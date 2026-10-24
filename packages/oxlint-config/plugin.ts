@@ -1,6 +1,6 @@
 import { definePlugin, defineRule } from '@oxlint/plugins';
-import { NATIVE_TITLE } from '@liveplanner/oxlint-config/native-title';
-import { RAW_ICON_SVG } from '@liveplanner/oxlint-config/raw-svg';
+import { NATIVE_TITLE } from '@liveworkspace/oxlint-config/native-title';
+import { RAW_ICON_SVG } from '@liveworkspace/oxlint-config/raw-svg';
 
 // The repo's own rules, loaded through oxlint's `jsPlugins`. Each reports every node its
 // selector matches, with the message that names the primitive to use instead.
@@ -16,7 +16,7 @@ const restrict = ({ selector, message }: Restriction) =>
   });
 
 export default definePlugin({
-  meta: { name: 'liveplanner' },
+  meta: { name: 'liveworkspace' },
   rules: {
     'no-native-title': restrict(NATIVE_TITLE),
     'no-raw-icon-svg': restrict(RAW_ICON_SVG),

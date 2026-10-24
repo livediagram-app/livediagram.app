@@ -3,8 +3,8 @@ import { findingsOf, lintFixtures, type Finding } from './lint-fixtures';
 
 // Raw icon-sized <svg> is rejected outside the art allow-list
 // (docs/specs/004-interface-design/iconography.md, "Guarding").
-const SVG = 'livedesign(no-raw-icon-svg)';
-const TITLE = 'livedesign(no-native-title)';
+const SVG = 'liveworkspace(no-raw-icon-svg)';
+const TITLE = 'liveworkspace(no-native-title)';
 const ICON = 'export const A = () => <svg width="18" height="18" />;';
 
 const FIXTURES = {

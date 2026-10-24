@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@livedesign/next-config": "workspace:*",
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livedesign/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",

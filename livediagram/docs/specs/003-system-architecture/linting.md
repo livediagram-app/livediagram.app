@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-Every workspace is linted by **oxlint** with one shared config, `@livediagram/oxlint-config`
-(`packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
+Every workspace is linted by **oxlint** with one shared config, `@liveworkspace/oxlint-config`
+(the monorepo's `packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
 `oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/editor`
 adds one override for its Playwright suite). Every rule is an **error**; there are no warnings.
 
@@ -68,10 +68,10 @@ is the whole of what the repo enforces.
   `error-boundaries`, `unsupported-syntax`). The plugin's `config` and `gating` rules are not part of
   the port: they check React Compiler options, and the repo sets none.
   [React state and effects](react-state-and-effects.md) says why they are errors.
-- **The repo's own rules**, in the `livediagram` JS plugin (`packages/oxlint-config/plugin.ts`):
-  - `livediagram/no-native-title`: no native `title` outside `iframe` and `abbr`
+- **The repo's own rules**, in the `liveworkspace` JS plugin (the monorepo's `packages/oxlint-config/plugin.ts`):
+  - `liveworkspace/no-native-title`: no native `title` outside `iframe` and `abbr`
     ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
-  - `livediagram/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
+  - `liveworkspace/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
     ([Iconography](../004-interface-design/iconography.md)).
 - **No formatting rules.** Prettier owns formatting.
 
@@ -91,7 +91,7 @@ is the whole of what the repo enforces.
   as an inferred project, without the workspace's options and paths; only the tool configs
   (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
-  and a dependency of `@livediagram/oxlint-config`, whose tests run it.
+  and a dependency of `@liveworkspace/oxlint-config`, whose tests run it.
 - A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it
   by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
   (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still

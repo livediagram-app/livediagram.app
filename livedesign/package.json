@@ -21,7 +21,7 @@
     "icons:brand": "pnpm --filter @livedesign/live icons:brand"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
     "oxlint": "^1.88.0",

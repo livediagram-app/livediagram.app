@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@livediagram/next-config": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

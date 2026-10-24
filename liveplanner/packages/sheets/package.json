@@ -18,7 +18,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",

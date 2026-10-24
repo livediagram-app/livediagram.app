@@ -27,7 +27,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",

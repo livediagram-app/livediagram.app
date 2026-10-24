@@ -26,7 +26,7 @@
     "@livediagram/templates": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

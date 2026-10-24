@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@liveplanner/project-views": "workspace:*",
-    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

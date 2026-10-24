@@ -25,7 +25,7 @@
     "@livedocuments/templates": "workspace:*"
   },
   "devDependencies": {
-    "@livedocuments/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@types/node": "^26.6.4",

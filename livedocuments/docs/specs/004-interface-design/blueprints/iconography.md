@@ -129,7 +129,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
-| No raw svg outside homes          | `livedocuments/no-raw-icon-svg` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`            |
+| No raw svg outside homes          | `liveworkspace/no-raw-icon-svg` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`            |
 | Tech tiles centred                | `tech-centring.test.ts` (32px tile; rotated-orbit glyphs named in `CENTRED_BY_CONSTRUCTION`)             |
 | Menu icons: one step, centred     | `context-menu-icons.test.tsx` (`MENU_ICON_PX` 14, `QUICK_ACTION_ICON_PX` 16; `ASYMMETRIC` exceptions)    |
 | Palette tile step                 | `palette-tile-defs.test.tsx` (`TILE_GLYPH_PX` 18)                                                        |

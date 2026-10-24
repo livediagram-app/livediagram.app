@@ -9,10 +9,11 @@ export const RAW_ICON_SVG = {
     "JSXOpeningElement[name.name='svg'] > JSXAttribute[name.name='width'][value.expression.value<=24]",
   ].join(', '),
   message:
-    'Icons render through Glyph (or lucideGlyph) from @livediagram/ui. Art belongs in a file on ICON_ART_ALLOWLIST (packages/oxlint-config/raw-svg.ts).',
+    'Icons render through Glyph (or lucideGlyph) from the product ui package (@livediagram/ui, @liveplanner/ui, ...). Art belongs in a file on ICON_ART_ALLOWLIST (packages/oxlint-config/raw-svg.ts).',
 };
 
-// Globs resolve from each workspace's own oxlint config, so they start at `**/components`.
+// Globs resolve from each workspace's own oxlint config, so they start at `**/components`. One list serves every
+// product: a file named here that a product doesn't have allows nothing there.
 export const ICON_ART_ALLOWLIST = [
   // Test fixtures render raw markup on purpose.
   '**/*.test.tsx',
@@ -28,6 +29,11 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/palette/sankey-menu-glyphs.tsx',
   '**/components/canvas/quick-style-rows.tsx',
   '**/components/dialogs/export-format-icons.tsx',
+  // Layout thumbnails: an infographic's (livedocuments) and a page layout's (livedesign).
+  '**/components/canvas/infographic-layout-thumb.tsx',
+  '**/components/canvas/layout-thumb.tsx',
+  // A photo tool's choices drawn as what they do (a selection mode's two shapes, a crop ratio's box).
+  '**/components/photo/option-pictures.tsx',
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',

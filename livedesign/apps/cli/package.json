@@ -24,7 +24,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.6.4",

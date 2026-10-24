@@ -23,7 +23,7 @@
     "@livedesign/design": "workspace:*"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -22,7 +22,7 @@
     "@cloudflare/workers-types": "^5.20261007.1",
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
-    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",

@@ -57,7 +57,7 @@
   "devDependencies": {
     "@livediagram/fake-google": "workspace:*",
     "@livediagram/next-config": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",

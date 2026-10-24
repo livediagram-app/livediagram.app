@@ -49,7 +49,7 @@
     "@livedesign/templates": "workspace:*",
     "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/next-config": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

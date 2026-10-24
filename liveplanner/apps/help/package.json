@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@liveplanner/next-config": "workspace:*",
-    "@liveplanner/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

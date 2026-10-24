@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@livediagram/edit-operations": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",

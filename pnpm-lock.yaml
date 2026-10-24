@@ -53,9 +53,9 @@ importers:
 
   livedesign:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:packages/oxlint-config
+        version: link:../packages/oxlint-config
       '@liveworkspace/prettier-config':
         specifier: workspace:*
         version: link:../packages/prettier-config
@@ -132,12 +132,12 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -187,9 +187,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -254,15 +254,15 @@ importers:
       '@livedesign/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -375,12 +375,12 @@ importers:
       '@livedesign/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../../../packages/source-ast
@@ -472,12 +472,12 @@ importers:
       '@livedesign/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -566,9 +566,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -609,9 +609,9 @@ importers:
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -658,9 +658,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -679,9 +679,9 @@ importers:
 
   livedesign/packages/api-client:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -710,9 +710,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -741,9 +741,9 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -778,9 +778,9 @@ importers:
         specifier: workspace:*
         version: link:../templates
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -821,9 +821,9 @@ importers:
       '@livedesign/design-views':
         specifier: workspace:*
         version: link:../design-views
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -842,9 +842,9 @@ importers:
 
   livedesign/packages/help-registry:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -858,9 +858,9 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -885,9 +885,9 @@ importers:
 
   livedesign/packages/licences:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -920,36 +920,11 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livedesign/packages/oxlint-config:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: ^1.88.0
-        version: 1.89.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livedesign/packages/page-background:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -978,12 +953,12 @@ importers:
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1005,9 +980,9 @@ importers:
 
   livedesign/packages/photo-engine:
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1033,9 +1008,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/style-guards
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1061,9 +1036,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1089,12 +1064,12 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -1129,9 +1104,9 @@ importers:
         specifier: workspace:*
         version: link:../design
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1184,9 +1159,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedesign/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1217,9 +1192,9 @@ importers:
 
   livediagram:
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:packages/oxlint-config
+        version: link:../packages/oxlint-config
       '@liveworkspace/prettier-config':
         specifier: workspace:*
         version: link:../packages/prettier-config
@@ -1296,9 +1271,6 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
@@ -1308,6 +1280,9 @@ importers:
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1366,9 +1341,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1421,12 +1396,12 @@ importers:
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -1557,12 +1532,12 @@ importers:
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../../../packages/source-ast
@@ -1651,15 +1626,15 @@ importers:
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -1739,12 +1714,12 @@ importers:
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -1830,9 +1805,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1870,9 +1845,9 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1919,9 +1894,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1940,9 +1915,9 @@ importers:
 
   livediagram/packages/api-client:
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -1974,9 +1949,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2002,12 +1977,12 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2036,9 +2011,9 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2067,9 +2042,9 @@ importers:
         specifier: workspace:*
         version: link:../document
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2107,9 +2082,9 @@ importers:
       '@livediagram/document-views':
         specifier: workspace:*
         version: link:../document-views
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2128,9 +2103,9 @@ importers:
 
   livediagram/packages/fake-google:
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2149,9 +2124,9 @@ importers:
 
   livediagram/packages/help-registry:
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -2165,9 +2140,9 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2192,9 +2167,9 @@ importers:
 
   livediagram/packages/licences:
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2227,40 +2202,15 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livediagram/packages/oxlint-config:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: ^1.88.0
-        version: 1.89.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livediagram/packages/sticky-model:
     dependencies:
       '@livediagram/sticky-vision':
         specifier: workspace:*
         version: link:../sticky-vision
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2286,9 +2236,9 @@ importers:
         specifier: workspace:*
         version: link:../document
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2314,9 +2264,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/style-guards
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2342,9 +2292,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2373,12 +2323,12 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -2413,9 +2363,9 @@ importers:
         specifier: workspace:*
         version: link:../document
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2474,9 +2424,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2507,9 +2457,9 @@ importers:
 
   livedocuments:
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:packages/oxlint-config
+        version: link:../packages/oxlint-config
       '@liveworkspace/prettier-config':
         specifier: workspace:*
         version: link:../packages/prettier-config
@@ -2583,12 +2533,12 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2638,9 +2588,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -2759,12 +2709,12 @@ importers:
       '@livedocuments/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../../../packages/source-ast
@@ -2850,15 +2800,15 @@ importers:
       '@livedocuments/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -2938,12 +2888,12 @@ importers:
       '@livedocuments/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -3032,9 +2982,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3075,9 +3025,9 @@ importers:
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3124,9 +3074,9 @@ importers:
       '@livedocuments/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3145,9 +3095,9 @@ importers:
 
   livedocuments/packages/api-client:
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3173,9 +3123,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3201,12 +3151,12 @@ importers:
       '@livedocuments/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3238,9 +3188,9 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3272,9 +3222,9 @@ importers:
         specifier: workspace:*
         version: link:../templates
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3312,9 +3262,9 @@ importers:
       '@livedocuments/document-views':
         specifier: workspace:*
         version: link:../document-views
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3333,9 +3283,9 @@ importers:
 
   livedocuments/packages/help-registry:
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -3349,9 +3299,9 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3376,9 +3326,9 @@ importers:
 
   livedocuments/packages/licences:
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3411,36 +3361,11 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livedocuments/packages/oxlint-config:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: ^1.88.0
-        version: 1.89.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livedocuments/packages/page-background:
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3463,9 +3388,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/style-guards
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3491,9 +3416,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3519,9 +3444,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -3556,9 +3481,9 @@ importers:
         specifier: workspace:*
         version: link:../document
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3608,9 +3533,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedocuments/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3641,9 +3566,9 @@ importers:
 
   liveplanner:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:packages/oxlint-config
+        version: link:../packages/oxlint-config
       '@liveworkspace/prettier-config':
         specifier: workspace:*
         version: link:../packages/prettier-config
@@ -3726,9 +3651,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3778,9 +3703,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -3884,12 +3809,12 @@ importers:
       '@liveplanner/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../../../packages/source-ast
@@ -3981,12 +3906,12 @@ importers:
       '@liveplanner/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -4063,15 +3988,15 @@ importers:
       '@liveplanner/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../../packages/project
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -4166,9 +4091,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4209,9 +4134,9 @@ importers:
       '@liveplanner/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../packages/oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4267,9 +4192,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4288,9 +4213,9 @@ importers:
 
   liveplanner/packages/api-client:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4325,9 +4250,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4356,12 +4281,12 @@ importers:
         specifier: workspace:*
         version: link:../templates
     devDependencies:
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@liveplanner/project-views':
         specifier: workspace:*
         version: link:../project-views
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4390,9 +4315,9 @@ importers:
         specifier: workspace:*
         version: link:../sheets
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4411,9 +4336,9 @@ importers:
 
   liveplanner/packages/help-registry:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -4427,9 +4352,9 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4454,9 +4379,9 @@ importers:
 
   liveplanner/packages/items:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4475,9 +4400,9 @@ importers:
 
   liveplanner/packages/licences:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4510,36 +4435,11 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  liveplanner/packages/oxlint-config:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: ^1.88.0
-        version: 1.89.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   liveplanner/packages/page-background:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4574,9 +4474,9 @@ importers:
         specifier: workspace:*
         version: link:../ui
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4611,9 +4511,9 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4642,9 +4542,9 @@ importers:
         specifier: workspace:*
         version: link:../project
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4666,9 +4566,9 @@ importers:
 
   liveplanner/packages/sheets:
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4694,9 +4594,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/style-guards
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4722,9 +4622,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4762,12 +4662,12 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
@@ -4811,9 +4711,9 @@ importers:
         specifier: workspace:*
         version: link:../sheets
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -4866,9 +4766,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@liveplanner/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../oxlint-config
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
@@ -5138,9 +5038,6 @@ importers:
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/next-config
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../livediagram/packages/oxlint-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/tailwind-config
@@ -5165,6 +5062,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/templates
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../../../packages/source-ast
@@ -5453,6 +5353,31 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/oxlint-config:
+    dependencies:
+      '@oxlint/plugins':
+        specifier: ^1.88.0
+        version: 1.89.0
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      oxlint-tsgolint:
+        specifier: ^7.0.2004
+        version: 7.0.2004
+    devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/prettier-config: {}
 
   packages/render-png:
@@ -5461,9 +5386,9 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../livediagram/packages/oxlint-config
+        version: link:../oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -5550,9 +5475,9 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../livediagram/packages/oxlint-config
+        version: link:../oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -5575,9 +5500,9 @@ importers:
         specifier: workspace:*
         version: link:../source-ast
     devDependencies:
-      '@livediagram/oxlint-config':
+      '@liveworkspace/oxlint-config':
         specifier: workspace:*
-        version: link:../../livediagram/packages/oxlint-config
+        version: link:../oxlint-config
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config

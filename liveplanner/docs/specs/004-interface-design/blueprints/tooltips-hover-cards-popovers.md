@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/ui/src/Tooltip.tsx`                        | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
 | `packages/ui/src/HoverCard.tsx`                      | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                           | Exports `Tooltip`, `HoverCard` and their prop types                            |
-| `packages/oxlint-config/native-title.ts`             | `liveplanner/no-native-title`: native `title` outside the exceptions           |
+| `packages/oxlint-config/native-title.ts`             | `liveworkspace/no-native-title`: native `title` outside the exceptions           |
 | `apps/editor/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                   |
 
 ## Domain and naming

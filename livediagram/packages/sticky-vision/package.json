@@ -21,7 +21,7 @@
     "@livediagram/document": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.4",

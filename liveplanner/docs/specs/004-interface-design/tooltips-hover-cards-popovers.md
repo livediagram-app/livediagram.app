@@ -183,6 +183,6 @@ None. Hints change no one's workflow, and hovering is not an action worth counti
 ## Where it lives
 
 - `@liveplanner/ui` owns `Tooltip` and `HoverCard`, used by every app.
-- The shared lint config (`@liveplanner/oxlint-config`) holds the native-`title` rule.
+- The shared lint config (`@liveworkspace/oxlint-config`) holds the native-`title` rule.
 - Popovers keep their own homes (`packages/ui` popover positioning, the editor's menus and pickers);
   this spec only fixes what the word means. A popover that is a menu follows [Menus](./menus.md).

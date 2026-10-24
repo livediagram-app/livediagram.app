@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'oxlint';
-import { ICON_ART_ALLOWLIST } from '@livediagram/oxlint-config/raw-svg';
+import { ICON_ART_ALLOWLIST } from '@liveworkspace/oxlint-config/raw-svg';
 
 // The shared oxlint config every workspace's `oxlint.config.ts` re-exports
-// (docs/specs/003-system-architecture/linting.md). Rules are listed one by one, every category is
-// off, so this file is the whole of what the repo enforces; every rule is an error.
+// (each product's docs/specs/003-system-architecture/linting.md). Rules are listed one by one, every
+// category is off, so this file is the whole of what the monorepo enforces; every rule is an error.
 
 const JS_FILES = ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx'];
 const TS_FILES = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'];
@@ -32,8 +32,8 @@ export default defineConfig({
     '**/dist/**',
     '**/build/**',
     '**/.next/**',
-    // Dev-server cache dir for `apps/editor`, separated from `.next/` to keep `next dev` from
-    // racing `next build` on the same files. See `apps/editor/next.config.ts` + the dev script.
+    // Dev-server cache dir of each product's Next apps, separated from `.next/` to keep `next dev`
+    // from racing `next build` on the same files. See @liveworkspace/next-config + a product's dev script.
     '**/.next-dev/**',
     // The licences generator's analysis of each Next app
     // (docs/specs/002-project-scope/third-party-licences.md): build output.
@@ -159,8 +159,8 @@ export default defineConfig({
     'react/unsupported-syntax': 'error',
 
     // The repo's own rules (./plugin.ts).
-    'livediagram/no-native-title': 'error',
-    'livediagram/no-raw-icon-svg': 'error',
+    'liveworkspace/no-native-title': 'error',
+    'liveworkspace/no-raw-icon-svg': 'error',
   },
   overrides: [
     {
@@ -241,7 +241,7 @@ export default defineConfig({
     {
       // Art keeps its own paint; only the title rule applies there.
       files: ICON_ART_ALLOWLIST,
-      rules: { 'livediagram/no-raw-icon-svg': 'off' },
+      rules: { 'liveworkspace/no-raw-icon-svg': 'off' },
     },
   ],
 });
