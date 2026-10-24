@@ -17,7 +17,7 @@ export function CodeSnippet({ code, lang, label }: { code: string; lang: string;
       <pre
         // Focusable, so a keyboard can scroll a line too long for the card (axe scrollable-region-focusable).
         tabIndex={0}
-        className="overflow-x-auto px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-300"
+        className="overflow-x-auto px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300"
       >
         <code
           className={`select-all ${lang === 'bash' ? "before:text-slate-500 before:content-['$_']" : ''}`}
