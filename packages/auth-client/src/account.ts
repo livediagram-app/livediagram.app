@@ -37,35 +37,6 @@ export interface MintedToken {
   secret: string;
 }
 
-export interface TeamChange {
-  id: string;
-  name: string;
-  // The team's organisation line (a company or department), null when it has none. The feed always
-  // carries it; optional so a caller building a change of its own may leave it out.
-  organisation?: string | null;
-  deleted: boolean;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface MemberChange {
-  id: string;
-  teamId: string;
-  userId: string | null;
-  email: string;
-  role: TeamRole;
-  status: 'invited' | 'joined' | 'declined' | 'removed';
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface TeamChanges {
-  teams: TeamChange[];
-  members: MemberChange[];
-  cursor: string;
-  more: boolean;
-}
-
 function basic(credentials: ClientCredentials): string {
   const pair = `${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`;
   return `Basic ${btoa(pair)}`;
@@ -260,18 +231,6 @@ export async function liveTokenIds(
   );
   if (!response.ok) throw new Error(`token liveness failed: ${response.status}`);
   return ((await response.json()) as { live: string[] }).live;
-}
-
-// One page of the teams change feed after `cursor` (null for the start).
-export async function fetchTeamChanges(
-  credentials: ClientCredentials,
-  cursor: string | null,
-  fetcher: typeof fetch = fetch,
-): Promise<TeamChanges> {
-  const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
-  const response = await call(credentials, `/teams/changes${query}`, { method: 'GET' }, fetcher);
-  if (!response.ok) throw new Error(`team changes failed: ${response.status}`);
-  return (await response.json()) as TeamChanges;
 }
 
 // --- Settings ---

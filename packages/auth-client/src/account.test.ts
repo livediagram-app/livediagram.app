@@ -4,7 +4,6 @@ import {
   claimMilestone,
   createTeamFor,
   createTokenChecker,
-  fetchTeamChanges,
   mintAccountToken,
   ProfileError,
   readProfiles,
@@ -114,18 +113,6 @@ describe('mintAccountToken', () => {
     await expect(
       mintAccountToken(CREDENTIALS, { accessToken: 'jwt', name: 'x', readOnly: false }, fetcher),
     ).resolves.toBeNull();
-  });
-});
-
-describe('fetchTeamChanges', () => {
-  it('passes the cursor along', async () => {
-    const { fetcher, calls } = fakeFetch(() =>
-      Response.json({ teams: [], members: [], cursor: '3:a,4:b', more: false }),
-    );
-    await fetchTeamChanges(CREDENTIALS, '1:a,2:b', fetcher);
-    expect(calls[0]!.url).toBe(
-      'https://liveworkspace.app/api/account/internal/teams/changes?cursor=1%3Aa%2C2%3Ab',
-    );
   });
 });
 

@@ -117,26 +117,16 @@ The two doors that need no session, the join preview and the Decline link, are l
 (`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48).
 
 Rows are never deleted. Leaving or being removed makes a row `removed`; deleting a team stamps
-`deletedAt`. Every write takes the next number from one counter (`team_seq`) in the same batch, so
-the apps can follow everything that changed after the last number they saw. The feed carries each
-team's organisation too.
+`deletedAt`. Every write takes the next number from one counter (`team_seq`) in the same batch, and
+`GET /api/account/internal/teams/changes?cursor=…` answers every team and member written after the
+cursor, oldest first, 500 a page. No app reads that feed any more (see below); it stays for a
+deployment that still might.
 
 ### How an app keeps up
 
-An app's own tables still say which documents belong to which team, and its permission checks
-still join on its own copy of each team and its joined members. liveworkspace is the source of
-that copy, which reaches the app two ways:
-
-- **The change feed.** `GET /api/account/internal/teams/changes?cursor=…` answers every team and
-  member written after the cursor, oldest first, 500 a page, with the next cursor. The app applies
-  them and keeps the cursor. It reads the feed on a five-minute cron, so a removal reaches every app
-  within five minutes even if the person never opens it again.
-- **The token's claim.** Every access token liveworkspace mints carries the account's teams
-  (`teams: [{ id, name, role }]`, up to 50). When the app sees a claim that differs from its copy for
-  that account, it reads the feed then and there, so a team made or joined a moment ago is there on
-  the next request. The claim is only ever a nudge: tokens live an hour, so the app's copy, not
-  the claim, decides access. An app remembers per isolate which claims it has already caught up
-  with, so a steady state costs nothing per request.
+An app keeps no copy of teams. Its items are on the index, which decides team access from the person's token
+claim, asking accounts only when a request names a team the claim doesn't hold (see "How an app and the
+index know someone's teams" above).
 
 ## API tokens
 
