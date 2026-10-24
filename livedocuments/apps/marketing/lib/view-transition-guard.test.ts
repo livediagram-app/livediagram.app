@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 
-import { VIEW_TRANSITION_GUARD_SCRIPT } from './view-transition-guard';
+import { NON_MARKETING_SEGMENTS } from '@livedocuments/api-schema';
+import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
+
+// The shared guard, bound to this product's other apps as its layout binds it.
+const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
 
 const ORIGIN = 'https://livedocuments.app';
 
