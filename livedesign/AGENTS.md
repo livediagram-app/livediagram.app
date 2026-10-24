@@ -190,7 +190,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 - **Design** is what a person makes, never a "document": in file names, identifiers, routes, tables, copy and specs
   (`packages/design/src/design-naming.test.ts` enforces it). The DOM's `document` and the flowchart shape `document`
   keep their names.
-- **Page kind** is what a page is: logo, wireframe or photo (`PageKind`). A tab holds pages of any kind. livedesign
+- **Page kind** is what a page is: logo, wireframe or photo (`PageKind`). Every page of a tab is of one kind, its first page's. livedesign
   has no slide, article or infographic pages; presenting is the Slides view stepping through any tab's pages.
 - **Template** is what a design was made from: a Logos, Photos or Wireframes template or a page layout, never a kind.
 - **This Browser** names a design saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".

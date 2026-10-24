@@ -61,7 +61,7 @@ export function wireframeTourSteps(): PageTourStep[] {
     {
       id: 'add-page',
       title: 'Add a Page',
-      body: '+ adds another page like this one; the button under it adds a page of any kind.',
+      body: '+ adds another screen like this one; the button under it adds a screen of another device. Every page of a tab is one kind.',
       selector: addPageAnchor,
     },
     {

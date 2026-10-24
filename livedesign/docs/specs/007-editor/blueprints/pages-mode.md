@@ -10,7 +10,7 @@ every design decision.
 | Page                        | `Page` (`{ id, orientation, size?, fit?, rowAt?, background?, name?, kind?, locked?, startedBlank? }`), `packages/design/src/page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Fit to Content sides        | `PageSides` (`{ width, height }`), `parsePageSides`, `clampPageSide`, `FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`, `packages/design/src/page-fit.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Row anchor                  | `RowAt` (`{ x, y }`), `parseRowAt` (`page-fit.ts`); `rowAnchorOf(pages)`, `withOneRowAnchor` and `withRowAnchorKept` (private), `page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Page kind                   | `PageKind` (`'logo' \| 'wireframe' \| 'photo'`); `pageKindOf(page)` (absent, or a kind livedesign does not have, reads `null`: a blank page), `newLogoPage(id)`, `newWireframePage(...)` ([Logo pages](logo-pages.md))                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Page kind                   | `PageKind` (`'logo' \| 'wireframe' \| 'photo'`); `pageKindOf(page)` (absent, or a kind livedesign does not have, reads `null`: a blank page), `tabPageKind(pages)` (the first page's, `null` for a blank one), `lastPageOfTabKind(pages)` (what the + adds another of), `newLogoPage(id)`, `newWireframePage(...)` ([Logo pages](logo-pages.md))                                                                                                                                                                                                                                                                                                       |
 | The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, device?)`, `packages/design/src/page-units.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Units of the row            | `PageUnit` (`{ pageIds }`, one page each), `pageUnits`, `withUnitMoved` (`page-units.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | A page laid out             | `LaidOutPage` (`Page & { index, rect: PageRect }`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -49,7 +49,7 @@ every design decision.
 | Sheets and title bars       | `CanvasPages` (`PageCog`, `LayoutInvite`, `ReorderMarker`), `apps/live/components/canvas/CanvasPages.tsx`; `AddPageButton` (`AddPageButton.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Background beside the cog   | `PageBackgroundButton`, `pageBackgroundRoom` (`components/canvas/PageBackgroundButton.tsx`) over `TitlePopoverButton`, `titleButtonClass` (`TitlePopoverButton.tsx`); body `BackgroundSection`                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Title-bar room              | `titleBarFixedRoom`, `titleBarNamed` (buttons named only while the page on screen holds them named plus `LABEL_MIN`), `components/canvas/page-title-bar-room.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Add a page                  | `AddPagePopover` (`AddPagePopover.tsx`); `PAGE_KINDS`, `PageKindChoice`, `PageKindCard`, `moveBetweenKindCards` (`page-kind-cards.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Kind cards                  | `PAGE_KINDS`, `PageKindChoice`, `PageKindCard`, `moveBetweenKindCards` (`page-kind-cards.tsx`, the first page's choice alone); a screen of another device `AddScreenPopover` (`AddScreenPopover.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | In-page layout card         | `EmptyPageLayouts` (`components/canvas/EmptyPageLayouts.tsx`), `showsLayoutCard` (in `CanvasPages`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | First page's choice card    | `FirstPageChoice` (`components/canvas/FirstPageChoice.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Page navigator              | `PageNavigatorClusterStrip` (`components/canvas/PageNavigatorClusterStrip.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -105,7 +105,7 @@ page; "template" stays the whole-tab starting point.
 | `PAGINATE_MAX_PAGES`                                                       | 20 pages per Split Into Pages                                                      | `paginate.ts`; spec "Into pages"                                                                                                         |
 | `FIT_PAGE_MIN_SIDE`                                                        | 200 px                                                                             | `page-fit.ts`; spec "Sizes"                                                                                                              |
 | `FIT_PAGE_MAX_SIDE`                                                        | 19200 px (14400 pt, a PDF's largest page, at 0.75 pt per px)                       | `page-fit.ts`; spec "Sizes"                                                                                                              |
-| Add a page popover                                                         | 420 px wide, 10 px from the +                                                      | `AddPagePopover` `WIDTH`, `GAP`; D55                                                                                                     |
+| Add a Screen popover                                                       | 300 px wide, 10 px from its button                                                 | `AddScreenPopover` `WIDTH`, `GAP`; D55                                                                                                   |
 | `ADD_PAGE_SIZE`, `ADD_PAGE_CLEARANCE`                                      | 36 px, 12 px                                                                       | `AddPageButton.tsx`; spec "Adding a page"                                                                                                |
 | First page's choice card                                                   | 420 px wide                                                                        | `FirstPageChoice` (`w-[420px]`); D56                                                                                                     |
 | `LAYOUT_CARD_MIN_WIDTH`, `LAYOUT_CARD_MAX_WIDTH`, `LAYOUT_CARD_MAX_HEIGHT` | 340 px, 900 px, 660 px                                                             | `page-layout-card.ts`; spec "An empty page offers its layouts", D78                                                                      |
@@ -297,10 +297,13 @@ in front of it. `pagesSharing(pages, id)` is the page a page-wide change reaches
 - `movePageTo(id, unitIndex)` (`pageMovedTo`, clamped to the row), `movePage(id, ±1)`,
   `canMove(id, ±1)`: over units (`pageUnits`: one per page), `withUnitMoved`;
   content follows its page.
-- `addPage(kind)` (absent at the limit, `pageAdded`), `nextPageId(current)`:
+- `addPage(kind, device?)` (absent at the limit, `pageAdded`), `nextPageId(current)`: a `kind` other
+  than `tabPageKind(current)` (any, on a blank tab) is refused (`kind_not_offered`, no edit, log `add
+refused: another kind`);
   `'logo'` as in [Logo pages](logo-pages.md), `'wireframe'` as in [Wireframe pages](../wireframe-pages.md),
   `'photo'` as in [Photo pages](../../031-photo/photo-pages.md); `addPageLike(id)` (`pageAddedLike`) adds
-  one like a page, refused for a blank page; then
+  one like a page, refused for a blank page and for a page not of the tab's kind; `addPhotoPage(after,
+size?)` (Edit as Photo) is absent unless `tabPageKind(current) === 'photo'`; then
   `onGoTo(id)`. Telemetry `KIND_ADDED_EVENT` (`LogoPageAdded`, `WireframePageAdded`,
   `PhotoPageAdded`).
 - `choosePageKind(id, kind, device?)`: `withPageKindChosen` (null once the page no longer offers
@@ -580,15 +583,26 @@ pageHasOrientation(page)`, then a logo page's **Background** and
 
 ### Kinds, adding, getting around
 
-- **Add a page**: `AddPageButton` (the + after the last page, at `lastRight + max(GAP / 2,
+- **Add a page**: `AddPageButton` is the + (after the last page, at `lastRight + max(GAP / 2,
 (ADD_PAGE_SIZE / 2 + ADD_PAGE_CLEARANCE) / zoom)`, level with the last page's middle,
-  `aria-expanded`, brand-filled while open, `data-add-page-trigger`) opens `AddPagePopover` (the strip's own +,
-  `AddPageStripButton`, is gone: the strip is the category bar):
-  desktop a `Portal`led card under the anchor, centred on it, kept in the window (above it when
-  there is no room below), first card focused; phone a `BottomSheet`. Arrow keys cycle the cards
-  (`moveBetweenKindCards` in `page-kind-cards.tsx`, shared with `FirstPageChoice`: Left / Right one
-  card, Up / Down a row, wrapping); a card `onClose(false)` then `onAdd(kind)`; Escape closes and
-  refocuses the +; an outside press closes (the + trigger whitelisted).
+  `data-add-page-like`, named `addAnotherLabel(like)`), calling `onAddLike(like.id)`
+  (`edit.addPageLike`), `like` being `lastPageOfTabKind(pages)`: the last page of the tab's kind, the
+  last page itself unless a stored tab mixes kinds. `CanvasPages` renders it only while there is a
+  `like` (none on a blank tab). There is no chooser of kinds: `AddPagePopover` is gone.
+- **A screen of another device**: on a wireframe tab (`like.kind === 'wireframe'`) a smaller button sits
+  under the + (`data-add-page-trigger`, **Add a Screen of Another Device**, `aria-haspopup="dialog"`,
+  `aria-expanded`, brand-filled while open) toggling `AddScreenPopover`: desktop a `Portal`led list
+  beside the button (right while there is room, else left), level with it, kept in the window;
+  phone a `BottomSheet`. Rows per `WIREFRAME_DEVICE_GROUPS`, the remembered device
+  (`lastWireframeDevice`) ringed and focused, Up / Down / Home / End cycle; a row
+  `rememberWireframeDevice(device)`, `onClose(false)` then `onAddDevice(device)`
+  (`edit.addPage('wireframe', device)`); Escape closes and refocuses the button; an outside press
+  closes (the trigger whitelisted).
+- **One kind a tab**: `tabPageKind(pages)` (`packages/design/src/page.ts`) = `pageKindOf(pages[0])`,
+  `null` for a blank first page (or no pages); `pageAdded` refuses `kind_not_offered` when the tab has a
+  page and `kind !== tabPageKind(pages)`, before the room check; `pageAddedLike` refuses it when the
+  source's kind is not the tab's. `pageDuplicated` copies a page's own kind, so it passes. The first
+  page's choice is the only change of kind (`withPageKindChosen`, one unchosen empty page).
 - **First page's choice**: `CanvasPages` renders `FirstPageChoice` on a page when `edit`, not
   `bare`, not locked, and `offersPageKindChoice(pages, page.id, edit.contentCount(page.id))`; the
   layout invite is withheld meanwhile. Cards call
@@ -661,12 +675,14 @@ next), ownerId)`; the editor follows the cache (`useEditorPreferences`). Setting
   every word in the number, name, kind line or the page's words; `usePageContents` computes `texts`
   with `pageTexts` (`apps/live/lib/page-texts.ts`: one walk, each element to the page its anchor
   lies on via `rowPageAt`, its `elementFindTexts` from `@livedesign/design-views`) only while the query is not blank.
-- **Add Page**: `ContentsAddPage` is two buttons in a row: the wide one (`data-contents-add`,
-  **Add Page** with `lucidePlus`, its tooltip `addAnotherLabel(lastPage)`) calls `addLike()` (`edit.addPageLike(lastPage.id)`); the
-  square one (`data-add-page-trigger`, `data-contents-add-any`, **Add a Page of Any Kind**,
-  `aria-haspopup="dialog"`) toggles `AddPagePopover`, whose `onAdd` is `add(kind, device)`. The
-  popover carries `data-floating-panel` and `data-menu-surface`, so a press in it stays inside an
-  open Contents popover. At the limit both are disabled, the limit in their tooltips.
+- **Add Page**: `ContentsAddPage` is one wide button (`data-contents-add`, **Add Page** with
+  `lucidePlus`, its tooltip `addAnotherLabel(lastPage)`) that calls `addLike()`
+  (`edit.addPageLike(lastPage.id)`), `lastPage` being `lastPageOfTabKind(pages)`; with no `lastPage` (a
+  blank tab) there is no footer. On a wireframe tab a square button beside it
+  (`data-add-page-trigger`, `data-contents-add-screen`, **Add a Screen of Another Device**,
+  `aria-haspopup="dialog"`) toggles `AddScreenPopover`, whose `onAddDevice` is `add('wireframe',
+device)`. The popover carries `data-floating-panel` and `data-menu-surface`, so a press in it stays
+  inside an open Contents popover. At the limit both are disabled, the limit in their tooltips.
 - **Pictures**: `usePageContents` draws only rows an `IntersectionObserver` (root the list,
   `CONTENTS_DRAW_AHEAD_PX` margin) has seen, every row without one; `usePageThumbnails` holds its
   inputs until they rest `settleMs` (the sidebar's `CONTENTS_SIDEBAR_SETTLE_MS`, the popover's 0),
@@ -845,7 +861,8 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
   nothing.
 - The pure edits (`pages-edits.ts`) answer `{ tab }` (the same tab when nothing changes) or
   `{ refused: PageEditRefusal }` (`unknown_page`, `locked`, `no_orientation`, `size_not_offered`,
-  `pattern_not_offered`, `page_limit`, `last_page`).
+  `pattern_not_offered`, `page_limit`, `photo_limit`, `last_page`, `not_a_wireframe`,
+  `kind_not_offered`).
 - `offersPageKindChoice(pages, id, count)`: true only for the only page, unchosen, empty.
   `withPageKindChosen`: null when the page no longer offers it.
 - `PageLayout.build(box: LayoutBox): Element[]`: pure; every element inside the box (1 px slack),
@@ -860,34 +877,38 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
 
 ## Errors and edge cases
 
-| Case                                   | Handling                                                    |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Malformed stored page / field          | Skipped / dropped by `parsePage` (Data and persistence)     |
-| Edit to a page removed meanwhile       | The commit's `find` misses; the tab is unchanged            |
-| Duplicate or add at the limit          | The control is absent / disabled; the commit also refuses   |
-| Delete of the last page                | The tab is cleared; Start Making Pages comes back; Undo     |
-| Arrow end over another page's element  | Not pinned or joined; the end stays free                    |
-| Kind chosen on a page no longer alone  | `withPageKindChosen` null: no edit                          |
-| Stored page with a repeated id         | Skipped after the first                                     |
-| Two quick edits                        | Each re-reads the tab at commit time                        |
-| Duplicated arrow pinned off the page   | Not copied                                                  |
-| Re-fit of content larger than the room | Scaled down, never up                                       |
-| Lone page under a layout preview       | `pagesClipPath([])` returns a clip that hides everything    |
-| Page slide whose page is gone          | Resolves to no elements, frames to null; shown, fixable     |
-| Split past 20 clusters or the limit    | The rest share the last new page, sized around them         |
-| Split of a page with one cluster       | No edit; a toast says there is nothing to split             |
-| Content wider than `FIT_PAGE_MAX_SIDE` | The page stops at the limit; the content runs off, unscaled |
-| Carrier of the row anchor deleted      | The anchor moves to the new first page; the row stays       |
-| Malformed `fit` or `rowAt`             | Read as A4 / dropped (the row on the origin)                |
-| Gradient rasterise failure in export   | Caught; the paper stays                                     |
-| Page picture deleted or not servable   | The sheet and export paint its tone under its overlay       |
-| Thumbnail unreadable for the tone      | The stored picture is sampled; failing that, mid grey       |
-| Picture on a logo page (carried over)  | Dropped on read                                             |
-| A page fails to render in a .zip       | The export rejects; the dialog's existing error path shows  |
-| A page label with path characters      | `sanitizeFilename` replaces them in zip and download names  |
-| One page in the tab                    | No page `Select`; All and One give the same page            |
-| Name field closed without blur         | Committed on unmount                                        |
-| Stale dev bundle                       | Not a code path; restart the dev server (wipe `.next-dev`)  |
+| Case                                   | Handling                                                     |
+| -------------------------------------- | ------------------------------------------------------------ |
+| Malformed stored page / field          | Skipped / dropped by `parsePage` (Data and persistence)      |
+| Edit to a page removed meanwhile       | The commit's `find` misses; the tab is unchanged             |
+| Duplicate or add at the limit          | The control is absent / disabled; the commit also refuses    |
+| Delete of the last page                | The tab is cleared; Start Making Pages comes back; Undo      |
+| Arrow end over another page's element  | Not pinned or joined; the end stays free                     |
+| Kind chosen on a page no longer alone  | `withPageKindChosen` null: no edit                           |
+| Add of a kind other than the tab's     | `pageAdded` `kind_not_offered`: no edit, logged              |
+| Add to a blank tab (first page blank)  | `kind_not_offered`; no + and no Contents footer shown        |
+| Stored tab mixing kinds (before)       | Opens as it is; the + adds like the last of the first's kind |
+| Edit as Photo on a logo/wireframe tab  | Not offered (`addPhotoPage` absent)                          |
+| Stored page with a repeated id         | Skipped after the first                                      |
+| Two quick edits                        | Each re-reads the tab at commit time                         |
+| Duplicated arrow pinned off the page   | Not copied                                                   |
+| Re-fit of content larger than the room | Scaled down, never up                                        |
+| Lone page under a layout preview       | `pagesClipPath([])` returns a clip that hides everything     |
+| Page slide whose page is gone          | Resolves to no elements, frames to null; shown, fixable      |
+| Split past 20 clusters or the limit    | The rest share the last new page, sized around them          |
+| Split of a page with one cluster       | No edit; a toast says there is nothing to split              |
+| Content wider than `FIT_PAGE_MAX_SIDE` | The page stops at the limit; the content runs off, unscaled  |
+| Carrier of the row anchor deleted      | The anchor moves to the new first page; the row stays        |
+| Malformed `fit` or `rowAt`             | Read as A4 / dropped (the row on the origin)                 |
+| Gradient rasterise failure in export   | Caught; the paper stays                                      |
+| Page picture deleted or not servable   | The sheet and export paint its tone under its overlay        |
+| Thumbnail unreadable for the tone      | The stored picture is sampled; failing that, mid grey        |
+| Picture on a logo page (carried over)  | Dropped on read                                              |
+| A page fails to render in a .zip       | The export rejects; the dialog's existing error path shows   |
+| A page label with path characters      | `sanitizeFilename` replaces them in zip and download names   |
+| One page in the tab                    | No page `Select`; All and One give the same page             |
+| Name field closed without blur         | Committed on unmount                                         |
+| Stale dev bundle                       | Not a code path; restart the dev server (wipe `.next-dev`)   |
 
 ## Security and trust
 
@@ -964,12 +985,13 @@ SVG `href` is escaped. The api counts a page picture as an image reference
 
 ## Presentation and UX
 
-Copy and layout as the spec: **Add a Page** over the three cards (**Logo**, "A square
+Copy and layout as the spec: **What Is This Page For?** over the three cards (**Logo**, "A square
 artboard for a logo, with guides and drawing tools."; **Wireframe**, "A screen to wireframe,
 framed as a phone, tablet, laptop or browser."; **Photo**, "A picture to edit: layers, brushes,
 adjustments and filters."), each over its miniature; the
-in-page card **Start From a Layout** with **Hide**; the first page's card **What Is This Page For?**, "Choose now: a
-page keeps its kind once you start."; the navigator **Previous page**, "n of m", **Next page**;
+in-page card **Start From a Layout** with **Hide**; the first page's card **What Is This Page For?**, "Choose now: every
+page of this tab will be this kind."; the + named **Add Another Logo Page** (`addAnotherLabel`); a wireframe
+tab's **Add a Screen of Another Device** opening **Choose a Device**; the navigator **Previous page**, "n of m", **Next page**;
 the panel's tabs **Page** / **Background** / **Layouts** (a logo page **Background** / **Layouts**), sections **Size**,
 **Orientation**, **Background**, **Pattern**, **Start From a Layout**; the confirm **Replace this
 page's content?**, "The n elements on it make way for <layout>. Undo brings them back.",
@@ -990,9 +1012,10 @@ at most 100 pages: delete one to split this page."
   focus as well as hover.
 - The page label is a button named by its text (a HoverCard describes the press); the invite and
   Slides buttons are named; Tooltips repeat names only.
-- The + (both): `aria-haspopup="dialog"`, `aria-expanded`, named **Add Page**; the popover
-  `role="dialog"` named "Add a Page" around a `role="group"`; cards are buttons (name and line as
-  text), arrow keys cycle, Escape returns focus to the +.
+- The + is a button named by what it adds (`addAnotherLabel`). A wireframe tab's **Add a Screen of
+  Another Device**: `aria-haspopup="dialog"`, `aria-expanded`; its popover `role="dialog"` named
+  "Choose a Device" around a `role="group"`; rows are buttons (name and screen size as text), the
+  remembered one `aria-current`, arrow keys cycle, Escape returns focus to the button.
 - The first page's card `role="group"` labelled by its title "What Is This Page For?"; the in-page
   layout card `role="group"` labelled by "Start From a Layout", its Hide named; the navigator
   `role="group"` named "Page n of m", its arrows named and disabled at the ends.
@@ -1001,7 +1024,7 @@ at most 100 pages: delete one to split this page."
 
 ## Web Experience
 
-No new route or loaded asset; the panel, preview, picker, Add a page popover and the first page's
+No new route or loaded asset; the panel, preview, picker, Add a Screen popover and the first page's
 card mount on demand. Layout thumbnails, the preview and the kind miniatures are inline SVG (no
 network). No layout shift: the title bar, the navigator and the first page's card are absolutely
 positioned over the canvas.
@@ -1010,7 +1033,7 @@ positioned over the canvas.
 
 - `debugLog` fingerprints: `[page] orientation set`, `size set`, `renamed`,
   `background set`, `moved`, `page added`, `duplicated`,
-  `page removed`, `last page removed`, `first page kind chosen`,
+  `page removed`, `last page removed`, `first page kind chosen`, `add refused: another kind`,
   `layout placed`, `framed`, `last page recorded`, `content put onto a page`, `page split`, `split: one group`,
   `split refused: page limit`, `size refused: fit to content`, `size refused: not offered for the
 kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused: page locked`,
@@ -1032,6 +1055,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Page kinds: read, absent is a blank page, a stored article page read as a blank page                                                                                                                                                                                        | `packages/design/src/page.test.ts` "page kinds"                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | A new page per kind: logo, wireframe, photo; like the last                                                                                                                                                                                                                  | `packages/design/src/pages-edits.test.ts` "adding"; `apps/live/hooks/editor/page-edits.test.ts` "logo page edits", "Fit to Content page edits"                                                                                                                                                                                                                                                                                                                          |
+| One kind a tab: only the tab's kind is added, none to a blank tab, a stored mixed tab takes its first page's; no chooser of kinds on the + or in Contents                                                                                                                   | `pages-edits.test.ts` "adds only pages of the tab’s kind"; `page-edits.test.ts` "one kind a tab"; `AddPageButton.test.tsx`, `ContentsAddPage.test.tsx` "offers no other kind"                                                                                                                                                                                                                                                                                           |
 | Back to the page you were on: landing frames it, else the first; nothing recorded before the landing frame; a settling move kept on leaving or closing                                                                                                                      | `apps/live/hooks/editor/usePagesMode.last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | The remembered page: per design and tab, malformed reads absent, capped at the latest 200, the page under (else nearest) the view's centre                                                                                                                                  | `apps/live/lib/last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | The first page's choice: offered while alone, unchosen, empty; each kind taken                                                                                                                                                                                              | `apps/live/components/canvas/FirstPageChoice.test.tsx`; `page-edits.test.ts` "chooses Logo for the only, empty page"                                                                                                                                                                                                                                                                                                                                                    |
@@ -1098,7 +1122,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 
 Gaps (no unit test; browser-checked or uncovered):
 
-- The Add a Page popover (opening, focus, outside press, the bottom sheet).
+- The Add a Screen popover's placement, outside press and bottom sheet (its rows and keys are tested).
 - The page panel's placement, the bottom sheet, Escape restoring focus to the cog, closing on a
   wheel, following its cog after a move; the name field committing on close.
 - Hover previews on the sheet (backgrounds, layouts), and the layout invite's

@@ -32,7 +32,8 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A **tab kind** is what a tab is. livedesign has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
 - What a **page** is (a logo, a wireframe or a photo) is the page's kind (`PageKind`), not the tab's
-  ([Pages mode](../007-editor/pages-mode.md)). A tab holds pages of any kind.
+  ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
+  (`tabPageKind`), so a logo tab holds only logo pages; a tab whose first page is still blank has no kind yet.
 
 ### Template
 

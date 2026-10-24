@@ -190,7 +190,7 @@ export function PagesScene() {
         <TextBar x={305} y={162} w={48} tone="faint" />
         <rect x={305} y={206} width={70} height={16} rx={8} className="fill-brand-500" />
       </Sheet>
-      {/* After the last page: the + adds another like it, the button under it any kind */}
+      {/* After the last page: the + adds another screen like it, the button under it a screen of another device */}
       <g>
         <circle
           cx={438}

@@ -100,7 +100,7 @@ const pageChange = z
         kind: z
           .enum(['logo', 'wireframe', 'photo'])
           .describe(
-            'What the page is for (wireframe: a screen framed as a device; photo: an empty picture, edited in the editor).',
+            "What the page is for (wireframe: a screen framed as a device; photo: an empty picture, edited in the editor): the tab's own kind (its first page's), as every page of a tab is one kind.",
           ),
         size: size.optional(),
         orientation: orientation.optional(),

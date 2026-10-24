@@ -40,7 +40,8 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck
 3. The tab transforms inside `apps/live/hooks/editor/page-edits.ts` became pure functions in
    `packages/design/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
    (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
-'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo` and debug
+'last_page' | 'unknown_page' | 'kind_not_offered'`; `pageAdded` answers `kind_not_offered` when the kind is not
+   `tabPageKind(pages)`, a blank first page's `null` included); the hook keeps telemetry, toasts, `onGoTo` and debug
    logs, and calls them inside `commitTab`. The lock rule (`refusedLocked` with `shared`) and `sharing` move with
    them. Existing editor tests stay green unchanged; new unit tests cover each function.
 
@@ -54,7 +55,9 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck
      `1 Sign In (wireframe), 2 (wireframe)`;
    - `add`: if the only page is unchosen and empty
      (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
-     page; else `pageAdded(tab, kind, newId(), device)`; then
+     page; else `pageAdded(tab, kind, newId(), device)` (`kind_not_offered` when `kind` is not the tab's,
+     `This tab holds logo pages: every page of a tab is one kind. Put wireframe pages in a tab of their own
+(add_tab).`, `blank` for a tab whose first page has no kind); then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
      `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
      `Added page 3 (wireframe, iPhone) from layout Sign In: name "Sign In".`;
@@ -112,7 +115,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
 `size_not_offered`, `no_orientation`, `pattern_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,
-`page_limit`, `last_page`.
+`page_limit`, `last_page`, `kind_not_offered`.
 
 ### MCP
 
@@ -151,6 +154,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 | ------------------------------------------------------------- | -------------------------------------------------------------------- |
 | Fresh tab whose only page is unchosen and empty               | first `add` takes that page                                          |
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set) |
+| `add` of a kind other than the tab's (a blank tab's included) | `kind_not_offered` naming the tab's kind, pointing to `add_tab`      |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                             |
 | Turn a logo page                                              | `no_orientation`                                                     |
 | Pattern on a logo page                                        | `pattern_not_offered`                                                |
@@ -200,6 +204,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 | Naming a page (id, place, name, order)        | `page-changes.test.ts` "naming a page", `summary.test.ts`                          |
 | Each change and each refusal, the fresh tab   | `page-changes.test.ts`                                                             |
 | Pure edits match the editor                   | `packages/design/src/pages-edits.test.ts`, the editor's own page-edit tests        |
+| One kind a tab (`kind_not_offered`)           | `pages-edits.test.ts`, `page-changes.test.ts` "one kind a tab"                     |
 | Route gate, write, changeset, relay, refusals | `apps/api/src/routes/tab-pages-route.test.ts`                                      |
 | The `pages` view and header                   | `packages/design-views/src/pages.test.ts`, `render-view.test.ts`                   |
 | Tools, parity, output schema                  | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts` |

@@ -1,8 +1,8 @@
 'use client';
 
 // The first page's own choice (docs/specs/007-editor/pages-mode.md "Page kinds"): while a tab's
-// only page is unchosen and empty, it offers the kinds of page inside itself, the same cards as the
-// add-a-page popover. Logo turns it into the 1024 artboard; Wireframe asks for its device; Photo makes
+// only page is unchosen and empty, it offers the kinds of page inside itself, and the kind chosen is
+// the whole tab's ("One kind a tab"). Logo turns it into the 1024 artboard; Wireframe asks for its device; Photo makes
 // it a photo page, its Start a Photo card asking for a picture. Held at one screen size, centred on
 // the page.
 import type { PageKind, WireframeDeviceId } from '@livedesign/design';
@@ -49,11 +49,11 @@ export function FirstPageChoice({
               What Is This Page For?
             </p>
             <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Choose now: a page keeps its kind once you start.
+              Choose now: every page of this tab will be this kind.
             </p>
             <div
               className="grid grid-cols-2 gap-2"
-              // Arrow keys move between the cards, as in the Add a Page popover.
+              // Arrow keys move between the cards, two by two.
               onKeyDown={(e) => moveBetweenKindCards(e, cards.current)}
             >
               {PAGE_KINDS.map((k, i) => (

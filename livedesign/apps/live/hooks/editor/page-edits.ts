@@ -13,6 +13,7 @@ import {
   pageKindOf,
   pageSizesFor,
   pageUnits,
+  tabPageKind,
   withPageKindChosen,
   PAGE_NAME_MAX,
   withPages,
@@ -74,7 +75,8 @@ export type PageEdits = BackgroundCopyEdits & {
   // wireframe page's device and frame too. Absent at the page limit.
   addPageLike?: (pageId: string) => void;
   // A photo page added after a page (else at the end), of a picture's size, gone to: answers its id
-  // (Edit as Photo, docs/specs/031-photo/photo-pages.md "Making a photo page").
+  // (Edit as Photo, docs/specs/031-photo/photo-pages.md "Making a photo page"). Absent at the page
+  // limit and on a tab not of photos ("One kind a tab").
   addPhotoPage?: (after: string | null, size?: { width: number; height: number }) => string | null;
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
   choosePageKind: (pageId: string, kind: PageKind, device?: WireframeDeviceId) => void;
@@ -328,6 +330,11 @@ export function pageEdits({
   };
   const addPage = (kind: PageKind, chosen?: WireframeDeviceId) => {
     if (!takesEdits()) return;
+    // One kind a tab (docs/specs/007-editor/pages-mode.md): pageAdded refuses any other kind too.
+    if (kind !== tabPageKind(current)) {
+      debugLog('[page] add refused: another kind', { tabId, kind, tabKind: tabPageKind(current) });
+      return;
+    }
     // A first wireframe page added without its own choice (Contents' Add Page) takes the device last
     // chosen in this browser; a later one the last wireframe page's (pageAdded).
     const device =
@@ -512,7 +519,8 @@ export function pageEdits({
     canMove,
     addPage: room ? addPage : undefined,
     addPageLike: room ? addPageLike : undefined,
-    addPhotoPage: room ? addPhotoPage : undefined,
+    // Edit as Photo adds a photo page, so only a photo tab offers it ("One kind a tab").
+    addPhotoPage: room && tabPageKind(current) === 'photo' ? addPhotoPage : undefined,
     choosePageKind,
     setDevice,
     duplicatePage: room ? duplicatePage : undefined,

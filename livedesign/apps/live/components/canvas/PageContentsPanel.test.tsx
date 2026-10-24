@@ -30,6 +30,7 @@ const pages = (n: number) =>
 function show(n: number, canEdit = true, onDock?: () => void) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
+  const addPageLike = vi.fn();
   const movePageTo = vi.fn();
   const duplicatePage = vi.fn();
   const laid = pages(n);
@@ -40,6 +41,7 @@ function show(n: number, canEdit = true, onDock?: () => void) {
       ? {
           edit: {
             addPage,
+            addPageLike,
             movePageTo,
             duplicatePage,
             canDuplicate: () => true,
@@ -58,7 +60,7 @@ function show(n: number, canEdit = true, onDock?: () => void) {
       {...(onDock ? { onDock } : {})}
     />,
   );
-  return { focusPage, addPage, movePageTo, duplicatePage, onClose };
+  return { focusPage, addPage, addPageLike, movePageTo, duplicatePage, onClose };
 }
 
 // The page rows' own buttons, in order (a row opens through one button stretched across it).
@@ -81,17 +83,15 @@ describe('PageContentsPanel', () => {
     expect(h.onClose).not.toHaveBeenCalled();
   });
 
-  it('adds a page of the kind pressed, for an Editor alone', () => {
+  // One kind a tab (pages-mode.md): these pages start on a blank page, so the tab has no kind yet.
+  it('adds no page to a tab with no kind yet, and never one of another kind', () => {
     const h = show(2);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(
-      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="logo"]')!,
-    );
-    expect(h.addPage).toHaveBeenCalledWith('logo');
-    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(h.addPage).not.toHaveBeenCalled();
     cleanup();
     show(2, false);
-    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
   });
 
   it('offers Find a Page past six pages, narrowing the list', () => {

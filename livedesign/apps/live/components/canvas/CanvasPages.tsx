@@ -21,6 +21,7 @@ import { PageNotesButton } from './PageNotesButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import {
+  lastPageOfTabKind,
   offersPageKindChoice,
   PAGE_GAP,
   pageKindOf,
@@ -130,6 +131,9 @@ export function CanvasPages({
     edit?.previewInk(next);
   };
   const last = pages[pages.length - 1]!;
+  // What the + adds another of: the last page of the tab's kind ("One kind a tab"); none on a tab
+  // whose first page is still blank.
+  const like = lastPageOfTabKind(pages);
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
   // A label drags only when there is something to swap with: two pages.
@@ -438,8 +442,14 @@ export function CanvasPages({
         );
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
-      {edit?.addPage && edit.addPageLike ? (
-        <AddPageButton last={last} zoom={zoom} onAdd={edit.addPage} onAddLike={edit.addPageLike} />
+      {edit?.addPage && edit.addPageLike && like ? (
+        <AddPageButton
+          last={last}
+          like={like}
+          zoom={zoom}
+          onAddLike={edit.addPageLike}
+          onAddDevice={(device) => edit.addPage!('wireframe', device)}
+        />
       ) : null}
       {previewed && view.layoutPreview ? (
         <PageLayoutPreview

@@ -7,7 +7,7 @@ import { FirstPageChoice } from './FirstPageChoice';
 afterEach(() => cleanup());
 
 describe('FirstPageChoice', () => {
-  it('moves between the three cards with the arrow keys, as the Add a Page popover does', () => {
+  it('moves between the three cards with the arrow keys, two by two', () => {
     const onChoose = vi.fn();
     render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
     const cards = screen.getAllByRole('button');

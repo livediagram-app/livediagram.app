@@ -42,9 +42,9 @@ page is and offers; this section is the basics.
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** sits in the gap's width to the right of the
-  last page, level with its middle, adding another page like the last; under it
-  a smaller button opens **Add a Page** to choose a page of any kind
-  ("Adding a page"). The page goes after the last; both
+  last page, level with its middle, adding another page like the last, always of the
+  tab's own kind ("One kind a tab", "Adding a page"); on a wireframe tab a smaller button
+  under it adds a screen of another device. The page goes after the last; the buttons
   are gone at the limit, and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
@@ -82,16 +82,16 @@ page is and offers; this section is the basics.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **page**            | One sheet of a tab (`Page`), stored in `Tab.pages` in row order.                                                                      |
-| **page kind**       | What a page is for, fixed when it is made: a **logo**, **wireframe** or **photo** page; a page with no kind is a blank page.          |
-| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
-| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                                                |
-| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern. |
-| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
-| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
+| Term                | Means                                                                                                                                                            |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **page**            | One sheet of a tab (`Page`), stored in `Tab.pages` in row order.                                                                                                 |
+| **page kind**       | What a page is for, fixed when it is made: a **logo**, **wireframe** or **photo** page; a page with no kind is a blank page. Every page of a tab is of one kind. |
+| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                                                          |
+| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                                               |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                                                                           |
+| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern.                            |
+| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                                            |
+| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                                             |
 
 ## Selecting on a page
 
@@ -131,7 +131,8 @@ nothing moves under reduced motion.
 ## Page kinds
 
 A page is one of three kinds (`Page.kind`, `PageKind`), chosen when it is made and never changed
-afterwards (the one exception: the first page's own choice, below). A page whose kind is absent is
+afterwards (the one exception: the first page's own choice, below). Every page of a tab is of one
+kind ("One kind a tab"). A page whose kind is absent is
 a **blank page** not chosen yet: a plain A4 sheet. A kind livediagram stored that livedesign does not
 have (an infographic, a slide, an article) reads as absent (`pageKindOf`).
 
@@ -148,34 +149,50 @@ have (an infographic, a slide, an article) reads as absent (`pageKindOf`).
   selections, adjustments and filters ([Photo pages](../031-photo/photo-pages.md)). It has no background, no
   margin and no layouts; elements may sit on top of it as on any page.
 
-**Adding a page**: two buttons sit after the last page, one above the other (centred in the gap
-after it, level with its middle, or, zoomed out so far that the gap is narrower than them, kept 12
-screen px clear of the page), held at one screen size:
+### One kind a tab
 
-- **The +** adds **another page like the last one**, at once: its kind and shape (the logo artboard,
-  a photo page's picture size), and a wireframe page's device, frame look, orientation and system bars too
-  ([Wireframe pages](wireframe-pages.md)). It carries the last page's background as every new page
-  does, never its content. Its tooltip and name say what it adds (`addAnotherLabel`): **Add Another
-  Logo Page**, **Add Another Photo Page** (an unstarted photo page), **Add Another iPhone Screen** (a
-  browser's **Browser Page**, a watch's **Watch Face**). A blank page has no like to add
-  (`pageAddedLike` refuses it): a page after one is chosen in Add a Page.
-- **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
-  compact list, one row per kind, its glyph, its name and a short line, so it stays small however
-  many kinds there are:
-  - **Logo**: "A square artboard for a mark."
-  - **Wireframe**: "A phone, tablet or web screen.", with a chevron: it turns the list to
-    **Choose a Device**, a row per device (its miniature, name and screen size) under its family,
-    the device last chosen in this browser ringed and focused, and **Back**.
-  - **Photo**: "A picture to edit in layers."
+A tab is a logo, a set of wireframe screens or a set of photos, never a mix: **every page of a tab
+is of the tab's kind**, the kind of its first page (`tabPageKind`, `packages/design/src/page.ts`). A
+logo tab holds only logo pages, a wireframe tab only wireframe pages (of any devices), a photo tab only
+photo pages.
 
-  The list hangs beside the button (right of it while there is room, else left), level with it,
-  scrolling inside the window when it cannot fit. Up and Down (Home, End) move between the rows,
-  Enter or a press chooses, Escape steps back from the devices and else closes, an outside press
-  closes.
+- The kind is set by the first page's choice (below) or by the template a tab is made from. It is
+  never changed afterwards: the first page's choice is offered only while the tab's only page is
+  unchosen and empty.
+- A tab whose first page is still a **blank page** (its kind not chosen) has no kind yet: no page of a
+  kind is added to it. While that page is alone and empty its choice sets the kind; a blank page that
+  holds something stays blank (as a page stored by livediagram does), and a tab of blank pages grows
+  only by duplicating one.
+- Adding a page (the +, Contents' **Add Page**, the wireframe tab's device chooser, **Edit as Photo**,
+  an agent's `add`) only ever adds a page of the tab's kind. A page of any other kind is refused
+  (`kind_not_offered`): someone who wants another kind starts another tab.
+- A duplicate is of its page's kind, so it keeps the rule.
+- A tab stored with pages of more than one kind (made before this rule) opens as it is: nothing is
+  taken away or changed, and a page added to it is of its first page's kind, like the last page of
+  that kind.
 
-The first page's own choice (below) keeps its cards, two by two, arrow keys moving between them. A new
-logo page is the 1024 x 1024 artboard, a new wireframe page the device chosen, a new photo page its
-picture's size. Whatever its
+**Adding a page**: the **+** sits after the last page (centred in the gap after it, level with its
+middle, or, zoomed out so far that the gap is narrower than it, kept 12 screen px clear of the
+page), held at one screen size. It adds **another page like the last one** (the last of the tab's
+kind), at once: its kind and shape (the logo artboard, a photo page's picture size), and a wireframe
+page's device, frame look, orientation and system bars too ([Wireframe pages](wireframe-pages.md)). It
+carries the last page's background as every new page does, never its content. Its tooltip and name
+say what it adds (`addAnotherLabel`): **Add Another Logo Page**, **Add Another Photo Page** (an
+unstarted photo page), **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch
+Face**). There is no way to choose another kind: the tab has one. A tab with no kind yet (a blank
+first page) shows no +.
+
+**A screen of another device**: on a wireframe tab a smaller button sits under the + (a grid, tooltip
+**Add a Screen of Another Device**). It opens **Choose a Device**: a compact list, a row per device
+(its miniature, name and screen size) under its family, the device last chosen in this browser ringed
+and focused. A press or Enter adds a wireframe page in that device; Up and Down (Home, End) move
+between the rows, Escape or an outside press closes. The list hangs beside the button (right of it
+while there is room, else left), level with it, scrolling inside the window when it cannot fit; on a
+phone it is a bottom sheet. The device is a wireframe page's shape, not its kind, so a tab of screens
+may hold phones, tablets and browsers together.
+
+A new logo page is the 1024 x 1024 artboard, a new wireframe page the device of the page it is like
+(or the device chosen), a new photo page its picture's size. Whatever its
 kind, a new page **carries over the background** of the page before it (the last page): its fill
 and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
 from then on.
@@ -183,22 +200,27 @@ from then on.
 **A new page's background.** A new page with nothing to carry over starts on the plain paper, and a
 template that comes with content keeps the paper it was designed on. Every path that makes a page
 lands the same: adding one, choosing the first page's kind, the template picker and an AI tool's
-template. The popover is the same on a phone (a bottom sheet). The + already adds another of the
-last page's kind, so the list keeps one fixed order.
+template.
 
 A tab with no pages stored starts with one page, its kind unchosen.
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
-cards as the popover (`FirstPageChoice`, `page-kind-cards.tsx`). **Logo** turns it into the artboard
+**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over three
+cards (`FirstPageChoice`, `page-kind-cards.tsx`):
+
+- **Logo**: "A square artboard for a logo, with guides and drawing tools."
+- **Wireframe**: "A screen to wireframe, framed as a phone, tablet, laptop or browser."
+- **Photo**: "A picture to edit: layers, brushes, adjustments and filters."
+
+**Logo** turns it into the artboard
 (`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
 the card to Choose a Device, and the device chosen turns it into that device's screen
 (`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)); **Photo** turns it into an unstarted photo page
 (`kind: 'photo'`), its Start a Photo card showing ([Photo pages](../031-photo/photo-pages.md)). One edit each. Anything put on the page first (a layout, an element) keeps it a blank page: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
-view, nor on a second page (a page added from the + is chosen in the popover).
+view, nor on a second page (a page added from the + is of the tab's kind).
 
 ## The page panel
 
@@ -918,14 +940,14 @@ Both show the same list:
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
   button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
   control. Up, Down, Home and End move between the rows' buttons.
-- **Adding**: an Editor's footer is the same pair as the canvas's + after the last page ("Adding a
+- **Adding**: an Editor's footer is the canvas's + after the last page ("Adding a
   page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
   tooltip names what it adds, **Add Another Logo Page**, **Add Another iPad Screen**: its kind and
-  shape, a wireframe page's device and frame too), and beside it a square button, **Add a Page of
-  Any Kind**, opening Add a Page (the kinds as rows, Wireframe stepping on to its devices) beside
-  it. A new page lands after the last (carrying the background), glides into view and the list scrolls to its new row, marked as here. At the page
-  limit both buttons are disabled with the limit in
-  their tooltips. A Participant and a Viewer see the list without the footer.
+  shape, a wireframe page's device and frame too), always of the tab's kind ("One kind a tab"); on a
+  wireframe tab, beside it, a square button, **Add a Screen of Another Device**, opening Choose a
+  Device beside it. A new page lands after the last (carrying the background), glides into view and the list scrolls to its new row, marked as here. At the page
+  limit the buttons are disabled with the limit in
+  their tooltips. A tab with no kind yet (a blank first page) has no footer. A Participant and a Viewer see the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so

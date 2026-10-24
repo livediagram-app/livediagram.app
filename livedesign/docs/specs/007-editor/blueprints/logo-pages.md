@@ -117,8 +117,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ### Kind UI
 
-- `page-kind-cards.tsx`: the Logo card and `LogoMiniature`; `AddPagePopover` and `FirstPageChoice`
-  lay the cards out two by two (Up / Down step a row, `KIND_COLUMNS`). The first-page card and the
+- `page-kind-cards.tsx`: the Logo card and `LogoMiniature`; `FirstPageChoice`
+  lays the cards out two by two (Up / Down step a row, `KIND_COLUMNS`). The first-page card and the
   in-page layout card are solid (`bg-white`, `dark:bg-slate-900`); the layout card's list scrolls
   past 380 px.
 - `PagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`

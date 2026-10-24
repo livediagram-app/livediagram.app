@@ -103,7 +103,10 @@ export const pageSet = defineVerb({
     doc: docArg,
     tab: tabFlag,
     changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z.enum(['logo', 'wireframe', 'photo']).optional().describe('Add a page of this kind'),
+    add: z
+      .enum(['logo', 'wireframe', 'photo'])
+      .optional()
+      .describe("Add a page of this kind, the tab's own (every page of a tab is one kind)"),
     page: z.string().optional().describe('The page to change: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,

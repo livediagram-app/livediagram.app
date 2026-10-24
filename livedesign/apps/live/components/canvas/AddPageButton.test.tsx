@@ -1,59 +1,75 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { Page } from '@livedesign/design';
 import { AddPageButton } from './AddPageButton';
 import { addAnotherLabel } from '@/lib/add-page-labels';
 
 afterEach(cleanup);
 
 const rect = { x: 0, y: 0, width: 800, height: 840 };
-const page = (extra: object = {}) => ({ id: 'p1', rect, ...extra });
+const last = { rect };
+const like = (extra: Partial<Page> = {}) => ({ id: 'p1', kind: 'logo' as const, ...extra });
 
-// docs/specs/007-editor/pages-mode.md "Adding a page".
+// docs/specs/007-editor/pages-mode.md "Adding a page", "One kind a tab".
 describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
-    render(<AddPageButton last={page()} zoom={1} onAdd={vi.fn()} onAddLike={vi.fn()} />);
+    render(<AddPageButton last={last} like={like()} zoom={1} onAddLike={vi.fn()} />);
     const holder = screen
-      .getByRole('button', { name: 'Add Another Page' })
+      .getByRole('button', { name: 'Add Another Logo Page' })
       .closest('div[style]') as HTMLElement;
     expect(holder.style.top).toBe('420px');
   });
 
-  it('adds another page like the last with the +, named for what it adds', () => {
+  it('adds another page like the last of the tab’s kind with the +, named for what it adds', () => {
     const onAddLike = vi.fn();
     render(
       <AddPageButton
-        last={page({ kind: 'wireframe', device: 'ipad' })}
+        last={last}
+        like={like({ id: 'p0', kind: 'wireframe', device: 'ipad' })}
         zoom={1}
-        onAdd={vi.fn()}
         onAddLike={onAddLike}
+        onAddDevice={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Add Another iPad Screen' }));
-    expect(onAddLike).toHaveBeenCalledWith('p1');
+    expect(onAddLike).toHaveBeenCalledWith('p0');
   });
 
-  it('chooses any kind from the list under it, a wireframe by its device', () => {
-    const onAdd = vi.fn();
-    render(<AddPageButton last={page()} zoom={1} onAdd={onAdd} onAddLike={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    const rows = within(screen.getByRole('group', { name: 'Add a Page' })).getAllByRole('button');
-    expect(rows.map((r) => r.querySelector('span.block')?.textContent)).toEqual([
-      'Logo',
-      'Wireframe',
-      'Photo',
-    ]);
-    expect(document.activeElement).toBe(rows[0]);
-    fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[2]);
-    fireEvent.click(rows[0]!);
-    expect(onAdd).toHaveBeenCalledWith('logo');
+  it('offers no other kind: the tab holds one (One kind a tab)', () => {
+    render(
+      <AddPageButton
+        last={last}
+        like={like()}
+        zoom={1}
+        onAddLike={vi.fn()}
+        onAddDevice={vi.fn()}
+      />,
+    );
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+  });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(document.querySelector('[data-add-kind="wireframe"]')!);
-    expect(screen.getByRole('group', { name: 'Choose a Device' })).toBeTruthy();
+  it('adds a screen of another device on a wireframe tab, its devices alone', () => {
+    const onAddDevice = vi.fn();
+    render(
+      <AddPageButton
+        last={last}
+        like={like({ kind: 'wireframe', device: 'iphone' })}
+        zoom={1}
+        onAddLike={vi.fn()}
+        onAddDevice={onAddDevice}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Screen of Another Device' }));
+    const rows = within(screen.getByRole('group', { name: 'Choose a Device' })).getAllByRole(
+      'button',
+    );
+    expect(rows.length).toBeGreaterThan(3);
+    expect(document.querySelector('[data-add-kind]')).toBeNull();
+    fireEvent.keyDown(rows[0]!, { key: 'End' });
     fireEvent.click(document.querySelector('[data-device-row="watch"]')!);
-    expect(onAdd).toHaveBeenLastCalledWith('wireframe', 'watch');
+    expect(onAddDevice).toHaveBeenLastCalledWith('watch');
   });
 });
 

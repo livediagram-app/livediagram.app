@@ -84,17 +84,21 @@ case with dashes>` on a named one, so naming the page names the screen.
 
 ## Choosing the device
 
-- **Adding one**: the **Add a page** popover and the first page's choice offer a fifth card,
-  **Wireframe**: "A screen to wireframe, framed as a phone, tablet, laptop or browser." Choosing it
-  turns the popover (or the first page's choice) to **Choose a Device**: a tile per device, each a
-  miniature of its frame over its name and screen size, grouped **Phones**, **Tablets**,
-  **Computers** and **Watch**, with **Back** to the kinds. The device last chosen in this browser
-  is ringed and focused first (the iPhone the first time). A tile shows the device's shorter name
-  where it has one (**Android** under Phones and under Tablets). Arrow keys move between the tiles, Enter
-  or a press adds the page in that device; Escape goes back to the kinds (from the popover's first
-  step, closes it).
-- A new wireframe page takes the device and frame look of the last wireframe page, when the
-  device was not just chosen; on the plain paper, with its system bars shown.
+- **Adding one**: the first page's choice offers a card, **Wireframe**: "A screen to wireframe,
+  framed as a phone, tablet, laptop or browser." Choosing it turns the choice to **Choose a Device**:
+  a tile per device, each a miniature of its frame over its name and screen size, grouped **Phones**,
+  **Tablets**, **Computers** and **Watch**, with **Back** to the kinds. The device last chosen in this
+  browser is ringed and focused first (the iPhone the first time). A tile shows the device's shorter
+  name where it has one (**Android** under Phones and under Tablets). Arrow keys move between the
+  tiles, Enter or a press makes the page that device's screen; Escape goes back to the kinds.
+- **More screens**: a wireframe tab holds only wireframe pages ([Pages](pages-mode.md) "One kind a
+  tab"), of any devices. The **+** after the last page adds another screen like the last; the button
+  under it, **Add a Screen of Another Device**, opens **Choose a Device** as a list, a row per device
+  under its family, and adds a screen in the device pressed ([Pages](pages-mode.md) "A screen of
+  another device"). Contents' footer offers the same pair.
+- A new wireframe page takes the device and frame look of the page it is like (the +), or of the last
+  wireframe page when the device was just chosen (its device the one chosen); on the plain paper, with
+  its system bars shown.
 - **Beside the cog**: a wireframe page's title bar holds, for someone who may edit it, a **Device**
   button (the device's glyph, and on a desktop its name) opening the **Device popover** anchored to
   it:

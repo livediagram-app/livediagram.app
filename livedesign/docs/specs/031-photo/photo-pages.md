@@ -54,8 +54,9 @@ store](photo-store.md).
 
 ## Making a photo page
 
-- **Add a Page**: the popover offers a **Photo** row ("A picture to edit in layers."), and the first page's
-  choice a **Photo** card: "A picture to edit: layers, brushes, adjustments and filters."
+- **The first page's choice** offers a **Photo** card: "A picture to edit: layers, brushes, adjustments and
+  filters.", which makes the tab a photo tab. A photo tab holds only photo pages ([Pages](../007-editor/pages-mode.md)
+  "One kind a tab"): on it the **+** adds another photo page, an unstarted one of the last photo's size.
 - **The New Photo card**: choosing Photo makes the page at once and shows, centred on it while the photo has no
   pixels and nobody has chosen, a card **Start a Photo** (held at one screen size, as the layout card is):
   - **Open a Picture**: the image picker ([Images](../009-elements/images.md) "Image picker modal": Upload, Gallery,
@@ -68,12 +69,14 @@ store](photo-store.md).
   - Only someone who may edit sees the card; a Viewer sees the checkerboard.
   - A photo so started picks up a tool when none is in hand, so the next press does something: the **Brush** on a
     blank photo, **Move** on a picture (opened, dropped, pasted or a PSD). A tool already in hand stays.
-- **A dropped or pasted picture**: a picture file dropped on the **+** (Add Page) or on an unstarted photo page,
+- **A dropped or pasted picture**: a picture file dropped on a photo tab's **+** (Add Page) or on an unstarted photo page,
   or pasted while one is in focus, starts the photo from it, as Open a Picture does. Dropped or pasted on a started
   photo page, it lands as a **new layer** centred on the page ([Photo layers](photo-layers.md) "Layer operations").
 - **Edit as Photo**: an image element's context menu offers **Edit as Photo**: a new photo page after
   the image's page (or after the last page), started from the image's picture, and the view moves to it. The
-  element is left as it is. Offered for an image that has a picture, for someone who may add pages.
+  element is left as it is. Offered for an image that has a picture, for someone who may add pages, on a photo
+  tab alone: a new photo page joins only a tab of photos ("One kind a tab"), so on a logo or wireframe tab the
+  item is not offered.
 - **Templates**: the **Photo Edit** template (its own kind id `photo-edit`, in the **Photos** category) starts a
   tab whose one page is an unstarted photo page.
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   pageAdded,
+  pageAddedLike,
   pageBackgroundSet,
   pageDuplicated,
   pageLaidOut,
@@ -14,7 +15,16 @@ import {
   type PageEdit,
 } from './pages-edits';
 import { pagesSharing } from './page-units';
-import { pagesOf, layOutPages, MAX_PAGES, type Page } from './page';
+import {
+  lastPageOfTabKind,
+  layOutPages,
+  MAX_PAGES,
+  newLogoPage,
+  newWireframePage,
+  pagesOf,
+  tabPageKind,
+  type Page,
+} from './page';
 import type { Element, Tab } from './index';
 
 // docs/specs/007-editor/pages-mode.md "The page panel", "Page actions"; the same edits the
@@ -168,45 +178,67 @@ describe('painting', () => {
 });
 
 describe('adding', () => {
-  it('adds a logo page as the artboard, after any page', () => {
-    const afterFit = pagesAfter(
-      pageAdded(tabOf([a4('p', { size: 'fit', fit: { width: 100, height: 100 } })]), 'logo', 'n'),
-    );
-    expect(afterFit[1]).toMatchObject({ id: 'n', size: 'logo', kind: 'logo' });
-    expect(pagesAfter(pageAdded(tabOf([]), 'logo', 'n')).at(-1)).toMatchObject({
-      id: 'n',
-      kind: 'logo',
-    });
+  const logo = (id: string, extra: Partial<Page> = {}): Page => ({ ...newLogoPage(id), ...extra });
+  const screen = (id: string, extra: Partial<Page> = {}): Page => ({
+    ...newWireframePage(id),
+    ...extra,
   });
 
-  it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
+  it('adds a logo page as the artboard, after the last', () => {
+    const out = pagesAfter(pageAdded(tabOf([logo('p')]), 'logo', 'n'));
+    expect(out.map((p) => p.id)).toEqual(['p', 'n']);
+    expect(out[1]).toMatchObject({ id: 'n', size: 'logo', kind: 'logo' });
+  });
+
+  it('carries the last page’s background onto a new page of every kind, a logo without pattern', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
-    const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
-    for (const kind of ['wireframe'] as const) {
-      expect(pagesOf(ok(pageAdded(tab, kind, 'n')))[1]!.background).toEqual({
-        fill,
-        pattern: 'dots',
-      });
-    }
-    expect(pagesOf(ok(pageAdded(tab, 'logo', 'n')))[1]!.background).toEqual({
+    const wireframes = tabOf([screen('p', { background: { fill, pattern: 'dots' } })]);
+    expect(pagesOf(ok(pageAdded(wireframes, 'wireframe', 'n')))[1]!.background).toEqual({
       fill,
+      pattern: 'dots',
     });
+    const logos = tabOf([logo('p', { background: { fill } })]);
+    expect(pagesOf(ok(pageAdded(logos, 'logo', 'n')))[1]!.background).toEqual({ fill });
     // The paper carries nothing over.
-    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'logo', 'n'))[1]!.background).toBe(undefined);
-  });
-
-  it('adds a logo artboard', () => {
-    const tab = tabOf([a4('s')]);
-    expect(pagesAfter(pageAdded(tab, 'logo', 'n'))[1]).toMatchObject({
-      kind: 'logo',
-      size: 'logo',
-    });
+    expect(pagesAfter(pageAdded(tabOf([logo('p')]), 'logo', 'n'))[1]!.background).toBe(undefined);
   });
 
   it('refuses past the page limit or on an id already there', () => {
-    const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
+    const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => logo(`p${i}`)));
     expect(pageAdded(full, 'logo', 'n')).toEqual({ refused: 'page_limit' });
-    expect(pageAdded(tabOf([a4('p')]), 'logo', 'p')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(tabOf([logo('p')]), 'logo', 'p')).toEqual({ refused: 'page_limit' });
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('adds only pages of the tab’s kind, its first page’s', () => {
+    const logos = tabOf([logo('p')]);
+    expect(pageAdded(logos, 'wireframe', 'n')).toEqual({ refused: 'kind_not_offered' });
+    expect(pageAdded(logos, 'photo', 'n')).toEqual({ refused: 'kind_not_offered' });
+    const screens = tabOf([screen('s')]);
+    expect(pageAdded(screens, 'logo', 'n')).toEqual({ refused: 'kind_not_offered' });
+    // A screen of another device is still a wireframe page.
+    expect(pagesAfter(pageAdded(screens, 'wireframe', 'n', 'ipad'))[1]).toMatchObject({
+      kind: 'wireframe',
+      device: 'ipad',
+    });
+    // A tab whose first page is blank has no kind yet: nothing is added to it.
+    for (const kind of ['logo', 'wireframe', 'photo'] as const)
+      expect(pageAdded(tabOf([a4('p')]), kind, 'n')).toEqual({ refused: 'kind_not_offered' });
+    // A tab stored mixing kinds takes its first page's.
+    const mixed = tabOf([logo('l'), screen('s')]);
+    expect(pageAdded(mixed, 'wireframe', 'n')).toEqual({ refused: 'kind_not_offered' });
+    expect(pagesAfter(pageAdded(mixed, 'logo', 'n'))[2]).toMatchObject({ kind: 'logo' });
+    expect(pageAddedLike(mixed, 's', 'n')).toEqual({ refused: 'kind_not_offered' });
+    expect(pagesAfter(pageAddedLike(mixed, 'l', 'n'))[2]).toMatchObject({ kind: 'logo' });
+  });
+
+  it('reads the tab’s kind from its first page, and what the + adds another of', () => {
+    expect(tabPageKind([logo('l'), screen('s')])).toBe('logo');
+    expect(tabPageKind([a4('p'), logo('l')])).toBeNull();
+    expect(tabPageKind([])).toBeNull();
+    expect(lastPageOfTabKind([logo('a'), logo('b')])?.id).toBe('b');
+    expect(lastPageOfTabKind([logo('a'), screen('s')])?.id).toBe('a');
+    expect(lastPageOfTabKind([a4('p'), logo('l')])).toBeUndefined();
   });
 });
 

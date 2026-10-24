@@ -260,7 +260,8 @@ tabs in a create_design call.
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livedesign designs.
 A design holds tabs, and each tab holds pages: logo artboards and wireframes. change_pages adds, changes, lays out
 (from a ready-made layout), moves, copies and deletes them and answers each page's rectangle on the canvas, where
-update_design puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe page. A new
+update_design puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe page. Every page
+of a tab is one kind (its first page's): a logo and screens go in tabs of their own (add_tab). A new
 design starts with create_design and one tab whose template is "blank-logo" for a logo (one empty artboard;
 change_pages adds the rest, each change an object such as {"op": "add", "kind": "logo", "layout": ...}),
 "blank-wireframe-phone", "blank-wireframe-browser" or another blank wireframe for screens, or "blank-illustration"

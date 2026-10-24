@@ -24,6 +24,7 @@ import {
   pageRenamed,
   pageResized,
   pageSizesFor,
+  tabPageKind,
   pageTurned,
   pageDeviceSet,
   pageDeviceClass,
@@ -55,6 +56,7 @@ const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   photo_limit: 'photo_limit',
   last_page: 'last_page',
   not_a_wireframe: 'not_a_wireframe',
+  kind_not_offered: 'kind_not_offered',
 };
 
 class Stop extends Error {
@@ -111,8 +113,14 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | u
     photo_limit: 'A tab holds at most 10 photo pages: delete one first.',
     last_page: "That is the tab's only page: add another before deleting it.",
     not_a_wireframe: `${aKind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
+    kind_not_offered: kindNotOffered(tab, kindWord(kind)),
   };
   return words[why];
+}
+
+/** Why a page of `kind` cannot join the tab (docs/specs/007-editor/pages-mode.md "One kind a tab"). */
+export function kindNotOffered(tab: Tab, kind: string): string {
+  return `This tab holds ${kindWord(tabPageKind(pagesOf(tab)))} pages: every page of a tab is one kind. Put ${kind} pages in a tab of their own (add_tab).`;
 }
 
 export function applyPageChanges(
@@ -138,7 +146,7 @@ export function applyPageChanges(
       const stop = (code: PagesRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
       };
-      const take = (out: PageEdit<Tab>, page?: Page): Tab => {
+      const take = (out: PageEdit<Tab>, page?: Pick<Page, 'kind'>): Tab => {
         if ('refused' in out) stop(CODE[out.refused], messageFor(out.refused, current, page));
         return (out as { tab: Tab }).tab;
       };
@@ -253,7 +261,9 @@ export function applyPageChanges(
               change.kind === 'photo' && change.width && change.height
                 ? { width: change.width, height: change.height }
                 : undefined;
-            current = take(pageAdded(current, change.kind, id, change.device, photoSize));
+            current = take(pageAdded(current, change.kind, id, change.device, photoSize), {
+              kind: change.kind,
+            });
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);

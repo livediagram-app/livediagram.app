@@ -329,6 +329,24 @@ export function pageKindOf(page: Pick<Page, 'kind'>): PageKind | null {
     : null;
 }
 
+/** The tab's kind (docs/specs/007-editor/pages-mode.md "One kind a tab"): its first page's, so a
+ *  logo tab holds only logo pages; null while the first page is blank (its kind not chosen), when no
+ *  page of a kind may be added. A page added is of this kind. Reads the first page only. */
+export function tabPageKind(pages: readonly Pick<Page, 'kind'>[]): PageKind | null {
+  return pages[0] ? pageKindOf(pages[0]) : null;
+}
+
+/** The page the + adds another like: the last of the tab's kind (the last page, unless a tab
+ *  stored before one kind a tab mixes kinds), or undefined on a tab with no kind yet. */
+export function lastPageOfTabKind<P extends Pick<Page, 'kind'>>(
+  pages: readonly P[],
+): P | undefined {
+  const kind = tabPageKind(pages);
+  if (!kind) return undefined;
+  for (let i = pages.length - 1; i >= 0; i--) if (pageKindOf(pages[i]!) === kind) return pages[i];
+  return undefined;
+}
+
 /** A photo page's sheet on the canvas for a picture of `width` x `height` px: the picture's shape,
  *  its longer side at most PHOTO_SHEET_MAX canvas px (never scaled up), whole px, at least 1. */
 export function photoSheetSides(width: number, height: number): PageSides {
