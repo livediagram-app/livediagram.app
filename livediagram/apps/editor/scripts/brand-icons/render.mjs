@@ -42,7 +42,7 @@ const write = (path, text) => {
 };
 
 const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
-for (const app of ['marketing', 'live', 'help', 'community']) {
+for (const app of ['marketing', 'editor', 'help', 'community']) {
   write(`apps/${app}/app/icon.svg`, `${favicon}\n`);
 }
 for (const scheme of ['light', 'dark']) {
