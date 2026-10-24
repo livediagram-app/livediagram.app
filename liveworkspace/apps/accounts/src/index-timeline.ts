@@ -19,6 +19,9 @@ export const TIMELINE_SCOPES_MAX = 250;
 export const TIMELINE_CALLS_PER_RUN = 10;
 // An event the index keeps refusing (a malformed one: a 4xx) is dropped after this many tries.
 export const TIMELINE_MAX_ATTEMPTS = 96;
+// The most events kept waiting: with no index to send to (INDEX_URL or its key unset), or one that is down for
+// days, the oldest beyond this go, so the outbox never grows without bound. A day's worth many times over.
+export const TIMELINE_OUTBOX_MAX = 5_000;
 const TIMELINE_TIMEOUT_MS = 5_000;
 
 export type TimelineType =
@@ -146,6 +149,30 @@ export async function flushTimeline(
   } catch (error) {
     console.warn('[timeline] flush failed', error);
     return { sent, waiting: true };
+  }
+}
+
+/**
+ * Drops the oldest waiting events beyond TIMELINE_OUTBOX_MAX (the cron's, every run), whether or not an index is
+ * configured. Returns how many went. Never throws.
+ */
+export async function trimTimelineOutbox(
+  db: D1Database,
+  max = TIMELINE_OUTBOX_MAX,
+): Promise<number> {
+  try {
+    const result = await db
+      .prepare(
+        `DELETE FROM index_timeline_outbox WHERE id IN (
+           SELECT id FROM index_timeline_outbox ORDER BY createdAt DESC, id DESC LIMIT -1 OFFSET ?
+         )`,
+      )
+      .bind(max)
+      .run();
+    return result.meta.changes ?? 0;
+  } catch (error) {
+    console.warn('[timeline] trim failed', error);
+    return 0;
   }
 }
 

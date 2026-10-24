@@ -25,7 +25,12 @@ import { sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
 import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
-import { flushTimeline, flushTimelineAfter, TIMELINE_CALLS_PER_RUN } from './index-timeline.ts';
+import {
+  flushTimeline,
+  flushTimelineAfter,
+  TIMELINE_CALLS_PER_RUN,
+  trimTimelineOutbox,
+} from './index-timeline.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
 
@@ -145,7 +150,11 @@ export default {
     const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
     if (purges.sent + purges.failed > 0)
       console.log('[accounts] index purges', JSON.stringify(purges));
-    // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts).
+    // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts), the oldest beyond
+    // TIMELINE_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.
+    const trimmed = await trimTimelineOutbox(env.AUTH_DB);
+    if (trimmed > 0)
+      console.warn('[accounts] timeline events dropped, over the outbox limit', trimmed);
     const timeline = await flushTimeline(
       env.AUTH_DB,
       indexPurgeConfig(env),

@@ -6,6 +6,8 @@ import {
   flushTimelineAfter,
   TIMELINE_BATCH,
   TIMELINE_MAX_ATTEMPTS,
+  TIMELINE_OUTBOX_MAX,
+  trimTimelineOutbox,
 } from './index-timeline.ts';
 import {
   answerInvitation,
@@ -329,5 +331,39 @@ describe('sending to the index', () => {
     await Promise.all(waits);
     expect(waits).toHaveLength(1);
     expect(sent).toHaveLength(1);
+  });
+});
+
+describe('the outbox’s bound', () => {
+  const fill = (n: number) => {
+    const insert = sql.prepare(
+      'INSERT INTO index_timeline_outbox (id, body, createdAt) VALUES (?, ?, ?)',
+    );
+    sql.exec('BEGIN');
+    for (let i = 0; i < n; i++) insert.run(`e${String(i).padStart(6, '0')}`, '{}', NOW + i);
+    sql.exec('COMMIT');
+  };
+  const count = () =>
+    (sql.prepare('SELECT count(*) AS n FROM index_timeline_outbox').get() as { n: number }).n;
+
+  it('keeps the newest events up to the limit, with no index to send them to', async () => {
+    fill(TIMELINE_OUTBOX_MAX + 25);
+    expect(await flushTimeline(db, {})).toEqual({ sent: 0, waiting: false });
+    expect(await trimTimelineOutbox(db)).toBe(25);
+    expect(count()).toBe(TIMELINE_OUTBOX_MAX);
+    const oldest = sql.prepare('SELECT min(createdAt) AS at FROM index_timeline_outbox').get() as {
+      at: number;
+    };
+    expect(oldest.at).toBe(NOW + 25);
+    expect(await trimTimelineOutbox(db)).toBe(0);
+  });
+
+  it('trims a worst-case backlog, ten times the limit, within budget', async () => {
+    fill(TIMELINE_OUTBOX_MAX * 10);
+    const started = performance.now();
+    expect(await trimTimelineOutbox(db)).toBe(TIMELINE_OUTBOX_MAX * 9);
+    const ms = performance.now() - started;
+    expect(count()).toBe(TIMELINE_OUTBOX_MAX);
+    expect(ms).toBeLessThan(2_000);
   });
 });

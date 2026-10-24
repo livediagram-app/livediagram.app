@@ -205,7 +205,9 @@ recorded without its event, and an event is never recorded for a change that did
 refused over the limit, a second answer to one invitation). After the response, a request's events go to
 the index in one call (`POST /internal/timeline`, with the merge key, at most 100 a call). The
 15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
-sending it twice changes nothing; one the index keeps refusing is dropped after 96 tries. An event carries
+sending it twice changes nothing; one the index keeps refusing is dropped after 96 tries. At most 5,000
+events wait: each cron run first drops the oldest beyond that, so with no index configured, or one down for
+days, the outbox stays bounded (`trimTimelineOutbox`). An event carries
 the name of the person who acted, and for a member's event their name or address, so the Timeline can
 say who without asking accounts.
 
