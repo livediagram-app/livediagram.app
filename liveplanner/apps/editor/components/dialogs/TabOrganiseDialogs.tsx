@@ -2,8 +2,8 @@
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
 // Folder" (docs/specs/006-project/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Project" (docs/specs/006-project/tab-project-many-to-many.md — link the tab into another project; the tab is
-// shared, not copied). They used to be cramped sub-views squeezed inside the
+// "Add to Plan" (docs/specs/006-project/tab-project-many-to-many.md — copy the tab into another plan, where it is
+// a separate tab). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
 // long project lists. Single-click commits — both are one-shot pickers.
@@ -163,8 +163,8 @@ function ProjectPickCard({
   );
 }
 
-// Add to Project (docs/specs/006-project/tab-project-many-to-many.md): pick the destination project the tab is LINKED
-// into (shared, not copied — one tab, live in both). A filter keeps long
+// Add to Plan (docs/specs/006-project/tab-project-many-to-many.md): pick the plan the tab is COPIED into (a
+// separate tab from then on). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
 export function AddTabToProjectDialog({
   ownerId,
@@ -185,7 +185,7 @@ export function AddTabToProjectDialog({
   return (
     <OrganiseDialogFrame
       title="Add to Plan"
-      sub="Link this tab into another plan. It stays one live tab: edits show in both places."
+      sub="Copy this tab into another plan. The copy is a separate tab: edits stay in the plan they’re made in."
       onClose={onClose}
     >
       <input

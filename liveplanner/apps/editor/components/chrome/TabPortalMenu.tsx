@@ -94,8 +94,8 @@ export function PortalMenu({
   canClearContent: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
-  // organise pickers — "copyTo" (docs/specs/006-project/tab-project-many-to-many.md, link the tab into another
-  // project) and "folder" (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder) —
+  // organise pickers — "copyTo" (docs/specs/006-project/tab-project-many-to-many.md, copy the tab into another
+  // plan) and "folder" (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder) —
   // open as proper centred MODALS in place of the anchored box, so they
   // get room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms

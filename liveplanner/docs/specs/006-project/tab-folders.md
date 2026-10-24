@@ -2,35 +2,35 @@
 
 ## Why
 
-A project's tabs are a flat, ordered list along the tab bar. Once a project grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named **folder**, e.g. put three tabs under "Organisation" and two under "Plans", that takes one chip of space on the bar when they're not using it.
+A plan's tabs are a flat, ordered list along the tab bar. Once a plan grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named **folder**, e.g. put three tabs under "Organisation" and two under "Plans", that takes one chip of space on the bar when they're not using it.
 
-This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which nests **projects** in the Explorer.
+This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which files **plans** in the Explorer.
 
 ## Scope
 
 - **One level.** A folder contains tabs; folders never contain folders.
-- **Per-project.** Tab order already lives on the `project_tabs` link, not on the shared `tabs` row, because a tab can be shared into several projects ([Tab ↔ project many-to-many](tab-project-many-to-many.md)). Folder membership lives in the same place, for the same reason: a tab shared into two projects can sit in a folder in one and be loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
-- **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the project carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
+- **Beside the order, not in the body.** Tab order lives on the plan's `plan_tabs` row for the tab, not on the `tabs` body row ([Tabs and plans](tab-project-many-to-many.md)). Folder membership lives in the same place, so a content save never touches it. Folder membership is **never** part of the tab body (`tabs.data`).
+- **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the plan carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
 
 ## Data model
 
-The link table from [Tab ↔ project many-to-many](tab-project-many-to-many.md) carries one nullable column:
+The plan's `plan_tabs` table ([Tabs and plans](tab-project-many-to-many.md), `apps/api/src/plan-room/plan-schema.ts`) carries one nullable column:
 
 ```sql
 folder TEXT,  -- NULL = loose (no folder)
 ```
 
-No index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the `tabs` table: folder membership is a project-link concept.
+No index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the `tabs` table: folder membership is about where the tab sits, not what it holds.
 
 ## Ordering: one flat list, folders are contiguous runs
 
-There is **one** per-project order (the existing `project_tabs.order_index`). A folder is a **maximal run of adjacent tabs that share a folder name**, drawn under one chip. There is no second ordering dimension and no per-folder order.
+There is **one** order per plan (`plan_tabs.order_index`). A folder is a **maximal run of adjacent tabs that share a folder name**, drawn under one chip. There is no second ordering dimension and no per-folder order.
 
 To keep that invariant true after any reorder or membership change, the client **normalizes** the order before persisting:
 
 > Stable-sort the tabs by the key `(folderAnchorIndex, originalIndex)`, where `folderAnchorIndex` is the minimum original index among all tabs sharing that (non-empty) folder name. Loose tabs anchor on their own index.
 
-This groups every folder's tabs at the position of the folder's first member, preserves each tab's order within its folder, and interleaves loose tabs by position. Normalization is idempotent and preserves tab object identity for tabs whose content did not change (so the autosave content diff doesn't spuriously re-save bodies). The single implementation lives in `packages/project/src/tab-folders.ts` (`normalizeFolderOrder`, `groupTabsIntoRuns`, `folderNamesInProject`) and is consumed by the tab-bar renderer, the client save path, and the server route (defensive).
+This groups every folder's tabs at the position of the folder's first member, preserves each tab's order within its folder, and interleaves loose tabs by position. Normalization is idempotent and preserves tab object identity for tabs whose content did not change (so the autosave content diff doesn't spuriously re-save bodies). The single implementation lives in `packages/project/src/tab-folders.ts` (`normalizeFolderOrder`, `groupTabsIntoRuns`, `folderNamesInProject`) and is used by the tab-bar renderer and the editor's tab actions (`useTabActions`, `useTabFolders`) before they save. The server keeps the order it is sent; it only trims folder names.
 
 A drag both reorders AND sets membership: the dropped tab **adopts the drop target's folder** (see "Membership UX" below), then normalization re-groups the runs. So dragging never "snaps back" — it moves the tab to wherever it was dropped, in or out of a folder.
 
@@ -44,7 +44,7 @@ Folder membership changes two ways:
 
 **2. The tab's right-click / ellipsis menu** — an **Add to Folder** row that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)), replacing the old cramped in-menu sub-view. Picking commits immediately and closes:
 
-- **A tile per existing folder** in this project → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
+- **A tile per existing folder** in this plan → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
 - **A "No Folder" tile** → makes the tab loose on the bar; selected when the tab already is.
 - **A "New Folder" tile** → create-in-place naming (the placement browser's dashed tile); typing an existing name just moves the tab into it (same name = same folder).
 
@@ -62,8 +62,8 @@ Folder rides the **same wire path as `orderIndex`**, never the per-tab content `
 
 - `PUT /api/projects/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side. An entry that is neither a tab id nor `{ id, folder? }` with a text or null folder refuses the whole request (400 `invalid tabs`) before anything is written, the rename included.
 - The `project-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose — no parse break.
-- `reorderTabs` writes `project_tabs.folder` alongside `order_index`. The per-tab content upsert (`upsertTab`) leaves `project_tabs.folder` untouched, so a content save can never clobber membership.
-- The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into the shared `tabs.data`.
+- `reorderTabs` (`apps/api/src/db/tabs.ts`) writes `plan_tabs.folder` alongside `order_index`. The per-tab content save leaves `plan_tabs.folder` untouched, so a content save can never clobber membership.
+- The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into `tabs.data`.
 
 ## Telemetry
 
@@ -82,7 +82,7 @@ The `type` is not decoration. A dashboard metric card selects rows by an exact `
 
 Two further rules, both learned from the untyped version:
 
-- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the project hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
+- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the plan hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **The menu and the drag report identically.** Membership can change either from the ellipsis menu or from a drag that adopts the drop target's folder, and the two had drifted: leaving a folder by menu counted as `Tab·Removed`, leaving it by drag counted as `Tab·Reordered`. Which control someone reached for is not the fact being measured, so both paths go through one module (`hooks/persistence/tab-folder-reporting.ts`). A drag that crosses a folder boundary reports the membership change and **not** the reorder it came with; `Tab·Reordered` now means a reorder that changed nothing else.
 
 ## Edge cases
@@ -90,11 +90,11 @@ Two further rules, both learned from the untyped version:
 - **Active tab in a folder** → it renders inline beside the chip, so the user can always see where they are.
 - **One-tab folder** → valid; renders as a chip.
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
-- **Name uniqueness within a project** → same name is the same folder (members merge into one run on normalize).
-- **Shared tab, foldered in A, loose in B** → naturally correct: folder is on the link, never in the body.
+- **Name uniqueness within a plan** → same name is the same folder (members merge into one run on normalize).
+- **Add to Plan** → the copy lands loose in the other plan; its folder there is the person's to choose.
 
 ## Cross-references
 
 - [Per-tab storage](per-tab-storage.md) — per-tab storage; folder is link metadata, not body content.
-- [Tab ↔ project many-to-many](tab-project-many-to-many.md) — the `project_tabs` link table folder now extends.
+- [Tabs and plans](tab-project-many-to-many.md) — the `plan_tabs` table the folder column sits on.
 - [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) — telemetry enums reused here.

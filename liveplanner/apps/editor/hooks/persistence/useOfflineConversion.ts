@@ -43,7 +43,7 @@ export function useOfflineConversions(ownerId: string | null) {
   const takeOffline = async (liveDoc: ConvertedPlan, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
-    // A shared tab stays in its other projects and forks here (docs/specs/006-project/offline-mode.md).
+    // No tab is in another plan any more (docs/specs/006-project/tab-project-many-to-many.md), so this adds nothing.
     const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
     const ok = await confirm({
       title: `Take “${liveDoc.name}” Offline?`,

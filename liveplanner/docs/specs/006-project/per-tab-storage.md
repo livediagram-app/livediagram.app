@@ -14,11 +14,10 @@ storage. Cost grows linearly with the project's tab count.
 - One DB write per editorial commit, scoped to the changed tab.
 - Per-tab snapshot fetch (open one tab, hydrate one row) so the
   initial view of a many-tab project is fast.
-- Foundation for "this tab is shared across projects" reuse — landed in [Tab ↔ project many-to-many](tab-project-many-to-many.md) (item #13). The link table sits over the same tab body rows described here.
 
 ## Non-goals (V1)
 
-- ~~Sharing a tab across projects~~ — landed in [Tab ↔ project many-to-many](tab-project-many-to-many.md). The link table lives next to `tabs` and holds the per-project placement.
+- Sharing a tab across plans. Each tab belongs to one plan ([Tabs and plans](tab-project-many-to-many.md)); Add to Plan copies it.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
 
@@ -39,7 +38,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which projects contain it, and its order and folder in each, live on the `project_tabs` link ([Tab ↔ project many-to-many](tab-project-many-to-many.md)). Nothing on the row points at a project, so nothing cascades from `projects` into `tabs`: removing a tab from a project, deleting a project and deleting an account each drop a tab explicitly once no project links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it.
+A `tabs` row is the tab's body and nothing else. Its order and folder in the plan live on its `plan_tabs` row ([Tabs and plans](tab-project-many-to-many.md)). Both are in the plan's own Durable Object, so a tab belongs to that plan alone: deleting the tab drops both rows, and purging the plan empties its object.
 
 The table is created by the plan's schema, `apps/api/src/plan-room/plan-schema.ts`.
 
@@ -295,29 +294,15 @@ row. An empty write over an already-empty / brand-new row, and any
 non-empty write, are unaffected. This is intentionally independent of the
 client guard — belt and suspenders against the most destructive failure.
 
-### A save never adopts another project's tab
-
-The save upserts by tab id, so a tab id seen elsewhere (a share link) could otherwise overwrite that tab and link it
-into the caller's own project. So when this project has no tab with the
-id, and the id already names a tab not linked to this project, the save
-is **refused with 409 `tab_id_taken`**, never overwritten or adopted, and
-the worker logs `[tabs] refused a save onto another project's tab`.
-Linking an existing tab into a project has its own route
-(`POST /api/projects/:id/tabs/:tabId/link`,
-[Tab ↔ project many-to-many](tab-project-many-to-many.md)). The check
-(`tabBelongsElsewhere` in `apps/api/src/db/tabs.ts`, called from
-`apps/api/src/routes/tab-put-route.ts`) runs only when the project has no
-such tab, so the common autosave pays nothing.
-
 ## Risk
 
-- Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
-  tab. Acceptable for the small tab counts (< 20) we see in practice.
+- Tab reorder is an `UPDATE plan_tabs SET order_index = ?, folder = ?` per
+  tab, in one batch. Acceptable for the small tab counts (< 20) we see in practice.
 
 ## What this does NOT change
 
 - Realtime presence (still room-level).
-- Sharing (per-project share codes; no per-tab sharing yet). Tab-level reuse across projects is a server-side relationship under [Tab ↔ project many-to-many](tab-project-many-to-many.md), not user-visible sharing.
+- Sharing (per-plan share links, which may open one tab).
 - The frontend `Tab` type shape (just where it's persisted).
 
 ## Import carries identity, not just content
