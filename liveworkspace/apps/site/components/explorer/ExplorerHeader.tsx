@@ -1,7 +1,8 @@
 'use client';
 
 // The Explorer's header on liveworkspace.app (liveworkspace/docs/site.md "The Explorer"): the liveworkspace logo,
-// then, for a person who came from an app, a hairline and that app's logo, which leads back to it. The search field
+// then, for a person who came from an app, a hairline and that app's logo, which leads back to it (on a phone, the
+// app's logo alone). The search field
 // sits in the middle (on Home the hero holds it instead) and the account control on the right, as the site's own
 // header has them: the same height, border and frosted bar. The Explorer runs the page's full width, so the rail the
 // site's other pages keep Appearance on (SiteRail) would sit over it; its Light / Dark / System control is here,
@@ -45,8 +46,9 @@ export function ExplorerHeader({
       className="sticky top-0 z-40 h-16 shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80"
     >
       <div className="mx-auto flex h-full max-w-7xl items-center gap-4 px-4 sm:px-6">
-        <div className="flex min-w-0 shrink-0 items-center gap-3">
-          <SiteSwitcher current="liveworkspace.app">
+        <div className="flex min-w-0 shrink-0 items-center">
+          {/* On a phone, with an app's logo beside it, only the app's shows: there is little room. */}
+          <SiteSwitcher current="liveworkspace.app" className={listed ? 'max-sm:hidden' : ''}>
             <a
               href={host ? `${workspaceOrigin()}/` : '/'}
               aria-label="liveworkspace home"
@@ -57,7 +59,12 @@ export function ExplorerHeader({
           </SiteSwitcher>
           {listed ? (
             <>
-              <span aria-hidden className="h-6 w-px rotate-12 bg-slate-300 dark:bg-slate-700" />
+              {/* The switcher's chevron (hidden until hover) holds 22px after the wordmark, so the hairline's
+                  right margin is that much wider than its left: the gaps either side of it look equal. */}
+              <span
+                aria-hidden
+                className="ml-1 mr-[26px] h-6 w-px rotate-12 bg-slate-300 max-sm:hidden dark:bg-slate-700"
+              />
               <a
                 href={host === app ? '/' : listed.url}
                 data-explorer-from={app}
