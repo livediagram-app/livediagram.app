@@ -3,7 +3,7 @@ import type { Env } from './types';
 
 // A stand-in for the liveworkspace accounts Worker's internal API (liveworkspace/docs/accounts.md "The
 // API"), for the tests of what livedesign keeps there: settings, profiles, sightings, milestones, verified
-// addresses, activity and the teams it makes. Answers the same shapes from memory, following the same rules (a patch per key,
+// addresses, activity, the teams it makes and a sender's notification allowance (liveworkspace/docs/workbench.md). Answers the same shapes from memory, following the same rules (a patch per key,
 // null deletes; a profile read answers an account's name until it sets one; a claim wins once; a milestone
 // needs a sighting), and records every call so a test can count them.
 //
@@ -52,6 +52,8 @@ export type FakeAccounts = {
   teamPeople: Map<string, TeamPerson[]>;
   // How many designs each person has made, as the index counts them (INDEX_ENV's origin).
   designCounts: Map<string, number>;
+  // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
+  allowances: Map<string, number[]>;
   // Makes the next calls to a path fail with this status.
   failing: Map<string, number>;
 };
@@ -78,6 +80,7 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     teams: [],
     teamPeople: new Map(),
     designCounts: new Map(),
+    allowances: new Map(),
     failing: new Map(),
   };
   const prefix = `${ACCOUNTS_ENV.ACCOUNTS_URL}/api/account/internal/`;
@@ -126,6 +129,17 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     if (failure) return json({ error: 'failing' }, failure);
     const now = Date.now();
     switch (path) {
+      case 'allowance': {
+        const key = `${String(body.personId)} ${String(body.kind)}`;
+        const windowMs = body.windowMs as number;
+        const used = (state.allowances.get(key) ?? []).filter((at) => at > now - windowMs);
+        const taken = Math.max(
+          0,
+          Math.min(body.count as number, (body.max as number) - used.length),
+        );
+        state.allowances.set(key, [...used, ...Array.from({ length: taken }, () => now)]);
+        return json({ taken });
+      }
       case 'settings/read': {
         const { all, app, updatedAt } = scoped(String(body.owner));
         return json({ all, app, updatedAt });
@@ -147,8 +161,10 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
         const keys = body.keys as string[];
         const pick = (prefs: Record<string, unknown>) =>
           Object.fromEntries(Object.entries(prefs).filter(([k]) => keys.includes(k)));
-        const settings: Record<string, { all: Record<string, unknown>; app: Record<string, unknown> }> =
-          {};
+        const settings: Record<
+          string,
+          { all: Record<string, unknown>; app: Record<string, unknown> }
+        > = {};
         for (const owner of body.owners as string[]) {
           const stored = state.settings.get(owner);
           if (stored) settings[owner] = { all: pick(stored.all), app: pick(stored.app) };

@@ -59,8 +59,8 @@ export async function getDesignMeta(
 }
 
 // What liveworkspace keeps of a design's pictures (liveworkspace/docs/previews.md), for when the index purges it
-// (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are in their owners'
-// workbench stores: a ticket lapses in a minute, and a session's every request is gated on the design's grant, which a
+// (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are liveworkspace's:
+// a ticket lapses in a minute, and a session's every request is gated on the design's grant, which a
 // purged design never gets again. Best effort: a preview the purge misses is unreachable (every read asks the index).
 export async function purgeDesignPreviews(env: Env, id: string): Promise<void> {
   const media = mediaClient(env);

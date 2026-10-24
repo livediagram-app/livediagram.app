@@ -210,8 +210,6 @@ export async function probeDispatch(
     ...env,
     DESIGN_DB: trap('DESIGN_DB'),
     DESIGN_ROOM: { idFromName: (name: string) => name, get: () => trap('DESIGN_ROOM (local)') },
-    // Each person's workbench store (src/workbench-store.ts): a handler that reaches it has reached storage.
-    WORKBENCH: { idFromName: (name: string) => name, get: () => trap('WORKBENCH') },
   } as unknown as DesignEnv;
   const room = new Proxy(
     {},

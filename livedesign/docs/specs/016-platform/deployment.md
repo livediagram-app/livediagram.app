@@ -86,7 +86,7 @@ All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangle
 
 ### Durable Object migrations
 
-The api worker keeps no database of its own. Each design's content lives in its own `DesignRoom` Durable Object (its own SQLite, beside its realtime room), each person's workbench in a `WorkbenchStore`, and photo tiles in R2 (previews are liveworkspace's media service's); where every design is filed, and who may open it, is liveworkspace's index. So there is no schema migration to run before a deploy.
+The api worker keeps no database of its own. Each design's content lives in its own `DesignRoom` Durable Object (its own SQLite, beside its realtime room) and photo tiles in R2 (previews are liveworkspace's media service's); where every design is filed, and who may open it, is liveworkspace's index. So there is no schema migration to run before a deploy.
 
 The Durable Object classes themselves are declared through `[[migrations]]` tags in `apps/api/wrangler.toml` (and again under `[env.staging]`, since migrations are not inherited), and `wrangler deploy` applies a new tag itself. A new class is a new tag with `new_sqlite_classes`. Renaming or deleting a class is a new tag too (`renamed_classes`, `deleted_classes`), never an edit to an existing one: deleting a class deletes every object's storage, so it ships to **staging first**. Each object's own SQLite tables are made by the class's code on first use (`apps/api/src/design-room/design-schema.ts` for a design).
 

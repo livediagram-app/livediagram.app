@@ -7,7 +7,7 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { createNotifier, workbenchAllowance } from '@liveworkspace/index-app';
+import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import type { TeamPerson } from '@liveworkspace/auth-client';
 import { MENTIONS_MAX, type Comment } from '@livedesign/design';
 import { emailOf } from '../accounts/people';
@@ -19,6 +19,7 @@ import {
   type NotifySetting,
 } from '../accounts/notify';
 import { isAccountOwner } from '../accounts/client';
+import { accountCredentials } from '../auth/accounts';
 import { getParticipant } from '../accounts/profiles';
 import { getNotificationPrefs } from '../accounts/settings';
 import { claimCommentNotify } from '../design-room/design-content';
@@ -70,7 +71,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
   itemsMadeBy: designsMadeBy,
   claimMilestone: claimOwnerMilestone,
   claims: (env) => (env as DesignEnv).DESIGN_DB,
-  allowance: (env) => workbenchAllowance(env.WORKBENCH),
+  allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
   settings: { join: 'notifyDesignJoin' },

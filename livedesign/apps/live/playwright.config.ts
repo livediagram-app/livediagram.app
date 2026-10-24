@@ -14,7 +14,9 @@ const signedIn = process.env.E2E_SIGNED_IN === '1';
 const SIGNED_IN_PORTS = { live: '3415', api: '8415', marketing: '3416', index: '8416' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
-// (`pnpm test:e2e:workbench`) on its own ports.
+// (`pnpm test:e2e:workbench`) on its own ports. Pairing, tickets and sessions are liveworkspace's now
+// (liveworkspace/docs/workbench.md), so the suite also needs liveworkspace's accounts Worker and site, which the
+// stack does not start yet: until it does, the suite stops at its first mint.
 const workbench = process.env.E2E_WORKBENCH === '1';
 const WORKBENCH_PORTS = { live: '3421', api: '8421', marketing: '3422', index: '8422' };
 const BASE_URL =

@@ -6,13 +6,13 @@ This guide is the practical path: provision Cloudflare resources, connect livewo
 
 ## What you'll provision on Cloudflare
 
-| Resource                               | Used by           | Why                                                                                                                                                                                                                                                   |
-| -------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                  | All seven workers | Durable Objects need the paid plan.                                                                                                                                                                                                                   |
-| **Durable Objects**                    | `apps/api`        | `DESIGN_ROOM` (`DesignRoom`): one per design, holding its content in its own SQLite and running its realtime room. `WORKBENCH` (`WorkbenchStore`): one per person, holding their workbench pairings, tickets and sessions. Both come with the deploy. |
-| **R2 bucket `PHOTO_BLOBS`** (optional) | `apps/api`        | Photo pages' tiles, sources and previews ([Photo store](../specs/031-photo/photo-store.md)). Without it, every photo blob route answers `503`.                                                                                                        |
-| **Rate Limiter bindings** (optional)   | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, API-token reads and workbench tickets. Any binding you don't provision falls through to "allow", so none are required.                           |
-| **Custom domain**                      | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                               |
+| Resource                               | Used by           | Why                                                                                                                                                                                                                          |
+| -------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers paid plan**                  | All seven workers | Durable Objects need the paid plan.                                                                                                                                                                                          |
+| **Durable Objects**                    | `apps/api`        | `DESIGN_ROOM` (`DesignRoom`): one per design, holding its content in its own SQLite and running its realtime room. It comes with the deploy. Workbench pairings, tickets and sessions are liveworkspace's accounts Worker's. |
+| **R2 bucket `PHOTO_BLOBS`** (optional) | `apps/api`        | Photo pages' tiles, sources and previews ([Photo store](../specs/031-photo/photo-store.md)). Without it, every photo blob route answers `503`.                                                                               |
+| **Rate Limiter bindings** (optional)   | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                    |
+| **Custom domain**                      | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                      |
 
 The api worker also runs one cron, `0 3 * * *`, which tells the media service each day which images its designs still use. It is declared in `apps/api/wrangler.toml` and needs nothing provisioned.
 
@@ -198,9 +198,7 @@ teams its person is in, and the index grants access to team designs
 
 A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where sign-in is configured; without it the routes answer as for any caller without a token and nothing breaks.
 
-- `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livedesign.app.
-- `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- Each person's workbench lives in their own `WorkbenchStore` Durable Object (the `WORKBENCH` binding), which comes with the deploy; there is nothing to create.
+- Pairing, tickets and sessions are liveworkspace's: its accounts Worker keeps them, builds the frame URLs from the app's known origin and serves the pairing page on liveworkspace.app ([liveworkspace/docs/workbench.md](../../../liveworkspace/docs/workbench.md)). This api forwards `/api/workbench/*` to `ACCOUNTS_URL` and checks each `lvw_` session there; nothing needs creating here.
 
 ## Images
 
@@ -227,5 +225,5 @@ The five downstream workers don't need their own domain; the router fans out via
 ## What can break, and how to debug
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
-- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DesignRoom` and `WorkbenchStore` as its DO classes. Both are exported from `apps/api/src/index.ts`; if you've forked + renamed one, keep the export name in step with the binding, and add a new `[[migrations]]` tag with `renamed_classes` rather than editing the existing tag.
+- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DesignRoom` as its DO class. It is exported from `apps/api/src/index.ts`; if you've forked and renamed it, keep the export name in step with the binding, and add a new `[[migrations]]` tag with `renamed_classes` rather than editing the existing tag.
 - **Editor loads but no design opens or saves**: the api worker can't reach liveworkspace. Check that `ACCOUNTS_URL` and `API_RESOURCE` are set (without them no one has an identity), that `INDEX_ORIGIN` names your liveworkspace deployment, and that `INDEX_KEY` matches the index's `INDEX_KEY_LIVEDESIGN` (without it the design endpoints answer as missing). See [What you need from liveworkspace](#what-you-need-from-liveworkspace).

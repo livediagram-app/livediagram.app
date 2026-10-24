@@ -75,17 +75,16 @@ simple = { limit = 120, period = 60 }
 name = "DESIGN_ROOM"
 class_name = "DesignRoom"
 
-# Each person's workbench (src/workbench-store.ts, docs/specs/013-workspace/blueprints/workbench-embeds.md "Data
-# and persistence"): one SQLite-backed instance per person, holding their pairing requests, pairings, tickets and
-# sessions. Its alarm checks the tokens behind live sessions and sweeps spent rows.
-[[durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
-
 # livedesign has never been deployed, so the classes start SQLite-backed with no rename history.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DesignRoom", "WorkbenchStore"]
+
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # `0 3 * * *`: daily at 03:00 UTC, tell liveworkspace's media service that livedesign's set of image references is
 # complete (src/media.ts announceMediaRefs), so a quiet day never holds its sweep up. Each design sends its own
@@ -123,15 +122,6 @@ name = "API_TOKEN_READ_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
-
-# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few designs, never a stream.
-# Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -283,12 +273,6 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
 # A different script is a different Durable Object namespace, so staging's
 # DESIGN_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
@@ -296,13 +280,13 @@ simple = { limit = 30, period = 60 }
 name = "DESIGN_ROOM"
 class_name = "DesignRoom"
 
-[[env.staging.durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
-
 [[env.staging.migrations]]
 tag = "v1"
 new_sqlite_classes = ["DesignRoom", "WorkbenchStore"]
+
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
 # TELEMETRY_KEY come from the

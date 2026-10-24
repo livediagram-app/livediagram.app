@@ -9,7 +9,7 @@ import {
   type RoomTicketResponse,
 } from '@livedesign/api-schema';
 import { adderKeyFor } from '../adder-key';
-import { workbenchStore } from '../workbench-store';
+import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
@@ -34,9 +34,13 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
       grant.token,
       workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
     );
-    // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
-    if (workbench?.scope === 'workspace')
-      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
+    // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
+    // its access closes them all (WB55).
+    if (workbench?.scope === 'workspace') {
+      const noted = noteWorkbenchRoom(env, workbench, id);
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
     // stickies and text it adds, so its editor knows which are its own.
     const person = linkCodeOf(grant.sub) ? null : grant.sub;

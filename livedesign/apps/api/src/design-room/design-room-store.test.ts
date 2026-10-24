@@ -188,7 +188,6 @@ const personOf = (headers: Record<string, string>) =>
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
   const env = {
-    WORKBENCH: d1.env.WORKBENCH,
     INDEX_ORIGIN: 'https://index.test',
     ...extra,
   } as unknown as Env;
@@ -640,8 +639,8 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(authorsIn('O')).toEqual([owner, 'user_visitor']);
   });
 
-  // A workbench ticket or session on the design stays in its person's workbench store (src/workbench-store.ts)
-  // until it expires or is swept, reaching nothing: the index grants nothing on a design that is gone.
+  // A workbench ticket or session on the design stays at liveworkspace (liveworkspace/docs/workbench.md) until it
+  // expires or is swept, reaching nothing: the index grants nothing on a design that is gone.
   it('purges a design: every row and every session', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });

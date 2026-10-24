@@ -1,17 +1,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDesignSchema } from './design-room/design-schema';
-import {
-  memoryWorkbenchNamespace,
-  nodeItemSql,
-  nodeTransaction,
-} from '@liveworkspace/index-app/testing';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@livedesign/api-schema';
 import type { GrantCaller, GrantOutcome, DesignGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DesignEnv } from './types';
-import { accountCredentials } from './auth/accounts';
-import { closeWorkbenchSessions } from './room-access-client';
 
 // A real store for tests: an in-memory SQLite database holding the designs' content (docs/specs/015-api/api.md
 // "Storage"), which in production is each design's own Durable Object. Every design's tables sit in the one
@@ -93,13 +87,6 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testDesignRooms(env, sql, next);
     },
   });
-  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
-  if (!base.WORKBENCH) {
-    env.WORKBENCH = memoryWorkbenchNamespace<'design'>({
-      credentials: () => accountCredentials(env),
-      closeRoom: (designId, pairingId) => closeWorkbenchSessions(env, designId, pairingId),
-    }) as unknown as DurableObjectNamespace;
-  }
   return { env, sql, flush };
 }
 

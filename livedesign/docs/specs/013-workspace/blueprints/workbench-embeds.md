@@ -1281,7 +1281,7 @@ Every api fingerprint above carries `scope` (`design` or `workspace`), as the sp
 
 `originHost` is the origin's host only (no scheme or port, WB37). The fingerprints beyond the spec's list name
 decision points it leaves unlogged (WB47). Telemetry: `track('Session', 'Opened',
-'Workbench')` once per mount; `track('Token', 'Linked', 'Workbench')` after a successful Allow; `Cli·Used·WorkbenchOpen`
+'Workbench')` once per mount (the Allow is liveworkspace.app's and sends no app event); `Cli·Used·WorkbenchOpen`
 and `Cli·Used·WorkbenchPair` after exit 0. Dashboard: `WORKBENCH_SESSIONS` beside `EMBEDS_VIEWED` ("Workbench
 Sessions", "A design opened inside a developer tool's frame, signed in."), `WORKBENCHES_PAIRED` in
 `API_TOKEN_ACTIVITY` ("Workbenches Paired", "A token's owner allowed a developer tool to open their designs."),

@@ -41,7 +41,6 @@ vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
-vi.mock('./routes/workbench', () => stub('handleWorkbench'));
 
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
@@ -98,7 +97,6 @@ describe('a workspace session at the front door', () => {
     ['POST', 'trash/doc1/restore', 'handleTrash'],
     ['GET', 'teams', 'handleTeams'],
     ['GET', 'teams/team1/library', 'handleTeams'],
-    ['DELETE', 'workbench/sessions/current', 'handleWorkbench'],
   ])('lets %s %s reach its route as the person', async (method, path, handler) => {
     const res = await call(method, path);
 
@@ -120,9 +118,6 @@ describe('a workspace session at the front door', () => {
     ['GET', 'tokens'],
     ['POST', 'tokens'],
     ['DELETE', 'tokens/current'],
-    ['GET', 'workbench/pairings'],
-    ['DELETE', 'workbench/pairings/p1'],
-    ['POST', 'workbench/tickets'],
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
@@ -139,6 +134,16 @@ describe('a workspace session at the front door', () => {
 
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: 'workbench_confined' });
+    expect(reached).not.toHaveBeenCalled();
+  });
+
+  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): /api/workbench/* goes there before the
+  // session is looked at, and accounts takes a session for nothing but ending itself.
+  it('leaves /api/workbench/* to liveworkspace without resolving the session', async () => {
+    const res = await call('GET', 'workbench/pairings');
+
+    expect(res.status).toBe(503);
+    expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
     expect(reached).not.toHaveBeenCalled();
   });
 
