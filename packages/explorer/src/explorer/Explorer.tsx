@@ -20,6 +20,7 @@ import type {
   ItemHref,
   LinkComponent,
   Placement,
+  RenderItemMark,
   RenderThumbnail,
   InboxHost,
   ShareHost,
@@ -73,6 +74,8 @@ export type ExplorerProps = {
   onCreate: (placement: Placement) => void;
   /** A preview for a row (small) or a card (large); without it rows show the kind's icon. */
   renderThumbnail?: RenderThumbnail;
+  /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
+  renderItemMark?: RenderItemMark;
   /** The host's link component (Next.js `Link`); a plain `<a>` by default. */
   Link?: LinkComponent;
   /** Opens an item from a menu; a page load by default. */
@@ -253,6 +256,7 @@ function ExplorerInner({
   itemHref,
   onCreate,
   renderThumbnail,
+  renderItemMark,
   Link,
   onOpenItem,
   basePath,
@@ -330,6 +334,7 @@ function ExplorerInner({
       teams={teams}
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
+      renderItemMark={renderItemMark}
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}

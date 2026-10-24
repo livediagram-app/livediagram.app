@@ -121,7 +121,7 @@ export const ItemRow = memo(function ItemRow({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link } = useExplorer();
+  const { Link, renderItemMark } = useExplorer();
   const { leaving } = useExtras();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
@@ -141,6 +141,7 @@ export const ItemRow = memo(function ItemRow({
         {options.showApp ? <AppMark app={item.app} /> : null}
         <RowThumb item={item} />
         {item.favourite ? <FavouriteMarker /> : null}
+        {renderItemMark?.(item, 'title')}
         {renaming ? (
           <InlineRenameInput
             initial={item.title}
@@ -172,8 +173,10 @@ export const ItemRow = memo(function ItemRow({
       <span className="hidden sm:flex sm:items-center">
         <VisibilityBadge item={item} />
       </span>
-      <span className="flex min-w-0 items-center">
+      {/* The host's time mark at the column's right edge, so the marks line up. */}
+      <span className="flex min-w-0 items-center justify-between gap-1.5">
         <RelativeTimeChip at={item.trashedAt ?? item.updatedAt} />
+        {renderItemMark?.(item, 'time')}
       </span>
       {renaming ? (
         <span />
@@ -324,7 +327,7 @@ export const ItemCard = memo(function ItemCard({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, renderThumbnail } = useExplorer();
+  const { Link, renderThumbnail, renderItemMark } = useExplorer();
   const { leaving } = useExtras();
   const owner = useOwnerLabel(item, options.showOwner === true);
   const bits = useItemBits(item);
@@ -381,12 +384,14 @@ export const ItemCard = memo(function ItemCard({
           <VisibilityBadge item={item} />
           <MadeByAiBadge item={item} />
           {item.favourite ? <FavouriteMarker /> : null}
+          {renderItemMark?.(item, 'title')}
           {options.showFolder && bits.place ? (
             <FolderChip label={bits.place.label} onOpen={bits.place.open} />
           ) : null}
           <span className="flex min-w-0 !shrink items-center">
             <RelativeTimeChip at={item.trashedAt ?? item.updatedAt} />
           </span>
+          {renderItemMark?.(item, 'time')}
         </div>
         {options.showOwner ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{owner}</span>

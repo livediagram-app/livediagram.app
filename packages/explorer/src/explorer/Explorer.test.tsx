@@ -63,6 +63,28 @@ describe('<Explorer>', () => {
     expect(document.querySelector('[data-folder-row="f1"]')).toBeTruthy();
   });
 
+  it("draws the host's marks beside each item's name and Updated time, in rows and cards", async () => {
+    const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
+    const renderItemMark = vi.fn((item: Item, at: 'title' | 'time') =>
+      item.id === makeItem(1).id ? <i data-mark={`${at}:${item.id}`} /> : null,
+    );
+    const { unmount } = renderExplorer(index, { kind: 'all' }, { renderItemMark });
+    await waitFor(() => expect(rows().length).toBe(2));
+    const first = document.querySelector(`[data-item-row="${makeItem(1).id}"]`)!;
+    expect(first.querySelector(`[data-mark="title:${makeItem(1).id}"]`)).toBeTruthy();
+    expect(first.querySelector(`[data-mark="time:${makeItem(1).id}"]`)).toBeTruthy();
+    const second = document.querySelector(`[data-item-row="${makeItem(2).id}"]`)!;
+    expect(second.querySelector('[data-mark]')).toBeNull();
+    unmount();
+    localStorage.setItem('liveworkspace:explorer-view-mode', 'card');
+    renderExplorer(index, { kind: 'all' }, { renderItemMark });
+    await waitFor(() =>
+      expect(
+        document.querySelector(`[data-item-card="${makeItem(1).id}"] [data-mark^="time:"]`),
+      ).toBeTruthy(),
+    );
+  });
+
   it("moves a team folder's address onto its team's page in place, keeping its lens", async () => {
     const index = createFakeIndex({
       folders: [

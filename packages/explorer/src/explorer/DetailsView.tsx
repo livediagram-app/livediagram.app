@@ -280,7 +280,7 @@ const DetailsRow = memo(function DetailsRow({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, renderThumbnail } = useExplorer();
+  const { Link, renderThumbnail, renderItemMark } = useExplorer();
   const { leaving, prefetchThumbnail } = useExtras();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
@@ -319,6 +319,7 @@ const DetailsRow = memo(function DetailsRow({
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}
         {item.favourite ? <FavouriteMarker /> : null}
+        {renderItemMark?.(item, 'title')}
         {renaming ? (
           <InlineRenameInput
             initial={item.title}
@@ -352,8 +353,9 @@ const DetailsRow = memo(function DetailsRow({
       <span className={CELLS.created}>
         <DateCell at={item.createdAt} />
       </span>
-      <span className={CELLS.updated}>
+      <span className={`${CELLS.updated} justify-between gap-1.5`}>
         <DateCell at={item.updatedAt} />
+        {renderItemMark?.(item, 'time')}
       </span>
       {renaming ? (
         <span />

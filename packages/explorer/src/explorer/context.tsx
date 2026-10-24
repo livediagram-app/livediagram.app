@@ -49,6 +49,7 @@ import type {
   LinkComponent,
   LinkProps,
   Placement,
+  RenderItemMark,
   RenderThumbnail,
   InboxHost,
   ShareHost,
@@ -110,6 +111,7 @@ export type ExplorerContextValue = {
   openItem: (item: Item) => void;
   Link: LinkComponent;
   renderThumbnail?: RenderThumbnail;
+  renderItemMark?: RenderItemMark;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -202,6 +204,7 @@ export type ExplorerProviderProps = {
   teams?: TeamRef[];
   viewerId?: string | null;
   renderThumbnail?: RenderThumbnail;
+  renderItemMark?: RenderItemMark;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -247,6 +250,7 @@ export function ExplorerProvider({
   teams = NO_TEAMS,
   viewerId = null,
   renderThumbnail,
+  renderItemMark,
   shareUrl,
   shareHost,
   inboxHost,
@@ -369,6 +373,7 @@ export function ExplorerProvider({
       openItem,
       Link,
       renderThumbnail,
+      renderItemMark,
       shareUrl,
       shareHost,
       inboxHost,
@@ -414,6 +419,7 @@ export function ExplorerProvider({
       openItem,
       Link,
       renderThumbnail,
+      renderItemMark,
       shareUrl,
       shareHost,
       inboxHost,

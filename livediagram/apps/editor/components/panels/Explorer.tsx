@@ -23,6 +23,7 @@ import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
+import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
 
@@ -146,6 +147,7 @@ function ExplorerImpl({
         onOpenExplorer={(view) => window.location.assign(explorerPath(view))}
         onOpenItem={(href) => go(href)}
         renderThumbnail={renderDocumentThumbnail}
+        renderItemMark={driveItemMarks(accountUserId ?? null)}
         Link={Link}
         teams={teams}
         viewerId={accountUserId ?? null}

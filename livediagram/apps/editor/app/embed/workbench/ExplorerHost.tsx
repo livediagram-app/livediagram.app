@@ -28,6 +28,7 @@ import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
+import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
@@ -165,6 +166,7 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
         renderThumbnail={renderDocumentThumbnail}
+        renderItemMark={driveItemMarks(accountUserId ?? null)}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
