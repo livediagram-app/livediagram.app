@@ -155,6 +155,13 @@ the account, its verified email, read-only and the account's teams. `createToken
 ten seconds), so a burst of MCP calls costs one check; it is also how long a revoked token can go on
 working in an isolate that had just checked it.
 
+### Workbench pairings
+
+A token can also be paired with a workbench (a developer tool that frames an app's editor), approved once by its
+owner on `liveworkspace.app/workbench/pair`. The pairings, the tickets they mint and the sessions those open live in
+this Worker, one Durable Object per person ([workbench.md](workbench.md)), so revoking a token here, or the CLI
+revoking its own, ends them in the same request.
+
 A local stack has one more door, for the apps' MCP evaluation benches: `POST /api/auth/internal/bench-accounts`
 `{count, name?}` makes `count` throwaway accounts (up to 200) with one API token each and answers
 `{accounts: [{userId, token}]}`. It needs `ADMIN_TOKEN`, as registering a client does, and exists only where
@@ -590,7 +597,9 @@ rules every app keeps, and the two questions it asks before it writes, are share
   (`milestones/claim`, above) before the email goes. The rest are the app's to keep once only, where its
   item lives (liveplanner keeps them in each plan's own store): at most one "someone joined" email per
   item per 15 minutes (`JOIN_NOTIFY_THROTTLE_MS`), and the same assignment or mention once a day
-  (`NOTIFY_EMAIL_DEDUPE_MS`), with at most 60 a sender an hour (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`).
+  (`NOTIFY_EMAIL_DEDUPE_MS`), with at most 60 a sender an hour (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`), taken
+  from the sender's allowance here (`POST /api/account/internal/allowance`, kept per app in the sender's
+  Durable Object, [workbench.md](workbench.md)).
   Claim keys for text an email carries are SHA-256 hashes (`notifyClaimKey`), so no store holds the
   words.
 - **What happened.** The index tells an item's app that someone made a share link on it or opened it
@@ -662,7 +671,8 @@ access token, `src/delete-account.ts`), and the account closes for every app at 
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
    the longest-standing member.
-2. Its settings rows and its profile are deleted.
+2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
+   rooms its sessions had open are closed ([workbench.md](workbench.md)).
 3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),
    naming the teams deleted in step 1.
 4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, API
@@ -741,25 +751,31 @@ script runs a team. Joining by link, tokens and the profile stay the session's.
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
 
-| Route                                         | Does                                                                                     |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `POST /api/account/internal/tokens/verify`    | `{ token }` → the account and its teams, or 404                                          |
-| `POST /api/account/internal/tokens`           | `{ accessToken, name, readOnly }` → a token, shown once                                  |
-| `POST /api/account/internal/teams`            | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
-| `POST /api/account/internal/invitations`      | `{ userId }` → `{ invitations }`: those waiting for the account's verified address       |
-| `GET /api/account/internal/teams/changes`     | `?cursor=` → the next page of the change feed                                            |
-| `POST /api/account/internal/tokens/revoke`    | `{ token }` → revokes it (a CLI signing out), or 404                                     |
-| `POST /api/account/internal/tokens/live`      | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
-| `POST /api/account/internal/settings/read`    | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
-| `POST /api/account/internal/settings/write`   | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
-| `POST /api/account/internal/settings/notify`  | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`          |
-| `POST /api/account/internal/teams/members`    | `{ teamId }` → `{ team, members }`, joined and invited, or 404                           |
-| `POST /api/account/internal/profiles/read`    | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
-| `POST /api/account/internal/profiles/write`   | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
-| `POST /api/account/internal/sightings`        | `{ userId }` → `{ first }`, for the client's own app                                     |
-| `POST /api/account/internal/milestones/claim` | `{ userId, milestone }` → `{ claimed }`, for the client's own app                        |
-| `POST /api/account/internal/emails`           | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                   |
-| `POST /api/account/internal/activity`         | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)       |
+| Route                                          | Does                                                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `POST /api/account/internal/tokens/verify`     | `{ token }` → the account and its teams, or 404                                          |
+| `POST /api/account/internal/tokens`            | `{ accessToken, name, readOnly }` → a token, shown once                                  |
+| `POST /api/account/internal/teams`             | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
+| `POST /api/account/internal/invitations`       | `{ userId }` → `{ invitations }`: those waiting for the account's verified address       |
+| `GET /api/account/internal/teams/changes`      | `?cursor=` → the next page of the change feed                                            |
+| `POST /api/account/internal/tokens/revoke`     | `{ token }` → revokes it (a CLI signing out), or 404                                     |
+| `POST /api/account/internal/tokens/live`       | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
+| `POST /api/account/internal/settings/read`     | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
+| `POST /api/account/internal/settings/write`    | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
+| `POST /api/account/internal/settings/notify`   | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`          |
+| `POST /api/account/internal/teams/members`     | `{ teamId }` → `{ team, members }`, joined and invited, or 404                           |
+| `POST /api/account/internal/profiles/read`     | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
+| `POST /api/account/internal/profiles/write`    | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
+| `POST /api/account/internal/sightings`         | `{ userId }` → `{ first }`, for the client's own app                                     |
+| `POST /api/account/internal/milestones/claim`  | `{ userId, milestone }` → `{ claimed }`, for the client's own app                        |
+| `POST /api/account/internal/emails`            | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                   |
+| `POST /api/account/internal/activity`          | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)       |
+| `POST /api/account/internal/workbench/session` | `{ session }` → the workbench session for the client's app, or 404 `{ reason }`          |
+| `POST /api/account/internal/workbench/rooms`   | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room      |
+| `POST /api/account/internal/allowance`         | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app           |
+
+The workbench routes (`/api/account/workbench/*`: tickets, sessions, pairing requests and pairings, for API tokens,
+workbench sessions and the signed-in person) are in [workbench.md](workbench.md).
 
 `Profile` is `{ id, name, color, createdAt, updatedAt }`: `name` and `color` may be null, and the two
 times are null for an account that has never set either.

@@ -3,6 +3,15 @@
 > **Partly superseded (October 2026).** The Explorer, teams and room tickets moved to liveworkspace's index and
 > `@liveworkspace/explorer` ([One Explorer](../../../../../liveworkspace/docs/one-explorer.md)); a workbench ticket is now
 > `<grant>~<pairing>~<cap>~<hmac>`. Files marked (removed) below went with liveplanner's own copies.
+>
+> **Moved to the platform (October 2026).** The store (`workbench-store*.ts`), the routes
+> (`routes/workbench*.ts`, `routes/workbench-access.ts`), the pairing page (`app/workbench/pair`) and their tests
+> are gone from this app: pairing, tickets, sessions, revocation and the sweep are liveworkspace's
+> ([Workbenches](../../../../../liveworkspace/docs/workbench.md)), in the accounts Worker, and `/api/workbench/*` is
+> forwarded there unchanged. A `lvw_` bearer is checked with liveworkspace (`auth/workbench-session.ts`,
+> `@liveworkspace/auth-client` `createWorkbenchSessionChecker`) and confined here as below; ending access closes
+> rooms through `POST /api/internal/items/:id/workbench-close`. Read "Pairing", "The ticket mint", "Redemption",
+> "Ending access", "Routes", "Data and persistence" and the pairing page's copy as the platform's now.
 
 Derived from [Workbench embeds](../workbench-embeds.md), with the frame headers of [Embeds](../embeds.md), the token
 choke point of [API](../../015-api/api.md#auth) and [Public API and API tokens](../../015-api/public-api-and-tokens.md),

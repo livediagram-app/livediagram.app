@@ -274,7 +274,9 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   gets one from the index as a delegated caller (above), cached until a minute before it lapses.
 - **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
   the app opens for a paired tool seals its own limits into the ticket:
-  `<grant>~<pairing>~<cap>~<HMAC(INDEX_KEY)>`, so neither can be raised.
+  `<grant>~<pairing>~<cap>~<HMAC(INDEX_KEY)>`, so neither can be raised. When the pairing ends (unpaired, its token
+  revoked, its account closed), accounts asks the index to close its sockets and the index tells each item
+  (`POST <app>/api/internal/items/:id/workbench-close` `{pairingId}`, [workbench.md](workbench.md)).
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one. A fresh grant saying the same moves the lapse
   on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in

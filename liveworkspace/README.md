@@ -38,6 +38,10 @@ And it runs the One Explorer's index, its API at liveworkspace.app/api/index: wh
 Document and Design is and who can reach it, with the grants that let an app open one. See
 [docs/index-service.md](docs/index-service.md).
 
+And it pairs every app's API tokens with workbenches (developer tools that frame an app's editor beside an
+agent), and holds the tickets and sessions those open, in the accounts Worker. See
+[docs/workbench.md](docs/workbench.md).
+
 ## How signing in works
 
 The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they can't share a

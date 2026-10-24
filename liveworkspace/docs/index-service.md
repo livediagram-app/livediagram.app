@@ -47,7 +47,12 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
   link anonymously (`GET /share/:code`), through its service binding: the index's answer is who may see a preview
   ([previews.md](previews.md)).
 - **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge` (a guest signing in) and
-  `POST /api/index/internal/purge-person` (an account closing).
+  `POST /api/index/internal/purge-person` (an account closing). For workbenches ([workbench.md](workbench.md))
+  accounts also acts for an account it checked itself, as an app's server does, with `MERGE_KEY` in place of the
+  app's key beside `X-Index-App`, `X-Index-Person` and `X-Index-Teams` (that app's items only), and asks
+  `POST /api/index/internal/workbench-close` `{ app, pairingId, itemIds }` (up to 500) to close a pairing's sessions:
+  the index calls `${APP_ORIGIN_<APP>}/api/internal/items/:id/workbench-close` `{ pairingId }` for each, ten at a
+  time, with the app's key, and answers `{ closed, unreached }`.
 
 ## Decisions the contract left open
 

@@ -2,6 +2,12 @@
 
 **Status: built** for both scopes: the api, the pages, the pairing page and the CLI commands.
 
+**Where it runs.** Pairing, tickets and sessions are liveworkspace's, one service for every app in the accounts
+Worker ([Workbenches](../../../../liveworkspace/docs/workbench.md)). `/api/workbench/*` on livediagram's address is
+forwarded there with the same requests and answers, and the pairing page is liveworkspace.app's. livediagram keeps
+what is its own: the frame (`/embed/workbench`), the confinement of its API to a session's scope, checking a
+presented session with liveworkspace, and closing its rooms when a pairing ends.
+
 A **workbench** is a developer tool that shows a document live beside an agent: an agent workbench first, then VS Code
 and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
 there, everything they draw reaches livediagram at once, and their agent, working through the
@@ -47,6 +53,9 @@ that acts as the person on one document only.
      `{ url, scope, folderId, expiresAt }`. `scope` is `document` when absent, so today's callers are unchanged. A
      `folderId` the token's owner cannot reach answers `404` (CLI exit 3); a document scope without a `documentId`,
      or a workspace scope with one, is refused `400 invalid_value`. The ticket stores the scope and the folder.
+   - **What is checked.** The document or folder as its owner reaches it now: a document in the Trash answers
+     `410 document_trashed`, one they cannot reach `404`. The tab is not checked: the CLI resolves `--tab` against
+     the document first, and a frame asked for a tab that is gone opens the first.
    - **The origin** is exactly `scheme://host[:port]`, nothing more: `https` anywhere, `http` only on a loopback
      host (`localhost`, `127.0.0.1`, `[::1]`). `*`, `null`, a path, a query or any other scheme is refused
      `400 invalid_origin`; another workbench's scheme (a VS Code webview's) joins the list in this spec first.
@@ -85,8 +94,8 @@ second, explicit approval, never an existing pairing widened in silence.
 2. **Ask.** `livediagram workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
    (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
    for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livediagram".
-3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
-   person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
+3. **Approve.** `https://liveworkspace.app/workbench/pair?code=<code>` is liveworkspace.app's page for every app (never
+   framed), for a signed-in person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
    open your documents with the token **livediagram CLI**?", with **Allow** and **Don't allow**. The workbench name
    is the one the CLI sent, shown beside the origin, which is what is enforced. A workspace request reads: "Allow
    **Acme Editor** at `https://127.0.0.1:5175` to open **your whole workspace**, and to create, move, share and
@@ -96,7 +105,8 @@ second, explicit approval, never an existing pairing widened in silence.
 
 - A pairing lives as long as its token: revoking the token removes its pairings.
 - **Settings > API tokens** lists each token's paired workbenches (name, origin, scope, when paired), each with
-  **Unpair**, which ends that pairing's open sessions as revoking does.
+  **Unpair**, which ends that pairing's open sessions as revoking does: their rooms close at once, and a session
+  this app checked a moment before is refused within a minute.
 - Pairing is per origin, so one workbench on a laptop and on a LAN address pairs separately.
 
 ## What a workbench session may do
