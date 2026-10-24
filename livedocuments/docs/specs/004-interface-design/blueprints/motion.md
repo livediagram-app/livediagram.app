@@ -78,12 +78,11 @@ drifting.
 ### Cascades
 
 - **CSS cascades** read `min(calc(var(--stagger-i, 0) * var(--motion-cascade-step)), var(--motion-cascade-cap))`.
-  They're `.stagger-enter`, `.lvd-menu-stagger > *`, `.lvd-cascade > *`, and the Timeline fans
-  `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
+  They're `.stagger-enter`, `.lvd-menu-stagger > *` and `.lvd-cascade > *`. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
-- **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
+- **JS cascades** call `cascadeDelayMs`. None does today: the Timeline that did is the shared Explorer's now.
+- **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
 
 ### Exit holds
@@ -132,9 +131,7 @@ arrival").
 
 | Rule                    | Before                    | After                        |
 | ----------------------- | ------------------------- | ---------------------------- |
-| `.tl-fan-out(-up)`      | 420ms                     | `micro`                      |
 | `.lvd-cascade > *`      | 320ms, 35ms step to 700ms | `micro`, 10ms step to 100ms  |
-| `.tl-date-pulse`        | 0.7s × 2                  | unchanged: ambient indicator |
 | `empty-float` / `-ring` | loops                     | unchanged: ambient indicator |
 
 ### Component classes
@@ -342,7 +339,6 @@ logging, because motion isn't a decision point.
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                            |
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                             |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, ui and template-previews                      |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                               |
 | Exit holds equal their tokens                | `TabPresenceStack.test.tsx`                                                                     |
 | Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                        |
 | Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx` |
