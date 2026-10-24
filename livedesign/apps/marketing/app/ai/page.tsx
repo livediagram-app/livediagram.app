@@ -68,7 +68,7 @@ export default function BuildWithAiPage() {
         >
           <span
             aria-hidden
-            className="absolute inset-0 [background-image:radial-gradient(rgb(14_165_233/0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
+            className="absolute inset-0 [background-image:radial-gradient(color-mix(in_srgb,var(--color-brand-500)_12%,transparent)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
           />
           <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pt-14 pb-16 sm:px-6 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:pb-20">
             <div className="min-w-0">
