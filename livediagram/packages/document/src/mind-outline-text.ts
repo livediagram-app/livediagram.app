@@ -12,7 +12,12 @@ import {
   mindMarksToMarkdown,
   mindNodeMarks,
 } from './mind-outline-marks';
-import { normalizeRuns, runsPlainText, trimRuns, type TextRun } from './rich-text';
+import {
+  normalizeRuns,
+  runsPlainText,
+  trimRuns,
+  type TextRun,
+} from '@liveworkspace/document-core/rich-text';
 
 /**
  * One node of an outline: its text (line breaks kept), its bold / italic / underline over that

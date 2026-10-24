@@ -2,7 +2,7 @@
 // its per-element emitters: tables, shape silhouettes, freehand). Their own
 // module so the emitters never import from svg-render (which imports THEM),
 // keeping the graph cycle-free.
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/document-core/label-font';
 import type { BoxedElement } from './index';
 
 // XML-escape for both text nodes and attribute values. Re-exported rather

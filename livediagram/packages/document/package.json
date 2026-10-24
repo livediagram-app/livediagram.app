@@ -10,6 +10,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@liveworkspace/document-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },

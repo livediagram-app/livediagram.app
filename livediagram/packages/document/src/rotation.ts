@@ -6,7 +6,11 @@
 // Rotation category, the Rotate commands and the rotation write, so no surface can offer what another
 // refuses; `rotationOf` is what the canvas and the export draw, so a stored turn on either is ignored.
 
-import { boundsOfPoints, rotatePoint, type Rect } from './geometry-primitives';
+import {
+  boundsOfPoints,
+  rotatePoint,
+  type Rect,
+} from '@liveworkspace/document-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 import { isPointerNote } from './pointer-note';
 

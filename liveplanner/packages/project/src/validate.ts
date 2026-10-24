@@ -20,12 +20,12 @@ import type { Element, ShapeKind, Tab } from './index';
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
-import { ADDER_KEY_LENGTH } from './adder';
+import { ADDER_KEY_LENGTH } from '@liveworkspace/document-core/adder';
 import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
-import { parseStrokePoints } from './stroke-points';
+import { parseStrokePoints } from '@liveworkspace/document-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
   type ElementValidationIssue,
@@ -37,10 +37,10 @@ import {
   isNum,
   issue,
   oneOfRule,
-} from './validate-primitives';
-import { isRecord } from './is-record';
+} from '@liveworkspace/document-core/validate-primitives';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 
-export type { ElementValidationIssue } from './validate-primitives';
+export type { ElementValidationIssue } from '@liveworkspace/document-core/validate-primitives';
 
 // Bounds. Generous vs any real project, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;

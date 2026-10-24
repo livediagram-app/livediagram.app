@@ -20,7 +20,11 @@
 // don't fight.
 
 import { isContainerKind } from './containment';
-import { pointInRect, rectsIntersect, type Rect } from './geometry-primitives';
+import {
+  pointInRect,
+  rectsIntersect,
+  type Rect,
+} from '@liveworkspace/document-core/geometry-primitives';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // How far the break extends beyond the box, in canvas units. Fixed rather

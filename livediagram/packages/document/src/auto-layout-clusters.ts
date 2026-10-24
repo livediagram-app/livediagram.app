@@ -17,7 +17,7 @@ import {
   type GraphCluster,
   type GraphLook,
 } from './graph-authoring';
-import { unionRects, type Rect } from './geometry-primitives';
+import { unionRects, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
 import { lineUpStackedFrames } from './auto-layout-cluster-stack';

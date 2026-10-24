@@ -7,8 +7,8 @@
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-primitives';
 
 // One resolved span of a rich label (run + element defaults).
-import { MUTED_RUN_OPACITY } from './title-caption';
-import { bidiLine, bidiMarkup } from './svg-bidi';
+import { MUTED_RUN_OPACITY } from '@liveworkspace/document-core/title-caption';
+import { bidiLine, bidiMarkup } from '@liveworkspace/document-core/svg-bidi';
 
 export type ExportRun = {
   text: string;

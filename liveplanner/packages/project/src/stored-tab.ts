@@ -8,7 +8,7 @@ import { settleStacks } from './stack';
 import { settleTabFields } from './tab-fields';
 import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,

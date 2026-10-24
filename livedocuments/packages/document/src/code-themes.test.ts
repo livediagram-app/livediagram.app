@@ -5,7 +5,7 @@ import {
   codeTheme,
   isCodeThemeId,
   type CodeTheme,
-} from './code-themes';
+} from '@liveworkspace/document-core/code-themes';
 import { svgCodeBlockShape } from './svg-render-shapes';
 
 // The scheme ids are STORED on elements, so they are permanent. Everything

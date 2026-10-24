@@ -2,7 +2,7 @@
 // swatch (a short arrow in the row's pattern, or a card edge in the tag's colour) beside the row's meaning, placed by
 // the same `diagramKeyLayout` the canvas face uses. The box is the ordinary bordered shape's, drawn by the caller.
 
-import { BORDER_DASH_ARRAY, type BorderStyle } from './border-style';
+import { BORDER_DASH_ARRAY, type BorderStyle } from '@liveworkspace/document-core/border-style';
 import { KEY_EMPTY_HINT, diagramKeyLayout, meaningOf } from './diagram-key';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';

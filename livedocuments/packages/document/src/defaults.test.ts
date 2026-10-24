@@ -12,7 +12,7 @@ import {
   defaultTextColor,
   type Padding,
 } from './index';
-import { tableKeys } from './table-keys';
+import { tableKeys } from '@liveworkspace/document-core/table-keys';
 import { PEN_INK } from './pen-colours';
 
 // These default-resolution helpers drive the editor's rendering

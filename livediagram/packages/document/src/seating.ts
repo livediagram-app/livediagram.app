@@ -9,7 +9,7 @@
 
 import { DEFAULT_CHAIR_FACING, type ChairFacing, type ChairSitterFacing } from './collab-shapes';
 import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
 
 export type SeatingKind = 'chair' | 'desk' | 'sofa' | 'meeting-table';
 

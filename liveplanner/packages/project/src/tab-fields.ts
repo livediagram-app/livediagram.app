@@ -5,7 +5,7 @@
 // `readDashboard`, ...); these are the ones read raw. Fields of retired features (a tab's pages and
 // their writing) are dropped as they are read.
 import type { Layer } from './layers';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 
 type SettledFields = {
   layers?: unknown;

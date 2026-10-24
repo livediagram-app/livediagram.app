@@ -4,7 +4,7 @@
 //
 // A LEAF module: types only from './index'.
 
-import { clamp } from './geometry-primitives';
+import { clamp } from '@liveworkspace/document-core/geometry-primitives';
 import type { AnimationSpeed, Element, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
 

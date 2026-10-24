@@ -3,7 +3,7 @@
 // live face) and the export (svgMarkerFace, reading the face's markup) both describe a part and call
 // markerFacePartSvg, so the two draw the same parts the same way.
 import { MARKER_LINE_PX } from './finish';
-import { isPillRect } from './face-finish';
+import { isPillRect } from '@liveworkspace/document-core/face-finish';
 import {
   MARKER_INK_OPACITY,
   MARKER_STREAK_OPACITY,

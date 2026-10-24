@@ -8,7 +8,7 @@ import {
   DEFAULT_BORDER_STYLE,
   IMAGE_DEFAULT_RADIUS_PX,
   cornerRadiusPx,
-} from './border-style';
+} from '@liveworkspace/document-core/border-style';
 import { MARKER_LINE_PX, finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
 import { freehandCanvasPoints } from './freehand-points';
 import type { FreehandElement, ImageElement } from './index';

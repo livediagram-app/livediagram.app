@@ -6,7 +6,12 @@
 // never elements. A tab from before multiple pages carries one `pageOrientation` instead, read as
 // a single page.
 import { isBoxed, type Element, type Tab } from './index';
-import { parsePageSides, parseRowAt, type PageSides, type RowAt } from './page-fit';
+import {
+  parsePageSides,
+  parseRowAt,
+  type PageSides,
+  type RowAt,
+} from '@liveworkspace/document-core/page-fit';
 import {
   parseColourFill,
   parsePagePattern,

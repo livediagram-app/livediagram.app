@@ -10,7 +10,7 @@ import {
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
-} from './border-style';
+} from '@liveworkspace/document-core/border-style';
 import {
   finishBorderStroke,
   finishCornerFallbackPx,

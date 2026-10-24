@@ -26,8 +26,8 @@ import { labelOn } from './readable-colour';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement } from './index';
-import { legendFontPx } from './label-font';
-import { textAdvanceEm } from './text-advance';
+import { legendFontPx } from '@liveworkspace/document-core/label-font';
+import { textAdvanceEm } from '@liveworkspace/document-core/text-advance';
 import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 

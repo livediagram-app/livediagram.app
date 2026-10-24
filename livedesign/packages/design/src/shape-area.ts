@@ -2,8 +2,8 @@
 // combining shapes works on. Unlike the hit outline (shape-hit.ts), which traces the border's
 // centre line, this is the whole drawn area out to the box's edge, its curves traced finely enough
 // that no ring strays more than `tolerance` px from the shape. In the element's local, unrotated px.
-import { cornerRadiusPx } from './border-style';
-import type { Point } from './geometry-primitives';
+import { cornerRadiusPx } from '@liveworkspace/document-core/border-style';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 import type { ShapeElement } from './index';
 import { SHAPE_GEOMETRY_KINDS, shapeGeometry } from './shape-geometry';
 import {

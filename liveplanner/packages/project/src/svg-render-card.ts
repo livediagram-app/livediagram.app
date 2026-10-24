@@ -3,7 +3,7 @@
 
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { cardLayout, cardMediaOf, cardSlotsOf } from './card';
-import { colorWash } from './color-wash';
+import { colorWash } from '@liveworkspace/document-core/color-wash';
 import { borderOf } from './svg-render-border';
 import { labelOn } from './readable-colour';
 import { TAG_CHIP_WASH, tagColourOf } from './tag-colours';

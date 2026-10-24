@@ -9,7 +9,7 @@ import type {
   TextElement,
 } from './index';
 import { SNAP_COLOUR_FIELDS, snapTabColours, snappableCustomColours } from './snap-colours';
-import { encodeStrokePoints } from './stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
 
 const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
   id: 'f',

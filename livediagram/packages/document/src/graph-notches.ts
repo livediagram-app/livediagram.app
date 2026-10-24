@@ -6,7 +6,7 @@
 
 import { arrowPolyline } from './arrow-path-hits';
 import { buildElementIndex } from './geometry';
-import { rectsIntersect, type Rect } from './geometry-primitives';
+import { rectsIntersect, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 import { segmentHitsBox } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type Endpoint } from './index';
 

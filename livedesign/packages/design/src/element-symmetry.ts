@@ -6,7 +6,7 @@
 import type { BoxedElement } from './index';
 import type { FreehandElement, PathElement } from './element-types';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
-import { encodeStrokePoints } from './stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
 import { pathContours, pathOfContours, pathWorldAnchors } from './path-element';
 import type { PathAnchor } from './path-geometry';
 import type { LaidOutPage, PageRect } from './page';

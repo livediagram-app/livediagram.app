@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bidiLine, bidiMarkup, hasRtl } from './svg-bidi';
+import { bidiLine, bidiMarkup, hasRtl } from '@liveworkspace/document-core/svg-bidi';
 import { svgWrappedLabel } from './svg-render-labels';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Labels": an exported line of right-to-left text takes its own

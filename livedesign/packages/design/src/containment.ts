@@ -1,7 +1,7 @@
 // Derived containment and the content origin (docs/specs/024-agents/design-views.md "The outline"):
 // the one rule views, edit-operation membership reports, the lint and the editor's frame drag read.
 import type { Element, ElementId } from './index';
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 
 export type Box = { x: number; y: number; width: number; height: number };
 

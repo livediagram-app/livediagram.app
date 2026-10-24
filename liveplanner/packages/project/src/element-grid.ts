@@ -8,7 +8,7 @@
 // still run their exact test.
 
 import { isBoxed, type Element } from './index';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
 
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D63, D64.
 export const ELEMENT_GRID_CELL = 256;

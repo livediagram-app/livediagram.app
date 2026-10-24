@@ -8,11 +8,11 @@
 // to be is left for isValidTab to judge.
 
 import { anchorPrimarySide } from './anchors';
-import { asText } from './as-text';
+import { asText } from '@liveworkspace/document-core/as-text';
 import { orthogonalBends } from './arrow-orthogonal';
-import { LOOK_MD_MAX_NODES } from './look-size';
+import { LOOK_MD_MAX_NODES } from '@liveworkspace/document-core/look-size';
 import { CODE_LANGUAGES } from './data-shapes';
-import { isCodeThemeId } from './code-themes';
+import { isCodeThemeId } from '@liveworkspace/document-core/code-themes';
 import { variantFitsKind } from './chart-types';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
@@ -21,7 +21,7 @@ import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
 import type { Element as DocElement, TableElement } from './index';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 import {
   cleanSankeyName,
   SANKEY_ALIGNS,

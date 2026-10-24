@@ -5,7 +5,7 @@
 // A LEAF module (types only from './index'), like web-components.ts, so the validator and the shape factory can read
 // its constants at module-init time without walking the index cycle.
 
-import { clamp } from './geometry-primitives';
+import { clamp } from '@liveworkspace/document-core/geometry-primitives';
 import type { Element, IconPosition, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
 

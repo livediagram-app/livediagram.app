@@ -28,7 +28,7 @@ import {
   type InkRole,
 } from './page-ink-rules';
 import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
-import { pointInRect, type Rect } from './geometry-primitives';
+import { pointInRect, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 
 /** A colour re-inking replaced (`from`, the author's) and what it wrote (`to`). */
 export type InkRecall = { from: string; to: string };

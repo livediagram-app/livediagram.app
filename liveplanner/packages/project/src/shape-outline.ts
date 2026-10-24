@@ -6,11 +6,15 @@
 
 import { isTechIconId } from '@liveworkspace/icons';
 import type { BoxedElement } from './index';
-import { techIconMarkBounds } from './icon-size';
-import { distToSegment, rotatePoint, type Point } from './geometry-primitives';
+import { techIconMarkBounds } from '@liveworkspace/document-core/icon-size';
+import {
+  distToSegment,
+  rotatePoint,
+  type Point,
+} from '@liveworkspace/document-core/geometry-primitives';
 import { ACTOR_HULL, ACTOR_VIEWBOX, shapePathData, shapePolygonVertices } from './shape-geometry';
 import { actorFigureRect } from './actor-figure';
-import { sampleSvgPath } from './svg-path-outline';
+import { sampleSvgPath } from '@liveworkspace/document-core/svg-path-outline';
 import type { ShapeKind } from './shape-kind';
 
 // Half circles (a stadium's ends) and half ellipses (a cylinder's caps) are

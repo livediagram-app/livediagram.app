@@ -7,7 +7,7 @@
 // Type-only import from the barrel (no runtime cycle) — the Element
 // union itself lives in index.ts, same pattern as element-types.ts.
 import type { Element } from './index';
-import { clamp } from './geometry-primitives';
+import { clamp } from '@liveworkspace/document-core/geometry-primitives';
 
 export type ElementShadow = {
   // Horizontal / vertical offset in px, clamped to ±SHADOW_LIMITS.offset.

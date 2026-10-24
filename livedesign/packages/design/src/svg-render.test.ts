@@ -1,4 +1,4 @@
-import { svgTags, textTagBefore } from './svg-test-tags';
+import { svgTags, textTagBefore } from '@liveworkspace/document-core/svg-test-tags';
 import { describe, expect, it } from 'vitest';
 import type {
   ArrowElement,
@@ -15,8 +15,8 @@ import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
 import { arrowLabelFontStack } from './svg-render-arrows';
 import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
-import { encodeStrokePoints } from './stroke-points';
-import { DEFAULT_BACKGROUND_COLOR as PAPER } from './canvas-colors';
+import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { DEFAULT_BACKGROUND_COLOR as PAPER } from '@liveworkspace/document-core/canvas-colors';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,

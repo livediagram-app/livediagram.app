@@ -37,7 +37,7 @@ import {
   type Routes,
 } from './graph-look';
 import { placeElbowLabels } from './graph-look-labels';
-import { unionRects } from './geometry-primitives';
+import { unionRects } from '@liveworkspace/document-core/geometry-primitives';
 import { isBoxed } from './index';
 import { withHeaderAndKey, type GraphKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
@@ -82,8 +82,8 @@ export type GraphInput = {
 };
 
 // Up to this many nodes a graph's text is `md`, the template's size; past it `sm`, so a large system still fits.
-export { LOOK_MD_MAX_NODES } from './look-size';
-import { LOOK_MD_MAX_NODES } from './look-size';
+export { LOOK_MD_MAX_NODES } from '@liveworkspace/document-core/look-size';
+import { LOOK_MD_MAX_NODES } from '@liveworkspace/document-core/look-size';
 // Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
 // nearer LANDSCAPE; past it, down.
 const AUTO_DIRECTION_MAX_NODES = 150;

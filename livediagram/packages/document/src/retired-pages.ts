@@ -4,7 +4,7 @@
 // article's margin note). Run on every stored or incoming tab by the stored-tab migration (./stored-tab), so no data
 // migration is needed: a tab is read the new way wherever it is read, and saved the new way the next time it is saved.
 // Pure; the same object back when there is nothing to drop, so the common read allocates nothing.
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 
 // The modes a stored tab may carry from Pages: its id, and its two older names.
 const RETIRED_MODES: ReadonlySet<unknown> = new Set(['pages', 'illustrate', 'infographic']);

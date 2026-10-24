@@ -11,7 +11,7 @@
 // validator and the shape factory can read its constants at module-init time
 // without walking the index cycle.
 
-import { clamp, type Rect } from './geometry-primitives';
+import { clamp, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 import type { ShapeKind } from './index';
 import { CARD_TAGS_MAX, clampCardTag } from './card';
 import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from './concept';

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@livedesign/photo-engine": "workspace:*",
+    "@liveworkspace/document-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"

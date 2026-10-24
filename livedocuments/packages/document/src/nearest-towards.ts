@@ -11,7 +11,7 @@
 
 import type { Anchor, BoxedElement, Element } from './index';
 import { isBoxed } from './index';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
 
 // How far off the source's own span a candidate may sit and still count as
 // "on that side". A fraction of the SOURCE's width/height rather than a fixed

@@ -1,6 +1,6 @@
 // Segment and polygon tests shared by hit-testing (./shape-hit), indicator placement and the avatar
 // fence: the distance between two segments and an even-odd point-in-polygon test. Pure; canvas coords.
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 
 function distToSegment(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x;

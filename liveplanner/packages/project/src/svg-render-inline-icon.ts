@@ -3,7 +3,7 @@
 // and every export left it out, so a flowchart template's cart and card glyphs, and an agent's preview, came out
 // bare. The metrics are shared with the canvas so the two agree on where the icon is.
 
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/document-core/label-font';
 import { labelMeasure, wrapLabel } from './svg-render-primitives';
 import type { ExportIconArt } from './svg-render-describe';
 import { wrapExportRuns, type ExportLabel } from './svg-render-labels';

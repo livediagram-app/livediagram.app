@@ -4,9 +4,9 @@
 // rounded box. A cluster starts tight in its corner and slides inward until it fits, or reports
 // that it cannot (the caller then draws the pip on the outline). Pure; no DOM.
 
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from './index';
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/document-core/label-font';
 import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';

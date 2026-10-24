@@ -1,6 +1,6 @@
 // What is drawn behind a label, and keeping a label readable on it when a theme repaints one without the other
 // (docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it"). Pure.
-import { mixHex } from './color-wash';
+import { mixHex } from '@liveworkspace/document-core/color-wash';
 import {
   canvasSurface,
   contrastRatio,

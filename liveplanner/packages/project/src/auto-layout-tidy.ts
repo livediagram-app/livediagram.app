@@ -16,7 +16,11 @@
 
 import { isBoxed, type ArrowElement, type Element, type ElementId } from './index';
 import { tidyGraph } from './auto-layout-tidy-graph';
-import { rectsIntersect, unionRects, type Rect } from './geometry-primitives';
+import {
+  rectsIntersect,
+  unionRects,
+  type Rect,
+} from '@liveworkspace/document-core/geometry-primitives';
 import {
   COMPONENT_GAP,
   components,

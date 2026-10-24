@@ -28,7 +28,7 @@ import {
 import { SHAPE_KINDS } from './validate';
 import { createSticky, createText } from './factories';
 import { createShape } from './shape-factory';
-import { FONTS } from './fonts';
+import { FONTS } from '@liveworkspace/document-core/fonts';
 
 // docs/specs/008-canvas/finish.md
 describe('resolveFinish', () => {

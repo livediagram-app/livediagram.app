@@ -25,7 +25,7 @@ import {
 } from './page-ink-rules';
 import { isBoxed, type Element } from './index';
 import type { Layer } from './layers';
-import { pointInRect, type Rect } from './geometry-primitives';
+import { pointInRect, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 
 // A series (a line, a bar, a wedge, a Sankey node) against its ground: WCAG 2.2 SC 1.4.11
 // non-text contrast, floor and target both, as re-inking holds lines and marks.

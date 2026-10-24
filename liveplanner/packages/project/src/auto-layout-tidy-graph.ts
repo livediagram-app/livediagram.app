@@ -19,7 +19,7 @@ import {
   type Element,
   type ElementId,
 } from './index';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
 import { buildEdges, type Edge } from './auto-layout-shared';
 
 type TidyGraph = {

@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
 import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import { getBuiltInTheme } from './themes';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from './canvas-colors';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+} from '@liveworkspace/document-core/canvas-colors';
 import type { Element, Tab } from './index';
 
 const box = {

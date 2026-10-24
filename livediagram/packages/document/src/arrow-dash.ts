@@ -6,7 +6,7 @@
 
 import { arrowPathPolyline } from './arrow-path';
 import { arrowStyleOf } from './arrow-style';
-import { BORDER_DASH_ARRAY } from './border-style';
+import { BORDER_DASH_ARRAY } from '@liveworkspace/document-core/border-style';
 import type { ArrowElement } from './index';
 
 // The stroke-dashoffset that puts the dash pattern's start at the arrow's end, or undefined: a solid line, or one

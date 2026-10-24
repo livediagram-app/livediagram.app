@@ -5,7 +5,7 @@
 //
 // A LEAF module: types only.
 
-import { clamp } from './geometry-primitives';
+import { clamp } from '@liveworkspace/document-core/geometry-primitives';
 import type { LayoutRect } from './web-components';
 
 export type TimelineMilestone = {

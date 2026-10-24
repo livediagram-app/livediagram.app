@@ -4,7 +4,10 @@
 // only reader of the former shape: it runs wherever a stored or foreign element arrives, before
 // validation, so nothing downstream ever sees it.
 
-import { encodeStrokePoints, type NormalisedPoint } from './stroke-points';
+import {
+  encodeStrokePoints,
+  type NormalisedPoint,
+} from '@liveworkspace/document-core/stroke-points';
 import type { Element, FreehandElement } from './index';
 
 type LegacyFreehandPoints = { points?: unknown; pressures?: unknown };

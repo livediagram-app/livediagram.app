@@ -15,7 +15,7 @@ import {
   CODE_MAX_LENGTH,
 } from './data-shapes';
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
-import { isCodeThemeId } from './code-themes';
+import { isCodeThemeId } from '@liveworkspace/document-core/code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
@@ -34,8 +34,8 @@ import {
   issue,
   oneOfRule,
   stringRule,
-} from './validate-primitives';
-import { isRecord } from './is-record';
+} from '@liveworkspace/document-core/validate-primitives';
+import { isRecord } from '@liveworkspace/document-core/is-record';
 import {
   SANKEY_ALIGNS,
   SANKEY_LEFTOVERS,

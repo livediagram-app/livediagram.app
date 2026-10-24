@@ -11,7 +11,7 @@ import {
   runsFromPlainText,
   runsPlainText,
   type TextRun,
-} from './rich-text';
+} from '@liveworkspace/document-core/rich-text';
 
 // The formatting an outline carries.
 const MARK_KEYS = ['bold', 'italic', 'underline'] as const;

@@ -6,7 +6,7 @@
 import type { Anchor } from './arrow-types';
 import type { BoxedElement } from './index';
 import type { ShapeKind } from './shape-kind';
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 
 export type Side = 'n' | 'e' | 's' | 'w';
 type AnchorClass = 'corner' | 'quarter' | 'middle';

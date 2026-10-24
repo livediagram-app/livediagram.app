@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { indefiniteArticle, withArticle } from './indefinite-article';
+import { indefiniteArticle, withArticle } from '@liveworkspace/document-core/indefinite-article';
 
 describe('indefiniteArticle', () => {
   it('says "an" before a vowel sound and "a" before the rest', () => {

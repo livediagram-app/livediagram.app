@@ -2,7 +2,7 @@
 // which the validator and the shape factory load early, because the readable-colour helpers sit in an import cycle
 // with them.
 
-import { mixHex } from './color-wash';
+import { mixHex } from '@liveworkspace/document-core/color-wash';
 import { contrastRatio } from './colors';
 import { THEME_TEXT_CONTRAST, labelOn } from './readable-colour';
 

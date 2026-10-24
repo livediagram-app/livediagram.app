@@ -1,9 +1,9 @@
 // A person node in the headless render (docs/specs/009-elements/org-chart.md): the initials disc, the name and the role,
 // placed by the same `personNodeLayout` the canvas face uses. The box is the mind node's ordinary bordered one.
 
-import { colorWash } from './color-wash';
+import { colorWash } from '@liveworkspace/document-core/color-wash';
 import type { BoxedElement } from './index';
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/document-core/label-font';
 import { personInitials, personNodeLayout } from './person-node';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { line as webLine } from './svg-render-web';

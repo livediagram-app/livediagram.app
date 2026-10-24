@@ -6,12 +6,12 @@
 import { ACCENT_EDGES } from './accent-edge';
 import { ARROWHEAD_SHAPES } from './arrow-style';
 import { ATTACH_POINTS } from './attachment';
-import { BORDER_DASH_ARRAY } from './border-style';
+import { BORDER_DASH_ARRAY } from '@liveworkspace/document-core/border-style';
 import { CARD_MEDIA } from './card';
 import { CHIP_LOOKS } from './chip';
 import { PYRAMID_VARIANTS } from './concept';
-import { FONTS } from './fonts';
-import { ICON_WEIGHTS } from './icon-weight';
+import { FONTS } from '@liveworkspace/document-core/fonts';
+import { ICON_WEIGHTS } from '@liveworkspace/document-core/icon-weight';
 import { STACK_ALIGNS, STACK_DIRECTIONS } from './stack';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {

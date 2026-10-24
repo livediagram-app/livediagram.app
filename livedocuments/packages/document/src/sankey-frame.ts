@@ -6,7 +6,7 @@ import { chartMarkInk } from './chart-ink';
 import { chartRamp } from './chart-palettes';
 import { isLightColor } from './colors';
 import type { ShapeElement, TextSize, TextSizePreset } from './index';
-import { readTextSize } from './label-font';
+import { readTextSize } from '@liveworkspace/document-core/label-font';
 import {
   sankeyLayout,
   type SankeyLayout,

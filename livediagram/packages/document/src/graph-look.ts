@@ -14,7 +14,7 @@ import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowRoutePoints } from './arrow-label-layout';
-import { rectGrid, type RectGrid } from './auto-layout-route-grid';
+import { rectGrid, type RectGrid } from '@liveworkspace/document-core/auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {

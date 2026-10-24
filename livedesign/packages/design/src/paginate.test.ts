@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { contentClusters, pageAround, withContentOnAPage, withPageSplit } from './paginate';
 import { elementIdsOnPage } from './page-content';
 import { pagesOf, layOutPages, MAX_PAGES, pageMargin, type Page } from './page';
-import { FIT_PAGE_MAX_SIDE } from './page-fit';
+import { FIT_PAGE_MAX_SIDE } from '@liveworkspace/document-core/page-fit';
 import type { Element } from './index';
 
 // docs/specs/007-editor/pages-mode.md "Into pages".

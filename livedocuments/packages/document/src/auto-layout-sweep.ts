@@ -2,7 +2,7 @@
 // (docs/specs/024-agents/blueprints/edit-operations.md). Pure.
 
 import { LAYER_GAP, SIBLING_GAP, type Pt } from './auto-layout-shared';
-import { unionRects, type Rect } from './geometry-primitives';
+import { unionRects, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // Space between a container's border and its members: the top band is deeper so

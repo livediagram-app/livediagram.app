@@ -1,9 +1,13 @@
 // A freehand element's points (docs/specs/006-project/stroke-points.md): laying raw canvas points
 // out in a box and packing them, and reading a stroke's packed points back through the shared
 // decode cache. Every writer and reader of a stroke's points goes through here or the codec.
-import { decodeStrokePoints } from './stroke-points-cache';
-import { encodeStrokePoints, type NormalisedPoint, type StrokePoints } from './stroke-points';
-import type { Point } from './geometry-primitives';
+import { decodeStrokePoints } from '@liveworkspace/document-core/stroke-points-cache';
+import {
+  encodeStrokePoints,
+  type NormalisedPoint,
+  type StrokePoints,
+} from '@liveworkspace/document-core/stroke-points';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 import type { FreehandElement } from './element-types';
 
 type Box = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'>;

@@ -2,7 +2,7 @@
 // element stores its nodes normalised to a box that wraps the drawn curve; every gesture works on
 // anchors in canvas px and hands them back through `pathGeometry`.
 import type { PathElement, PathNode, PathPoint } from './element-types';
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/document-core/geometry-primitives';
 import { pathBounds, pathD, type PathAnchor } from './path-geometry';
 
 type PathGeometry = Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes'>;

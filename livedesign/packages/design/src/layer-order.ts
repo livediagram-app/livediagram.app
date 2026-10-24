@@ -1,4 +1,4 @@
-import { unionRects, type Rect } from './geometry-primitives';
+import { unionRects, type Rect } from '@liveworkspace/document-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element, type ElementId } from './index';
 
 // Layer order: moving one element, or a set, to the top or bottom of the

@@ -17,7 +17,7 @@
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
 //   - limb:    an unfilled round-capped line (the actor's body)
 //   - head:    a limb that takes the element's fill (the actor's head)
-import { colorWash } from './color-wash';
+import { colorWash } from '@liveworkspace/document-core/color-wash';
 import type { ShapeKind } from './shape-kind';
 
 export type ShapePartRole = 'main' | 'outline' | 'detail' | 'limb' | 'head';
