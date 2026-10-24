@@ -5,6 +5,7 @@
 // which app it belongs to.
 
 import { memo, type MouseEvent } from 'react';
+import { BrandGlyph } from '@liveworkspace/brand';
 import type { App, Item } from '@liveworkspace/index-client';
 import {
   FolderOutlineIcon,
@@ -123,8 +124,8 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 }
 
 /**
- * Which app an item belongs to, in its app's accent: a small square mark with the app's initial, and its
- * kind word for a screen reader. Shown on every row while the filter is All.
+ * Which app an item belongs to: the app's logo, its Living Prism, in the app's accent, and its kind word for a
+ * screen reader. Shown on every row while the filter is All, so it is the stateless glyph, not the animated mark.
  */
 export const AppMark = memo(function AppMark({ app, size = 16 }: { app: App; size?: number }) {
   const site = siteOf(app);
@@ -133,15 +134,10 @@ export const AppMark = memo(function AppMark({ app, size = 16 }: { app: App; siz
     <span
       data-app-mark={app}
       title={`${word} in ${site.name}`}
-      className="inline-flex shrink-0 items-center justify-center rounded font-bold leading-none text-white"
-      style={{
-        width: size,
-        height: size,
-        background: site.accent,
-        fontSize: Math.round(size * 0.6),
-      }}
+      className="inline-flex shrink-0 items-center justify-center"
+      style={{ width: size, height: size, color: site.accent }}
     >
-      <span aria-hidden>{site.name.replace(/^live/, '').charAt(0).toUpperCase()}</span>
+      <BrandGlyph className="size-full" />
       <span className="sr-only">{`${word} in ${site.name}`}</span>
     </span>
   );
