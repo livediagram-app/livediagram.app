@@ -348,9 +348,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The help centre.
-  'apps/help/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
-  'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
-  'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/lib/use-article-vote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/lib/use-article-vote.ts Help·Unhelpful': {
+    values: SLUGS,
+    open: SLUG_WHY,
+  },
 
   // The Community app.
   'apps/community/lib/telemetry.ts Community·Reported': { values: COMMUNITY_REASON_TYPES },

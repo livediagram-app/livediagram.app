@@ -113,3 +113,15 @@ export function platformEmailKinds(): string[] {
     .filter((type): type is string => typeof type === 'string');
   return [...new Set(kinds)].sort();
 }
+
+// The shared help centre (@liveworkspace/help-site) sends every app's article views, votes and searches
+// (Help·View, Help·Helpful, Help·Unhelpful, Help·Searched) through the app's own `track`, so each app's
+// scan adds them as its own, with paths from the monorepo root.
+export const SHARED_SITE_ROOTS = ['packages/help-site/src'];
+
+let siteCached: Emit[] | undefined;
+
+export function sharedSiteEmitters(): Emit[] {
+  siteCached ??= scanEmitters(MONOREPO, SHARED_SITE_ROOTS, '');
+  return siteCached;
+}

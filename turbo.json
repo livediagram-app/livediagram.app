@@ -76,6 +76,32 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
     },
+    // The telemetry dashboard's emitter checks (app/telemetry) scan every product's apps and packages and the
+    // shared code that sends in their names, so those sources are inputs: a new or moved emitter must never
+    // replay a cached pass.
+    "@liveworkspace/site#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livediagram/apps/**",
+        "$TURBO_ROOT$/livediagram/packages/**",
+        "$TURBO_ROOT$/liveplanner/apps/**",
+        "$TURBO_ROOT$/liveplanner/packages/**",
+        "$TURBO_ROOT$/livedocuments/apps/**",
+        "$TURBO_ROOT$/livedocuments/packages/**",
+        "$TURBO_ROOT$/livedesign/apps/**",
+        "$TURBO_ROOT$/livedesign/packages/**",
+        "$TURBO_ROOT$/liveworkspace/apps/accounts/src/**",
+        "$TURBO_ROOT$/packages/help-site/src/**",
+        "$TURBO_ROOT$/packages/telemetry-client/src/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**"
+      ]
+    },
     // The shared marketing guards read every product's marketing app (src/guards/targets.ts), so their
     // sources are inputs too: a change in one app must never replay a cached pass.
     "@liveworkspace/marketing-site#test": {

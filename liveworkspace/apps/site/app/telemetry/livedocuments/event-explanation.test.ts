@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { sharedClientEmitters } from '../platform-emitters';
+import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
@@ -18,6 +18,8 @@ const REPO = resolve(__dirname, '../../../../../../livedocuments');
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
   ...sharedClientEmitters(),
+  // Every app's help-centre views, votes and searches, sent by the shared help site.
+  ...sharedSiteEmitters(),
 ];
 const LAST_RESORT = /^Someone did /;
 
