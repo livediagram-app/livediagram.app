@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },

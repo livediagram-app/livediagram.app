@@ -1,23 +1,20 @@
-import { Brand as LivediagramBrand, BrandMark } from '@livediagram/ui';
-import { Brand as LivedesignBrand, BrandMark as LivedesignMark } from '@livedesign/ui';
-import { Brand as LivedocumentsBrand, BrandMark as LivedocumentsMark } from '@livedocuments/ui';
-import { Brand as LiveplannerBrand, BrandMark as LiveplannerMark } from '@liveplanner/ui';
+import { Brand, BrandMark, BRAND_APPS, type BrandApp } from '@liveworkspace/brand';
 import type { CSSProperties } from 'react';
 import type { ListedApp } from '@/lib/apps';
 
-const BRANDS: Record<string, typeof LivediagramBrand> = {
-  'livediagram.app': LivediagramBrand,
-  'liveplanner.app': LiveplannerBrand,
-  'livedocuments.app': LivedocumentsBrand,
-  'livedesign.app': LivedesignBrand,
-};
+// The brand package's name for a listed app ('livediagram' for livediagram.app), or null for one it
+// has no logo for yet.
+export function brandAppOf(id: string): BrandApp | null {
+  const app = id.replace(/\.app$/, '');
+  return app in BRAND_APPS ? (app as BrandApp) : null;
+}
 
-// An app's logo as its own header draws it: its UI package's Brand, with the prism, the hover
-// shimmer and "live" in its accent. Each Brand colours "live" with its own brand-700 (light) and
-// its accent's 400 (dark); this site's scales are not the apps', so the wrapper points those at
-// the app's deep and accent colours.
+// An app's logo as its own header draws it: the prism, the hover shimmer and "live" in its accent.
+// The logo colours "live" with brand-700 (light) and the app's 400 (dark); this site's scales are
+// not the apps', so the wrapper points those at the app's deep and accent colours.
 export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: 'sm' | 'md' | 'lg' }) {
-  const Brand = BRANDS[app.id] ?? LivediagramBrand;
+  const brand = brandAppOf(app.id);
+  if (!brand) return <span className="font-semibold">{app.name}</span>;
   return (
     <span
       className="inline-flex"
@@ -31,25 +28,18 @@ export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: 'sm' | 'm
         } as CSSProperties
       }
     >
-      <Brand size={size} />
+      <Brand app={brand} size={size} />
     </span>
   );
 }
 
-const MARKS: Record<string, typeof BrandMark> = {
-  'livediagram.app': BrandMark,
-  'liveplanner.app': LiveplannerMark,
-  'livedocuments.app': LivedocumentsMark,
-  'livedesign.app': LivedesignMark,
-};
-
-// An app's prism alone, for places too small for the wordmark: its own, or for an app with no UI
-// package here, the shared prism tinted with its accent.
+// An app's prism alone, for places too small for the wordmark: its own, or for an app the brand
+// package has no logo for yet, livediagram's prism tinted with its accent.
 export function AppMark({ app, className }: { app: ListedApp; className: string }) {
-  const Mark = MARKS[app.id];
-  return Mark ? (
-    <Mark className={className} />
+  const brand = brandAppOf(app.id);
+  return brand ? (
+    <BrandMark app={brand} className={className} />
   ) : (
-    <BrandMark accentColor={app.accent} className={className} />
+    <BrandMark app="livediagram" accentColor={app.accent} className={className} />
   );
 }

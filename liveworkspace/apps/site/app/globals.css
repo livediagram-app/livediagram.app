@@ -12,11 +12,8 @@
  * is symlinked. */
 @source '../../../../livediagram/packages/ui/src/SiteSwitcher.tsx';
 @source '../../../../livediagram/packages/ui/src/icons';
-@source '../../../../livediagram/packages/ui/src/Brand.tsx';
-/* The other apps' logos (components/landing/AppLogo.tsx): their dark-mode accent and shimmer. */
-@source '../../../../liveplanner/packages/ui/src/Brand.tsx';
-@source '../../../../livedocuments/packages/ui/src/Brand.tsx';
-@source '../../../../livedesign/packages/ui/src/Brand.tsx';
+/* Every app's logo (components/landing/AppLogo.tsx): its dark-mode accent and shimmer. */
+@source '../../../../packages/brand/src';
 @source '../../../../livediagram/packages/ui/src/appearance';
 /* The account menu, shared with every app's marketing header. */
 @source '../../../../packages/account-menu/src';

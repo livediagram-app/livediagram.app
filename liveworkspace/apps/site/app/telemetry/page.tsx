@@ -2,18 +2,15 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { Brand as LivediagramBrand } from '@livediagram/ui';
 import { EmptyState } from '@liveworkspace/ui';
-import { Brand as LiveplannerBrand } from '@liveplanner/ui';
-import { Brand as LivedocumentsBrand } from '@livedocuments/ui';
-import { Brand as LivedesignBrand } from '@livedesign/ui';
+import { Brand } from '@liveworkspace/brand';
 import {
   type TelemetryAppFilter,
   type TelemetryDisabled,
   type TelemetrySummary,
 } from '@liveworkspace/telemetry';
 import { Footer } from '@/components/Footer';
-import { AppLogo } from '@/components/landing/AppLogo';
+import { AppLogo, brandAppOf } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 import { Header } from '@/components/Header';
 import { AllApps } from './AllApps';
@@ -43,16 +40,6 @@ const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.B
 });
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
-
-// Each app's chip shows its logo as its own site's header does: the prism and the wordmark with
-// "live" in the app's accent. The chip's own `data-app` scopes the accent to it, whichever app is
-// picked around it.
-const APP_LOGOS: Partial<Record<TelemetryAppFilter, typeof LivediagramBrand>> = {
-  'livediagram.app': LivediagramBrand,
-  'liveplanner.app': LiveplannerBrand,
-  'livedocuments.app': LivedocumentsBrand,
-  'livedesign.app': LivedesignBrand,
-};
 
 // The liveworkspace telemetry dashboard (liveworkspace/docs/telemetry.md "The dashboard"): every app's
 // anonymous events, all together or one app at a time.
@@ -124,11 +111,14 @@ export default function TelemetryDashboard() {
                 }
               >
                 {(() => {
-                  const Logo = APP_LOGOS[choice.key];
-                  if (Logo)
+                  // Each app's chip shows its logo as its own site's header does: the prism and the
+                  // wordmark with "live" in the app's accent. The chip's own `data-app` scopes the
+                  // accent to it, whichever app is picked around it.
+                  const brand = brandAppOf(choice.key);
+                  if (brand)
                     return (
                       <span data-app={choice.key} className="flex">
-                        <Logo size="sm" />
+                        <Brand app={brand} size="sm" />
                       </span>
                     );
                   // An app whose UI package isn't in this repo yet: the shared prism in its accent.

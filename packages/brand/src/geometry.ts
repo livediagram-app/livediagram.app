@@ -1,4 +1,5 @@
-import { PRISM_PALETTES, PRISM_STOPS, type PrismScheme, type PrismStop } from './brand-prism';
+import type { BrandApp } from './apps';
+import { PRISM_STOPS, prismPalettes, type PrismScheme, type PrismStop } from './prism';
 
 // The Living Prism's geometry (docs/specs/004-interface-design/brand-mark.md),
 // shared by the React <BrandMark> and by the SVG strings the static copies are
@@ -126,13 +127,20 @@ const BLEND: Record<PrismScheme, string> = { light: 'multiply', dark: 'screen' }
 // The mark as a standalone SVG document. `light` / `dark` write literal colours
 // (renderers without CSS variables or media queries: next/og's resvg, the PNG
 // script); `auto` follows the viewer's prefers-color-scheme, for favicons.
-// `idPrefix` keeps gradient ids unique when several marks share one project.
+// `idPrefix` keeps gradient ids unique when several marks share one document.
 export function brandMarkSvg({
+  app,
   variant = 'compact',
   scheme = 'auto',
   idPrefix = '',
-}: { variant?: BrandMarkVariant; scheme?: PrismScheme | 'auto'; idPrefix?: string } = {}): string {
-  const fixed = scheme === 'auto' ? null : PRISM_PALETTES[scheme];
+}: {
+  app: BrandApp;
+  variant?: BrandMarkVariant;
+  scheme?: PrismScheme | 'auto';
+  idPrefix?: string;
+}): string {
+  const palettes = prismPalettes(app);
+  const fixed = scheme === 'auto' ? null : palettes[scheme];
   const stopColour = (stop: PrismStop) =>
     fixed ? ` stop-color="${fixed[stop]}"` : ` class="s-${stop}"`;
   const gradients = BRAND_GRADIENTS.map(({ key, vector: v, stops }) => {
@@ -156,10 +164,10 @@ export function brandMarkSvg({
     );
   }
   const css = (s: PrismScheme) =>
-    PRISM_STOPS.map((stop) => `.s-${stop}{stop-color:${PRISM_PALETTES[s][stop]}}`).join('') +
+    PRISM_STOPS.map((stop) => `.s-${stop}{stop-color:${palettes[s][stop]}}`).join('') +
     `.blend{mix-blend-mode:${BLEND[s]}}` +
     (full
-      ? `.node-fill{fill:${PRISM_PALETTES[s].highlight}}.node-stroke{stroke:${PRISM_PALETTES[s].highlight}}`
+      ? `.node-fill{fill:${palettes[s].highlight}}.node-stroke{stroke:${palettes[s].highlight}}`
       : '');
   const style = fixed
     ? ''

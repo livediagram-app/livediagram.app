@@ -9,7 +9,7 @@ import {
   restingTurn,
   settleTurn,
   type PrismFrame,
-} from './brand-prism-motion';
+} from './motion';
 
 // The DOM the spin writes to: the lid, the bottom fold, and each side face's
 // left-lit and right-lit layers, in the order prismFrame returns the sides.

@@ -1,4 +1,5 @@
-import { hexToRgb, rgbToHex } from '@livedesign/design';
+import { BRAND_APPS, type BrandApp } from './apps';
+import { hexToRgb, rgbToHex } from './colour';
 
 // The Living Prism's colours (docs/specs/004-interface-design/brand-mark.md).
 // Six stops, light to dark; each face of the mark is a gradient over them.
@@ -6,28 +7,6 @@ export const PRISM_STOPS = ['light', 'vivid', 'primary', 'deep', 'dark', 'highli
 export type PrismStop = (typeof PRISM_STOPS)[number];
 export type PrismPalette = Record<PrismStop, string>;
 export type PrismScheme = 'light' | 'dark';
-
-// The brand palettes: livedesign' rose, the product accent (each live product has its own; see
-// docs/specs/004-interface-design/brand-mark.md). `vivid` is the anchor a theme accent replaces; every other
-// stop is placed relative to it.
-export const PRISM_PALETTES: Record<PrismScheme, PrismPalette> = {
-  light: {
-    light: '#fb7185',
-    vivid: '#e11d48',
-    primary: '#db2777',
-    deep: '#be185d',
-    dark: '#500724',
-    highlight: '#ffe4e6',
-  },
-  dark: {
-    light: '#fb7185',
-    vivid: '#f43f5e',
-    primary: '#ec4899',
-    deep: '#be185d',
-    dark: '#0f172a',
-    highlight: '#fecdd3',
-  },
-};
 
 // How far (OKLCH lightness, 0..1) an accent may pull the cube lighter or darker
 // than the brand. Small enough that a near-black (#0f172a) or pale (#86efac)
@@ -40,9 +19,9 @@ const PRISM_LIGHTNESS_PULL = 0.08;
 // Safe range 1..2.
 const PRISM_CHROMA_RATIO_MAX = 1.4;
 
-// How much of the brand ramp's hue travel (rose at `light` round to pink at
-// `dark`) an accent keeps. The full travel suits the brand, but
-// turns a pink theme red at its dark end; 0.4 keeps each ramp in its own hue
+// How much of the brand ramp's hue travel (livediagram's runs sky at `light` round
+// to indigo at `dark`, about 40 degrees) an accent keeps. The full travel suits the
+// brand, but turns a pink theme red at its dark end; 0.4 keeps each ramp in its own hue
 // family while still deepening. Safe range 0..1.
 const PRISM_HUE_SPREAD = 0.4;
 
@@ -105,12 +84,21 @@ function oklchToHex(colour: Oklch): string {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
-// The prism palette for a scheme, tinted to `accent` when one is given. The
+// An app's brand palettes, light and dark.
+export function prismPalettes(app: BrandApp): Record<PrismScheme, PrismPalette> {
+  return BRAND_APPS[app].palettes;
+}
+
+// An app's prism palette for a scheme, tinted to `accent` when one is given. The
 // brand palette's shape (each stop's lightness offset, chroma ratio and, narrowed,
 // hue offset from `vivid`) is carried onto the accent, so any theme gets the same
 // glass depth. No accent, or one that is not `#rrggbb`, gives the brand palette.
-export function prismPalette(scheme: PrismScheme, accent?: string | null): PrismPalette {
-  const brand = PRISM_PALETTES[scheme];
+export function prismPalette(
+  app: BrandApp,
+  scheme: PrismScheme,
+  accent?: string | null,
+): PrismPalette {
+  const brand = BRAND_APPS[app].palettes[scheme];
   const target = accent ? hexToOklch(accent) : null;
   if (!target) return brand;
   const anchor = hexToOklch(brand.vivid)!;

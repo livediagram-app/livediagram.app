@@ -164,7 +164,11 @@ describe('<Explorer>', () => {
     );
     const flow = screen.getByRole('link', { name: 'Flow' });
     expect(flow.getAttribute('href')).toBe('https://livediagram.app/open/item-2');
-    expect(document.querySelector('[data-app-mark="livediagram"]')).toBeTruthy();
+    // The app's mark is its logo, the prism, in the app's accent: no letter.
+    const mark = document.querySelector<HTMLElement>('[data-app-mark="livediagram"]')!;
+    expect(mark.querySelector('svg')).toBeTruthy();
+    expect(mark.style.color).toBe('rgb(14, 165, 233)');
+    expect(mark.querySelector('[aria-hidden]')?.textContent).toBe('');
     expect(localStorage.getItem('liveworkspace:explorer-filter:liveplanner')).toBe('all');
   });
 

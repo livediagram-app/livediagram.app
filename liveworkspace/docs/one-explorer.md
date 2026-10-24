@@ -92,6 +92,11 @@ liveworkspace logo and then that app's logo (which leads back), and a filter sho
 "All Apps". Reached on liveworkspace.app from no app (its account menu's **Explorer**, say), it is in no app and
 shows every app's items, All Apps. Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
 
+Under All Apps each row, card and Timeline entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
+rest in the app's accent with each face at its own opacity (`BrandGlyph` from `@liveworkspace/brand`), never a
+letter. Its title and a screen-reader label say "<Kind> in <app>". It is a stateless drawing with no gradients or
+motion, so a list of thousands pays for paths only.
+
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
 Canvas, and so on. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.

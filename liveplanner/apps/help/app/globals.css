@@ -8,6 +8,7 @@
 @source '../../../packages/ui/src';
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
 
 @import '@liveplanner/ui/hero-band.css';
 @import './help-art.css';
