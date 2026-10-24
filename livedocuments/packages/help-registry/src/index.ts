@@ -131,8 +131,8 @@ export const categories: Category[] = [
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted livedocuments service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
-    articleCount: 3,
+      'How to report a vulnerability. The terms and privacy policy are liveworkspace\'s, on liveworkspace.app.',
+    articleCount: 1,
   },
   {
     slug: 'contact',
@@ -679,24 +679,6 @@ export const articles: Article[] = [
   },
 
   // ---- Policies ----
-  {
-    slug: 'terms',
-    title: 'Terms of Service',
-    description: 'The terms that govern use of the hosted livedocuments service.',
-    keywords: 'tos legal terms conditions agreement rules',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
-  {
-    slug: 'privacy-policy',
-    title: 'Privacy Policy',
-    description: 'The full privacy policy for the hosted livedocuments service.',
-    keywords: 'legal privacy gdpr data protection personal information ai retention security',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
   {
     slug: 'report-a-vulnerability',
     title: 'Reporting a Vulnerability',

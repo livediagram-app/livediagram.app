@@ -85,7 +85,7 @@ export function PrivacySection() {
         <p className="mt-12 text-center text-xs text-slate-600 dark:text-slate-400">
           Read the full{' '}
           <a
-            href="/help/policies/privacy-policy/"
+            href="https://liveworkspace.app/privacy"
             className="underline transition hover:text-slate-900 dark:hover:text-slate-200"
           >
             privacy policy

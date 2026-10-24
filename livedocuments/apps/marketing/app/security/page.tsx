@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 
 import { LegalRedirect } from '@/components/LegalRedirect';
 
-// The vulnerability disclosure policy lives in the help centre (Policies),
-// beside the Terms and Privacy Policy. /security is the short, guessable URL
+// The vulnerability disclosure policy lives in the help centre (Policies).
+// /security is the short, guessable URL
 // researchers try first, so it redirects there; noindex like /privacy so
 // search engines consolidate on the canonical help article.
 // See docs/specs/002-project-scope/vulnerability-disclosure.md.

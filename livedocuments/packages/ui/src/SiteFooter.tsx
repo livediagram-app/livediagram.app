@@ -1,4 +1,5 @@
 import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livedocuments/icons/lucide';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';
 import { CONTRIBUTORS } from './contributors';
@@ -50,8 +51,9 @@ const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
   {
     title: 'Legal',
     links: [
-      { href: '/help/policies/terms/', label: 'Terms' },
-      { href: '/help/policies/privacy-policy/', label: 'Privacy Policy' },
+      // One set of terms and one privacy policy cover every liveworkspace app, on liveworkspace.app.
+      { href: `${PLATFORM_SITE.url}/terms`, label: 'Terms' },
+      { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).
       { href: '/help/policies/report-a-vulnerability/', label: 'Report a Vulnerability' },

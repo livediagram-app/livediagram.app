@@ -34,8 +34,8 @@ export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.
 export const REPO_URL = 'https://github.com/livedocuments-app/livedocuments.app';
 
 // The public contact form, the one way to reach the team; no email address is published. livedocuments has no
-// Forms, so it is the shared form hosted on livediagram. Linked from the help centre's contact page, the FAQ,
-// the status page and the Terms and Privacy Policy.
+// Forms, so it is the shared form hosted on livediagram. Linked from the help centre's contact page, the FAQ
+// and the status page.
 export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or

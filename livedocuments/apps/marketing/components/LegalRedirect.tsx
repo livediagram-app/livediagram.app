@@ -2,11 +2,9 @@
 
 import { useEffect } from 'react';
 
-// Client-side redirect for a retired legal page. The Terms and Privacy Policy
-// now live in the help centre; these stubs keep the historical /terms and
-// /privacy URLs working by sending visitors there, with a visible link as a
-// no-JS / crawler fallback. /security, which never lived here, reuses it with
-// its own `lead`.
+// Client-side redirect for a retired legal page. The Terms and Privacy Policy live on liveworkspace.app; these stubs
+// keep the historical /terms and /privacy URLs working by sending visitors there, with a visible link as a no-JS /
+// crawler fallback. /security reuses it too, each with its own `lead`.
 export function LegalRedirect({
   href,
   heading,
