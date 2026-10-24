@@ -320,6 +320,85 @@ describe("a design's content lives in its own Durable Object", () => {
   });
 });
 
+describe("an API client's create, made in the index by the worker", () => {
+  // The index answers the create (filed by its default folder for the intent) and an `item_exists` re-commit.
+  function indexMakes(answer: 'filed' | 'exists') {
+    const creates: Record<string, unknown>[] = [];
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      const path = new URL(req.url).pathname;
+      if (req.method === 'POST' && path.endsWith('/items')) {
+        const body = (await req.json()) as Record<string, unknown>;
+        creates.push(body);
+        if (answer === 'exists') return Response.json({ error: 'item_exists' }, { status: 409 });
+        return Response.json({
+          item: { id: body.id, folderId: 'folder_logos', teamId: null },
+          grant: { grant: grantOf(String(body.id)), expiresAt: 9e9 },
+        });
+      }
+      if (req.method === 'POST' && path.endsWith('/grant'))
+        return Response.json({ grant: grantOf(path.split('/').at(-2)!), expiresAt: 9e9 });
+      return Response.json({ ok: true });
+    });
+    return creates;
+  }
+
+  it('leaves the folder out so the index files it by its intent, and answers where it went', async () => {
+    const creates = indexMakes('filed');
+    const w = world();
+    const res = await w.send(
+      'POST',
+      '/api/designs',
+      {
+        id: 'C',
+        name: 'Logo',
+        source: 'mcp',
+        tabs: [{ id: 't1', name: 'Board', template: 'blank-logo' }],
+      },
+      { 'X-Index-Grant': '' },
+    );
+    expect(creates).toEqual([
+      { id: 'C', app: 'livedesign', title: 'Logo', intent: 'pages:diagram', source: 'ai' },
+    ]);
+    expect(res.status).toBe(201);
+    const { design } = await res.json<{ design: { folderId: string | null } }>();
+    expect(design.folderId).toBe('folder_logos');
+  });
+
+  it('names the folder and team it is given, and a refused intent makes nothing', async () => {
+    const creates = indexMakes('filed');
+    const w = world();
+    await w.send(
+      'POST',
+      '/api/designs',
+      { id: 'D', name: 'D', folderId: null, teamId: 'team_1', intent: { mode: 'pages' } },
+      { 'X-Index-Grant': '' },
+    );
+    expect(creates[0]).toMatchObject({ folderId: null, teamId: 'team_1', intent: 'pages:diagram' });
+    const refused = await w.send(
+      'POST',
+      '/api/designs',
+      { id: 'E', name: 'E', intent: { mode: 'nope' } },
+      { 'X-Index-Grant': '' },
+    );
+    expect(refused.status).toBe(400);
+    expect(creates).toHaveLength(1);
+  });
+
+  it("re-commits the client's own design by the grant it holds", async () => {
+    indexMakes('exists');
+    const w = world();
+    await createDesign(w, 'A');
+    const res = await w.send(
+      'POST',
+      '/api/designs',
+      { id: 'A', name: 'A again' },
+      { 'X-Index-Grant': '' },
+    );
+    expect(res.status).toBe(201);
+  });
+});
+
 describe("the design's owner and team, from the index's grant", () => {
   const grantNaming = (owner: string | undefined, team: string | null) =>
     `G.${btoa(JSON.stringify({ item: 'A', sub: 'user_merged', level: 'edit', tab: null, team, owner, exp: 9e9 }))}`;

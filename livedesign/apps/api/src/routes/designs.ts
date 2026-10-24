@@ -5,7 +5,7 @@
 
 import type { Tab } from '@livedesign/design';
 import { isValidTab, migrateIncomingTab } from '@livedesign/design';
-import { IndexError, type ItemSource } from '@liveworkspace/index-client';
+import { createItemGrant, itemSourceOf, type ItemCreateRequest } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
   MAX_DECK_LEN,
@@ -18,6 +18,7 @@ import {
   INDEX_GRANT_HEADER,
   INTENT_INVALID,
   MARK_USED_INVALID,
+  creationIntentOf,
   readCreationIntent,
   readMarkUsed,
   type CreationIntent,
@@ -43,7 +44,7 @@ import {
 } from '../design-room/design-content';
 import { identityOf } from '../design-room/design-route';
 import { designRoom } from '../design-client';
-import { INDEX_APP, indexFor, linkCodeOf, designGrantOf, verifyDesignGrant } from '../index-service';
+import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDesignIndexRoutes, handleDesignList } from './design-index-routes';
 import { resolveDesignGrant } from './design-grant';
 import {
@@ -92,6 +93,8 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   let designId = segments[2] ?? '';
   let grant: Awaited<ReturnType<typeof resolveDesignGrant>>;
   let renamedTo: string | null = null;
+  // Where the index filed an API client's create, for its answer.
+  let filed: { folderId: string | null; teamId: string | null } | null = null;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -104,9 +107,27 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
     }
     designId = named;
     if (designId.length > MAX_DESIGN_ID) return notFound();
-    grant = request.headers.get(INDEX_GRANT_HEADER)
-      ? await resolveDesignGrant(ctx, designId)
-      : await createForCaller(ctx, designId, read);
+    if (request.headers.get(INDEX_GRANT_HEADER)) {
+      grant = await resolveDesignGrant(ctx, designId);
+    } else {
+      // An API client's create: the worker makes the index's item for it, under the id it minted, and opens the
+      // design with the grant that comes back. The id already taken is the same client re-committing its own
+      // design: its grant decides.
+      const create = createRequestOf(read);
+      if (create instanceof Response) return create;
+      const made = await createItemGrant(
+        indexService,
+        ctx.env,
+        request,
+        grantCallerOf(ctx),
+        designId,
+        create,
+        (body, status) => json(body, { status }),
+      );
+      if (made instanceof Response) return made;
+      grant = made?.grant ?? null;
+      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+    }
   } else {
     if (!designId || designId.length > MAX_DESIGN_ID) return notFound();
     grant = await resolveDesignGrant(ctx, designId);
@@ -128,38 +149,48 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
         }),
       );
   }
+  // An API client's create answers where the index filed it (the MCP names the folder it landed in).
+  if (filed && res.status === 201) {
+    const answer = (await res.json()) as { design?: DesignDTO | null };
+    if (answer.design) answer.design = { ...answer.design, ...filed };
+    return json(answer, { status: 201 });
+  }
   return res;
 }
 
-// An API client's create (POST /api/designs without a grant): the worker makes the index's item for it, under
-// the id it minted, and opens the design with the grant that comes back. The id already taken is the same client
-// re-committing its own design: its grant decides.
-async function createForCaller(
-  ctx: RouteContext,
-  designId: string,
-  body: Record<string, unknown>,
-): Promise<Awaited<ReturnType<typeof resolveDesignGrant>>> {
-  const client = indexFor(ctx.env, grantCallerOf(ctx));
-  if (!client) return json({ error: 'index_unavailable' }, { status: 503 });
-  const title = capStoredName(typeof body.name === 'string' ? body.name : '', null, 'design') || undefined;
-  const source: ItemSource | null = body.source === 'mcp' ? 'ai' : body.source === 'cli' ? 'import' : null;
-  try {
-    const { grant } = await client.createItem({
-      id: designId,
-      app: INDEX_APP,
-      ...(title ? { title } : {}),
-      teamId: typeof body.teamId === 'string' ? body.teamId : null,
-      folderId: typeof body.folderId === 'string' ? body.folderId : null,
-      source,
-    });
-    const claims = await verifyDesignGrant(ctx.env, grant.grant, designId);
-    return claims ? designGrantOf(claims, null, grant.grant) : null;
-  } catch (err) {
-    if (err instanceof IndexError && err.code === 'item_exists') return resolveDesignGrant(ctx, designId);
-    if (err instanceof IndexError) return json({ error: err.code }, { status: err.status });
-    console.error('[index] create failed', { designId, error: String(err) });
-    return json({ error: 'index_unavailable' }, { status: 503 });
-  }
+// What an API client's create (POST /api/designs without a grant) asks the index for: the design's title, where it
+// is filed (a folder or team named, else the index's default for its intent), its intent and provenance. A malformed
+// intent refuses the create before the index makes anything.
+function createRequestOf(body: Record<string, unknown>): ItemCreateRequest | Response {
+  const read = body.intent === undefined ? null : readCreationIntent(body.intent);
+  if (read && !read.ok) return intentRejected();
+  // With no intent given, a seeded tab given as a template supplies it, as the design's own create does.
+  const intent = read?.ok ? read.intent : seededIntentOf(body.tabs);
+  const title =
+    capStoredName(typeof body.name === 'string' ? body.name : '', null, 'design') || undefined;
+  return {
+    ...(title ? { title } : {}),
+    // Left out, the index files it by its intent's default folder; a folder or team named is where it goes.
+    ...(typeof body.folderId === 'string' || body.folderId === null
+      ? { folderId: body.folderId }
+      : {}),
+    ...(typeof body.teamId === 'string' ? { teamId: body.teamId } : {}),
+    // The intent as the index keeps it, one word for filters and defaults ("pages:diagram"), as the editor sends it.
+    intent: intent ? [intent.mode, intent.tabKind].join(':') : null,
+    source: itemSourceOf(body.source),
+  };
+}
+
+// The intent a create's seeded tabs supply when its first tab is given as a template (design-seed.ts), read without
+// compiling it.
+function seededIntentOf(tabs: unknown): CreationIntent | null {
+  if (!Array.isArray(tabs)) return null;
+  const first: unknown = tabs[0];
+  if (typeof first !== 'object' || first === null) return null;
+  const tab = first as { template?: unknown; elements?: unknown };
+  return tab.template !== undefined && tab.elements === undefined
+    ? creationIntentOf(undefined)
+    : null;
 }
 
 // A design the index knows (the caller holds its grant) that nothing has started yet (a copy, or an item made in
