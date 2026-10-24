@@ -64,6 +64,9 @@ file to this.
 | Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
 | Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                    | `default`, for the Worker constructor sink alone |
 
+No ProseMirror: the article editor stayed with livedocuments, so the header names no `ProseMirrorClipboard` policy
+(`packages/ui/src/trusted-types.test.ts` fails if a livedesign package brings ProseMirror in).
+
 Sign-in loads no third-party script: it is a full-page hand-off to the liveworkspace accounts site, so no third-party
 origin is allowed. When the editor signed in through Clerk, its script origin and Cloudflare Turnstile's (for sign-up
 bot protection) were allowed here.
