@@ -136,7 +136,7 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
 
   // Undo puts the note back, in ONE step: there is no switch flip underneath
   // it any more.
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(async () => (await notes.nth(2).boundingBox())!.x).toBeCloseTo(third.x, 0);
 
   // …and the board still snaps after a reload, with nothing stored to restore.

@@ -122,6 +122,17 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
+/**
+ * Opens a focused control's context menu from the keyboard. Chromium turns Shift+F10 into a `contextmenu` event on
+ * Windows and Linux only: macOS has no such key (VoiceOver's VO+Shift+M sends the event itself), so there the test
+ * sends the event the platform would.
+ */
+export async function openContextMenuFromKeyboard(target: Locator): Promise<void> {
+  await target.focus();
+  if (process.platform === 'darwin') await target.dispatchEvent('contextmenu');
+  else await target.page().keyboard.press('Shift+F10');
+}
+
 // The app is a static export: its buttons are in the HTML before React attaches their handlers, and a click in that
 // gap does nothing, more often the busier the machine. React tags every element it has hydrated with a
 // `__reactProps$` key; wait for it on the element about to be used.

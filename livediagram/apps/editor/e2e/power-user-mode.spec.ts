@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test, paletteTile } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+  paletteTile,
+  openContextMenuFromKeyboard,
+} from './fixtures';
 
 // Power user mode and Minimal chrome (docs/specs/007-editor/power-user-mode.md), and the role pill
 // (docs/specs/007-editor/editor-app.md#role-pill), in a real browser, dark mode.
@@ -248,11 +255,10 @@ test.describe('Power user mode', () => {
     );
     await expect(page.getByRole('menu')).toHaveCount(0);
 
-    // The keyboard reaches System too: Shift+F10 on the focused control.
+    // The keyboard reaches System too: Shift+F10 on the focused control (its macOS stand-in there).
     await appearance.click();
     await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
-    await appearance.focus();
-    await page.keyboard.press('Shift+F10');
+    await openContextMenuFromKeyboard(appearance);
     await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expectNoPageErrors(pageErrors);
   });

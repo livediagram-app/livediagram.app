@@ -117,7 +117,7 @@ test('a photo lands as a draft, Add is one undo step, and it survives a reload',
 
   // A draft note is an ORDINARY note: type into it before accepting.
   await notes(page).nth(3).dblclick();
-  await page.keyboard.press('Control+a');
+  await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.type('Invoice raised');
   await page.keyboard.press('Escape');
 
@@ -127,9 +127,9 @@ test('a photo lands as a draft, Add is one undo step, and it survives a reload',
   await expect(notes(page)).toHaveCount(4);
 
   // ONE undo takes the whole import back — the landing AND the correction.
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press('ControlOrMeta+z');
   await expect(notes(page)).toHaveCount(3);
-  await page.keyboard.press('Control+Shift+z');
+  await page.keyboard.press('ControlOrMeta+Shift+z');
   await expect(notes(page)).toHaveCount(4);
 
   // …and it survives the round trip through the api, no longer a draft.
@@ -208,7 +208,7 @@ test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) 
   await expect(bar(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(3);
   // Nothing in the undo stack either: a discarded import never happened.
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press('ControlOrMeta+z');
   await expect(notes(page)).toHaveCount(3);
 
   expectNoPageErrors(pageErrors);
