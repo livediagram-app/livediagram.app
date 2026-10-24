@@ -160,8 +160,8 @@ export function ConfigSources() {
   );
 }
 
-/** Optional sign-in with a guest-only fallback: a config switch picks the
- *  identity path, but the editor works either way. */
+/** Optional sign-in: configured, accounts and guests sign in through liveworkspace; unset, nobody has an
+ *  identity, documents stay in this browser and share links still open. The editor works either way. */
 export function GuestFallback() {
   return (
     <Scene w={420} h={244}>
@@ -169,7 +169,15 @@ export function GuestFallback() {
       <Shape x={148} y={20} w={124} h={40} kind="diamond" label="Sign-in on?" labelTone="strong" />
 
       {/* Configured path */}
-      <Shape x={28} y={104} w={132} h={40} kind="rect" label="Signed-in" labelTone="strong" />
+      <Shape
+        x={28}
+        y={104}
+        w={132}
+        h={40}
+        kind="rect"
+        label="Accounts, guests"
+        labelTone="strong"
+      />
       {/* Elbow connectors: out of each side vertex, down into each path. */}
       <path d="M148 40 H94 V96" className="fill-none stroke-brand-400" strokeWidth={2} />
       <Arrow from={[94, 94]} to={[94, 104]} tone="accent" />
@@ -178,7 +186,7 @@ export function GuestFallback() {
       </Label>
 
       {/* Guest fallback path */}
-      <Shape x={258} y={104} w={132} h={40} kind="rect" accent label="Guest path" />
+      <Shape x={258} y={104} w={132} h={40} kind="rect" accent label="Browser + links" />
       <path d="M272 40 H324 V96" className="fill-none stroke-brand-400" strokeWidth={2} />
       <Arrow from={[324, 94]} to={[324, 104]} tone="accent" />
       <Label x={304} y={34} anchor="middle" size={10} tone="muted">

@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Self-Hosting Overview" description="Run your own copy of livedocuments on your own infrastructure, with the same feature set as the hosted version." categoryTitle="Self-Hosting" categorySlug="self-hosting">
 
-livedocuments is built to be self-hosted, not just used at livedocuments.app. Because the whole project is open source, you can clone the repository and run it on your own Cloudflare account. You get every feature in the codebase, no subscription, no licence check, and no required outside services. This page covers why you might do that and what you are signing up for.
+livedocuments is built to be self-hosted, not just used at livedocuments.app. Because the whole project is open source, you can clone the repository and run it on your own Cloudflare account. You get every feature in the codebase, no subscription and no licence check. The one outside service it needs is liveworkspace, whose index files your documents. This page covers why you might do that and what you are signing up for.
 
 ## Why self-host
 
@@ -40,9 +40,9 @@ This means there is no separate database server, no container fleet, and no alwa
 
 ## What you keep control of
 
-A self-hosted instance's servers make no required calls to any outside service. Visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it.
+Apart from liveworkspace's index (and its accounts Worker, when sign-in is on), a self-hosted instance's servers make no required calls to any outside service. Visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it.
 
-- **Sign-in is optional.** Leave it unconfigured and the app runs in pure-guest mode, fully usable, with no account system at all.
+- **Sign-in is optional.** Leave it unconfigured and there is no account system and no guest identity: the editor keeps documents in this browser, and shared documents open through their links.
 - **Telemetry is off by default.** A self-host emits and serves nothing unless you explicitly enable it.
 - **Every integration is opt-in.** Email and the MCP server for AI tools each stay off until you set them up. See [Configuration and Optional Auth](/help/self-hosting/configuration/).
 - **No license gating.** Nothing phones home to unlock features.
