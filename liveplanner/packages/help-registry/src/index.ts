@@ -133,7 +133,7 @@ export const categories: Category[] = [
     description: 'Get in touch, report a bug, or request a feature.',
     articleCount: 0,
   },
-  // Feature-guide categories (kind: 'feature'). Rendered under "Feature Guides"
+  // Feature-guide categories (kind: 'feature'). Rendered under "Editor Guides"
   // on the home page; each has a card-grid index at /help/<slug>/. articleCount
   // counts the feature landings in the category (each landing has its own
   // sub-guides). See docs/specs/018-help/help-app.md.

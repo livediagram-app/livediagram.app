@@ -26,7 +26,7 @@ The **`@liveplanner/help-registry` package** is the single source of truth for c
 
 **Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title — synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
 
-**Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Palette's `Selection Modes` / `Elements` / `Palette Settings`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
+**Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Plan's `Getting Going` / `Boards and Cards` / `Sheets` / `Forms and Dashboards`, in the order the category's `groups` names). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
@@ -34,34 +34,34 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, liveplanner.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
 
-| slug                   | title                | icon      | kind    |
-| ---------------------- | -------------------- | --------- | ------- |
-| `about`                | About liveplanner    | info      | support |
-| `getting-started`      | Getting Started      | rocket    | support |
-| `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
-| `account-and-data`     | Account and Data     | user      | support |
-| `privacy-and-security` | Privacy and Security | shield    | support |
-| `developers`           | Developers           | code      | support |
-| `troubleshooting`      | Troubleshooting      | wrench    | support |
-| `supported-devices`    | Supported Devices    | devices   | support |
-| `policies`             | Policies             | project   | support |
-| `contact`              | Contact              | mail      | support |
-| `explorer`             | Explorer             | folder    | feature |
-| `palette`              | Palette              | palette   | feature |
-| `canvas`               | Canvas               | frame     | feature |
-| `tabs`                 | Tabs                 | tabs      | feature |
-| `collaboration`        | Collaboration        | users     | feature |
-| `tools`                | Tools                | tools     | feature |
-| `search-panel`         | Search Panel         | search    | feature |
+| slug                   | title                | kind    |
+| ---------------------- | -------------------- | ------- |
+| `about`                | About liveplanner    | support |
+| `getting-started`      | Getting Started      | support |
+| `tips-and-tricks`      | Tips and Tricks      | support |
+| `account-and-data`     | Account and Data     | support |
+| `privacy-and-security` | Privacy and Security | support |
+| `developers`           | Developers           | support |
+| `troubleshooting`      | Troubleshooting      | support |
+| `supported-devices`    | Supported Devices    | support |
+| `policies`             | Policies             | support |
+| `contact`              | Contact              | support |
+| `plan`                 | Plan                 | feature |
+| `user-interface`       | User Interface       | feature |
+| `explorer`             | Explorer             | feature |
+| `tabs`                 | Tabs                 | feature |
+| `collaboration`        | Collaboration        | feature |
+| `tools`                | Tools                | feature |
+| `search-panel`         | Search Panel         | feature |
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the project library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Work and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
-- **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
-- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Project, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
-- **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
+- **Plan** — boards of cards, sheets, forms and dashboards, in four groups: **Getting Going**, **Boards and Cards**, **Sheets**, and **Forms and Dashboards**.
+- **User Interface** — the editor's chrome: the title and tab bars, quick controls, zoom controls, panel layout, Settings, Power User Mode, themes, and Undo and Redo.
+- **Explorer** — the library every liveworkspace app shares (one guide per sidebar row), in two groups: **Your Library** and **Activity**.
+- **Tabs** — a plan's tabs: Tab Folders, side by side tabs, locking, adding a tab to another plan, importing and exporting.
+- **Collaboration** — comments, live presence, teams, sharing and embeds, and session tools.
+- **Tools** — zen mode and appearance (light, dark or system).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding projects/folders, teams, tabs, boards and cards, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
