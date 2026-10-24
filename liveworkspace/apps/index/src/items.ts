@@ -46,7 +46,7 @@ import {
 } from './http';
 import { listItems, type ListFilters, type ListSpec } from './lists';
 import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
-import { drainTombstones, purgeRows } from './purge';
+import { drainTombstonesSoon, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { bulkEventStatements, eventStatements, moveScopeStatements } from './timeline';
 import { recordVisitorCopy, recordVisitorOpen } from './visitors';
@@ -212,7 +212,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   await purgeRows(env, results);
   if (results.length > 0) {
     const ids = results.slice(0, PURGE_NOW_MAX).map((r) => r.id);
-    ctx.waitUntil(drainTombstones(env, { ids }));
+    ctx.waitUntil(drainTombstonesSoon(env, ids));
   }
   console.log('[index] emptied trash', {
     scope: team ? 'team' : 'personal',
@@ -519,7 +519,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   if (url.searchParams.get('permanent') === 'true' && !teammate) {
     if (offline) await env.INDEX_DB.batch(takenOffline(Date.now()));
     await purgeRows(env, [{ id: row.id, app: row.app }]);
-    ctx.waitUntil(drainTombstones(env, { ids: [row.id] }));
+    ctx.waitUntil(drainTombstonesSoon(env, [row.id]));
     console.log('[index] purged', { app: row.app });
     return noContent();
   }

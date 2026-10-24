@@ -40,7 +40,11 @@ export async function handleSummary(
   const res = json(buildTelemetrySummary(now, asked, app ? [app] : TELEMETRY_SENDERS, rows));
   if (!cached) return res;
   res.headers.set('Cache-Control', `public, max-age=${CACHE_SECONDS}`);
-  ctx.waitUntil(caches.default.put(cacheKey, res.clone()));
+  ctx.waitUntil(
+    caches.default
+      .put(cacheKey, res.clone())
+      .catch((err: unknown) => console.error('summary cache put failed', err)),
+  );
   return res;
 }
 

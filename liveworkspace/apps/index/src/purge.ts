@@ -38,6 +38,14 @@ export async function purgeRows(env: Env, items: Purgeable[], now = Date.now()):
 
 type TombstoneRow = { item_id: string; app: App };
 
+// The given items' drain, straight after their purge (in `waitUntil`): a failure is logged, and the tombstones
+// wait for the daily sweep.
+export const drainTombstonesSoon = (env: Env, ids: string[]): Promise<number> =>
+  drainTombstones(env, { ids }).catch((err: unknown) => {
+    console.error('[index] purge: tombstone drain failed', err);
+    return 0;
+  });
+
 // Asks each app to drop the content of tombstoned items: the given ones, or the longest-waiting. Returns
 // how many the apps confirmed.
 export async function drainTombstones(

@@ -74,6 +74,28 @@ describe('telemetry worker', () => {
     expect(await off.json()).toEqual({ enabled: false });
   });
 
+  it('answers a summary from the edge cache, whose headers cannot be changed', async () => {
+    const hit = new Response('{"app":"all"}', { headers: { 'Content-Type': 'application/json' } });
+    // As on Cloudflare: a cached answer's headers are immutable.
+    hit.headers.set = () => {
+      throw new TypeError("Can't modify immutable headers.");
+    };
+    const original = (globalThis as { caches?: unknown }).caches;
+    (globalThis as { caches?: unknown }).caches = { default: { match: async () => hit } };
+    try {
+      const res = await worker.fetch(
+        get('/api/telemetry/summary'),
+        testEnv({ ENVIRONMENT: 'production' }),
+        ctx,
+      );
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+      expect(await res.json()).toEqual({ app: 'all' });
+    } finally {
+      (globalThis as { caches?: unknown }).caches = original;
+    }
+  });
+
   it("answers nothing outside its API: every page is the static site's", async () => {
     const env = testEnv();
     for (const path of [

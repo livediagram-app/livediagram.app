@@ -88,6 +88,10 @@ export async function edgeCached(
   const res = await produce();
   if (res.status !== 200) return res;
   res.headers.set('Cache-Control', `public, max-age=${maxAgeSeconds}`);
-  if (cache) ctx.waitUntil(cache.put(key, res.clone()));
+  if (cache) {
+    ctx.waitUntil(
+      cache.put(key, res.clone()).catch((err: unknown) => console.error('cache put failed', err)),
+    );
+  }
   return res;
 }

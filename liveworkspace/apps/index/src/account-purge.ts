@@ -26,7 +26,7 @@ import { PURGE_NOW_MAX } from './config';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
 import { drainPersonNotices, recordPersonNotices } from './person-notices';
-import { drainTombstones } from './purge';
+import { drainTombstones, drainTombstonesSoon } from './purge';
 
 // What a reference to a closed account becomes. Shaped like neither an account (`user_…`) nor a guest
 // (`guest_…`), so it can never match anyone.
@@ -338,7 +338,7 @@ export async function handlePersonPurge(
   await settleRequest(db, row!, outcome.done, now);
   // The first few apps hear at once; the cron tells them about the rest.
   if (outcome.purged.length > 0) {
-    waitUntil(drainTombstones(env, { ids: outcome.purged.slice(0, PURGE_NOW_MAX) }));
+    waitUntil(drainTombstonesSoon(env, outcome.purged.slice(0, PURGE_NOW_MAX)));
   }
   // And the apps hear of the person (person-notices.ts).
   waitUntil(

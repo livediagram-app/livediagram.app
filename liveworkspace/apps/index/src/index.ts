@@ -131,17 +131,33 @@ const worker = {
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
-      const done = await continuePurges(env);
-      const merges = await drainPersonMerges(env);
-      console.log('[index] purges', JSON.stringify({ ...done, merges }));
+      await step('purges', async () => {
+        console.log('[index] purges', JSON.stringify(await continuePurges(env)));
+      });
+      await step('person merges', async () => {
+        console.log('[index] person merges', await drainPersonMerges(env));
+      });
       return;
     }
-    const { emptied, purged, confirmed } = await sweep(env);
-    const expiring = await sweepExpiringLinks(env);
-    console.log(
-      `[index] sweep: ${emptied} empty items to the Trash, purged ${purged} items, apps confirmed ${confirmed}, ${expiring} items with links expiring`,
-    );
+    await step('sweep', async () => {
+      const { emptied, purged, confirmed } = await sweep(env);
+      console.log(
+        `[index] sweep: ${emptied} empty items to the Trash, purged ${purged} items, apps confirmed ${confirmed}`,
+      );
+    });
+    await step('expiring links', async () => {
+      console.log(`[index] ${await sweepExpiringLinks(env)} items with links expiring`);
+    });
   },
 };
+
+// One cron step: a failure is logged and the run goes on to the next, so one broken step never starves the rest.
+async function step(name: string, run: () => Promise<void>): Promise<void> {
+  try {
+    await run();
+  } catch (err) {
+    console.error(`[index] cron step failed: ${name}`, err);
+  }
+}
 
 export default worker;
