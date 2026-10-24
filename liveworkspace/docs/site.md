@@ -280,21 +280,28 @@ turned off links here, so someone signed out signs in and comes back.
 - **Privacy and accessibility**: anonymous usage events, and Reduce Motion.
 - **Your apps**: a card per app that opens that app's own settings in a dialog on this page
   (`components/settings/AppSettingsDialog.tsx`, `lib/app-settings.ts`): the settings in the app's
-  scope, with the labels, descriptions, sections and order of the app's own Settings, from its
-  plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](accounts.md#scopes)).
-  It has the app's switches, choices, sliders and groups of switches, hides a nested row while its
-  switch is off as the app does, and leaves the shared settings to the cards above. What only makes
+  scope, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
+  [accounts.md](accounts.md#scopes)). The dialog is the app's own Settings view, not a copy of it:
+  the same `@liveworkspace/settings-ui` component every app's Settings renders, so it has the app's
+  rail with its category tiles and nested sub-categories, its panes, sections, collapsed sections,
+  section notes, row cards, search, phone push layout and back bar. The site maps the catalogue onto
+  the view's model (`lib/app-settings-model.tsx`): each row's value read from the stored scopes, each
+  change written as below. It has the app's switches, choices, sliders and groups of switches, hides
+  a nested row while its switch is off as the app does, and leaves the shared settings to the cards
+  above. What it keeps of its own is the framing: the header names the app with its mark, the body
+  shows a placeholder while the catalogue and settings load and a note with Try again if they fail,
+  and the footer says changes are saved to the account and links into the app. What only makes
   sense inside the editor (appearance, shortcuts, the shared editor chrome such as UI scale and your
   colours, lists such as tours seen) stays in the app, in the Settings its editor opens: the dialog
   ends with "More in <app> Settings" and a link into the app (`<app>/explorer/home`), never the
   `?settings=` deep link, which the Explorer sends back to this page. `?app=<name>` opens a dialog as the page
   loads, and the address follows the open dialog. The dialog traps focus, closes on Escape, a click
-  outside or its close button, gives focus back to its card, and is a sheet from the bottom at phone
-  width. Its code and each app's catalogue load only when one first opens (or the pointer reaches
+  outside or its close button, gives focus back to its card, and at phone width fills the screen and
+  pushes a category's pane, as the apps' Settings do. Its code and each app's catalogue load only when one first opens (or the pointer reaches
   its card); the app's settings are read once when its dialog first opens
   (`GET /api/account/settings/:app`) and kept for the page's lifetime. Each change is shown at once and
   written alone as a patch of just its key in the app's scope (`PATCH { app }`), and put back with a
-  note if the write fails; a slider saves once it rests. The app picks the change up the next time
+  note if the write fails; a slider saves on release, as in the app. The app picks the change up the next time
   it opens: each app reads its settings once per load, and the server's copy wins over its cached
   one, and it only ever sends back the keys it changed itself.
 

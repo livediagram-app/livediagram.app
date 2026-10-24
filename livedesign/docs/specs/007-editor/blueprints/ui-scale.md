@@ -143,7 +143,7 @@ What makes room for a scaled surface:
     `parent: 'uiScale'`, `max: uiScaleMax(part)`, `read: resolveUiScalePart(p, part)`,
     `write: withUiScalePatch(p, uiScalePartPatch(part, v))`.
   - The default `1` is written as `1`, not a delete, matching `panelOpacity`.
-- `SettingsSliderRow` gains `disabled` and `notice`, honoured from the row's
+- The slider row (`packages/settings-ui/src/rows/SliderRow.tsx` at the root) gains `disabled` and `notice`, honoured from the row's
   `desktopOnly` like the toggle row.
 - Live preview: `SettingsSliderRowSpec.preview?(value | null)`. The row calls
   it on every `change`, then commits and calls `preview(null)` on release
@@ -215,7 +215,7 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 | Master clears parts; part writes own | `apps/live/lib/ui-scale.test.ts` writing                 |
 | Phone always 100%                    | `apps/live/lib/ui-scale.test.ts`                         |
 | Slider row offers its default        | existing `settings-catalogue.test.ts` slider round-trips |
-| Rows commit, preview, grey out       | `SettingsCategoryPane.ui-scale.test.tsx`                 |
+| Rows commit, preview, grey out       | `settings-model.ui-scale.test.tsx`                       |
 | Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |

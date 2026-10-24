@@ -711,6 +711,23 @@ and the dialog stays as the one complete, browsable index of them.
   in a file that only grows. Picking a category emits `UI` / `Opened` with a
   `Settings<Category>` type.
 
+  **One Settings view for every app.** The dialog's view is shared:
+  `@liveworkspace/settings-ui` (`packages/settings-ui` at the monorepo root) draws the header with its
+  back bar, the rail, the pane, search and its "no matches" state, the view memory and scroll
+  anchor, sections, collapsed sections, nested rows, the desktop-only note and every generic row
+  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note`, the power user
+  preset readout and the shortcut list). It knows nothing of this app: it is driven by a plain model
+  (categories with an icon, rows with a value and an `onChange`) and is handed the app's pieces (the
+  search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
+  keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
+  `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
+  standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
+  and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
+  (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
+  liveworkspace.app's "Your apps" dialog renders the same view over this app's derived catalogue
+  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md)), so the app's settings look
+  the same there as here.
+
   Email rows are **absent, not disabled**, unless BOTH Resend is configured
   ([Transactional email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
