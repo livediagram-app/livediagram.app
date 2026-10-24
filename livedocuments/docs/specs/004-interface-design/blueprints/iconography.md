@@ -9,10 +9,10 @@ Derived from [Iconography](../iconography.md).
 | On-screen stroke   | `ICON_STROKE_PX`, `ICON_STROKE_PX_SMALL`                                                                                  | `../packages/icons/src/weight.ts`                       |
 | Stroke in units    | `strokeUnits(px, sizePx, units)` (exporters, tech tiles)                                                                  | `../packages/icons/src/weight.ts`                       |
 | Ink geometry       | `primsBounds`, `inkInsets`                                                                                                | `../packages/icons/src/ink.ts`                          |
-| Glyph child reader | `childPrims(children)`                                                                                                    | `packages/ui/src/icons/glyph-ink.ts`                    |
+| Glyph child reader | `childPrims(children)`                                                                                                    | `../packages/ui/src/icons/glyph-ink.ts`                 |
 | Non-scaling rule   | `.lvd-glyph *`                                                                                                            | `../packages/tailwind-config/theme.css`                 |
 | Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                                 | `../packages/icons/src/weight.ts`                       |
-| Icon primitive     | `Glyph`                                                                                                                   | `packages/ui/src/icons/Glyph.tsx`                       |
+| Icon primitive     | `Glyph`                                                                                                                   | `../packages/ui/src/icons/Glyph.tsx`                    |
 | Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                            | `packages/document/src/icon-weight.ts`                  |
 | Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                                   | `packages/document/src/icon-weight.ts`                  |
 | Element field      | `iconWeight?: IconWeight`                                                                                                 | `BoxedElement` in `element-types.ts`                    |
@@ -45,7 +45,7 @@ export const GLYPH_SIZES: readonly GlyphSize[];
 export function strokeUnits(px: number, sizePx: number, units: number): number; // px * units / sizePx
 export function glyphStrokePx(sizePx: number): number;
 
-// packages/ui/src/icons/Glyph.tsx
+// ../packages/ui/src/icons/Glyph.tsx
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth'> & {
   size?: number; // px, default 16; controls use GLYPH_SIZES
   weight?: number; // on-screen px override; default glyphStrokePx(size)

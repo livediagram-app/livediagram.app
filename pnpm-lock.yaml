@@ -5479,6 +5479,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../trusted-types

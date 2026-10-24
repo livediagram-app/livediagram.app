@@ -1,7 +1,7 @@
 import type { EditorMode } from '@livedocuments/document';
 import type { ComponentType } from 'react';
 
-import { Glyph, type IconProps } from './Glyph';
+import { Glyph, type IconProps } from '@liveworkspace/ui';
 
 // A page with a little chart above two lines of writing, on its 24-unit grid: Pages mode's mark
 // (docs/specs/007-editor/pages-mode.md), for the pages it lays out, infographics and articles.

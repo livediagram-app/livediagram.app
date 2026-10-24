@@ -2,7 +2,7 @@ import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveworkspa
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';
-import { lucideGlyph } from './icons/lucide-glyph';
+import { lucideGlyph } from '@liveworkspace/ui';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';

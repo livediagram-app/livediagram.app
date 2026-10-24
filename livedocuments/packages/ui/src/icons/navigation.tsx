@@ -7,7 +7,7 @@ import {
   lucideSearch,
 } from '@liveworkspace/icons/lucide';
 
-import { lucideGlyph } from './lucide-glyph';
+import { lucideGlyph } from '@liveworkspace/ui';
 
 // Navigation glyphs: chevrons, menus, search, overflow. Lucide geometry.
 export const ChevronDownIcon = lucideGlyph(lucideChevronDown, 10);

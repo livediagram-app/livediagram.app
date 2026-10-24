@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import type { ComponentType } from 'react';
 import { describe, expect, it } from 'vitest';
 import * as icons from './index';
-import type { IconProps } from './Glyph';
+import type { IconProps } from '@liveworkspace/ui';
 
 // Every exported icon component (everything ending in `Icon`), so a new one
 // is covered the moment it is exported.

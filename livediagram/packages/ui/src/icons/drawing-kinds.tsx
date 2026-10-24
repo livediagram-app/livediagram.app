@@ -2,8 +2,7 @@ import { lucideWorkflow } from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
 import type { ComponentType } from 'react';
 
-import { Glyph, type IconProps } from './Glyph';
-import { lucideGlyph } from './lucide-glyph';
+import { Glyph, type IconProps, lucideGlyph } from '@liveworkspace/ui';
 
 // The three kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"):
 // a marker for freehand drawing, a flowchart for a diagram, a mind map for a brainstorm.

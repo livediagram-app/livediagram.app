@@ -1,7 +1,5 @@
-// Shared chrome icons (React components). See Glyph.tsx for the contract.
-export { Glyph, type IconProps } from './Glyph';
-export { lucideGlyph } from './lucide-glyph';
-export { Prims } from './Prims';
+// Shared chrome icons (React components). Glyph, Prims and lucideGlyph, the contract they're
+// drawn on, are @liveworkspace/ui's (packages/ui/src/icons/Glyph.tsx).
 export {
   ArrowDownIcon,
   ArrowUpIcon,

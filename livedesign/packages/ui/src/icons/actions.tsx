@@ -19,9 +19,7 @@ import {
   lucideX,
 } from '@liveworkspace/icons/lucide';
 
-import { Glyph, type IconProps } from './Glyph';
-import { lucideGlyph } from './lucide-glyph';
-import { Prims } from './Prims';
+import { Glyph, type IconProps, lucideGlyph, Prims } from '@liveworkspace/ui';
 
 // Edit-action glyphs: the delete / duplicate / copy / edit / lock / refresh / add / close / confirm
 // buttons that recur across the editor's toolbars, popovers and dialogs. Lucide geometry.

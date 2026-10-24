@@ -4,8 +4,7 @@ import {
   lucideSlidersHorizontal,
 } from '@liveworkspace/icons/lucide';
 
-import { Glyph, type IconProps } from './Glyph';
-import { lucideGlyph } from './lucide-glyph';
+import { Glyph, type IconProps, lucideGlyph } from '@liveworkspace/ui';
 
 // The editor's bottom chrome (docs/specs/004-interface-design/iconography.md): the canvas cluster
 // (undo / redo, tidy up, layers, the look-and-feel brush) and the tab bar's settings. Shared

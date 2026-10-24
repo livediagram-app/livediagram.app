@@ -7,7 +7,7 @@ import {
   lucideWandSparkles,
 } from '@liveworkspace/icons/lucide';
 
-import { lucideGlyph } from './lucide-glyph';
+import { lucideGlyph } from '@liveworkspace/ui';
 
 // Element badges: link, note, action, comment, and a mind map's outline. Lucide geometry.
 export const LinkIcon = lucideGlyph(lucideLink, 14);

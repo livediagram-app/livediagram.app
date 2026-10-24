@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import type { IconProps } from './Glyph';
+import type { IconProps } from '@liveworkspace/ui';
 import * as icons from './index';
 
 // Every shared chrome glyph's ink sits within 0.5px of its box centre at its default size

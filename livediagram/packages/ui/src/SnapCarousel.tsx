@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Glyph } from './icons/Glyph';
+import { Glyph } from '@liveworkspace/ui';
 
 // A heading row over a horizontal, scroll-snapping track of cards, with prev /
 // next arrows that page through it. Shared by the landing page's template

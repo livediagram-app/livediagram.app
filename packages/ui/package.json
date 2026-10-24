@@ -23,6 +23,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { Glyph } from '../icons/Glyph';
+import { Glyph } from '@liveworkspace/ui';
 // Glyphs for the collapsible tile groups inside a palette category (PaletteTileGroup). Kept beside the tab icons
 // rather than inline in the tab bodies, so the category files stay a list of what's in them.
 
