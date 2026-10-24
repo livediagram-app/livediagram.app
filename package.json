@@ -25,6 +25,7 @@
     "dev:documents": "turbo run dev --filter=@livedocuments/*"
   },
   "devDependencies": {
+    "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",

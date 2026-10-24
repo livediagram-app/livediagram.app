@@ -1,1 +1,1 @@
-export { default } from '@livedocuments/prettier-config';
+export { default } from '@liveworkspace/prettier-config';

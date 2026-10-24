@@ -1,11 +1,2 @@
-// The same settings as livediagram and liveplanner, so code moves between the repos without a reformat.
-/** @type {import('prettier').Config} */
-export default {
-  semi: true,
-  singleQuote: true,
-  trailingComma: 'all',
-  printWidth: 100,
-  tabWidth: 2,
-  arrowParens: 'always',
-  endOfLine: 'lf',
-};
+// One Prettier config for the whole monorepo (@liveworkspace/prettier-config); each product's root re-exports it too.
+export { default } from '@liveworkspace/prettier-config';
