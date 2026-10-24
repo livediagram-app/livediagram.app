@@ -2,25 +2,25 @@ import type { Metadata } from 'next';
 
 import { LegalRedirect } from '@/components/LegalRedirect';
 
-// The terms of service moved into the help centre (Policies). This page keeps
-// the historical /terms URL alive — it redirects there — but is noindex so
-// search engines consolidate on the canonical help article rather than this
-// thin redirect.
-const HELP_TERMS_URL = '/help/policies/terms/';
+// The terms of service cover every liveworkspace app, liveplanner included, so they live on liveworkspace.app.
+// This page keeps the historical /terms URL alive (it redirects there) but is noindex so search engines
+// consolidate on that page.
+const TERMS_URL = 'https://liveworkspace.app/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service · liveplanner',
-  description: 'The liveplanner terms of service now live in the help centre.',
+  description: "The terms of service for liveplanner are liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
-  alternates: { canonical: HELP_TERMS_URL },
+  alternates: { canonical: TERMS_URL },
 };
 
 export default function TermsPage() {
   return (
     <LegalRedirect
-      href={HELP_TERMS_URL}
+      href={TERMS_URL}
       heading="Our terms of service have moved"
       linkText="read the terms of service here"
+      lead="They now live on liveworkspace.app and cover every liveworkspace app."
     />
   );
 }

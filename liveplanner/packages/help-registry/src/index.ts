@@ -124,8 +124,8 @@ export const categories: Category[] = [
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted liveplanner service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
-    articleCount: 3,
+      "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
+    articleCount: 1,
   },
   {
     slug: 'contact',
@@ -529,25 +529,6 @@ export const articles: Article[] = [
       'agent comments reply resolve reopen threads presence status focus ring card comments api cli bot',
     category: 'Developers',
     categorySlug: 'developers',
-  },
-  {
-    slug: 'terms',
-    title: 'Terms of Service',
-    description: 'The terms that govern use of the hosted liveplanner service.',
-    keywords: 'tos legal terms conditions agreement rules',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
-  {
-    slug: 'privacy-policy',
-    title: 'Privacy Policy',
-    description: 'The full privacy policy for the hosted liveplanner service.',
-    keywords:
-      'legal privacy gdpr data protection personal information openai ai retention security',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
   },
   {
     slug: 'report-a-vulnerability',

@@ -9,13 +9,13 @@ import { articles } from './articles';
 // short and scannable. The page's `helpMetadata` one is the SEO and OG meta:
 // it is what a search engine and a link preview quote, so it wants to say
 // more than the card does. AGENTS.md states the rule directly ("write a
-// concise one, don't just copy the meta"), and the Privacy Policy is the
-// pattern to copy: a one-line card, a meta that names what the page covers.
+// concise one, don't just copy the meta"): a one-line card, a meta that
+// names what the page covers.
 //
 // Copying one into the other costs nothing visible, which is exactly why it
 // is easy to do and hard to notice: the card still renders and the page
-// still has a meta tag. Terms of Service had the same sentence in both
-// until this test was written.
+// still has a meta tag. The old Terms of Service article had the same
+// sentence in both until this test was written.
 
 const APP_DIR = fileURLToPath(new URL('../app', import.meta.url));
 

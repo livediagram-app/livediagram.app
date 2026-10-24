@@ -1,4 +1,5 @@
 import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveplanner/icons/lucide';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';
 import { lucideGlyph } from './icons/lucide-glyph';
@@ -45,8 +46,9 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Legal',
     links: [
-      { href: '/help/policies/terms/', label: 'Terms' },
-      { href: '/help/policies/privacy-policy/', label: 'Privacy Policy' },
+      // The Terms and Privacy Policy are liveworkspace's and cover every app (docs/specs/018-help/help-app.md).
+      { href: `${PLATFORM_SITE.url}/terms`, label: 'Terms' },
+      { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).
       { href: '/help/policies/report-a-vulnerability/', label: 'Report a Vulnerability' },
@@ -99,7 +101,7 @@ export function SiteFooter() {
           <p>
             {/* The build's year, inlined at build (@liveworkspace/next-config), never the clock: the prerender and
                 the browser render the same text whatever the date. */}
-            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}liveplanner. All rights reserved.`}</span>
+            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}liveplanner. MIT licensed.`}</span>
           </p>
         </div>
       </div>
