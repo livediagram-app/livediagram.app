@@ -46,4 +46,3 @@ export function photoView(
   };
   return { ...h, view, toasts };
 }
-

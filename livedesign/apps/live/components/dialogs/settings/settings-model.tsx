@@ -90,7 +90,7 @@ const APPEARANCE_OPTIONS = [
 ];
 
 // Appearance is the one row backed by its own device-local store rather than
-// UserPreferences (docs/specs/007-editor/editor-app.md: a pre-hydration script applies it before first
+// UserPreferences (docs/specs/007-editor/user-preferences.md: a pre-hydration script applies it before first
 // paint, so it cannot wait on a synced fetch). useAppearance emits the
 // telemetry for the change itself, which is why nothing is tracked here.
 function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
@@ -106,7 +106,7 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
 }
 
 // The keyboard-shortcuts master switch. Like appearance, it is backed by its
-// own per-device localStorage store rather than UserPreferences (docs/specs/007-editor/editor-app.md),
+// own per-device localStorage store rather than UserPreferences (docs/specs/007-editor/user-preferences.md),
 // so it reads and writes here instead of through the catalogue. The hook
 // emits its own telemetry on set, which is why nothing is tracked here.
 function ShortcutsRow({ row }: { row: SettingsShortcutsRowSpec }) {

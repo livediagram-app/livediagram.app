@@ -9,7 +9,7 @@ const TERMS_URL = 'https://liveworkspace.app/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service · livedesign',
-  description: 'The terms of service for livedesign are liveworkspace\'s, on liveworkspace.app.',
+  description: "The terms of service for livedesign are liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
   alternates: { canonical: TERMS_URL },
 };

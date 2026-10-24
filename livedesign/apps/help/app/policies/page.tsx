@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Policies',
   description:
-    'How to report a vulnerability. The terms and privacy policy are liveworkspace\'s, on liveworkspace.app.',
+    "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
   path: '/help/policies/',
 });
 

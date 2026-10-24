@@ -79,12 +79,12 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### Spaces
 
-| Row          | Opens                             | Children                | Badge                      |
-| ------------ | --------------------------------- | ----------------------- | -------------------------- |
-| My Work      | `/explorer/all`, the My Work root | The root folders        | None                       |
-| Each team    | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
-| Invites      | `/explorer/invites`               | None                    | Pending invites            |
-| New Team     | The team dialog, then the team    | None                    | None                       |
+| Row       | Opens                             | Children                | Badge                      |
+| --------- | --------------------------------- | ----------------------- | -------------------------- |
+| My Work   | `/explorer/all`, the My Work root | The root folders        | None                       |
+| Each team | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
+| Invites   | `/explorer/invites`               | None                    | Pending invites            |
+| New Team  | The team dialog, then the team    | None                    | None                       |
 
 - **The My Work root** lists its root folders, then its root designs, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
@@ -108,11 +108,11 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children            | Badge                   |
-| ------------ | -------------------------------------- | ------------------- | ----------------------- |
-| Library      | Nothing: the row expands and collapses | Recent, Favourites, Unsorted, Image Gallery | None |
-| This Browser | `/explorer/offline`                    | None                | Designs in this browser |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                | None                    |
+| Row          | Opens                                  | Children                                    | Badge                   |
+| ------------ | -------------------------------------- | ------------------------------------------- | ----------------------- |
+| Library      | Nothing: the row expands and collapses | Recent, Favourites, Unsorted, Image Gallery | None                    |
+| This Browser | `/explorer/offline`                    | None                                        | Designs in this browser |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                        | None                    |
 
 - **This Browser** shows only while this browser holds at least one offline design, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its designs are the reader's own
@@ -316,7 +316,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                  | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                         | New Folder |
 | A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                                                                                                           | New Folder |
-| Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`); Open Page goes to the Explorer's gallery view                                                                                                                                                                                         | None       |
+| Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`); Open Page goes to the Explorer's gallery view                                                                                                                                                                                           | None       |
 | Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                        | None       |
 
 - **Every design the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's design events)

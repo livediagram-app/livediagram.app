@@ -9,7 +9,7 @@ const PRIVACY_URL = 'https://liveworkspace.app/privacy';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · livedesign',
-  description: 'The privacy policy for livedesign is liveworkspace\'s, on liveworkspace.app.',
+  description: "The privacy policy for livedesign is liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
   alternates: { canonical: PRIVACY_URL },
 };

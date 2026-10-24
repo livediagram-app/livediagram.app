@@ -7,7 +7,7 @@ const NEW_URL = 'https://liveworkspace.app/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'The terms for livedesign is liveworkspace\'s, on liveworkspace.app.',
+  description: "The terms for livedesign is liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
   alternates: { canonical: NEW_URL },
 };

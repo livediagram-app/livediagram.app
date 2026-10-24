@@ -13,10 +13,7 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // design.ts, so they aren't repeated here.
 
-import {
-  LINT_VIEW_NAME,
-  TAB_VIEW_NAMES,
-} from '@livedesign/api-schema';
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livedesign/api-schema';
 import { NAME_MAX_LENGTH } from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from './types';

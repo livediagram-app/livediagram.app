@@ -56,10 +56,13 @@ const DEAD_HIDDEN_KEY = 'recentExcludedIds';
 // fits; when dropping that list cannot make it fit, the save is refused and the device copy is kept
 // (see above).
 export function fitPreferences(prefs: UserPreferences): UserPreferences {
-  if (preferencesBodyLength(prefs) <= PREFERENCES_BODY_MAX || !(DEAD_HIDDEN_KEY in prefs)) return prefs;
+  if (preferencesBodyLength(prefs) <= PREFERENCES_BODY_MAX || !(DEAD_HIDDEN_KEY in prefs))
+    return prefs;
   const { [DEAD_HIDDEN_KEY]: gone, ...next } = prefs as UserPreferences & Record<string, unknown>;
   const dropped = Array.isArray(gone) ? gone.length : 1;
-  console.warn(`[preferences] trimmed to fit dropped=${dropped} length=${preferencesBodyLength(next)}`);
+  console.warn(
+    `[preferences] trimmed to fit dropped=${dropped} length=${preferencesBodyLength(next)}`,
+  );
   return next;
 }
 
