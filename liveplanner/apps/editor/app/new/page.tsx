@@ -222,22 +222,24 @@ export default function NewProjectPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A project in This Browser has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
-    // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
-    const cloudOwner = offline ? null : await settleIdentity();
-    if (offline) {
-      void settleIdentity().catch((err: unknown) =>
-        debugLog(`[new] background identity failed: ${String(err)}`),
-      );
-    }
-    // The template's tabs, card types and example cards, or one blank tab (lib/new-project-content.ts).
-    const { tabs, tab, itemTypes, seedItems } = await newProjectContent({
-      templateKind,
-      themeId,
-      tabId,
-      via: 'new',
-    });
     try {
+      // A project in This Browser has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
+      // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
+      // Inside the try: signing the guest id and loading a template's seeds can both fail, and either
+      // failure must reach the error card, never leave /new on "Creating" for good.
+      const cloudOwner = offline ? null : await settleIdentity();
+      if (offline) {
+        void settleIdentity().catch((err: unknown) =>
+          debugLog(`[new] background identity failed: ${String(err)}`),
+        );
+      }
+      // The template's tabs, card types and example cards, or one blank tab (lib/new-project-content.ts).
+      const { tabs, tab, itemTypes, seedItems } = await newProjectContent({
+        templateKind,
+        themeId,
+        tabId,
+        via: 'new',
+      });
       if (offline) {
         // Offline Mode (docs/specs/006-project/offline-mode.md): create the project in IndexedDB only. This
         // also registers its id so every later load / save routes local. A template's Sheets are made with it, as
