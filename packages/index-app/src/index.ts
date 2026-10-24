@@ -18,5 +18,6 @@ export * from './forms';
 export * from './cards';
 export * from './item-head';
 export * from './notify-claims';
+export * from './notifier';
 export * from './person-events';
 export * from './item-db';

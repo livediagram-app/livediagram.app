@@ -1,27 +1,14 @@
 // docs/specs/014-identity/profile-and-email-notifications.md: the opt-out transactional notifications layered on top
 // of the docs/specs/014-identity/transactional-email.md email feature: a new comment, someone joining a shared
-// document, an action assigned, a mention, and the two milestones (the tenth document and the first share link). Each is best-effort, fired from `waitUntil` on a request made by SOMEONE OTHER than the
-// recipient (or, for a milestone, after the owner's own write), so the recipient's address is their verified one
-// at the liveworkspace accounts Worker, never the caller's headers, and their opt-out is read from their settings
-// there (person/notify.ts, person/settings.ts, docs/specs/007-editor/user-preferences.md). The rules every app
-// shares (the milestone counts, the windows, the hourly cap) are @liveworkspace/auth-client's notify.ts; the
-// once-only state is accounts' (the milestones) or the document's own (@liveworkspace/index-app notify-claims.ts).
+// document, an action assigned, a mention, and the two milestones (the tenth document and the first share link).
+// Every app sends the last five the same way, so they are @liveworkspace/index-app's createNotifier with this app's
+// templates and accounts; the new-comment email, throttled in the document's own storage, is this app's.
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { claimNotice, claimNotices, workbenchAllowance } from '@liveworkspace/index-app';
-import {
-  JOIN_NOTIFY_THROTTLE_MS,
-  MILESTONE_ITEM_COUNTS,
-  NOTIFY_EMAIL_DEDUPE_MS,
-  NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
-  NOTIFY_RATE_WINDOW_MS,
-  notifyClaimKey,
-  reachedMilestone,
-  teamTargets,
-  type TeamPerson,
-} from '@liveworkspace/auth-client';
+import { createNotifier, workbenchAllowance } from '@liveworkspace/index-app';
+import type { TeamPerson } from '@liveworkspace/auth-client';
 import { MENTIONS_MAX, type Comment } from '@livedocuments/document';
 import { ownerEmail } from '../person/account-app';
 import {
@@ -29,6 +16,7 @@ import {
   notifyRecipients,
   documentsMadeBy,
   teamPeople,
+  type NotifySetting,
 } from '../person/notify';
 import { isAccountOwner } from '../person/owner';
 import { getParticipant } from '../person/profiles';
@@ -36,10 +24,6 @@ import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../document-room/document-content';
 import type { Env, DocumentEnv } from '../types';
 import { emailEnabled, sendEmail } from './client';
-
-// At most one "new comment" email per document per this window (docs/specs/014-identity/transactional-email.md #1), so a
-// burst of comments doesn't spam the owner.
-const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
   commentNotificationEmail,
@@ -47,7 +31,12 @@ import {
   mentionedEmail,
   milestoneEmail,
   documentJoinedEmail,
+  type RenderedEmail,
 } from './templates';
+
+// At most one "new comment" email per document per this window (docs/specs/014-identity/transactional-email.md #1), so a
+// burst of comments doesn't spam the owner.
+const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 
 // Someone OTHER than the owner left a comment on a document the owner owns
 // (docs/specs/014-identity/transactional-email.md #1). Immediate, opt-out (notifyComments). Best-effort; never blocks
@@ -71,169 +60,67 @@ export async function notifyNewComment(
   });
 }
 
-// ---------- Milestones (docs/specs/014-identity/transactional-email.md #6) ----------------------------------------
+// ---------- Milestones, joins, actions and mentions: the kit's, with this app's wording -----------------------------
 
-// The owner just made a document: when it brings them to a document-count milestone (the tenth), celebrate it once.
-// Opt-out (notifyMilestones). The count is the index's (every document they have made, the Trash's included), asked
-// only up to the milestone, so it costs the same however many documents they have; the claim at accounts means a
-// burst of creates sends exactly one email. Best-effort; never blocks the write.
-export async function notifyMilestone(env: Env, ownerId: string): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(ownerId)) return;
-  const reached = reachedMilestone(
-    await documentsMadeBy(env, ownerId, Math.max(...MILESTONE_ITEM_COUNTS)),
-  );
-  if (reached === null) return;
-  const to = (await notifyRecipients(env, [ownerId], 'notifyMilestones')).get(ownerId);
-  if (!to) return;
-  if (!(await claimOwnerMilestone(env, ownerId, 'milestone'))) return;
-  await sendEmail(env, { to, ...milestoneEmail(env, reached) });
-}
+const notifier = createNotifier<Env, RenderedEmail>({
+  enabled: emailEnabled,
+  send: sendEmail,
+  isAccount: isAccountOwner,
+  recipients: (env, ids, setting) => notifyRecipients(env, ids, setting as NotifySetting),
+  itemsMadeBy: documentsMadeBy,
+  claimMilestone: claimOwnerMilestone,
+  claims: (env) => (env as DocumentEnv).DOCUMENT_DB,
+  allowance: (env) => workbenchAllowance(env.WORKBENCH),
+  nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
+  teamPeople,
+  settings: { join: 'notifyDocumentJoin' },
+  emails: {
+    milestone: milestoneEmail,
+    firstShare: firstShareEmail,
+    joined: documentJoinedEmail,
+    actionAssigned: actionAssignedEmail,
+    mentioned: (env, authorName, document, text) =>
+      mentionedEmail(env, authorName, document.name, document.id, text),
+  },
+});
 
-// Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts). Opt-out
-// (notifyMilestones), the same category as the document-count milestone; claimed once per account at accounts.
-export async function notifyFirstShare(env: Env, actorId: string): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(actorId)) return;
-  const to = (await notifyRecipients(env, [actorId], 'notifyMilestones')).get(actorId);
-  if (!to) return;
-  if (!(await claimOwnerMilestone(env, actorId, 'firstShare'))) return;
-  await sendEmail(env, { to, ...firstShareEmail(env) });
-}
+// The owner just made a document: the tenth celebrates, once (docs/specs/014-identity/transactional-email.md #6).
+export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
+  notifier.notifyMilestone(env, ownerId);
 
-// ---------- Someone joined my document (profile-and-email-notifications.md (a)) ---------------------------------------
+// Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
+export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
+  notifier.notifyFirstShare(env, actorId);
 
-// A signed-in person opened one of an owner's documents through a share link for the first time (the index's
-// `joined` notice, run inside the document's Durable Object). Never for a guest, never for the owner. Opt-out
-// (notifyDocumentJoin); throttled per document so a run of joins is one email.
-export async function notifyDocumentJoin(
+// A signed-in person opened one of an owner's documents through a share link for the first time (the index's `joined`
+// notice, run inside the document's Durable Object). Opt-out (notifyDocumentJoin).
+export const notifyDocumentJoin = (
   env: DocumentEnv,
   document: { id: string; ownerId: string; name: string },
   joinerId: string,
-): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(joinerId) || joinerId === document.ownerId) return;
-  const to = (await notifyRecipients(env, [document.ownerId], 'notifyDocumentJoin')).get(
-    document.ownerId,
-  );
-  if (!to) return;
-  const now = Date.now();
-  const claimed = await claimNotice(env.DOCUMENT_DB, {
-    key: 'join',
-    sender: document.ownerId,
-    now,
-    dedupeSince: now - JOIN_NOTIFY_THROTTLE_MS,
-  });
-  if (!claimed) return;
-  const joiner = await getParticipant(env, joinerId);
-  await sendEmail(env, { to, ...documentJoinedEmail(env, document.name, joiner?.name ?? null) });
-}
-
-// ---------- Actions assigned and mentions (assigned-actions.md, comment-mentions.md) -----------------------------
-
-// The action-assigned and mentioned emails carry the sender's words, so each is claimed in the document before it
-// goes: the same email (sender, document, recipient, wording) once a day, and NOTIFY_EMAILS_PER_SENDER_PER_HOUR per
-// sender at most, counted across every document in the sender's own store (@liveworkspace/index-app notify-claims.ts).
-async function claimTeamNotices(
-  env: DocumentEnv,
-  senderId: string,
-  emails: (string | null)[][],
-): Promise<boolean[]> {
-  const now = Date.now();
-  const keys = await Promise.all(emails.map((parts) => notifyClaimKey([senderId, ...parts])));
-  const allowed = await claimNotices(
-    env.DOCUMENT_DB,
-    keys.map((key) => ({
-      key,
-      sender: senderId,
-      now,
-      dedupeSince: now - NOTIFY_EMAIL_DEDUPE_MS,
-      rate: { max: NOTIFY_EMAILS_PER_SENDER_PER_HOUR, windowMs: NOTIFY_RATE_WINDOW_MS },
-    })),
-    workbenchAllowance(env.WORKBENCH),
-  );
-  const skipped = allowed.filter((ok) => !ok).length;
-  if (skipped > 0)
-    console.warn(
-      `[notify-email] skipped ${skipped} ${String(emails[0]?.[0])} email(s): duplicate or sender over the hourly cap`,
-    );
-  return allowed;
-}
-
-async function claimTeamNotice(
-  env: DocumentEnv,
-  senderId: string,
-  parts: (string | null)[],
-): Promise<boolean> {
-  const [allowed] = await claimTeamNotices(env, senderId, [parts]);
-  return allowed === true;
-}
-
-// Where each of these team people's email goes: an account's verified address unless they turned `setting` off,
-// an invited person's invite address (no account, so no switch: on).
-async function teamAddresses(
-  env: Env,
-  people: readonly TeamPerson[],
-  setting: 'notifyActionAssigned' | 'notifyMentions',
-): Promise<Map<string, string>> {
-  const accounts = people.flatMap((p) => (p.userId ? [p.userId] : []));
-  const verified =
-    accounts.length > 0
-      ? await notifyRecipients(env, accounts, setting)
-      : new Map<string, string>();
-  const out = new Map<string, string>();
-  for (const p of people) {
-    const to = p.userId ? verified.get(p.userId) : p.email;
-    if (to) out.set(p.id, to);
-  }
-  return out;
-}
+): Promise<void> => notifier.notifyJoin(env, document, joinerId);
 
 // A teammate assigned the recipient an action on a document (routes/notify-action-route.ts, after it checked both
 // people and the document). Opt-out (notifyActionAssigned).
-export async function notifyActionAssigned(
+export function notifyActionAssigned(
   env: DocumentEnv,
   input: {
     assignee: TeamPerson;
-    // The assigner's verified account id: the claim's sender and whose hourly cap the email counts against.
     assignerUserId: string;
     assignerName: string | null;
     document: { id: string; name: string };
-    // False when the assignee cannot open the document: the email then names no document and does not link into it
-    // (docs/specs/012-collaboration/assigned-actions.md §4).
     assigneeCanOpen: boolean;
     actionName: string;
     description: string | null;
   },
 ): Promise<void> {
-  if (!emailEnabled(env)) return;
-  const to = (await teamAddresses(env, [input.assignee], 'notifyActionAssigned')).get(
-    input.assignee.id,
-  );
-  if (!to) return;
-  const claimed = await claimTeamNotice(env, input.assignerUserId, [
-    'action',
-    input.document.id,
-    input.assignee.userId ?? `mail:${to}`,
-    input.actionName,
-    input.description,
-  ]);
-  if (!claimed) return;
-  await sendEmail(env, {
-    to,
-    ...actionAssignedEmail(
-      env,
-      input.assignerName,
-      input.assigneeCanOpen ? input.document : null,
-      input.actionName,
-      input.description,
-    ),
-  });
+  const { document, ...rest } = input;
+  return notifier.notifyActionAssigned(env, { ...rest, item: document });
 }
 
 // The author's new comments on a team document @-mentioned teammates (docs/specs/012-collaboration/comment-mentions.md
-// "The email"): each person mentioned gets one email per comment. A mention only ever reaches the document's own team,
-// and only from one of its joined members; anyone else a comment names is skipped. Opt-out (notifyMentions); an
-// invited person with no account yet is written to at their invite address. One team read and one recipients
-// read, whatever the number of comments and mentions.
-export async function notifyMentions(
+// "The email"): each person mentioned gets one email per comment. Opt-out (notifyMentions).
+export function notifyMentions(
   env: DocumentEnv,
   input: {
     document: { id: string; name: string; teamId: string | null };
@@ -243,49 +130,6 @@ export async function notifyMentions(
     comments: readonly Comment[];
   },
 ): Promise<void> {
-  const { document, authorId } = input;
-  if (!emailEnabled(env) || !document.teamId || !isAccountOwner(authorId)) return;
-  const mentioning = input.comments.filter((c) => (c.mentions?.length ?? 0) > 0);
-  if (mentioning.length === 0) return;
-  const people = await teamPeople(env, document.teamId);
-  if (!people?.some((p) => p.userId === authorId && p.status === 'joined')) return;
-  const sends = mentioning.map((c) => ({
-    comment: c,
-    to: teamTargets(people, c.mentions!.slice(0, MENTIONS_MAX), authorId),
-  }));
-  const everyone = new Map(sends.flatMap((s) => s.to).map((p) => [p.id, p]));
-  if (everyone.size === 0) return;
-  const [addresses, author] = await Promise.all([
-    teamAddresses(env, [...everyone.values()], 'notifyMentions'),
-    getParticipant(env, authorId),
-  ]);
-  const authorName = author?.name ?? input.authorFallbackName ?? null;
-  // Every email this save may send, claimed together: one batch in the document and one call to the author's store.
-  const pending: { to: string; comment: Comment; parts: (string | null)[] }[] = [];
-  for (const { comment, to: recipients } of sends) {
-    for (const person of recipients) {
-      const to = addresses.get(person.id);
-      if (!to) continue;
-      pending.push({
-        to,
-        comment,
-        parts: ['mention', document.id, person.userId ?? `mail:${to}`, `comment:${comment.id}`],
-      });
-    }
-  }
-  const allowed = await claimTeamNotices(
-    env,
-    authorId,
-    pending.map((p) => p.parts),
-  );
-  await Promise.all(
-    pending
-      .filter((_, i) => allowed[i])
-      .map(({ to, comment }) =>
-        sendEmail(env, {
-          to,
-          ...mentionedEmail(env, authorName, document.name, document.id, comment.text),
-        }),
-      ),
-  );
+  const { document, ...rest } = input;
+  return notifier.notifyMentions(env, { ...rest, item: document, mentionsMax: MENTIONS_MAX });
 }
