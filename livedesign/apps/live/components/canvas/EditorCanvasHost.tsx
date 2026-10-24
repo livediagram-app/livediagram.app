@@ -7,7 +7,7 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@livedesign/design';
+import { canvasSurface, PEN_INK } from '@livedesign/design';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
@@ -18,7 +18,6 @@ import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
-import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
@@ -312,12 +311,8 @@ export function EditorCanvasHost() {
     shownElements,
     surface,
     themeViewMap(activeTab.theme, appearance),
-    labelsFollowCanvas(activeTab)
-      ? {
-          stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
-          drawn: backdrop.backgroundColor,
-        }
-      : undefined,
+    // No canvas to re-ink labels against: every tab is pages, each with its own paper.
+    undefined,
     pageView,
   );
   // Lazy per-tab load gate (docs/specs/006-design/per-tab-storage.md): show a blocking loader / error over

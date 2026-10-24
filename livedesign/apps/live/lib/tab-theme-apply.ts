@@ -2,13 +2,7 @@
 // multicolour-themes.md): the tab's theme id, its backdrop and its elements' colours, as one pure transform. Picking a
 // theme (useTabTheme.setTheme) and picking a look (useTabCanvas.applyTabLook) both run it, so a look's theme lands
 // exactly as picking that theme does.
-import {
-  opensInOf,
-  viewElementInTheme,
-  withReadableLabelInks,
-  type Appearance,
-  type Tab,
-} from '@livedesign/design';
+import { viewElementInTheme, type Appearance, type Tab } from '@livedesign/design';
 import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { getResolvedAppearance } from '@livedesign/ui';
 import {
@@ -69,23 +63,12 @@ export function withThemeApplied(
   // to the new theme's stroke (resetArrowsToTheme), so a theme pick
   // re-tints every connector instead of leaving hand-coloured ones
   // on the old hue. Shapes / text keep their customisations.
-  const switched = resetArrowsToTheme(switchThemeElements(t.elements, prevTheme, theme), theme);
+  const elements = resetArrowsToTheme(switchThemeElements(t.elements, prevTheme, theme), theme);
   // Backdrop follows the same preserve-customs rule as the
   // elements: a deliberately-chosen pattern / colour survives a
   // theme change instead of being reset to the theme's backdrop.
   const backdrop = switchThemeBackdrop(t, prevTheme, theme);
-  // A label the pick sank into what is behind it gets an ink that reads there (docs/specs/011-theme/light-and-dark.md
-  // "A theme never sinks a label into what is behind it"); not on pages, which have their own paper.
-  const elements = labelsFollowCanvas(t)
-    ? [
-        ...withReadableLabelInks(
-          t.elements,
-          viewedCanvas(t.backgroundColor ?? prevTheme.backgroundColor, viewMap),
-          switched,
-          backdrop.backgroundColor,
-        ),
-      ]
-    : switched;
+  // Labels keep their inks: every tab is pages, and a page has its own paper rather than the canvas behind it.
   // Pages on a fill of the old theme's own take the new theme's (page-theme-follow).
   return withPageBackgroundsFollowingTheme(
     { ...t, elements, theme: id, ...backdrop },
@@ -94,13 +77,3 @@ export function withThemeApplied(
   );
 }
 
-/** Whether a tab's labels sit on its canvas and panels: not a Pages tab's, whose pages have their own paper. */
-export function labelsFollowCanvas(
-  tab: Pick<Tab, 'opensIn' | 'kind' | 'layers' | 'pages'>,
-): boolean {
-  return opensInOf(tab) !== 'pages' && !(Array.isArray(tab.pages) && tab.pages.length > 0);
-}
-
-// A stored canvas colour as the applier sees it: the theme's, in their half; any other colour as it is.
-const viewedCanvas = (colour: string, map: ReadonlyMap<string, string>): string =>
-  map.get(colour.toLowerCase()) ?? colour;
