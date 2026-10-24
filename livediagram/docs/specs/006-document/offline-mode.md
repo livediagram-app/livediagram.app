@@ -215,7 +215,7 @@ Conversion works **both directions**, from a canvas's menu in the editor's Explo
 (`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on This Browser's
 page (`/offline`). The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
 store, so it hands each to This Browser's page (`/offline?convert=take-offline|sync&item=<id>`,
-`hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and asks the same
+`hooks/persistence/useConversionHandoff.ts`, over the shared `@liveworkspace/explorer/conversion-handoff`), which checks the canvas is the person's to move and asks the same
 confirmation (Sync with its own). A canvas taken offline on purpose is never offered back by the move prompt after
 signing in. In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by

@@ -307,7 +307,7 @@ page (`/offline`), the Share dialog gate and the move prompt after signing in).
 Action: **"Take Offline"**, on a document's menu in the editor's Explorer panel (the shared Explorer's
 `itemMenu`, `hooks/persistence/useOfflineItemMenu.ts`: only a page on this app's origin reaches the browser's
 store) and in the Explorer on livedocuments's address, which hands it to This Browser's page
-(`/offline?convert=take-offline&item=<id>`, `hooks/persistence/useConversionHandoff.ts`): the page checks the document
+(`/offline?convert=take-offline&item=<id>`, `hooks/persistence/useConversionHandoff.ts`, over the shared `@liveworkspace/explorer/conversion-handoff`): the page checks the document
 is the person's to move, then asks the same confirmation. It is offered on a document the person can edit in their library or a team's, never on one reached
 through a link. This is **destructive on the server** and gated by a
 confirmation:

@@ -1,11 +1,11 @@
-// @vitest-environment jsdom
-// Take Offline and Sync handed over by the Explorer on this app's address: read once from This Browser's address,
-// taken out of it, checked, confirmed, then run by the panel's own conversions.
+// Take Offline and Sync handed over by the Explorer on an app's address: read once from This Browser's address,
+// taken out of it, checked, confirmed, then run by the app's own conversions.
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
+import { useConversionHandoff, type ConversionHandoffOptions } from './conversion-handoff';
 
-const h = vi.hoisted(() => ({
+const h = {
   item: null as Partial<Item> | null,
   kept: [] as { id: string; name: string }[],
   confirmed: true,
@@ -13,28 +13,30 @@ const h = vi.hoisted(() => ({
   syncToCloud: vi.fn(async () => {}),
   confirm: vi.fn(),
   error: vi.fn(),
-}));
-vi.mock('@/lib/index-client', () => ({
-  indexClient: {
-    getItem: async () => {
-      if (!h.item) throw new Error('not_found');
-      return { item: h.item };
-    },
-  },
-}));
-vi.mock('@/lib/offline/offline-store', () => ({ offlineListDocuments: async () => h.kept }));
-vi.mock('./useOfflineConversion', () => ({
-  useOfflineConversions: () => ({ takeOffline: h.takeOffline, syncToCloud: h.syncToCloud }),
-}));
-vi.mock('@/hooks/ui/useConfirm', () => ({
-  useConfirm: () => async (opts: unknown) => {
+};
+
+const options = (
+  ownerId: string | null,
+  signedIn: boolean,
+  over: Partial<ConversionHandoffOptions> = {},
+): ConversionHandoffOptions => ({
+  ownerId,
+  signedIn,
+  app: 'livediagram',
+  noun: 'canvas',
+  conversions: { takeOffline: h.takeOffline, syncToCloud: h.syncToCloud },
+  confirm: async (opts) => {
     h.confirm(opts);
     return h.confirmed;
   },
-}));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ error: h.error }) }));
-
-import { useConversionHandoff } from './useConversionHandoff';
+  toastError: h.error,
+  getItem: async () => {
+    if (!h.item) throw new Error('not_found');
+    return { item: h.item as Item };
+  },
+  listKept: async () => h.kept,
+  ...over,
+});
 
 const at = (search: string) => window.history.replaceState(null, '', `/offline${search}`);
 const doc = (extra: Partial<Item> = {}): Partial<Item> => ({
@@ -55,10 +57,10 @@ beforeEach(() => {
 afterEach(() => at(''));
 
 describe('Take Offline and Sync handed over by the Explorer', () => {
-  it("takes the person's own canvas offline (its own confirm asks), and leaves the address", async () => {
+  it("takes the person's own item offline (its own confirm asks), and leaves the address", async () => {
     at('?convert=take-offline&item=d1');
     h.item = doc();
-    renderHook(() => useConversionHandoff('user_ada', true));
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
     await waitFor(() => expect(h.takeOffline).toHaveBeenCalledWith({ id: 'd1', name: 'Report' }));
     expect(window.location.search).toBe('');
   });
@@ -66,7 +68,7 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
   it('waits for the person, then reads the request once', async () => {
     at('?convert=take-offline&item=d1');
     h.item = doc();
-    const { rerender } = renderHook(({ owner }) => useConversionHandoff(owner, false), {
+    const { rerender } = renderHook(({ owner }) => useConversionHandoff(options(owner, false)), {
       initialProps: { owner: null as string | null },
     });
     expect(window.location.search).not.toBe('');
@@ -80,21 +82,32 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     ['another app', { app: 'livedesign' }],
     ['one reached through a link', { sharedVia: 'code1' }],
     ['one the person can only view', { access: 'view' }],
-  ] as const)('refuses %s', async (_, extra) => {
+  ] as const)('refuses %s, in the app’s own words', async (_, extra) => {
     at('?convert=take-offline&item=d1');
     h.item = doc(extra);
-    renderHook(() => useConversionHandoff('user_ada', true));
-    await waitFor(() => expect(h.error).toHaveBeenCalled());
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() =>
+      expect(h.error).toHaveBeenCalledWith('You can’t take that canvas offline.'),
+    );
     expect(h.takeOffline).not.toHaveBeenCalled();
   });
 
-  it('syncs a canvas this browser keeps once the person confirms', async () => {
+  it("takes only the app's own items", async () => {
+    at('?convert=take-offline&item=d1');
+    h.item = doc({ app: 'livedocuments' });
+    renderHook(() =>
+      useConversionHandoff(options('user_ada', true, { app: 'livedocuments', noun: 'document' })),
+    );
+    await waitFor(() => expect(h.takeOffline).toHaveBeenCalledWith({ id: 'd1', name: 'Report' }));
+  });
+
+  it('syncs an item this browser keeps once the person confirms, naming it as the app does', async () => {
     at('?convert=sync&item=d1');
     h.kept = [{ id: 'd1', name: 'Notes' }];
-    renderHook(() => useConversionHandoff('user_ada', true));
+    renderHook(() => useConversionHandoff(options('user_ada', true, { noun: 'design' })));
     await waitFor(() => expect(h.syncToCloud).toHaveBeenCalledWith({ id: 'd1', name: 'Notes' }));
     expect(h.confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ confirmLabel: 'Sync Canvas' }),
+      expect.objectContaining({ confirmLabel: 'Sync Design' }),
     );
   });
 
@@ -102,13 +115,14 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     at('?convert=sync&item=d1');
     h.kept = [{ id: 'd1', name: 'Notes' }];
     h.confirmed = false;
-    renderHook(() => useConversionHandoff('user_ada', true));
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
     await waitFor(() => expect(h.confirm).toHaveBeenCalled());
     at('?convert=sync&item=d1');
-    renderHook(() => useConversionHandoff('guest_1', false));
+    renderHook(() => useConversionHandoff(options('guest_1', false)));
     at('?convert=sync&item=missing');
-    renderHook(() => useConversionHandoff('user_ada', true));
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
     await waitFor(() => expect(h.error).toHaveBeenCalledTimes(2));
+    expect(h.error).toHaveBeenCalledWith('Couldn’t find that canvas in this browser.');
     expect(h.syncToCloud).not.toHaveBeenCalled();
   });
 });
