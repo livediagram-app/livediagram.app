@@ -7,14 +7,13 @@ import { THEMES } from '@livedesign/design';
 import { LOGO_LAYOUTS, TEMPLATE_CATEGORIES, TEMPLATES } from '@livedesign/templates';
 
 import { LANDING_SECTIONS } from './landing-content';
+import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
 import {
   FAQ_CATEGORIES,
-  faqAnswerText,
   LOGO_LAYOUT_COUNT,
   TEMPLATE_CATEGORY_COUNT,
   TEMPLATE_COUNT,
 } from './faq-content';
-import { filterFaq } from './faq-filter';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
 

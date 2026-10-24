@@ -17,6 +17,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
+│  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
@@ -96,6 +97,8 @@ liveworkspace/
 │  ├─ api-client, telemetry-client, render-png, source-ast, icons
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
 │  ├─ templates, template-previews
+│  ├─ help-site                    the help centre's pages, components and checks around each product's articles
+│  ├─ marketing-site               the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ ui                           design system: buttons, menus, dialogs, tokens
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start

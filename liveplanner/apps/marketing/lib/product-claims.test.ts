@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { COMPARISONS } from './alternatives';
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
 import { PROMISES } from './promises';
 import { MARKETING_DESCRIPTION, MARKETING_PITCH, MARKETING_TITLE } from './site-copy';

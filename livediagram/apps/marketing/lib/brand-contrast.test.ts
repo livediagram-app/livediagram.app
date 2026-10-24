@@ -91,7 +91,11 @@ describe('brand text contrast', () => {
     expect(read('../components/StartDrawingCta.tsx')).toContain(`bg-[${INDIGO}]`);
     expect(read('../components/PromisePrism.tsx')).toContain(`bg-[${INDIGO}]`);
     expect(read('../components/TryItCard.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
-    expect(read('../components/eyebrow.ts')).toContain('text-brand-700');
-    expect(read('../components/faq/FaqItem.tsx')).toContain('[&_a]:text-brand-700');
+    expect(read('../../../../packages/marketing-site/src/lib/eyebrow.ts')).toContain(
+      'text-brand-700',
+    );
+    expect(read('../../../../packages/marketing-site/src/components/faq/FaqItem.tsx')).toContain(
+      '[&_a]:text-brand-700',
+    );
   });
 });

@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { EDITOR_MODES, editorModeLabel } from '@livedocuments/document';
 
 import { COMPARISONS } from './alternatives';
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing

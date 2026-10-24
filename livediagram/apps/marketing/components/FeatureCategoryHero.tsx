@@ -1,10 +1,10 @@
 import { ctaHref } from '@livediagram/api-schema';
 import { RAIL_CLEAR_PADDING } from '@livediagram/ui';
 import type { CSSProperties } from 'react';
-import { CtaLink } from '@/components/CtaLink';
+import { CtaLink } from '@liveworkspace/marketing-site/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { FeatureScene } from '@/components/FeatureScene';
-import { EYEBROW } from '@/components/eyebrow';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
 // The hero band at the top of a /features/<id> category page: a two-column
 // pitch (the feature's plain name as the eyebrow, the headline, the positioning

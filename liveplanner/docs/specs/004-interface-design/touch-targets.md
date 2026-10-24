@@ -16,7 +16,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   so a dense desktop layout and a phone share one design. The host is positioned (`relative`, or
   its own `absolute`): a static host's pad fills its nearest positioned ancestor and takes every tap
   there (a Plan column's Remove Column once took every tap in its popover). A static guard
-  (`touch-target-guard` in `../packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
+  (`touch-target-guard` in `../packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`, and for the marketing sites by `../packages/marketing-site/src/guards/source-guards.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.

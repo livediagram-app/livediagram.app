@@ -7,13 +7,8 @@ import { THEMES } from '@livediagram/document';
 import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livediagram/templates';
 
 import { LANDING_SECTIONS } from './landing-content';
-import {
-  FAQ_CATEGORIES,
-  faqAnswerText,
-  TEMPLATE_CATEGORY_COUNT,
-  TEMPLATE_COUNT,
-} from './faq-content';
-import { filterFaq } from './faq-filter';
+import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES, TEMPLATE_CATEGORY_COUNT, TEMPLATE_COUNT } from './faq-content';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
 

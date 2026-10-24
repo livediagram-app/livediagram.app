@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { LegalRedirect } from '@/components/LegalRedirect';
+import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
 
 // The privacy policy covers every liveworkspace app, livedesign included, so it lives on liveworkspace.app. This
 // page keeps the historical /privacy URL alive (it redirects there) but is noindex so search engines consolidate on

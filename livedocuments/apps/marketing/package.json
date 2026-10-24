@@ -21,6 +21,7 @@
     "@liveworkspace/comparisons": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",
+    "@liveworkspace/marketing-site": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

@@ -1,7 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
-import { LicencesView } from '@/components/licences/LicencesView';
-import { loadLicencesManifest } from '@/lib/licences-manifest';
+import { loadLicencesManifest } from '@liveworkspace/marketing-site/lib/licences-manifest';
+import { LicencesView } from '@liveworkspace/marketing-site/components/licences/LicencesView';
 import { pageMetadata, SiteHeader } from '@livediagram/ui';
 
 export const metadata = pageMetadata({
@@ -21,7 +21,12 @@ export default function LicencesPage() {
       <BreadcrumbJsonLd name="Licences" path="/licences" />
       <SiteHeader buildWithAi="link" account />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <LicencesView manifest={manifest} />
+        <LicencesView
+          manifest={manifest}
+          title="Open-source licences"
+          lede="livediagram is MIT licensed and built on the work of many open-source projects. These are the ones our apps ship, generated from what each app actually bundles every time the site is built."
+          browserIntro="Sent to your browser by the editor, this website, the help centre and the Community."
+        />
       </main>
       <Footer />
     </>

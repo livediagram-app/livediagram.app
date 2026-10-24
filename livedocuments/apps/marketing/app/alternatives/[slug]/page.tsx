@@ -16,7 +16,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { PageHero } from '@/components/PageHero';
+import { PageHero } from '@liveworkspace/marketing-site/components/PageHero';
 import { TryItCard } from '@/components/TryItCard';
 import { COMPARISONS } from '@/lib/alternatives';
 
@@ -62,10 +62,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
       />
       <Header surface="Compare" />
       <Breadcrumb
-        items={[
-          { label: 'Comparison', href: HUB_PATH },
-          { label: `${alt.name} alternative` },
-        ]}
+        items={[{ label: 'Comparison', href: HUB_PATH }, { label: `${alt.name} alternative` }]}
       />
       <main className="pb-20 sm:pb-24">
         <PageHero eyebrow={`${COMPARISONS.app} vs ${alt.name}`} title={alt.h1} lede={alt.lede}>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { LegalRedirect } from '@/components/LegalRedirect';
+import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
 
 // The terms of service cover every liveworkspace app, livediagram included, so they live on liveworkspace.app.
 // This page keeps the historical /terms URL alive (it redirects there) but is noindex so search engines
@@ -9,7 +9,7 @@ const TERMS_URL = 'https://liveworkspace.app/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service · livediagram',
-  description: 'The terms of service for livediagram are liveworkspace\'s, on liveworkspace.app.',
+  description: "The terms of service for livediagram are liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
   alternates: { canonical: TERMS_URL },
 };
