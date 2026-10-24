@@ -1463,7 +1463,7 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library every liveworkspace app shares: Documents or All, the sidebar's Overview, Spaces and More, views and search.",
+      "The full-page library every liveworkspace app shares: Documents or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
       'library home dashboard files my documents list manage browse sidebar overview spaces more search all apps every app filter canvases designs liveworkspace duplicate copy document',
     category: 'Explorer',
@@ -1484,7 +1484,8 @@ export const articles: Article[] = [
   {
     slug: 'list-and-card-views',
     title: 'List, Card and Details Views',
-    description: 'Toggle browse views between compact rows, cards and a sortable details table.',
+    description:
+      'Toggle browse views between preview cards, compact rows and a sortable details table.',
     keywords:
       'card grid view toggle layout rows tiles gallery details table columns sort type comments access size created updated date',
     category: 'Explorer',
