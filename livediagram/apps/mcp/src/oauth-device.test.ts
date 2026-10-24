@@ -98,6 +98,13 @@ describe('starting', () => {
   it('refuses a client it did not ship, and more than 20 starts an hour from one address', async () => {
     const other = await app.request('/oauth/device_authorization', form({ client_id: 'abc' }), env);
     expect(await other.json()).toEqual({ error: 'invalid_client' });
+    // A name every object answers to is no client either.
+    const inherited = await app.request(
+      '/oauth/device_authorization',
+      form({ client_id: 'constructor' }),
+      env,
+    );
+    expect(await inherited.json()).toEqual({ error: 'invalid_client' });
     for (let i = 0; i < 20; i++) await start();
     const limited = await app.request(
       '/oauth/device_authorization',
