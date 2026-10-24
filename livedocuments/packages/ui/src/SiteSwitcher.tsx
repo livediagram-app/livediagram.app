@@ -13,9 +13,7 @@ import { APP_SITES, PLATFORM_SITE, type Site, type SiteId } from '@liveworkspace
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { BrandMark } from './Brand';
 import { ChevronDownIcon } from './icons';
-import { useMenu } from './menu/useMenu';
-import { useMenuButton } from './menu/useMenuButton';
-import { useClickOutside } from './useClickOutside';
+import { useMenu, useMenuButton, useClickOutside } from '@liveworkspace/ui';
 
 export function SiteSwitcher({
   current,

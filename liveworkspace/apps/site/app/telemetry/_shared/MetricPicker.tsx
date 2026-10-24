@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
-import { TextInput, Glyph, CloseIcon } from '@livediagram/ui';
+import { Glyph, CloseIcon } from '@livediagram/ui';
+import { TextInput } from '@liveworkspace/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';

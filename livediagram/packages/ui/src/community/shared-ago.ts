@@ -1,4 +1,4 @@
-import { relativeSince } from '../relative-time';
+import { relativeSince } from '@liveworkspace/ui';
 import { DAY_MS } from '@livediagram/document';
 
 const MONTH_DAYS = 30;

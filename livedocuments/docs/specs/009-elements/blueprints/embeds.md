@@ -20,8 +20,8 @@ Scope, by file:
 | `packages/document/src/element-kind-label.ts`              | `elementKindLabel`: `video` reads "Embed"                                  |
 | `packages/document/src/svg-render-describe.ts`             | Headless export: the generic rect branch [QC2]                             |
 | `apps/editor/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice |
-| `packages/ui/src/Tooltip.tsx`                              | `Tooltip`: names each player control button                                |
-| `packages/ui/src/HoverCard.tsx`                            | `HoverCard`: explains the website's new-tab link                           |
+| `../packages/ui/src/Tooltip.tsx`                           | `Tooltip`: names each player control button                                |
+| `../packages/ui/src/HoverCard.tsx`                         | `HoverCard`: explains the website's new-tab link                           |
 | `apps/editor/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                       |
 | `apps/editor/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                    |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                              |

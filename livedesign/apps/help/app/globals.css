@@ -6,6 +6,8 @@
  * here too. Tailwind v4 skips node_modules, where the workspace package
  * is symlinked. */
 @source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
 
 @import '@livedesign/ui/hero-band.css';

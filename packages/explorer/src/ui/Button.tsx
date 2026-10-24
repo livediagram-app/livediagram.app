@@ -1,7 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { SOLID_BRAND_DARK_CONTROL } from './classes';
 
-// liveplanner's shared Button (packages/ui/src/Button.tsx): brand primary, neutral outline, ghost, or a solid
+// @liveworkspace/ui's Button (packages/ui/src/Button.tsx): brand primary, neutral outline, ghost, or a solid
 // fill the caller supplies; no red variant, a delete looks like any other action in its place.
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'solid';

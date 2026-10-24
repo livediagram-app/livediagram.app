@@ -161,9 +161,10 @@ category colours, how its events read (`createEventExplanation` over its own sen
 events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
 nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
 out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
-which gives it to every view through context. The views draw with `@livediagram/ui`, whose primitives
-the four apps' UI packages share. The shared views are tested against every app's config
-(`_shared/test-apps.ts`).
+which gives it to every view through context. The views draw with the shared design system,
+`@liveworkspace/ui` (buttons, fields, tooltips, hover cards, menus), and with `@livediagram/ui` for the
+icons and brand marks the apps' UI packages do not share yet. The shared views are tested against
+every app's config (`_shared/test-apps.ts`).
 
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend

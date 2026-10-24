@@ -39,6 +39,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

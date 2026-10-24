@@ -37,7 +37,7 @@ type OpticalViolation = { file: string; line: number; snippet: string };
 
 // The primitives own the rule, so their call sites are compliant by construction.
 const PRIMITIVES = new Set(['GlyphDisc', 'Chip', 'IconSlot']);
-// ...and so is their own implementation (packages/ui/src/optical).
+// ...and so is their own implementation (@liveworkspace/ui's packages/ui/src/optical).
 const PRIMITIVES_DIR = `${sep}optical${sep}`;
 const SKIP_DIRS = new Set([
   'node_modules',

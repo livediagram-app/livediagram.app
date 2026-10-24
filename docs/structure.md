@@ -27,6 +27,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
+│  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks
 │  └─ vitest-config            the Vitest defaults and test helpers every workspace extends
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
@@ -150,6 +151,26 @@ Each step is its own PR, and both products build and pass their tests after ever
    Then move.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
+   - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`
+     packages had in common that needs nothing of a product's: `Button`, `TextInput`, `DateInput`,
+     `CountBadge`, `EmptyState`, `LoadingSweep`, `Portal`, `SheetHandle`, `JsonLd`, `Tooltip` and
+     `HoverCard` with the `hint/` machinery under them, `Dialog` and `DialogHeader`, the `menu/` hooks,
+     the `optical/` primitives, the brand-fill classes, the build loaders' kit, the footer's
+     contributors and the hooks (`useClickOutside`, `useEscape`, `useFocusTrap`, `useMediaQuery`,
+     `useCopiedFlash`, `useSheetDrag`, `useVisualViewportBand`, `safe-area`, `popover`, `relative-time`,
+     `random-uuid-boot`). Every difference between the copies was a comment, or one product behind
+     the others (liveplanner's `openDatePicker`, livediagram's hover-card `preview` look, which
+     livedocuments had dropped as unused); the newer side won. Each product's `@<product>/ui`
+     re-exports it (`export * from '@liveworkspace/ui'`), so callers did not change, and keeps only
+     what is its own or still waits on a shared dependency. Apps scan it with
+     `@source '../../../../packages/ui/src'`.
+   - Still in each product's `ui`: the brand files (Brand, the mark's geometry, prism and motion, the
+     social card), which move to `@liveworkspace/brand`; anything drawing a chrome icon (`icons/`,
+     `Glyph`, `Select`, `DialogCloseButton`, `SiteSwitcher`, `SiteHeader`, `SiteFooter`, `PageNotFound`,
+     the appearance toggle), which waits on `@liveworkspace/icons`; and what is a product's own data:
+     `site.ts` and `seo.ts` (its name, URLs and pitch), `trusted-types` (its CSP), the appearance key,
+     `browser-repair` (its storage keys), and the page-view, web-vitals and CTA pieces bound to its
+     `api-schema` and `telemetry-client`. They follow as those packages move.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    both apps.

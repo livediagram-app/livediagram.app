@@ -1133,6 +1133,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -2379,6 +2382,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -3469,6 +3475,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -4385,9 +4394,9 @@ importers:
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../project
-      '@liveplanner/ui':
+      '@liveworkspace/ui':
         specifier: workspace:*
-        version: link:../ui
+        version: link:../../../packages/ui
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -4683,6 +4692,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -4937,6 +4949,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -5564,6 +5579,52 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/ui:
+    dependencies:
+      '@liveworkspace/trusted-types':
+        specifier: workspace:*
+        version: link:../trusted-types
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

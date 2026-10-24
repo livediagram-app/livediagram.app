@@ -1,7 +1,8 @@
 'use client';
 
 import type { SettingsUiKit } from '@liveworkspace/settings-ui';
-import { DialogCloseButton, Glyph, HoverCard, NoMatches } from '@livediagram/ui';
+import { DialogCloseButton, Glyph, NoMatches } from '@livediagram/ui';
+import { HoverCard } from '@liveworkspace/ui';
 
 // What the shared Settings view (@liveworkspace/settings-ui) borrows here: livediagram's glyph,
 // close button and empty state, as the apps' own Settings use, and the apps' search box. No help

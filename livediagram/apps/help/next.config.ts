@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   // sub-article directories. Mirrors the Manager Toolkit help app.
   trailingSlash: true,
   pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
-  transpilePackages: ['@livediagram/ui'],
+  transpilePackages: ['@livediagram/ui', '@liveworkspace/ui'],
 };
 
 // remark-gfm enables GitHub-flavoured markdown in MDX bodies — most importantly

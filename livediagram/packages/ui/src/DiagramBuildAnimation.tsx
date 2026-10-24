@@ -9,7 +9,7 @@ import {
   glideStops,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is drawing a diagram" loop: a collaborator cursor
 // labelled "You" places a card, drags a connector that draws under it to

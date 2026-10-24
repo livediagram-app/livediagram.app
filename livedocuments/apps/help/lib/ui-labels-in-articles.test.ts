@@ -26,6 +26,9 @@ const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 // renders as its own. Its labels are what a reader sees in livedocuments, so they
 // are read as the editor's.
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
+// The Settings dialog likewise is the shared view (@liveworkspace/settings-ui; docs/specs/007-editor/
+// user-preferences.md "One Settings view for every app"), its search field and category list included.
+const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -60,6 +63,7 @@ function uiLabels(): Map<string, Set<string>> {
   };
   walk(`${ROOT}/apps/editor`);
   walk(EXPLORER_PACKAGE);
+  walk(SETTINGS_PACKAGE);
   return byLower;
 }
 
@@ -93,6 +97,9 @@ function editorSource(): string {
   };
   for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
   walk(EXPLORER_PACKAGE);
+  walk(SETTINGS_PACKAGE);
+  // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
+  walk(`${ROOT}/../packages/ui/src`);
   return all.toLowerCase();
 }
 

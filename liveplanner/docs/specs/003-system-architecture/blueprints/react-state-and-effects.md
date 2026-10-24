@@ -55,10 +55,10 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 
 ### Ref-only wrappers: the sites
 
-| Site                                                        | The wrapper carried          | Becomes                                                          |
-| ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| Site | The wrapper carried | Becomes |
+| ---- | ------------------- | ------- |
 
-Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
+Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`),
 and `apps/editor/components/plan/AddCardPopover.tsx` (catches React events bubbling out of a portal).
 
@@ -137,8 +137,8 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 ## Constants and configuration
 
-| Constant                 | Value                                       | Provenance                       | Safe range        |
-| ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
+| Constant                 | Value                                       | Provenance                         | Safe range        |
+| ------------------------ | ------------------------------------------- | ---------------------------------- | ----------------- |
 | `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveworkspace/next-config` `env` | A four-digit year |
 
 ## Defaults ledger

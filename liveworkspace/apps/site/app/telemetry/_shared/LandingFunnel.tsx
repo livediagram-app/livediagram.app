@@ -1,5 +1,5 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import { CardColumns } from './CardColumns';
 import { useTelemetryApp } from './app';
 import { formatRate, rate, type FunnelCounts } from './cta-funnel';

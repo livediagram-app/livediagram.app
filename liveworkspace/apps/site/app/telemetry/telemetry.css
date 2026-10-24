@@ -7,11 +7,13 @@
  * the rest of the site doesn't carry the apps' UI. The site's own stylesheet comes first with the
  * base styles; this one adds the theme values and utilities the dashboard uses, repeating the few
  * both use, which is harmless. Tailwind v4 skips node_modules, where the workspace packages are
- * symlinked, so the UI the dashboard uses is named: every view draws with @livediagram/ui, and the
- * page's app chips show each app's logo from @liveworkspace/brand. */
+ * symlinked, so the UI the dashboard uses is named: every view draws with @livediagram/ui and the
+ * design system it re-exports (@liveworkspace/ui), and the page's app chips show each app's logo from
+ * @liveworkspace/brand. */
 @source './';
 @source '../../components';
 @source '../../../../../livediagram/packages/ui/src';
+@source '../../../../../packages/ui/src';
 @source '../../../../../packages/brand/src';
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import { Brand } from '@liveworkspace/brand';
 import {
   type TelemetryAppFilter,

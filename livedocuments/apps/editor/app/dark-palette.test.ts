@@ -169,6 +169,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = [
   ...['app', 'components', 'hooks', 'lib'].flatMap((d) => sourceFiles(`${ROOT}${d}`)),
   ...sourceFiles(`${REPO}packages/ui/src`),
+  // The shared design system (@liveworkspace/ui), which this app renders too.
+  ...sourceFiles(`${REPO}../packages/ui/src`),
 ];
 
 // Parsed once, here at collection time, and shared by every rule below: re-parsing ~900 files

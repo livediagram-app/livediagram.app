@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
   assetPrefix: ASSET_PREFIX,
   transpilePackages: [
     '@livediagram/ui',
+    '@liveworkspace/ui',
     '@livediagram/api-schema',
     '@liveplanner/ui',
     '@liveplanner/api-schema',

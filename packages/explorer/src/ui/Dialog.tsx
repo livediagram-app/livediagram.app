@@ -5,7 +5,7 @@ import { Portal } from './Portal';
 import { CloseIcon } from './icons';
 import { useLatest } from './useLatest';
 
-// liveplanner's Dialog shell (packages/ui/src/dialog/Dialog.tsx): the dim backdrop and centred panel, Escape
+// @liveworkspace/ui's Dialog shell (packages/ui/src/dialog/Dialog.tsx): the dim backdrop and centred panel, Escape
 // and a press on the backdrop to close, focus kept inside while open and handed back after. The larger sizes
 // fill a phone's screen. Callers compose their own header, body and footer.
 

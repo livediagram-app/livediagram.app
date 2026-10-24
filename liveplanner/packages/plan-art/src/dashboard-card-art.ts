@@ -8,7 +8,7 @@ import {
   type DashboardContent,
   type PlanPalette,
 } from '@liveplanner/project';
-import { relativeSince } from '@liveplanner/ui/relative-time';
+import { relativeSince } from '@liveworkspace/ui/relative-time';
 import {
   FORM_METRIC_NAMES,
   SHEET_METRIC_NAMES,

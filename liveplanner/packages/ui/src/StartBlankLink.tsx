@@ -1,5 +1,5 @@
 import { ctaHref, isCtaSource, type CtaSurface } from '@liveplanner/api-schema';
-import { ButtonContent, buttonClassName } from './Button';
+import { ButtonContent, buttonClassName } from '@liveworkspace/ui';
 
 // Start Blank on the public sites (docs/specs/019-marketing/marketing-site.md "Start Blank"): a plain link to the
 // wizard, never a menu of blanks. The wizard still asks what the visitor is making, and `start=blank` opens the

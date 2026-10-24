@@ -10,7 +10,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
   },
@@ -51,6 +50,7 @@
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
-    "@liveworkspace/trusted-types": "workspace:*"
+    "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   }
 }

@@ -2,8 +2,7 @@
 // "Not found"): an address that names no page gets the site's own chrome around one calm card with the ways on, not
 // a bare "404 | This page could not be found." with no way home. The editor keeps its own card (apps/live NotFound),
 // which offers the Explorer and a new design.
-import { buttonClassName } from './Button';
-import { EmptyState } from './EmptyState';
+import { buttonClassName, EmptyState } from '@liveworkspace/ui';
 import { SearchIcon } from './icons';
 
 export function PageNotFound({

@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '../Tooltip';
+import { Tooltip } from '@liveworkspace/ui';
 import { APPEARANCE_LABEL, appearanceToggleName } from './appearance-cycle';
 import { AppearanceIcon } from './AppearanceIcon';
 import { useAppearance } from './useAppearance';

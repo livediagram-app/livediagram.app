@@ -9,14 +9,14 @@ Scope, by file:
 
 | File                                                   | Role                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `packages/ui/src/hint/hint-constants.ts`               | Every timing and size, named                                                   |
-| `packages/ui/src/hint/place-hint.ts`                   | Pure placement: trigger rect + surface size + viewport to a layout             |
-| `packages/ui/src/hint/hint-registry.ts`                | Module state: the one open hint, and the tooltip warm-up clock                 |
-| `packages/ui/src/hint/trigger-text.ts`                 | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
-| `packages/ui/src/hint/useHint.ts`                      | The state machine: pointer, focus, press, long press, Escape, grace            |
-| `packages/ui/src/hint/HintSurface.tsx`                 | The portal, the measured layout, the pointer triangle, the two looks           |
-| `packages/ui/src/Tooltip.tsx`                          | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
-| `packages/ui/src/HoverCard.tsx`                        | `HoverCard`: title + description, instant, on the layout wrapper it always had |
+| `../packages/ui/src/hint/hint-constants.ts`            | Every timing and size, named                                                   |
+| `../packages/ui/src/hint/place-hint.ts`                | Pure placement: trigger rect + surface size + viewport to a layout             |
+| `../packages/ui/src/hint/hint-registry.ts`             | Module state: the one open hint, and the tooltip warm-up clock                 |
+| `../packages/ui/src/hint/trigger-text.ts`              | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
+| `../packages/ui/src/hint/useHint.ts`                   | The state machine: pointer, focus, press, long press, Escape, grace            |
+| `../packages/ui/src/hint/HintSurface.tsx`              | The portal, the measured layout, the pointer triangle, the two looks           |
+| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
+| `../packages/ui/src/HoverCard.tsx`                     | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                            |
 | `packages/oxlint-config/native-title.ts`               | `liveworkspace/no-native-title`: native `title` outside the exceptions         |
 | `apps/editor/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                 |
@@ -270,7 +270,7 @@ surface.
 | `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                         | 1000–3000  |
 | `TOOLTIP_GAP_PX`          | 6     | D29                                                          | 4–10       |
 | `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                       | 6–14       |
-| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `packages/ui/src/popover.ts`                       | 4–16       |
+| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `../packages/ui/src/popover.ts`                    | 4–16       |
 
 ## Assets and external resources
 

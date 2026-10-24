@@ -2,7 +2,7 @@
 // the brand badge with the surface's glyph, a "No <things>" heading, an optional line and at most one way forward.
 // The page-sized one is EmptyState; NoMatches is this, written for a search or a filter that found nothing.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Button } from './Button';
+import { Button } from '@liveworkspace/ui';
 import { SearchIcon } from './icons/navigation';
 
 type EmptyStateSize = 'regular' | 'small';

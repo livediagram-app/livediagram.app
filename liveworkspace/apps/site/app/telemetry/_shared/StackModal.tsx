@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CloseIcon, useEscape } from '@livediagram/ui';
+import { CloseIcon } from '@livediagram/ui';
+import { useEscape } from '@liveworkspace/ui';
 import { createPortal } from 'react-dom';
 
 // The modal an open stack deals its members into (docs/specs/017-telemetry/telemetry.md): centred over the
