@@ -410,9 +410,9 @@ export function useRoomConnection(opts: {
         // closes its socket either way. Everyone else keeps their session.
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') {
-          // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-          noteAccessEnded(documentId, 'revoked');
-          window.location.assign('/explorer');
+          // The Explorer says why we arrived, rather than landing without a word. The note rides in the address:
+          // the Explorer is liveworkspace's, on another origin (liveworkspace/docs/site.md "Addresses handed over").
+          window.location.assign('/explorer?ended=revoked');
         } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like

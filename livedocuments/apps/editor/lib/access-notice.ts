@@ -1,10 +1,10 @@
-// Why a document just left your screen (docs/specs/013-workspace/share-roles.md "Share links"): a revoked pass sends
-// its sessions to the Explorer, and an access change (a team removal, a share password) reloads them into the access
-// check, which may now refuse. Either used to land without a word: an empty Explorer, or "doesn't exist or isn't
-// yours" for a document that was open a second ago. The editor notes why just before it goes; the page it lands on
-// takes the note once and explains.
+// Why a document just left your screen (docs/specs/013-workspace/share-roles.md "Share links"): an access change (a
+// team removal, a share password) reloads its sessions into the access check, which may now refuse. That used to land
+// on "doesn't exist or isn't yours" for a document that was open a second ago. The editor notes why just before it
+// reloads; the page it lands on takes the note once and explains. (A revoked pass sends its sessions to the Explorer
+// with `?ended=revoked` in the address instead: the Explorer is on another origin.)
 
-export type AccessEnded = 'revoked' | 'changed';
+export type AccessEnded = 'changed';
 
 const KEY = 'livedocuments:access-ended:v1';
 // Only the landing that follows the eject explains it; a stale note never reaches a later visit.
@@ -33,12 +33,9 @@ export function takeAccessEnded(documentId?: string, now: number = Date.now()): 
     if (typeof note.at !== 'number' || now - note.at > ACCESS_NOTICE_TTL_MS || note.at > now)
       return null;
     if (documentId !== undefined && note.documentId !== documentId) return null;
-    return note.reason === 'revoked' || note.reason === 'changed' ? note.reason : null;
+    return note.reason === 'changed' ? note.reason : null;
   } catch {
     return null;
   }
 }
 
-/** What the Explorer says when a revoked pass sent you there. */
-export const ACCESS_REVOKED_MESSAGE =
-  'The link you opened that document with was revoked, so it is no longer open to you.';

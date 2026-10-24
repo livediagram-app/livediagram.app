@@ -98,7 +98,9 @@ once a document is open.
   Longer Shared With You** ("Your access to this document was removed while you had it open. Ask its owner to share
   it with you again.") instead of "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage`
   just before it goes and the first page after takes it once (`apps/editor/lib/access-notice.ts`, honoured for a
-  minute).
+  minute). A session whose link is revoked leaves for the Explorer at `/explorer?ended=revoked`: the Explorer is
+  liveworkspace's, on another origin, so the reason rides in the address, and the Explorer says once that the link
+  was revoked (liveworkspace/docs/site.md "Addresses handed over").
 - The collaborators list badges each person Editor, Participant or Viewer.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
