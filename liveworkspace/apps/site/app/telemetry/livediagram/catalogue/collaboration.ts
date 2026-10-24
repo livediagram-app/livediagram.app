@@ -524,17 +524,24 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
+export const JOINING: MetricStack = {
+  stack: true,
+  title: 'Joining',
+  blurb:
+    'The people who came into a document through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+};
+
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
-  title: 'Sharing & Joining',
-  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
+  title: 'Sharing & Embeds',
+  blurb:
+    'Edit, Participant and view links made, share links and embed codes copied or switched off, embeds viewed, and the Workbench.',
   members: [
     EDIT_LINKS_SHARED,
     PARTICIPATE_LINKS_SHARED,
     VIEW_LINKS_SHARED,
-    COLLABORATORS_JOINED,
-    PARTICIPANTS_JOINED,
-    VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
@@ -543,7 +550,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     WORKBENCH_WORKSPACES,
     LIVE_IMAGE_TABS,
   ],
-  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: SHARE_LINKS_COPIED,
 };
 
 export const DISCUSSION: MetricStack = {
