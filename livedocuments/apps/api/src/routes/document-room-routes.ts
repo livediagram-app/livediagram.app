@@ -3,10 +3,7 @@
 // upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps what it says on the
 // headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
-import {
-  type AccessLevel,
-  type RoomTicketResponse,
-} from '@livedocuments/api-schema';
+import { type AccessLevel, type RoomTicketResponse } from '@livedocuments/api-schema';
 import { workbenchStore } from '../workbench-store';
 import { indexService, linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';

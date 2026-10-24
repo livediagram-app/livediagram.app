@@ -61,6 +61,11 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
   return `Default${key.split(':').map(pascal).join('')}`;
 }
 
+/** The intent as the index keeps it, a word for its filters and default folders: `pages`. Null for none. */
+export function indexIntentOf(intent: CreationIntent | null): string | null {
+  return intent ? intent.mode : null;
+}
+
 /** A create body's `intent`: none when absent or null, refused (`intent_invalid`) when malformed. */
 export function readCreationIntent(
   value: unknown,

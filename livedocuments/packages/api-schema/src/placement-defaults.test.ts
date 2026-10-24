@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EDITOR_MODES } from '@livedocuments/document';
 import {
+  indexIntentOf,
   CREATION_INTENT,
   PLACEMENT_DEFAULT_KEYS,
   defaultKeysFor,
@@ -11,6 +12,13 @@ import {
 
 // Default folders (docs/specs/013-workspace/default-folders.md): the keys, generated from the closed
 // list of editor modes, the creation intent a create carries, and the keys a create tries.
+
+describe('indexIntentOf', () => {
+  it('words an intent as the index keeps it', () => {
+    expect(indexIntentOf({ mode: 'pages' })).toBe('pages');
+    expect(indexIntentOf(null)).toBeNull();
+  });
+});
 
 describe('PLACEMENT_DEFAULT_KEYS', () => {
   it('holds the one Pages key', () => {

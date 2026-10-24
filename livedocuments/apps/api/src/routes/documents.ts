@@ -5,8 +5,14 @@
 
 import type { Tab } from '@livedocuments/document';
 import { isValidTab, migrateIncomingTab } from '@livedocuments/document';
-import { IndexError, type ItemSource } from '@liveworkspace/index-client';
-import { itemTabsOf, itemTabsRequest, itemTabsResponse } from '@liveworkspace/index-app';
+import {
+  createItemGrant,
+  itemSourceOf,
+  itemTabsOf,
+  itemTabsRequest,
+  itemTabsResponse,
+  type ItemCreateRequest,
+} from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
   MAX_DECK_LEN,
@@ -17,6 +23,7 @@ import {
 } from '../limits';
 import {
   INDEX_GRANT_HEADER,
+  indexIntentOf,
   INTENT_INVALID,
   MARK_USED_INVALID,
   readCreationIntent,
@@ -41,7 +48,7 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
-import { compileSeededTabs } from './document-seed';
+import { compileSeededTabs, seedIntentOf } from './document-seed';
 import type { DocumentDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
 import { reportOwnerActivity } from '../person/account-app';
@@ -54,13 +61,7 @@ import {
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
 import { documentRoom } from '../document-client';
-import {
-  INDEX_APP,
-  indexFor,
-  linkCodeOf,
-  documentGrantOf,
-  verifyDocumentGrant,
-} from '../index-service';
+import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDocumentIndexRoutes, handleDocumentList } from './document-index-routes';
 import { resolveDocumentGrant } from './document-grant';
 import {
@@ -109,6 +110,8 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
   let documentId = segments[2] ?? '';
   let grant: Awaited<ReturnType<typeof resolveDocumentGrant>>;
   let renamedTo: string | null = null;
+  // Where the index filed an API client's create, for its answer.
+  let filed: { folderId: string | null; teamId: string | null } | null = null;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -121,9 +124,27 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
     }
     documentId = named;
     if (documentId.length > MAX_DOCUMENT_ID) return notFound();
-    grant = request.headers.get(INDEX_GRANT_HEADER)
-      ? await resolveDocumentGrant(ctx, documentId)
-      : await createForCaller(ctx, documentId, read);
+    if (request.headers.get(INDEX_GRANT_HEADER)) {
+      grant = await resolveDocumentGrant(ctx, documentId);
+    } else {
+      // An API client's create (no grant): the index makes the item under the id the client minted, and the
+      // document opens with the grant that comes back. The id already taken is the same client re-committing its
+      // own document: the grant it holds decides (@liveworkspace/index-app createItemGrant).
+      const create = createRequestOf(read);
+      if (create instanceof Response) return create;
+      const made = await createItemGrant(
+        indexService,
+        ctx.env,
+        request,
+        grantCallerOf(ctx),
+        documentId,
+        create,
+        (body, status) => json(body, { status }),
+      );
+      if (made instanceof Response) return made;
+      grant = made?.grant ?? null;
+      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+    }
   } else {
     if (!documentId || documentId.length > MAX_DOCUMENT_ID) return notFound();
     grant = await resolveDocumentGrant(ctx, documentId);
@@ -145,41 +166,35 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
         }),
       );
   }
+  // An API client's create answers where the index filed it (the MCP names the folder it landed in).
+  if (filed && res.status === 201) {
+    const answer = (await res.json()) as { document?: DocumentDTO | null };
+    if (answer.document) answer.document = { ...answer.document, ...filed };
+    return json(answer, { status: 201 });
+  }
   return res;
 }
 
-// An API client's create (POST /api/documents without a grant): the worker makes the index's item for it, under
-// the id it minted, and opens the document with the grant that comes back. The id already taken is the same client
-// re-committing its own document: its grant decides.
-async function createForCaller(
-  ctx: RouteContext,
-  documentId: string,
-  body: Record<string, unknown>,
-): Promise<Awaited<ReturnType<typeof resolveDocumentGrant>>> {
-  const client = indexFor(ctx.env, grantCallerOf(ctx));
-  if (!client) return json({ error: 'index_unavailable' }, { status: 503 });
+// What an API client's create (POST /api/documents without a grant) asks the index for: the document's title,
+// where it is filed (a folder or team named, else the index's default folder for its intent), its intent and
+// provenance. The intent is the one the document records: the body's, else its seeded tabs'. A malformed intent
+// refuses the create before the index makes anything.
+function createRequestOf(body: Record<string, unknown>): ItemCreateRequest | Response {
+  const given = body.intent === undefined ? null : readCreationIntent(body.intent);
+  if (given && !given.ok) return intentRejected();
+  const intent = given ? given.intent : seedIntentOf(body.tabs);
   const title =
     capStoredName(typeof body.name === 'string' ? body.name : '', null, 'document') || undefined;
-  const source: ItemSource | null =
-    body.source === 'mcp' ? 'ai' : body.source === 'cli' ? 'import' : null;
-  try {
-    const { grant } = await client.createItem({
-      id: documentId,
-      app: INDEX_APP,
-      ...(title ? { title } : {}),
-      teamId: typeof body.teamId === 'string' ? body.teamId : null,
-      folderId: typeof body.folderId === 'string' ? body.folderId : null,
-      source,
-    });
-    const claims = await verifyDocumentGrant(ctx.env, grant.grant, documentId);
-    return claims ? documentGrantOf(claims, null, grant.grant) : null;
-  } catch (err) {
-    if (err instanceof IndexError && err.code === 'item_exists')
-      return resolveDocumentGrant(ctx, documentId);
-    if (err instanceof IndexError) return json({ error: err.code }, { status: err.status });
-    console.error('[index] create failed', { documentId, error: String(err) });
-    return json({ error: 'index_unavailable' }, { status: 503 });
-  }
+  return {
+    ...(title ? { title } : {}),
+    // Left out, the index files it by its intent's default folder; a folder or team named is where it goes.
+    ...(typeof body.folderId === 'string' || body.folderId === null
+      ? { folderId: body.folderId }
+      : {}),
+    ...(typeof body.teamId === 'string' ? { teamId: body.teamId } : {}),
+    intent: indexIntentOf(intent),
+    source: itemSourceOf(body.source),
+  };
 }
 
 // A document the index knows (the caller holds its grant) that nothing has started yet (a copy, or an item made in

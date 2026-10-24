@@ -2,6 +2,7 @@
 // Listing, copying, deleting and sharing documents are the index's (lib/index-client.ts, the shared Explorer).
 import {
   INDEX_GRANT_HEADER,
+  indexIntentOf,
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
   svgBackgroundColor,
@@ -194,7 +195,7 @@ export async function apiCreateDocument(
       title: d.name,
       ...(d.teamId ? { teamId: d.teamId } : {}),
       ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
-      ...(d.intent ? { intent: intentWord(d.intent) } : {}),
+      ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
     });
   } catch (err) {
     if (err instanceof IndexError) {
@@ -228,11 +229,6 @@ export async function apiCreateDocument(
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');
   return liveDoc;
-}
-
-// The intent as the index keeps it, a word for filters and defaults: "pages".
-function intentWord(intent: CreationIntent): string {
-  return intent.mode;
 }
 
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
