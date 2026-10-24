@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { accountsServiceFor } from '../test-accounts-service';
-import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { reportSignIn } from './session-telemetry';
 

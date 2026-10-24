@@ -11,7 +11,7 @@ import {
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';
-import { captureTelemetry, TELEMETRY_ON } from './test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
 // membership reads through this rather than `.has`.

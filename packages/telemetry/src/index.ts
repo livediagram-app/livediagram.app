@@ -6,5 +6,6 @@
 
 export * from './apps';
 export * from './explorer-events';
+export * from './server';
 export * from './summary';
 export * from './wire';

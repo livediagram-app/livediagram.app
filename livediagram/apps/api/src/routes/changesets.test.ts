@@ -5,7 +5,7 @@ import { elementFingerprint, type Element } from '@livediagram/document';
 import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
-import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';

@@ -6,7 +6,7 @@ import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
 import { elementFingerprint, type Element } from '@liveplanner/project';
 import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -79,7 +79,7 @@ async function setUp(
     PLAN_ROOM: r.binding,
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
-  sent = stubTelemetry();
+  sent = captureTelemetry();
   clearTestProfiles();
   setTestProfile(OWNER, 'Webber', '#123456');
   const created = await call(db, 'POST', '/api/projects', {
@@ -102,7 +102,7 @@ const stored = (db: SqliteD1, tab = 't1') =>
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
 // The Agent events posted to the telemetry service since setUp.
-let sent: ReturnType<typeof stubTelemetry> = [];
+let sent: ReturnType<typeof captureTelemetry> = [];
 const events = () =>
   sent.filter((e) => e.category === 'Agent').map((e) => ({ action: e.action, type: e.type }));
 

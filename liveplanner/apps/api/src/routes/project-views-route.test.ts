@@ -3,7 +3,7 @@ import { OVERVIEW_TAB_BATCH } from '@liveplanner/project-views';
 import type { Element } from '@liveplanner/project';
 import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { getProject } from '../db/projects';
 import { answerOverview, parseViewQuery, type ParsedView } from './project-views-route';
@@ -82,7 +82,7 @@ async function setUp(extraTabs = 0, room?: unknown) {
     ...TELEMETRY_ON,
     ...(room ? { PLAN_ROOM: room } : {}),
   } as unknown as Partial<Env>);
-  sent = stubTelemetry();
+  sent = captureTelemetry();
   const tabs = [
     { id: 't1', name: 'Architecture', elements: ELEMENTS },
     ...Array.from({ length: extraTabs + 1 }, (_, i) => ({
@@ -101,7 +101,7 @@ const tabView = (db: SqliteD1, query: string, who: Who = {}) =>
 const docView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/projects/D?${query}`, undefined, who);
 // The Agent·Viewed types posted to the telemetry service since setUp, sorted.
-let sent: ReturnType<typeof stubTelemetry> = [];
+let sent: ReturnType<typeof captureTelemetry> = [];
 const viewed = () =>
   sent
     .filter((e) => e.category === 'Agent' && e.action === 'Viewed')

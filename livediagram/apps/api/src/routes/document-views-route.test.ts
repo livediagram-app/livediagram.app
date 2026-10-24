@@ -3,7 +3,7 @@ import { OVERVIEW_TAB_BATCH } from '@livediagram/document-views';
 import type { Element } from '@livediagram/document';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
-import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { getDocument } from '../db/documents';
 import { answerOverview, parseViewQuery, type ParsedView } from './document-views-route';
