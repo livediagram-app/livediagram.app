@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplateTabs, validTemplateKinds, type TemplateKind } from '@livediagram/templates';
+import { buildTemplateTab, validTemplateKinds, type TemplateKind } from '@livediagram/templates';
 import { elementsIssue } from './element-values';
 
 const box = (extra: Record<string, unknown>) => ({
@@ -46,8 +46,7 @@ describe('elementsIssue', () => {
   // A template read back with format "json" and sent again must always pass.
   it('passes every element of every template', () => {
     for (const kind of validTemplateKinds().split(', ') as TemplateKind[]) {
-      const tabs = buildTemplateTabs({ id: 't', name: 'T' }, kind, () => crypto.randomUUID());
-      for (const tab of tabs) expect(elementsIssue(tab.elements), kind).toBeNull();
+      expect(elementsIssue(buildTemplateTab('t', 'T', kind).elements), kind).toBeNull();
     }
   });
 });

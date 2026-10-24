@@ -271,13 +271,3 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
 // The "Blank Diagram" template is truly blank: no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.
-
-// A template's tabs: one, named null so it keeps the name the caller gives a new tab, its elements buildTemplate's.
-export type TemplateTabDef = {
-  name: string | null;
-  build: (cx: number, cy: number) => Element[];
-};
-
-export function templateTabs(kind: TemplateKind): TemplateTabDef[] {
-  return [{ name: null, build: (cx: number, cy: number) => buildTemplate(kind, cx, cy) }];
-}
