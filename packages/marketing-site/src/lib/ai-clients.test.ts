@@ -88,7 +88,11 @@ describe('one-click install links', () => {
 describe('a product binding', () => {
   it('names the product and its hosted MCP host, never another product', () => {
     const text = JSON.stringify(
-      aiClients({ name: 'liveplanner', mcpUrl: MCP_URL, hostedMcpHost: 'mcp.liveplanner.app' }),
+      aiClients({
+        name: 'liveplanner',
+        mcpUrl: 'https://mcp.liveplanner.app/mcp',
+        hostedMcpHost: 'mcp.liveplanner.app',
+      }),
     );
     expect(text).toContain(
       'Running your own liveplanner? Use your own MCP host in place of mcp.liveplanner.app',
