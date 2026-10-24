@@ -1,8 +1,5 @@
-// The palette on a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): a plan view, board, Sheet or
-// sticky (a note) tile fills a slot, and a Layout tile adds a row or a slot, rather than landing on the canvas the page
-// covers. A module seam, as card-types-opener is: the open Dashboard registers where they go, and the editor's element
-// creation hands a pressed tile to it while one is registered; a dragged tile is dropped on the page itself
-// (DashboardPage), which works out the zone it lands in (dashboardZone).
+// What fills a Dashboard's slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): the items Add to Slot places, and
+// the zone a slot carried by its grip lands in (dashboardZone).
 
 import {
   DASHBOARD_CARD_TYPES,
@@ -40,30 +37,6 @@ export type DashboardZone =
   | { kind: 'slot'; slotId: string }
   | { kind: 'row-gap'; index: number }
   | { kind: 'slot-gap'; rowId: string; index: number };
-
-type DashboardPlacer = (item: DashboardItem, zone: DashboardZone | null) => void;
-
-let placer: DashboardPlacer | null = null;
-
-// The open Dashboard's placer; returns the unregister.
-export function registerDashboardPlacer(next: DashboardPlacer): () => void {
-  placer = next;
-  return () => {
-    if (placer === next) placer = null;
-  };
-}
-
-// Something pressed in the palette, on a Dashboard: true when the Dashboard took it.
-export function placeOnDashboard(item: DashboardItem | null): boolean {
-  if (!placer || !item) return false;
-  placer(item, null);
-  return true;
-}
-
-// A Dashboard is open: the palette's tiles fill its slots.
-export function dashboardOpen(): boolean {
-  return placer !== null;
-}
 
 // The Layout tiles' rows (palette-dashboard-tiles): their height and how many slots they bring.
 const DASHBOARD_LAYOUT_ROWS: Readonly<Record<string, { height: number; slots: number }>> = {

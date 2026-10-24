@@ -25,8 +25,8 @@ const pathD = (i: number) => {
 const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
 // The shared palette tile catalogue: every creation tile across the categories as one data
-// entry — label, glyph, tinting flags, and an action descriptor that PaletteTileGrid maps to the
-// editor's add-handlers. Every category body, Popular, the Toolbar strip and the Search panel
+// entry — label, glyph, tinting flags, and an action descriptor the
+// editor's add-handlers act on. Every category body, Popular, the Toolbar strip and the Search panel
 // render from this one catalogue (arranged per mode by palette-layouts.ts), so a tile is defined
 // once and can never drift between the places it shows.
 //

@@ -6,18 +6,16 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { CommentMention, EmbedProvider, Finish, FrameHandle } from '@liveplanner/project';
+import type { CommentMention, Finish, FrameHandle } from '@liveplanner/project';
 import type {
   BackgroundPattern,
   Element,
   Layer,
-  ShapeKind,
   TextAlignX,
   TextAlignY,
   TextRun,
 } from '@liveplanner/project';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
@@ -84,7 +82,6 @@ export type CanvasProps = {
   snapGuideStore: SnapGuideStore;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
-  onSetCanvasTool: (tool: CanvasTool) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
   onPressSessionButton?: (element: import('@liveplanner/project').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
@@ -175,71 +172,14 @@ export type CanvasProps = {
   formatSourceId: string | null;
   canUndo: boolean;
   canRedo: boolean;
-  onAddShape: (kind: ShapeKind) => void;
-  onAddIcon: (iconId: string) => void;
-  // Sticker (docs/specs/010-palette/stickers.md): its own kind, its own handler.
-  onAddSticker: (stickerId: string) => void;
-  // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
-  onAddTechIcon: (iconId: string) => void;
-  onAddTable: () => void;
-  onAddAnnotation: () => void;
-  onAddLinkCard: () => void;
-  onAddVideo: (provider?: EmbedProvider) => void;
-  // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
-  // Header / Avatar carry an image and open the picker on drop.
-  onAddBanner: () => void;
-  onAddHero: () => void;
-  onAddHeader: () => void;
-  onAddCallout: () => void;
-  onAddStatRow: () => void;
-  onAddProcess: () => void;
-  onAddFlowchart: () => void;
-  onAddAvatar: () => void;
-  onAddText: () => void;
-  onAddSticky: () => void;
   // Any other file dropped on the canvas, at its canvas point (refused with a notice: the canvas takes no files).
   // Absent where files are refused silently.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@liveplanner/project').ArrowEnds) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
   // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
   reshapingArrowId?: string | null;
-  // The polygon click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from its tile.
-  onBeginPolygon: () => void;
-  // Draw-to-size mode. Picking any palette element except the annotation
-  // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
-  // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
-  // canvas-coord points (raw, no axis swap) so the editor can decide
-  // how to interpret them per intent: box intents floor to a 16px
-  // minimum and convert to top-left + width/height; the arrow intent
-  // treats the points as from / to. onCancelDraw backs the Cancel
-  // button on the in-canvas ModeBanner (Escape calls it from the
-  // keyboard hook too).
-  pendingDraw: PendingDraw | null;
-  onCommitDraw: (
-    intent: PendingDraw,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-  ) => void;
-  // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
-  // vertices in canvas coords (no simplification — the user placed
-  // each one) plus whether the loop closed on the start vertex.
-  onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // The line or arrow a draw would land if released now, as the canvas would show it, drawn in
-  // place of a stand-in while the drag is in flight. From lib/drawn-arrow-preview.
-  previewDrawnArrow?: (
-    intent: Extract<PendingDraw, { type: 'arrow' }>,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-  ) => import('@liveplanner/project').ArrowElement;
   // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
-  onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
   // Lightweight id + name of this project's tabs, so a link badge's
@@ -473,19 +413,6 @@ export type CanvasProps = {
   // arrow from that side (drag on desktop, tap-target on mobile — the
   // handler branches on the pointer type).
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
-  // Drag-from-palette drop: a palette tile dropped on the canvas places that
-  // element kind centred on the drop point. `art` carries the catalogue id
-  // for the two catalogue-driven kinds — `iconId` for an icon or brand mark,
-  // `stickerId` for a sticker (docs/specs/010-palette/stickers.md).
-  onDropPalette?: (
-    kind: ShapeKind | 'sticky',
-    canvasX: number,
-    canvasY: number,
-    // `choice` is the creation-time value a split tile carries (which session
-    // tool, reaction, mode or estimate scale), so a DRAG places what the tile
-    // says it places rather than the kind's default.
-    art?: { iconId?: string; stickerId?: string; choice?: string },
-  ) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;

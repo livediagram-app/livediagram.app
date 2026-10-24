@@ -916,7 +916,7 @@ export type FreehandElement = {
   // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
-  // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
+  // Polygon-tool paths (docs/specs/008-canvas/finish.md "Polygons"): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter
   // strokes (which want the smoothing).

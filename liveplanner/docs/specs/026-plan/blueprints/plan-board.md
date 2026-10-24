@@ -172,7 +172,7 @@ drop, and the board as a target for cards from other boards through `plan-board-
 boards on screen by element id), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
-`plan-card-drop.ts` (a palette card into the column under the pointer). `maximised-plan.ts` is the maximised board or view, a module store
+`maximised-plan.ts` is the maximised board or view, a module store
 (`{ id, kind: 'Board' | 'View' } | null`, `maximisePlanElement` / `restorePlanElement` / `releasePlanElement` /
 `useMaximisedPlanId`; `kind` names the telemetry), drawn in the canvas area (no zen chrome; the editor's chrome stays). `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
@@ -467,7 +467,6 @@ section). The column picker sends `Plan · Changed · ColumnAdded | ColumnAddedE
 | Keyboard moves and their announcement              | `apps/editor/components/plan/plan-board-keys.test.ts`                                                                                                     |
 | New card types, deleted-type fallback              | `packages/items/src/archive.test.ts`                                                                                                                    |
 | Face-down and votes spent                          | `packages/items/src/board.test.ts`                                                                                                                      |
-| A palette card lands only in a column              | `apps/editor/hooks/plan/plan-card-drop.test.ts`                                                                                                           |
 | Plan templates' boards                             | `apps/editor/lib/template-boards.test.ts`                                                                                                                 |
 | Card trail steps, cut-back, cap; children          | `apps/editor/components/plan/item-trail.test.ts`                                                                                                          |
 | Linked as rows, empty state, open                  | `apps/editor/components/plan/LinkedCards.test.tsx`                                                                                                        |

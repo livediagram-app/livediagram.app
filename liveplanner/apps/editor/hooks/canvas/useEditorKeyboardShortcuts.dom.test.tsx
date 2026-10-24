@@ -24,7 +24,6 @@ function deps(overrides: Overrides = {}) {
   };
   const target: Record<string, unknown> = {
     formatSourceId: null,
-    pendingDraw: null,
     selectedId: 'a',
     multiSelectedIds: new Set<string>(),
     editingId: null,
@@ -126,16 +125,10 @@ describe('plain letter and digit keys', () => {
       { isReadOnly: true, participant: true },
       { isReadOnly: true, participant: false },
     ]) {
-      const addSticky = vi.fn();
-      const addText = vi.fn();
-      const addShape = vi.fn();
-      const { bag } = deps({ selectedId: null, ...role, addSticky, addText, addShape });
+      const { bag } = deps({ selectedId: null, ...role });
       const { unmount } = renderHook(() => useEditorKeyboardShortcuts(bag));
       for (const key of ['n', 't', 'r', '2', 'v', 'h', 'i'])
         expect(press(key).defaultPrevented, key).toBe(false);
-      expect(addSticky).not.toHaveBeenCalled();
-      expect(addText).not.toHaveBeenCalled();
-      expect(addShape).not.toHaveBeenCalled();
       unmount();
     }
   });

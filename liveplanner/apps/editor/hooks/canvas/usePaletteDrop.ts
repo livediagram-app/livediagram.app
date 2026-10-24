@@ -1,136 +1,52 @@
 'use client';
 
-// Palette drag-drop onto the canvas, lifted out of Canvas. Accepts drops
-// carrying a palette shape / line-art icon / tech-icon / sticker MIME,
-// converts the drop point to world-space canvas coords, and dispatches
-// onDropPalette (and dropped files to onDropFile). Returns the
-// onDragOver / onDrop handlers to spread onto the
-// canvas <main>.
+// A file dropped on the canvas, lifted out of Canvas: converts the drop point to world-space canvas coords and
+// dispatches onDropFile. Returns the onDragOver / onDrop handlers to spread onto the canvas <main>.
 
-import { endPlanCardDrag, planCardDragOver } from '@/hooks/plan/plan-card-drop';
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
-import type { ShapeKind } from '@liveplanner/project';
 import { pointerToCanvas } from '@/lib/canvas';
-import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
-import { STICKER_DND_MIME } from '@/lib/stickers';
-import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
-import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { overFloatingPanel } from '@/lib/canvas-pointer';
 
 type PaletteDropDeps = {
-  // 'sticky' rides beside the shape kinds: a sticky is its own
-  // element type, and the drop needs to build one rather than a shape.
-  onDropPalette?: (
-    kind: ShapeKind | 'sticky',
-    canvasX: number,
-    canvasY: number,
-    art?: { iconId?: string; stickerId?: string; choice?: string },
-  ) => void;
   viewportZoom: number;
   // The TRANSFORMED canvas wrapper (scale + translate applied), same as the
   // double-click add path: its rect already bakes in zoom, pan AND the
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
-  // Any other file dropped on the canvas, with the canvas point it was released at: an image lands
-  // there as an image element (docs/specs/008-canvas/canvas-and-palette.md). Absent where the
-  // canvas takes no files.
+  // A file dropped on the canvas, with the canvas point it was released at
+  // (docs/specs/008-canvas/canvas-and-palette.md). Absent where the canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
 };
 
-export function usePaletteDrop({
-  onDropPalette,
-  viewportZoom,
-  wrapperRef,
-  onDropFile,
-}: PaletteDropDeps) {
+export function usePaletteDrop({ viewportZoom, wrapperRef, onDropFile }: PaletteDropDeps) {
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // Something inside the canvas already took this drag (a folder in the Explorer panel taking a dragged
     // project, docs/specs/013-workspace/folders.md "Drag-and-drop"): it is that target's, so the guard below must
     // not turn its accepted drop into a no-drop and cancel it.
     if (e.defaultPrevented) return;
-    // A drag back over a floating panel (the Palette itself) is a "changed my
-    // mind" — show no-drop and don't let the drop below add anything. The
-    // dragover events still bubble here from the panel, so check the target,
-    // not just the MIME type.
+    // A drag back over a floating panel is a "changed my mind": show no-drop and don't let the drop below add
+    // anything. The dragover events still bubble here from the panel, so check the target.
     if (overFloatingPanel(e.target)) {
       e.dataTransfer.dropEffect = 'none';
-      endPlanCardDrag();
       return;
     }
-    // A Plan card from the palette opens a gap in the board column under the pointer
-    // (docs/specs/026-plan/plan-mode.md "The palette").
-    planCardDragOver(e.clientX, e.clientY);
-    // A file (an image) is accepted the same way a tile is,
-    // so the cursor says it will land rather than showing the no-drop sign.
+    // A file is accepted, so the cursor says it will land rather than showing the no-drop sign.
     if (onDropFile && e.dataTransfer.types.includes('Files')) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      return;
-    }
-    // Allow dropping palette tiles (shapes / devices / icons).
-    if (
-      e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
-      e.dataTransfer.types.includes(ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(TECH_ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(STICKER_DND_MIME)
-    ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
     }
   };
   const onDrop = (e: ReactDragEvent<HTMLElement>) => {
-    endPlanCardDrag();
     // Handled by a target inside the canvas (as above).
     if (e.defaultPrevented) return;
-    // Dropped back onto a floating panel (the Palette) — cancel: the drop event
-    // bubbles up from the panel to this canvas handler, so without this guard a
-    // drop over the Palette would still add an element behind it.
+    // Dropped back onto a floating panel: cancel, so nothing lands behind it.
     if (overFloatingPanel(e.target)) return;
-    // `kind` or `kind|choice` — the creation-time choice a split tile
-    // carries (docs/specs/012-collaboration/session-button.md). Without parsing it back out, a
-    // dragged Vote tile dropped a timer.
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
-    if (file) {
-      e.preventDefault();
-      const rect = wrapperRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
-      return;
-    }
-    const payload = e.dataTransfer.getData(PALETTE_DND_MIME);
-    const [shapeKind, dragChoice] = payload.split('|');
-    // A line-art icon and a tech (brand) icon both drop as an 'icon' shape
-    // carrying the id; dropPaletteItem picks the telemetry type.
-    const iconId =
-      e.dataTransfer.getData(ICON_DND_MIME) || e.dataTransfer.getData(TECH_ICON_DND_MIME);
-    // A sticker carries its OWN mime (docs/specs/010-palette/stickers.md) precisely so it can't be
-    // mistaken for an icon: an icon dropped on a shape folds into that
-    // shape's label, and a sticker must never do that.
-    const stickerId = e.dataTransfer.getData(STICKER_DND_MIME);
-    if (!shapeKind && !iconId && !stickerId) return;
+    if (!file) return;
     e.preventDefault();
-    // Invert via the transformed wrapper rect (like the double-click add):
-    // measuring the untransformed <main> instead misses the origin-center
-    // pivot term, landing drops off-cursor at any zoom other than 100%.
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    // Land where the ghost + guides promised: the alignment snap
-    // the drag latched onto, not the raw cursor. Cleared immediately so a
-    // later drag can't inherit a stale offset.
-    const snap = getPaletteDragSnap();
-    setPaletteDragSnap(null);
-    const cx = raw.x + (snap?.dx ?? 0);
-    const cy = raw.y + (snap?.dy ?? 0);
-    if (stickerId) onDropPalette?.('sticker', cx, cy, { stickerId });
-    else if (iconId) onDropPalette?.('icon', cx, cy, { iconId });
-    else
-      onDropPalette?.(
-        shapeKind as ShapeKind,
-        cx,
-        cy,
-        dragChoice ? { choice: dragChoice } : undefined,
-      );
+    onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
   };
   return { onDragOver, onDrop };
 }

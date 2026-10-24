@@ -18,8 +18,6 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
-import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
-import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
@@ -97,7 +95,6 @@ import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionAc
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
-import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
 import { useVoteReview } from '@/hooks/canvas/useVoteReview';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
@@ -1044,17 +1041,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // Plan starts on Hand and leaves Format out (docs/specs/026-plan/plan-mode.md "The tools").
   usePlanDefaultTool(canvasTool, setCanvasTool);
-  // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
-  // "The palette"): never a card on the canvas. A miss or a refusal is said.
-  const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
-    const point = boardClientPoint(activeTab.elements, canvasX, canvasY);
-    const result = point
-      ? dropPlanCardAt(itemType ?? 'task', point.x, point.y)
-      : { outcome: 'missed' as const, message: PLAN_CARD_MISSED };
-    if (result.outcome === 'added') return;
-    debugLog('[plan] palette card not placed', { outcome: result.outcome });
-    toast.info(result.message);
-  };
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors are neither sent nor drawn. Derived here so
   // the outbound gate (useEditorBroadcast) and the render gate
@@ -1621,7 +1607,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
   // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
+  const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
       readSelection,
       activeId,
@@ -1903,29 +1889,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Element CRUD --------------------------------------------------------
 
-  // Draw-to-size + polygon tooling (pendingDraw state machine +
-  // commit handlers). beginDrawIfEnabled short-circuits the palette
-  // adds below into draw mode; the rest is consumed by the Canvas +
-  // keyboard hook. See useShapeDrawing.
-  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
-    useShapeDrawing({
-      editsBlocked: createBlocked,
-      readSelection,
-      canvasTool,
-      setCanvasTool,
-      activeTab,
-      commit,
-      setSelectedId,
-      setMultiSelectedIds,
-      setEditingId,
-      styleNewElement: styleMemory.styleNewElement,
-      onPlanCardPlace: placePaletteCard,
-    });
   useEffect(() => {
-    returnToHandRef.current = () => {
-      cancelDrawShape();
-      setCanvasTool('pan');
-    };
+    returnToHandRef.current = () => setCanvasTool('pan');
   });
   // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
   // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
@@ -1961,45 +1926,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
   });
 
-  // Palette element-creation handlers. See useElementCreation.
-  const {
-    addShape,
-    addIcon,
-    addSticker,
-    addTechIcon,
-    addTable,
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addBanner,
-    addHero,
-    addHeader,
-    addCallout,
-    addStatRow,
-    addProcess,
-    addFlowchart,
-    addAvatar,
-    dropPaletteItem,
-    addText,
-    addSticky,
-    addArrow,
-    handleCanvasDoubleClick,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
-  } = useElementCreation({
+  // Start Planning's placements and the double-click Text box. See useElementCreation.
+  const { dropPaletteItem, handleCanvasDoubleClick } = useElementCreation({
     editsBlocked: createBlocked,
     activeId,
     activeTab,
-    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
-    beginDraw,
     styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlace: placePaletteCard,
   });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
@@ -2483,8 +2419,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
-    connectSourceId,
-    connectArrowTo,
     tick,
     commit,
     markCheckpoint,
@@ -2570,18 +2504,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     copySelection,
     setCanvasTool: pickCanvasTool,
     canvasTool,
-    addShape,
-    addText,
-    addSticky,
-    addArrow,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
     onEscapeMindNode: escapeGrownMindNode,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
-    pendingDraw,
-    onCancelDraw: cancelDrawShape,
     onToggleLock: () => {
       if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
@@ -2747,36 +2675,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
       layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
-    addArrow,
     addComment,
     replaceCommentId,
-    addIcon,
-    addSticker,
-    addTechIcon,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
     dropIconOnElement,
     removeIconFromElement,
-    addShape,
-    addSticky,
-    addTable,
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addBanner,
-    addHero,
-    addHeader,
-    addCallout,
-    addStatRow,
-    addProcess,
-    addFlowchart,
-    addAvatar,
     dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
     getViewportCenter,
     addTab,
-    addText,
     anyWelcomeOpen,
     autoAlignTab,
     autoLayoutTab,
@@ -2813,13 +2719,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginPolygon,
     bringSelectedToFront,
     broadcastCursor,
     canvasPointerRef,
     canRedo,
     canUndo,
-    cancelDrawShape,
     cancelEdit,
     canvasMainRef,
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
@@ -2836,8 +2740,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commentRows,
     commentThreadOpenId,
     commentThreadOpenCell,
-    commitDraw,
-    commitPolygon,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
@@ -2904,7 +2806,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openProject,
     openNote,
     participantsByTab,
-    pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,

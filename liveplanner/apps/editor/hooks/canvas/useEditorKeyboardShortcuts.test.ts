@@ -14,10 +14,6 @@ function spyLive() {
   const live = {
     setCanvasTool: (t: string) => calls.push(`tool:${t}`),
     onToggleZen: () => calls.push('zen'),
-    addShape: (k: string) => calls.push(`shape:${k}`),
-    addText: () => calls.push('text'),
-    addSticky: () => calls.push('sticky'),
-    addArrow: () => calls.push('arrow'),
   };
   // The actions only touch the subset of deps above; cast through unknown
   // so we don't have to stub the whole EditorKeyboardShortcutsDeps bag.

@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   ensureIconCatalogs,
   getIconLoaded,
-  getLoadedIconCatalog,
-  getLoadedTechIconCatalog,
-  getTechIconLoaded,
   isIconCatalogsLoaded,
+  resolveIconArtLoaded,
   subscribeIconCatalogs,
 } from './icon-registry';
 import { getIcon, PLACEHOLDER_ICON } from './icons';
@@ -20,9 +18,7 @@ describe('icon-registry load lifecycle', () => {
   it('starts unloaded: sync lookups are empty, placeholder + id set still answer', () => {
     expect(isIconCatalogsLoaded()).toBe(false);
     expect(getIconLoaded('server')).toBeUndefined();
-    expect(getTechIconLoaded('aws-s3')).toBeUndefined();
-    expect(getLoadedIconCatalog()).toEqual([]);
-    expect(getLoadedTechIconCatalog()).toEqual([]);
+    expect(resolveIconArtLoaded('aws-s3')).toBeUndefined();
     // The graceful-degradation contract before the chunk lands: line-art
     // lookups serve the placeholder (never blank) and the tech-id gate
     // answers exactly (it rides a first-load id set, not the async data).
@@ -46,17 +42,12 @@ describe('icon-registry load lifecycle', () => {
     unsubscribe();
   });
 
-  it('serves both catalogues after load, with line-art order preserved', async () => {
+  it('serves both catalogues after load', async () => {
     await ensureIconCatalogs();
     expect(getIconLoaded('server')?.id).toBe('server');
-    expect(getTechIconLoaded('aws-s3')?.label).toBe('S3');
-    const icons = getLoadedIconCatalog();
-    expect(icons.length).toBeGreaterThan(0);
-    // Part 1 leads part 2, so index 0 is still the catalogue's default icon.
-    expect(icons[0]?.id).toBe('user');
-    expect(getLoadedTechIconCatalog().length).toBeGreaterThan(0);
+    expect(resolveIconArtLoaded('aws-s3')?.colored).toBe(true);
     // Unknown ids stay undefined even when loaded.
     expect(getIconLoaded('does-not-exist')).toBeUndefined();
-    expect(getTechIconLoaded('does-not-exist')).toBeUndefined();
+    expect(resolveIconArtLoaded('does-not-exist')).toBeUndefined();
   });
 });

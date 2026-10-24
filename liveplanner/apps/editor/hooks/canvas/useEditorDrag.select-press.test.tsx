@@ -34,7 +34,6 @@ function harness(multi: string[]) {
     applyFormatFromSource: vi.fn(),
     formatToolActive: false,
     setFormatSourceId: vi.fn(),
-    connectSourceId: null,
     connectArrowTo: vi.fn(),
     tick: vi.fn(),
     commit: vi.fn(),

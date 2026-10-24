@@ -54,7 +54,6 @@ function harness(elements: Element[]) {
     setFormatSourceId: vi.fn(),
     groupSourceId: null,
     completeGrouping: vi.fn(),
-    connectSourceId: null,
     connectArrowTo: vi.fn(),
     tick: (m: (els: Element[]) => Element[]) => {
       current = m(current);

@@ -80,7 +80,6 @@ describe('computeDockAnchor', () => {
 
 describe('canvasCursorClass', () => {
   const rest = {
-    pendingDraw: false,
     pan: false,
     marquee: false,
     canvasTool: 'pan',
@@ -88,9 +87,6 @@ describe('canvasCursorClass', () => {
     isPaintMode: false,
   };
 
-  it('a pending draw wins over everything', () => {
-    expect(canvasCursorClass({ ...rest, pendingDraw: true, pan: true })).toBe('cursor-crosshair');
-  });
   it('an active pan shows the grabbing cursor', () => {
     expect(canvasCursorClass({ ...rest, pan: true })).toBe('cursor-grabbing');
   });

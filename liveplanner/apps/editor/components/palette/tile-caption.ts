@@ -2,7 +2,7 @@ import { headlineCase } from '@liveplanner/api-schema';
 
 // The short name a palette tile shows, derived from its action label.
 //
-// One definition shared by both layouts — the 3-column grid (PaletteIconButton)
+// One definition shared by both layouts — the tile grid
 // and the Tools tab's rows (PaletteToolRows) — because a tool called "Text" in
 // one and "Add Text" in the other is the kind of drift that makes a palette
 // feel unfinished.

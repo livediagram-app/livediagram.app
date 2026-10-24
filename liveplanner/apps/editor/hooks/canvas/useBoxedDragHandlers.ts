@@ -38,13 +38,6 @@ export function useBoxedDragHandlers({
   // a tap that panned instead of dragging (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
   const pressArmedAction = (elementId: string): boolean => {
     const d = depsRef.current;
-    // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
-    // is the action" shape as the Format tool below. Draws a
-    // pinned connector to the clicked shape instead of selecting it.
-    if (d.connectSourceId !== null) {
-      d.connectArrowTo(elementId);
-      return true;
-    }
     // Persistent Format tool: first click arms the source, each later
     // click paints onto the target and (in Keep painting) KEEPS the
     // source armed so the user can format many elements in a row.

@@ -28,7 +28,6 @@ Scope, by file:
 | `apps/editor/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |
 | `apps/editor/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
-| `apps/editor/app/project/[id]/useArrowConnect.ts`               | Click-to-connect: creation anchors only, no rebind                                                 |
 | `apps/editor/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
 | `apps/editor/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |

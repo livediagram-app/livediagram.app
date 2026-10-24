@@ -232,7 +232,6 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`     |
 | Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`  |
 | Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`         |
-| Palette card refused in a left-out column                 | `apps/editor/hooks/plan/plan-card-drop.test.ts`             |
 | Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)         |
 
 ## Constants and configuration

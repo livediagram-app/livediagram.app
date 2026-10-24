@@ -11,10 +11,6 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
-// The theme-tinted palette tile + its tint context moved to
-// PaletteIconButton.tsx; re-exported so existing imports keep working.
-export { IconButton, PaletteTintProvider, type PaletteTint } from './PaletteIconButton';
-
 export function SizeButton({
   active,
   onClick,

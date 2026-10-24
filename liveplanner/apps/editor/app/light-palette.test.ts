@@ -156,7 +156,6 @@ describe('solid brand fills in light mode', () => {
 // (WCAG 1.4.3 and 1.4.11 exempt pure decoration). Everything else in light brand ink is brand-700.
 const DECORATIVE_INK = new Set([
   'apps/editor/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
-  'apps/editor/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
   'apps/editor/components/plan/dashboard/DashboardSheetMetric.tsx', // an aria-hidden sparkline
 ]);
 

@@ -3,11 +3,9 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
-import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
-import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
@@ -68,28 +66,9 @@ export function EditorCanvasHost() {
     hideOtherLayersOp,
     layerPreviewId,
     setLayerPreviewId,
-    addAnnotation,
-    addArrow,
-    addAvatar,
-    addBanner,
-    addCallout,
     beginArrowBend,
     beginArrowScale,
-    addHeader,
-    addHero,
-    addIcon,
-    addSticker,
-    addLinkCard,
-    addVideo,
-    addProcess,
-    addFlowchart,
-    addShape,
-    addStatRow,
-    addSticky,
     dropBoardFile,
-    addTable,
-    addTechIcon,
-    addText,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
@@ -103,11 +82,8 @@ export function EditorCanvasHost() {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginPolygon,
     broadcastCursor,
     canvasPointerRef,
-    cancelConnect,
-    cancelDrawShape,
     cancelEdit,
     canRedo,
     canUndo,
@@ -123,9 +99,6 @@ export function EditorCanvasHost() {
     actionRows,
     commentRows,
     commentsPanelPosition,
-    commitDraw,
-    commitPolygon,
-    styleNewElement,
     commitLabel,
     deleteCurvePoint,
     deleteMultiSelected,
@@ -133,7 +106,6 @@ export function EditorCanvasHost() {
     projectId,
     projectName,
     nameProject,
-    dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -174,7 +146,6 @@ export function EditorCanvasHost() {
     openComments,
     openNote,
     pauseTimer,
-    pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
@@ -202,7 +173,6 @@ export function EditorCanvasHost() {
     pickerFor,
     collabElements,
     tabs,
-    setCanvasTool,
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
@@ -406,14 +376,6 @@ export function EditorCanvasHost() {
           setViewportOffset={setViewportOffset}
           elements={canvasElements}
           tabLayers={activeTab.layers}
-          previewDrawnArrow={(intent, startX, startY, endX, endY) =>
-            drawnArrowAsShown(intent, startX, startY, endX, endY, {
-              elements: activeTab.elements,
-              theme: activeTheme,
-              styleNewElement,
-              surface,
-            })
-          }
           layerInertIds={layerInertIds}
           shiftDupGhostIds={shiftDupGhostIds}
           snapGuideStore={snapGuideStore}
@@ -425,7 +387,6 @@ export function EditorCanvasHost() {
           }}
           onSelectMarquee={selectMarquee}
           canvasTool={canvasTool}
-          onSetCanvasTool={setCanvasTool}
           // Session button (docs/specs/012-collaboration/session-button.md) / Picker (docs/specs/012-collaboration/picker.md):
           // see useBehaviourElements — the press resolves what to do from the
           // element and calls the tool that already exists.
@@ -498,33 +459,9 @@ export function EditorCanvasHost() {
           formatSourceId={formatSourceId}
           canUndo={canUndo && !activeTabLocked}
           canRedo={canRedo && !activeTabLocked}
-          onAddShape={addShape}
-          onAddIcon={addIcon}
-          onAddSticker={addSticker}
-          onAddTechIcon={addTechIcon}
-          onAddTable={addTable}
-          onAddAnnotation={addAnnotation}
-          onAddLinkCard={addLinkCard}
-          onAddVideo={addVideo}
-          onAddBanner={addBanner}
-          onAddHero={addHero}
-          onAddHeader={addHeader}
-          onAddCallout={addCallout}
-          onAddStatRow={addStatRow}
-          onAddProcess={addProcess}
-          onAddFlowchart={addFlowchart}
-          onAddAvatar={addAvatar}
-          onAddText={addText}
-          onAddSticky={addSticky}
           onDropFile={isReadOnly ? undefined : dropBoardFile}
-          onAddArrow={addArrow}
           reshapingArrowId={reshapingArrowId}
-          onBeginPolygon={beginPolygon}
-          pendingDraw={pendingDraw}
-          onCommitDraw={commitDraw}
-          onCommitPolygon={commitPolygon}
           settings={userPreferences}
-          onCancelDraw={cancelDrawShape}
           onUndo={undo}
           onRedo={redo}
           mapPosition={mapPosition}
@@ -640,11 +577,9 @@ export function EditorCanvasHost() {
             },
           }}
           onDeselect={() => {
-            // Clicking empty canvas also cancels an armed arrow-connect, and
-            // wraps up the Format tool — restoring the pre-Format tool — so a
+            // Clicking empty canvas wraps up the Format tool — restoring the pre-Format tool — so a
             // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
             if (canvasTool === 'format') exitFormatTool();
-            cancelConnect();
             setSelectedId(null);
             setMultiSelectedIds(new Set());
             setEditingId(null);
@@ -799,7 +734,6 @@ export function EditorCanvasHost() {
           onPrevVoteResult={prevVoteResult}
           onDoneVoteReview={doneVoteReview}
           onToggleAspectLock={toggleAspectLockSelected}
-          onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
           onSpawnConnect={spawnConnectSelected}
           onStartArrow={handleStartArrow}
           onToggleLockSelected={toggleLockSelected}

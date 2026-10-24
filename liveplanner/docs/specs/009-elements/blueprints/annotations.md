@@ -18,10 +18,7 @@ Scope, by file:
 | `apps/editor/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
 | `apps/editor/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
 | `apps/editor/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
-| `apps/editor/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
-| `apps/editor/app/project/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
 | `apps/editor/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                       |
-| `apps/editor/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
 | `apps/editor/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                               |
 | `apps/editor/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
@@ -48,13 +45,9 @@ component), "tooltip" for the hover preview.
 
 ### Add
 
-1. The Write tile `tools:annotation` calls `addAnnotation` directly; it never arms draw mode
-   (`draw-mode.ts` leaves it out).
-2. `addAnnotation` returns early when `editsBlocked`. Otherwise `addBoxed` places
-   `createAnnotation(x, y)` centred on the viewport, with `deriveNewBoxedColours` applied, selects
-   it, and commits once (one undo step).
-3. `track('Element', 'Added', 'Annotation')`.
-4. A new annotation is `44 × 44` and `aspectLocked: true` (see Constants); `inheritedSizeFor`
+1. liveplanner has no annotation tile (Plan shows no palette, `docs/specs/026-plan/plan-mode.md` "No palette"):
+   an annotation arrives from a template, an import or the MCP.
+2. A new annotation is `44 × 44` and `aspectLocked: true` (see Constants); `inheritedSizeFor`
    returns its own size whatever is selected.
 
 ### Hover

@@ -157,8 +157,7 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
 - **Writers** (each produces a fresh block):
   - `createFreehand(rawPoints, closed, pressures?)` and `freehandGeometry` (factories):
     `freehandGeometry` keeps its box rule and returns normalised points (unpacked);
-    `createFreehand` packs them with the pressures. The Polygon tool (`useCanvasPolygonGesture.ts`)
-    and the templates write through it.
+    `createFreehand` packs them with the pressures. The templates write through it.
   - The style preset that drops pen ink (`style-presets.ts`): re-packs the same points without
     pressures.
 - **Readers** (each decodes through the cache): canvas freehand view (pen outline and the
@@ -200,7 +199,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                | unchanged (already migrate)                                                         |
 | Offline store    | `apps/editor/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
 | MCP server       | `packages/project/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
 | Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence

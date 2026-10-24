@@ -18,7 +18,6 @@ function setup(canvasTool = 'select', { readOnly = false } = {}) {
     useCanvasSurfaceGestures({
       canvasTool,
       middleMousePan: true,
-      pendingDraw: null,
       viewportOffset: { x: 0, y: 0 },
       viewportZoom: 1,
       mainRef: { current: null },
@@ -27,7 +26,6 @@ function setup(canvasTool = 'select', { readOnly = false } = {}) {
       setPan,
       setMarquee,
       isoCamera: {},
-      beginPendingDrawGesture: () => false,
       onCanvasContextMenu: readOnly ? undefined : onCanvasContextMenu,
       onDeselect,
       onCanvasDoubleClick: vi.fn(),
@@ -228,8 +226,7 @@ describe('a press on the canvas cover', () => {
       useCanvasSurfaceGestures({
         canvasTool: 'select',
         middleMousePan: true,
-        pendingDraw: null,
-        viewportOffset: { x: 0, y: 0 },
+          viewportOffset: { x: 0, y: 0 },
         viewportZoom: 1,
         mainRef: { current: null },
         wrapperRef: { current: null },
@@ -237,8 +234,7 @@ describe('a press on the canvas cover', () => {
         setPan: vi.fn(),
         setMarquee: vi.fn(),
         isoCamera: {},
-        beginPendingDrawGesture: () => false,
-        onDeselect: vi.fn(),
+          onDeselect: vi.fn(),
         onCanvasDoubleClick: vi.fn(),
         interceptPress,
       } as never),
@@ -308,8 +304,7 @@ describe('a double press on the bare canvas', () => {
       useCanvasSurfaceGestures({
         canvasTool,
         middleMousePan: true,
-        pendingDraw: null,
-        viewportOffset: { x: 0, y: 0 },
+          viewportOffset: { x: 0, y: 0 },
         viewportZoom: 2,
         mainRef: { current: null },
         wrapperRef: { current: wrapper },
@@ -318,8 +313,7 @@ describe('a double press on the bare canvas', () => {
         setMarquee: vi.fn(),
         // The inert tools handle the press themselves; any of their calls is a no-op here.
         isoCamera: inertTool(),
-        beginPendingDrawGesture: () => false,
-        onDeselect: vi.fn(),
+          onDeselect: vi.fn(),
         onCanvasDoubleClick,
       } as never),
     );

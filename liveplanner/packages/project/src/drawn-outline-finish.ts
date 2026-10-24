@@ -1,5 +1,5 @@
 // Outlines drawn on purpose in their finish (docs/specs/008-canvas/finish.md "Polygons"): a Polygon-tool
-// outline (docs/specs/008-canvas/polygon-tool.md), placed point by point, is a drawing like a shape's outline, not a
+// outline (docs/specs/008-canvas/finish.md "Polygons"), placed point by point, is a drawing like a shape's outline, not a
 // hand's stroke, so it follows its finish as a shape does. Pen strokes and smoothed pencil strokes are already
 // hand-drawn and stay as drawn.
 import {

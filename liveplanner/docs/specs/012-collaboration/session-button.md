@@ -90,8 +90,8 @@ element, its face and its menu are identical; only the config differs, and
 three kinds would be three registrations to keep in step for a field that
 already exists.
 
-The choice rides the draw intent (`PendingDraw.session`) and is applied at
-commit through `defaultSessionConfig`, which fills in a working default per
+The choice is applied at
+creation through `defaultSessionConfig`, which fills in a working default per
 tool (a timer's five minutes, a vote's three dots).
 
 ## No tooltip on the button

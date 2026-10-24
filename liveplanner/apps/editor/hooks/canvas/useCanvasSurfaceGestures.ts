@@ -33,7 +33,6 @@ const inCornerCluster = (target: EventTarget | null): boolean =>
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
-  pendingDraw,
   viewportOffset,
   viewportZoom,
   mainRef,
@@ -42,7 +41,6 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   isoCamera,
-  beginPendingDrawGesture,
   interceptPress,
   onCanvasContextMenu,
   onDeselect,
@@ -51,7 +49,6 @@ export function useCanvasSurfaceGestures({
   canvasTool: CanvasProps['canvasTool'];
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
-  pendingDraw: CanvasProps['pendingDraw'];
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
@@ -60,9 +57,6 @@ export function useCanvasSurfaceGestures({
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
   isoCamera: ReturnType<typeof useIsometricCamera>;
-  // Starts the queued draw-to-size gesture; true when it
-  // claimed the press (see useCanvasDrawGesture).
-  beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
   // A tool that owns a primary press on the canvas (the Format tool on a page's paper); true when
   // it claimed the press.
   interceptPress?: (e: ReactPointerEvent) => boolean;
@@ -166,18 +160,6 @@ export function useCanvasSurfaceGestures({
       });
       return;
     }
-    // Draw-to-size intercept must run in the capture phase so a
-    // queued draw can begin ON TOP of an existing element. An
-    // element's own bubble-phase pointerdown selects / drags it and
-    // stops propagation, which would otherwise make it impossible
-    // to draw a new element over another. Capturing here lets the
-    // draw win regardless of what's under the pointer; the
-    // background bubble handlers still cover the rect-less edge
-    // case where this returns false.
-    if (e.button === 0 && pendingDraw) {
-      focusCanvas();
-      if (beginPendingDrawGesture(e)) e.stopPropagation();
-    }
   };
 
   // Right-clicking (or long-pressing) the empty canvas deselects, then opens
@@ -269,16 +251,6 @@ export function useCanvasSurfaceGestures({
     // clipboard-image paste works after the user has interacted
     // with the canvas at least once.
     focusCanvas();
-    // Draw-to-size intercept: when an intent is pending, this
-    // pointer-down starts the size-drag instead of falling
-    // through to pan / marquee. Coords convert immediately to
-    // canvas coords so the rest of the gesture (the window-
-    // level move + up listeners) operates in one space.
-    // Usually the capture-phase intercept above has already started
-    // the gesture (and stopped propagation); this is the fallback
-    // for the rect-less edge case where it didn't. A press on the corner cluster's strip frames
-    // (which don't stop it) bubbles here, and is chrome, not a draw.
-    if (pendingDraw && !inCornerCluster(e.target) && beginPendingDrawGesture(e)) return;
     // Auto-fit on load can scale the wrapper below 1, which
     // shrinks its hit region inside `main`. Without this mirror
     // handler, clicks in the "outside the shrunken wrapper but
@@ -309,16 +281,6 @@ export function useCanvasSurfaceGestures({
     // doesn't bubble through the outer onPointerDown's
     // currentTarget gate) still leaves the canvas focused.
     focusCanvas();
-    // Draw-to-size intercept (mirror of the outer handler).
-    // beginPendingDrawGesture branches on `freehand` internally:
-    // a freehand intent seeds the polyline accumulator, every
-    // other intent seeds the box / line drag. (An earlier inline
-    // version always started a drawDrag, so a pen click landed
-    // BOTH a penPoints state and a drawDrag and mis-routed into
-    // createImage; the shared helper has the single correct
-    // branch.) Usually the capture-phase intercept has already
-    // handled this; kept as the rect-less fallback.
-    if (pendingDraw && beginPendingDrawGesture(e)) return;
     routePanOrMarquee(e);
   };
 

@@ -42,18 +42,16 @@ export function computeDockAnchor(
 
 // The Tailwind cursor class for the canvas surface, resolved from the
 // current gesture + tool state. Order matters: an in-progress gesture
-// (draw / pan / marquee) wins over the resting tool cursor, and holding
+// (pan / marquee) wins over the resting tool cursor, and holding
 // Space (pan override) suppresses the tool cursors.
 export function canvasCursorClass(input: {
-  pendingDraw: boolean;
   pan: boolean;
   marquee: boolean;
   canvasTool: string;
   spaceHeld: boolean;
   isPaintMode: boolean;
 }): string {
-  const { pendingDraw, pan, marquee, canvasTool, spaceHeld, isPaintMode } = input;
-  if (pendingDraw) return 'cursor-crosshair';
+  const { pan, marquee, canvasTool, spaceHeld, isPaintMode } = input;
   if (pan) return 'cursor-grabbing';
   if (marquee) return 'cursor-crosshair';
   // Isometric view (docs/specs/008-canvas/isometric-view.md) is navigation-only: it pans like Hand, so it

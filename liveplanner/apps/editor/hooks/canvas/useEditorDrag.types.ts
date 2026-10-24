@@ -45,9 +45,6 @@ export type EditorDragDeps = {
   // of selecting / dragging. `setFormatSourceId` arms the source.
   formatToolActive: boolean;
   setFormatSourceId: (id: string | null) => void;
-  // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): armed source + the action.
-  connectSourceId: string | null;
-  connectArrowTo: (targetId: string) => void;
   // Element setters from the editor. `tick` writes elements without
   // taking a history checkpoint (used during the move-effect's
   // 60+/sec updates); `commit` writes elements AND snapshots history

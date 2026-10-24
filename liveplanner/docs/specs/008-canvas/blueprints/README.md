@@ -9,7 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./corner-radius.md - when implementing or changing how a corner preset is drawn (`cornerRadiusPx`, the quarter cap)
 - ./quick-style-panel.md - when implementing or changing the quick style panel, its swatches, placement, or style memory
 - ./selection-clicks.md - when implementing or changing what a plain click or Shift-click does to the selection
-- ./resize.md - when implementing or changing resize handles, the aspect lock, Shift constraints, draw-to-size with Shift, or where selection grips draw
+- ./resize.md - when implementing or changing resize handles, the aspect lock, Shift constraints, or where selection grips draw
 - ./canvas-performance.md - when implementing or changing the gesture store, element view stability, the element grid, the Map's settled drawing, or the performance probe
 - ./viewport-store.md - when implementing or changing where the pan and zoom live, or who renders for a pan or zoom
 - ./selection-store.md - when implementing or changing where the selection lives, who re-renders on a selection change, or the canvas boundary

@@ -44,9 +44,8 @@ export function pointerToCanvas(
 // boxed element's width / height (so adding elements one after another
 // keeps a consistent size), falling back to the factory default when
 // nothing boxed is selected. Circles + diamonds are forced square — a
-// non-square inherited size would squash them. Shared by the palette
-// tap-to-drop (addBoxed) and the combined add gesture's tap branch
-// (useShapeDrawing.commitDraw) so both paths size new elements the same.
+// non-square inherited size would squash them. Used by addBoxed, so every
+// boxed add sizes the same way.
 export function inheritedSizeFor(
   base: BoxedElement,
   selected: Element | null | undefined,

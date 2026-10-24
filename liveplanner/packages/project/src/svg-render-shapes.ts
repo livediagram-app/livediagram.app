@@ -144,7 +144,7 @@ export function svgShapeSilhouette(
 
 // A freehand sketch's real path (normalised points scaled to the box), drawn
 // the way FreehandSvg draws it on the canvas: a pen stroke through the same
-// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/polygon-tool.md) with its straight
+// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/finish.md "Polygons") with its straight
 // edges, and nothing for a lone point. Closed paths fill like the canvas;
 // open ones render stroke-only.
 export function svgFreehandShape(

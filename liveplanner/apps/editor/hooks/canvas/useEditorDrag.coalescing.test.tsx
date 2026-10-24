@@ -62,7 +62,6 @@ function harness() {
     applyFormatFromSource: vi.fn(),
     formatToolActive: false,
     setFormatSourceId: vi.fn(),
-    connectSourceId: null,
     connectArrowTo: vi.fn(),
     // A drag writes the project once, on release; its per-frame writes are counted above, on the
     // preview.

@@ -66,7 +66,7 @@ worked on like a board.', icon: <SheetArt size={18} /> }` after `plan-visualisat
 'plan-sheets', label: 'Add Sheet', caption: 'Sheet', ..., action: { type: 'shape', kind: 'plan-sheet' }, icon: <SheetArt size={18} /> }]`,
   spread into `PLAN_TILES`. `SheetArt` (`components/sheets/sheet-art.tsx`, main bundle) is a small grid with a
   filled header row and one cell ringed, on the 22-unit grid of the other Plan glyphs.
-- Placement: `draw-commit.ts` and `useElementCreation.ts` call `placeNewSheet()` (`lib/sheet-seeds.ts`): a new
+- Placement: `useElementCreation.ts` calls `placeNewSheet()` (`lib/sheet-seeds.ts`): a new
   sheet id, the element with `planSheet: { sheetId }`, the placement remembered. `useSheetModel` takes it
   (`takePlacedSheet`) as the Sheet first draws and makes the store `create` with `title: nextSheetTitle(titles)`
   (`Sheet N`, or the CSV's file name made unique) and an empty 100 × 26 layout, with `setupPending: true` unless it
@@ -508,7 +508,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Element validation, factory size, labels; static SVG render | `packages/project/src/plan-sheet.test.ts`                                                                                                     |
 | Palette category, tile, layout order, keywords              | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`                                                           |
-| Placement names a new sheet; placed and copied sheets made  | `apps/editor/lib/draw-commit.test.ts`, `lib/sheet-seeds.test.ts`, `components/sheets/useSheetModel.test.tsx`                                     |
+| Placement names a new sheet; placed and copied sheets made  | `apps/editor/lib/sheet-seeds.test.ts`, `components/sheets/useSheetModel.test.tsx`                                     |
 | A CSV dropped in Plan mode places a filled Sheet            | `apps/editor/hooks/sheets/useSheetCsvDrop.test.ts`                                                                                               |
 | Geometry: offsets, frozen, hidden, merges, hit testing      | `apps/editor/components/sheets/sheet-geometry.test.ts`                                                                                           |
 | Keyboard map: every row of the spec's table                 | `apps/editor/components/sheets/sheet-keys.test.ts`, `SheetGrid.test.tsx`                                                                         |

@@ -85,7 +85,7 @@ describe('isValidElement', () => {
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
-    // Highlighter recipe (docs/specs/006-project/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
+    // Highlighter recipe (docs/specs/006-project/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/finish.md "Polygons").
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);

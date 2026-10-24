@@ -17,13 +17,11 @@ import {
   layerOpacityOf,
   type CommentMention,
   createElementGridTracker,
-  type ElementIndex,
 } from '@liveplanner/project';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import {
   SelectionGripsContext,
   SelectionGripsLayer,
@@ -43,14 +41,10 @@ import {
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds } from '@liveplanner/project';
 
-// What a drawn arrow resolves its ends against on a board with no arrows yet.
-const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
 type ElementsExtras = {
-  // The draw gesture in flight (canvas coords), for the line or arrow it would land.
-  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
@@ -86,7 +80,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
-    drawDrag,
     isPaintMode,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
@@ -506,25 +499,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             tabFinish={tabFinish}
             fontEpoch={fontEpoch}
           />
-
-          {/* The line or arrow being drawn (docs/specs/007-editor/editor-modes.md): the
-          element the release lands, after every element, where it will land. */}
-          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-            <DrawnArrowPreview
-              arrow={props.previewDrawnArrow(
-                props.pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )}
-              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-              occluders={drawnElements}
-              draftLayout={arrowLabels.draftLayout}
-              fontFamily={tabFontStack}
-              withDefs={!hasArrows}
-            />
-          ) : null}
 
           {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}

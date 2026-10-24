@@ -40,17 +40,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // but I don't want to re-attach the listener on every render."
   const liveRef = useLatest(deps);
 
-  // Escape cancels whichever transient editor mode is active:
-  // format-painter, or a pending draw-to-size shape.
+  // Escape cancels whichever transient editor mode is active: the format painter, Format or Isometric.
   // Keeping the narrow deps means the listener only attaches while
   // one of those modes is on, so we pay nothing in the idle case.
   // The setters come through the ref so the same-render values apply.
   useEffect(() => {
-    const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
+    const { formatSourceId, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
     if (
       formatSourceId === null &&
-      pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric'
     )
@@ -70,7 +68,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // knows it's spoken for.
         if (
           live.formatSourceId !== null ||
-          live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
           live.canvasTool === 'isometric'
         ) {
@@ -86,14 +83,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (liveRef.current.canvasTool === 'isometric') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
-        if (liveRef.current.pendingDraw !== null) {
-          liveRef.current.onCancelDraw();
-        }
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
+  }, [deps.enabled, deps.formatSourceId, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -178,7 +172,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
       // and with nothing MORE transient to peel first: an active mode
-      // (format / draw / isometric — the narrow effect above
+      // (format / isometric — the narrow effect above
       // owns those) or a live selection each take their own Escape, so
       // one press exits exactly one layer instead of snapping the whole
       // stack back at once.
@@ -188,7 +182,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         live.editingId === null &&
         live.formatSourceId === null &&
-        live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         selectedId === null &&
@@ -215,7 +208,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // --- Escape clears the selection ---
       // When Escape has no transient mode to cancel (the narrow first
-      // effect above owns format / pending-draw / Format /
+      // effect above owns the format painter / Format /
       // Isometric) and the user isn't typing, a live selection is
       // dropped, mirroring a click on empty canvas. Guarded on the same
       // mode flags so a single Escape does one thing: cancel the mode
@@ -225,7 +218,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         live.editingId === null &&
         live.formatSourceId === null &&
-        live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         (selectedId !== null || multiSelectedIds.size > 0)

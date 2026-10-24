@@ -39,7 +39,5 @@ export function isDragTravel(dx: number, dy: number): boolean {
 //   - `MOVE_SLOP_PX = 10` (hooks/ui/useLongPress) is how far a finger may drift
 //     DURING a half-second hold before the long-press is abandoned. A hold is
 //     touch-only and lasts much longer than a click, so it has to be looser.
-//   - `TAP_TRAVEL_PX = 16` (lib/draw-commit) is measured in CANVAS px, which
-//     scale with zoom, and gates what a press on the canvas draws.
 //   - `ARROW_SNAP_THRESHOLD_PX = 12` (lib/canvas) is a snapping distance, not a
 //     gesture threshold at all.

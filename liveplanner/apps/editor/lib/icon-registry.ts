@@ -107,35 +107,6 @@ export function getIconLoaded(id: string | undefined): IconDef | undefined {
   return id ? loaded?.iconById.get(id) : undefined;
 }
 
-// Sync tech-icon lookup: undefined until the chunk lands (or for an unknown
-// id). Note `isTechIconId` (tech-icons.ts) stays truthful BEFORE load via its
-// lightweight id set — only the heavy colour/glyph data waits on the chunk.
-export function getTechIconLoaded(id: string | undefined): TechIconDef | undefined {
-  return id ? loaded?.techIconById.get(id) : undefined;
-}
-
-// Whole-catalogue views for the pickers / search. Empty until loaded — the
-// callers subscribe (useIconCatalogs) and re-run when the data lands, so an
-// empty array only ever paints a brief loading state, not a dead end.
-export function getLoadedIconCatalog(): IconDef[] {
-  return loaded?.icons ?? [];
-}
-
-export function getLoadedTechIconCatalog(): TechIconDef[] {
-  return loaded?.techIcons ?? [];
-}
-
-export function getLoadedStickerCatalog(): StickerDef[] {
-  return loaded?.stickers ?? [];
-}
-
-// Sync sticker lookup: undefined until the chunk lands (or for an unknown
-// id), at which point the canvas draws nothing for that element rather than
-// guessing at art it doesn't have.
-export function getStickerLoaded(id: string | undefined): StickerDef | undefined {
-  return id ? loaded?.stickerById.get(id) : undefined;
-}
-
 // Export-art resolver over the loaded catalogues (the editor-side
 // counterpart of @liveplanner/icons/resolve, which static-imports the data
 // for the Workers). Passed to the shared SVG renderer / export pipeline so

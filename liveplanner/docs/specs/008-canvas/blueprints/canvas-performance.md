@@ -83,7 +83,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `useCanvasPanAndMarquee`              | `pan`, `marquee` | When the pan or the marquee state is set                        |
 | `useCanvasPinchZoom`, plain wheel     | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last |
 | `useCanvasPinchZoom`, Ctrl/Cmd, pinch | `zoom`           | Likewise                                                        |
-| `useCanvasDrawGesture` (`drawDrag`)   | `stroke`         | While the drawing state is set (draw-to-size)                   |
+
 
 - Discrete actions (a click, a key, a zoom button) open no gesture.
 
@@ -179,7 +179,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `routeBehindQueryRect(from, to)` is the rect to ask: the arrow's bounds padded by twice
   `ROUTE_BEHIND_MARGIN`, so every box whose inflated hole could meet the padded bounds is a candidate.
 - Exports, thumbnails and the Map pass a list to `svgArrow`, which asks `elementGridFor(list)` (one
-  grid per list, cached in a `WeakMap`). `DrawnArrowPreview` does the same for its occluders.
+  grid per list, cached in a `WeakMap`).
 
 ### Selection chrome while a selection moves
 
@@ -194,8 +194,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 - `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
   `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
-  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
-  and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay` and
+  `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
 - The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
 
 ### The Map draws settled elements

@@ -298,7 +298,7 @@ function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null 
 }
 
 // Optional pen recipe (docs/specs/006-project/stroke-points.md) and straight-edge flag
-// (docs/specs/008-canvas/polygon-tool.md).
+// (docs/specs/008-canvas/finish.md "Polygons").
 const FREEHAND_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'pen', valid: (v) => v === 'highlighter', rule: oneOfRule(['highlighter']) },
   {

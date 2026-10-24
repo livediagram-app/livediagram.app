@@ -144,14 +144,11 @@ export function EditorView() {
     loadAllTabs,
     makeCopy,
     participantsByTab,
-    pendingDraw,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
     removeTabFromFolder,
     reorderTabs,
-    connectSourceId,
-    cancelConnect,
     selfParticipant,
     sessionRole,
     sessionShareCode,
@@ -448,27 +445,6 @@ export function EditorView() {
                             <SplitViewFrame header={header} footer={footer}>
                               {(headerInColumn, footerInColumn) => (
                                 <div className="flex h-dvh flex-col">
-                                  {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
-          is armed so the user knows the next shape click connects, and
-          gives a click target to cancel (clicking empty canvas also
-          cancels). */}
-                                  {connectSourceId !== null ? (
-                                    <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-                                      <button
-                                        type="button"
-                                        onClick={cancelConnect}
-                                        className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-                                      >
-                                        Click a shape to connect the arrow
-                                        <span className="text-brand-300" aria-hidden>
-                                          |
-                                        </span>
-                                        <span className="text-brand-700 dark:text-brand-300">
-                                          Cancel
-                                        </span>
-                                      </button>
-                                    </div>
-                                  ) : null}
                                   {headerInColumn}
                                   <AreaErrorBoundary area="TabDialogs">
                                     <EditorTabDialogs />
@@ -566,11 +542,7 @@ export function EditorView() {
                                       drag={drag}
                                       elements={activeTab.elements}
                                       hasElements={activeTab.elements.length > 0}
-                                      suppressed={
-                                        canvasTool === 'format' ||
-                                        formatSourceId !== null ||
-                                        pendingDraw !== null
-                                      }
+                                      suppressed={canvasTool === 'format' || formatSourceId !== null}
                                     />
                                   )}
 

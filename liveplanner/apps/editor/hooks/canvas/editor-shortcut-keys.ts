@@ -10,13 +10,6 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
-// Shape kinds that have a single-key palette shortcut: the common
-// flowchart set. The rest of the ShapeKind union (stadium, project,
-// cloud, devices, etc.) has no memorable free letter and stays a click
-// away in the palette.
-type ShortcutShape =
-  'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
-
 export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
   // them (docs/specs/007-editor/power-user-mode.md).
@@ -28,15 +21,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;
-  // Pending draw-to-size intent, set when the palette was clicked
-  // under the drawToAdd user preference. Escape clears it so a
-  // user who accidentally entered draw mode (or changed their
-  // mind) can bail before clicking on the canvas. Null when no
-  // draw is pending. The hook only needs to know "is something
-  // pending" so we accept the opaque truthiness rather than the
-  // discriminated union type itself.
-  pendingDraw: unknown;
-  onCancelDraw: () => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -69,14 +53,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Active canvas tool. Read by the Escape handler so Escape exits the
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
-  // Element-add callbacks. R / O / D / C / H / G fire addShape with the
-  // matching ShortcutShape; T / N / A fire the dedicated handlers. All
-  // mirror their palette counterparts so the keyboard route reaches the
-  // same code path as the click route.
-  addShape: (kind: ShortcutShape) => void;
-  addText: () => void;
-  addSticky: () => void;
-  addArrow: (ends?: import('@liveplanner/project').ArrowEnds) => void;
   // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
   // and the grower itself. Asked per keystroke rather than held as a flag so
   // it can't go stale against the selection.

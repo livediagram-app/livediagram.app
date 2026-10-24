@@ -3,17 +3,9 @@
 // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): its rows of slots drawn over the canvas
 // area, below the top row and clear of the panels, as a covering board is (CanvasCover): the canvas under it takes no
 // input. The page scrolls when taller than the window; rows and slots come from the palette's Layout.
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import {
-  dashboardItemOf,
-  dashboardZone,
-  readDashboardGeometry,
-  registerDashboardPlacer,
-  type DashboardZone,
-} from '@/hooks/plan/dashboard-drop';
-import { getPaletteDragPreview } from '@/lib/palette-drag-preview';
-import { DropZoneMark, sameZone, zoneMark, type ZoneMark } from './drop-zone-mark';
-import { PALETTE_DND_MIME } from '@/lib/icons';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type DashboardZone } from '@/hooks/plan/dashboard-drop';
+import { DropZoneMark } from './drop-zone-mark';
 import { createPortal } from 'react-dom';
 import {
   moveDashboardSlot,
@@ -29,7 +21,6 @@ import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { dashboardOf, type PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardRowView } from './DashboardRowView';
-import { useArmedPlacement } from './useArmedPlacement';
 import { useFitGuard } from './useFitGuard';
 import { useSlotMove } from './useSlotMove';
 import { DashboardMenuName } from './DashboardMenuName';
@@ -72,9 +63,6 @@ export function DashboardPage({
   const mark = useCallback((node: HTMLElement | null) => {
     if (node) setCanvas(document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR));
   }, []);
-  // A palette tile dragged over the page: the zone it would land in is drawn (DropZoneMark: a slot outlined, a line
-  // between rows, a line in a row), and the drop fills it. Native drag and drop, as the palette's tiles are; what is
-  // dragged is read from the drag preview, as `dataTransfer` cannot be read until the drop.
   const pageRef = useRef<HTMLDivElement>(null);
   // The page is up: slots added from now on settle into place (useSlotEnter); those it opened with draw still.
   useEffect(() => {
@@ -89,64 +77,6 @@ export function DashboardPage({
   const dashboard = useMemo(() => dashboardOf(tab), [tab]);
   const elements = useMemo(() => new Map(tab.elements.map((e) => [e.id, e])), [tab.elements]);
   const guard = useFitGuard(pageRef, dashboard, elements);
-  const placement = useArmedPlacement({
-    pageRef,
-    tabs,
-    allowFor: guard.allowFor,
-    place: (item, z) => actions.placeItem(item, z),
-  });
-  const { arm } = placement;
-  // The palette's plan views fill slots here: the one dropped on, or the first empty one.
-  useEffect(() => {
-    if (!canEdit) return;
-    // A drop lands where it was dropped; a pressed tile waits for a click (useArmedPlacement).
-    return registerDashboardPlacer((item, zone) =>
-      zone ? actions.placeItem(item, zone) : arm(item),
-    );
-  }, [canEdit, actions, arm]);
-  const [zone, setZone] = useState<{ zone: DashboardZone; mark: ZoneMark } | null>(null);
-  const zoneAt = (x: number, y: number) => {
-    const drag = getPaletteDragPreview();
-    const item = drag ? dashboardItemOf(drag.kind, drag.choice) : null;
-    const root = pageRef.current;
-    if (!item || !root) return null;
-    const geo = readDashboardGeometry(root);
-    const z = dashboardZone(item, geo, x, y, guard.allowFor(item));
-    return z
-      ? { zone: z, mark: zoneMark(z, geo, root.getBoundingClientRect(), root.scrollTop) }
-      : null;
-  };
-  const onDragOver = (e: DragEvent<HTMLDivElement>) => {
-    if (!canEdit || !e.dataTransfer.types.includes(PALETTE_DND_MIME)) return;
-    const next = zoneAt(e.clientX, e.clientY);
-    e.stopPropagation();
-    if (!next) {
-      setZone(null);
-      return;
-    }
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setZone((prev) => (prev && sameZone(prev.zone, next.zone) ? prev : next));
-  };
-  const onDrop = (e: DragEvent<HTMLDivElement>) => {
-    setZone(null);
-    if (!canEdit) return;
-    const [kind, choice] = e.dataTransfer.getData(PALETTE_DND_MIME).split('|');
-    const item = kind ? dashboardItemOf(kind, choice || undefined) : null;
-    const root = pageRef.current;
-    if (!item || !root) return;
-    const z = dashboardZone(
-      item,
-      readDashboardGeometry(root),
-      e.clientX,
-      e.clientY,
-      guard.allowFor(item),
-    );
-    if (!z) return;
-    e.preventDefault();
-    e.stopPropagation();
-    actions.placeItem(item, z);
-  };
   // A slot carried by its grip (plan-tabs.md "Moving a slot"): see useSlotMove.
   const { moving, beginMove } = useSlotMove({
     pageRef,
@@ -297,17 +227,7 @@ export function DashboardPage({
                     // last row scrolls fully into view above them; on a phone also the home indicator's safe area.
                     // A tinted background washes the page behind the slots (Dashboard Settings).
                     className={`relative h-full overflow-y-auto overscroll-contain px-3 pb-20 pt-3 max-sm:pb-[calc(6rem+env(safe-area-inset-bottom))] ${dashboard.background === 'tint' ? 'bg-brand-500/[0.07] dark:bg-brand-400/[0.09]' : ''}`}
-                    onDragOver={onDragOver}
-                    onDragLeave={(e) => {
-                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setZone(null);
-                    }}
-                    onDrop={onDrop}
-                    onPointerMove={placement.onPointerMove}
-                    onClickCapture={placement.onClickCapture}
-                    data-armed={placement.armed ? '' : undefined}
                   >
-                    {placement.overlay}
-                    {zone ? <DropZoneMark mark={zone.mark} /> : null}
                     {moving?.mark ? <DropZoneMark mark={moving.mark} /> : null}
                     {/* At least the page's height, so a row that fills the page has the height to fill. */}
                     <div className="flex min-h-full flex-col gap-3">
