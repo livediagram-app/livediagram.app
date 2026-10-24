@@ -23,8 +23,6 @@ export function useElementHelpers(opts: {
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
-  // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
-  // travel, and whether the brush stays loaded.
   getViewportCenter: () => { x: number; y: number };
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;

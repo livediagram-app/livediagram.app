@@ -242,7 +242,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit: linear in the stroke.
-- The bench that measured the wins (`scripts/stroke-points-bench.ts`) was removed 2026-10-24 with the whiteboard
+- The bench that measured the wins (scripts/stroke-points-bench.ts) was removed 2026-10-24 with the whiteboard
   boards it synthesised; the numbers in the spec's "Measured wins" are from it.
 
 ## Observability

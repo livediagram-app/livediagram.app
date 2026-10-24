@@ -112,7 +112,7 @@ path of its own).
 | Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`             |
 | Canvas overlay draws per edge / nothing  | `apps/editor/components/canvas/AccentEdgeOverlay.test.tsx` |
 | Row writes, hides on unsupported         | `apps/editor/components/palette/AccentEdgeRow.test.tsx`    |
-| Format painter maps both to Border       | `apps/editor/lib/format-config.test.ts` (exhaustive table) |
+| Format painter maps both to Border       | apps/editor/lib/format-config.test.ts (exhaustive table) |
 
 ## Constants and configuration
 
