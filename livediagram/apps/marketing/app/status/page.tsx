@@ -61,7 +61,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Document storage',
     description:
-      'Each document’s Durable Object keeps it in its own SQLite: tabs, change logs, its Community post. Where documents are filed, and their share links, live on the liveworkspace index.',
+      'Each document’s own Durable Object (SQLite) holds its tabs, change logs and Community post. Filing and share links live on the liveworkspace index.',
   },
   {
     name: 'Image storage',
