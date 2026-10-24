@@ -305,10 +305,11 @@ client guard — belt and suspenders against the most destructive failure.
 
 ### A save only ever reaches its own document's tab
 
-The save upserts by tab id, against the document's own store: another document's tabs are in another document's
-object, so a tab id seen elsewhere (a share link) can name only a new tab here. The check that used to refuse a
-save onto another document's tab (`409 tab_id_taken`) has nothing left to guard, and is gone with the shared tab
-table.
+The save upserts by tab id, against the document's own store: another document's tabs are in another document's object, so a
+tab id seen elsewhere (a share link) can name only a new tab here, shared with nothing. A tab shared with other
+documents ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is this document's own copy under the same id: the save writes that
+copy, and this document's object sends it on to the others. Putting an existing tab into another document is the `link`
+route, never a save.
 
 ## Risk
 

@@ -427,6 +427,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Add to Document: share a tab another of your documents holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { from: { type: 'string' } },
+      required: ['from'],
+    },
+    responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404, 409],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/copy',
     segment: 'documents',
     tag: 'Documents',

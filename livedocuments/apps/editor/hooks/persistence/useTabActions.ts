@@ -23,7 +23,7 @@ import {
   type Element,
   type Tab,
 } from '@livedocuments/document';
-import { apiCopyTabTo } from '@/lib/api-client';
+import { apiLinkTab } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -41,6 +41,8 @@ type TabActionsDeps = {
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
+  // The open document: the one a tab added elsewhere is shared from.
+  documentId: string | null;
   // The local participant id (owner of the link request).
   ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
@@ -78,6 +80,7 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     documentList,
     ownerId,
+    documentId,
     createTab,
     commit,
     commitTabs,
@@ -151,25 +154,16 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Copy the active tab into another of the user's documents. Each document holds its own content (its Durable Object,
-  // docs/specs/015-api/api.md "Storage"), so this is a copy under fresh ids, not a tab shared by both: edits on
-  // either side stay on that side.
+  // Share the active tab into another of the user's documents (docs/specs/006-document/tab-document-many-to-many.md).
+  // Goes through POST /api/documents/<target>/tabs/<tabId>/link with this document as `from`: the target then holds
+  // the same tab, and an edit to it in either document reaches the other.
   const linkActiveTabTo = async (targetDocumentId: string) => {
     const source = tabs.find((t) => t.id === activeId);
-    if (!source) return;
+    if (!source || !documentId) return;
     const target =
       toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
-    // A still-loading source is an empty placeholder: copying it would save an empty tab there.
-    if (!isTabLoaded(source.id)) {
-      toast.error('That tab is still loading. Try again in a moment.');
-      return;
-    }
     try {
-      await apiCopyTabTo(
-        ownerId,
-        targetDocumentId,
-        remintTabElements({ ...source, elements: source.elements.map((el) => ({ ...el })) }),
-      );
+      await apiLinkTab(ownerId, targetDocumentId, source.id, documentId);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

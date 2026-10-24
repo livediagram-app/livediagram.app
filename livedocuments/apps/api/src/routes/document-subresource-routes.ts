@@ -1,6 +1,7 @@
 // /api/documents/<id>/... inside the document's Durable Object: per-tab content, comments, agent presence and
 // changesets.
 
+import { handleTabLink } from './tab-link-route';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
@@ -147,9 +148,9 @@ export async function handleDocumentSubresources(
   const rendered = await handleTabRender(ctx);
   if (rendered) return rendered;
 
-  // /api/documents/<id>/tabs/<tabId>/link — owner only.
-  // A tab belongs to exactly one document (its Durable Object holds it), so there is no linking an existing tab into
-  // another document any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
+  // /api/documents/<id>/tabs/<tabId>/link — share a tab from another of the caller's documents into this one.
+  const linked = await handleTabLink(ctx);
+  if (linked) return linked;
 
   return null;
 }

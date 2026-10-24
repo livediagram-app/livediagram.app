@@ -2,6 +2,7 @@
 // by `document_tabs`. Runs only inside the document's Durable Object, on `env.DOCUMENT_DB`
 // (document-room/document-db.ts).
 
+import { shareLeaveStatements } from '@liveworkspace/index-app';
 import { drawnCount, type Tab } from '@livedocuments/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -302,6 +303,9 @@ export async function deleteTabRow(
       `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
         RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
     ).bind(documentId, tabId),
+    // A shared tab (document-room/tab-shares.ts): every other holder hears that this document left, and nothing else it
+    // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
+    ...shareLeaveStatements(env.DOCUMENT_DB, tabId),
     env.DOCUMENT_DB.prepare(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM document_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),

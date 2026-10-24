@@ -25,6 +25,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   // anonymiseDocument: a closed account's name off the comments in a body; it changes no image id, so the body's
   // references stay as they were.
   'api/src/document-room/document-anonymise.ts': 1,
+  // A shared tab's copies (docs/specs/006-document/tab-document-many-to-many.md): @liveworkspace/index-app takes one in through
+  // tabWriteStatements (the app's insertTab), and a later body from another holder replaces the data in the same
+  // batch as this file's bodyTaken, which stamps the element count and replaces its references.
+  'api/src/document-room/tab-shares.ts': 1,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,

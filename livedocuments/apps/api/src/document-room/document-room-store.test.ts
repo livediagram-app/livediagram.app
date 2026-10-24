@@ -9,6 +9,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';
 import { mediaImages } from '../db/test-image-fixtures';
 import { mediaOwner } from '../media';
+import { MAX_TAB_HOLDERS } from '@liveworkspace/index-app';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './document-outbox';
@@ -20,27 +21,62 @@ import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 // database (the object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between
 // documents, as in production.
 
+// `Bearer guest:<id>` stands in for a verified guest token; any other bearer is the owner's.
 vi.mock('../auth/accounts', () => ({
-  getPersonIdentity: async () => ({ kind: 'guest', guestId: 'guest_owner' }),
+  getPersonIdentity: async (_env: unknown, request: Request) => {
+    const bearer = request.headers.get('Authorization') ?? '';
+    return {
+      kind: 'guest',
+      guestId: bearer.startsWith('Bearer guest:')
+        ? bearer.slice('Bearer guest:'.length)
+        : 'guest_owner',
+    };
+  },
   accountCredentials: () => null,
 }));
 
-// The index's grants, signed by a stand-in (`G.<claims>`): the owner edits every document it names.
-const grantOf = (item: string) =>
-  `G.${btoa(JSON.stringify({ item, sub: 'guest_owner', level: 'edit', tab: null, team: null, exp: 9e9 }))}`;
+const OWNER = 'guest_owner';
+const as = (person: string) => ({ Authorization: `Bearer guest:${person}` });
+
+// The index's grants, signed by a stand-in (`G.<claims>`): `person` edits the document it names (`level` and
+// `shareCode`, a link's, for the access tests).
+const grantOf = (item: string, person = OWNER, level = 'edit') =>
+  `G.${btoa(JSON.stringify({ item, sub: person, level, tab: null, team: null, exp: 9e9 }))}`;
 beforeEach(() => {
   setGrantVerifierForTests(async (token: string) =>
     token.startsWith('G.') ? (JSON.parse(atob(token.slice(2))) as GrantClaims) : null,
   );
 });
 
-// What reached the index: every push the documents made, answered as stored.
+// What reached the index: every push the documents made, answered as stored. A grant a document asks for (a tab
+// linked in from another of the caller's documents) is given at `levelOf(document, person)`, as the index would:
+// the owner edits their own, anyone else gets nothing unless a test says otherwise.
 const indexCalls: string[] = [];
+let ownerOf: (documentId: string) => string | null = () => OWNER;
+let levelOf: (documentId: string, person: string) => string | null = (id, person) =>
+  ownerOf(id) === person ? 'edit' : null;
 beforeEach(() => {
   indexCalls.length = 0;
+  ownerOf = () => OWNER;
+  levelOf = (id, person) => (ownerOf(id) === person ? 'edit' : null);
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const req = new Request(input, init);
-    indexCalls.push(`${req.method} ${new URL(req.url).pathname}`);
+    const path = new URL(req.url).pathname;
+    indexCalls.push(`${req.method} ${path}`);
+    const asked = /^\/api\/index\/items\/([^/]+)\/grant$/.exec(path);
+    if (asked) {
+      const id = decodeURIComponent(asked[1]!);
+      const bearer = req.headers.get('Authorization') ?? '';
+      const person = bearer.startsWith('Bearer guest:') ? bearer.slice(13) : OWNER;
+      const level = levelOf(id, person);
+      if (!level) return Response.json({ error: 'not_found' }, { status: 404 });
+      return Response.json({
+        grant: grantOf(id, person, level),
+        level,
+        tabId: null,
+        expiresAt: 9e12,
+      });
+    }
     return Response.json({ ok: true });
   });
 });
@@ -147,6 +183,9 @@ type World = {
   ) => Promise<Response>;
 };
 
+const personOf = (headers: Record<string, string>) =>
+  headers.Authorization?.startsWith('Bearer guest:') ? headers.Authorization.slice(13) : OWNER;
+
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
   const env = {
@@ -173,7 +212,11 @@ function world(extra: Partial<Env> = {}): World {
         method,
         headers: {
           Authorization: 'Bearer guest-token',
-          'X-Index-Grant': grantOf(documentId),
+          'X-Index-Grant': grantOf(
+            documentId,
+            personOf(headers),
+            levelOf(documentId, personOf(headers)) ?? 'view',
+          ),
           'Content-Type': 'application/json',
           ...headers,
         },
@@ -629,5 +672,242 @@ describe('speed', () => {
     expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 2);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
+  });
+});
+
+// A tab shared between documents (docs/specs/006-document/tab-document-many-to-many.md): each holder keeps a copy under the same tab id,
+// and a write in one reaches the others when its room drains (document-room/tab-shares.ts).
+describe('a tab shared between documents', () => {
+  const link = (w: World, target: string, tabId: string, from: unknown, person = OWNER) =>
+    w.send('POST', `/api/documents/${target}/tabs/${tabId}/link`, { from }, as(person));
+  const labels = (w: World, id: string, tabId = 't1') => {
+    const row = w.documents.get(id)!.db.prepare('SELECT data FROM tabs WHERE id = ?').get(tabId);
+    if (!row) return null;
+    return (JSON.parse(String(row.data)) as { elements: { label?: string }[] }).elements.map(
+      (e) => e.label,
+    );
+  };
+  const holders = (w: World, id: string, tabId = 't1') =>
+    w.documents
+      .get(id)!
+      .db.prepare('SELECT item_id FROM tab_shares WHERE tab_id = ? ORDER BY item_id')
+      .all(tabId)
+      .map((r) => r.item_id);
+  const save = async (w: World, id: string, label: string, tabId = 't1') => {
+    await new Promise((r) => setTimeout(r, 2));
+    const res = await w.send('PUT', `/api/documents/${id}/tabs/${tabId}`, {
+      id: tabId,
+      name: 'Board',
+      elements: [box('a', label)],
+    });
+    expect(res.status).toBe(200);
+  };
+  const drain = async (w: World, ...ids: string[]) => {
+    for (const id of ids) await w.documents.get(id)!.room.drain();
+  };
+  const sharedTabs = async (w: World, id: string) => {
+    const res = await w.send('GET', `/api/documents/${id}/shared-tabs`);
+    expect(res.status).toBe(200);
+    return ((await res.json()) as { sharedTabs: unknown }).sharedTabs;
+  };
+
+  async function two() {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [box('a', 'From A')] }]);
+    await createDocument(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    return w;
+  }
+
+  it('adds the tab to the other document, the same tab in both', async () => {
+    const w = await two();
+    const res = await link(w, 'B', 't1', 'A');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ tab: { id: 't1', name: 'Board' } });
+    expect(labels(w, 'B')).toEqual(['From A']);
+    expect(holders(w, 'A')).toEqual(['B']);
+    expect(holders(w, 'B')).toEqual(['A']);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 1, documents: 1 });
+    expect(await sharedTabs(w, 'B')).toEqual({ tabs: 1, documents: 1 });
+    // A repeat is answered as it is.
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    expect(count(w.documents.get('B')!.db, 'tabs')).toBe(2);
+  });
+
+  it('carries an edit in either document to the other, without sending it back', async () => {
+    const w = await two();
+    await link(w, 'B', 't1', 'A');
+    await drain(w, 'A', 'B');
+    await save(w, 'A', 'Edited in A');
+    expect(labels(w, 'B')).toEqual(['From A']);
+    await drain(w, 'A');
+    expect(labels(w, 'B')).toEqual(['Edited in A']);
+    expect(count(w.documents.get('B')!.db, 'share_outbox')).toBe(0);
+    await save(w, 'B', 'Edited in B');
+    await drain(w, 'B');
+    expect(labels(w, 'A')).toEqual(['Edited in B']);
+    expect(count(w.documents.get('A')!.db, 'share_outbox')).toBe(0);
+    // The Inbox and listing pushes still follow the copy taken in.
+    expect(count(w.documents.get('A')!.db, 'outbox')).toBeGreaterThan(0);
+  });
+
+  it('keeps the later of two writes in every document', async () => {
+    const w = await two();
+    await link(w, 'B', 't1', 'A');
+    await save(w, 'B', 'Earlier');
+    await save(w, 'A', 'Later');
+    await drain(w, 'B', 'A');
+    expect(labels(w, 'A')).toEqual(['Later']);
+    expect(labels(w, 'B')).toEqual(['Later']);
+  });
+
+  it('shares on through a third document, which every holder then hears of', async () => {
+    const w = await two();
+    await createDocument(w, 'C', [{ id: 'tc', name: 'Own', elements: [] }]);
+    await link(w, 'B', 't1', 'A');
+    expect((await link(w, 'C', 't1', 'B')).status).toBe(200);
+    expect(holders(w, 'C')).toEqual(['A', 'B']);
+    await drain(w, 'B');
+    expect(holders(w, 'A')).toEqual(['B', 'C']);
+    await save(w, 'C', 'Edited in C');
+    await drain(w, 'C');
+    expect(labels(w, 'A')).toEqual(['Edited in C']);
+    expect(labels(w, 'B')).toEqual(['Edited in C']);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 1, documents: 2 });
+  });
+
+  it('leaves the others their copy when one document drops the tab, or goes for good', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = await two();
+    await createDocument(w, 'C', [{ id: 'tc', name: 'Own', elements: [] }]);
+    await link(w, 'B', 't1', 'A');
+    await link(w, 'C', 't1', 'A');
+    await drain(w, 'A');
+    expect((await w.send('DELETE', '/api/documents/B/tabs/t1')).status).toBe(204);
+    await drain(w, 'B');
+    expect(holders(w, 'A')).toEqual(['C']);
+    expect(holders(w, 'C')).toEqual(['A']);
+    expect(labels(w, 'A')).toEqual(['From A']);
+
+    const purged = await w.send('DELETE', '/api/internal/items/C', undefined, {
+      Authorization: 'Bearer index-key',
+    });
+    expect(purged.status).toBe(200);
+    expect(holders(w, 'A')).toEqual([]);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 0, documents: 0 });
+    expect(labels(w, 'A')).toEqual(['From A']);
+  });
+
+  it('grants the holder taking it in the images its sender may serve, and no others', async () => {
+    const w = world();
+    const media = mediaServiceFor(w.env, { passOn: true });
+    mediaImages(media, await mediaOwner(OWNER), ['img-1']);
+    mediaImages(media, 'user_mallory', ['img-3']);
+    const picture = (id: string, imageId: string) =>
+      ({ id, type: 'image', x: 0, y: 0, width: 10, height: 10, imageId }) as unknown as Element;
+    await createDocument(w, 'A', [
+      { id: 't1', name: 'Board', elements: [picture('p1', 'img-1'), picture('p3', 'img-3')] },
+    ]);
+    await createDocument(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    const b = w.documents.get('B')!;
+    expect(b.db.prepare('SELECT image_id FROM image_grants').all()).toEqual([
+      { image_id: 'img-1' },
+    ]);
+    expect(await b.room.servesImage('B', 'img-1', 't1')).toBe(true);
+    expect(await b.room.servesImage('B', 'img-3', 't1')).toBe(false);
+  });
+
+  it('drops a holder that no longer has the tab when it says so', async () => {
+    const w = await two();
+    await link(w, 'B', 't1', 'A');
+    w.documents.get('B')!.db.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    await save(w, 'A', 'Edited in A');
+    await drain(w, 'A');
+    expect(holders(w, 'A')).toEqual([]);
+    expect(count(w.documents.get('A')!.db, 'share_outbox')).toBe(0);
+  });
+
+  it('refuses a tab the caller cannot edit, or into a document they cannot edit', async () => {
+    const w = await two();
+    // A stranger edits neither.
+    expect((await link(w, 'B', 't1', 'A', 'stranger')).status).toBe(403);
+    // A person per case: the index's grants are remembered per person and item.
+    levelOf = (id, person) => {
+      if (person === 'viewsSource') return id === 'B' ? 'edit' : 'view';
+      if (person === 'viewsTarget') return id === 'A' ? 'edit' : 'view';
+      if (person === 'teammate' || person === 'viaLink') return 'edit';
+      return ownerOf(id) === person ? 'edit' : null;
+    };
+    // Edits the target but only views the source.
+    expect((await link(w, 'B', 't1', 'A', 'viewsSource')).status).toBe(403);
+    // Edits the source but only views the target.
+    expect((await link(w, 'B', 't1', 'A', 'viewsTarget')).status).toBe(403);
+    // Edits both through a share link (the request names a link's code): not as their own.
+    const viaLink = await w.send(
+      'POST',
+      '/api/documents/B/tabs/t1/link',
+      { from: 'A' },
+      { ...as('viaLink'), 'X-Share-Code': 'code' },
+    );
+    expect(viaLink.status).toBe(403);
+    expect(holders(w, 'A')).toEqual([]);
+    // Edits both as their own: a teammate, say.
+    expect((await link(w, 'B', 't1', 'A', 'teammate')).status).toBe(200);
+    expect((await link(w, 'B', 'nope', 'A')).status).toBe(404);
+    expect((await link(w, 'B', 't1', 'missing')).status).toBe(404);
+    expect((await w.send('POST', '/api/documents/B/tabs/t1/link', {})).status).toBe(400);
+    expect((await link(w, 'A', 't1', 'A')).status).toBe(400);
+  });
+
+  it('answers the shared-tabs count only to those who may delete the document', async () => {
+    const w = await two();
+    expect(
+      (await w.send('GET', '/api/documents/A/shared-tabs', undefined, as('stranger'))).status,
+    ).toBe(403);
+  });
+});
+
+describe('shared tab speed', () => {
+  it(`sends an edit of a 1 MB tab held by ${MAX_TAB_HOLDERS} documents within budget, and refuses one more`, async () => {
+    const w = world();
+    await createDocument(w, 'A');
+    for (let i = 0; i < MAX_TAB_HOLDERS; i++) {
+      await createDocument(w, `S${i}`, [{ id: `own${i}`, name: 'Own', elements: [] }]);
+      const res = await w.send('POST', `/api/documents/S${i}/tabs/t1/link`, { from: 'A' });
+      expect(res.status).toBe(i < MAX_TAB_HOLDERS - 1 ? 200 : 409);
+    }
+    const a = w.documents.get('A')!;
+    while (count(a.db, 'share_outbox') > 0) await a.room.drain();
+    const elements = Array.from({ length: 2_500 }, (_, i) => box(`e${i}`, 'x'.repeat(320)));
+    await new Promise((r) => setTimeout(r, 2));
+    let status = 0;
+    const saveMs = await cpuMsOfAsync(async () => {
+      status = (
+        await w.send('PUT', '/api/documents/A/tabs/t1', { id: 't1', name: 'Board', elements })
+      ).status;
+    });
+    expect(status).toBe(200);
+    const fanOutMs = await cpuMsOfAsync(() => a.room.drain());
+    // Opening a document holding shared tabs reads its own copies: no call to any other holder.
+    const holder = w.documents.get(`S${MAX_TAB_HOLDERS - 2}`)!;
+    let openStatus = 0;
+    const openMs = await cpuMsOfAsync(async () => {
+      const res = await w.send('GET', `/api/documents/S${MAX_TAB_HOLDERS - 2}/tabs/t1`);
+      openStatus = res.status;
+      await res.text();
+    });
+    expect(openStatus).toBe(200);
+    console.info('[perf] 1 MB tab held by documents', {
+      holders: MAX_TAB_HOLDERS - 1,
+      saveMs,
+      fanOutMs,
+      openMs,
+    });
+    expect(
+      holder.db.prepare("SELECT element_count FROM tabs WHERE id = 't1'").get()!.element_count,
+    ).toBe(2_500);
+    expect(saveMs).toBeLessThan(cpuBudgetMs(200));
+    expect(fanOutMs).toBeLessThan(cpuBudgetMs(2_000));
+    expect(openMs).toBeLessThan(cpuBudgetMs(100));
   });
 });

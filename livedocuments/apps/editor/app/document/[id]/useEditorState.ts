@@ -1733,6 +1733,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEditStructure: !isStructureReadOnly,
     documentList,
     ownerId: selfParticipant.id,
+    documentId,
     createTab,
     commit,
     commitTabs,

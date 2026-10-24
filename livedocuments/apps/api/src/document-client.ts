@@ -8,6 +8,7 @@
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { RouteIdentity } from './document-room/document-route';
 import type { ThumbnailSubject } from './thumbnail';
+import type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
 import type { Env } from './types';
 
 export type DocumentRoomClient = {
@@ -38,6 +39,11 @@ export type DocumentRoomClient = {
   joined(personId: string): Promise<void>;
   // A closed account's name off the document (document-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
+  // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the join
+  // recorded, and what another holder (`from`) sends.
+  sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
+  receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
 };
 
 export function documentRoom(
@@ -60,6 +66,9 @@ export function documentRoom(
     revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
     joined: (personId) => room.joined(documentId, personId),
     anonymise: (personId) => room.anonymise(documentId, personId),
+    sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
+    shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
+    receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
   };
 }
 
@@ -88,5 +97,13 @@ export type DocumentRoomRpc = {
   ): Promise<number>;
   joined(documentId: string, personId: string): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
+  sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(
+    documentId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean>;
+  receiveShares(documentId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
   fetch(request: Request): Promise<Response>;
 };
