@@ -65,6 +65,11 @@ jobs:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveplanner/editor build
 
+      # The Explorer is liveworkspace's page at liveplanner's own /explorer: the stack serves its static
+      # export, so the specs that open it need it built.
+      - name: Build liveworkspace's site (the Explorer)
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
       # Playwright's webServer boots scripts/e2e-stack.mjs (index on local D1, api worker + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
@@ -125,6 +130,11 @@ jobs:
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveplanner/marketing build
 
+      # The Explorer is liveworkspace's page at liveplanner's own /explorer: the stack serves its static
+      # export, so the specs that open it need it built.
+      - name: Build liveworkspace's site (the Explorer)
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
       - name: Run sites audit
         run: pnpm --filter @liveplanner/editor test:e2e:sites
       # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
@@ -175,6 +185,11 @@ jobs:
       # the stack standing in for the accounts Worker; no account or secret is involved.
       - name: Build editor app with sign-in on
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveplanner/editor build:signed-in
+
+      # The Explorer is liveworkspace's page at liveplanner's own /explorer: the stack serves its static
+      # export, so the specs that open it need it built.
+      - name: Build liveworkspace's site (the Explorer)
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
 
       - name: Run signed-in specs
         run: pnpm --filter @liveplanner/editor test:e2e:signed-in

@@ -7,6 +7,7 @@ import {
   seedTab,
   startBlankProject,
   test,
+  untilHydrated,
 } from './fixtures';
 
 // Menus by keyboard alone (docs/specs/004-interface-design/menus.md): a command menu is a `menu` of
@@ -107,16 +108,18 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the product switcher opens from the keyboard, not on focus alone', async ({
+  // The editor header's switcher (the Explorer is liveworkspace's page, its own build).
+  test('the site switcher opens from the keyboard, not on focus alone', async ({
     page,
     pageErrors,
   }) => {
-    await page.goto('/explorer');
+    await startBlankProject(page);
     const switcher = page.getByRole('button', { name: 'Switch site' });
+    await untilHydrated(switcher);
     await switcher.focus();
     await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu').first();
+    const menu = page.getByRole('menu', { name: 'liveworkspace sites' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');

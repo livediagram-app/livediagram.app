@@ -128,6 +128,10 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
+   - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
+     `liveworkspace/apps/site/out` when that site is built, as the router's workspace routes
+     (`@liveworkspace/sites/workspace-proxy`) do; without the build they answer a logged 404, so only the specs
+     that open the Explorer page need it (CI builds it in each job that runs them);
    - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an

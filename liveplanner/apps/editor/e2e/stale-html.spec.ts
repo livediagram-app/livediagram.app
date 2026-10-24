@@ -35,13 +35,14 @@ test('a simulated deploy leaves every other browser context on its build', async
   request,
 }) => {
   const chunkOf = (html: string) => /_next\/static\/chunks\/([\w-]+)\.js/.exec(html)?.[1];
-  const before = chunkOf(await (await request.get('/explorer/recent')).text());
+  // An editor page: the simulated deploy renames this build's chunks (the Explorer is liveworkspace's own build).
+  const before = chunkOf(await (await request.get('/new')).text());
   expect(before).toBeTruthy();
 
   expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
 
-  expect(chunkOf(await (await page.request.get('/explorer/recent')).text())).toMatch(/-d\d+$/);
-  expect(chunkOf(await (await request.get('/explorer/recent')).text())).toBe(before);
+  expect(chunkOf(await (await page.request.get('/new')).text())).toMatch(/-d\d+$/);
+  expect(chunkOf(await (await request.get('/new')).text())).toBe(before);
 });
 
 test('back after a deploy brings the Explorer back, never a white screen', async ({ page }) => {
