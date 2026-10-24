@@ -117,7 +117,8 @@ export type ExplorerContextValue = {
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
-  manageTeamsUrl?: string;
+  // The person's API tokens page, for a token's Timeline card.
+  tokensUrl?: string;
   onCreate: (placement: Placement) => void;
   // Inline rename: one row at a time, by id (item or folder).
   renamingId: string | null;
@@ -211,7 +212,7 @@ export type ExplorerProviderProps = {
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
-  manageTeamsUrl?: string;
+  tokensUrl?: string;
   openNav?: () => void;
   helpHref?: HelpHref;
   heroWords?: HeroWords;
@@ -258,7 +259,7 @@ export function ExplorerProvider({
   shareUrl,
   shareHost,
   inboxHost,
-  manageTeamsUrl,
+  tokensUrl,
   openNav = NO_NAV,
   helpHref,
   heroWords,
@@ -382,7 +383,7 @@ export function ExplorerProvider({
       shareUrl,
       shareHost,
       inboxHost,
-      manageTeamsUrl,
+      tokensUrl,
       onCreate,
       renamingId,
       setRenamingId,
@@ -429,7 +430,7 @@ export function ExplorerProvider({
       shareUrl,
       shareHost,
       inboxHost,
-      manageTeamsUrl,
+      tokensUrl,
       onCreate,
       renamingId,
       dialog,

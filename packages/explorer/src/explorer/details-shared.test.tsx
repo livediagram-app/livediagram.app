@@ -1,8 +1,8 @@
-// Shared With Me's list, the Details table, the layout toggle, and a team's page with what accounts says.
+// Shared With Me's list, the Details table and the layout toggle (a team's page: teams/teams.test.tsx).
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
-import type { ExplorerAccounts, TeamDetails } from '../data/accounts';
+import type { ExplorerAccounts } from '../data/accounts';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer } from './Explorer';
@@ -24,8 +24,6 @@ function fakeAccounts(
   const asked: string[][] = [];
   return {
     asked,
-    teamMembers: async () => null,
-    myTeams: async () => ({ teams: [], invitations: [] }),
     people: async (ids) => {
       asked.push([...ids]);
       return new Map(ids.map((id) => [id, id === 'user_ann' ? 'Ann Lee' : null]));
@@ -198,116 +196,5 @@ describe('the layout toggle', () => {
     fireEvent.click(details);
     expect(onViewToggled).toHaveBeenCalledWith('ExplorerViewDetails');
     expect(localStorage.getItem('liveworkspace:explorer-view-mode')).toBe('details');
-  });
-});
-
-const TEAM: TeamDetails = {
-  team: { id: 't1', name: 'Design', organisation: null, myRole: 'admin', myMemberId: 'm1' },
-  members: [
-    {
-      id: 'm1',
-      userId: 'user_me',
-      email: 'me@x.test',
-      name: 'Sam Doe',
-      role: 'admin',
-      status: 'joined',
-    },
-    {
-      id: 'm2',
-      userId: 'user_ann',
-      email: 'ann@x.test',
-      name: 'Ann Lee',
-      role: 'member',
-      status: 'joined',
-    },
-    {
-      id: 'm3',
-      userId: null,
-      email: 'kai.moss@x.test',
-      name: null,
-      role: 'member',
-      status: 'invited',
-    },
-  ],
-};
-
-describe('a team’s page', () => {
-  beforeEach(() => localStorage.clear());
-
-  it('shows its members, the admin line and where to manage it, over its library', async () => {
-    const index = createFakeIndex({ items: [makeItem(1, { teamId: 't1' })] });
-    page(
-      index,
-      { kind: 'team', id: 't1' },
-      {
-        teams: [{ id: 't1', name: 'Design' }],
-        accounts: fakeAccounts({ teamMembers: async () => TEAM }),
-        teamManageUrl: (id) => `https://liveworkspace.app/teams/${id}`,
-      },
-    );
-    expect(await screen.findByText('2 members · You’re an admin')).toBeTruthy();
-    expect(
-      screen.getByRole('link', { name: 'Manage on liveworkspace.app' }).getAttribute('href'),
-    ).toBe('https://liveworkspace.app/teams/t1');
-    expect(screen.getByText('you')).toBeTruthy();
-    expect(screen.getByText('Kai Moss')).toBeTruthy();
-    expect(screen.getByText('Invited')).toBeTruthy();
-    expect(await screen.findByText('Item 1')).toBeTruthy();
-  });
-
-  it('is a not-found card for a team the person is not in', async () => {
-    const index = createFakeIndex({});
-    page(
-      index,
-      { kind: 'team', id: 'gone' },
-      { teams: [{ id: 't1', name: 'Design' }], accounts: fakeAccounts() },
-    );
-    expect(await screen.findByText('Team not found')).toBeTruthy();
-  });
-
-  it('badges each team with its members, and lists invitations waiting', async () => {
-    const index = createFakeIndex({});
-    page(
-      index,
-      { kind: 'all' },
-      {
-        teams: [{ id: 't1', name: 'Design' }],
-        manageTeamsUrl: 'https://liveworkspace.app/teams',
-        accounts: fakeAccounts({
-          myTeams: async () => ({
-            teams: [{ id: 't1', name: 'Design', memberCount: 4 }],
-            invitations: [
-              {
-                id: 'i1',
-                teamId: 't9',
-                teamName: 'Ops',
-                role: 'member',
-                invitedByName: 'Ann',
-                memberCount: 3,
-              },
-            ],
-          }),
-        }),
-      },
-    );
-    expect(await screen.findByRole('treeitem', { name: 'Design (4 members)' })).toBeTruthy();
-    expect(screen.getByRole('treeitem', { name: 'Invites (1 waiting)' })).toBeTruthy();
-  });
-
-  it('nudges a guest to sign in instead of Manage Teams', async () => {
-    const index = createFakeIndex({});
-    page(
-      index,
-      { kind: 'all' },
-      {
-        signedIn: false,
-        signInHref: '/sign-in',
-        manageTeamsUrl: 'https://liveworkspace.app/teams',
-      },
-    );
-    const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
-    expect(nudge.getAttribute('href')).toBe('/sign-in');
-    expect(nudge.textContent).toContain('your guest plans come with you');
-    expect(screen.queryByRole('treeitem', { name: 'Manage Teams' })).toBeNull();
   });
 });

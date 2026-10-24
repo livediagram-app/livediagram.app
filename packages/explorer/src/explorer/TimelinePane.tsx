@@ -98,18 +98,12 @@ export function actorWords(event: TimelineEvent, viewerId: string | null): strin
 
 const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/** An account page beside Manage Teams' (`/account/teams` → `/account/tokens`), for a token's card. */
-export function accountPageUrl(manageTeamsUrl: string | undefined, page: 'teams' | 'tokens') {
-  if (!manageTeamsUrl) return undefined;
-  return page === 'teams' ? manageTeamsUrl : manageTeamsUrl.replace(/\/teams\/?$/, `/${page}`);
-}
-
 const leave = (url: string | undefined) => (url ? () => window.location.assign(url) : undefined);
 
 /** What an event about no item says: a team's, an API token's, images uploaded, an item taken offline. */
 function renderLooseEvent(
   event: TimelineEvent,
-  ctx: Pick<ExplorerContextValue, 'viewerId' | 'filter' | 'navigate' | 'manageTeamsUrl'> & {
+  ctx: Pick<ExplorerContextValue, 'viewerId' | 'filter' | 'navigate' | 'tokensUrl'> & {
     onOpen?: (event: TimelineEvent) => void;
   },
 ): TimelineCardRender {
@@ -147,13 +141,13 @@ function renderLooseEvent(
         meta: `Kept only in one browser · ${by}`,
       };
     case 'team_invite_sent':
-      // To the person invited: answered where invitations are, on liveworkspace.app.
+      // To the person invited: answered in the Explorer's Invites.
       if (mine(detail.personId)) {
         return {
           ...base,
           label: 'Invited to a Team',
           meta: `From ${who}`,
-          onClick: opened(leave(ctx.manageTeamsUrl)),
+          onClick: opened(() => ctx.navigate({ kind: 'invites' })),
         };
       }
       return {
@@ -188,12 +182,12 @@ function renderLooseEvent(
       return base;
     case 'token_created':
     case 'token_revoked':
-      return { ...base, onClick: opened(leave(accountPageUrl(ctx.manageTeamsUrl, 'tokens'))) };
+      return { ...base, onClick: opened(leave(ctx.tokensUrl)) };
     case 'token_expiring':
       return {
         ...base,
         meta: 'Rotate it before it lapses to keep connected tools working',
-        onClick: opened(leave(accountPageUrl(ctx.manageTeamsUrl, 'tokens'))),
+        onClick: opened(leave(ctx.tokensUrl)),
       };
     default:
       return base;
@@ -207,7 +201,7 @@ export function renderTimelineEvent(
     ExplorerContextValue,
     'viewerId' | 'filter' | 'renderThumbnail' | 'openItem' | 'navigate' | 'teamName'
   > & {
-    manageTeamsUrl?: string;
+    tokensUrl?: string;
     onOpen?: (event: TimelineEvent) => void;
   },
 ): TimelineCardRender {
@@ -336,7 +330,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
       [onTimeline],
     ),
   });
-  const { renderThumbnail, openItem, navigate, teamName, manageTeamsUrl } = explorer;
+  const { renderThumbnail, openItem, navigate, teamName, tokensUrl } = explorer;
   const render: TimelineRenderer = useMemo(() => {
     const ctx = {
       viewerId,
@@ -345,7 +339,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
       openItem,
       navigate,
       teamName,
-      manageTeamsUrl,
+      tokensUrl,
       onOpen: () => onTimeline?.('Opened', 'Card'),
     };
     return (event) =>
@@ -358,7 +352,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
     openItem,
     navigate,
     teamName,
-    manageTeamsUrl,
+    tokensUrl,
     onTimeline,
     overlay,
     overlayVersion,

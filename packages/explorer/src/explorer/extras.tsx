@@ -1,7 +1,7 @@
 'use client';
 
-// What the Explorer page knows beyond the index: people and teams from liveworkspace accounts (the Owner column's
-// names, a team's members and its member count, the invitations waiting), whether the person is signed in (a
+// What the Explorer page knows beyond the index: people from liveworkspace accounts (the Owner column's names; teams
+// are teams/context.tsx's), whether the person is signed in (a
 // guest is nudged to sign in for Teams), the host's preview prefetch and view-toggle telemetry, and the rows
 // sliding out as they are deleted. Kept beside the core context so a surface without it (the editor's panel)
 // reads quiet defaults.
@@ -16,9 +16,8 @@ import {
   type ReactNode,
 } from 'react';
 import type { Item } from '@liveworkspace/index-client';
-import type { ExplorerAccounts, MyTeams } from '../data/accounts';
+import type { ExplorerAccounts } from '../data/accounts';
 import { usePeopleStore, type PeopleStore } from '../data/usePeople';
-import { useMyTeams } from '../data/useMyTeams';
 import { useSharedCount } from '../data/useSharedCount';
 import { useOptionalExplorer } from './context';
 
@@ -27,12 +26,9 @@ export type ViewModeTelemetry = 'ExplorerViewList' | 'ExplorerViewCard' | 'Explo
 export type ExplorerExtras = {
   accounts: ExplorerAccounts | null;
   people: PeopleStore;
-  myTeams: MyTeams | null;
   // A guest sees the Sign in to access Teams nudge.
   signedIn: boolean;
   signInHref?: string;
-  // Where a team is run (its page on liveworkspace.app), for the team page's Manage link.
-  teamManageHref: (teamId: string) => string | undefined;
   // The host loads an item's preview ahead, as its Details row comes near the screen.
   prefetchThumbnail?: (item: Item) => void;
   // A real switch of the List / Card / Details toggle (`UI / Toggled / <type>`).
@@ -49,7 +45,6 @@ export type ExtrasProps = {
   accounts?: ExplorerAccounts | null;
   signedIn?: boolean;
   signInHref?: string;
-  teamManageUrl?: (teamId: string) => string;
   prefetchThumbnail?: (item: Item) => void;
   onViewToggled?: (type: ViewModeTelemetry) => void;
 };
@@ -72,9 +67,7 @@ const QUIET: ExplorerExtras = {
     subscribe: () => () => {},
     version: () => 0,
   },
-  myTeams: null,
   signedIn: true,
-  teamManageHref: () => undefined,
   sharedCount: undefined,
   leaving: NO_LEAVING,
   slideOut: (_id, run) => run(),
@@ -96,14 +89,12 @@ export function ExtrasProvider({
   accounts = null,
   signedIn = true,
   signInHref,
-  teamManageUrl,
   prefetchThumbnail,
   onViewToggled,
   children,
 }: ExtrasProps & { children: ReactNode }) {
   const core = useOptionalExplorer();
   const people = usePeopleStore(accounts);
-  const myTeams = useMyTeams(accounts, signedIn);
   const sharedCount = useSharedCount(core!.client, core!.app, core!.filter, core!.epoch);
   const [leaving, setLeaving] = useState<ReadonlySet<string>>(NO_LEAVING);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -139,18 +130,12 @@ export function ExtrasProvider({
       prefetchThumbnail(item);
     };
   }, [prefetchThumbnail]);
-  const teamManageHref = useCallback(
-    (teamId: string) => teamManageUrl?.(teamId) ?? core?.manageTeamsUrl,
-    [teamManageUrl, core?.manageTeamsUrl],
-  );
   const value = useMemo<ExplorerExtras>(
     () => ({
       accounts,
       people,
-      myTeams,
       signedIn,
       signInHref,
-      teamManageHref,
       prefetchThumbnail: prefetchOnce,
       onViewToggled,
       sharedCount,
@@ -160,10 +145,8 @@ export function ExtrasProvider({
     [
       accounts,
       people,
-      myTeams,
       signedIn,
       signInHref,
-      teamManageHref,
       prefetchOnce,
       onViewToggled,
       sharedCount,

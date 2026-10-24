@@ -1,37 +1,59 @@
 'use client';
 
 // Invites (livediagram's TeamInvitesPane): a card for each team invitation waiting for the person, with the team's
-// monogram, name and organisation, how many have joined, who invited them and when, and the role offered. They are
-// answered where teams are run (the host's Manage Teams page), so each card links there. The list is the one the
-// sidebar's Invites count reads (useExtras().myTeams): no request of its own.
+// monogram, name and organisation, how many have joined, who invited them and when, and the role offered, answered
+// in place: Accept opens the team, Decline takes the card away, each said in a toast. The list is the one the
+// sidebar's Invites count reads (useTeams().myTeams): no request of its own.
 
-import { buttonClassName } from '../ui/Button';
+import { useState } from 'react';
+import { teamErrorMessage, type PendingInvitation } from '../data/teams';
+import { useTeams } from '../teams/context';
+import { initialsOf } from '../teams/TeamCard';
+import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { MailIcon } from '../ui/library-icons';
+import { useToast } from '../ui/Toasts';
 import { relativeSince, useNow } from '../time';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
-import { useExtras } from './extras';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
 import { PaneHeader } from './PaneHeader';
-import { initialsOf } from './TeamPane';
-
-/** Where the invitations wait on the host's Manage Teams page. */
-export const invitationsHref = (manageTeamsUrl: string) =>
-  `${manageTeamsUrl.replace(/#.*$/, '')}#invitations`;
 
 const members = (n: number) => `${n} ${n === 1 ? 'member' : 'members'}`;
 
 export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
-  const { manageTeamsUrl, words } = useExplorer();
-  const { myTeams, accounts, signedIn } = useExtras();
+  const { words, navigate } = useExplorer();
+  const { myTeams, canRun, answer } = useTeams();
+  const toast = useToast();
   const now = useNow();
-  const answerAt = manageTeamsUrl ? invitationsHref(manageTeamsUrl) : null;
+  // The invitations being answered, so their buttons wait.
+  const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const invites = myTeams?.invitations ?? null;
+
+  async function reply(invite: PendingInvitation, accept: boolean) {
+    setBusy((was) => new Set(was).add(invite.id));
+    const result = await answer(invite, accept);
+    setBusy((was) => {
+      const next = new Set(was);
+      next.delete(invite.id);
+      return next;
+    });
+    if (!result.ok) {
+      toast.error(teamErrorMessage(result.error));
+      return;
+    }
+    if (result.value.status === 'joined') {
+      toast.show(`You joined ${result.value.teamName}.`, { tone: 'success' });
+      navigate({ kind: 'team', id: result.value.teamId });
+    } else {
+      toast.show(`You declined the invitation to ${invite.teamName}.`);
+    }
+  }
+
   return (
     <div data-explorer-view="invites">
       <PaneHeader title={SIDEBAR_LABELS.invites} onOpenNav={onOpenNav} showFilter={false} />
-      {!accounts || !signedIn ? (
+      {!canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
       ) : invites === null ? (
         <SkeletonRows count={2} />
@@ -39,7 +61,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
         <EmptyState
           icon={<MailIcon size={28} />}
           title="No pending invites"
-          description="When someone invites you to a team, the invitation shows up here. You answer it where your teams are run."
+          description="When someone invites you to a team, the invitation shows up here, to accept or decline."
         />
       ) : (
         <ul className="flex flex-col gap-3">
@@ -75,15 +97,26 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                     {`${from}${when}${role}.`}
                   </span>
                 </span>
-                {answerAt ? (
-                  <a
-                    href={answerAt}
-                    aria-label={`Answer the invitation to ${invite.teamName}`}
-                    className={buttonClassName({ size: 'xs', className: 'shrink-0 shadow-sm' })}
+                <span className="flex shrink-0 items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    disabled={busy.has(invite.id)}
+                    aria-label={`Decline the invitation to ${invite.teamName}`}
+                    onClick={() => void reply(invite, false)}
                   >
-                    Answer
-                  </a>
-                ) : null}
+                    Decline
+                  </Button>
+                  <Button
+                    size="xs"
+                    disabled={busy.has(invite.id)}
+                    aria-label={`Accept the invitation to ${invite.teamName}`}
+                    className="shadow-sm"
+                    onClick={() => void reply(invite, true)}
+                  >
+                    Accept
+                  </Button>
+                </span>
               </li>
             );
           })}

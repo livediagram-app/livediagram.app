@@ -167,7 +167,7 @@ export const SIDEBAR_LABELS = {
   unsorted: 'Unsorted',
   library: 'Library',
   trash: 'Trash',
-  manageTeams: 'Manage Teams',
+  newTeam: 'New Team',
   invites: 'Invites',
   gallery: 'Image Gallery',
   shapeLibraries: 'Shape Libraries',

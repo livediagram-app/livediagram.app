@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { TimelineEvent } from '@liveworkspace/index-client';
 import { makeEvent } from '../test/fakeClient';
-import { accountPageUrl, renderTimelineEvent } from './TimelinePane';
+import { renderTimelineEvent } from './TimelinePane';
 
 const ctx = () => ({
   viewerId: 'user_me',
@@ -12,7 +12,7 @@ const ctx = () => ({
   openItem: vi.fn(),
   navigate: vi.fn(),
   teamName: () => 'Team',
-  manageTeamsUrl: '/account/teams',
+  tokensUrl: '/account/tokens',
 });
 
 const loose = (type: TimelineEvent['type'], over: Partial<TimelineEvent> = {}): TimelineEvent =>
@@ -52,6 +52,9 @@ describe('Timeline cards about no item', () => {
       c,
     );
     expect([invited.label, invited.meta]).toEqual(['Invited to a Team', 'From Ana']);
+    // Answered in the Explorer's Invites.
+    invited.onClick!();
+    expect(c.navigate).toHaveBeenCalledWith({ kind: 'invites' });
     const joined = renderTimelineEvent(loose('team_joined', { actorId: 'user_me' }), c);
     expect(joined.label).toBe('Joined a Team');
     const removed = renderTimelineEvent(
@@ -63,8 +66,6 @@ describe('Timeline cards about no item', () => {
   });
 
   it('sends a token’s card to the tokens page, and warns ahead of its expiry', () => {
-    expect(accountPageUrl('/account/teams', 'tokens')).toBe('/account/tokens');
-    expect(accountPageUrl(undefined, 'tokens')).toBeUndefined();
     const card = renderTimelineEvent(
       loose('token_expiring', { title: 'CI', actorId: null }),
       ctx(),

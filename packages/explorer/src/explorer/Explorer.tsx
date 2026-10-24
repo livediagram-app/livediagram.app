@@ -60,6 +60,8 @@ import { WelcomeFan } from '../welcome/HomeWelcome';
 import type { WelcomeOptions } from '../welcome/types';
 import { ExtrasProvider, type ViewModeTelemetry } from './extras';
 import type { ExplorerAccounts } from '../data/accounts';
+import type { TeamsHost } from '../data/teams';
+import { TeamsProvider, useTeams } from '../teams/context';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -87,6 +89,9 @@ export type ExplorerProps = {
   basePath?: string;
   /** Teams the person has joined (their token's `teams` claim), for the sidebar and Move. */
   teams?: TeamRef[];
+  /** Making and running teams in place (createTeamsHost; packages/explorer/README.md "Teams"): New Team, the team
+   *  card, and answering invitations. Without it teams show, but nothing about them changes here. */
+  teamsHost?: TeamsHost | null;
   /** The person's id, for "Assigned to You" in the Inbox. */
   viewerId?: string | null;
   /** A share link's address; `${origin}/s/<code>` by default. */
@@ -96,8 +101,8 @@ export type ExplorerProps = {
   share?: ShareHost;
   /** The Inbox's extras: rows from items only this browser holds, card glyphs, a help article and telemetry. */
   inbox?: InboxHost;
-  /** The Manage Teams row's address; the row is hidden without it. */
-  manageTeamsUrl?: string;
+  /** The person's API tokens page, for a token's Timeline card. */
+  tokensUrl?: string;
   /** Controlled filter; uncontrolled (remembered per app in this browser) when omitted. */
   filter?: AppFilter;
   onFilterChange?: (filter: AppFilter) => void;
@@ -150,9 +155,8 @@ export type ExplorerProps = {
   allLabel?: string;
   /** A sentence said once on arrival, as a toast (why the person was sent here: a revoked link, say). */
   arrivalNotice?: string | null;
-  /** liveworkspace accounts, for people's names (the Owner column, What Happened, the Timeline: one cache), a
-   *  team's page and member count, and the invitations waiting. On liveworkspace.app: `createExplorerAccounts()`.
-   *  Without it those go unsaid. */
+  /** liveworkspace accounts, for people's names (the Owner column, What Happened, the Timeline: one cache). On
+   *  liveworkspace.app: `createExplorerAccounts()`. Without it those go unsaid. */
   accounts?: ExplorerAccounts | null;
   /** Whether the person is signed in; a guest is nudged to sign in for Teams. Signed in when omitted. */
   signedIn?: boolean;
@@ -161,8 +165,6 @@ export type ExplorerProps = {
   /** A guest's sign-in banner at the foot of the page (Sign In, the reasons, a close this browser remembers), shown
    *  while `signedIn` is false and there is a `signInHref`. Without it there is no banner. */
   signInBanner?: SignInBannerHost;
-  /** Where a team is run, for its page's Manage link; `manageTeamsUrl` when omitted. */
-  teamManageUrl?: (teamId: string) => string;
   /** Loads an item's preview ahead, as its Details row comes near the screen (the hover preview then paints at
    *  once). */
   prefetchThumbnail?: (item: Item) => void;
@@ -232,7 +234,7 @@ export function Explorer({
   imports,
   itemMenu,
   history,
-  onCreateTeam,
+  teamsHost,
   ...props
 }: ExplorerProps) {
   return (
@@ -243,9 +245,16 @@ export function Explorer({
         imports={imports}
         itemMenu={itemMenu}
         history={history}
-        onCreateTeam={onCreateTeam}
       >
-        <ExplorerInner {...props} />
+        {/* The page reads the person's teams as it opens: the Invites badge and member counts. */}
+        <TeamsProvider
+          host={teamsHost}
+          signedIn={props.signedIn ?? true}
+          tokenTeams={props.teams}
+          eager
+        >
+          <ExplorerInner {...props} />
+        </TeamsProvider>
       </LibraryHostProvider>
     </ToastProvider>
   );
@@ -264,12 +273,11 @@ function ExplorerInner({
   Link,
   onOpenItem,
   basePath,
-  teams,
   viewerId,
   shareUrl,
   share,
   inbox: inboxHost,
-  manageTeamsUrl,
+  tokensUrl,
   filter: controlledFilter,
   onFilterChange,
   toolbar,
@@ -296,10 +304,10 @@ function ExplorerInner({
   signedIn,
   signInHref,
   signInBanner,
-  teamManageUrl,
   prefetchThumbnail,
   onViewToggled,
-}: Omit<ExplorerProps, keyof LibraryHostProps>) {
+}: Omit<ExplorerProps, keyof LibraryHostProps | 'teamsHost'>) {
+  const shownTeams = useTeams().teams;
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
   const heroOnHome = view.kind === 'home' && !heroHidden;
@@ -335,7 +343,7 @@ function ExplorerInner({
       onOpenItem={onOpenItem}
       Link={Link}
       basePath={basePath}
-      teams={teams}
+      teams={shownTeams}
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
       renderItemMark={renderItemMark}
@@ -343,7 +351,7 @@ function ExplorerInner({
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}
-      manageTeamsUrl={manageTeamsUrl}
+      tokensUrl={tokensUrl}
       openNav={openNav}
       helpHref={helpHref}
       heroWords={heroWords}
@@ -359,7 +367,6 @@ function ExplorerInner({
         accounts={accounts}
         signedIn={signedIn}
         signInHref={signInHref}
-        teamManageUrl={teamManageUrl}
         prefetchThumbnail={prefetchThumbnail}
         onViewToggled={onViewToggled}
       >

@@ -74,7 +74,12 @@ import {
   TrashIcon,
 } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
-import { explorerPath, type ExplorerView } from '../views';
+import { explorerPath, SIDEBAR_LABELS, type ExplorerView } from '../views';
+import type { TeamsHost } from '../data/teams';
+import { TeamsProvider, useTeams } from '../teams/context';
+import { TeamCard, useTeamDetails } from '../teams/TeamCard';
+import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { Dialog, DialogCloseButton, DialogHeader } from '../ui/Dialog';
 import { folderCountLabel, type AppFilter } from '../words';
 
 export { folderCountLabel } from '../words';
@@ -151,6 +156,9 @@ export type ExplorerPanelProps = {
   onOpenItem?: (href: string, item: Item) => void;
   basePath?: string;
   teams?: TeamRef[];
+  /** Making and running teams (createTeamsHost): New Team on the rail and a team's Members dialog. Passed for a
+   *  signed-in person only; the panel asks nothing about teams until one of those opens. */
+  teamsHost?: TeamsHost | null;
   viewerId?: string | null;
   shareUrl?: ShareUrl;
   // The Share dialog's tabs, embed, live image, help and telemetry.
@@ -178,7 +186,7 @@ export function ExplorerPanel({
   imports,
   itemMenu,
   history,
-  onCreateTeam,
+  teamsHost,
   ...props
 }: ExplorerPanelProps) {
   return (
@@ -189,9 +197,15 @@ export function ExplorerPanel({
         imports={imports}
         itemMenu={itemMenu}
         history={history}
-        onCreateTeam={onCreateTeam}
       >
-        <PanelInner {...props} />
+        <TeamsProvider
+          host={teamsHost}
+          signedIn={Boolean(teamsHost)}
+          tokenTeams={props.teams}
+          eager={false}
+        >
+          <PanelInner {...props} />
+        </TeamsProvider>
       </LibraryHostProvider>
     </ToastProvider>
   );
@@ -213,7 +227,6 @@ function PanelInner({
   Link,
   onOpenItem,
   basePath,
-  teams = [],
   viewerId,
   shareUrl,
   share,
@@ -225,7 +238,8 @@ function PanelInner({
   notice,
   footer,
   divider = 'titles',
-}: Omit<ExplorerPanelProps, keyof LibraryHostProps>) {
+}: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams'>) {
+  const { teams } = useTeams();
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
   const { gallery, shapeLibraries } = useLibraryHost();
@@ -530,6 +544,7 @@ function Rail({
   divider: 'titles' | 'lines';
 }) {
   const { onCreate, kind, inbox, viewerId, teamName } = useExplorer();
+  const canRunTeams = useTeams().canRun;
   const navRef = useRef<HTMLElement>(null);
   const selectedKey = sectionKey(selected);
   const name = (id: string) => teamName(id);
@@ -570,6 +585,9 @@ function Rail({
       </span>
     </button>
   );
+  const newTeamEntry = canRunTeams ? (
+    <NewTeamEntry key="new-team" phone={phone} onMade={(id) => onPick({ kind: 'team', id })} />
+  ) : null;
   const entry = (s: PanelSection) => {
     const key = sectionKey(s);
     return (
@@ -598,7 +616,10 @@ function Rail({
       {phone ? (
         <ul className="flex gap-1.5">
           <li className="shrink-0">{newItem}</li>
-          {groups.flatMap((g) => g.sections).map(entry)}
+          {groups.flatMap((g) => [
+            ...g.sections.map(entry),
+            ...(g.id === 'spaces' && newTeamEntry ? [newTeamEntry] : []),
+          ])}
         </ul>
       ) : (
         <>
@@ -618,13 +639,45 @@ function Rail({
                     className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
                   />
                 ) : null}
-                <ul className="flex flex-col gap-0.5">{g.sections.map(entry)}</ul>
+                <ul className="flex flex-col gap-0.5">
+                  {g.sections.map(entry)}
+                  {g.id === 'spaces' ? newTeamEntry : null}
+                </ul>
               </section>
             ) : null,
           )}
         </>
       )}
     </nav>
+  );
+}
+
+// New Team, last under Spaces (signed in): the team dialog, and the team made opens in the pane.
+function NewTeamEntry({ phone, onMade }: { phone: boolean; onMade: (teamId: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <li className={phone ? 'shrink-0' : ''}>
+      <button
+        type="button"
+        data-rail-entry=""
+        onClick={() => setOpen(true)}
+        className={`flex cursor-pointer items-center gap-2 border border-transparent text-left text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
+          phone
+            ? 'relative h-9 touch-target-y whitespace-nowrap rounded-lg px-2.5 text-[13px] ring-1 ring-slate-200 dark:ring-slate-700'
+            : 'h-8 w-full rounded-md px-2'
+        }`}
+      >
+        <span aria-hidden className="flex shrink-0 items-center opacity-80">
+          <PlusIcon />
+        </span>
+        <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>
+          {SIDEBAR_LABELS.newTeam}
+        </span>
+      </button>
+      {open ? (
+        <NewTeamDialog onClose={() => setOpen(false)} onMade={(team) => onMade(team.id)} />
+      ) : null}
+    </li>
   );
 }
 
@@ -757,6 +810,8 @@ function Pane({
 }) {
   const { teamName, folders } = useExplorer();
   const libraryHost = useLibraryHost();
+  const canRunTeams = useTeams().canRun;
+  const [members, setMembers] = useState(false);
   const title = sectionLabel(section, (id) => teamName(id));
   const space = section.kind === 'mine' || section.kind === 'team';
   // The folder open, while it is still one of the space's (a folder deleted or moved away goes back to the root).
@@ -822,6 +877,12 @@ function Pane({
         {section.kind === 'mine' ? (
           <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} />
         ) : null}
+        {section.kind === 'team' && canRunTeams ? (
+          <button type="button" onClick={() => setMembers(true)} className={HEADER_BUTTON}>
+            <TeamIcon size={12} />
+            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Members</span>
+          </button>
+        ) : null}
         {section.kind === 'library' ? null : <FilterToggle />}
         <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
           <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
@@ -837,6 +898,13 @@ function Pane({
           {body}
         </div>
       </div>
+      {members && section.kind === 'team' ? (
+        <TeamMembersDialog
+          teamId={section.id}
+          teamName={title}
+          onClose={() => setMembers(false)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -1374,5 +1442,55 @@ function TrashSection() {
         />
       ) : null}
     </div>
+  );
+}
+
+// ---- A team's Members dialog ---------------------------------------------------------------------------
+
+// The team card, as the page shows it over the team's library: read when the dialog opens. Leaving or deleting the
+// team closes it and goes Home.
+function TeamMembersDialog({
+  teamId,
+  teamName,
+  onClose,
+}: {
+  teamId: string;
+  teamName: string;
+  onClose: () => void;
+}) {
+  const { viewerId, helpHref, navigate } = useExplorer();
+  const [load, reload] = useTeamDetails(teamId);
+  return (
+    <Dialog onClose={onClose} ariaLabel={`${teamName} members`} size="lg">
+      <DialogHeader title={teamName} subtitle="Members">
+        <DialogCloseButton onClick={onClose} />
+      </DialogHeader>
+      <div className="px-5 py-4" data-team-members-dialog={teamId}>
+        {load.state === 'found' ? (
+          <TeamCard
+            details={load.details}
+            reload={reload}
+            viewerId={viewerId}
+            helpHref={helpHref?.({ kind: 'team', id: teamId })}
+            onGone={() => {
+              onClose();
+              navigate({ kind: 'home' });
+            }}
+          />
+        ) : load.state === 'loading' ? (
+          <PaneSkeleton rows={3} />
+        ) : (
+          <PaneEmpty
+            icon={<TeamIcon size={22} />}
+            title={load.state === 'gone' ? 'Team not found' : 'The team could not load'}
+            description={
+              load.state === 'gone'
+                ? 'This team doesn’t exist, or you’re not a member of it.'
+                : 'Check your connection and try again.'
+            }
+          />
+        )}
+      </div>
+    </Dialog>
   );
 }

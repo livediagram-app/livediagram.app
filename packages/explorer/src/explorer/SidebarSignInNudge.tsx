@@ -1,6 +1,6 @@
 'use client';
 
-// The guest's sign-in nudge, last in Spaces in place of Manage Teams: teams need an account. A deep navy card in
+// The guest's sign-in nudge, last in Spaces in place of New Team: teams need an account. A deep navy card in
 // both appearances with a brand glow in its corner. The host says where signing in is (`signInHref`).
 
 import { useExplorer } from './context';

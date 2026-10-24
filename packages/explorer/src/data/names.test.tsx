@@ -12,8 +12,6 @@ function fakeAccounts(names: Record<string, string>) {
   });
   const accounts: ExplorerAccounts = {
     people,
-    teamMembers: async () => null,
-    myTeams: async () => ({ teams: [], invitations: [] }),
   };
   return { accounts, people };
 }

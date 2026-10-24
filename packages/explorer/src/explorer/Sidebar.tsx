@@ -58,6 +58,8 @@ import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
 import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
 import { useExtras } from './extras';
+import { useTeams } from '../teams/context';
+import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
 import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import { useLibraryHost } from '../library/context';
@@ -427,7 +429,7 @@ export function timelineBadge(count: number | undefined): {
 }
 
 export function Sidebar() {
-  const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
+  const { view, navigate, folders, teams, inbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const library = useLibraryHost();
   const { expanded, toggle } = useExpanded(view);
@@ -436,7 +438,9 @@ export function Sidebar() {
   const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
   const navRef = useRef<HTMLElement>(null);
   const tree = useTreeNavigation(navRef);
-  const { sharedCount, myTeams, signedIn, signInHref } = useExtras();
+  const { sharedCount, signedIn, signInHref } = useExtras();
+  const { myTeams, canRun } = useTeams();
+  const [newTeam, setNewTeam] = useState(false);
   const memberCounts = useMemo(
     () => new Map(myTeams?.teams.map((t) => [t.id, t.memberCount])),
     [myTeams],
@@ -564,13 +568,19 @@ export function Sidebar() {
         ) : null}
         {!signedIn && signInHref ? (
           <SidebarSignInNudge href={signInHref} />
-        ) : manageTeamsUrl ? (
+        ) : canRun ? (
           <SidebarRow
             icon={<PlusIcon />}
-            label={SIDEBAR_LABELS.manageTeams}
+            label={SIDEBAR_LABELS.newTeam}
             selected={false}
-            onActivate={() => window.location.assign(manageTeamsUrl)}
+            onActivate={() => setNewTeam(true)}
             depth={0}
+          />
+        ) : null}
+        {newTeam ? (
+          <NewTeamDialog
+            onClose={() => setNewTeam(false)}
+            onMade={(team) => navigate({ kind: 'team', id: team.id })}
           />
         ) : null}
       </SidebarGroup>

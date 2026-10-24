@@ -49,15 +49,15 @@ export function PanelTimeline() {
     openItem,
     navigate,
     teamName,
-    manageTeamsUrl,
+    tokensUrl,
   } = explorer;
   const feed = useTimelineFeed(client, app, filter, epoch, inbox.clearTimelineNew);
   // Renames and deletes made anywhere show on the rows at once: a new overlay version draws them again.
   useSyncExternalStore(overlay.subscribe, overlay.version, overlay.version);
   const days = useMemo(() => groupByDay(feed.events), [feed.events]);
   const ctx = useMemo(
-    () => ({ viewerId, filter, renderThumbnail, openItem, navigate, teamName, manageTeamsUrl }),
-    [viewerId, filter, renderThumbnail, openItem, navigate, teamName, manageTeamsUrl],
+    () => ({ viewerId, filter, renderThumbnail, openItem, navigate, teamName, tokensUrl }),
+    [viewerId, filter, renderThumbnail, openItem, navigate, teamName, tokensUrl],
   );
   if (feed.error) return <PaneFailed message="The Timeline could not load." onRetry={feed.retry} />;
   if (feed.loading) return <PaneSkeleton rows={6} />;

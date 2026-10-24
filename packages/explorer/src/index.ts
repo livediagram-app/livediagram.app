@@ -89,12 +89,23 @@ export {
   AccountsError,
   PEOPLE_MAX,
   type ExplorerAccounts,
+} from './data/accounts';
+export {
+  createTeamsHost,
+  teamErrorMessage,
+  TeamsError,
+  type AnsweredInvitation,
+  type InviteLink,
   type MyTeams,
   type PendingInvitation,
+  type RemovedMember,
   type TeamDetails,
   type TeamMember,
+  type TeamResult,
   type TeamRole,
-} from './data/accounts';
+  type TeamsHost,
+  type TeamsHostOptions,
+} from './data/teams';
 export type { ViewModeTelemetry } from './explorer/extras';
 export { placeHash } from './place';
 export type {
@@ -104,7 +115,6 @@ export type {
   ImportHost,
   ImportSource,
   ItemMenuHost,
-  CreateTeam,
   ItemMenuVerb,
   LibraryHostProps,
   LibraryShape,
