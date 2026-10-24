@@ -67,7 +67,7 @@ Request bodies are capped at 8 MB (image uploads have their own cap), and one ta
 
 Every [API token](/help/account-and-data/api-tokens/) lasts **six months**, then expires. After that, requests with it fail with `401 invalid_token`, the same as a [revoked](/help/account-and-data/api-tokens/) token. There is no never-expires option, so build rotation in: create a fresh token before the old one lapses, update your integration, then revoke the old one.
 
-You can hold up to **20** live tokens at once, across every liveworkspace app. Tokens are made and revoked on [liveworkspace.app](https://liveworkspace.app/account/tokens).
+You can hold up to **20** live tokens at once, across every liveworkspace app. Tokens are made and revoked on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens).
 
 <Note>
   Revocation takes effect immediately. The next request a revoked token makes is rejected, so revoke

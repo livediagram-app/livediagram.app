@@ -126,7 +126,7 @@ export function SettingsDialog({
         all: settings,
         set: ownToggleSetter(model, (key, value) => onChange({ ...settings, [key]: value })),
       },
-      profileHref: `${workspaceOriginFor(window.location.host)}/account/settings#profile`,
+      profileHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
       emails: emailEnabled,
     }),
     [settings, model, onChange, emailEnabled],

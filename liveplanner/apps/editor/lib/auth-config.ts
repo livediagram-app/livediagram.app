@@ -32,4 +32,4 @@ export const sessionsEnabled = signInEnabled || e2eAuthEnabled;
 export const accountsSiteUrl = (
   process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || 'https://liveworkspace.app'
 ).replace(/\/+$/, '');
-export const manageTokensUrl = `${accountsSiteUrl}/account/tokens`;
+export const manageTokensUrl = `${accountsSiteUrl}/explorer?settings=tokens`;
