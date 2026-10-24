@@ -45,10 +45,12 @@ livedocuments'), and only stores an event that its app could have sent.
 The answer is always `204`, whether the batch was stored or not, so telemetry can never surface an
 error to the page or Worker that sent it. A batch stores at most 100 events.
 
-**From a browser**, each app's `@<app>/telemetry-client` buffers events and sends them in batches,
-with `navigator.sendBeacon` on page hide. The batching is one engine for every sender,
-`@liveworkspace/telemetry/emitter` (`createTelemetryEngine`); each app's client only fixes its app and
-its vocabulary's types. It sends the body as `text/plain`, with no cookies, so a
+**From a browser**, each app buffers events and sends them in batches, with `navigator.sendBeacon`
+on page hide. The batching is one engine for every sender, `@liveworkspace/telemetry/emitter`
+(`createTelemetryEngine`). The browser side around it (the opt-out rule, the public sites' tracker,
+client error tracking, timings, page hide) is `@liveworkspace/telemetry-client`, also shared; each
+app's `@<app>/telemetry-client` only binds it to the app: its name here, the key its preferences are
+stored under, its vocabulary's types and its error and timing tokens. It sends the body as `text/plain`, with no cookies, so a
 cross-site send needs no CORS preflight. The service stores a browser batch only when its `Origin` is
 one of its app's own sites (`TELEMETRY_APP_ORIGINS`), so one site can't post in another's name.
 Browser batches are rate-limited per network (120 a minute; the IPv6 /64), and the address is never

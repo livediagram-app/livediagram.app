@@ -19,20 +19,17 @@ packages/
   template-previews/ per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
-  api-client/     the api client the MCP and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   page-background/ a page background's colours, patterns and motions, and their parser (pure)
   photo-engine/   photo pages: the photo's layer model and the pixel engine: composite, adjustments, filters, selections, paint, PSD (pure)
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   design-views/ read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   page-lint/      checks a tab's text fits where it is drawn, with a fix each
-  telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
+  telemetry-client/ this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/       build-time generator of the /licences page from what each app bundles
-  oxlint-config/  shared oxlint config + the repo's own lint rules
-  prettier-config/shared Prettier config
   tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
-  vitest-config/  shared Vitest defaults
-  next-config/    shared Next.js settings (the build's type check, skipped only by E2E builds)
+  (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
+  telemetry-client, render-png, source-ast, style-guards, and the oxlint, prettier, vitest, next configs)
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)
 marketing/      off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -80,7 +77,7 @@ Each app pulls these in via `workspace:*`:
 - **`@livedesign/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords, plus the pure href/search helpers. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/live/lib/help-search.ts`), so adding an article once makes it findable in both.
 - **`@livedesign/licences`** generates the third-party licences page ([Third-party licences](../specs/002-project-scope/third-party-licences.md)). The marketing build runs it after every other app has built: it reads what each Next app ships to the browser from `next experimental-analyze` and what each worker bundles from a `wrangler --dry-run` metafile, collects each package's licence and notice files (with reviewed overrides for packages that ship none, and a reviewed table for what sits inside WASM and fonts), and writes a manifest plus deduplicated plain-text files that `apps/marketing/app/licences` renders. A package with no licence text, an unrecognised licence, a disallowed one or an unreviewed binary fails the build with a named error.
 - **`@liveworkspace/source-ast`** (`packages/source-ast` at the repo root) parses the repo's own TypeScript for the static guards that read code ([Source scanners](../specs/003-system-architecture/source-scanners.md)): `parseSourceFiles(paths)` opens the files as one in-memory project in TypeScript 7's native compiler (`typescript/unstable/sync`) and returns their syntax trees.
-- **`@liveworkspace/oxlint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** / **`next-config`** own the shared lint / format / theme / test / Next.js configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livedesign/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
+- **`@liveworkspace/oxlint-config`** / **`prettier-config`** / **`vitest-config`** / **`next-config`** (the monorepo's `packages/`, shared with every product) and this product's own **`tailwind-config`** own the lint / format / test / Next.js / theme configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livedesign/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
 
 ## Tech stack
 

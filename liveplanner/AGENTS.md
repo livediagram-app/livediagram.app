@@ -217,16 +217,13 @@ packages/
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
   project-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
-  api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
-  telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
+  telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/     # build-time generator of the /licences page from what each app bundles
-  oxlint-config/  # shared oxlint config + the repo's own lint rules
-  prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
-  vitest-config/  # shared Vitest defaults (extended per workspace)
-  next-config/    # shared Next.js settings
+  # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
+  # telemetry-client, render-png, source-ast, style-guards, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

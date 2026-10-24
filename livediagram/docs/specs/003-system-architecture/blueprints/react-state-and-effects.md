@@ -139,8 +139,8 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 ## Constants and configuration
 
-| Constant                 | Value                                       | Provenance                       | Safe range        |
-| ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
+| Constant                 | Value                                       | Provenance                         | Safe range        |
+| ------------------------ | ------------------------------------------- | ---------------------------------- | ----------------- |
 | `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveworkspace/next-config` `env` | A four-digit year |
 
 ## Defaults ledger

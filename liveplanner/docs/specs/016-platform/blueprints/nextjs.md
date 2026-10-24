@@ -4,14 +4,14 @@ Derived from [Next.js](../nextjs.md).
 
 ## Domain and naming
 
-| Term            | Identifier                               | Meaning                                                        |
-| --------------- | ---------------------------------------- | -------------------------------------------------------------- |
-| Shared config   | `liveworkspaceNextConfig(options)`         | The settings every app shares, from `@liveworkspace/next-config` |
-| App config      | each app's `next.config.ts`              | The shared config spread, plus the app's own settings          |
-| Turbopack build | `isTurbopack(env)` (`env.TURBOPACK` set) | Next sets `TURBOPACK` before it loads the config               |
-| Static export   | `output: 'export'`                       | Always, except the editor's dev server (`exportInDev: false`)  |
-| Dev directory   | `NEXT_DISTDIR=.next-dev`                 | Where `scripts/next-dev.mjs` points dev                        |
-| Build year      | `NEXT_PUBLIC_BUILD_YEAR`                 | Inlined at build by `env`                                      |
+| Term            | Identifier                               | Meaning                                                          |
+| --------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| Shared config   | `liveworkspaceNextConfig(options)`       | The settings every app shares, from `@liveworkspace/next-config` |
+| App config      | each app's `next.config.ts`              | The shared config spread, plus the app's own settings            |
+| Turbopack build | `isTurbopack(env)` (`env.TURBOPACK` set) | Next sets `TURBOPACK` before it loads the config                 |
+| Static export   | `output: 'export'`                       | Always, except the editor's dev server (`exportInDev: false`)    |
+| Dev directory   | `NEXT_DISTDIR=.next-dev`                 | Where `scripts/next-dev.mjs` points dev                          |
+| Build year      | `NEXT_PUBLIC_BUILD_YEAR`                 | Inlined at build by `env`                                        |
 
 ## Behaviour and state
 

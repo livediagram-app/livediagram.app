@@ -37,7 +37,9 @@ corepack pnpm typecheck          # everything; or inside a product folder, just 
 ```
 
 Each product folder keeps its own scripts (`cd livediagram && corepack pnpm test` runs only
-livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules.
+livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules. The lint,
+format, test and Next.js settings are shared (`packages/oxlint-config`, `prettier-config`,
+`vitest-config`, `next-config`), so a rule changes once for every product.
 
 ## Deploys
 

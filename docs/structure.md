@@ -6,6 +6,7 @@
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
+│  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
@@ -13,6 +14,9 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
+│  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
+│  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
+│  ├─ prettier-config          the formatting settings, for the root and every product
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
@@ -20,7 +24,9 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
-│  └─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
+│  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
+│  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
+│  └─ vitest-config            the Vitest defaults and test helpers every workspace extends
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
@@ -68,7 +74,7 @@ livediagram, so `packages/items` and `packages/sheets` are liveplanner's alone n
 | `api-client`, `oxlint-config`, `prettier-config`, `render-png`, `source-ast`, `telemetry-client` | all       | 0       | 0           |
 
 Every day both products change separately, so these numbers get worse. That's the case for
-sharing now rather than later.
+sharing now rather than later. The last row has since moved to `packages/` (step 1, below).
 
 ## Where it's heading
 
@@ -122,9 +128,21 @@ hard-coding them.
 
 Each step is its own PR, and both products build and pass their tests after every one.
 
-1. **Move the identical packages** (`api-client`, `telemetry-client` and the config packages;
-   `render-png`, `source-ast` and the style guards have moved) to `packages/` as `@liveworkspace/*`, then repoint imports in both
-   products. This is mechanical and checked by typecheck.
+1. **Move the identical packages** (`api-client`, `telemetry-client`, `render-png`, `source-ast`,
+   the style guards and the config packages) to `packages/` as `@liveworkspace/*`, then repoint
+   imports in every product. This is mechanical and checked by typecheck. **Done**:
+   - `prettier-config`, `vitest-config`, `oxlint-config`, `next-config` and `api-client` are one
+     copy each. The platform packages and liveworkspace's site no longer borrow livediagram's
+     configs. The lint plugin is `liveworkspace` (`liveworkspace/no-native-title`,
+     `liveworkspace/no-raw-icon-svg`), the coverage variable `LIVEWORKSPACE_COVERAGE`, and every
+     Next app spreads `liveworkspaceNextConfig()`.
+   - `telemetry-client` is one copy of the code. Each product keeps a binding of about 60 lines
+     as `@<product>/telemetry-client`: its app on the telemetry service, its preferences key
+     (unchanged, so nobody's saved preferences or opt-out reset), its vocabulary's types and its
+     error and timing tokens from its own `api-schema`. Those stay per product until `api-schema`
+     moves in step 3.
+   - `tailwind-config` is still in each product: its theme differs per product, so it belongs to
+     step 2.
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
    behaviour, which becomes config, or just one side being behind, where the newer side wins.
