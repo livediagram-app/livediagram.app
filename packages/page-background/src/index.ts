@@ -1,6 +1,8 @@
-// A page background's colours (docs/specs/007-editor/pages-mode.md "Backgrounds"): a solid colour or a
-// two-stop gradient (a slide's moving one included, "Animated backgrounds"), and a pattern over it. Read by a slide
-// page (@livedocuments/document, which adds pictures). Pure, no dependencies.
+// A colour background: a solid colour or a two-stop gradient (a moving one included), and a pattern over it.
+// Shared by every product that paints one: a page's background in livedocuments and livedesign
+// (docs/specs/007-editor/pages-mode.md "Backgrounds" there, with pictures added by the page's own model) and a
+// form's cover in liveplanner (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover), so all of
+// them read and paint the same backgrounds. Pure, no dependencies.
 
 // A slide's animated background (docs/specs/007-editor/pages-mode.md "Animated backgrounds"):
 // a gradient with a motion drawn over it, moving on screen and while presenting, still in exports
@@ -55,6 +57,9 @@ export type PageColourFill =
       speed?: number;
     };
 
+// A background in colour alone: a form's cover (a page's PageBackground adds pictures).
+export type ColourBackground = { fill?: PageColourFill; pattern?: PagePattern };
+
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v);
 
@@ -86,4 +91,14 @@ export function parseColourFill(v: unknown): PageColourFill | undefined {
 /** A stored pattern, or undefined. */
 export function parsePagePattern(v: unknown): PagePattern | undefined {
   return PAGE_PATTERNS.includes(v as PagePattern) ? (v as PagePattern) : undefined;
+}
+
+/** A stored colour background (a form's cover), keeping what is valid; undefined when nothing is. */
+export function parseColourBackground(v: unknown): ColourBackground | undefined {
+  const b = v as Record<string, unknown> | null;
+  if (!b || typeof b !== 'object') return undefined;
+  const fill = parseColourFill(b.fill);
+  const pattern = parsePagePattern(b.pattern);
+  if (!fill && !pattern) return undefined;
+  return { ...(fill ? { fill } : {}), ...(pattern ? { pattern } : {}) };
 }

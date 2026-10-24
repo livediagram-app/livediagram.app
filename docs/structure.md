@@ -16,6 +16,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
+│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data

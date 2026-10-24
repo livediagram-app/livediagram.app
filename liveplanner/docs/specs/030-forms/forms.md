@@ -25,7 +25,7 @@ project.
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
 | **destination**     | The Board tab, card type and status every response is made in                                 | target, inbox                 |
-| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the project    | share link (that is a doc's)  |
+| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the project     | share link (that is a doc's)  |
 | **respondent**      | Anyone filling in a form through its form link; always anonymous                              | user, visitor, submitter      |
 | **response**        | One submitted set of answers; it is made into one card                                        | submission, entry, reply      |
 | **response number** | The form's own running count, 1, 2, 3, never reused (`Bug Report #14`)                        | key (that is the card's)      |
@@ -130,10 +130,10 @@ previewing), the help link and the form's **cog**.
 ### The form card, top to bottom
 
 - **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a colour background
-  (`@liveplanner/page-background`): a **Background** section with **Solid**, **Gradient** (the tab theme's gradients
+  (`@liveworkspace/page-background`): a **Background** section with **Solid**, **Gradient** (the tab theme's gradients
   first) and **Animated** (the background motions, moving on screen; still under reduced motion), then **Pattern**.
   No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
-  `@liveplanner/page-background` shape). A hover previews on the band; a press sets it.
+  `@liveworkspace/page-background` shape). A hover previews on the band; a press sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
@@ -598,7 +598,7 @@ board settings, for switching back.
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
-| Sync a project in This Browser from Share Form          | ✓                                      |             |        |
+| Sync a project in This Browser from Share Form           | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
@@ -728,7 +728,7 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
 | Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
-| Form     | Moved    | `SyncedToShare`                                         | Sync Project pressed in Share Form                   |
+| Form     | Moved    | `SyncedToShare`                                         | Sync Project pressed in Share Form                    |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
 | Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`             | A report is filed (server-side)                       |

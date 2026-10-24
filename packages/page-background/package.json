@@ -1,8 +1,7 @@
 {
-  "name": "@liveplanner/page-background",
+  "name": "@liveworkspace/page-background",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",

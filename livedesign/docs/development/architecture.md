@@ -20,7 +20,6 @@ packages/
   help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
-  page-background/ a page background's colours, patterns and motions, and their parser (pure)
   photo-engine/   photo pages: the photo's layer model and the pixel engine: composite, adjustments, filters, selections, paint, PSD (pure)
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   design-views/ read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
@@ -29,7 +28,7 @@ packages/
   licences/       build-time generator of the /licences page from what each app bundles
   tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
   (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  telemetry-client, render-png, source-ast, style-guards, and the oxlint, prettier, vitest, next configs)
+  telemetry-client, render-png, source-ast, style-guards, page-background, and the oxlint, prettier, vitest, next configs)
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)
 marketing/      off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)

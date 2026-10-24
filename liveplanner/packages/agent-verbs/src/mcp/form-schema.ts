@@ -23,7 +23,7 @@ import {
   type QuestionType,
   type StarterId,
 } from '@liveplanner/forms';
-import { PAGE_MOTIONS } from '@liveplanner/page-background';
+import { PAGE_MOTIONS } from '@liveworkspace/page-background';
 import { FORM_CHANGES_MAX } from '../forms/form-calls';
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');

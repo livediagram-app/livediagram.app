@@ -14,7 +14,7 @@
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/page-background": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {

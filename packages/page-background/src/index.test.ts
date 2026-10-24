@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isPageMotion, parseColourBackground, parseColourFill, parsePagePattern } from './index';
 
-// A colour background (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover).
+// A colour background (a page's in livedocuments and livedesign, a form cover's in liveplanner).
 
 describe('parseColourFill', () => {
   it('reads a solid colour and a gradient, its angle brought into 0 to 359', () => {

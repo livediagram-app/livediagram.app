@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@livedocuments/icons": "workspace:*",
-    "@livedocuments/page-background": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {
