@@ -1,7 +1,8 @@
 'use client';
 
-// The open tab's name, for the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"): published by
-// usePlanCoverWiring as the tab opens or is renamed, read by TabNameInBox. A module store, like plan-tab-list-store.ts.
+// The open tab's name, for the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"): published by the
+// editor through usePublishTabName as the tab opens or is renamed, read by TabNameInBox. A module store, so only the
+// name re-renders when it changes.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { createListeners } from '@/lib/listeners';
@@ -13,6 +14,15 @@ export function setActiveTabName(next: string): void {
   if (next === name) return;
   name = next;
   listeners.notify();
+}
+
+// Publishes the open tab's name while the editor is mounted, in every mode; cleared as the editor goes, so no name
+// lingers for the next document.
+export function usePublishTabName(tabName: string): void {
+  useLayoutEffect(() => {
+    setActiveTabName(tabName);
+  }, [tabName]);
+  useLayoutEffect(() => () => setActiveTabName(''), []);
 }
 
 const get = () => name;

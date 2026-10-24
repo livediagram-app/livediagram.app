@@ -6,7 +6,7 @@ import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
-import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
+import { usePublishTabName, usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
@@ -2050,7 +2050,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     confirm,
     toast,
   });
-  // The menu box renames the open tab on a click on its name (active-tab-name-store).
+  // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
+  usePublishTabName(activeTab.name);
   usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
