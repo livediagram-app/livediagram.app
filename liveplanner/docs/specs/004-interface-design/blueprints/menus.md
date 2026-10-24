@@ -5,36 +5,36 @@ the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                       | Role                                                                                                         |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/ui/src/menu/menu-constants.ts`                                   | Every selector, attribute and timing, named                                                                  |
-| `packages/ui/src/menu/menu-keys.ts`                                        | Pure keyboard model: key to intent, index stepping, typeahead, initial index                                 |
-| `packages/ui/src/menu/input-modality.ts`                                   | The last interaction (key or pointer) and the last focused element, tracked on the project                   |
-| `packages/ui/src/menu/menu-dom.ts`                                         | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership                               |
-| `packages/ui/src/menu/menu-tree.ts`                                        | `MenuTreeContext`: the kind and id of the menu a component renders inside                                    |
-| `packages/ui/src/menu/useMenu.ts`                                          | Command menu hook: roles, label, initial focus, keys, Tab, focus return                                      |
-| `packages/ui/src/menu/useMenuButton.ts`                                    | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open                           |
-| `packages/ui/src/menu/useControlMenu.ts`                                   | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
-| `packages/ui/src/menu/index.ts`                                            | Public surface, re-exported from `packages/ui/src/index.ts`                                                  |
-| `packages/tailwind-config/theme.css`                                       | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
-| `apps/editor/components/primitives/PortalMenu.tsx`                         | Anchored menu (command or control) and its list rows, each role-aware                                        |
-| `apps/editor/components/primitives/MenuTiles.tsx`                          | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
-| `apps/editor/components/primitives/menu-item-props.ts`                     | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |
-| `apps/editor/components/primitives/usePortalMenuPlacement.ts`              | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
-| `apps/editor/components/primitives/MenuFlyoutSection.tsx`                  | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
-| `apps/editor/components/primitives/MenuFlyoutPanel.tsx`                    | The flyout's surface: `menu` or `dialog`                                                                     |
-| `apps/editor/components/primitives/EllipsisTriggerButton.tsx`              | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
-| `apps/editor/components/palette/ContextMenu.tsx`                           | Control menu at a point (element, selection, cell)                                                           |
-| `apps/editor/components/chrome/TabPortalMenu.tsx`                          | Tab and Canvas control menu                                                                                  |
-| `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                    | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
-| `apps/editor/components/chrome/ZoomMenu.tsx`                               | Hover-open command menu with a button of its own                                                             |
-| `apps/editor/components/chrome/AuthControls.tsx`                           | Account command menu                                                                                         |
-| `apps/editor/components/chrome/EmbedChrome.tsx`                            | Embed tab command menu                                                                                       |
-| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                   | Canvas shortcuts stand down inside a menu surface                                                            |
-| `apps/editor/components/canvas/SelectionPopover.tsx`                       | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
-| `apps/editor/lib/element-names.ts`                                         | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
-| `packages/ui/src/SiteSwitcher.tsx`                                         | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
-| `../liveworkspace/apps/site/app/telemetry/liveplanner/StickyWindowBar.tsx` | View picker command menu                                                                                     |
+| File                                                                   | Role                                                                                                         |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `packages/ui/src/menu/menu-constants.ts`                               | Every selector, attribute and timing, named                                                                  |
+| `packages/ui/src/menu/menu-keys.ts`                                    | Pure keyboard model: key to intent, index stepping, typeahead, initial index                                 |
+| `packages/ui/src/menu/input-modality.ts`                               | The last interaction (key or pointer) and the last focused element, tracked on the project                   |
+| `packages/ui/src/menu/menu-dom.ts`                                     | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership                               |
+| `packages/ui/src/menu/menu-tree.ts`                                    | `MenuTreeContext`: the kind and id of the menu a component renders inside                                    |
+| `packages/ui/src/menu/useMenu.ts`                                      | Command menu hook: roles, label, initial focus, keys, Tab, focus return                                      |
+| `packages/ui/src/menu/useMenuButton.ts`                                | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open                           |
+| `packages/ui/src/menu/useControlMenu.ts`                               | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
+| `packages/ui/src/menu/index.ts`                                        | Public surface, re-exported from `packages/ui/src/index.ts`                                                  |
+| `packages/tailwind-config/theme.css`                                   | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
+| `apps/editor/components/primitives/PortalMenu.tsx`                     | Anchored menu (command or control) and its list rows, each role-aware                                        |
+| `apps/editor/components/primitives/MenuTiles.tsx`                      | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
+| `apps/editor/components/primitives/menu-item-props.ts`                 | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |
+| `apps/editor/components/primitives/usePortalMenuPlacement.ts`          | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
+| `apps/editor/components/primitives/MenuFlyoutSection.tsx`              | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
+| `apps/editor/components/primitives/MenuFlyoutPanel.tsx`                | The flyout's surface: `menu` or `dialog`                                                                     |
+| `apps/editor/components/primitives/EllipsisTriggerButton.tsx`          | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
+| `apps/editor/components/palette/ContextMenu.tsx`                       | Control menu at a point (element, selection, cell)                                                           |
+| `apps/editor/components/chrome/TabPortalMenu.tsx`                      | Tab and Canvas control menu                                                                                  |
+| `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
+| `apps/editor/components/chrome/ZoomMenu.tsx`                           | Hover-open command menu with a button of its own                                                             |
+| `apps/editor/components/chrome/AuthControls.tsx`                       | Account command menu                                                                                         |
+| `apps/editor/components/chrome/EmbedChrome.tsx`                        | Embed tab command menu                                                                                       |
+| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`               | Canvas shortcuts stand down inside a menu surface                                                            |
+| `apps/editor/components/canvas/SelectionPopover.tsx`                   | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
+| `apps/editor/lib/element-names.ts`                                     | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
+| `packages/ui/src/SiteSwitcher.tsx`                                     | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
+| `../liveworkspace/apps/site/app/telemetry/_shared/StickyWindowBar.tsx` | View picker command menu                                                                                     |
 
 ## Domain and naming
 

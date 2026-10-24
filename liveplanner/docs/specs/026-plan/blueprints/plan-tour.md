@@ -36,7 +36,7 @@ Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `ca
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
 `apps/help/app/canvas/plan-mode/plan-tour/page.mdx` with its registry entry, icon and colour, and the telemetry
 dashboard (`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/features.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/visitors.ts`,
-`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/DashboardView.tsx`,
+`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/config.ts`,
 `../liveworkspace/apps/site/app/telemetry/liveplanner/computed-emitters.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`).
 
 Wiring: `useEditorState` composes `usePlanTourLeftovers` (it returns nothing); `EditorView` mounts `<PlanTourHost />` beside `<TourHost />` in the same

@@ -138,14 +138,30 @@ the app's to report, so each change is counted once.
 ## The dashboard
 
 `https://liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
-`?app=liveplanner.app` or `?app=livedocuments.app` opens one app's own dashboard, with all of its tabs, catalogues and
-explanations. Picking an app on the page updates the link.
+`?app=liveplanner.app`, `?app=livedocuments.app` or `?app=livedesign.app` opens one app's own dashboard, with all of
+its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
   last 30 days) and the 30-day trend line, each app's share against the span before it, and the
   busiest events. The same event from two apps counts as one row, added up.
-- **One app** shows the dashboard that app had before, unchanged. Each app's catalogue lives in
-  `<app>/` in the dashboard's folder, and only loads when that app is picked.
+- **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
+  `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's
+  data in `<app>/`, which only loads when that app is picked.
+
+```
+app/telemetry/_shared     the views and their logic, once: AppDashboard, the tabs, cards, charts, rankings
+app/telemetry/<app>       the app's data: config.ts, its catalogue, event explanations, retired events, tests
+```
+
+`<app>/config.ts` is the whole difference between two apps' dashboards (`TelemetryAppConfig` in
+`_shared/app.ts`): its name, the noun for what it makes (document, project, design), its accent, its
+category colours, how its events read (`createEventExplanation` over its own sentences), its retired
+events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
+nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
+out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
+which gives it to every view through context. The views draw with `@livediagram/ui`, whose primitives
+the four apps' UI packages share. The shared views are tested against every app's config
+(`_shared/test-apps.ts`).
 
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
@@ -174,10 +190,11 @@ the repo root runs the site with this Worker behind it, at http://localhost:3000
 ## Which apps send
 
 livediagram, liveplanner, livedocuments and livedesign send events, and each has its own dashboard
-under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
+data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
 `livedesign/`). Each folder's tests read that app's source: every event an emitter can send must be
 in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
-event has an explanation (`event-explanation.test.ts`).
+event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
+`retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`).
 
 ## First deploy
 
@@ -202,8 +219,11 @@ HTTPS, not a service binding. Only the key has to be copied across.
    (`EXPLORER_TELEMETRY_EVENTS`), which its dashboard then charts.
 2. Add its vocabulary to `apps/telemetry/src/vocabularies.ts`, and a `TELEMETRY_KEY_<APP>` secret to
    `src/env.ts` and `appKey`.
-3. Add its dashboard under `apps/site/app/telemetry/<app>/`, with a `Body` the page loads when the
-   app is picked.
+3. Add its dashboard data under `apps/site/app/telemetry/<app>/`: a `config.ts` (a
+   `TelemetryAppConfig`), its catalogue and explanations, and a `Body.tsx` that hands the config to
+   `AppDashboard`, which the page loads when the app is picked. Add the config to
+   `_shared/test-apps.ts` so the shared views' tests run against it, and its brand scale to
+   `telemetry.css`.
 4. In the app, send batches as above, and allow `https://liveworkspace.app` in its CSP
    `connect-src`.
 
@@ -217,6 +237,13 @@ HTTPS, not a service binding. Only the key has to be copied across.
 - **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
+- **One set of views** (October 2026): the four apps' dashboards were near-copies (420 files, 65,261
+  lines); with the views shared they are 200 files and 43,705 lines. In the production build, an app's
+  dashboard loads 83.6 to 108.6 KiB of JavaScript (gzipped; 96.1 to 113.6 before), and every app's
+  together 290.0 KiB, against 415.5, since the views' chunks are now one set the browser caches across
+  apps. livediagram's own grew 1.5 KiB (the shared views read the app's config through context).
+  The page's first load is unchanged (219 KiB). The dashboard's stylesheet reads only
+  `@livediagram/ui` and the other apps' `Brand.tsx` (20.5 KiB gzipped, was 20.7).
 - **Accounts' team and token events**: reporting one is an array push on the request; the app it
   counts for is read (one primary-key read each) and the batch sent, one per app, in `waitUntil` after
   the response, bounded at two seconds. No query or request is added to the request itself.
