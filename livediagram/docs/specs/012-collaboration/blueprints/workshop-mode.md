@@ -76,7 +76,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 - Every `Record<EditorMode, …>` gains a `workshop` entry (the compiler enforces it):
   `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `POPULAR_BY_MODE`,
   `useTemplateModeFilter` events and counts, marketing `modeCounts`.
-- Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (explorer-lens), settings
+- Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (`packages/explorer/src/lens/dimensions.ts`), settings
   icons, help `featureColours`, marketing `HeroMode` and `TemplateGallery` `CHOICES`.
 - OpenAPI `EditorMode` enum regenerated (`pnpm --filter @livediagram/api gen:openapi`).
 - `TemplateKind` gains `'blank-session'`; `isBlankTemplate` covers it.
@@ -154,7 +154,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 | Share roles in Workshop                                                                   | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
 | Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                              |
 | Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
-| Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                             |
+| Explorer Opens in chip                                                                    | `packages/explorer/src/lens/lens.test.ts`                                                                                             |
 | OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |
 
 ## Defaults ledger

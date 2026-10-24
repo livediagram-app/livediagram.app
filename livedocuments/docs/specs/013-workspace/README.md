@@ -19,7 +19,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./empty-document-cleanup.md - when looking for the empty-document sweep (removed)
 - ./explorer-home.md - when working on Explorer Home and recording a document's opens (moved)
 - ./hide-from-recent.md - when looking for Hide from Recent / Show in Recent
-- ./explorer-filters.md - when looking for the Explorer's filter lens (removed; `packages/explorer-lens` remains)
+- ./explorer-filters.md - when looking for the Explorer's filter lens (removed; the shared Explorer's lens is `packages/explorer/src/lens/`)
 - ./explorer-details-view.md - when working on the per-tab stats a document pushes to the index for the Details view (moved)
 - ./inbox.md - when working on what a document pushes for the Inbox (moved)
 - ./timeline.md - when looking for the Timeline, What Happened, History or Team Activity (removed)

@@ -208,7 +208,6 @@ packages/
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  explorer-lens/  # the former Explorer filter lens: parse, match and autocomplete filter tokens (pure; unused by the shared Explorer)
   page-background/ # a page background's colours, patterns and motions + their parser (pure)
   document-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes

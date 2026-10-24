@@ -292,7 +292,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
-  - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
   - `packages/sticky-vision`: the classical sticky-note detector for the photo
     import ([Event storming](../021-event-storming/event-storming.md)): colour
     classification, contours, seams, necks and spill, the boundary-model hybrid,

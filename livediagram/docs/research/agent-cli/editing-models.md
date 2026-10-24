@@ -256,7 +256,7 @@ does. The CLI and the server both resolve a handle: exact id first, then unique 
 matches is `E_TARGET_AMBIGUOUS` with candidates.
 
 **Selectors.** A selector is either a handle or a set of `key:value` tokens ANDed together, in the
-token style the Explorer filters already use (`packages/explorer-lens`), so people learn one syntax:
+token style the Explorer filters already use (`packages/explorer/src/lens/`), so people learn one syntax:
 
 | Token                            | Matches                                                                |
 | -------------------------------- | ---------------------------------------------------------------------- |

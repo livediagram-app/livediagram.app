@@ -213,7 +213,6 @@ packages/
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   page-background/ # a page background's colours, patterns and motions + their parser (pure)
   photo-engine/   # photo pages: the layer model + the pixel engine (composite, adjustments, filters, selections, paint, PSD) (pure)
   design-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts

@@ -277,7 +277,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash
     shapes, error telemetry and page views.
-  - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.

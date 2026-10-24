@@ -13,7 +13,7 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                                |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livedesign/edit-operations`, laid out like `packages/explorer-lens` (EO1)                                                               |
+| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livedesign/edit-operations`, laid out like the former explorer-lens package (EO1)                                                               |
 | `packages/edit-operations/src/index.ts`                                           | The public surface (listed under [Interfaces and contracts](#interfaces-and-contracts))                                                                             |
 | `packages/edit-operations/src/types.ts`                                           | `EditOperation` and one type per operation, `Selector`, `Placement`, `FieldValue`, `ApplyOptions`, outcomes                                                         |
 | `packages/edit-operations/src/vocabulary.ts`                                      | `EDIT_OPERATION_NAMES`, `OPERATION_MEMBERS`, `PLACEMENT_RELATIONS`, `SELECTOR_KEYS`, `FLAG_MEMBERS`, `RESERVED_WORDS`, constants                                    |
@@ -544,7 +544,7 @@ Line form, words separated by whitespace:
   `by=`, `style=`, `direction=`, `id=` in the operations that define them; `key:value` with a placement key is a
   placement, `gap:` its gap; other `key:value` words, quoted words, `label~`, `->` words and other bare words are
   selector terms; flags are the operation's keywords. Keys read case-insensitively, as `tokenKeyOf` in
-  `@livedesign/explorer-lens` reads them (EO11).
+  the Explorer's lens (`packages/explorer/src/lens/dimensions.ts`) reads them (EO11).
 - **Operation shapes.** `connect` splits its selectors at a standalone `->`, or at the `->` outside quotes of one
   word (`connect "Sign in"->"Pay"`); a second `->`, either way, is a `parse_error` ("one -> in connect"), never a
   dropped end (E17); `insert … between <a> <b>` takes one
