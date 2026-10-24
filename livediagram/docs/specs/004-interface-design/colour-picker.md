@@ -150,7 +150,6 @@ pick commits it, once, for undo.
 | ----------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout                                                                                                                          |
 | **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour               |
-| **Field**         | A field-sized trigger (swatch, name, chevron) opening the picker in a popover               | None today (`ColourField`, kept for a form field)                                                                                        |
 | **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, Quick Style's **More colours** |
 
 ## Quick Style

@@ -1,6 +1,5 @@
 'use client';
 
-import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -232,24 +231,12 @@ export function EditorView() {
     appearance,
   );
 
-  // The same visibility for the Explorer panel's Current Document card (document-visibility-store).
+  // Whether the document shows as public on Community, for the header's share state.
   const headerCommunity = documentIsPublic({
     communityOn,
     ownPostState: communityState,
     communitySession: sessionCommunity !== null,
   });
-  usePublishDocumentVisibility(
-    documentShareable,
-    !!documentTeamId,
-    isOffline,
-    headerCommunity,
-    canShareDocument && hydrated
-      ? () => {
-          setShareDialogOpen(true);
-          track('UI', 'Opened', 'Share');
-        }
-      : undefined,
-  );
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
