@@ -238,7 +238,8 @@ copy in the same box.
 
 ## Presentation and UX
 
-Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and marketing's `Footer`,
+Route `/licences`, the shared `SiteHeader` in its marketing bar (`buildWithAi="link"`, `account`) without a
+funnel surface (D15) and marketing's `Footer`,
 content column `max-w-3xl`.
 
 - Title (h1): "Open-source licences".

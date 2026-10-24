@@ -26,19 +26,34 @@ export function useSignedInHint(): boolean {
   return useSyncExternalStore(noSubscription, signedInNow, signedOutOnServer);
 }
 
-export function HeaderPrimaryCta({ ctaSurface }: { ctaSurface?: CtaSurface }) {
-  const signedIn = useSignedInHint();
+// Where the label drops its verb: below 430px by default, below `md` in the marketing bar, which holds three
+// links and the account menu (SiteHeader's MarketingActions).
+const VERB_HIDDEN = { '430px': 'max-[429px]:hidden', md: 'max-md:hidden' } as const;
+
+export function HeaderPrimaryCta({
+  ctaSurface,
+  explorerWhenSignedIn = true,
+  shortBelow = '430px',
+  className = '',
+}: {
+  ctaSurface?: CtaSurface;
+  // False on a marketing page, whose Explorer link is always beside it: Choose Template for everyone.
+  explorerWhenSignedIn?: boolean;
+  shortBelow?: keyof typeof VERB_HIDDEN;
+  className?: string;
+}) {
+  const signedIn = useSignedInHint() && explorerWhenSignedIn;
   const href = signedIn
     ? EXPLORER_HOME_HREF
     : ctaSurface
       ? ctaHref('/new', `${ctaSurface}.Header`)
       : '/new';
   const name = signedIn ? 'Open Explorer' : 'Choose Template';
-  // Below 430px each label drops its verb so the bar fits a phone beside the longest wordmark
+  // Narrow, each label drops its verb so the bar fits a phone beside the longest wordmark
   // (livedocuments: 421px with the verb); the aria-label keeps it.
   const label = (verb: string, noun: string) => (
     <>
-      <span className="max-[429px]:hidden">{verb} </span>
+      <span className={VERB_HIDDEN[shortBelow]}>{verb} </span>
       {noun}
     </>
   );
@@ -49,21 +64,25 @@ export function HeaderPrimaryCta({ ctaSurface }: { ctaSurface?: CtaSurface }) {
       className={buttonClassName({
         size: 'md',
         // A transparent border, so it is the height of Start Blank (a bordered secondary) beside it.
-        className: 'relative shrink-0 border border-transparent shadow-sm touch-target-y',
+        className: `relative shrink-0 border border-transparent shadow-sm touch-target-y ${className}`,
       })}
     >
       <ButtonContent>
-        <span className="grid justify-items-center">
-          <span className={`text-optical-line [grid-area:1/1] ${signedIn ? 'invisible' : ''}`}>
-            {label('Choose', 'Template')}
+        {explorerWhenSignedIn ? (
+          <span className="grid justify-items-center">
+            <span className={`text-optical-line [grid-area:1/1] ${signedIn ? 'invisible' : ''}`}>
+              {label('Choose', 'Template')}
+            </span>
+            <span
+              aria-hidden
+              className={`text-optical-line [grid-area:1/1] ${signedIn ? '' : 'invisible'}`}
+            >
+              {label('Open', 'Explorer')}
+            </span>
           </span>
-          <span
-            aria-hidden
-            className={`text-optical-line [grid-area:1/1] ${signedIn ? '' : 'invisible'}`}
-          >
-            {label('Open', 'Explorer')}
-          </span>
-        </span>
+        ) : (
+          <span className="text-optical-line">{label('Choose', 'Template')}</span>
+        )}
       </ButtonContent>
     </a>
   );

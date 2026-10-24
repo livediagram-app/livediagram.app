@@ -44,28 +44,55 @@ describe('SiteHeader', () => {
   });
 });
 
-// docs/specs/019-marketing/build-with-ai.md "Entry points".
-describe('SiteHeader: Build with AI', () => {
+// docs/specs/019-marketing/marketing-site.md "Header" and build-with-ai.md "Entry points": a marketing page's bar.
+describe('SiteHeader: the marketing bar', () => {
+  const html = renderToStaticMarkup(
+    <SiteHeader ctaSurface="Home" buildWithAi="link" account shareRail={false} />,
+  );
+  // The bar's right-hand links: everything from Build with AI on (the logo's site switcher links come before).
+  const right = html.slice(html.lastIndexOf('<a ', html.indexOf('href="/ai"')));
+  const hrefs = [...right.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1]);
+
   it('shows no Build with AI link unless the surface asks for it', () => {
     const plain = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
     expect(plain).not.toContain('Build with AI');
   });
 
-  it('puts the link to /ai left of Start Blank, desktop only', () => {
-    const html = renderToStaticMarkup(
-      <SiteHeader ctaSurface="Home" buildWithAi="link" shareRail={false} />,
-    );
-    const link = html.match(/<a [^>]*href="\/ai"[^>]*>/)?.[0];
-    expect(link).toContain('max-lg:hidden');
-    expect(link).not.toContain('aria-current');
-    expect(html.indexOf('href="/ai"')).toBeLessThan(html.indexOf('Start Blank'));
+  it('is the logo, then Build with AI, Choose Template and Explorer, in that order', () => {
+    expect(html.indexOf('href="/"')).toBeLessThan(html.indexOf('href="/ai"'));
+    expect(hrefs).toEqual(['/ai', '/new?via=Home.Header', '/explorer/home']);
   });
 
-  it('marks it current on /ai itself', () => {
-    const html = renderToStaticMarkup(
+  it('has no Start Blank and no Open Explorer swap', () => {
+    expect(html).not.toContain('Start Blank');
+    expect(html).not.toContain('Open Explorer');
+  });
+
+  it('keeps every link on a phone, shorter: glyphs below lg, "Template" below md, the mark below 480px', () => {
+    const tag = (href: string) =>
+      html.match(new RegExp(`<a [^>]*href="${href}"[^>]*>.*?</a>`))?.[0] ?? '';
+    for (const [href, name] of [
+      ['/ai', 'Build with AI'],
+      ['/explorer/home', 'Explorer'],
+    ] as const) {
+      const link = tag(href);
+      expect(link.match(/<a [^>]*>/)?.[0]).not.toContain('hidden');
+      expect(link).toContain(`aria-label="${name}"`);
+      expect(link).toContain(`<span class="text-optical-line max-lg:hidden">${name}</span>`);
+    }
+    const primary = tag('/new\\?via=Home\\.Header');
+    expect(primary).toContain('aria-label="Choose Template"');
+    expect(primary).toMatch(/<span class="max-md:hidden">Choose <\/span>Template/);
+    expect(html).toContain('max-[479px]:hidden');
+    expect(html).not.toContain('max-[359px]:hidden');
+  });
+
+  it('marks Build with AI current on /ai itself', () => {
+    const ai = renderToStaticMarkup(
       <SiteHeader ctaSurface="Ai" buildWithAi="current" shareRail={false} />,
     );
-    expect(html).toMatch(/<a [^>]*href="\/ai"[^>]*aria-current="page"/);
-    expect(html).toContain('href="/new?via=Ai.Header"');
+    expect(ai).toMatch(/<a [^>]*href="\/ai"[^>]*aria-current="page"/);
+    expect(ai).toContain('href="/new?via=Ai.Header"');
+    expect(html.match(/<a [^>]*href="\/ai"[^>]*>/)?.[0]).not.toContain('aria-current');
   });
 });

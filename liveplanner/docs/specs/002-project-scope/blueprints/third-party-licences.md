@@ -32,8 +32,8 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/marketing/app/sitemap.ts`                                           | Lists `/licences`                                                     |
 | `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link; legal strip at AA contrast                    |
 | `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
-| `apps/editor/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row                                                        |
-| `apps/editor/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
+| `apps/editor/components/panels/ExplorerHeaderMenu.tsx`                    | "Licences" row                                                        |
+| `apps/editor/components/chrome/tab-bar-icons.tsx`                         | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
 | `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
 
@@ -238,7 +238,8 @@ copy in the same box.
 
 ## Presentation and UX
 
-Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and marketing's `Footer`,
+Route `/licences`, the shared `SiteHeader` in its marketing bar (`buildWithAi="link"`, `account`) without a
+funnel surface (D15) and marketing's `Footer`,
 content column `max-w-3xl`.
 
 - Title (h1): "Third-party licences".

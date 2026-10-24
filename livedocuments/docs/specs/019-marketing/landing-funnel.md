@@ -81,8 +81,9 @@ ingest drops.
 
 The slots:
 
-- `Header` / `HeaderBlank`: the shared `SiteHeader` pair, Choose Template (`/new`) and Start Blank
-  (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)).
+- `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
+  pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
+  bar has no Start Blank, so its `HeaderBlank` no longer fires.
 - `HeaderDraw` / `HeaderIllustration` / `HeaderSession` (**retired** in October 2026 with the Start Blank
   menu, [Start Blank](marketing-site.md#start-blank); the slots stay so their stored history still reads):
   the menu's rows beside Choose Template. The help centre's header has one Start button, its `Header`.

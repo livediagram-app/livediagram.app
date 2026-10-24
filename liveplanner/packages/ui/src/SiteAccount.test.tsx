@@ -46,4 +46,28 @@ describe('the site header account menu', () => {
     const { container } = render(<SiteHeader ctaSurface="Home" />);
     expect(container.querySelector('[aria-label$="account menu"]')).toBeNull();
   });
+
+  it('keeps the marketing bar for someone signed in: the three links, then the menu at the far right', async () => {
+    document.cookie = 'lp_signed_in=1; path=/';
+    document.cookie = 'lp_account=Ada; path=/';
+    const { container } = render(<SiteHeader ctaSurface="Home" buildWithAi="link" account />);
+    const menu = await screen.findByRole(
+      'button',
+      { name: 'Ada, account menu' },
+      { timeout: 10_000 },
+    );
+    const bar = container.querySelector('header > div > div:last-child')!;
+    expect([...bar.querySelectorAll('a')].map((a) => a.getAttribute('aria-label'))).toEqual([
+      'Build with AI',
+      'Choose Template',
+      'Explorer',
+    ]);
+    expect(screen.getByRole('link', { name: 'Choose Template' }).getAttribute('href')).toBe(
+      '/new?via=Home.Header',
+    );
+    const links = [...bar.querySelectorAll('a')];
+    expect(
+      links.every((a) => a.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
+  });
 });
