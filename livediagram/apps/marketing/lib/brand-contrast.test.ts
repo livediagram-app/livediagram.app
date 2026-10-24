@@ -94,6 +94,8 @@ describe('brand text contrast', () => {
     expect(read('../../../../packages/marketing-site/src/lib/eyebrow.ts')).toContain(
       'text-brand-700',
     );
-    expect(read('../components/faq/FaqItem.tsx')).toContain('[&_a]:text-brand-700');
+    expect(read('../../../../packages/marketing-site/src/components/faq/FaqItem.tsx')).toContain(
+      '[&_a]:text-brand-700',
+    );
   });
 });

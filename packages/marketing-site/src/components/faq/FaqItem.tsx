@@ -1,5 +1,5 @@
 import { lucideChevronDown } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveworkspace/ui';
 import type { ReactNode } from 'react';
 
 const ChevronIcon = lucideGlyph(lucideChevronDown, 18);

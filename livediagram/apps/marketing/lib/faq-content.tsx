@@ -11,24 +11,13 @@ import {
   lucideZap,
 } from '@liveworkspace/icons/lucide';
 import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livediagram/ui';
-import type { ReactNode } from 'react';
+import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
 // into categories, each with an icon and a one-line blurb. Pure data, exempt from the line target.
-//
-// Each entry's `a` is what renders on the page (a ReactNode, so prose can mix in links). `aText` is the plain-text
-// form the FAQPage JSON-LD emits, since schema.org's Answer.text expects a string: entries whose `a` is already a
-// string omit it, the rest restate the answer sans markup. faq-content.test.tsx renders every JSX answer and fails
-// if its text drifts from `aText`, so the structured data stays a faithful image of the page.
-
-export type FaqItem = { q: string; a: ReactNode; aText?: string };
-export type FaqCategory = {
-  id: string;
-  title: string;
-  blurb: string;
-  icon: ReturnType<typeof lucideGlyph>;
-  items: FaqItem[];
-};
+// The shape, and what `a` and `aText` are, is @liveworkspace/marketing-site's lib/faq.ts. faq-content.test.tsx
+// renders every JSX answer and fails if its text drifts from `aText`, so the structured data stays a faithful
+// image of the page.
 
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
@@ -693,8 +682,3 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
 ];
-
-// The plain-text answer for the JSON-LD and the page search.
-export function faqAnswerText(item: FaqItem): string {
-  return item.aText ?? (typeof item.a === 'string' ? item.a : '');
-}
