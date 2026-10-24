@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import { useTelemetryApp } from './app';
 import { ActivityGlyph } from './glyphs';

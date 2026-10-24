@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@liveworkspace/ui';
 import { fmtDay } from './chart-utils';
 import { linePath, plot, VIEW_H, VIEW_W } from './TrendChart';
 

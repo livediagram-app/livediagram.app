@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { Brand as LivediagramBrand, EmptyState } from '@livediagram/ui';
+import { Brand as LivediagramBrand } from '@livediagram/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import { Brand as LiveplannerBrand } from '@liveplanner/ui';
 import { Brand as LivedocumentsBrand } from '@livedocuments/ui';
 import { Brand as LivedesignBrand } from '@livedesign/ui';

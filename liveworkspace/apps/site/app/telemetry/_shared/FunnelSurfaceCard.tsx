@@ -1,4 +1,5 @@
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { Glyph } from '@livediagram/ui';
+import { Tooltip } from '@liveworkspace/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { useTelemetryApp } from './app';

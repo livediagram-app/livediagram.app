@@ -1,7 +1,8 @@
 'use client';
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { BrandMark, Dialog, lucideGlyph, useMediaQuery } from '@livediagram/ui';
+import { BrandMark, lucideGlyph } from '@livediagram/ui';
+import { Dialog, useMediaQuery } from '@liveworkspace/ui';
 import { lucideExternalLink } from '@livediagram/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import type { TelemetryWindowKey } from '@liveworkspace/telemetry';
-import { Tooltip, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
+import { Glyph } from '@livediagram/ui';
+import { Tooltip, useMenu, useMenuButton } from '@liveworkspace/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.

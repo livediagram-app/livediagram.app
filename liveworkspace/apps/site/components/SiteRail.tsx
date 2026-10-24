@@ -1,6 +1,7 @@
 'use client';
 
-import { SiteAppearanceToggle, useCopiedFlash } from '@livediagram/ui';
+import { SiteAppearanceToggle } from '@livediagram/ui';
+import { useCopiedFlash } from '@liveworkspace/ui';
 
 // The rail pinned to the page's right edge (liveworkspace/docs/site.md "The rail"), as on the apps'
 // sites: on the home page a Share card (plain share-intent links, no SDKs or tracking, and Copy

@@ -1,6 +1,6 @@
 'use client';
 
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import { metricKey, type TelemetryCount, type TelemetryDaily } from '@liveworkspace/telemetry';
 import { pct } from './chart-utils';
 import { typeLabel } from './event-vocab';

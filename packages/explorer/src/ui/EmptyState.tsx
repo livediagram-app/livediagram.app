@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-// liveplanner's illustrated empty state (packages/ui/src/EmptyState.tsx): a floating badge in the brand ramp
+// @liveworkspace/ui's illustrated empty state (packages/ui/src/EmptyState.tsx): a floating badge in the brand ramp
 // over a softly pulsing double ring and a faint mini-diagram motif, a heading, one line, and an optional call
 // to action. The motion is the host theme's `animate-empty-*` (liveplanner's tailwind theme); without it the
 // art simply stands still.
