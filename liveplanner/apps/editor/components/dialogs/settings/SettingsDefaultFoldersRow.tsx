@@ -6,7 +6,7 @@ import { useTokenTeams } from '@/lib/explorer-host';
 import { indexClient } from '@/lib/index-client';
 import { trackOrganise } from '@/lib/explorer-organise';
 import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
 // Settings › Plans › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new plans go

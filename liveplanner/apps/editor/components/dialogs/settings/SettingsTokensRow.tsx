@@ -6,8 +6,8 @@ import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { manageTokensUrl } from '@/lib/auth-config';
 import { useRelativeNow } from '@/lib/relative-time';
-import { TokensGlyph } from './settings-icons';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { SettingsTokenPairings } from './SettingsTokenPairings';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
@@ -37,7 +37,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
               : 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700'
           }`}
         >
-          {TokensGlyph}
+          <SettingsSharedGlyph id="tokens" />
         </span>
       }
       descriptionContent={

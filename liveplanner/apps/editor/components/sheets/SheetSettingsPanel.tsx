@@ -37,8 +37,7 @@ import { SheetFormatRuleList, SheetValidationRules } from './rules/SheetRuleSett
 import { ConditionalFormatIcon, ValidationIcon } from './sheet-icons';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SigmaIcon } from './sheet-icons';
-import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
-import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
+import { SettingsRowShell, SettingsToggleRowView } from '@liveworkspace/settings-ui';
 import { NumberStepper } from '@/components/primitives/NumberStepper';
 import { OptionRows } from '@/components/plan/OptionRows';
 import {
@@ -212,12 +211,12 @@ export function SheetSettingsPanel({
             <ViewGlyph />,
             <>
               <SettingsBody>
-                <SettingsRow
+                <SettingsToggleRowView
                   row={row('grid', 'Gridlines', 'The lines between the cells, for everyone.')}
                   checked={layout.showGrid !== false}
                   onChange={(on) => actions.setOptions({ showGrid: on })}
                 />
-                <SettingsRow
+                <SettingsToggleRowView
                   row={row(
                     'headers',
                     'Row and Column Headers',

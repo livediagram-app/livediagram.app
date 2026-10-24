@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { SettingsCategoryPane } from './SettingsCategoryPane';
+import { SettingsCategoryPane } from './test-pane';
 import { visibleCategories } from './settings-catalogue';
 import { setPowerUserMode } from '@/lib/power-user-mode';
 import type { UserPreferences } from '@/lib/user-preferences';

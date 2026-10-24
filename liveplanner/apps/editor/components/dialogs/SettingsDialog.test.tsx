@@ -3,10 +3,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SettingsDialog } from './SettingsDialog';
 import { visibleCategories } from './settings/settings-catalogue';
-import { SETTINGS_ROW_ATTRIBUTE } from './settings/settings-scroll-anchor';
-import { readSettingsView, writeSettingsView } from './settings/settings-view-memory';
+import {
+  readSettingsView as readView,
+  SETTINGS_ROW_ATTRIBUTE,
+  writeSettingsView as writeView,
+} from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
+
+const VIEW_KEY = 'liveplanner:settings-view:v1';
+const readSettingsView = () => readView(VIEW_KEY);
+const writeSettingsView = (view: Parameters<typeof writeView>[1]) => writeView(VIEW_KEY, view);
 
 // Who is reading: a guest unless a test signs in.
 const clerk = vi.hoisted(() => ({ accountUserId: null as string | null, isSignedIn: false }));

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
-import { firstMatchingCategory, searchSettings } from './settings-search';
+import { firstMatchingCategory, searchSettings } from '@liveworkspace/settings-ui';
 
 const ALL = visibleCategories({ emailEnabled: true, signedIn: true });
 
