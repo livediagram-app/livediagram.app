@@ -122,10 +122,6 @@ export type AppItems = {
   onIndex: boolean;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
-  // An item's preview, an SVG its API serves to anyone the item is open to (the index's grant decides), with `:id`
-  // for the item's id; `?v=<updatedAt>` keeps a cached one fresh. Null while the app serves none to other sites, and
-  // the Explorer on liveworkspace.app draws the kind's icon instead.
-  previewPath: string | null;
   // What the Share dialog offers beyond a link's address, as the app serves it (address patterns on its site).
   share: AppShare;
   // The person's Library in the app's API, which the Explorer on liveworkspace.app reads by the workspace token: their
@@ -190,7 +186,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlineConversions: true,
     onIndex: true,
     sharePath: '/document/shared?s=',
-    previewPath: '/api/documents/:id/thumbnail',
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',
     imports: [
@@ -211,7 +206,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlineConversions: true,
     onIndex: true,
     sharePath: '/project/shared?s=',
-    previewPath: '/api/projects/:id/thumbnail',
     imagesPath: null,
     shapeLibrariesPath: null,
     imports: [],
@@ -228,7 +222,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlineConversions: true,
     onIndex: true,
     sharePath: '/document/shared?s=',
-    previewPath: null,
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
     imports: [],
@@ -245,7 +238,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlineConversions: true,
     onIndex: true,
     sharePath: '/design/shared?s=',
-    previewPath: '/api/designs/:id/thumbnail',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
     imports: [],

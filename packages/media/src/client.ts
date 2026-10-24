@@ -127,6 +127,13 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
     mergeOwner: async (from: string, to: string) =>
       json<MediaMergeResponse>(await call('/owners/merge', send('POST', { from, to }))),
 
+    /** An item purged: delete every preview the service keeps of it (liveworkspace/docs/previews.md "Purging").
+     *  Only this app's items. Answers how many objects went. */
+    deletePreviews: async (itemId: string) =>
+      json<{ deleted: number }>(
+        await call(`/previews/${encodeURIComponent(itemId)}`, { method: 'DELETE' }),
+      ),
+
     /** An account deleted: delete every image it uploaded, in every app. */
     forgetOwner: async (owner: string) =>
       json<{ deleted: number }>(

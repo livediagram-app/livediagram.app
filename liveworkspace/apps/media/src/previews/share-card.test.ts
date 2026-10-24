@@ -8,7 +8,7 @@ import {
   shareCardSvg,
 } from './share-card';
 
-// The share card (docs/specs/013-workspace/share-link-previews.md "The share card"): the drawing fitted inside the
+// The share card (liveworkspace/docs/previews.md, `GET …/share/:code/image.png`): the drawing fitted inside the
 // 1200 x 630 card with a 48 px margin, centred, never stretched or cropped, on its own paper.
 
 const drawing = (w: number, h: number, fill = '#f8fafc') =>

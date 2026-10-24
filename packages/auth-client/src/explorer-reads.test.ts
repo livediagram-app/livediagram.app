@@ -35,13 +35,14 @@ describe('appApiResources', () => {
 });
 
 describe('isExplorerRead', () => {
-  it('is an item’s preview or tabs, read', () => {
-    expect(isExplorerRead(get('/api/documents/abc/thumbnail'), 'documents')).toBe(true);
+  it('is an item’s tabs, read', () => {
     expect(isExplorerRead(get('/api/documents/abc/tabs?x=1'), 'documents')).toBe(true);
+    // Previews are liveworkspace's now (liveworkspace/docs/previews.md), not an app's read.
+    expect(isExplorerRead(get('/api/documents/abc/thumbnail'), 'documents')).toBe(false);
   });
 
   it('is nothing else: another method, another route, another app’s segment, the item itself', () => {
-    expect(isExplorerRead(get('/api/documents/abc/thumbnail', 'PUT'), 'documents')).toBe(false);
+    expect(isExplorerRead(get('/api/documents/abc/tabs', 'PUT'), 'documents')).toBe(false);
     expect(isExplorerRead(get('/api/documents/abc'), 'documents')).toBe(false);
     expect(isExplorerRead(get('/api/documents/abc/comments'), 'documents')).toBe(false);
     expect(isExplorerRead(get('/api/documents//tabs'), 'documents')).toBe(false);
@@ -53,9 +54,7 @@ describe('isExplorerRead', () => {
 describe('audiencesFor', () => {
   it('widens the audience for the Explorer’s reads only', () => {
     const resource = 'https://livediagram.app/api';
-    expect(audiencesFor(get('/api/documents/abc/thumbnail'), resource, 'documents')).toHaveLength(
-      4,
-    );
+    expect(audiencesFor(get('/api/documents/abc/tabs'), resource, 'documents')).toHaveLength(4);
     expect(audiencesFor(get('/api/documents/abc'), resource, 'documents')).toBe(resource);
   });
 });

@@ -14,7 +14,10 @@ export type TestDb = {
   // The raw handle, for arranging rows and asserting on them directly.
   sql: DatabaseSync;
   // What the bucket holds, by key.
-  objects: Map<string, { bytes: Uint8Array; contentType?: string }>;
+  objects: Map<
+    string,
+    { bytes: Uint8Array; contentType?: string; customMetadata?: Record<string, string> }
+  >;
 };
 
 // D1 binds a boolean as 1 / 0; node:sqlite refuses one outright.
@@ -101,26 +104,51 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
   };
 }
 
-// An R2 bucket in memory: the put / get / delete the service calls, keyed like R2.
+// An R2 bucket in memory: the put / get / list / delete the service calls, keyed like R2, with metadata.
+type Stored = {
+  bytes: Uint8Array;
+  contentType?: string;
+  customMetadata?: Record<string, string>;
+};
+
 function memoryBucket() {
-  const objects = new Map<string, { bytes: Uint8Array; contentType?: string }>();
+  const objects = new Map<string, Stored>();
+  const bytesOf = (value: string | ArrayBuffer | Uint8Array): Uint8Array =>
+    typeof value === 'string'
+      ? new TextEncoder().encode(value)
+      : value instanceof Uint8Array
+        ? value.slice()
+        : new Uint8Array(value.slice(0));
   return {
     objects,
     put: async (
       key: string,
-      value: ArrayBuffer,
-      options?: { httpMetadata?: { contentType?: string } },
+      value: string | ArrayBuffer | Uint8Array,
+      options?: {
+        httpMetadata?: { contentType?: string };
+        customMetadata?: Record<string, string>;
+      },
     ) => {
       objects.set(key, {
-        bytes: new Uint8Array(value.slice(0)),
+        bytes: bytesOf(value),
         contentType: options?.httpMetadata?.contentType,
+        customMetadata: options?.customMetadata,
       });
     },
     get: async (key: string) => {
       const found = objects.get(key);
       if (!found) return null;
-      return { body: new Blob([found.bytes]).stream(), size: found.bytes.byteLength };
+      return {
+        body: new Blob([found.bytes]).stream(),
+        size: found.bytes.byteLength,
+        customMetadata: found.customMetadata ?? {},
+        text: async () => new TextDecoder().decode(found.bytes),
+      };
     },
+    list: async ({ prefix = '' }: { prefix?: string; cursor?: string } = {}) => ({
+      objects: [...objects.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })),
+      truncated: false,
+    }),
     delete: async (keys: string | string[]) => {
       for (const key of Array.isArray(keys) ? keys : [keys]) objects.delete(key);
     },

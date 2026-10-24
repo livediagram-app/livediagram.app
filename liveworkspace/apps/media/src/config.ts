@@ -1,10 +1,11 @@
 // The Worker's settings. They live apart from src/index.ts because a Worker's entry module may only
 // export handlers: the runtime refuses to start on any other export there.
 
-import { MEDIA_API_PATH } from '@liveworkspace/media';
+import { MEDIA_API_PATH, PREVIEWS_API_PATH } from '@liveworkspace/media';
 
-// The path of liveworkspace.app this Worker owns.
+// The paths of liveworkspace.app this Worker owns: the media API, and previews (liveworkspace/docs/previews.md).
 export const API_PATH = MEDIA_API_PATH;
+export const PREVIEWS_PATH = PREVIEWS_API_PATH;
 
 // The largest JSON body a route takes: a reference sync of MEDIA_REFS_SYNC_MAX documents.
 export const MAX_JSON_BYTES = 2 * 1024 * 1024;

@@ -322,3 +322,45 @@ export function forwardToIndex(
   else forwarded.headers.delete(WORKSPACE_CLIENT_IP_HEADER);
   return doFetch(forwarded);
 }
+
+// ---------- Previews, on the app's address ---------------------------------------------------------------------------
+// (liveworkspace/docs/previews.md). Every app's item pictures are liveworkspace's media service's, under
+// /api/previews. The router forwards them, and a share link's three public doors at the address every app has always
+// served them on (`/api/share/<code>/image.svg|image.png|card`), so live images already embedded keep working.
+// `@liveworkspace/media` names the same paths (PREVIEWS_API_PATH, SHARE_PREVIEW_DOORS); this file stays
+// dependency-free, so they are written out here, and media's tests hold the two together.
+
+/** Where previews live when the router names no other (`PREVIEWS_ORIGIN`). */
+export const PRODUCTION_PREVIEWS_ORIGIN = 'https://liveworkspace.app';
+export const PREVIEWS_PATH = '/api/previews';
+const SHARE_DOOR = /^\/api\/share\/([^/]+)\/(image\.svg|image\.png|card)$/;
+
+/** The path on the previews service a request to `pathname` goes to, or null when it is not a preview. */
+export function previewsTargetFor(pathname: string): string | null {
+  if (underPrefix(pathname, PREVIEWS_PATH)) return pathname;
+  const door = SHARE_DOOR.exec(pathname);
+  return door ? `${PREVIEWS_PATH}/share/${door[1]}/${door[2]}` : null;
+}
+
+/**
+ * A preview on an app's address: the same request at the previews service, minus this site's cookies. The bearer
+ * token and the share headers go along (the index decides who may see an item's picture from them), and so does the
+ * visitor's address. Null for a path that is not a preview, so the router carries on.
+ */
+export function routeToPreviews(
+  request: Request,
+  origin: string | undefined,
+  doFetch: typeof fetch = fetch,
+): Promise<Response> | null {
+  const url = new URL(request.url);
+  const path = previewsTargetFor(url.pathname);
+  if (!path) return null;
+  const target = new URL(`${path}${url.search}`, origin || PRODUCTION_PREVIEWS_ORIGIN);
+  if (target.host === url.host) return Promise.resolve(loop('PREVIEWS_ORIGIN is this site'));
+  const forwarded = new Request(target.toString(), request);
+  forwarded.headers.delete('Cookie');
+  const client = request.headers.get('CF-Connecting-IP');
+  if (client) forwarded.headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
+  else forwarded.headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  return doFetch(forwarded);
+}

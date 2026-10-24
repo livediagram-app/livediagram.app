@@ -1,21 +1,21 @@
 'use client';
 
-// Item previews on liveworkspace.app's Explorer: each app that serves one (the sites registry's `previewPath`,
-// liveplanner's plan snapshot today) is asked by the person's workspace token, which every app's API accepts, with
-// the share code for an item reached through a link. An app that serves none, or an empty item, draws the kind's
-// icon with no request at all.
+// Item previews in the Explorer (liveworkspace/docs/previews.md): one address for every app's items,
+// `/api/previews/items/<id>` on the page's own origin (liveworkspace.app's media service, which each app's router
+// forwards to), asked with the page's token, and the share code for an item reached through a link. The service asks
+// the index whether the reader may see the item, so a preview is never more visible than the item. An empty item
+// draws the kind's icon with no request at all.
 //
 // Cheap on purpose: a preview is asked for only once its box scrolls near the screen (or a row is hovered, by the
 // Explorer's prefetch), at most PREVIEW_CONCURRENCY at a time, once per item version per page (in flight and
 // settled requests are shared), and kept as blob URLs in a page-wide cache of PREVIEW_CACHE_MAX, least recently
-// used out (each URL revoked as it goes). The app's answer is `private, max-age=86400` keyed by `?v=<updatedAt>`,
-// so a reload reads from the browser's cache.
+// used out (each URL revoked as it goes). The answer is `private, max-age=86400` keyed by `?v=<updatedAt>`, so a
+// reload reads from the browser's cache. Same-origin, so no CORS preflight per item.
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { RenderThumbnail } from '@liveworkspace/explorer';
-import { APP_ITEMS, isAppName } from '@liveworkspace/sites';
-import { appOrigin } from './page-app';
+import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
 import { workspaceToken } from './token';
 
 export const PREVIEW_CACHE_MAX = 200;
@@ -25,13 +25,9 @@ const ROOT_MARGIN = '200px';
 
 type Entry = { status: 'ready'; src: string } | { status: 'none' };
 
-/** The preview's address for an item, or null when its app serves none. */
-export function previewUrl(item: Pick<Item, 'app' | 'id' | 'updatedAt'>): string | null {
-  if (!isAppName(item.app)) return null;
-  const path = APP_ITEMS[item.app].previewPath;
-  if (!path) return null;
-  const at = path.replace(':id', encodeURIComponent(item.id));
-  return `${appOrigin(item.app)}${at}?v=${item.updatedAt}`;
+/** The preview's address for an item, whatever its app: on this page's own origin. */
+export function previewUrl(item: Pick<Item, 'id' | 'updatedAt'>): string {
+  return `${PREVIEWS_PATH}/items/${encodeURIComponent(item.id)}?v=${item.updatedAt}`;
 }
 
 const isEmpty = (item: Item) => (item.summary as { empty?: boolean } | null)?.empty === true;
@@ -114,8 +110,7 @@ export function loadPreview(item: Item): Promise<Entry> | null {
 }
 
 function peek(item: Item): Entry | undefined {
-  const url = previewUrl(item);
-  return url ? entries.get(`${url}|${item.sharedVia ?? ''}`) : undefined;
+  return entries.get(`${previewUrl(item)}|${item.sharedVia ?? ''}`);
 }
 
 const subscribe = (l: () => void) => {
@@ -179,9 +174,9 @@ function Preview({ item }: { item: Item }) {
   );
 }
 
-/** The Explorer's previews: the app's own picture where it serves one, otherwise the kind's icon (null). */
+/** The Explorer's previews: the item's picture, or the kind's icon (null) for an empty item. */
 export const renderPreview: RenderThumbnail = (item): ReactNode =>
-  isEmpty(item) || !previewUrl(item) ? null : <Preview item={item} />;
+  isEmpty(item) ? null : <Preview item={item} />;
 
 /** Asked for ahead, when a row is pointed at, so its card opens with the picture. */
 export const prefetchPreview = (item: Item) => void loadPreview(item);

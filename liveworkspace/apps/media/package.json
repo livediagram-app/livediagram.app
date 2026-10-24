@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@liveworkspace/index-app": "workspace:*",
-    "@liveworkspace/media": "workspace:*"
+    "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",

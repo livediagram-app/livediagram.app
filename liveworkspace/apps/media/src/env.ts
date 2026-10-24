@@ -1,3 +1,4 @@
+import type { App } from '@liveworkspace/index-client';
 import { MEDIA_APPS, type MediaApp } from '@liveworkspace/media';
 
 export interface Env {
@@ -18,6 +19,16 @@ export interface Env {
   MEDIA_KEY_LIVEPLANNER?: string;
   MEDIA_KEY_LIVEDOCUMENTS?: string;
   MEDIA_KEY_LIVEDESIGN?: string;
+  // Previews (liveworkspace/docs/previews.md). The index, asked who may see an item: its service binding (a
+  // Worker's fetch to another Worker's route on its own zone isn't routed to it), else INDEX_URL.
+  INDEX?: Fetcher;
+  INDEX_URL?: string;
+  // Where each app answers its export door (`<origin>/api/internal/items/:id/export`), called with that app's
+  // media key. Unset, that app's items have no previews.
+  APP_ORIGIN_LIVEDIAGRAM?: string;
+  APP_ORIGIN_LIVEPLANNER?: string;
+  APP_ORIGIN_LIVEDOCUMENTS?: string;
+  APP_ORIGIN_LIVEDESIGN?: string;
 }
 
 const KEY_OF: Record<MediaApp, keyof Env> = {
@@ -48,4 +59,35 @@ export function parsePositiveCap(raw: string | undefined): number | null {
   if (!raw) return null;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// ---------- Previews: an index app, as this service names it ------------------------------------------------------
+
+const MEDIA_APP_OF: Record<App, MediaApp> = {
+  livediagram: 'livediagram.app',
+  liveplanner: 'liveplanner.app',
+  livedocuments: 'livedocuments.app',
+  livedesign: 'livedesign.app',
+};
+
+const ORIGIN_OF: Record<App, keyof Env> = {
+  livediagram: 'APP_ORIGIN_LIVEDIAGRAM',
+  liveplanner: 'APP_ORIGIN_LIVEPLANNER',
+  livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
+  livedesign: 'APP_ORIGIN_LIVEDESIGN',
+};
+
+export const mediaAppOf = (app: App): MediaApp => MEDIA_APP_OF[app];
+
+// Where an app's export door is, with the key it takes, or null when either is not configured.
+export function appDoor(env: Env, app: App): { origin: string; key: string } | null {
+  const origin = env[ORIGIN_OF[app]];
+  const key = appKey(env, MEDIA_APP_OF[app]);
+  if (typeof origin !== 'string' || origin.trim() === '' || !key) return null;
+  return { origin: origin.replace(/\/+$/, ''), key };
+}
+
+// The index's app, from the media app a key speaks for.
+export function indexAppOf(app: MediaApp): App {
+  return app.slice(0, -'.app'.length) as App;
 }

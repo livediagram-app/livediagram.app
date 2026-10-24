@@ -31,15 +31,12 @@ beforeEach(() => {
 });
 
 describe('previews on liveworkspace.app', () => {
-  it("asks the item's own app, cache-busted by its version, and only apps that serve one", () => {
-    expect(previewUrl(item())).toBe('https://www.liveplanner.app/api/projects/p1/thumbnail?v=5');
-    expect(previewUrl(item({ app: 'livediagram' }))).toBe(
-      'https://www.livediagram.app/api/documents/p1/thumbnail?v=5',
+  it('asks one address on the page’s own origin for every app, cache-busted by its version', () => {
+    expect(previewUrl(item())).toBe('/api/previews/items/p1?v=5');
+    expect(previewUrl(item({ app: 'livedocuments', id: 'd 1' }))).toBe(
+      '/api/previews/items/d%201?v=5',
     );
-    expect(previewUrl(item({ app: 'livedesign' }))).toBe(
-      'https://www.livedesign.app/api/designs/p1/thumbnail?v=5',
-    );
-    expect(renderPreview(item({ app: 'livedocuments' }), 'card')).toBeNull();
+    expect(renderPreview(item({ app: 'livedocuments' }), 'card')).not.toBeNull();
     expect(renderPreview(item({ summary: { empty: true } }), 'card')).toBeNull();
     expect(loadPreview(item({ summary: { empty: true } }))).toBeNull();
   });

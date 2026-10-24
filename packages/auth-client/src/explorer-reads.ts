@@ -1,8 +1,9 @@
 // The Explorer's reads from another app (liveworkspace/docs/one-explorer.md): on an app's own address the Explorer
 // asks as that app, with a token addressed to that app's API, yet it draws every app's items, so it asks each item's
-// own app for its preview and its tabs. Those two reads, and only those, accept a token addressed to any of the four
-// apps' APIs in the same environment, the audiences liveworkspace.app's own token already carries. What the token
-// may read is unchanged: the route still checks the person may read the item.
+// own app for its tabs (the Share dialog's tab picker). That read, and only that, accepts a token addressed to any of
+// the four apps' APIs in the same environment, the audiences liveworkspace.app's own token already carries. What the
+// token may read is unchanged: the route still checks the person may read the item. Previews are no app's any more:
+// they are liveworkspace's (liveworkspace/docs/previews.md), behind the index, which takes every app's token.
 
 import { APP_SITES } from '@liveworkspace/sites';
 
@@ -27,7 +28,7 @@ export function appApiResources(resource: string): string[] {
   return APP_HOSTS.map((host) => `${url.protocol}//${prefix}${host}${url.pathname}`);
 }
 
-/** Whether a request is one of the Explorer's reads of an item: `GET /api/<items>/<id>/thumbnail` or `…/tabs`. */
+/** Whether a request is the Explorer's read of an item's tabs: `GET /api/<items>/<id>/tabs`. */
 export function isExplorerRead(request: Request, itemsSegment: string): boolean {
   if (request.method !== 'GET') return false;
   const path = new URL(request.url).pathname;
@@ -38,7 +39,7 @@ export function isExplorerRead(request: Request, itemsSegment: string): boolean 
     parts[1] === 'api' &&
     parts[2] === itemsSegment &&
     parts[3] !== '' &&
-    (parts[4] === 'thumbnail' || parts[4] === 'tabs')
+    parts[4] === 'tabs'
   );
 }
 

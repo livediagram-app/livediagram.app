@@ -23,7 +23,7 @@ import {
   type MediaRefsSync,
 } from '@liveworkspace/media';
 import { MAX_JSON_BYTES } from './config';
-import { appKey, parsePositiveCap, type Env } from './env';
+import { appKey, indexAppOf, parsePositiveCap, type Env } from './env';
 import { badRequest, forbidden, json, notFound, ok, unauthorized, unavailable } from './http';
 import {
   deleteImageRow,
@@ -39,6 +39,7 @@ import {
   type Caps,
 } from './images';
 import { stripJpegMetadata } from './jpeg-strip';
+import { deleteItemPreviews } from './previews/store';
 import { syncRefs } from './refs';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
@@ -133,6 +134,14 @@ export async function handleApp(
       return ok();
     }
     return notFound();
+  }
+
+  // DELETE /app/previews/<itemId>: an item purged; every preview kept of it goes (liveworkspace/docs/previews.md
+  // "Purging"). Only the calling app's: the key names the app, and the app names the folder.
+  if (segments[0] === 'previews' && segments.length === 2 && method === 'DELETE') {
+    const itemId = segments[1];
+    if (!isId(itemId)) return notFound();
+    return json({ deleted: await deleteItemPreviews(bucket, indexAppOf(app), itemId) });
   }
 
   // GET /app/usage?owner=: which documents, in any app, place each of the owner's images.
