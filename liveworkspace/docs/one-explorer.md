@@ -48,13 +48,14 @@ is renamed twice. Until each app moves, only what people see is renamed.
 ### 1. The index is the only record of where an item is and who can reach it
 
 liveworkspace keeps one row per item: id, app, title, owner, team, folder, favourite, Trash
-state, created, updated, last opened, a thumbnail key, and its share links and the people it is
+state, created, updated, last opened, and its share links and the people it is
 shared with. Folders are not per app: a folder can hold a Canvas, a Plan, a Document and a Design.
 
 The Durable Object never keeps its own copy of any of this. Renaming in the editor writes the
 index. Moving, sharing, trashing and restoring happen only in the index. That removes the
 "feed D1 from every object" problem the RFC reply called the bulk of the work: the only things an
-app pushes are its content-derived summary (see 5) and a thumbnail.
+app pushes are its content-derived summary (see 5). Its preview is drawn on request and kept by
+liveworkspace ([previews.md](previews.md)).
 
 Search is title and folder search over the index. It does not search inside content.
 
@@ -246,7 +247,7 @@ As the RFC proposes, and as its reply agreed: one SQLite-backed object per item,
 live room. It holds tabs and their elements (as rows or chunks, which removes D1's 2 MB row limit),
 the change log, the sequence counter and presence. Saves go to the object instead of to D1, and the
 object gives each change its number and stores it in one step. Images stay in liveworkspace's media
-service; snapshots stay in R2.
+service, and so do previews, which the object draws when asked ([previews.md](previews.md)).
 
 Each app's D1 shrinks to what is genuinely its own, if anything (for example livediagram's community
 publishing or a Plan's cross-item caches); everything the Explorer needs is gone from it.
@@ -285,7 +286,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   are paged.
 - **Durable Objects** cost what the RFC estimates (roughly $14 a month at a million items), with
   hibernating WebSockets.
-- **Content-derived summaries** (thumbnails, element counts for cards) are pushed by the object on
+- **Content-derived summaries** (element counts for cards, whether it is empty) are pushed by the object on
   idle, at most once a minute per item, with retries.
 
 ## Decided

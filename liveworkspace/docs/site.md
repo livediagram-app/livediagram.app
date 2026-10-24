@@ -174,11 +174,12 @@ built once here. It is shown here and, through each switched-on app's router, at
   (`@<app>/templates/hero.json`, generated from the components the app's Home draws), drawn by the Explorer's
   `HeroArt` as React elements (no HTML parsed, only boxes and shapes). It is loaded once per page, only on Home
   with the hero shown and room for it (`lg` and up). Every app ships one.
-- **Previews.** Real previews where the app serves one (`previewPath` in the registry; liveplanner's plan
-  snapshot), asked with the person's workspace token and the item's share code. They are asked for only as a
-  card nears the screen or a row is pointed at, at most 4 at a time, once per item version, and kept as up to
-  200 blob URLs, least recently used out. The app's answer is cached by the browser for a day per version.
-  Other apps' items show their kind's icon, with no request.
+- **Previews.** Every app's items have one, from liveworkspace's previews on the page's own origin
+  (`/api/previews/items/<id>?v=<updatedAt>`, [previews.md](previews.md)), asked with the person's workspace token
+  and the item's share code. They are asked for only as a card nears the screen or a row is pointed at, at most
+  4 at a time, once per item version, and kept as up to 200 blob URLs, least recently used out. The answer is
+  cached by the browser for a day per version. An item the index says is empty shows its kind's icon, with no
+  request.
 - **Names.** Owners and who did what are named through `/api/account/people`, gathered into one request per
   beat (at most 100 ids) and kept in one bounded cache. A guest is named too: the route answers this
   browser's guest cookie, rate limited ([accounts.md](accounts.md)).

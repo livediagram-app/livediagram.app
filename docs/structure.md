@@ -25,7 +25,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
-│  ├─ apps/media               liveworkspace.app/api/media: every app's images, own D1 and R2
+│  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
@@ -94,7 +94,7 @@ liveworkspace/
 │  ├─ accounts                     sign-in
 │  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
 │  ├─ community                    every product's Community listings (docs/community.md there)
-│  ├─ media                        every product's uploaded images (docs/media.md there)
+│  ├─ media                        every product's uploaded images and previews (docs/media.md, docs/previews.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)

@@ -98,7 +98,6 @@ type ItemSummary = {
   mode?: string;
   empty?: boolean; // nothing to draw: no tab, or an empty first tab
   hasContent?: boolean; // anything on any tab; false (or never pushed) feeds the empty clean-up
-  thumbnail?: string /* media key or null */;
   [k: string]: unknown;
 }; // ≤ 2 KB
 ```
@@ -119,7 +118,8 @@ type ItemSummary = {
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it    |
 |                                |                     | minted (409 `item_exists` when taken); the item's Durable Object              |
 |                                |                     | starts empty the first time it is opened with a grant.                        |
-| `GET /items/:id`               | person or link      | `{item}`                                                                      |
+| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the   |
+|                                |                     | public link's code when that is their only way in (previews.md)               |
 | `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a            |
 |                                |                     | team needs joined membership.                                                 |
 | `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                               |
@@ -219,7 +219,7 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the owner or a joined team member.
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
-- `GET /share/:code` — public: `{item, level, tabId}`; records the item under Shared for a person who
+- `GET /share/:code` — public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it; 401 `password_required`, 403 `password_invalid` (a public link: 404).
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 

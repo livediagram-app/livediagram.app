@@ -30,7 +30,9 @@ hosts its own Community pages, which read it. See [docs/community.md](docs/commu
 
 And it keeps every app's uploaded images, its API at liveworkspace.app/api/media, so a person's
 pictures follow them from app to app. Each app still decides who may see one and serves the bytes
-itself. See [docs/media.md](docs/media.md).
+itself. See [docs/media.md](docs/media.md). The same service keeps and serves every app's previews (Explorer
+thumbnails, live images and share cards) at liveworkspace.app/api/previews, which each app's router forwards on
+its own address; the apps only draw them. See [docs/previews.md](docs/previews.md).
 
 And it runs the One Explorer's index, its API at liveworkspace.app/api/index: where every Canvas, Plan,
 Document and Design is and who can reach it, with the grants that let an app open one. See
@@ -109,7 +111,7 @@ corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 
 `dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
 (8790), the Community Worker (8791), the media Worker (8792) and the index Worker (8793) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
-accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
+accounts Worker (and `/api/previews/*` to the media Worker), so the pages and the API share one origin, as on liveworkspace.app. That origin,
 `http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
 
 The index's schema is one baseline migration, `apps/index/migrations/0001_index.sql`, edited in place

@@ -256,9 +256,9 @@ origin: there is no CORS, and a cross-site request (by `Sec-Fetch-Site`) is refu
 
 On an app's own address the Explorer asks as that app, with a token addressed to that app's API alone, yet it
 draws every app's items. So each app's API takes a token addressed to any of the four apps' APIs (in the same
-environment) for the Explorer's two reads of an item, `GET /api/<items>/<id>/thumbnail` and `…/tabs`, and for
-nothing else (`@liveworkspace/auth-client` `explorer-reads.ts`). The route still checks that the person may read
-the item. Every app's API answers any origin (CORS `*`), so the browser lets those reads through.
+environment) for the Explorer's read of an item's tabs, `GET /api/<items>/<id>/tabs`, and for nothing else (its previews
+are liveworkspace's, [previews.md](previews.md)) (`@liveworkspace/auth-client` `explorer-reads.ts`). The route still checks that the person may read
+the item. Every app's API answers any origin (CORS `*`), so the browser lets that read through.
 
 ## Signing in without a click
 

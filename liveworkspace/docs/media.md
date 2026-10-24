@@ -128,8 +128,9 @@ document in any app**. It keeps bytes whenever in doubt:
 | api Worker | `MEDIA_URL` var (default `https://liveworkspace.app/api/media`), `MEDIA_KEY` secret                   |
 | Service    | `MEDIA_KEY_<APP>` secret, the same value: `LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN` |
 
-An app without a key can't use the service, and the sweep doesn't wait for it. An app keeps its own R2
-bucket for anything else it stores, such as document thumbnails.
+An app without a key can't use the service, and the sweep doesn't wait for it. The same key lets the service ask
+the app's export door for a drawing: every app's previews (Explorer thumbnails, live images, share cards) live here
+too, under `previews/` in the same bucket ([previews.md](previews.md)), so no app keeps a bucket of pictures.
 
 ## Running it locally
 

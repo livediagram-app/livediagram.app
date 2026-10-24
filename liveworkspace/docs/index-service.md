@@ -41,7 +41,11 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
   (`auth.ts` `delegatedPersonOf`, `delegate.test.ts`).
 - **An app's server**, with `Authorization: Bearer <INDEX_KEY>` and `X-Index-App: <app>`, to push an
   item's summary and its comments and actions. The index calls the app back with the same key, at
-  `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`.
+  `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`. The same doors take
+  `…/export` (an item's drawing), on that key or the app's media key, for the previews ([previews.md](previews.md)).
+- **The media service's previews**, reading an item as the person asking (`GET /items/:id`, side-effect free) or a
+  link anonymously (`GET /share/:code`), through its service binding: the index's answer is who may see a preview
+  ([previews.md](previews.md)).
 - **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge` (a guest signing in) and
   `POST /api/index/internal/purge-person` (an account closing).
 
