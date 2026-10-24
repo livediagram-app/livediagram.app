@@ -185,6 +185,22 @@ describe('edges', () => {
     expect(media.calls).toEqual([]);
   });
 
+  it("serves no teammate's image while the team's people cannot be read", async () => {
+    liveDesign(db.sql, 'D', 'user_ada', 'team_1');
+    accounts.failing.set('teams/members', 500);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    mediaImages(media, 'user_bob', ['bobs']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'bobs'), 0);
+    expect(await designServesImage(db.env, 'D', 'bobs')).toBe(false);
+  });
+
+  it('serves no one as owner on a design whose owner was anonymised away', async () => {
+    liveDesign(db.sql, 'D', '');
+    mediaImages(media, 'user_ada', ['adas']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'adas'), 0);
+    expect(await designServesImage(db.env, 'D', 'adas')).toBe(false);
+  });
+
   it('serves no image when the media service is not set up', async () => {
     liveDesign(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_ada', ['mine']);
