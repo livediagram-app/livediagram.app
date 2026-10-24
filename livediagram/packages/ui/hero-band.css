@@ -1,6 +1,6 @@
 /* The landing hero's band (docs/specs/019-marketing/marketing-site.md "Hero"), which the help centre's page
    headers wear too (docs/specs/018-help/help-pages.md "Shared look"): its colours, drawn from
-   the brand mark's prism (packages/ui/src/brand-prism.ts), in one place for light and dark. Light is the
+   the brand mark's prism (packages/brand/src/apps.ts), in one place for light and dark. Light is the
    prism's pale sky ground with its indigo ink; dark is the page's deepest slate with the prism's sky
    for accents. The primary button is the header's brand-700 in light and the prism's primary blue in dark
    (white on either clears 4.5:1). */

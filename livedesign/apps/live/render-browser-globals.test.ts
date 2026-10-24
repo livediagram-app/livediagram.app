@@ -14,8 +14,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
     'prefersReducedMotion, called from a scroll handler',
   'apps/live/components/canvas/arrow-flow.tsx': 'inside the pinning effect',
   // Hooks: read in effects, handlers, store snapshots and subscriptions, or module state the browser-only Explorer reads.
-  'packages/ui/src/useBrandShimmer.ts': 'inside an effect',
-  'packages/ui/src/useBrandSpin.ts': 'inside an effect',
   'packages/ui/src/useClickOutside.ts': 'inside an effect',
   'packages/ui/src/useEscape.ts': 'inside an effect',
   'packages/ui/src/useFocusTrap.ts': 'coarsePointer, called from the open effect',

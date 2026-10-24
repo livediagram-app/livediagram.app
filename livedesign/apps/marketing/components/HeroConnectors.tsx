@@ -39,7 +39,7 @@ const EDGE_CLEAR = 12;
 // The straight run into the bar after the curve, so the line meets the arrowhead level at its tip.
 const LEAD_IN = 28;
 
-// The brand mark's prism (packages/ui/src/brand-prism.ts): its vivid rose out of the headline, its
+// The brand mark's prism (packages/brand/src/apps.ts): its vivid rose out of the headline, its
 // primary pink into the search.
 const FROM = '#e11d48';
 const TO = '#db2777';

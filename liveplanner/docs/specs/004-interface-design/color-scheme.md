@@ -7,7 +7,7 @@ The liveplanner brand color is **violet**. Everything below builds on that.
 Every live product carries its own accent and shares everything else: the layout, the neutrals, the components and the
 Living Prism mark. livediagram is sky blue; **liveplanner is violet**. The accent lives in one ramp, the `brand-*` tokens
 in `packages/tailwind-config/theme.css`, and in the prism palette the mark and every icon are generated from
-(the app's `palettes` in `@liveworkspace/brand`'s `src/apps.ts`, written out by `pnpm icons:brand`). The places that cannot
+(the app's `palettes` in `packages/brand/src/apps.ts` (`@liveworkspace/brand`), written out by `pnpm icons:brand`). The places that cannot
 read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent) name the same
 hexes, and a change of accent changes them together.
 
