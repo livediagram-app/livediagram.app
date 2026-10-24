@@ -25,7 +25,6 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter, setApiWarningReporter } from './api/error-report';
 export {
   API_BASE,
-  PROJECT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   registerTokenProvider,
   setSessionSharePassword,

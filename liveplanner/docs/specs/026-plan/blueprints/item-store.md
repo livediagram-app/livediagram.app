@@ -332,7 +332,7 @@ action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies 
 - **Activity** (since removed: the Inbox is the index's now): `readActivity` added `cardThreads` from `CARD_THREADS_SQL`, the card
   placement shared with `CARDS_SQL`. `useActivityFeed` merges them
   into `threads` as `{ kind: 'card' }` rows ordered by latest comment; `ActivityPane` draws them with
-  `ActivityCardThreadRow`, linking `cardDeepLinkHref`.
+  `ActivityCardThreadRow`, linking to the card (the link builder went with the pane).
   `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
   `PlanSheetsHost` hands `ItemPanel` `comments: { canComment: canVote, selfId: ownerId, onComment }`;
   `ItemFieldEditor` draws `ItemComments` for `comments`, from the shared `comment-thread-parts.tsx`

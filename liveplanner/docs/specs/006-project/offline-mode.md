@@ -190,7 +190,7 @@ Every row and card of an offline project carries a **This Browser** pill,
 wherever the project is listed: the list and card views (folders, Search results,
 This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
-rows and its Current Project card, and the Trash.
+rows, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
   "This Browser", in an amber tone whose text meets 4.5:1 on its fill in light and

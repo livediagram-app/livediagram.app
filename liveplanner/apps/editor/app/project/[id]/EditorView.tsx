@@ -1,6 +1,5 @@
 'use client';
 
-import { usePublishProjectVisibility } from '@/hooks/editor/project-visibility-store';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
@@ -230,19 +229,6 @@ export function EditorView() {
       patternScale,
       patternSpeed,
     ],
-  );
-
-  // The same visibility for the Explorer panel's Current Project card (project-visibility-store).
-  usePublishProjectVisibility(
-    projectShareable,
-    !!projectTeamId,
-    isOffline,
-    canShareProject && hydrated
-      ? () => {
-          setShareDialogOpen(true);
-          track('UI', 'Opened', 'Share');
-        }
-      : undefined,
   );
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone

@@ -369,32 +369,6 @@ export async function offlineSaveItemTypes(
   await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
 }
 
-// Personal-folder placement for an offline project (docs/specs/013-workspace/folders.md). Folders are
-// server-side rows, but an offline record carries a folderId so its row can
-// sit in the Explorer's personal tree like any other.
-export async function offlineSetProjectFolder(
-  id: string,
-  folderId: string | null,
-  now: number,
-): Promise<void> {
-  await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
-}
-
-// Star / un-star an offline project (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
-// alone on purpose: a star is a per-user bookmark, not an edit to the
-// project, and bumping it would reorder Recent on a click that changed
-// nothing about the content.
-export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => (rec ? { ...rec, favourite } : undefined)),
-  );
-}
-
-export async function offlineListFavouriteIds(): Promise<string[]> {
-  const recs = await offlineBackend().all();
-  return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
-}
-
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   // No create-on-missing: a save must never resurrect a deleted project.
   // A pending debounced autosave can land AFTER a sync-to-cloud deleted
