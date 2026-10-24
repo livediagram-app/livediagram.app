@@ -40,11 +40,19 @@ const beforeHydration = (): Query => undefined;
 // A code redeems once; React may run an effect twice in development.
 const redeemed = new Set<string>();
 
-const CLOUD_SYNC_HREF = explorerHref('', '?settings=account&section=cloud-sync');
+// Cloud Sync lives in the editor's Settings, so the way back to it is the page the connect started from (its
+// remembered `returnPath`, which already names Account > Cloud Sync). Without one (a consent this browser did not
+// start, or a cancel whose path was lost) there is no Cloud Sync to go back to: the Explorer instead.
+const EXPLORER_HREF = explorerHref();
 
-// `switch`: the consent came from another Google account; `returnPath` is
-// where to go once the owner answers.
-type Phase = 'working' | 'denied' | 'invalid' | 'failed' | { kind: 'switch'; returnPath: string };
+// `switch`: the consent came from another Google account; `failed`: Google or the api refused it. `returnPath` is
+// where to go once the owner answers, or to try again.
+type Phase =
+  | 'working'
+  | 'denied'
+  | 'invalid'
+  | { kind: 'failed'; returnPath: string }
+  | { kind: 'switch'; returnPath: string };
 
 // Redeem the code once; the phase to show, or null while leaving the page.
 async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase | null> {
@@ -72,7 +80,7 @@ async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase
     }
   } catch (err) {
     driveWarn('connect-failed', { error: err instanceof Error ? err.message : String(err) });
-    return 'failed';
+    return { kind: 'failed', returnPath };
   }
   track('Drive', 'Linked', 'Broker');
   driveLog('connected', {});
@@ -103,13 +111,13 @@ export function DriveConnected() {
       </LandingCard>
     );
   }
-  if (typeof phase === 'object' && accountUserId) {
+  if (typeof phase === 'object' && phase.kind === 'switch' && accountUserId) {
     const { returnPath } = phase;
     return (
       <LandingCard>
         <Body>Connecting Google Drive…</Body>
         <DriveAccountSwitchDialog
-          cloudSyncHref={CLOUD_SYNC_HREF}
+          cloudSyncHref={returnPath}
           onSwitch={async () => {
             await apiConfirmDriveAccountSwitch(accountUserId);
             track('Drive', 'Changed', 'AccountSwitched');
@@ -135,11 +143,11 @@ export function DriveConnected() {
         <Body>
           Nothing changed. You can connect it any time from Settings, Account, Cloud Sync.
         </Body>
-        <PrimaryLink href={CLOUD_SYNC_HREF}>Back</PrimaryLink>
+        <PrimaryLink href={EXPLORER_HREF}>Back</PrimaryLink>
       </LandingCard>
     );
   }
-  if (phase === 'invalid' || phase === 'failed') {
+  if (phase === 'invalid' || (typeof phase === 'object' && phase.kind === 'failed')) {
     return (
       <LandingCard>
         <Heading>Google Drive couldn&apos;t be connected</Heading>
@@ -149,7 +157,11 @@ export function DriveConnected() {
             : 'Google did not accept the connection.'}{' '}
           Try again from Settings, Account, Cloud Sync.
         </Body>
-        <PrimaryLink href={CLOUD_SYNC_HREF}>Back to Cloud Sync</PrimaryLink>
+        {phase === 'invalid' ? (
+          <PrimaryLink href={EXPLORER_HREF}>Go to Explorer</PrimaryLink>
+        ) : (
+          <PrimaryLink href={phase.returnPath}>Back to Cloud Sync</PrimaryLink>
+        )}
       </LandingCard>
     );
   }

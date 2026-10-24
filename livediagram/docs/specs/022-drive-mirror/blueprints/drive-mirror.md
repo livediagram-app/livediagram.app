@@ -765,7 +765,11 @@ Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livedia
 
 Banner (`needs_reconnect` / `needs_resume`), bottom-left, dismissible for the session: "Google Drive sync is paused."
 with **Reconnect** / **Resume sync**. `/drive/connected`: "Connecting Google Drive…", then back to the page the user
-started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. `/drive/open`: "Opening from
+started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. Cloud Sync lives only in the
+editor's Settings, so every way back to it is the remembered page (which already names Account > Cloud Sync): a
+connection the api refused offers **Back to Cloud Sync** there, as does the account switch dialog. With no remembered
+page (a consent this browser did not start: **Go to Explorer**; a cancel whose page was lost: **Back**) they go to
+the Explorer. `/drive/open`: "Opening from
 Google Drive…"; import: "This document isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
 "This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
 **Import as new document**; error: "This file can't be
