@@ -84,7 +84,7 @@ namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
 # The design's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per design id,
-# holding the design's content (tabs, items, sheets, changesets) in its own SQLite and running its realtime
+# holding the design's content (tabs, pages, comments, changesets) in its own SQLite and running its realtime
 # room (presence + ordered ops over hibernating WebSockets).
 [[durable_objects.bindings]]
 name = "DESIGN_ROOM"

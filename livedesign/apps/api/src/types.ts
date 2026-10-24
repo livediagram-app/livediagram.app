@@ -139,7 +139,7 @@ export type Env = {
 };
 
 // The env a design's own code runs with, inside its Durable Object (src/design-room/design-room.ts): the
-// worker's bindings plus `DESIGN_DB`, the design's own SQLite behind the D1 surface (design-room/design-db.ts).
+// worker's bindings plus `DESIGN_DB`, the design's own SQLite behind the D1 surface the room builds.
 // Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
 // the worker reaches content through the design's Durable Object instead.
 export type DesignEnv = Env & { DESIGN_DB: D1Database };

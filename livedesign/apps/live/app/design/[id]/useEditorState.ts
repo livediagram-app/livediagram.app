@@ -214,8 +214,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-design/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
-    // individual creation path (draw, paste, template, Mermaid
-    // import) carries layer logic. stampNewElementLayers no-ops on tabs
+    // individual creation path (draw, paste, template) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {

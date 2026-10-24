@@ -513,8 +513,7 @@ export async function apiDelete(
 // point because several mutation paths reach persistence — the history
 // commit, the non-undoable session tick, a remote apply — and a field whose
 // presence depends on which one ran is a field no reader can trust.
-// `stampTabKind` resolves a legacy board by its layer, so a pre-`kind`
-// workshop board is never branded an ordinary diagram on its next save.
+// `stampTabKind` resolves a tab stored before `kind` existed, so it is stamped the same way on its next save.
 export function tabForWire(tab: Tab): Tab {
   return stampTabKind(stripUiTabFields(tab));
 }
