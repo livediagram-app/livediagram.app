@@ -95,6 +95,7 @@ liveworkspace/
 │  ├─ api-client, telemetry-client, render-png, source-ast, icons
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
 │  ├─ templates, template-previews
+│  ├─ marketing-site               the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ ui                           design system: buttons, menus, dialogs, tokens
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start

@@ -9,7 +9,7 @@ const CONTENT_STYLESHEETS = ['css/hero-fan.css', 'css/promises.css', 'css/page-m
 
 describe('shared marketing motion budget', () => {
   it('keeps every chrome duration within the budget', () => {
-    const root = fileURLToPath(new URL('.', import.meta.url));
+    const root = fileURLToPath(new URL('..', import.meta.url));
     const violations = checkMotionBudget({ root, canvasStylesheets: CONTENT_STYLESHEETS });
     expect(formatViolations(violations)).toBe('');
   });
