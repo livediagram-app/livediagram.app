@@ -11,8 +11,9 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Infographic: its name, layout, background, size, another page, present', () => {
-    expect(ids(pageTourSteps('wireframe'))).toEqual([
+  it('Wireframe: its name, layout, background, device, another page, present', () => {
+    const steps = pageTourSteps('wireframe');
+    expect(ids(steps)).toEqual([
       'page-name',
       'layouts',
       'background',
@@ -21,11 +22,7 @@ describe('the tracks', () => {
       'present',
       'outro',
     ]);
-  });
-
-  it('Wireframe: the infographic track, its size step naming the device instead', () => {
-    expect(ids(pageTourSteps('wireframe'))).toEqual(ids(pageTourSteps('wireframe')));
-    const device = pageTourSteps('wireframe').find((s) => s.id === 'page-size')!;
+    const device = steps.find((s) => s.id === 'page-size')!;
     expect(device.title).toBe('Device');
     expect(device.body).toMatch(/device/);
   });
