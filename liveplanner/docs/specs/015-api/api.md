@@ -448,6 +448,8 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 
 **The person's workbench store** is closed too: every pairing ends (closing the rooms its sessions had open) and the store is deleted. Account deletion runs on `DELETE /api/account` and whenever the index says an account closed (`POST /api/internal/people/:id/purge`), wherever it was closed.
 
+**A guest merged into an account** (`POST /api/internal/people/:guest/merge {into}`, from the index) has nothing to move here: their plans are the index's, liveplanner keeps no images, and a guest holds no workbench (pairing needs an API token). The door confirms at once.
+
 **Kept by the index, not here.** What a person has seen of forms' responses, which the index drops with the account.
 
 **Kept by the accounts Worker, not here.** API tokens are the account's and close with it. A person's settings ([User preferences](../007-editor/user-preferences.md)), name and colour (`GET`/`PUT /api/participants`), sign-in sighting and email address live in the liveworkspace accounts database ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), under the account's user id or, for a guest, the `guest_<uuid>` id its guest token names. Closing an account deletes them there, and a guest's move to an account on sign-in is the accounts Worker's too.
