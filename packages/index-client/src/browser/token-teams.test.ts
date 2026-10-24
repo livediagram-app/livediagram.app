@@ -9,6 +9,15 @@ describe('teamsOfToken', () => {
     expect(teamsOfToken(token)).toEqual([{ id: 't1', name: 'One' }]);
   });
 
+  it('reads a name with any letter in it', () => {
+    const json = new TextEncoder().encode(JSON.stringify({ teams: [{ id: 't1', name: 'Équipe 🎨' }] }));
+    const payload = btoa(String.fromCharCode(...json))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    expect(teamsOfToken(`h.${payload}.s`)).toEqual([{ id: 't1', name: 'Équipe 🎨' }]);
+  });
+
   it('answers none for no token, a guest, or anything unreadable', () => {
     expect(teamsOfToken(null)).toEqual([]);
     expect(teamsOfToken(tokenWith({ kind: 'guest' }))).toEqual([]);

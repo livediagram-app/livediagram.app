@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '../client';
-import { createItemGrants, GRANT_RENEW_BEFORE_MS, GRANTS_HELD_MAX } from './item-grants';
+import {
+  createItemGrants,
+  GRANT_RENEW_BEFORE_MS,
+  GRANT_RETRY_MS,
+  GRANTS_HELD_MAX,
+} from './item-grants';
 import { fakeWindow } from './fake-window';
 
 // The index's grant on an item (liveworkspace/docs/one-explorer-contracts.md "Grants"), as an editor holds it: one
@@ -100,6 +105,43 @@ it('keepFresh renews a minute before expiry, and stops when told', async () => {
   expect(index.grant).toHaveBeenCalledTimes(2);
   expect(grants.held('d1')).toBe('g2');
   stop();
+  await vi.advanceTimersByTimeAsync(TEN_MIN);
+  expect(index.grant).toHaveBeenCalledTimes(2);
+});
+
+it('keepFresh tries a renewal the network failed again, and stops on a refusal', async () => {
+  vi.useFakeTimers();
+  index.grant
+    .mockResolvedValueOnce(grantOf('g1'))
+    .mockRejectedValueOnce(new TypeError('offline'))
+    .mockResolvedValueOnce(grantOf('g2'))
+    .mockRejectedValueOnce(new IndexError(403, 'forbidden'));
+  const stop = grants.keepFresh('d1');
+  await vi.advanceTimersByTimeAsync(TEN_MIN - GRANT_RENEW_BEFORE_MS);
+  expect(index.grant).toHaveBeenCalledTimes(2);
+  await vi.advanceTimersByTimeAsync(GRANT_RETRY_MS);
+  expect(index.grant).toHaveBeenCalledTimes(3);
+  expect(grants.held('d1')).toBe('g2');
+  await vi.advanceTimersByTimeAsync(TEN_MIN);
+  expect(index.grant).toHaveBeenCalledTimes(4);
+  await vi.advanceTimersByTimeAsync(TEN_MIN);
+  expect(index.grant).toHaveBeenCalledTimes(4);
+  stop();
+});
+
+it('keepFresh renews while any caller keeps the item fresh', async () => {
+  vi.useFakeTimers();
+  let n = 0;
+  index.grant.mockImplementation(async () => grantOf(`g${++n}`));
+  const stopA = grants.keepFresh('d1');
+  const stopB = grants.keepFresh('d1');
+  await vi.advanceTimersByTimeAsync(0);
+  expect(index.grant).toHaveBeenCalledTimes(1);
+  stopA();
+  stopA();
+  await vi.advanceTimersByTimeAsync(TEN_MIN);
+  expect(index.grant).toHaveBeenCalledTimes(2);
+  stopB();
   await vi.advanceTimersByTimeAsync(TEN_MIN);
   expect(index.grant).toHaveBeenCalledTimes(2);
 });

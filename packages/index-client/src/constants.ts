@@ -47,6 +47,8 @@ export const INDEX_APP_HEADER = 'X-Index-App';
 export const INDEX_PERSON_HEADER = 'X-Index-Person';
 export const INDEX_TEAMS_HEADER = 'X-Index-Teams';
 export const DELEGATED_TEAMS_MAX = 50;
+// An item's grant, on every request about the item and as the room's ticket.
+export const ITEM_GRANT_HEADER = 'X-Index-Grant';
 // A link visitor's share code, and its password when the item has one.
 export const SHARE_CODE_HEADER = 'X-Share-Code';
 export const SHARE_PASSWORD_HEADER = 'X-Share-Password';

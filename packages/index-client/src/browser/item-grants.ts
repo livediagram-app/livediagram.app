@@ -8,13 +8,16 @@
 // createItemGrants, naming its index client, the window global its boot script leaves an early grant on, and the
 // api path segment its items live under (`/api/<segment>/<id>`).
 import { IndexError, type IndexClient } from '../client';
+import { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER } from '../constants';
 import type { GrantResponse } from '../types';
 
-export const ITEM_GRANT_HEADER = 'X-Index-Grant';
+export { ITEM_GRANT_HEADER };
 // Fetched again this long before it lapses (the contract's renewal window).
 export const GRANT_RENEW_BEFORE_MS = 60_000;
 // A refusal is remembered this long, so an item the person cannot open is not asked about on every request.
 export const GRANT_REFUSAL_MEMORY_MS = 30_000;
+// A renewal the network failed is tried again after this long.
+export const GRANT_RETRY_MS = 15_000;
 // Items held at once; the oldest goes first. A person has one or two open.
 export const GRANTS_HELD_MAX = 32;
 
@@ -63,6 +66,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   const held = new Map<string, Held>();
   const inflight = new Map<string, Promise<GrantResponse | null>>();
   const renewTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // How many callers keep each item fresh (keepFresh); its renewals run while any do.
+  const freshKeepers = new Map<string, number>();
   // Why the last request was refused, by key, for the callers that say so (a password prompt).
   const refusals = new Map<string, string>();
 
@@ -154,22 +159,36 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
     },
     // Why the index last refused this item (`password_required`, `password_invalid`, `not_found`, ...), or null.
     refusal: (itemId, share = null) => refusals.get(keyOf(itemId, share)) ?? null,
-    // Keep the open item's grant fresh, for as long as it stays open. Answers the stop. One timer per item.
+    // Keep the open item's grant fresh, for as long as it stays open. Answers the stop. One timer per item, however
+    // many keep it fresh: it runs until the last of them stops. A renewal the network failed is tried again after
+    // GRANT_RETRY_MS; a refusal ends the renewals (the item can't be opened on this grant any more).
     keepFresh: (itemId, share = null) => {
       const key = keyOf(itemId, share);
+      const keepers = (freshKeepers.get(key) ?? 0) + 1;
+      freshKeepers.set(key, keepers);
       let stopped = false;
       const arm = (g: GrantResponse | null) => {
-        if (stopped || !g) return;
+        if (!freshKeepers.has(key)) return;
+        if (!g && refusals.has(key)) return;
         clearTimeout(renewTimers.get(key));
-        const wait = Math.max(1_000, g.expiresAt - GRANT_RENEW_BEFORE_MS - Date.now());
+        const wait = g
+          ? Math.max(1_000, g.expiresAt - GRANT_RENEW_BEFORE_MS - Date.now())
+          : GRANT_RETRY_MS;
         renewTimers.set(
           key,
           setTimeout(() => void grant(itemId, share, { fresh: true }).then(arm), wait),
         );
       };
-      void grant(itemId, share).then(arm);
+      if (keepers === 1) void grant(itemId, share).then(arm);
       return () => {
+        if (stopped) return;
         stopped = true;
+        const left = (freshKeepers.get(key) ?? 1) - 1;
+        if (left > 0) {
+          freshKeepers.set(key, left);
+          return;
+        }
+        freshKeepers.delete(key);
         clearTimeout(renewTimers.get(key));
         renewTimers.delete(key);
       };
@@ -182,8 +201,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       if (!itemId) return init;
       const headers = new Headers(init?.headers);
       if (headers.has(ITEM_GRANT_HEADER)) return init;
-      const code = headers.get('X-Share-Code');
-      const share = code ? { code, password: headers.get('X-Share-Password') } : null;
+      const code = headers.get(SHARE_CODE_HEADER);
+      const share = code ? { code, password: headers.get(SHARE_PASSWORD_HEADER) } : null;
       const g = await grant(itemId, share);
       if (!g) return init;
       headers.set(ITEM_GRANT_HEADER, g.grant);
@@ -195,6 +214,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       refusals.clear();
       for (const timer of renewTimers.values()) clearTimeout(timer);
       renewTimers.clear();
+      freshKeepers.clear();
     },
   };
 }

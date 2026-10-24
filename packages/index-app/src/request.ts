@@ -12,6 +12,9 @@
 
 import {
   IndexError,
+  ITEM_GRANT_HEADER,
+  SHARE_CODE_HEADER,
+  SHARE_PASSWORD_HEADER,
   type CreateItemInput,
   type Item,
   type ItemSource,
@@ -25,10 +28,8 @@ import {
   type ItemGrant,
 } from './service';
 
-export const ITEM_GRANT_HEADER = 'X-Index-Grant';
-// A link visitor's share code and its password, as every app's editor sends them.
-export const SHARE_CODE_HEADER = 'X-Share-Code';
-export const SHARE_PASSWORD_HEADER = 'X-Share-Password';
+// The headers every app's editor sends (@liveworkspace/index-client), for the apps' servers.
+export { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER };
 
 const PASSWORD_REFUSALS = new Set(['password_required', 'password_invalid']);
 
