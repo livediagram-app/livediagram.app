@@ -20,11 +20,11 @@ describe('the device store (a guest’s settings in this browser)', () => {
   it('reads the editor’s flat copy as the two scopes', async () => {
     localStorage.setItem(
       KEY,
-      JSON.stringify({ telemetryEnabled: false, reduceMotion: true, showMinimap: false }),
+      JSON.stringify({ telemetryEnabled: false, reduceMotion: true, notifyProjectJoin: false }),
     );
     expect(await store.loadApp('liveplanner.app')).toEqual({
       ok: true,
-      data: { all: { telemetryEnabled: false, reduceMotion: true }, app: { showMinimap: false } },
+      data: { all: { telemetryEnabled: false, reduceMotion: true }, app: { notifyProjectJoin: false } },
     });
   });
 
@@ -41,22 +41,22 @@ describe('the device store (a guest’s settings in this browser)', () => {
   });
 
   it('writes only the key a change names, over the freshest copy, and marks it unsynced for the guest', async () => {
-    localStorage.setItem(KEY, JSON.stringify({ showMinimap: false }));
+    localStorage.setItem(KEY, JSON.stringify({ notifyProjectJoin: false }));
     await store.loadApp('liveplanner.app');
     // Another tab (the editor) changes a key meanwhile.
-    localStorage.setItem(KEY, JSON.stringify({ showMinimap: false, uiScale: 1.25 }));
-    const result = await store.patchApp('liveplanner.app', { alignmentGuides: false });
-    expect(stored()).toEqual({ showMinimap: false, uiScale: 1.25, alignmentGuides: false });
+    localStorage.setItem(KEY, JSON.stringify({ notifyProjectJoin: false, uiScale: 1.25 }));
+    const result = await store.patchApp('liveplanner.app', { notifyFormResponses: false });
+    expect(stored()).toEqual({ notifyProjectJoin: false, uiScale: 1.25, notifyFormResponses: false });
     expect(result).toEqual({
       ok: true,
-      data: { all: { uiScale: 1.25 }, app: { showMinimap: false, alignmentGuides: false } },
+      data: { all: { uiScale: 1.25 }, app: { notifyProjectJoin: false, notifyFormResponses: false } },
     });
     expect(localStorage.getItem(MARK)).toBe('guest_1');
   });
 
   it('removes a key patched to null, and writes shared keys into the same flat copy', async () => {
-    localStorage.setItem(KEY, JSON.stringify({ showMinimap: false }));
-    await store.patchApp('liveplanner.app', { showMinimap: null });
+    localStorage.setItem(KEY, JSON.stringify({ notifyProjectJoin: false }));
+    await store.patchApp('liveplanner.app', { notifyProjectJoin: null });
     expect(stored()).toEqual({});
     expect(await store.patchShared({ reduceMotion: true })).toEqual({
       ok: true,
@@ -67,7 +67,7 @@ describe('the device store (a guest’s settings in this browser)', () => {
 
   it('leaves the mark alone with no guest id', async () => {
     const anonymous = createDeviceSettingsStore('liveplanner.app', { ownerId: () => null });
-    await anonymous.patchApp('liveplanner.app', { showMinimap: false });
+    await anonymous.patchApp('liveplanner.app', { notifyProjectJoin: false });
     expect(localStorage.getItem(MARK)).toBeNull();
   });
 
@@ -85,9 +85,9 @@ describe('the device store (a guest’s settings in this browser)', () => {
   });
 
   it('splits on ALL_SETTING_KEYS', () => {
-    expect(splitDeviceSettings({ notifyTips: false, homeBanner: false })).toEqual({
+    expect(splitDeviceSettings({ notifyTips: false, formTourSeen: false })).toEqual({
       all: { notifyTips: false },
-      app: { homeBanner: false },
+      app: { formTourSeen: false },
     });
   });
 });
