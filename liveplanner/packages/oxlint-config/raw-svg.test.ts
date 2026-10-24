@@ -12,7 +12,7 @@ const FIXTURES = {
   'components/NumericWidth.tsx': 'export const A = () => <svg width={24} height={24} />;',
   'components/Illustration.tsx': 'export const A = () => <svg width="240" height="130" />;',
   'components/Computed.tsx': 'export const A = ({ s }: { s: number }) => <svg width={s} />;',
-  'components/palette/palette-tile-art.tsx': ICON,
+  'components/palette/palette-style-previews.tsx': ICON,
   'components/feature-art/canvas.tsx': ICON,
   'components/Thing.test.tsx': ICON,
   'components/palette/context-menu-tiles.tsx': 'export const A = () => <button title="Zoom" />;',
