@@ -7,7 +7,7 @@ import {
   emptyCardDismissed,
 } from './empty-card-dismissed';
 
-// new-document-route.md "The empty-canvas hint": a closed card stays closed on that tab.
+// start-diagramming.md: a closed start stays closed on that tab.
 beforeEach(() => localStorage.clear());
 
 describe('the empty-tab card’s dismissal', () => {

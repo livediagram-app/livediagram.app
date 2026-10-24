@@ -18,8 +18,8 @@
 // so a generic JSON helper would just add layers.
 //
 // `safeJson` below is the one exception, and it earned the exception
-// by evidence rather than argument: five later config modules (avatar,
-// laser, spotlight, eraser, format) each grew a byte-identical copy of
+// by evidence rather than argument: later config modules (avatar,
+// laser, spotlight, format) each grew a byte-identical copy of
 // it. It is deliberately only the PARSE step, not a `readJson(key)`
 // that folds the read in — the read semantics really do still differ
 // per caller, which is what the paragraph above is about.

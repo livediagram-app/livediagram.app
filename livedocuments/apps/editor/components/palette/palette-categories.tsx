@@ -4,7 +4,7 @@
 // with the label, blurb and glyph each one wears.
 //
 // Its own module, holding NO component imports, so anything that needs the list (the mode
-// layouts, the whiteboard dock's shape catalogue) can import it without pulling in the category
+// layouts) can import it without pulling in the category
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
 import {

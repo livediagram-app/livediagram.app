@@ -628,7 +628,7 @@
 }
 
 /* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
-   tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
+   tool's Cancel, a modifier hint) is up: they take the same place under the strip, and the mode's
    says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
 body:has([data-mode-message]) [data-yields-to-mode] {
   display: none;

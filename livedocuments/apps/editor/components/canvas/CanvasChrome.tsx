@@ -352,10 +352,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           Zen hides it with the rest of the chrome. */}
       {zenMode || menuInStrip ? null : explorerMenuButton}
 
-      {/* The empty-canvas hint is now a dismissible bottom banner
-          (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
-          theme banners rather than a centre-of-canvas card. */}
-
       {showIdentityPrompt ? (
         <IdentityPrompt
           participant={selfParticipant}

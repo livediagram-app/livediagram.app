@@ -4,7 +4,7 @@ import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { HoverCard } from '@livedocuments/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every
-// tool-config panel is built from (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md):
+// tool-config panel is built from (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md):
 // an uppercase title, the current value still readable while collapsed, and a
 // wrap of radio pills once open.
 //

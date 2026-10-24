@@ -15,8 +15,7 @@ const FOCUSABLE =
 const shown = (el: HTMLElement): boolean =>
   el.getClientRects().length > 0 && !el.closest('.hidden, [hidden], [aria-hidden="true"]');
 
-/** The roots of the regions on screen, in screen order (a region's first shown root: the Palette is the strip or
- *  the Draw dock, whichever the tab has). */
+/** The roots of the regions on screen, in screen order (a region's first shown root). */
 export function shownRegions(doc: Document): HTMLElement[] {
   const out: HTMLElement[] = [];
   for (const name of EDITOR_REGIONS) {

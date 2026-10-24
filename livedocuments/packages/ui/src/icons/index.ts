@@ -40,6 +40,5 @@ export {
   RedoIcon,
   SettingsIcon,
   ThemeLookIcon,
-  TidyUpIcon,
   UndoIcon,
 } from './editor-chrome';

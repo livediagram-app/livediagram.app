@@ -4,13 +4,13 @@ import { useEffect, useState, type RefObject } from 'react';
 import type { MovablePanelProps } from './MovablePanel.types';
 
 // How high a bottom-anchored panel may grow: to the canvas's top edge (below the header), and below the palette strip
-// or the Draw dock where they overlap it across, so its header never slides under them on a short window (a laptop
+// where it overlaps it across, so its header never slides under them on a short window (a laptop
 // zoomed to 200%, docs/specs/007-editor/panel-docking.md "Default layout").
 export function bottomPanelTopLimit(panelRect: Pick<DOMRect, 'left' | 'right'>): number {
   const canvas = document.querySelector('main[data-region="canvas"], main[aria-label="Canvas"]');
   let top = canvas ? canvas.getBoundingClientRect().top : 0;
   for (const el of document.querySelectorAll(
-    '[data-toolbar-palette] [data-tour-id="palette"], [data-whiteboard-dock]',
+    '[data-toolbar-palette] [data-tour-id="palette"]',
   )) {
     const r = el.getBoundingClientRect();
     if (r.height > 0 && panelRect.right > r.left && panelRect.left < r.right)
