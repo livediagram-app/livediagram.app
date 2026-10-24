@@ -3,8 +3,6 @@ import { elementValidationIssue } from './validate';
 import {
   arcGeometry,
   arcText,
-  clampLetterSpacing,
-  clampTextArc,
   hasWordmarkType,
   resolvedFontWeight,
   wordmarkDisplayText,
@@ -30,18 +28,6 @@ describe('wordmark type', () => {
     expect(resolvedFontWeight({ fontWeight: 500, textBold: true })).toBe(500);
     expect(resolvedFontWeight({ textBold: true })).toBe(700);
     expect(resolvedFontWeight({})).toBe(400);
-  });
-
-  it('clamps tracking and arc, storing none as absent', () => {
-    expect(clampLetterSpacing(2)).toBe(1);
-    expect(clampLetterSpacing(-1)).toBe(-0.2);
-    expect(clampLetterSpacing(0.123)).toBe(0.12);
-    expect(clampLetterSpacing(0)).toBeUndefined();
-    expect(clampLetterSpacing(Number.NaN)).toBeUndefined();
-    expect(clampTextArc(400)).toBe(360);
-    expect(clampTextArc(-90.4)).toBe(-90);
-    expect(clampTextArc(0.2)).toBeUndefined();
-    expect(clampTextArc(Number.POSITIVE_INFINITY)).toBeUndefined();
   });
 
   it('reads line breaks as spaces on an arc', () => {

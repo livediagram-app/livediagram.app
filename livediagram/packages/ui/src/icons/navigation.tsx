@@ -3,9 +3,7 @@ import {
   lucideChevronLeft,
   lucideChevronRight,
   lucideEllipsis,
-  lucideMaximize2,
   lucideMenu,
-  lucideMinimize2,
   lucideSearch,
 } from '@livediagram/icons/lucide';
 
@@ -18,5 +16,3 @@ export const ChevronRightIcon = lucideGlyph(lucideChevronRight, 14);
 export const MenuIcon = lucideGlyph(lucideMenu, 12);
 export const SearchIcon = lucideGlyph(lucideSearch, 16);
 export const EllipsisIcon = lucideGlyph(lucideEllipsis, 16);
-export const MaximizeIcon = lucideGlyph(lucideMaximize2, 16);
-export const MinimizeIcon = lucideGlyph(lucideMinimize2, 16);

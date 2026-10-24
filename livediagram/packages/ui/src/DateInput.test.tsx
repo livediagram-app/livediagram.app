@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DateInput, dateCommit, isWholeDay, openDatePicker } from './DateInput';
+import { DateInput, dateCommit, isWholeDay } from './DateInput';
 
 afterEach(cleanup);
 
@@ -167,33 +167,5 @@ describe('DateInput', () => {
     render(<DateInput aria-label="Due" value={undefined} onCommit={vi.fn()} />);
     expect(field().min).toBe('1000-01-01');
     expect(field().max).toBe('9999-12-31');
-  });
-});
-
-describe('openDatePicker', () => {
-  it('opens the system picker where the browser has one', () => {
-    const el = document.createElement('input');
-    const showPicker = vi.fn();
-    Object.defineProperty(el, 'showPicker', { value: showPicker });
-    openDatePicker(el);
-    expect(showPicker).toHaveBeenCalledOnce();
-  });
-
-  it('focuses the field where the picker is missing or refused', () => {
-    const missing = document.createElement('input');
-    Object.defineProperty(missing, 'showPicker', { value: undefined });
-    const refused = document.createElement('input');
-    Object.defineProperty(refused, 'showPicker', {
-      value: () => {
-        throw new DOMException('No gesture', 'NotAllowedError');
-      },
-    });
-    document.body.append(missing, refused);
-    openDatePicker(missing);
-    expect(document.activeElement).toBe(missing);
-    openDatePicker(refused);
-    expect(document.activeElement).toBe(refused);
-    missing.remove();
-    refused.remove();
   });
 });

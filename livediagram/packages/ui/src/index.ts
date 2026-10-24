@@ -15,7 +15,6 @@ export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { BuildWithAiLink } from './BuildWithAiLink';
-export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
 export {
@@ -38,7 +37,6 @@ export {
   DateInput,
   dateCommit,
   isWholeDay,
-  openDatePicker,
   type DateCommit,
   type DateInputProps,
 } from './DateInput';
@@ -47,7 +45,6 @@ export { Tooltip, type TooltipProps } from './Tooltip';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
-export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';

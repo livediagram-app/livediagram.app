@@ -18,7 +18,6 @@ export {
   PlusIcon,
   RefreshIcon,
   SideBySideIcon,
-  SplitPagesIcon,
   TrashIcon,
 } from './actions';
 export {
@@ -26,9 +25,7 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   EllipsisIcon,
-  MaximizeIcon,
   MenuIcon,
-  MinimizeIcon,
   SearchIcon,
 } from './navigation';
 export {

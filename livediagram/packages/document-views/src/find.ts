@@ -60,12 +60,6 @@ function searchedTexts(el: Element): [FindField, string[]][] {
   ];
 }
 
-/** Every text `find` searches on one element (its label, note, cells, fields, items, nodes, code
- *  and comments), for a caller that searches by element without the view. */
-export function elementFindTexts(el: Element): string[] {
-  return searchedTexts(el).flatMap(([, texts]) => texts);
-}
-
 function matchedFields(el: Element, q: string): FindField[] {
   return searchedTexts(el).flatMap(([field, texts]) =>
     texts.some((text) => normaliseFind(text).includes(q)) ? [field] : [],

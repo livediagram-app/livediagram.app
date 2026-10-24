@@ -7,7 +7,6 @@ import {
   lucideCopyPlus,
   lucideIndentDecrease,
   lucideIndentIncrease,
-  lucideLayoutGrid,
   lucideLock,
   lucideLockOpen,
   lucidePaintRoller,
@@ -30,8 +29,6 @@ import { Prims } from './Prims';
 export const TrashIcon = lucideGlyph(lucideTrash2, 16);
 // Duplicate an element (a copy with a plus), distinct from copying a value.
 export const DuplicateIcon = lucideGlyph(lucideCopyPlus, 16);
-// One page split into several (a page's Split Into Pages).
-export const SplitPagesIcon = lucideGlyph(lucideLayoutGrid, 16);
 // Copy a value or a theme.
 export const CopyIcon = lucideGlyph(lucideCopy, 14);
 export const PencilIcon = lucideGlyph(lucidePencil, 14);

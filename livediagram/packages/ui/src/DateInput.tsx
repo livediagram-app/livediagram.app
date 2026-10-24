@@ -45,20 +45,6 @@ export function dateCommit(raw: string, partial: boolean): DateCommit {
   return isWholeDay(raw) ? { kind: 'set', day: raw } : { kind: 'wait' };
 }
 
-// Opens the system date picker on a date field, or focuses it where the browser has no
-// `showPicker` (or refuses it, e.g. without a user gesture).
-export function openDatePicker(el: HTMLInputElement): void {
-  try {
-    if (typeof el.showPicker === 'function') {
-      el.showPicker();
-      return;
-    }
-  } catch {
-    // Falls through to focus.
-  }
-  el.focus();
-}
-
 export type DateInputProps = Omit<
   TextInputProps,
   'type' | 'value' | 'defaultValue' | 'onChange' | 'min' | 'max'
