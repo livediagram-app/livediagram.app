@@ -6,7 +6,7 @@ A collaborative editor for logos, wireframes and photos that works without signi
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
-packages/    shared design model, the photo engine, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds, the api client and agent verbs, the edit-operations engine, design views, the lint, PNG rendering, telemetry client, the TypeScript source parser for static guards, the licences generator, configs
+packages/    shared design model, the photo engine, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, page backgrounds, the api client and agent verbs, the edit-operations engine, design views, the lint, telemetry client, the licences generator, configs (PNG rendering and the TypeScript source parser are the monorepo's @liveworkspace/render-png and @liveworkspace/source-ast)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
