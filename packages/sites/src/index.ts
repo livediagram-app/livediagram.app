@@ -256,7 +256,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     shapeLibrariesPath: null,
     imports: [],
     importPath: null,
-    share: shareOf('/api/designs/:id', 'design', 'livedesign tab'),
+    share: shareOf(itemTabsPath('designs'), null, 'livedesign tab'),
   },
 };
 

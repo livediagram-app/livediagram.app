@@ -785,6 +785,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/designs/{id}/tabs',
+    segment: 'designs',
+    tag: 'Designs',
+    summary:
+      "The design's tabs alone, in order: id, name and kind (the editor mode it is drawn in), without their content. Read-gated like GET /designs/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: {
+        tabs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              kind: { type: ['string', 'null'] },
+            },
+            required: ['id', 'name', 'kind'],
+          },
+        },
+      },
+      required: ['tabs'],
+    },
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
     path: '/designs/{id}/thumbnail',
     segment: 'designs',
     tag: 'Designs',

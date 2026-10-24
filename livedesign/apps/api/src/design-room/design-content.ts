@@ -94,6 +94,26 @@ export async function readDesignMeta(env: DesignEnv, designId: string): Promise<
   return metaOf(head ?? null);
 }
 
+// The design's tabs alone, in order, for the Share dialog's tab picker (@liveworkspace/index-app tabs.ts): each tab's
+// id and name from its row, and its kind from the stats written beside it (the editor mode it is drawn in), never
+// its content.
+export async function readDesignTabs(
+  env: DesignEnv,
+  designId: string,
+): Promise<{ id: string; name: string; kind: string | null }[]> {
+  const { results } = await env.DESIGN_DB.prepare(
+    `SELECT t.id, t.name, s.mode AS kind
+       FROM design_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+       LEFT JOIN tab_stats s ON s.tab_id = t.id
+      WHERE dt.design_id = ?
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(designId)
+    .all<{ id: string; name: string; kind: string | null }>();
+  return results ?? [];
+}
+
 // What a create or a first open writes about the design (startDesign, upsertDesignMeta). A started design keeps its
 // owner, team, provenance and intent; only its name and last save move after.
 export type DesignStart = {

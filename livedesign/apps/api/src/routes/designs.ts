@@ -5,7 +5,14 @@
 
 import type { Tab } from '@livedesign/design';
 import { isValidTab, migrateIncomingTab } from '@livedesign/design';
-import { createItemGrant, itemSourceOf, type ItemCreateRequest } from '@liveworkspace/index-app';
+import {
+  createItemGrant,
+  itemSourceOf,
+  itemTabsOf,
+  itemTabsRequest,
+  itemTabsResponse,
+  type ItemCreateRequest,
+} from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
   MAX_DECK_LEN,
@@ -24,7 +31,15 @@ import {
   type CreationIntent,
 } from '@livedesign/api-schema';
 import { getDesign, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, forbidden, json, notFound, payloadTooLarge, svgImage } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+  svgImage,
+} from '../responses';
 import { designDates, isDesignSource } from '@livedesign/api-schema';
 import { designImageSvg } from '../design-image';
 import { redactDesignForReader, redactDesignForScope } from '../redact-design';
@@ -39,6 +54,7 @@ import { notifyMilestone } from '../email/notifications';
 import {
   initDesign,
   readDesignMeta,
+  readDesignTabs,
   renameDesign,
   setDesignPresentation,
 } from '../design-room/design-content';
@@ -217,6 +233,17 @@ async function startedDesign(ctx: DesignRouteContext, id: string): Promise<Desig
   return getDesign(ctx.env, id);
 }
 
+// /api/designs/<id>/tabs: the design's tabs alone (`{ tabs: [{ id, name, kind }] }`), for the Share dialog's tab picker
+// on liveworkspace.app (@liveworkspace/index-app tabs.ts), gated by the grant like a read. A tab's share link sees its
+// own tab alone. Read from the tab rows, never their content.
+async function designTabs(ctx: DesignRouteContext, id: string): Promise<Response> {
+  const grant = await gateGrant(ctx, id);
+  if (!grant) return notFound();
+  const rows = await readDesignTabs(ctx.env, id);
+  if (rows.length === 0 && !(await readDesignMeta(ctx.env, id))) return notFound();
+  return itemTabsResponse(itemTabsOf(rows, grant.tabScope), CORS_HEADERS);
+}
+
 // /api/designs/<id>/thumbnail: the cached SVG snapshot (docs/specs/006-design/design-snapshots.md), served by
 // the design (its row holds the cache's freshness), gated by the grant like a read. A native <img> can't send
 // auth headers, so the editor fetches it with headers and wraps the bytes in a blob URL; a miss is a 404 the
@@ -377,6 +404,10 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       return json({ design: liveDoc }, { status: 201 });
     }
   }
+
+  // /api/designs/<id>/tabs
+  const tabsOf = itemTabsRequest(request.method, segments, 'designs');
+  if (tabsOf) return designTabs(ctx, tabsOf);
 
   // /api/designs/<id>/thumbnail
   if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {

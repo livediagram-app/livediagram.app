@@ -320,6 +320,66 @@ describe("a design's content lives in its own Durable Object", () => {
   });
 });
 
+describe('GET /api/designs/:id/tabs: the tabs alone, for the Share dialog', () => {
+  const scopedGrant = (item: string, tab: string) =>
+    `G.${btoa(JSON.stringify({ item, sub: 'guest_owner', level: 'view', tab, team: null, exp: 9e9 }))}`;
+
+  it('answers every tab in order as { id, name, kind } from the rows, and a tab link its own tab', async () => {
+    const w = world();
+    await createDesign(w, 'A', [
+      { id: 't1', name: 'Logo', elements: [box('a')] },
+      { id: 't2', name: 'Wireframe', elements: [] },
+    ]);
+    const res = await w.send('GET', '/api/designs/A/tabs');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    const { tabs } = await res.json<{
+      tabs: { id: string; name: string; kind: string | null }[];
+    }>();
+    expect(tabs.map((t) => [t.id, t.name])).toEqual([
+      ['t1', 'Logo'],
+      ['t2', 'Wireframe'],
+    ]);
+    expect(tabs.every((t) => t.kind === null || t.kind === 'pages')).toBe(true);
+
+    const scoped = await w.send('GET', '/api/designs/A/tabs', undefined, {
+      'X-Index-Grant': scopedGrant('A', 't2'),
+    });
+    expect((await scoped.json<{ tabs: { id: string }[] }>()).tabs.map((t) => t.id)).toEqual(['t2']);
+  });
+
+  it('is a 404 with no grant, and for a design never started', async () => {
+    const w = world();
+    await createDesign(w, 'A');
+    expect(
+      (await w.send('GET', '/api/designs/A/tabs', undefined, { 'X-Index-Grant': 'forged' })).status,
+    ).toBe(404);
+    expect((await w.send('GET', '/api/designs/B/tabs')).status).toBe(404);
+  });
+
+  it('reads 200 tabs within budget, from the rows alone', async () => {
+    const w = world();
+    const tabs = Array.from({ length: 200 }, (_, i) => ({
+      id: `t${i}`,
+      name: `Tab ${i}`,
+      elements: Array.from({ length: 20 }, (_, j) => box(`e${i}_${j}`)),
+    }));
+    await createDesign(w, 'A', tabs);
+    const read = async () => {
+      const res = await w.send('GET', '/api/designs/A/tabs');
+      return (await res.json<{ tabs: unknown[] }>()).tabs.length;
+    };
+    expect(await read()).toBe(200);
+    let count = 0;
+    const cpu = await cpuMsOfAsync(async () => {
+      count = await read();
+    });
+    console.info('[perf] 200-tab tabs read', { cpu });
+    expect(count).toBe(200);
+    expect(cpu).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
 describe("an API client's create, made in the index by the worker", () => {
   // The index answers the create (filed by its default folder for the intent) and an `item_exists` re-commit.
   function indexMakes(answer: 'filed' | 'exists') {
