@@ -599,11 +599,40 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     expect((await call('/settings/liveplanner.app', bearer('tok-guest'))).status).toBe(401);
   });
 
+  it('runs a team in place: makes, renames, invites and deletes it', async () => {
+    const made = await call('/teams', bearer('tok-ada', { method: 'POST', body: { name: 'Design' } }));
+    expect(made.status).toBe(201);
+    const { id } = (await made.json()) as { id: string };
+    const renamed = await call(
+      `/teams/${id}`,
+      bearer('tok-ada', { method: 'PATCH', body: { name: 'Product Design' } }),
+    );
+    expect(renamed.status).toBe(200);
+    const invited = await call(
+      `/teams/${id}/members`,
+      bearer('tok-ada', { method: 'POST', body: { email: 'bea@example.com', role: 'member' } }),
+    );
+    expect(invited.status).toBe(201);
+    const link = await call(`/teams/${id}/invite-link`, bearer('tok-ada', { method: 'POST' }));
+    expect(link.status).toBe(200);
+    const members = (await (await call(`/teams/${id}/members`, bearer('tok-ada'))).json()) as {
+      team: { name: string };
+      members: { email: string }[];
+    };
+    expect(members.team.name).toBe('Product Design');
+    expect(members.members.map((m) => m.email).sort()).toEqual([
+      'ada@example.com',
+      'bea@example.com',
+    ]);
+    expect((await call(`/teams/${id}`, bearer('tok-ada', { method: 'DELETE' }))).status).toBe(200);
+  });
+
   it('refuses a forged bearer, and everything the page does not need', async () => {
     expect((await call('/teams', bearer('forged'))).status).toBe(401);
     expect(
-      (await call('/teams', bearer('tok-ada', { method: 'POST', body: { name: 'x' } }))).status,
-    ).toBe(404);
+      (await call('/teams', bearer('tok-guest', { method: 'POST', body: { name: 'x' } }))).status,
+    ).toBe(401);
+    expect((await call('/join/abc', bearer('tok-ada', { method: 'POST' }))).status).toBe(404);
     expect((await call('/tokens', bearer('tok-ada'))).status).toBe(404);
     expect((await call('/profile', bearer('tok-ada'))).status).toBe(404);
   });

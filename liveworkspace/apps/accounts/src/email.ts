@@ -80,9 +80,9 @@ export function settingsUrl(baseUrl: string): string {
 export const declineUrl = (baseUrl: string, token: string) =>
   `${origin(baseUrl)}/join/decline?token=${encodeURIComponent(token)}`;
 
-// An invitation to a team, sent when an admin invites an address on liveworkspace.app, and again as a
-// reminder (stage 1 to 3) while nobody answers. Accepting happens there, signed in with that address;
-// declining needs no account, through the email's own link.
+// An invitation to a team, sent when an admin invites an address in the Explorer, and again as a
+// reminder (stage 1 to 3) while nobody answers. Accepting happens in the Explorer's Invites, signed in
+// with that address; declining needs no account, through the email's own link.
 export function teamInviteEmail(
   baseUrl: string,
   teamName: string,
@@ -91,7 +91,7 @@ export function teamInviteEmail(
   stage = 0,
 ) {
   const who = inviterName.trim() || 'Someone';
-  const link = `${origin(baseUrl)}/account/teams`;
+  const link = `${origin(baseUrl)}/explorer/invites`;
   const decline = declineUrl(baseUrl, declineToken);
   const reminder = stage > 0;
   const subject = reminder
@@ -160,9 +160,13 @@ export function inviteResponseEmail(
   teamName: string,
   responder: string,
   accepted: boolean,
+  teamId?: string,
 ) {
   const verb = accepted ? 'accepted' : 'declined';
-  const link = `${origin(baseUrl)}/account/teams`;
+  // The team's view in the Explorer, where it is run.
+  const link = teamId
+    ? `${origin(baseUrl)}/explorer/team?id=${encodeURIComponent(teamId)}`
+    : `${origin(baseUrl)}/explorer`;
   const unsubscribeUrl = settingsUrl(baseUrl);
   const subject = `${responder} ${verb} your invitation to ${teamName}`;
   const text = [
@@ -185,13 +189,20 @@ export function inviteResponseEmail(
 export async function sendInviteResponseEmails(
   env: Env,
   recipients: { email: string }[],
-  response: { teamName: string; responder: string; accepted: boolean; app: SettingsApp | null },
+  response: {
+    teamId?: string;
+    teamName: string;
+    responder: string;
+    accepted: boolean;
+    app: SettingsApp | null;
+  },
 ): Promise<void> {
   const email = inviteResponseEmail(
     env.BASE_URL,
     response.teamName,
     response.responder,
     response.accepted,
+    response.teamId,
   );
   await Promise.all(
     recipients.map(async (r) => {

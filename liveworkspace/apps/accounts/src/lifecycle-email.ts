@@ -195,12 +195,12 @@ export function lifecycleEmail(
         intro:
           'If you work with other people, a team gives everyone a shared home, the same team in every app:',
         points: both([
-          '<strong>Create a team</strong> on liveworkspace.app and invite people by email.',
+          '<strong>Create a team</strong> in the Explorer and invite people by email.',
           '<strong>Work you file under the team</strong> opens for every member, in every app, with no links to pass around.',
           '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
         ]),
         outro: 'None of the apps needs an account to start. Teams just add a shared home on top.',
-        cta: { text: 'Create a team', href: `${site}/account/teams` },
+        cta: { text: 'Create a team', href: `${site}/explorer` },
         unsubscribeUrl,
       });
     case 'activation':

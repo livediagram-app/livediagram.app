@@ -1,10 +1,10 @@
 // The invitations waiting for an account, for an app's server (liveworkspace/docs/accounts.md "The
 // API"): `POST /api/account/internal/invitations` `{ userId }`. An app shows them in its Invites view
-// with a link to /account/teams, where they are answered; it never answers one itself.
+// and answers them through liveworkspace's account API (the Explorer's TeamsHost); this read never does.
 //
 // The app vouches for the account, as it does for settings and emails: an id it has already verified
 // (an access token's sub, or an API token's owner). What comes back is what the person sees on
-// /account/teams: the team's name, organisation and joined-member count, the role offered, who invited
+// the Explorer's Invites: the team's name, organisation and joined-member count, the role offered, who invited
 // them and when. An account with no verified address has none waiting (an invitation is to an address,
 // and only a verified one may accept it).
 //

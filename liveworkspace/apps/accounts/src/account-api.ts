@@ -241,7 +241,9 @@ async function tellAdmins(
 ): Promise<void> {
   try {
     const recipients = await inviteResponseRecipients(env.AUTH_DB, teamId);
-    if (recipients.length) await sendInviteResponseEmails(env, recipients, response);
+    if (recipients.length) {
+      await sendInviteResponseEmails(env, recipients, { ...response, teamId });
+    }
   } catch (cause) {
     console.error('[teams] invite response email failed', cause);
   }
@@ -260,9 +262,98 @@ async function handleSignedIn(
   const actor = await sessionActor(request, auth);
   if (!actor) return error(401, 'signed_out');
   const db = env.AUTH_DB;
-  const [section, id, sub, subId, action] = parts;
-  // Team and token events are counted under the app the actor signed up through, found when the batch
+  const [section, id, sub] = parts;
+  // Join and token events are counted under the app the actor signed up through, found when the batch
   // goes (telemetry.ts).
+  const home = () => signupAppOf(db, actor.id);
+
+  const teams = await teamRoutes(request, env, actor, parts);
+  if (teams) return teams;
+
+  // Joining through a team's join link. Its preview (GET) is open: handleOpen.
+  if (section === 'join' && id && !sub && method === 'POST') {
+    if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
+    const result = await joinByInviteLink(db, actor, id);
+    if (result.ok && !result.value.alreadyMember)
+      reportServerEvent(env, 'Team', 'Joined', null, home);
+    return answer(result);
+  }
+
+  if (section === 'tokens') {
+    if (!id && method === 'GET') return json({ tokens: await listApiTokens(db, actor.id) });
+    if (!id && method === 'POST') {
+      const body = await readBody(request);
+      const token = await mintApiToken(db, actor.id, {
+        name: cleanTokenName(body.name, 'API token'),
+        readOnly: body.readOnly === true,
+      });
+      if (!token) return error(409, 'token_limit_reached');
+      reportServerEvent(env, 'Token', 'Created', 'Manual', home);
+      return json(token, 201);
+    }
+    if (id && !sub && method === 'DELETE') {
+      if (!(await revokeApiToken(db, actor.id, id))) return error(404, 'not_found');
+      reportServerEvent(env, 'Token', 'Removed', null, home);
+      return json({ id });
+    }
+  }
+
+  // Other people's display names, by id (the Explorer's Owner column).
+  if (section === 'people' && !id && method === 'GET') return peopleNames(request, db);
+
+  // Their display name and colour, the ones collaborators see in every app.
+  if (section === 'profile' && !id) {
+    if (method === 'GET') {
+      const [profile] = await readProfiles(db, [actor.id]);
+      return json({ profile: profile ?? null });
+    }
+    if (method === 'PATCH') {
+      const checked = checkProfilePatch(await readBody(request));
+      if (!checked.ok) return error(400, checked.error);
+      const result = await writeProfile(db, actor.id, checked.patch);
+      return result.ok ? json({ profile: result.value }) : answer(result);
+    }
+  }
+
+  // The settings every app shows; each app's own are its server's to read and write.
+  if (section === 'settings' && !id) {
+    if (method === 'GET') return sharedSettings(db, actor);
+    if (method === 'PATCH') {
+      const result = await writeSettings(db, actor.id, null, {
+        all: (await readBody(request)).all,
+      });
+      return result.ok
+        ? json({ all: result.value.all, updatedAt: result.value.updatedAt })
+        : answer(result);
+    }
+  }
+
+  // One app's own settings, for its dialog on the settings page: GET answers both scopes (the app's
+  // rows can depend on a shared switch), PATCH `{ app }` changes only the app's. Always the signed-in
+  // person's own rows.
+  if (section === 'settings' && id && !sub) {
+    const answered = await appSettings(request, db, actor, id);
+    if (answered) return answered;
+  }
+
+  return error(404, 'not_found');
+}
+
+// --- Running teams, on both doors: the session's on liveworkspace.app, the bearer's on an app's address ---
+
+// Making, running and leaving teams and answering invitations (liveworkspace/docs/one-explorer.md "Teams are run in
+// the Explorer"). The Explorer runs a team wherever it shows, so these answer the session on liveworkspace.app and
+// the app's bearer alike. Null for a route that isn't one of these.
+async function teamRoutes(
+  request: Request,
+  env: Env,
+  actor: Actor & { name: string },
+  parts: string[],
+): Promise<Response | null> {
+  const { method } = request;
+  const db = env.AUTH_DB;
+  const [section, id, sub, subId, action] = parts;
+  // Team events are counted under the app the actor signed up through, found when the batch goes (telemetry.ts).
   const home = () => signupAppOf(db, actor.id);
 
   if (section === 'teams') {
@@ -359,74 +450,7 @@ async function handleSignedIn(
     }
     return answer(result);
   }
-
-  // Joining through a team's join link. Its preview (GET) is open: handleOpen.
-  if (section === 'join' && id && !sub && method === 'POST') {
-    if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
-    const result = await joinByInviteLink(db, actor, id);
-    if (result.ok && !result.value.alreadyMember)
-      reportServerEvent(env, 'Team', 'Joined', null, home);
-    return answer(result);
-  }
-
-  if (section === 'tokens') {
-    if (!id && method === 'GET') return json({ tokens: await listApiTokens(db, actor.id) });
-    if (!id && method === 'POST') {
-      const body = await readBody(request);
-      const token = await mintApiToken(db, actor.id, {
-        name: cleanTokenName(body.name, 'API token'),
-        readOnly: body.readOnly === true,
-      });
-      if (!token) return error(409, 'token_limit_reached');
-      reportServerEvent(env, 'Token', 'Created', 'Manual', home);
-      return json(token, 201);
-    }
-    if (id && !sub && method === 'DELETE') {
-      if (!(await revokeApiToken(db, actor.id, id))) return error(404, 'not_found');
-      reportServerEvent(env, 'Token', 'Removed', null, home);
-      return json({ id });
-    }
-  }
-
-  // Other people's display names, by id (the Explorer's Owner column).
-  if (section === 'people' && !id && method === 'GET') return peopleNames(request, db);
-
-  // Their display name and colour, the ones collaborators see in every app.
-  if (section === 'profile' && !id) {
-    if (method === 'GET') {
-      const [profile] = await readProfiles(db, [actor.id]);
-      return json({ profile: profile ?? null });
-    }
-    if (method === 'PATCH') {
-      const checked = checkProfilePatch(await readBody(request));
-      if (!checked.ok) return error(400, checked.error);
-      const result = await writeProfile(db, actor.id, checked.patch);
-      return result.ok ? json({ profile: result.value }) : answer(result);
-    }
-  }
-
-  // The settings every app shows; each app's own are its server's to read and write.
-  if (section === 'settings' && !id) {
-    if (method === 'GET') return sharedSettings(db, actor);
-    if (method === 'PATCH') {
-      const result = await writeSettings(db, actor.id, null, {
-        all: (await readBody(request)).all,
-      });
-      return result.ok
-        ? json({ all: result.value.all, updatedAt: result.value.updatedAt })
-        : answer(result);
-    }
-  }
-
-  // One app's own settings, for its dialog on the settings page: GET answers both scopes (the app's
-  // rows can depend on a shared switch), PATCH `{ app }` changes only the app's. Always the signed-in
-  // person's own rows.
-  if (section === 'settings' && id && !sub) {
-    const answered = await appSettings(request, db, actor, id);
-    if (answered) return answered;
-  }
-
-  return error(404, 'not_found');
+  return null;
 }
 
 // --- The reads both doors answer: the session's on liveworkspace.app, the bearer's on an app's address ---
@@ -489,9 +513,10 @@ async function appSettings(
 
 // --- The Explorer on an app's own address, by the app's bearer (bearer.ts) ---
 
-// Only what that page reads and the one thing it writes (Home's banner, in the app's settings): names for a guest or
-// an account, and for an account its teams, a team's members and its settings. A bearer is no ambient credential,
-// so a write needs no same-origin check: a page can only send one it holds. Everything else stays the session's.
+// What that page and the editors' Explorer panels need: names for a guest or an account, and for an account its
+// settings and its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no
+// same-origin check: a page can only send one it holds. Joining by link, API tokens and the profile stay the
+// session's.
 async function handleBearer(
   request: Request,
   env: Env,
@@ -502,7 +527,7 @@ async function handleBearer(
   const person = await bearerPerson(token, env, auth);
   if (!person) return error(401, 'signed_out');
   const { method } = request;
-  const [section, id, sub, extra] = parts;
+  const [section, id, sub] = parts;
   const db = env.AUTH_DB;
   if (section === 'people' && !id && method === 'GET') {
     if (person.kind === 'guest' && (await overLinkLimit(request, env, 'people'))) {
@@ -515,9 +540,9 @@ async function handleBearer(
     id: person.userId,
     email: person.emailVerified && person.email ? person.email.toLowerCase() : null,
   };
-  if (section === 'teams' && !id && method === 'GET') return myTeams(db, actor);
-  if (section === 'teams' && id && sub === 'members' && !extra && method === 'GET') {
-    return teamMembers(db, env, actor, id);
+  if (section === 'teams' || section === 'invitations') {
+    const teams = await teamRoutes(request, env, { ...actor, name: await accountName(db, actor.id) }, parts);
+    if (teams) return teams;
   }
   if (section === 'settings' && !id && method === 'GET') return sharedSettings(db, actor);
   if (section === 'settings' && id && !sub) {
@@ -525,6 +550,15 @@ async function handleBearer(
     if (answered) return answered;
   }
   return error(404, 'not_found');
+}
+
+// The account's display name, for the Timeline's "by …" and the invitation email (a token carries none).
+async function accountName(db: Env['AUTH_DB'], userId: string): Promise<string> {
+  const row = await db
+    .prepare('SELECT name FROM "user" WHERE id = ?')
+    .bind(userId)
+    .first<{ name: string | null }>();
+  return row?.name ?? '';
 }
 
 // --- The apps' servers ---

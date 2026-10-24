@@ -1,7 +1,7 @@
 // The Explorer served under an app's own address (liveworkspace/docs/one-explorer.md "The Explorer on each app's
-// address") has no liveworkspace.app session: it is the app's page, signed in by the app's own session. It asks for
-// the few account reads it makes (people's names, the person's teams and a team's members, their settings) with the
-// bearer the app's session gives it, which the app's router forwards here from `/api/workspace/account/*`: an access
+// address") has no liveworkspace.app session: it is the app's page, signed in by the app's own session. It makes its
+// account calls (people's names, their settings, and running their teams) with the bearer the app's session gives
+// it, as the editors' Explorer panels do, which the app's router forwards here from `/api/workspace/account/*`: an access
 // token this Worker minted for one of the app APIs, or a guest token. The token is checked against this Worker's own
 // keys, read in-process (it cannot fetch its own /jwks), and kept for a few minutes per isolate.
 

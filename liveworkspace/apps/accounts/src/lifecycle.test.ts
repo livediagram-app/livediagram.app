@@ -294,7 +294,7 @@ describe('the emails', () => {
       'https://staging.livedesign.app',
     );
     const email = lifecycleEmail(env, 'week2', { home: null });
-    expect(email.html).toContain('https://liveworkspace.app/account/teams');
+    expect(email.html).toContain('https://liveworkspace.app/explorer');
     expect(email.text).toContain('Manage your notifications');
     expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
     expect(email.html).toContain(
