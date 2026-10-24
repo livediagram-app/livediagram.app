@@ -9,7 +9,7 @@ import {
   lucideSparkles,
   lucideUsers,
   lucideZap,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livedesign/ui';
 import type { ReactNode } from 'react';
 

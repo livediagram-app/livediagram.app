@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { LICENCES_SCHEMA_VERSION, type LicencesManifest } from '@liveplanner/licences';
+import { LICENCES_SCHEMA_VERSION, type LicencesManifest } from '@liveworkspace/licences';
 
 // The /licences page's data, written by the licences generator before
 // `next build` (docs/specs/002-project-scope/third-party-licences.md). Read at

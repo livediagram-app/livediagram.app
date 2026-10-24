@@ -11,7 +11,7 @@
 // + the dynamic-import wrapping.
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
-import { matches, paletteRank } from '@livediagram/icons';
+import { matches, paletteRank } from '@liveworkspace/icons';
 import type { ShapeKind, Tab } from '@livediagram/document';
 
 // Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its

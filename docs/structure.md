@@ -8,15 +8,18 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
-│  ├─ brand                    every app's logo: the Living Prism and wordmark, one geometry, coloured per app
+│  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
+│  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
+│  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
+│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
@@ -24,6 +27,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
+│  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
@@ -143,12 +147,25 @@ Each step is its own PR, and both products build and pass their tests after ever
      (unchanged, so nobody's saved preferences or opt-out reset), its vocabulary's types and its
      error and timing tokens from its own `api-schema`. Those stay per product until `api-schema`
      moves in step 3.
-   - `tailwind-config` is still in each product: its theme differs per product, so it belongs to
-     step 2.
+   - `tailwind-config` differed per product, so it moved in step 2.
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
    behaviour, which becomes config, or just one side being behind, where the newer side wins.
-   Then move.
+   Then move. **Done** for `page-background`, `help-registry`, `tailwind-config`, `icons` and `licences`:
+   - `page-background` and `icons` were one side behind (livedesign's and livediagram's copies were the
+     supersets), so each is one copy with no product binding. The Lucide manifest is the union of the
+     four products' glyphs; each glyph is a named export, so no bundle grows.
+   - `help-registry` is one copy of the shapes, hrefs, grouping, search and telemetry ids. Each
+     product's `@<product>/help-registry` keeps only its catalogue (categories and articles) and its
+     telemetry-id overrides, bound with `createHelpRegistry` and `createHelpTelemetryIds`.
+   - `tailwind-config` is one theme, sky by default, which livediagram and liveworkspace.app import
+     as it is. liveplanner, livedocuments and livedesign keep `@<product>/tailwind-config` as their
+     palette only: the shared theme, then their brand ramps; a test in the shared package keeps those
+     palettes to brand tokens. Motion only one app drew moved into that app's stylesheet.
+   - `licences` is one engine, one contract for the /licences page and one pool of committed texts.
+     Each product's `@<product>/licences` keeps its tables (apps, overrides, embedded works) and a
+     generate script that hands them to `generateLicences`.
+   - `diagram-lint` and `document-views` are not done yet.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
    - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`

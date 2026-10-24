@@ -10,7 +10,8 @@ Scope, by file:
 
 | File                                                    | Role                                                                                     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                    | `.dark` surface + Steel tokens                                                           |
+| `../packages/tailwind-config/theme.css`                 | `.dark` surfaces (the shared theme)                                                      |
+| `packages/tailwind-config/theme.css`                    | `.dark` Steel brand tokens, in amber (this product's palette)                            |
 | `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-amber-400`                                                    |
 | `packages/document/src/canvas-colors.ts`                | Dark canvas + pattern constants                                                          |

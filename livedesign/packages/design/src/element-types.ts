@@ -83,7 +83,7 @@ export type ShapeElement = {
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
-  // (@livedesign/icons), and an unknown key renders nothing rather than
+  // (@liveworkspace/icons), and an unknown key renders nothing rather than
   // guessing, so a design authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates

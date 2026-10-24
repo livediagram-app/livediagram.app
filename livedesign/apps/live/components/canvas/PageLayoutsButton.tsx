@@ -8,7 +8,7 @@
 // top offers Change Theme (the Tab Style popover, as the dock's Theme button opens it) beside an
 // X that closes it.
 import { useEffect, useRef } from 'react';
-import { lucidePanelsTopLeft } from '@livedesign/icons/lucide';
+import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedesign/ui';

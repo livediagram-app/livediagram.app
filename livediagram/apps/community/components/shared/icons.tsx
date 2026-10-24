@@ -10,7 +10,7 @@ import {
   lucideTriangleAlert,
   lucideUser,
   lucideUsers,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 
 // The Community app's own chrome glyphs, all through lucideGlyph (docs/specs/004-interface-design/

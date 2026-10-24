@@ -14,7 +14,7 @@ import {
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
 import { renderElementsToSvg, type Tab } from '@livediagram/document';
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { personStore } from '../person-client';
 import { badRequest, conflict, json, noContent, notFound, payloadTooLarge } from '../responses';
 import { requireOwner, type RouteContext, readBody } from './context';

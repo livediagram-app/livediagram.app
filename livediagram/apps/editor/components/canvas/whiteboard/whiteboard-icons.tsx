@@ -7,7 +7,7 @@ import {
   lucideShapes,
   lucideStickyNote,
   lucideType,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 // The Toolbar layout strip's tile glyph size, so the dock reads as the strip's twin.
 export const DOCK_ICON_PX = 18;

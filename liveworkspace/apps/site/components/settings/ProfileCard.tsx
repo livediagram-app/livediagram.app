@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { identityDeep, lucideGlyph } from '@livediagram/ui';
 import { presenceColour } from '@liveworkspace/settings';
-import { lucideCheck } from '@livediagram/icons/lucide';
+import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { ACCOUNT_API, accountApi } from '@/lib/account-api';
 import {
   cleanName,

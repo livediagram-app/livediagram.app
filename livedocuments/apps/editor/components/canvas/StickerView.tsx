@@ -3,7 +3,7 @@ import { trustedHtml } from '@livedocuments/ui';
 // emoji or badge on top, filling the element box.
 //
 // Deliberately thin. Every pixel comes from `stickerArt` in
-// @livedocuments/icons, the same builder the palette tile, the SVG / PNG / PDF
+// @liveworkspace/icons, the same builder the palette tile, the SVG / PNG / PDF
 // export, the share thumbnail and the MCP render all call — a sticker that
 // looked one way in the editor and another in the export would defeat the
 // point of it being a sticker.
@@ -12,7 +12,7 @@ import { trustedHtml } from '@livedocuments/ui';
 // its own (`supportsColours` returns false for the kind), so nothing here
 // takes an element colour.
 
-import { stickerArt, type StickerDef } from '@livedocuments/icons';
+import { stickerArt, type StickerDef } from '@liveworkspace/icons';
 import { getSticker } from '@/lib/stickers';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 

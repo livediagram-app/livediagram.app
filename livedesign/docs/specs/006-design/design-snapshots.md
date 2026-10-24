@@ -36,7 +36,7 @@ Who may see the picture (the owner, a team member, a share link, a tab-scoped li
 the index's to say, asked by the service before it ever calls the door; the door trusts its caller's key.
 
 The drawing is the first tab, or the one asked for, with `renderElementsToSvg` (`@livedesign/design`, the same
-DOM-free renderer the MCP worker uses). Icon elements render their real glyph via `@livedesign/icons/resolve`.
+DOM-free renderer the MCP worker uses). Icon elements render their real glyph via `@liveworkspace/icons/resolve`.
 Image elements render their real picture: the design reads each upload from the media service and inlines it as a
 base64 data URL through `embedTabImages` (`@livedesign/api-schema`, shared with the MCP preview,
 [MCP server](../015-api/mcp-server.md) §5), in design order under a 3 MB total budget so a tab of large photos can't

@@ -1,4 +1,4 @@
-import { lucideChevronDown } from '@liveplanner/icons/lucide';
+import { lucideChevronDown } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 

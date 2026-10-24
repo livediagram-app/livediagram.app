@@ -17,7 +17,7 @@ import {
   lucideSquareDashed,
   lucideTrash2,
   lucideLayers,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CompactEmptyState, lucideGlyph, Tooltip } from '@livedesign/ui';
 import {
   BLEND_MODE_GROUPS,

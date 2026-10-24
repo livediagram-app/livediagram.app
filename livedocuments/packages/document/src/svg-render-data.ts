@@ -12,7 +12,7 @@
 // alone: each one's resting frame is the static element, which is what a still
 // image wants anyway.
 
-import { capBandBaselineY } from '@livedocuments/icons';
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';

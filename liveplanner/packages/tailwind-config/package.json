@@ -10,24 +10,12 @@
     "./theme.css": "./theme.css"
   },
   "files": [
-    "theme.css",
-    "src"
+    "theme.css"
   ],
   "scripts": {
-    "lint": "oxlint",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "clean": "rm -rf node_modules .turbo coverage"
-  },
-  "devDependencies": {
-    "@liveworkspace/oxlint-config": "workspace:*",
-    "@liveworkspace/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
-    "oxlint": "^1.88.0",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@liveworkspace/style-guards": "workspace:*"
+    "@liveworkspace/tailwind-config": "workspace:*"
   }
 }

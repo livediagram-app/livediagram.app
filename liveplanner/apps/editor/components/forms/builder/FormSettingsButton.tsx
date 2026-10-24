@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideSettings } from '@liveplanner/icons/lucide';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';

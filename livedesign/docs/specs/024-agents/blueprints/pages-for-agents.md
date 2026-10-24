@@ -18,7 +18,7 @@ function and a test here; nothing here adds design.
 | summaries       | `pageSummaries`, `describeBackground`                                                                                                                                                         | `packages/api-schema/src/pages-summary.ts`                                    |
 | submit          | `submitPages`, `pagesRoomOps`                                                                                                                                                                 | `apps/api/src/changesets/pages.ts`                                            |
 | relay           | `relayPages`                                                                                                                                                                                  | `apps/api/src/room-client.ts`                                                 |
-| icon check      | `isIconId`, `iconsLike`                                                                                                                                                                       | `packages/icons/src/search.ts`                                                |
+| icon check      | `isIconId`, `iconsLike`                                                                                                                                                                       | `../packages/icons/src/search.ts`                                             |
 | route           | `handleTabPages`                                                                                                                                                                              | `apps/api/src/routes/tab-pages-route.ts`                                      |
 | verbs           | `changePages`, `pagesTabOf`                                                                                                                                                                   | `packages/agent-verbs/src/pages/pages-calls.ts`                               |
 | MCP tools       | `change_pages` (`mcpChangePages`)                                                                                                                                                             | `packages/agent-verbs/src/mcp/pages-schema.ts`, `apps/mcp/src/pages-tools.ts` |
@@ -197,20 +197,20 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Testing
 
-| Spec rule                                     | Test                                                                               |
-| --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Request read strictly, each refusal by name   | `packages/edit-operations/src/pages/parse.test.ts`                                 |
-| Which tab, switch, locked tab                 | `packages/edit-operations/src/pages/page-changes.test.ts` "which tab"              |
-| Naming a page (id, place, name, order)        | `page-changes.test.ts` "naming a page", `summary.test.ts`                          |
-| Each change and each refusal, the fresh tab   | `page-changes.test.ts`                                                             |
-| Pure edits match the editor                   | `packages/design/src/pages-edits.test.ts`, the editor's own page-edit tests        |
-| One kind a tab (`kind_not_offered`)           | `pages-edits.test.ts`, `page-changes.test.ts` "one kind a tab"                     |
-| Route gate, write, changeset, relay, refusals | `apps/api/src/routes/tab-pages-route.test.ts`                                      |
-| The `pages` view and header                   | `packages/design-views/src/pages.test.ts`, `render-view.test.ts`                   |
-| Tools, parity, output schema                  | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts` |
-| Which tab (verbs), CLI verbs                  | `packages/agent-verbs/src/verbs/pages.test.ts`                                     |
-| Icon ids                                      | `packages/edit-operations/src/fields.test.ts`, `packages/icons/src/search.test.ts` |
-| Performance                                   | `page-changes.test.ts` "worst case"                                                |
+| Spec rule                                     | Test                                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Request read strictly, each refusal by name   | `packages/edit-operations/src/pages/parse.test.ts`                                    |
+| Which tab, switch, locked tab                 | `packages/edit-operations/src/pages/page-changes.test.ts` "which tab"                 |
+| Naming a page (id, place, name, order)        | `page-changes.test.ts` "naming a page", `summary.test.ts`                             |
+| Each change and each refusal, the fresh tab   | `page-changes.test.ts`                                                                |
+| Pure edits match the editor                   | `packages/design/src/pages-edits.test.ts`, the editor's own page-edit tests           |
+| One kind a tab (`kind_not_offered`)           | `pages-edits.test.ts`, `page-changes.test.ts` "one kind a tab"                        |
+| Route gate, write, changeset, relay, refusals | `apps/api/src/routes/tab-pages-route.test.ts`                                         |
+| The `pages` view and header                   | `packages/design-views/src/pages.test.ts`, `render-view.test.ts`                      |
+| Tools, parity, output schema                  | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts`    |
+| Which tab (verbs), CLI verbs                  | `packages/agent-verbs/src/verbs/pages.test.ts`                                        |
+| Icon ids                                      | `packages/edit-operations/src/fields.test.ts`, `../packages/icons/src/search.test.ts` |
+| Performance                                   | `page-changes.test.ts` "worst case"                                                   |
 
 Not unit tested: the route's stale retry and `tab_busy` (they follow the changeset submit's own, tested there).
 

@@ -11,7 +11,7 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
-import { lucideChartColumn } from '@liveplanner/icons/lucide';
+import { lucideChartColumn } from '@liveworkspace/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import {
   DONE,

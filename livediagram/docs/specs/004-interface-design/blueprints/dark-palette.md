@@ -11,7 +11,7 @@ Scope, by file:
 
 | File                                                    | Role                                                                                     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                    | `.dark` surface + Steel tokens                                                           |
+| `../packages/tailwind-config/theme.css`                 | `.dark` surface + Steel tokens                                                           |
 | `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-sky-400`                                                      |
 | `packages/document/src/canvas-colors.ts`                | Dark canvas + pattern constants                                                          |

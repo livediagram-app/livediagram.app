@@ -39,12 +39,12 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/icons": "workspace:^",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

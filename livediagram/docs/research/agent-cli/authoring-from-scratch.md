@@ -146,7 +146,7 @@ What livediagram has, by file:
 
 What is missing for the CLI: layout hints (same rank, order within a rank, an edge that does
 not constrain ranking), placement of new nodes that keeps existing ones still, an `icon` on
-graph nodes (77 Technology icons exist, `packages/icons/src/tech-icon-ids.ts`, but a graph
+graph nodes (77 Technology icons exist, `../packages/icons/src/tech-icon-ids.ts`, but a graph
 node cannot name one), and stable edge ids.
 
 **Recommendation**: keep the graph as the primary authoring language and grow it with a
@@ -535,5 +535,5 @@ These are product decisions, not research conclusions:
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
 - In-repo: `packages/document/src/graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
   `apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
-  `arrow-path-hits.ts`, `mermaid-serialise.ts`, `packages/icons/src/tech-icon-ids.ts`,
+  `arrow-path-hits.ts`, `mermaid-serialise.ts`, `../packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

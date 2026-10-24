@@ -1,5 +1,5 @@
 import { headlineCase } from '@livediagram/api-schema';
-import type { IconDef, StickerDef, TechIconDef } from '@livediagram/icons';
+import type { IconDef, StickerDef, TechIconDef } from '@liveworkspace/icons';
 import { StickerArt } from '@/components/canvas/StickerView';
 import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';

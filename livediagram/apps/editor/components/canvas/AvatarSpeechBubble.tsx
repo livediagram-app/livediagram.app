@@ -7,7 +7,7 @@
 
 import { forwardRef, useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
 import { AVATAR_SAY_MAX_CHARS, AVATAR_SAY_MAX_WORDS, countWords } from '@livediagram/api-schema';
-import { lucideSend } from '@livediagram/icons/lucide';
+import { lucideSend } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import { nextDraft, SPEECH_COUNTER_FROM_WORDS } from '@/lib/avatar-speech';
 

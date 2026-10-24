@@ -17,7 +17,7 @@ import {
   lucideRotateCcw,
   lucideTable,
   lucideTrash2,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   AXIS_SIZE_MAX,
   COLUMN_WIDTH_MIN,

@@ -37,7 +37,7 @@ import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@lived
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { Button } from '@livediagram/ui';
-import { lucideMessageCircle } from '@livediagram/icons/lucide';
+import { lucideMessageCircle } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AvatarMessagePopover } from './AvatarMessagePopover';

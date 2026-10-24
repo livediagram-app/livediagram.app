@@ -6,7 +6,7 @@
 // anything seen: only opening the Form tab does.
 import { useState } from 'react';
 import { CheckIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@liveplanner/icons/lucide';
+import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@liveworkspace/icons/lucide';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';

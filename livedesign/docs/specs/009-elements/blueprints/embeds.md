@@ -436,11 +436,11 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 ## Assets and external resources
 
-| Resource                               | Source                                                                                               | Licence / terms             | Loaded                       |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------- |
-| YouTube poster                         | `https://i.ytimg.com/vi/<id>/hqdefault.jpg`                                                          | YouTube Terms of Service    | On render of a YouTube embed |
-| YouTube player                         | `https://www.youtube-nocookie.com/embed/<id>`                                                        | YouTube API Terms           | On play                      |
-| Vimeo / Loom / Figma / Google players  | provider embed URLs above                                                                            | Each provider's embed terms | On **Load embed**            |
-| Play badge, glyphs, draw cursor        | inline SVG and `Glyph` in `VideoView.tsx`, SVG string in `draw-mode.ts`                              | Repository MIT              | Bundled                      |
-| YouTube, Vimeo, Loom, Figma tile marks | inline SVG in `palette-tile-art.tsx`                                                                 | Repository MIT              | Bundled                      |
-| Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `packages/icons/src/lucide.generated.ts` (`lucide-static` 1.48.0) | ISC (Lucide)                | Bundled                      |
+| Resource                               | Source                                                                                                  | Licence / terms             | Loaded                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------- |
+| YouTube poster                         | `https://i.ytimg.com/vi/<id>/hqdefault.jpg`                                                             | YouTube Terms of Service    | On render of a YouTube embed |
+| YouTube player                         | `https://www.youtube-nocookie.com/embed/<id>`                                                           | YouTube API Terms           | On play                      |
+| Vimeo / Loom / Figma / Google players  | provider embed URLs above                                                                               | Each provider's embed terms | On **Load embed**            |
+| Play badge, glyphs, draw cursor        | inline SVG and `Glyph` in `VideoView.tsx`, SVG string in `draw-mode.ts`                                 | Repository MIT              | Bundled                      |
+| YouTube, Vimeo, Loom, Figma tile marks | inline SVG in `palette-tile-art.tsx`                                                                    | Repository MIT              | Bundled                      |
+| Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `../packages/icons/src/lucide.generated.ts` (`lucide-static` 1.52.0) | ISC (Lucide)                | Bundled                      |

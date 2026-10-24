@@ -206,11 +206,9 @@ apps/
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   project/       # project data model (Tab, Element types + element helpers)
-  icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  page-background/ # a page background's colours, patterns and motions + their parser (form covers, pure)
+  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
@@ -220,11 +218,10 @@ packages/
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
-  licences/     # build-time generator of the /licences page from what each app bundles
-  tailwind-config/# shared Tailwind theme (brand palette)
+  licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
+  tailwind-config/ # this product's brand ramps (violet) over @liveworkspace/tailwind-config's theme
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), and the oxlint,
-  # prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

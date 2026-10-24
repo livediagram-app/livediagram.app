@@ -9,7 +9,7 @@
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
 import { Button, CircleXIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideFolder } from '@liveplanner/icons/lucide';
+import { lucideFolder } from '@liveworkspace/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 

@@ -27,7 +27,7 @@ import {
   type FormQuestion,
   type SectionRule,
 } from '@liveplanner/forms';
-import { parseColourBackground, type ColourBackground } from '@liveplanner/page-background';
+import { parseColourBackground, type ColourBackground } from '@liveworkspace/page-background';
 import {
   setGoesTo,
   setRespondsTo,

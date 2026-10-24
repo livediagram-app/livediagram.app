@@ -9,7 +9,7 @@ import { drawnCount, migrateStoredTab, renderElementsToSvg, type Tab } from '@li
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the preview / live image instead of
 // the renderer's box-with-label fallback.
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import {
   getTab,
   getTabBody,

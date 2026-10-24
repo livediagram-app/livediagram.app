@@ -9,7 +9,7 @@ import {
   stickerEmojiGlyph,
   twemojiFileName,
   type EmojiArt,
-} from '@liveplanner/icons/resolve';
+} from '@liveworkspace/icons/resolve';
 import type { Element } from '@liveplanner/project';
 import { cached, type Fetcher } from './preview-fonts';
 

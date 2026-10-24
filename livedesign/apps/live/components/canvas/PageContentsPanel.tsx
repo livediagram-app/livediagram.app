@@ -7,7 +7,7 @@
 // (it closes so the page shows). Docked, Contents is PageContentsSidebar; the two share
 // usePageContents and PageContentsList.
 import { useEffect, useState } from 'react';
-import { lucidePanelLeftOpen } from '@livedesign/icons/lucide';
+import { lucidePanelLeftOpen } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, useEscape } from '@livedesign/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';

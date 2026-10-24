@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livediagram/icons/lucide';
+import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import { useState } from 'react';
 import { defaultTextColor, type LinkCardElement } from '@livediagram/document';
 import { Glyph, Prims } from '@livediagram/ui';

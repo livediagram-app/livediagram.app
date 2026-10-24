@@ -1,5 +1,5 @@
 import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livedesign/design';
-import { capBandBaselineY } from '@livedesign/icons';
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';

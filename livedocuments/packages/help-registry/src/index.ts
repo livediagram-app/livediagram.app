@@ -9,59 +9,19 @@
 // Each article carries `keywords`: the words a user would actually type when
 // they don't know the article's title ("transparency" for opacity, "hotkey"
 // for keyboard shortcuts). Both search surfaces match on them.
+//
+// The catalogue is this product's; its shapes and the lookups over it (grouping, search) are
+// @liveworkspace/help-registry's, bound to it below.
 
-export interface Article {
-  slug: string;
-  title: string;
-  description: string;
-  /**
-   * Space-separated, lowercase search synonyms. Widens matching beyond the
-   * title + description to the vocabulary users actually type: synonyms
-   * ("transparency" for opacity), adjacent spellings ("color" next to
-   * "colour"), and concept words the copy doesn't happen to use. Every
-   * article must have them (enforced by test) so nothing is findable only
-   * by its exact title.
-   */
-  keywords: string;
-  category: string;
-  /** Full nested path under /help, e.g. "canvas" or "canvas/the-canvas". */
-  categorySlug: string;
-  /** Feature-landing slug this article hangs off, if it's a sub-article. */
-  parentSlug?: string;
-  /** Optional sub-category heading used to group a feature category's landing
-   *  cards on its index page (e.g. Palette → "Selection Modes" / "Elements" /
-   *  "Palette Settings"). Landings without a group render in a single grid. */
-  group?: string;
-}
+import { createHelpRegistry, type Article, type Category } from '@liveworkspace/help-registry';
 
-// The href helpers live in ./hrefs, a module with no data, so a client component that only builds
-// links (the help centre's article page and search box) does not bundle the whole catalogue.
-export { articleHref, categoryHref } from './hrefs';
-
-/**
- * The top-level category a (possibly nested) `categorySlug` belongs to:
- * `palette/tools/data-elements` → `palette`, `canvas` → `canvas`. Lives here
- * because the nested-path shape is this registry's convention, so anything
- * grouping articles by their top-level category (the help centre's per-category
- * icon and accent fallbacks) reads it from one place rather than re-splitting
- * the string and drifting on what a segment means.
- */
-export function topCategorySlug(categorySlug: string): string {
-  return categorySlug.split('/')[0] ?? '';
-}
-
-export interface Category {
-  slug: string;
-  title: string;
-  description: string;
-  articleCount: number;
-  /** Feature-guide categories: grouped under "Feature Guides" on the home page,
-   *  apart from the support categories (About, Getting Started, ...). */
-  kind?: 'feature';
-  /** The order this category's card groups appear in on its page (docs/specs/018-help/help-pages.md "Groups").
-   *  Names every `group` its articles use; without it, groups appear in first-appearance order. */
-  groups?: string[];
-}
+export {
+  articleHref,
+  categoryHref,
+  topCategorySlug,
+  type Article,
+  type Category,
+} from '@liveworkspace/help-registry';
 
 export const categories: Category[] = [
   {
@@ -229,10 +189,6 @@ export const categories: Category[] = [
     kind: 'feature',
   },
 ];
-
-// The feature-guide categories (the card grids), derived once here so the
-// features page doesn't re-spell the predicate.
-export const featureCategories: Category[] = categories.filter((c) => c.kind === 'feature');
 
 export const articles: Article[] = [
   // ---- User Interface ----
@@ -2250,63 +2206,11 @@ export const articles: Article[] = [
   },
 ];
 
-export function getArticlesByCategory(categorySlug: string): Article[] {
-  return articles.filter((a) => a.categorySlug === categorySlug);
-}
-
-/**
- * A feature category's landing cards, split into sub-category groups in the
- * category's `groups` order, else the order each group first appears in {@link articles}. Used by the category
- * index to render grouped sections (e.g. Palette's Selection Modes / Elements
- * / Palette Settings). A category whose landings have no `group` collapses to
- * a single section with an empty `group` label, so callers can render a plain
- * grid unchanged.
- */
-export function getCategoryGroups(categorySlug: string): { group: string; articles: Article[] }[] {
-  const items = getArticlesByCategory(categorySlug);
-  const groups: { group: string; articles: Article[] }[] = [];
-  for (const article of items) {
-    const label = article.group ?? '';
-    const existing = groups.find((g) => g.group === label);
-    if (existing) existing.articles.push(article);
-    else groups.push({ group: label, articles: [article] });
-  }
-  // A category may fix its groups' order; a group it does not name keeps its place after the named ones.
-  const order = categories.find((c) => c.slug === categorySlug)?.groups ?? [];
-  const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
-  return groups.sort((a, b) => rank(a.group) - rank(b.group));
-}
-
-export function getSubArticles(parentSlug: string): Article[] {
-  return articles.filter((a) => a.parentSlug === parentSlug);
-}
-
-/**
- * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
- * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
- * the description, then one in the keywords alone, then (for a query of several words) an article holding every
- * word somewhere across the three, those with more of the words in the title first: "export png" finds Exporting
- * Diagrams. Registry order breaks ties.
- */
-export function searchArticles(query: string): Article[] {
-  const lower = query.toLowerCase().trim();
-  const words = lower.split(/\s+/).filter(Boolean);
-  // Ranks 5 and up: every word found across the three fields, fewer of them outside the title ranking higher.
-  const rank = (a: Article): number => {
-    const title = a.title.toLowerCase();
-    if (title.startsWith(lower)) return 0;
-    if (title.includes(` ${lower}`)) return 1;
-    if (title.includes(lower)) return 2;
-    if (a.description.toLowerCase().includes(lower)) return 3;
-    if (a.keywords.toLowerCase().includes(lower)) return 4;
-    if (words.length < 2) return -1;
-    const hay = `${title} ${a.description} ${a.keywords}`.toLowerCase();
-    if (!words.every((w) => hay.includes(w))) return -1;
-    return 5 + words.filter((w) => !title.includes(w)).length;
-  };
-  return articles
-    .map((a) => ({ a, r: rank(a) }))
-    .filter(({ r }) => r >= 0)
-    .sort((x, y) => x.r - y.r)
-    .map(({ a }) => a);
-}
+// The lookups the help app and the editor's search read, over this catalogue.
+export const {
+  featureCategories,
+  getArticlesByCategory,
+  getCategoryGroups,
+  getSubArticles,
+  searchArticles,
+} = createHelpRegistry(categories, articles);

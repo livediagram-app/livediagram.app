@@ -4,20 +4,16 @@
   "private": true,
   "type": "module",
   "sideEffects": false,
-  "main": "./src/contract.ts",
-  "types": "./src/contract.ts",
-  "exports": {
-    ".": "./src/contract.ts",
-    "./contract": "./src/contract.ts"
-  },
   "scripts": {
     "generate": "node scripts/generate.ts",
-    "verify": "node scripts/verify.ts",
     "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/licences": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

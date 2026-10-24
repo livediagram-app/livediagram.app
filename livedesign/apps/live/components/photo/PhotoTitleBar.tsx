@@ -10,7 +10,7 @@ import {
   lucideImage,
   lucideScan,
   lucideSlidersHorizontal,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import {
   ADJUSTMENT_IDS,

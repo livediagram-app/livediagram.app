@@ -1,4 +1,4 @@
-import type { LicencesManifest } from '@liveplanner/licences';
+import type { LicencesManifest } from '@liveworkspace/licences';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 

@@ -6,7 +6,7 @@
 // shows, holding the slot's Slot section too, or the slot's own Slot Settings cog (SlotCog), on hover or focus.
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { CompactEmptyState, Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideGripVertical, lucideLayoutGrid } from '@liveplanner/icons/lucide';
+import { lucideGripVertical, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import { dashboardNeighbour, moveDashboardSlot } from '@liveplanner/project';
 import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@liveplanner/project';
 import { DASHBOARD_GAP_PX } from '@/hooks/plan/slot-fit';

@@ -18,7 +18,7 @@ import {
 // elements render their real glyph in the inline image.
 // The preview resolvers: an emoji (no emoji font in a Worker) draws from its fetched art, else as a labelled disc,
 // never as missing-glyph boxes.
-import { previewResolvers } from '@livedocuments/icons/resolve';
+import { previewResolvers } from '@liveworkspace/icons/resolve';
 import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
 import { svgToPngBase64 } from './render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';

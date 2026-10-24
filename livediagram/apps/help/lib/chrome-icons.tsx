@@ -10,7 +10,7 @@ import {
   lucideMail,
   lucideMessageCircle,
   lucideTextAlignStart,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 
 // The help centre's own chrome icons (docs/specs/004-interface-design/iconography.md). Icons shared with

@@ -435,7 +435,7 @@ No new environment variable or binding.
 
 ## Assets and external resources
 
-No new asset. The Participant glyph is `lucideVote`, already vendored in `packages/icons/src/lucide.generated.ts`
+No new asset. The Participant glyph is `lucideVote`, already vendored in `../packages/icons/src/lucide.generated.ts`
 from Lucide (ISC licence).
 
 ## Defaults ledger

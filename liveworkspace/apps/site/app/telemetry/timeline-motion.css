@@ -1,0 +1,62 @@
+/* The dashboard's stacked cards deal in (livediagram's Timeline motion, docs/specs/013-workspace/timeline.md §2.6
+ * there). Only the dashboard draws these now, so they live with it rather than in every app's theme.
+ *
+ * The cascade relies on CSS animations firing on MOUNT only. An element
+ * that merely re-renders keeps its end state and doesn't replay, so
+ * nothing needs to track "have I animated this already": React mounts a
+ * fresh node exactly when a card is genuinely new and reuses it otherwise. */
+
+/* Individual cards. Starts pulled to the RIGHT with a small tilt and
+ * scale-down, then springs into place — reading as cards fanned out from
+ * the collapsed stack, whose faux-card layers sit off to the right. */
+@keyframes tl-fan-out {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, -2px, 0) rotate(3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+
+.tl-fan-out {
+  animation: tl-fan-out var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+
+/* The same motion originating from BELOW, used on the collapsed stack so
+ * closing one reads as folding back down rather than as another card
+ * being dealt. */
+@keyframes tl-fan-out-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, 12px, 0) rotate(-3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+
+.tl-fan-out-up {
+  animation: tl-fan-out-up var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The cascade is decoration; the stack reads identically without it.
+   * `opacity: 1` matters — tl-fan-out uses fill-mode `both`, so simply
+   * cancelling the animation would strand the card at its 0% opacity. */
+  .tl-fan-out,
+  .tl-fan-out-up {
+    animation: none;
+    opacity: 1;
+  }
+}

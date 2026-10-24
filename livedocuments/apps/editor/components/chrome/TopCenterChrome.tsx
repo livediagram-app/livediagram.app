@@ -1,4 +1,4 @@
-import { lucidePencilLine } from '@livedocuments/icons/lucide';
+import { lucidePencilLine } from '@liveworkspace/icons/lucide';
 import { drawBannerMessage } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@livedocuments/ui';
 import { isMobileViewportSync } from '@/lib/responsive';

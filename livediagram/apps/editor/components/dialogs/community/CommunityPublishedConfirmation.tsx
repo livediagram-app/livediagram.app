@@ -4,7 +4,7 @@ import { use } from 'react';
 import { browser } from 'react-dom';
 import { communityPostPath } from '@livediagram/api-schema';
 import { buttonClassName, Button, lucideGlyph, useCopiedFlash } from '@livediagram/ui';
-import { lucideExternalLink, lucideLink, lucideSparkles } from '@livediagram/icons/lucide';
+import { lucideExternalLink, lucideLink, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { useToast } from '@/hooks/ui/useToast';
 

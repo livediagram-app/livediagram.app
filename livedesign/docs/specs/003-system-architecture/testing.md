@@ -285,13 +285,13 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
     and the Timeline's cards, stacking, grouping, tones and categories, rendered
     in jsdom where they hold state.
-  - `packages/icons`: the icon resolver, catalogues, markup builders, stroke
+  - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
     template builders themselves (`packages/templates`, which has no suite of
     its own) are covered from their callers: `apps/live`'s template and
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
-  - `packages/tailwind-config`: the theme's budgets, motion and optical
+  - `../packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
   - `packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native

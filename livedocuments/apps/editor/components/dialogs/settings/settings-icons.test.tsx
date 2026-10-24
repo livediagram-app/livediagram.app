@@ -1,4 +1,4 @@
-import { centreOffsetPx } from '@livedocuments/icons/centring';
+import { centreOffsetPx } from '@liveworkspace/icons/centring';
 import { SettingsCategoryTile, SettingsUiKitProvider } from '@liveworkspace/settings-ui';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';

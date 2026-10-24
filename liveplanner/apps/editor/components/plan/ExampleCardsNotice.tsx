@@ -5,7 +5,7 @@
 // project to the Trash; Keep Them takes the flag off every one. Either is one write and one undo step, and either
 // leaves no example card, so the strip goes for everyone. An Editor's alone: a Participant may not trash or reshape
 // others' cards (docs/specs/013-workspace/share-roles.md), and a Viewer only looks.
-import { lucideInfo } from '@liveplanner/icons/lucide';
+import { lucideInfo } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   EXAMPLE_FIELD,

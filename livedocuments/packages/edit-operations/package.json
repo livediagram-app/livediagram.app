@@ -19,8 +19,8 @@
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
-    "@livedocuments/icons": "workspace:*",
-    "@livedocuments/templates": "workspace:*"
+    "@livedocuments/templates": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
     "@livedocuments/document-views": "workspace:*",

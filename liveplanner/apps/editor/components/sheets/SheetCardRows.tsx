@@ -18,7 +18,7 @@ import {
   lucideExternalLink,
   lucideList,
   lucideX,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   cellKey,
   displayValue,

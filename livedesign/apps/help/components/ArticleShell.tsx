@@ -8,7 +8,7 @@ import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
 // The hrefs alone, not lib/articles: that would bundle the whole article registry (about 300 articles with their
 // descriptions and keywords) into every article's JavaScript.
-import { articleHref, categoryHref } from '@livedesign/help-registry/hrefs';
+import { articleHref, categoryHref } from '@liveworkspace/help-registry/hrefs';
 import type { Article } from '@/lib/articles';
 import { parentRouteHref, routeHref } from '@/lib/article-route';
 import { articleJsonLd } from '@/lib/structured-data';

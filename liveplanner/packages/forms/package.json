@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/page-background": "workspace:*",
-    "@liveplanner/sheets": "workspace:*"
+    "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

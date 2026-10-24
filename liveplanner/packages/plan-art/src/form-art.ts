@@ -10,7 +10,7 @@ import {
   type FormDefinition,
   type FormQuestion,
 } from '@liveplanner/forms';
-import { xmlEscape } from '@liveplanner/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 import { box, line, r2 } from './plan-art-kit';
 
 // The builder's column (640) inside its gutters, and the cover's height on a desktop.

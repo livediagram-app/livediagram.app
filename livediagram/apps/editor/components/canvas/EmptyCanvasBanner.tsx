@@ -3,7 +3,7 @@
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
 import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideX } from '@livediagram/icons/lucide';
+import { lucideX } from '@liveworkspace/icons/lucide';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { EmptyCanvasArt } from './EmptyCanvasArt';
 import { dismissEmptyCard, emptyCardDismissed } from './empty-card-dismissed';

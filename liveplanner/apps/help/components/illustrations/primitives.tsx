@@ -14,7 +14,7 @@
 // figure scales down on mobile.
 
 import { useId, type ReactNode } from 'react';
-import { capBandBaselineY } from '@liveplanner/icons';
+import { capBandBaselineY } from '@liveworkspace/icons';
 
 // --- Scene shell -------------------------------------------------------------
 

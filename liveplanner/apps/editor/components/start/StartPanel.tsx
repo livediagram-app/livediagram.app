@@ -15,7 +15,7 @@ import {
   SheetHandle,
   useSheetDrag,
 } from '@liveplanner/ui';
-import { lucideSearch, lucideX } from '@liveplanner/icons/lucide';
+import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';

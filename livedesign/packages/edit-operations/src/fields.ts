@@ -28,7 +28,7 @@ import { applyLabel } from './labels';
 import { invalidValue, unknownField } from './rejections';
 import type { FieldValue, Fields } from './types';
 import { PROTOTYPE_KEYS } from './vocabulary';
-import { iconsLike, isIconId } from '@livedesign/icons/search';
+import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 
 // The spec's names, then the style keys the views print (`STYLE_KEYS`), so a printed `key=value` writes back
 // unchanged; `font` is a stored field name already.

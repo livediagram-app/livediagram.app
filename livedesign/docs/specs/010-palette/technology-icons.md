@@ -63,7 +63,7 @@ type TechIconDef = {
 - **The heavy data loads async.** `tech-icons.ts` is the synchronous API
   surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
   the per-icon colour + glyph markup lives in
-  `packages/icons/src/tech-icon-catalog.ts` (the shared `@livedesign/icons`
+  `../packages/icons/src/tech-icon-catalog.ts` (the shared `@liveworkspace/icons`
   package) and is dynamic-imported (together with the line-art catalogue) by
   `apps/live/lib/icon-registry.ts`, keeping ~25 kB of source out of the
   editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId` —
@@ -145,7 +145,7 @@ and the glyph is white.
 **The glyph stroke is the chrome weight for the tile's rendered size**
 ([Iconography](../004-interface-design/iconography.md)): 1.25px on screen, 1px at
 12px or less, expressed in tile-box units by `techGlyphStrokeUnits(sizePx)`
-(`@livedesign/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
+(`@liveworkspace/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
 96px); in the palette it is the thumbnail size (18px category and strip tiles,
 22px picker tiles). The stroke scales with the tile, so canvas zoom, or a box too
 small for its preset, shrinks the mark as one picture, and the export draws the
@@ -234,7 +234,7 @@ the mark and the element edge on its side, so the anchors on that side push
 out to the element edge — a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
-(their glyph scales with the box). The design package reads `isTechIconId` from `@livedesign/icons`
+(their glyph scales with the box). The design package reads `isTechIconId` from `@liveworkspace/icons`
 (tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
 
 **The format painter carries the icon fields.** Painting from one icon to
@@ -263,7 +263,7 @@ fallback (which remains the output for an unknown id or a resolver-less
 caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
 registry (`resolveIconArtLoaded`, awaited via `ensureIconCatalogs` in the
 Export dialog); the api worker's live image / Explorer thumbnail and the MCP
-worker's inline render resolve via `@livedesign/icons/resolve` (a static
+worker's inline render resolve via `@liveworkspace/icons/resolve` (a static
 import of the catalogue data).
 
 ## Telemetry

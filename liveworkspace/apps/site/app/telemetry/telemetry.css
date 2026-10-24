@@ -1,7 +1,8 @@
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities) source(none);
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 @import './dataviz-motion.css';
+@import './timeline-motion.css';
 
 /* The telemetry dashboard's own stylesheet, loaded only on /telemetry (app/telemetry/layout.tsx), so
  * the rest of the site doesn't carry the apps' UI. The site's own stylesheet comes first with the
@@ -17,7 +18,7 @@
 @source '../../../../../packages/brand/src';
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
- * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and
+ * (the shared tailwind-config's default brand scale, which the platform's slate replaced above) for every app and
  * for livediagram, liveplanner's violet, livedocuments' amber and livedesign's rose inside
  * their own. */
 [data-app] {

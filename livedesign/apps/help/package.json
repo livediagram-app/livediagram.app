@@ -14,9 +14,10 @@
   },
   "dependencies": {
     "@livedesign/help-registry": "workspace:*",
-    "@livedesign/icons": "workspace:^",
     "@livedesign/telemetry-client": "workspace:*",
     "@livedesign/ui": "workspace:*",
+    "@liveworkspace/help-registry": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",

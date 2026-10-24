@@ -10,13 +10,13 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
 
 ## How
 
-- **The tap area grows, not the control.** `touch-target` (shared theme, `packages/tailwind-config`)
+- **The tap area grows, not the control.** `touch-target` (shared theme, `../packages/tailwind-config`)
   draws an invisible `::before` that reaches past a smaller box to 44px each way, only under
   `(pointer: coarse)`; a box already 44px or more is left alone. The control keeps its drawn size,
   so a dense desktop layout and a phone share one design. The host is positioned (`relative`, or
   its own `absolute`): a static host's pad fills its nearest positioned ancestor and takes every tap
   there (a popover's remove button once took every tap in it). A static guard
-  (`touch-target-guard` in `packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
+  (`touch-target-guard` in `../packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.

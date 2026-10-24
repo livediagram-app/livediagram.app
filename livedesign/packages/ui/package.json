@@ -39,11 +39,11 @@
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
-    "@livedesign/icons": "workspace:^",
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

@@ -7,7 +7,7 @@
 // beside it, so it follows the Sheet's theme in light and dark.
 import { useState } from 'react';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideMinus, lucidePlus } from '@liveplanner/icons/lucide';
+import { lucideMinus, lucidePlus } from '@liveworkspace/icons/lucide';
 
 const MinusGlyph = lucideGlyph(lucideMinus, 14);
 const PlusGlyph = lucideGlyph(lucidePlus, 14);

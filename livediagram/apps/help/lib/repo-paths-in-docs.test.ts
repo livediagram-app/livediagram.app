@@ -40,7 +40,7 @@ const WORKSPACE_ROOTS = [
   'apps/router/',
   'packages/document/',
   'packages/api-schema/',
-  'packages/icons/',
+  '../packages/icons/',
   'packages/ui/',
   'packages/templates/',
   'packages/help-registry/',
@@ -223,6 +223,9 @@ function repoFilenames(): Set<string> {
     }
   };
   walk(ROOT);
+  // The monorepo's shared packages (`../packages/icons`, `../packages/licences`, ...): the specs name their files too.
+  const shared = `${ROOT}/../packages`;
+  if (existsSync(shared)) walk(shared);
   return names;
 }
 

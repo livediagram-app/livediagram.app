@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import type { StyledPrim } from '@livedocuments/icons';
+import type { StyledPrim } from '@liveworkspace/icons';
 import {
   lucideChevronLeft,
   lucideChevronRight,
   lucideLock,
   lucideSettings,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Prims } from '@livedocuments/ui';
 import { FONT } from '@/components/art-tokens';
 

@@ -2,7 +2,7 @@ import {
   lucideCircleCheck,
   lucideClipboardPaste,
   lucideWandSparkles,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 
 // The three steps (docs/specs/019-marketing/build-with-ai.md "The page" 2), one row, joined by a line on wide

@@ -10,7 +10,7 @@ import {
   communityPostPath,
 } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livediagram/ui';
-import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
+import { lucideExternalLink, lucideGlobe } from '@liveworkspace/icons/lucide';
 import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';

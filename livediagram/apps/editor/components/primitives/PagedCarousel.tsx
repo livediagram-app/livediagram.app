@@ -7,7 +7,7 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideChevronLeft, lucideChevronRight } from '@livediagram/icons/lucide';
+import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
 
 const PrevIcon = lucideGlyph(lucideChevronLeft, 16);
 const NextIcon = lucideGlyph(lucideChevronRight, 16);

@@ -22,7 +22,7 @@ as a full-size embed.
 
 - `200 image/svg+xml` with `ETag: "<saved_at>"`: the first tab (or `tab`) drawn by `renderElementsToSvg`
   (`@livedocuments/document`, the DOM-free renderer the MCP worker uses). Icon elements draw their real glyph
-  (`@livedocuments/icons/resolve`). Image elements draw their real picture: each upload the document
+  (`@liveworkspace/icons/resolve`). Image elements draw their real picture: each upload the document
   [may serve](../009-elements/images.md#placement-grants) is read from the media service and inlined as a base64
   data URL through `embedTabImages` (`@livedocuments/api-schema`, shared with the MCP preview), in document order
   under a 3 MB total budget, so a tab of large photos can't produce a multi-megabyte drawing. An image past the

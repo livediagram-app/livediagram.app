@@ -51,7 +51,7 @@ import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
-import { searchIcons } from '@livedocuments/icons/search';
+import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import {

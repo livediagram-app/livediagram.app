@@ -17,7 +17,7 @@ import {
   lucideMail,
   lucidePlus,
   lucideX,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useDashboard } from './dashboard-context';
 import { CARD_BODY, CardHeading } from './card-parts';

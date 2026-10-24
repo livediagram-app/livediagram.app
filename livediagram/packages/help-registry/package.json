@@ -9,8 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./telemetry": "./src/telemetry.ts",
-    "./community": "./src/community.ts",
-    "./hrefs": "./src/hrefs.ts"
+    "./community": "./src/community.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -21,5 +20,8 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@liveworkspace/help-registry": "workspace:*"
   }
 }

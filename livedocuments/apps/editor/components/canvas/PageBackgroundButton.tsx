@@ -5,7 +5,7 @@
 // button. Hovers preview on the page; a press commits and the
 // popover stays for another pick; closing it drops any preview.
 import { useEffect, useRef } from 'react';
-import { lucidePaintRoller } from '@livedocuments/icons/lucide';
+import { lucidePaintRoller } from '@liveworkspace/icons/lucide';
 import type { Page, PageBackground } from '@livedocuments/document';
 import { lucideGlyph } from '@livedocuments/ui';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';

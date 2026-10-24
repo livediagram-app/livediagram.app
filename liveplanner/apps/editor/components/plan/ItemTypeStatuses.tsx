@@ -7,7 +7,7 @@
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
 // ticked cannot be unticked (Deselect All stops there too), and a note says why.
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
-import { lucideColumns2 } from '@liveplanner/icons/lucide';
+import { lucideColumns2 } from '@liveworkspace/icons/lucide';
 import { useId } from 'react';
 import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, readyMadeDefaultStatus } from '@liveplanner/items';
 import { Button, Select } from '@liveplanner/ui';

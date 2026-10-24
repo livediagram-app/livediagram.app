@@ -17,7 +17,7 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, TrashIcon } from '@livedocuments/ui';
 import type { ArticleZoneAlign, ArticleZoneWrap, PageRect } from '@livedocuments/document';
 

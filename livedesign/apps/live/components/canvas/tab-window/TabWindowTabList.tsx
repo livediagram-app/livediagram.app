@@ -5,7 +5,7 @@
 // the menu's Tab Window section.
 import { tabWindowOffers, type Tab } from '@livedesign/design';
 import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
-import { lucideAppWindow } from '@livedesign/icons/lucide';
+import { lucideAppWindow } from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';
 
 const WindowIcon = lucideGlyph(lucideAppWindow, 16);

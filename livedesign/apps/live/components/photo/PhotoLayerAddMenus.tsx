@@ -10,7 +10,7 @@ import {
   lucidePaintBucket,
   lucideSquare,
   lucideSun,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { LAYER_ADJUSTMENT_IDS, adjustmentName, setLayer } from '@livedesign/photo-engine';
 import {

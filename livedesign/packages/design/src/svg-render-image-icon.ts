@@ -1,7 +1,7 @@
 // The two image-like bodies of the export (docs/specs/020-import-export/export-fidelity.md): a bitmap as a
 // clipped <image>, and an icon element's glyph nested over its box.
 
-import { techGlyphStrokeUnits } from '@livedesign/icons';
+import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 import { DEFAULT_ICON_SIZE, ICON_SIZE_PX, iconBandBounds, techIconMarkBounds } from './icon-size';
 import { iconWeightPx } from './icon-weight';
 import type { BoxedElement } from './index';

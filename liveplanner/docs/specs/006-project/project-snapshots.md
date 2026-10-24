@@ -18,7 +18,7 @@ is answered by the plan's Durable Object, where the content is (`plan-room.ts` `
   renderer the MCP worker uses). A Form tab draws its form as respondents see it on its tab's look (`formArt` from
   `@liveplanner/plan-art`, since a form is not an element). A Board draws its project's cards, a Sheet its window of
   cells, a Dashboard its page laid out with its metrics and charts counted from the cards. Icon elements render their
-  real glyph via `@liveplanner/icons/resolve` ([Technology icons](../010-palette/technology-icons.md) "Rendering").
+  real glyph via `@liveworkspace/icons/resolve` ([Technology icons](../010-palette/technology-icons.md) "Rendering").
   liveplanner takes no image uploads, so an image placeholder left by a diagram template draws as its empty box.
 - The **version** is the plan's `saved_at`, which every tab, card and Sheet write that lands moves, whoever made it
   (editor, collaborators, MCP server, API token). The service sends the version it holds as `If-None-Match`; an

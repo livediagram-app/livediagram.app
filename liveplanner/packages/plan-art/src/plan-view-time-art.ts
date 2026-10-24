@@ -13,7 +13,7 @@ import {
   type CalendarField,
 } from '@liveplanner/items';
 import { accentOn } from '@liveplanner/project';
-import { xmlEscape } from '@liveplanner/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 import { OVERDUE_RED } from './phase-colours';
 import { ART_PAD, box, dot, emptyBody, line, viewFrame, r2 } from './plan-art-kit';
 import type { ViewArtInput } from './plan-view-art';

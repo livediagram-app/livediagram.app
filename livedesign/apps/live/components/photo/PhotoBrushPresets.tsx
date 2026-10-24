@@ -5,7 +5,7 @@
 // flow and spacing for the tool in hand. Save Preset keeps the tip in hand under a name; the person's own
 // presets can be deleted.
 import { useState } from 'react';
-import { lucideX } from '@livedesign/icons/lucide';
+import { lucideX } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph, TextInput, Tooltip } from '@livedesign/ui';
 import {
   deletePreset,

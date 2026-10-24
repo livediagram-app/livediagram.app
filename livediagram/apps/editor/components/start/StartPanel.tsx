@@ -24,7 +24,7 @@ import {
   SheetHandle,
   useSheetDrag,
 } from '@livediagram/ui';
-import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

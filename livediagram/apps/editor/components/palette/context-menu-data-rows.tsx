@@ -41,7 +41,7 @@ import {
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
-import { lucideChartColumn, lucideChartPie, lucideStar } from '@livediagram/icons/lucide';
+import { lucideChartColumn, lucideChartPie, lucideStar } from '@liveworkspace/icons/lucide';
 
 // Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.

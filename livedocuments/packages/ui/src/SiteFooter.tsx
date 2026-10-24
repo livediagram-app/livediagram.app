@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livedocuments/icons/lucide';
+import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';

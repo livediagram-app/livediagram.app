@@ -45,7 +45,7 @@ import { flowLevels, flowNodeColors, flowTotals } from '@/lib/sankey-flow-levels
 import { SankeyFlowRow, type FlowField } from '@/components/dialogs/SankeyFlowRow';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { lucideGlyph } from '@livediagram/ui';
-import { lucidePlus } from '@livediagram/icons/lucide';
+import { lucidePlus } from '@liveworkspace/icons/lucide';
 
 const LOOSE_FIELDS: FlowField[] = ['from', 'to', 'value'];
 const GROUPED_FIELDS: FlowField[] = ['to', 'value'];

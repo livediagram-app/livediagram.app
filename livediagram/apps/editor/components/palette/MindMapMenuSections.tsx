@@ -18,7 +18,7 @@ import {
   lucideBetweenHorizontalStart,
   lucideListTree,
   lucideNetwork,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

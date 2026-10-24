@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucideMail } from '@liveplanner/icons/lucide';
+import { lucideBookOpen, lucideMail } from '@liveworkspace/icons/lucide';
 import { JsonLd, lucideGlyph, pageMetadata } from '@liveplanner/ui';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';

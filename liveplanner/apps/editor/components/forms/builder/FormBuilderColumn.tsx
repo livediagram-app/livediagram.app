@@ -5,7 +5,7 @@
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 import { Fragment, useCallback, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
-import { lucideClipboardList } from '@liveplanner/icons/lucide';
+import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import type { DestinationProblem } from '@liveplanner/forms';
 import { placeQuestion } from '@liveplanner/forms';
 import { FormAddBar } from './FormAddBar';

@@ -9,7 +9,7 @@
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@livedesign/ui';
-import { lucideTriangleAlert } from '@livedesign/icons/lucide';
+import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { penColourHardToSee, readablePenColour } from '@livedesign/design';
 import { hexToHsv, hsvToHex, type Hsv } from '@/lib/hsv';
 import { normaliseHex } from '@/lib/swatch-overrides';

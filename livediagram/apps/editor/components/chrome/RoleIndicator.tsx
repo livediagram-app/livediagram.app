@@ -2,7 +2,7 @@
 
 import { useId } from 'react';
 import { lucideGlyph, PencilIcon, Tooltip } from '@livediagram/ui';
-import { lucideVote } from '@livediagram/icons/lucide';
+import { lucideVote } from '@liveworkspace/icons/lucide';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
 import type { AccessLevel } from '@livediagram/api-schema';
 

@@ -10,9 +10,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@livedesign/icons": "workspace:*",
-    "@livedesign/page-background": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {

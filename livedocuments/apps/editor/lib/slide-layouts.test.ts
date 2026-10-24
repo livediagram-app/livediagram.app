@@ -15,7 +15,7 @@ import {
   SLIDE_LAYOUTS,
 } from '@livedocuments/templates';
 import { buildPageLayout } from '@livedocuments/templates';
-import { isIconId } from '@livedocuments/icons/search';
+import { isIconId } from '@liveworkspace/icons/search';
 
 // docs/specs/007-editor/pages-mode.md "Slide layouts": a slide page's own catalogue, every
 // layout fitting a 16:9 and a 4:3 slide inside its margins, save a full-bleed picture or panel,

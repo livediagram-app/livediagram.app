@@ -11,7 +11,7 @@ import {
   type QuestionType,
 } from '@liveplanner/forms';
 import { ChevronDownIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideSeparatorHorizontal } from '@liveplanner/icons/lucide';
+import { lucideSeparatorHorizontal } from '@liveworkspace/icons/lucide';
 import {
   addQuestion,
   addSection,

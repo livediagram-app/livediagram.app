@@ -21,7 +21,7 @@ import {
   type FormDefinition,
 } from '@liveplanner/forms';
 import { lucideGlyph, Tooltip } from '@liveplanner/ui';
-import { lucideEye } from '@liveplanner/icons/lucide';
+import { lucideEye } from '@liveworkspace/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import { setFormShareHost } from '@/lib/form-share-store';

@@ -35,7 +35,7 @@ in its header.
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
 - **`liveworkspace-markup`** turns markup that livediagram's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
-  sticker and template SVG builders (`@livediagram/icons`, `@livediagram/templates`), the headless tab renderer's
+  sticker and template SVG builders (`@liveworkspace/icons`, `@livediagram/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
 - **`liveworkspace-inert-parse`** lets `DOMParser` read a file a person opened (a draw.io diagram or library, a

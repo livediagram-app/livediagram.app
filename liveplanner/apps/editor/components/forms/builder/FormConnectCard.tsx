@@ -5,7 +5,7 @@
 // before anything else. Two choices side by side, each making its tab in one press: Cards on a Board (New Board) and
 // Rows in a Sheet (New Sheet); Choose Existing (when the project has a board or sheet) opens Responses Go To.
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideSquareKanban, lucideTable } from '@liveplanner/icons/lucide';
+import { lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';

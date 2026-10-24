@@ -10,7 +10,7 @@ import {
   lucideListOrdered,
   lucidePanelLeftClose,
   lucidePanelRightClose,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedocuments/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';

@@ -25,7 +25,8 @@ import { contrastRatio } from '@livediagram/document';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-const THEME_CSS = readFileSync(`${REPO}packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
+const THEME_CSS = readFileSync(`${REPO}../packages/tailwind-config/theme.css`, 'utf8');
 
 /** The declarations of the first top-level rule whose selector is exactly `selector`. */
 function block(css: string, selector: string): Record<string, string> {
@@ -149,7 +150,9 @@ describe('the wordmark', () => {
   const brand = readFileSync(`${REPO}../packages/brand/src/apps.ts`, 'utf8');
 
   it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
-    expect(brand).toMatch(/livediagram: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/);
+    expect(brand).toMatch(
+      /livediagram: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/,
+    );
   });
 });
 
@@ -230,7 +233,7 @@ describe('brand-coloured text in dark mode', () => {
   });
 });
 
-// The optical utilities and the optical guard live with optical-alignment.md: packages/tailwind-config
+// The optical utilities and the optical guard live with optical-alignment.md: the monorepo's packages/tailwind-config
 // (optical-utilities.test.ts) and each workspace's optical-guard.test.ts.
 
 // White text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules):

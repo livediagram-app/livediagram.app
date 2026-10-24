@@ -3,7 +3,7 @@
 // (a box, a paragraph, radio dots, checkboxes, stars), in the tab's own light or dark look; a badge in its top right
 // corner says where its responses go, a board or a sheet (none for Blank, which goes nowhere yet).
 import { formStarter, type QuestionType, type StarterId } from '@liveplanner/forms';
-import { lucideSquareKanban, lucideTable } from '@liveplanner/icons/lucide';
+import { lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
 import { Prims, lucideGlyph } from '@liveplanner/ui';
 import { FILL_BOX } from './story-parts';
 

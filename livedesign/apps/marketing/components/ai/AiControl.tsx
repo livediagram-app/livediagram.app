@@ -1,4 +1,4 @@
-import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@livedesign/icons/lucide';
+import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 
 // In your control (docs/specs/019-marketing/build-with-ai.md "The page" 6): the trust facts, each one true of the

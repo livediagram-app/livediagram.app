@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
-import { lucideSettings } from '@livedocuments/icons/lucide';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';

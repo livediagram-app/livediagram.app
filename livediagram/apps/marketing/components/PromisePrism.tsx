@@ -6,7 +6,7 @@ import {
   lucideGitFork,
   lucideUsers,
   lucideUserX,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   BrandMark,
   ChevronRightIcon,

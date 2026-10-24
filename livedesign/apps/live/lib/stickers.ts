@@ -5,14 +5,14 @@
 // `stickerId`), not an icon: it paints its own die-cut plate and shadow, tilts
 // when you drop it, is never tinted by the theme, carries no caption, and
 // never folds into another shape. This module owns the grouping and the
-// lookups; the artwork itself lives in @livedesign/icons so every renderer
+// lookups; the artwork itself lives in @liveworkspace/icons so every renderer
 // draws the same sticker.
 //
 // Like lib/icons.ts this is a SYNCHRONOUS surface over an async catalogue
 // chunk: until it lands the lists come back empty and the tab shows its
 // loading note (consumers subscribe via useIconCatalogs).
 
-import { STICKER_ASPECT, type StickerDef } from '@livedesign/icons';
+import { STICKER_ASPECT, type StickerDef } from '@liveworkspace/icons';
 import { getLoadedStickerCatalog, getStickerLoaded } from '@/lib/icon-registry';
 
 // DataTransfer MIME for dragging a sticker out of the palette onto the canvas.

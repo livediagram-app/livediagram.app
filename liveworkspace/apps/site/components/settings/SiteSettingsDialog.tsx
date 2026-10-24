@@ -3,7 +3,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { Dialog, useMediaQuery } from '@liveworkspace/ui';
-import { lucideExternalLink } from '@livediagram/icons/lucide';
+import { lucideExternalLink } from '@liveworkspace/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {
   createDeviceSettingsStore,

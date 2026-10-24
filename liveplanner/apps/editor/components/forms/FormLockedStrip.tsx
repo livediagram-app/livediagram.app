@@ -5,7 +5,7 @@
 // and every answer keeps its meaning. Edit Form stops it taking responses (its link kept) and unlocks it; Accepting
 // Responses opens it again once nothing stops it.
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideLock } from '@liveplanner/icons/lucide';
+import { lucideLock } from '@liveworkspace/icons/lucide';
 
 const LockGlyph = lucideGlyph(lucideLock, 15);
 

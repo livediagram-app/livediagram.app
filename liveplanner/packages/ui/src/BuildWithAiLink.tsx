@@ -1,4 +1,4 @@
-import { lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 
 import { buttonClassName } from '@liveworkspace/ui';
 import { lucideGlyph } from './icons/lucide-glyph';

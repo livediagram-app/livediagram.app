@@ -23,7 +23,7 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
 import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 import { lucideGlyph } from '@livedocuments/ui';
-import { lucideCircleDot } from '@livedocuments/icons/lucide';
+import { lucideCircleDot } from '@liveworkspace/icons/lucide';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 

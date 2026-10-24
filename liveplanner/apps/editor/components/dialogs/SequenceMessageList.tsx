@@ -16,7 +16,12 @@ import {
   type SequenceMessageKindName,
 } from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@liveplanner/ui';
-import { lucideChevronDown, lucideChevronUp, lucidePlus, lucideX } from '@liveplanner/icons/lucide';
+import {
+  lucideChevronDown,
+  lucideChevronUp,
+  lucidePlus,
+  lucideX,
+} from '@liveworkspace/icons/lucide';
 
 const UpIcon = lucideGlyph(lucideChevronUp, 15);
 const DownIcon = lucideGlyph(lucideChevronDown, 15);

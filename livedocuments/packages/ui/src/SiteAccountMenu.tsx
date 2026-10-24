@@ -6,7 +6,7 @@ import {
   type DeferredMenuProps,
 } from '@liveworkspace/account-menu';
 import { SIGNED_IN_HINT_COOKIE } from '@livedocuments/api-schema';
-import { lucideChevronDown, lucideKey, lucideSettings } from '@livedocuments/icons/lucide';
+import { lucideChevronDown, lucideKey, lucideSettings } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { useMenu, useMenuButton, type MenuInitialFocus, useClickOutside } from '@liveworkspace/ui';
 

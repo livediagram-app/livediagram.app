@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 
 /* Every page but the telemetry dashboard and the Explorer, whose classes (and the apps' UI) are in
  * their own stylesheets, telemetry/telemetry.css and explorer/explorer.css, each loaded only there. */

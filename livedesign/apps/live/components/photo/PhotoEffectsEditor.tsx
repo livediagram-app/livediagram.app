@@ -4,7 +4,7 @@
 // Glow, Stroke and Colour Overlay, each switched on or off, its colour from the shared picker and its
 // settings as sliders; a change shows at once and commits once it rests. Opened by the `fx` mark or
 // the Effects menu.
-import { lucideTrash2 } from '@livedesign/icons/lucide';
+import { lucideTrash2 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { setLayer, type LayerEffects, type PhotoLayer } from '@livedesign/photo-engine';
 import { standardGroup } from '@/components/colour/colour-options';

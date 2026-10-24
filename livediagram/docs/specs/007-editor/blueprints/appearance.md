@@ -18,12 +18,12 @@ Scope, by file:
 | `packages/ui/src/appearance/SiteAppearanceToggle.tsx`                 | The public sites' control, on the ShareRail's Appearance rail at `xl`+ (`2xl`+ on wide surfaces: help, Community), never in `SiteHeader`; no telemetry |
 | `packages/ui/src/site.ts`                                             | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                                                                 |
 | `apps/*/app/layout.tsx` (live, marketing, help, telemetry, community) | Inline the boot script; declare the lock meta; dark body                                                                                               |
-| `apps/editor/hooks/ui/useAppearance.ts`                                 | The shared hook plus the editor's telemetry                                                                                                            |
-| `apps/editor/components/chrome/AppearanceToggle.tsx`                    | The three-state control on the TabBar                                                                                                                  |
-| `apps/editor/components/canvas/CanvasSurfaceContext.tsx`                | Carries the `CanvasSurface` past `React.memo` element views                                                                                            |
+| `apps/editor/hooks/ui/useAppearance.ts`                               | The shared hook plus the editor's telemetry                                                                                                            |
+| `apps/editor/components/chrome/AppearanceToggle.tsx`                  | The three-state control on the TabBar                                                                                                                  |
+| `apps/editor/components/canvas/CanvasSurfaceContext.tsx`              | Carries the `CanvasSurface` past `React.memo` element views                                                                                            |
 | `packages/document/src/colors.ts`                                     | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                             |
 | `packages/document/src/canvas-colors.ts`                              | The Default scheme's light and dark canvas colours                                                                                                     |
-| `packages/tailwind-config/theme.css`                                  | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                                    |
+| `../packages/tailwind-config/theme.css`                               | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                                    |
 | `packages/template-previews/src/preview-art-tile.css`                 | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                           |
 
 ## Domain and naming

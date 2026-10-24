@@ -9,7 +9,7 @@ import {
   lucideList,
   lucideLock,
   lucideSettings,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
 import { FONT, at } from '@/components/art-tokens';

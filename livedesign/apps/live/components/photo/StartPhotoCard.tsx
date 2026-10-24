@@ -6,7 +6,7 @@
 // sizes drawn to scale and Custom, transparent. Escape or Close leaves a blank transparent 1920 x 1080 photo.
 // For someone who may edit.
 import { useState } from 'react';
-import { lucideImagePlus, lucideX } from '@livedesign/icons/lucide';
+import { lucideImagePlus, lucideX } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { LaidOutPage } from '@livedesign/design';
 import { PHOTO_DEFAULT_HEIGHT, PHOTO_DEFAULT_WIDTH } from '@livedesign/photo-engine';

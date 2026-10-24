@@ -3,7 +3,7 @@
 // The options flyout while a Free Transform is open (docs/specs/031-photo/photo-pages.md "The options flyout"):
 // Position, Size (px or a percent) and Angle, Shape (Mode and Interpolation), the flips, and Cancel and Commit.
 import { useState, type ReactNode } from 'react';
-import { lucideFlipHorizontal2, lucideFlipVertical2 } from '@livedesign/icons/lucide';
+import { lucideFlipHorizontal2, lucideFlipVertical2 } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph } from '@livedesign/ui';
 import type { Interpolation, TransformMode } from '@livedesign/photo-engine';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';

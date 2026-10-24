@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideSearch } from '@livedocuments/icons/lucide';
+import { lucideSearch } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import { useDeferredValue, useMemo, useState } from 'react';
 

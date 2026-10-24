@@ -1,4 +1,4 @@
-import { lucideSparkles, lucideVote } from '@livediagram/icons/lucide';
+import { lucideSparkles, lucideVote } from '@liveworkspace/icons/lucide';
 import { Glyph } from '../icons/Glyph';
 import { Prims } from '../icons/Prims';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's

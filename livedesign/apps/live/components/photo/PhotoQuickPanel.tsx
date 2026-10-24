@@ -6,7 +6,7 @@
 // name, the tip drawn for a tool with one, up to four quiet slider rows, and All Options opening the options flyout.
 // It steps aside while that flyout is open (it holds the same settings), while a crop or transform is under way,
 // and on a phone.
-import { lucideSlidersHorizontal } from '@livedesign/icons/lucide';
+import { lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { setToolOption } from '@/lib/photo-editor/set-tool-option';

@@ -16,7 +16,7 @@ Scope, by file:
 | `../packages/ui/src/menu/useMenuButton.ts`                        | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open                           |
 | `../packages/ui/src/menu/useControlMenu.ts`                       | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
 | `../packages/ui/src/menu/index.ts`                                | Public surface, re-exported from `../packages/ui/src/index.ts` and so from `packages/ui`                     |
-| `packages/tailwind-config/theme.css`                              | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
+| `../packages/tailwind-config/theme.css`                           | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
 | `apps/editor/components/primitives/PortalMenu.tsx`                | Anchored menu (command or control) and its list rows, each role-aware                                        |
 | `apps/editor/components/primitives/MenuTiles.tsx`                 | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
 | `apps/editor/components/primitives/menu-item-props.ts`            | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |

@@ -19,7 +19,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/document';
-import { techGlyphStrokeUnits } from '@livediagram/icons';
+import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';

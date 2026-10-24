@@ -25,6 +25,8 @@ const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 // The shared Settings view (@liveworkspace/settings-ui) prints the Settings dialog's own controls.
 const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
+// The shared icon catalogues (@liveworkspace/icons) print the sticker words and icon names the palette shows.
+const ICONS_PACKAGE = `${ROOT}/../packages/icons/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -96,6 +98,7 @@ function editorSource(): string {
   walk(SETTINGS_PACKAGE);
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
   walk(`${ROOT}/../packages/ui/src`);
+  walk(ICONS_PACKAGE);
   return all.toLowerCase();
 }
 

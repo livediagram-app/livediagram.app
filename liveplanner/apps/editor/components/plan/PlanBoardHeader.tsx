@@ -17,7 +17,7 @@ import {
   type PlanBoardSetup,
   type QuickFilter,
 } from '@liveplanner/items';
-import { lucideGripVertical } from '@liveplanner/icons/lucide';
+import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';

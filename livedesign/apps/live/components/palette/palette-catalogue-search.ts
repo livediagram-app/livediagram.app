@@ -3,7 +3,7 @@
 // (palette-dynamic-tiles) so it places as its category's own tile does. Only the catalogues the
 // mode's palette offers are searched.
 import type { EditorMode, Element } from '@livedesign/design';
-import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@livedesign/icons';
+import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveworkspace/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@/lib/stickers';
 import { getLoadedTechIconCatalog } from '@/lib/icon-registry';

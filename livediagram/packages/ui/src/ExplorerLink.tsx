@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideFolder } from '@livediagram/icons/lucide';
+import { lucideFolder } from '@liveworkspace/icons/lucide';
 
 import { buttonClassName } from '@liveworkspace/ui';
 import { EXPLORER_HOME_HREF, useSignedInHint } from './HeaderPrimaryCta';

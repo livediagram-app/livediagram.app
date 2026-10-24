@@ -6,7 +6,7 @@
 // Sheet. Open Tab, Duplicate, Clear and Remove are the cog's toolbar above its sections (SlotToolbar.tsx).
 import { useState } from 'react';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideLayoutGrid, lucidePencil } from '@liveplanner/icons/lucide';
+import { lucideLayoutGrid, lucidePencil } from '@liveworkspace/icons/lucide';
 import type { DashboardSlot } from '@liveplanner/project';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SettingsActionTile, SettingsBody } from '../settings-panel-parts';

@@ -4,7 +4,7 @@
 // warning, right after the response count, that a published form takes no responses now. Its tooltip says why; a
 // press opens where that is fixed. Red (danger), unlike Problems with this Form's amber: responses are being lost.
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideTriangleAlert } from '@liveplanner/icons/lucide';
+import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { track } from '@/lib/telemetry';
 import {
   FORM_NOT_TAKING,

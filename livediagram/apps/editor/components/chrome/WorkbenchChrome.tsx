@@ -7,7 +7,7 @@
 // document was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
 // says how to edit again.
 import type { WorkbenchEndReason } from '@livediagram/api-schema';
-import { lucideArrowLeft } from '@livediagram/icons/lucide';
+import { lucideArrowLeft } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livediagram/ui';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';

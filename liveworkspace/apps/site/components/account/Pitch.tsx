@@ -1,6 +1,6 @@
 import { APP_SITES } from '@liveworkspace/sites';
-import type { IconPrim } from '@livediagram/icons';
-import { lucideLayoutGrid, lucideMail, lucideUsers } from '@livediagram/icons/lucide';
+import type { IconPrim } from '@liveworkspace/icons';
+import { lucideLayoutGrid, lucideMail, lucideUsers } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 

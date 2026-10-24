@@ -19,9 +19,9 @@
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
-    "@livedesign/icons": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
-    "@livedesign/templates": "workspace:*"
+    "@livedesign/templates": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
     "@livedesign/design-views": "workspace:*",

@@ -4,7 +4,7 @@ import {
   lucideGift,
   lucideHandshake,
   lucideScale,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';

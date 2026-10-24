@@ -30,7 +30,7 @@ import {
   lucideTextAlignStart,
   lucideType,
   lucideWand,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { FONTS } from '@livedesign/design';
 import { lucideGlyph } from '@livedesign/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';

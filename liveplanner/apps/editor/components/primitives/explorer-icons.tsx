@@ -15,7 +15,7 @@ import {
   lucideFolder,
   lucideHouse,
   lucideShare2,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes

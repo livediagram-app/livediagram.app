@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
-import { lucidePanelsTopLeft, lucideSettings } from '@livedesign/icons/lucide';
+import { lucidePanelsTopLeft, lucideSettings } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';

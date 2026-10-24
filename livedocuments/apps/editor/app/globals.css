@@ -779,3 +779,27 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 html {
   view-transition-name: none;
 }
+
+/* The layout gallery's Surprise Me: its dice tumble once as it picks. Long motion token; under reduced motion
+ * it stays still. */
+@theme {
+  --animate-dice-roll: dice-roll var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dice-roll {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(200deg) scale(1.25);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dice-roll {
+    animation: none;
+  }
+}

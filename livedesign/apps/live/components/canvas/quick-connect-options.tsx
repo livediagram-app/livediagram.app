@@ -11,7 +11,7 @@ import {
   lucideBetweenHorizontalEnd,
   lucideBetweenVerticalEnd,
   lucideType,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 // The quick-connect ring's option catalogue + glyphs (docs/specs/008-canvas/canvas-and-palette.md / 51),
 // split out of QuickConnectRing the same way the other per-surface

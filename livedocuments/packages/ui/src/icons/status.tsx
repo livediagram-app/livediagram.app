@@ -1,4 +1,4 @@
-import { lucideCircleX, lucideFolder, lucideUsers } from '@livedocuments/icons/lucide';
+import { lucideCircleX, lucideFolder, lucideUsers } from '@liveworkspace/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';

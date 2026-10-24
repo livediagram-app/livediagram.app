@@ -5,7 +5,7 @@
 // one lives in its `…` menu: a small picture beside its number.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
-import { lucideFileText } from '@livediagram/icons/lucide';
+import { lucideFileText } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 
