@@ -6,7 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./csp": "./src/csp.ts"
+    "./csp": "./src/csp.ts",
+    "./sinks-suite": "./src/sinks-suite.ts"
   },
   "scripts": {
     "lint": "oxlint",
