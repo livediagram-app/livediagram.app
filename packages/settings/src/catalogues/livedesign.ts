@@ -142,6 +142,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'editor',
       label: 'Editor',
+      tile: 'editor',
       rows: [
         {
           kind: 'toggle',
@@ -149,6 +150,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Alignment Guides',
           description:
             'Snap lines while you move or resize, so elements line up with their neighbours.',
+          keywords: 'snap lines smart guides align',
           section: 'Canvas',
           key: 'alignmentGuides',
           on: true,
@@ -166,6 +168,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Auto-Attach Arrows',
           description:
             'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
+          keywords: 'connector reattach sticky arrows connections',
           section: 'Canvas',
           key: 'autoRebindArrows',
           on: true,
@@ -183,6 +186,8 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Element Indicators',
           description:
             'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
+          keywords:
+            'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
           section: 'Canvas',
           key: 'elementIndicatorStyle',
           options: [
@@ -214,6 +219,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Quick-Add on Hover',
           description:
             "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
+          keywords: 'plus menu hover add shortcut',
           section: 'Mouse',
           key: 'quickAddOnHover',
           on: true,
@@ -229,7 +235,8 @@ export const CATALOGUE: AppCatalogue = {
     },
     {
       id: 'pages',
-      label: 'Editor › Pages',
+      label: 'Pages',
+      parent: 'editor',
       rows: [
         {
           kind: 'choice',
@@ -237,6 +244,8 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Contents',
           description:
             'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
+          keywords:
+            'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
           section: 'Pages',
           key: 'contentsPlacement',
           options: [
@@ -263,6 +272,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Logo Guides',
           description:
             'Draws centre lines, keylines, the safe area and a grid over a logo page; the keylines snap. A page you set on its own keeps its choice.',
+          keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
           section: 'Logo Pages',
           key: 'logoGuides',
           on: true,
@@ -279,6 +289,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'logoGuideStrength',
           label: 'Logo Guide Strength',
           description: 'How strongly the guides show over the artwork.',
+          keywords: 'logo guides strength opacity faint strong contrast',
           section: 'Logo Pages',
           when: {
             key: 'logoGuides',
@@ -309,18 +320,21 @@ export const CATALOGUE: AppCatalogue = {
             category: 'UI',
             changed: 'LogoGuideStrength',
           },
+          parent: 'logoGuides',
         },
       ],
     },
     {
       id: 'presenting',
-      label: 'Editor › Presenting',
+      label: 'Presenting',
+      parent: 'editor',
       rows: [
         {
           kind: 'choice',
           id: 'presentation-transition',
           label: 'Transition',
           description: 'How one slide gives way to the next.',
+          keywords: 'slide transition animation fade cut move present presentation',
           section: 'Slides',
           key: 'presentation',
           field: 'transition',
@@ -352,6 +366,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-speed',
           label: 'Speed',
           description: 'How long a transition takes.',
+          keywords: 'transition speed quick slow duration present presentation',
           section: 'Slides',
           key: 'presentation',
           field: 'speed',
@@ -384,6 +399,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Slide Size',
           description:
             'Fill Screen blows a small slide up to fill the screen; Actual Size never zooms past 100%.',
+          keywords: 'zoom fill screen actual size scale present presentation',
           section: 'Slides',
           key: 'presentation',
           field: 'zoom',
@@ -411,6 +427,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Auto-Advance',
           description:
             'Move to the next slide on its own after this long; Off moves only when you say.',
+          keywords: 'auto advance timer kiosk loop slideshow seconds present presentation',
           section: 'Playback',
           key: 'presentation',
           field: 'autoAdvanceSeconds',
@@ -452,6 +469,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-advanceOnClick',
           label: 'Click to Advance',
           description: "Off if you'd rather only the keys and buttons move the deck.",
+          keywords: 'click advance next mouse present presentation',
           section: 'Playback',
           key: 'presentation',
           field: 'advanceOnClick',
@@ -469,6 +487,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-loop',
           label: 'Loop the Deck',
           description: 'After the last slide, start again rather than ending.',
+          keywords: 'loop repeat kiosk restart present presentation',
           section: 'Playback',
           key: 'presentation',
           field: 'loop',
@@ -486,6 +505,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-showPosition',
           label: 'Show Position',
           description: "The 7 / 23 counter and the slide's name.",
+          keywords: 'position counter slide number name hud present presentation',
           section: 'While Presenting',
           key: 'presentation',
           field: 'showPosition',
@@ -503,6 +523,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-keepControls',
           label: 'Keep Controls Visible',
           description: 'Stop the controls fading out when the pointer rests.',
+          keywords: 'controls hud fade visible present presentation',
           section: 'While Presenting',
           key: 'presentation',
           field: 'keepControls',
@@ -520,6 +541,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-hidePointer',
           label: 'Hide the Pointer',
           description: 'A still cursor left on a projector is a distraction.',
+          keywords: 'cursor pointer mouse hide projector present presentation',
           section: 'While Presenting',
           key: 'presentation',
           field: 'hidePointer',
@@ -537,6 +559,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-showElapsed',
           label: 'Show Elapsed Time',
           description: 'A clock counting from the moment you started.',
+          keywords: 'clock timer elapsed time pacing present presentation',
           section: 'While Presenting',
           key: 'presentation',
           field: 'showElapsed',
@@ -554,6 +577,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'presentation-showBudget',
           label: 'Show Slide Budget',
           description: 'Time on this slide against the minutes it was given.',
+          keywords: 'budget minutes pacing timer slide time present presentation',
           section: 'While Presenting',
           key: 'presentation',
           field: 'showBudget',
@@ -571,6 +595,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'layers',
       label: 'Panels › Layers',
+      tile: 'panels',
       rows: [
         {
           kind: 'toggle',
@@ -578,6 +603,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Enable Layers Panel',
           description:
             'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
+          keywords: 'layers panel enable hide show turn off remove move to layer',
           key: 'layersPanelEnabled',
           on: true,
           off: false,
@@ -593,6 +619,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'layersShowPreview',
           label: 'Layer Thumbnails',
           description: 'A small preview of what each layer holds.',
+          keywords: 'thumbnail preview layer picture',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -608,12 +635,14 @@ export const CATALOGUE: AppCatalogue = {
             on: 'LayerPreviewOn',
             off: 'LayerPreviewOff',
           },
+          parent: 'layersPanelEnabled',
         },
         {
           kind: 'toggle',
           id: 'layersShowCount',
           label: 'Layer Element Counts',
           description: 'How many elements each layer holds, beside its name.',
+          keywords: 'number badge count layer element counts',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -629,12 +658,14 @@ export const CATALOGUE: AppCatalogue = {
             on: 'LayerCountOn',
             off: 'LayerCountOff',
           },
+          parent: 'layersPanelEnabled',
         },
         {
           kind: 'toggle',
           id: 'layerHoverPreview',
           label: 'Preview Layer on Hover',
           description: 'Shows only that layer on the canvas while you rest on its row.',
+          keywords: 'highlight hover layer preview solo',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -650,12 +681,14 @@ export const CATALOGUE: AppCatalogue = {
             on: 'LayerHoverPreviewOn',
             off: 'LayerHoverPreviewOff',
           },
+          parent: 'layersPanelEnabled',
         },
       ],
     },
     {
       id: 'map',
       label: 'Panels › Map',
+      tile: 'panels',
       rows: [
         {
           kind: 'toggle',
@@ -663,6 +696,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Enable Map',
           description:
             'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
+          keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
           key: 'showMinimap',
           on: true,
           off: false,
@@ -678,6 +712,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'mapDimOutside',
           label: 'Dim Outside the View',
           description: 'Shades what is off screen, so the part you are looking at stands out.',
+          keywords: 'shade minimap viewport dim',
           when: {
             key: 'showMinimap',
             on: true,
@@ -693,12 +728,14 @@ export const CATALOGUE: AppCatalogue = {
             on: 'MapDimOn',
             off: 'MapDimOff',
           },
+          parent: 'showMinimap',
         },
         {
           kind: 'choice',
           id: 'mapSize',
           label: 'Map Size',
           description: 'How much of the corner the Map takes up.',
+          keywords: 'minimap height short medium tall',
           when: {
             key: 'showMinimap',
             on: true,
@@ -728,12 +765,14 @@ export const CATALOGUE: AppCatalogue = {
             category: 'UI',
             changed: 'MapSize',
           },
+          parent: 'showMinimap',
         },
       ],
     },
     {
       id: 'collaborate',
       label: 'Panels › Collaborate',
+      tile: 'panels',
       rows: [
         {
           kind: 'toggle',
@@ -741,6 +780,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Enable Collaborate Panel',
           description:
             "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
+          keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
           key: 'collaboratePanelEnabled',
           on: true,
           off: false,
@@ -756,6 +796,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'quickStyle',
       label: 'Panels › Quick Style',
+      tile: 'panels',
       rows: [
         {
           kind: 'toggle',
@@ -763,6 +804,8 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Enable Quick Style Panel',
           description:
             "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
+          keywords:
+            'quick style colour color stroke fill width panel selection enable hide show turn off',
           key: 'quickStylePanelEnabled',
           on: true,
           off: false,
@@ -778,6 +821,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'designs',
       label: 'Designs',
+      tile: 'folder',
       rows: [
         {
           kind: 'toggle',
@@ -785,6 +829,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Show Home Banner',
           description:
             "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
+          keywords: 'home banner hero greeting welcome header top search explorer hide show close',
           section: 'Explorer',
           key: 'homeBanner',
           on: true,
@@ -801,12 +846,14 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'notifications',
       label: 'Account › Notifications',
+      tile: 'account',
       rows: [
         {
           kind: 'toggle',
           id: 'notifyDesignJoin',
           label: 'Someone Joins My Design',
           description: 'A new person opens one of your shared designs.',
+          keywords: 'email join collaborator opened',
           section: 'Email',
           key: 'notifyDesignJoin',
           on: true,

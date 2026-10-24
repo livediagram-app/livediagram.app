@@ -63,7 +63,7 @@ const KNOWN = EMITS.filter(
 // file here means an emitter the scan can't see, so extend the scan (or add it
 // here with the reason) rather than let its events go unchecked.
 const DYNAMIC_EMITTERS: Record<string, string> = {
-  'apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx':
+  'apps/editor/components/dialogs/settings/settings-model.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
 };
 

@@ -6,7 +6,7 @@ import type { Metric, MetricStack } from '../metric-series';
 // ---- Settings tab ------------------------------------------------------------
 // One chart per row of the editor's Settings dialog, one stack per Settings
 // category (apps/live settings-catalogue.ts, in its order). Every row emits
-// generically from SettingsCategoryPane: a toggle `Toggled·<X>On` / `<X>Off`,
+// generically from settings-model.tsx (bindRow): a toggle `Toggled·<X>On` / `<X>Off`,
 // a choice `Changed·<X><Option>`, a slider `Changed·<X>`. Each chart counts
 // every change to its setting, both directions, so whether a setting is
 // flipped at all reads at a glance; which way it went is in Search. Neutral:

@@ -445,7 +445,7 @@ decides which scope a setting belongs in. liveworkspace.app shows and changes `a
 page, and each app's own scope in that app's dialog there.
 
 Which of an app's settings the site can show is plain data, `@liveworkspace/settings/catalogues/<app>`:
-for each setting the app's own key, label, description, search keywords, section, parent row and
+for each setting the app's own row key (its `id`), label, description, search keywords, section, parent row and
 order, the stored key (or the field of an object kept under a key) and the value for each of its
 states; for each category its parent category, its icon tile and its section notes and collapsed
 sections. That is the shape of the shared Settings view's model (`@liveworkspace/settings-ui`), so the

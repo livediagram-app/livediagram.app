@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { catalogueSource, deriveCatalogue } from '@liveworkspace/settings/catalogue';
 import { CATALOGUE } from '@liveworkspace/settings/catalogues/livedocuments';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
+import { SETTINGS_TILES } from './settings-icons';
 
 // liveworkspace.app shows this app's own settings in a dialog on its settings page, from a plain-data
 // copy of this catalogue (packages/settings/src/catalogue.ts). This keeps the copy in step: change a
@@ -13,7 +14,7 @@ const FILE = fileURLToPath(
 );
 
 describe("liveworkspace.app's copy of this app's settings", () => {
-  const derived = deriveCatalogue(SETTINGS_CATEGORIES);
+  const derived = deriveCatalogue(SETTINGS_CATEGORIES, { tiles: SETTINGS_TILES });
 
   it('matches the catalogue', () => {
     if (process.env.UPDATE_SITE_CATALOGUE) {

@@ -7,13 +7,15 @@ import { CATALOGUE as LIVEDIAGRAM } from '@liveworkspace/settings/catalogues/liv
 import { CATALOGUE as LIVEPLANNER } from '@liveworkspace/settings/catalogues/liveplanner';
 import { CATALOGUE as LIVEDOCUMENTS } from '@liveworkspace/settings/catalogues/livedocuments';
 import { CATALOGUE as LIVEDESIGN } from '@liveworkspace/settings/catalogues/livedesign';
-import { __forgetAppScopes, visibleRows, type AppId, type AppScopes } from '@/lib/app-settings';
+import { __forgetAppScopes, type AppId, type AppScopes } from '@/lib/app-settings';
+import { appSettingsModel } from '@/lib/app-settings-model';
 import { listedApps, type ListedApp } from '@/lib/apps';
 import AppSettingsDialog, { AppSettingsBody } from './AppSettingsDialog';
 import { SettingsPanel } from './SettingsPanel';
 
-// The app settings dialog (liveworkspace/docs/site.md "Your account"): each app's own settings, saved
-// a key at a time to that app's scope, put back when a save fails, and usable from the keyboard.
+// The app settings dialog (liveworkspace/docs/site.md "Your account"): each app's own settings, in
+// the same Settings view the app shows (@liveworkspace/settings-ui), saved a key at a time to that
+// app's scope, put back when a save fails, and usable from the keyboard.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const CATALOGUES: Record<AppId, AppCatalogue> = {
@@ -44,6 +46,7 @@ afterEach(() => {
   container.remove();
   vi.unstubAllGlobals();
   window.history.replaceState(null, '', '/');
+  localStorage.clear();
 });
 
 // The body of the nth request, as sent.
@@ -84,45 +87,68 @@ function renderLiveBody(app: AppId, initial: AppScopes = { all: {}, app: {} }) {
   draw();
 }
 
-const switchNamed = (label: string) => {
-  const labelEl = [...container.querySelectorAll('p')].find((p) => p.textContent === label)!;
-  return container.querySelector<HTMLButtonElement>(`[aria-labelledby="${labelEl.id}"]`)!;
-};
+// A row's switch, by the app's row key (the shared view names it by the row's label element).
+const switchFor = (rowKey: string) =>
+  document.querySelector<HTMLButtonElement>(`[role="switch"][aria-labelledby="${rowKey}-label"]`)!;
+
+// The rail's button for a category, by its label.
+const railButton = (label: string) =>
+  [
+    ...document.querySelectorAll<HTMLButtonElement>('nav[aria-label="Settings categories"] button'),
+  ].find((b) => b.textContent?.trim() === label);
+
+// Opens a category in the rail, its parent's first when it is a sub-category.
+function openCategory(app: AppId, id: string, value: AppScopes = { all: {}, app: {} }) {
+  const categories = appSettingsModel(CATALOGUES[app], value, () => {});
+  const category = categories.find((c) => c.id === id)!;
+  const parent = categories.find((c) => c.id === category.parent);
+  if (parent && !railButton(category.label)) act(() => railButton(parent.label)!.click());
+  act(() => railButton(category.label)!.click());
+}
 
 describe('AppSettingsBody', () => {
   it.each(Object.keys(CATALOGUES) as AppId[])(
-    "shows %s's own categories and rows, in its order",
+    "shows %s's own categories and rows, in its order, in the app's Settings view",
     (app) => {
       renderBody(app);
-      const catalogue = CATALOGUES[app];
-      const headings = [...container.querySelectorAll('h3')].map((h) => h.textContent);
-      const shown = catalogue.categories.filter(
-        (c) => visibleRows(c, { all: {}, app: {} }).length > 0,
-      );
-      expect(headings).toEqual(shown.map((c) => c.label));
-      const text = container.textContent ?? '';
-      for (const category of shown) {
-        for (const row of visibleRows(category, { all: {}, app: {} })) {
-          expect(text).toContain(row.label);
-          expect(text).toContain(row.description);
+      const value = { all: {}, app: {} };
+      const categories = appSettingsModel(CATALOGUES[app], value, () => {});
+      expect(categories.length).toBeGreaterThan(0);
+      // The rail lists the top-level categories, each with its tile.
+      const top = categories.filter((c) => !c.parent);
+      for (const category of top) expect(railButton(category.label)).toBeTruthy();
+      expect(top.every((c) => Boolean(c.icon))).toBe(true);
+      for (const category of categories) {
+        openCategory(app, category.id, value);
+        const pane = document.querySelector('[data-settings-pane]')!;
+        for (const row of category.rows) {
+          expect(pane.textContent).toContain(row.label);
+          expect(pane.textContent).toContain(row.description);
         }
       }
     },
   );
 
   it('hides a nested row while its switch is off, as the app does', () => {
-    renderBody('livediagram.app', { all: {}, app: { showMinimap: false } });
-    expect(container.textContent).toContain('Enable Map');
-    expect(container.textContent).not.toContain('Map Size');
+    const value = { all: {}, app: { showMinimap: false } };
+    renderBody('livediagram.app', value);
+    const map = appSettingsModel(CATALOGUES['livediagram.app'], value, () => {}).find((c) =>
+      c.rows.some((r) => r.label === 'Enable Map'),
+    )!;
+    openCategory('livediagram.app', map.id, value);
+    const pane = document.querySelector('[data-settings-pane]')!;
+    expect(pane.textContent).toContain('Enable Map');
+    expect(pane.textContent).not.toContain('Map Size');
   });
 
   it('saves a change as a patch of just that key, in that app’s scope', async () => {
     fetchMock.mockReturnValue(json(200, { all: {}, app: { alignmentGuides: false } }));
     renderLiveBody('livediagram.app');
-    const guides = switchNamed('Alignment Guides');
+    openCategory('livediagram.app', 'editor');
+    const guides = switchFor('alignmentGuides');
     expect(guides.getAttribute('aria-checked')).toBe('true');
     act(() => guides.click());
-    expect(guides.getAttribute('aria-checked')).toBe('false');
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
     await settle();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0]!;
@@ -133,8 +159,10 @@ describe('AppSettingsBody', () => {
 
   it("writes one field of an object setting, keeping the object's others", async () => {
     fetchMock.mockReturnValue(json(200, { all: {}, app: {} }));
-    renderLiveBody('livediagram.app', { all: {}, app: { presentation: { speed: 'slow' } } });
-    act(() => switchNamed('Loop the Deck').click());
+    const value = { all: {}, app: { presentation: { speed: 'slow' } } };
+    renderLiveBody('livediagram.app', value);
+    openCategory('livediagram.app', 'presenting', value);
+    act(() => switchFor('presentation-loop').click());
     await settle();
     expect(sent(0)).toEqual({
       app: { presentation: { speed: 'slow', loop: true } },
@@ -144,32 +172,41 @@ describe('AppSettingsBody', () => {
   it('puts a switch back, and says so, when the save fails', async () => {
     fetchMock.mockReturnValue(json(500, { error: 'failed' }));
     renderLiveBody('livediagram.app');
-    const guides = switchNamed('Alignment Guides');
-    act(() => guides.click());
-    expect(guides.getAttribute('aria-checked')).toBe('false');
+    openCategory('livediagram.app', 'editor');
+    act(() => switchFor('alignmentGuides').click());
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
     await settle();
-    expect(switchNamed('Alignment Guides').getAttribute('aria-checked')).toBe('true');
-    expect(container.querySelector('[role="alert"]')?.textContent).toMatch(/went wrong/);
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('true');
+    expect(document.querySelector('[role="alert"]')?.textContent).toMatch(/went wrong/);
   });
 
-  it('moves a choice with the arrow keys, saving each step', async () => {
+  it('saves the option picked in a choice', async () => {
     fetchMock.mockReturnValue(json(200, { all: {}, app: {} }));
     renderLiveBody('livediagram.app');
-    const group = [...container.querySelectorAll('[role="radiogroup"]')].find((g) =>
+    openCategory('livediagram.app', 'editor');
+    const group = [...document.querySelectorAll('[role="radiogroup"]')].find((g) =>
       g.textContent?.includes('Footer'),
     )!;
     const radios = [...group.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
-    expect(radios.map((r) => r.tabIndex)).toEqual([0, -1, -1]);
-    act(() => radios[0]!.focus());
-    act(() => {
-      radios[0]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    });
-    expect(radios[1]!.getAttribute('aria-checked')).toBe('true');
-    expect(document.activeElement).toBe(radios[1]);
+    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+    act(() => radios[1]!.click());
     await settle();
     expect(sent(0)).toEqual({
       app: { elementIndicatorStyle: 'footer' },
     });
+  });
+
+  it('finds a setting through the search, as in the app', () => {
+    renderBody('livediagram.app');
+    const search = document.querySelector<HTMLInputElement>('input[aria-label="Search settings"]')!;
+    act(() => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+      set.call(search, 'loop the deck');
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    const pane = document.querySelector('[data-settings-pane]')!;
+    expect(pane.textContent).toContain('Loop the Deck');
+    expect(pane.textContent).not.toContain('Alignment Guides');
   });
 });
 
@@ -189,10 +226,10 @@ describe('AppSettingsDialog', () => {
   it("is a modal dialog titled with the app's name and logo, linking to the rest", async () => {
     open();
     await settle();
-    const dialog = container.querySelector('[role="dialog"]')!;
+    const dialog = document.querySelector('[role="dialog"]')!;
     expect(dialog.getAttribute('aria-modal')).toBe('true');
-    const title = document.getElementById(dialog.getAttribute('aria-labelledby')!)!;
-    expect(title.textContent).toBe('liveplanner Settings');
+    expect(dialog.getAttribute('aria-label')).toBe('liveplanner Settings');
+    expect(dialog.querySelector('header h2')?.textContent).toBe('liveplanner Settings');
     expect(dialog.querySelector('header svg')).not.toBeNull();
     expect(document.activeElement).toBe(dialog);
     expect(dialog.textContent).toContain('More in liveplanner Settings');
@@ -206,7 +243,7 @@ describe('AppSettingsDialog', () => {
   it('closes on Escape', async () => {
     const onClose = open();
     await settle();
-    const dialog = container.querySelector('[role="dialog"]')!;
+    const dialog = document.querySelector('[role="dialog"]')!;
     act(() => {
       dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
@@ -214,11 +251,19 @@ describe('AppSettingsDialog', () => {
   });
 
   it('keeps Tab inside', async () => {
+    // jsdom lays nothing out, so every element reads as hidden to the shared Dialog's focus trap.
+    const offsetParent = vi
+      .spyOn(HTMLElement.prototype, 'offsetParent', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.parentElement;
+      });
     open();
     await settle();
-    const dialog = container.querySelector<HTMLElement>('[role="dialog"]')!;
+    const dialog = document.querySelector<HTMLElement>('[role="dialog"]')!;
     const focusable = [
-      ...dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]'),
+      ...dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex="0"]',
+      ),
     ].filter((el) => el.tabIndex >= 0);
     const first = focusable[0]!;
     const last = focusable.at(-1)!;
@@ -233,6 +278,7 @@ describe('AppSettingsDialog', () => {
       );
     });
     expect(document.activeElement).toBe(last);
+    offsetParent.mockRestore();
   });
 
   it('reads once, and reopens from the page’s copy', async () => {
@@ -257,12 +303,12 @@ describe('the Your apps cards', () => {
     window.history.replaceState(null, '', '/account/settings?app=livedesign');
     act(() => root.render(<SettingsPanel />));
     await settle();
-    const dialog = container.querySelector('[role="dialog"]')!;
+    const dialog = document.querySelector('[role="dialog"]')!;
     expect(dialog.textContent).toContain('livedesign Settings');
     act(() => {
       dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(window.location.search).toBe('');
     const card = document.activeElement as HTMLElement;
     expect(card.getAttribute('aria-haspopup')).toBe('dialog');

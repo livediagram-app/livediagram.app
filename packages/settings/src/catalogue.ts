@@ -34,13 +34,20 @@ export interface CatalogueBinding {
   event?: SettingEvent;
 }
 
+// A row carries the same text the app's own Settings row does, so liveworkspace.app draws it with the
+// same view (@liveworkspace/settings-ui). Its id is the app's row key (`key` here is where its value
+// is stored).
 interface RowCommon {
   // The app's own row key: unique within its category.
   id: string;
   label: string;
   description: string;
+  // Space-separated search synonyms the Settings search matches, as in the app.
+  keywords?: string;
   // The sub-heading the row sits under in the app's pane.
   section?: string;
+  // The row (by id) it is drawn nested under, when that row is shown here too.
+  parent?: string;
   // Shown only while another switch is on (the app nests it beneath that switch). The switch's
   // binding may be a shared key, so it is read from both scopes together.
   when?: ToggleBinding;
@@ -86,8 +93,16 @@ export type CatalogueRow =
 
 export interface CatalogueCategory {
   id: string;
-  // "Editor", or "Editor › Draw" for a sub-category, as the app's Settings path names it.
   label: string;
+  // The category it sits under ("Draw" under "Editor"), when that one is shown here too. A
+  // sub-category whose parent isn't shown takes the path as its label ("Editor › Draw") instead.
+  parent?: string;
+  // The top-level category's tile in the app's Settings list (@liveworkspace/settings-ui's tiles), or
+  // for a sub-category named by its path, its parent's.
+  tile?: string;
+  // A section's note under its sub-heading, and the sections drawn collapsed, as in the app.
+  sectionNotes?: Record<string, string>;
+  collapsedSections?: string[];
   rows: CatalogueRow[];
 }
 
@@ -173,6 +188,7 @@ export interface SourceRow {
   key: string;
   label: string;
   description: string;
+  keywords?: string;
   section?: string;
   parent?: string;
   available?(ctx: SourceContext): boolean;
@@ -191,6 +207,8 @@ export interface SourceCategory {
   id: string;
   label: string;
   parent?: string;
+  sectionNotes?: Readonly<Record<string, { note: string }>>;
+  collapsedSections?: readonly string[];
   rows: readonly SourceRow[];
 }
 
@@ -335,6 +353,7 @@ function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | nul
     id: row.key,
     label: row.label,
     description: row.description,
+    ...(row.keywords ? { keywords: row.keywords } : {}),
     ...(row.section ? { section: row.section } : {}),
     ...(offered === 'powerUser' ? { powerUser: true as const } : {}),
   };
@@ -388,23 +407,54 @@ function deriveShared(categories: readonly SourceCategory[]): SharedToggle[] {
   return [...shared.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
 
+// A category's rows the site can show; a row nested under one that isn't shown here sits at the top
+// level instead.
+function deriveRows(category: SourceCategory): CatalogueRow[] {
+  const rows = category.rows.flatMap((row) => deriveRow(row, category) ?? []);
+  const shown = new Set(rows.map((row) => row.id));
+  return rows.map((row) => {
+    const parent = category.rows.find((r) => r.key === row.id)?.parent;
+    return parent && shown.has(parent) ? { ...row, parent } : row;
+  });
+}
+
 // An app's catalogue as the site shows it: its categories in order, each with the rows the site can
-// show, and none left empty; and its shared switches' events.
-export function deriveCatalogue(categories: readonly SourceCategory[]): AppCatalogue {
+// show, and none left empty; and its shared switches' events. `tiles` names each top-level
+// category's tile, as the app's own Settings list draws it.
+export function deriveCatalogue(
+  categories: readonly SourceCategory[],
+  { tiles = {} }: { tiles?: Readonly<Record<string, string>> } = {},
+): AppCatalogue {
+  const derived = categories.flatMap((category) => {
+    const rows = deriveRows(category);
+    return rows.length > 0 ? [{ category, rows }] : [];
+  });
+  const shown = new Set(derived.map(({ category }) => category.id));
   const labelOf = new Map(categories.map((category) => [category.id, category.label]));
   return {
     shared: deriveShared(categories),
-    categories: categories.flatMap((category) => {
-      const rows = category.rows.flatMap((row) => deriveRow(row, category) ?? []);
-      if (rows.length === 0) return [];
-      const parent = category.parent ? labelOf.get(category.parent) : undefined;
-      return [
-        {
-          id: category.id,
-          label: parent ? `${parent} › ${category.label}` : category.label,
-          rows,
-        },
-      ];
+    categories: derived.map(({ category, rows }): CatalogueCategory => {
+      const parent = category.parent;
+      const nested = parent !== undefined && shown.has(parent);
+      const sections = new Set(rows.flatMap((row) => (row.section ? [row.section] : [])));
+      const notes = Object.entries(category.sectionNotes ?? {}).filter(([s]) => sections.has(s));
+      const collapsed = (category.collapsedSections ?? []).filter((s) => sections.has(s));
+      // A top-level category's own tile; a sub-category drawn at the top level takes its parent's.
+      const tile = parent === undefined ? tiles[category.id] : nested ? undefined : tiles[parent];
+      return {
+        id: category.id,
+        label:
+          parent !== undefined && !nested
+            ? `${labelOf.get(parent) ?? parent} › ${category.label}`
+            : category.label,
+        ...(nested ? { parent } : {}),
+        ...(tile ? { tile } : {}),
+        ...(notes.length > 0
+          ? { sectionNotes: Object.fromEntries(notes.map(([s, n]) => [s, n.note])) }
+          : {}),
+        ...(collapsed.length > 0 ? { collapsedSections: collapsed } : {}),
+        rows,
+      };
     }),
   };
 }

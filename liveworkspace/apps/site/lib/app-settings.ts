@@ -90,14 +90,3 @@ export function visibleRows(category: CatalogueCategory, value: AppScopes): Cata
       (!row.when || readToggleValue(joined, row.when)),
   );
 }
-
-// A row's group within its category: consecutive rows sharing a section, as the app draws them.
-export function sectionRuns(rows: CatalogueRow[]): { section?: string; rows: CatalogueRow[] }[] {
-  const runs: { section?: string; rows: CatalogueRow[] }[] = [];
-  for (const row of rows) {
-    const last = runs.at(-1);
-    if (last && last.section === row.section) last.rows.push(row);
-    else runs.push({ section: row.section, rows: [row] });
-  }
-  return runs;
-}

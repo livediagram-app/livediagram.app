@@ -84,6 +84,8 @@ const SOURCE: SourceCategory[] = [
     id: 'presenting',
     label: 'Presenting',
     parent: 'editor',
+    sectionNotes: { Timing: { note: 'Per slide.' }, Unused: { note: 'No rows.' } },
+    collapsedSections: ['Timing'],
     rows: [
       {
         kind: 'toggle',
@@ -98,6 +100,8 @@ const SOURCE: SourceCategory[] = [
         key: 'presentation-speed',
         label: 'Speed',
         description: 'How long.',
+        keywords: 'pace tempo',
+        section: 'Timing',
         parent: 'presentation-loop',
         options: [
           { id: 'quick', label: 'Quick' },
@@ -124,11 +128,14 @@ const SOURCE: SourceCategory[] = [
 ];
 
 describe('deriveCatalogue', () => {
-  const catalogue = deriveCatalogue(SOURCE);
+  const catalogue = deriveCatalogue(SOURCE, { tiles: { editor: 'editor', presenting: 'tours' } });
   const rows = catalogue.categories.flatMap((category) => category.rows);
 
-  it("keeps the app's categories and rows in order, naming a sub-category by its path", () => {
-    expect(catalogue.categories.map((c) => c.label)).toEqual(['Editor', 'Editor › Presenting']);
+  it("keeps the app's categories and rows in order, a sub-category under its parent", () => {
+    expect(catalogue.categories.map((c) => [c.label, c.parent])).toEqual([
+      ['Editor', undefined],
+      ['Presenting', 'editor'],
+    ]);
     expect(rows.map((row) => row.id)).toEqual([
       'guides',
       'tourSeen',
@@ -157,6 +164,30 @@ describe('deriveCatalogue', () => {
       labels: ['50%', '75%', '100%'],
       fallback: 1,
     });
+  });
+
+  it("carries the app's tiles, keywords, nesting, section notes and collapsed sections", () => {
+    const [editor, presenting] = catalogue.categories;
+    // Only a top-level category draws a tile.
+    expect(editor).toHaveProperty('tile', 'editor');
+    expect(presenting).not.toHaveProperty('tile');
+    expect(rows[4]).toMatchObject({ keywords: 'pace tempo', parent: 'presentation-loop' });
+    // Notes for sections it shows, as text.
+    expect(presenting).toMatchObject({
+      sectionNotes: { Timing: 'Per slide.' },
+      collapsedSections: ['Timing'],
+    });
+  });
+
+  it('names a sub-category by its path when its parent shows nothing here', () => {
+    const [orphan] = deriveCatalogue([SOURCE[2]!, { ...SOURCE[1]!, parent: 'empty' }]).categories;
+    expect(orphan).toMatchObject({ label: 'Empty › Presenting' });
+    expect(orphan).not.toHaveProperty('parent');
+    expect(
+      deriveCatalogue([SOURCE[2]!, { ...SOURCE[1]!, parent: 'empty' }], {
+        tiles: { empty: 'tours' },
+      }).categories[0],
+    ).toHaveProperty('tile', 'tours');
   });
 
   it('marks a row only offered to power users', () => {

@@ -1,12 +1,13 @@
 // Test support for emitter-scan.ts: the Settings catalogue's emits.
 //
-// SettingsCategoryPane emits every Settings row generically
+// Each app's settings-model.tsx (through @liveworkspace/settings-ui's bindRow) emits every
+// Settings row generically
 // (`track(row.event.category, 'Toggled', next ? row.event.on : row.event.off)`),
 // so the events live as data on the rows in settings-catalogue.ts rather than
 // in a call. A row is `{ kind, event: { category, on, off } }` for a toggle,
 // `{ kind, event: { category, changed } }` for a slider, and a choice row,
 // whose type is `changed` + the picked option id capitalised
-// (SettingsCategoryPane's choiceTelemetryType).
+// (bindRow's choiceTelemetryType).
 
 import {
   isArrayLiteralExpression,

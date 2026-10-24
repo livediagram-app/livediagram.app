@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { CatalogueCategory, CatalogueRow } from '@liveworkspace/settings/catalogue';
-import { appFromParam, isAppId, loadCatalogue, sectionRuns, visibleRows } from './app-settings';
+import type {
+  SettingsChoiceRow,
+  SettingsSliderRow,
+  SettingsToggleRow,
+} from '@liveworkspace/settings-ui';
+import { appFromParam, isAppId, loadCatalogue, visibleRows } from './app-settings';
+import { appSettingsModel } from './app-settings-model';
 
 const toggle = (id: string, extra: Partial<CatalogueRow> = {}) =>
   ({
@@ -42,18 +48,93 @@ describe('app settings', () => {
     expect(ids({}, { powerUserMode: true })).toEqual(['panel', 'child']);
   });
 
-  it('groups consecutive rows by section, as the apps do', () => {
-    const rows = [
-      toggle('a', { section: 'One' }),
-      toggle('b', { section: 'One' }),
-      toggle('c', { section: 'Two' }),
-      toggle('d'),
-    ];
-    expect(sectionRuns(rows).map((run) => [run.section, run.rows.map((r) => r.id)])).toEqual([
-      ['One', ['a', 'b']],
-      ['Two', ['c']],
-      [undefined, ['d']],
-    ]);
+  it("draws the app's rows in the shared view's model, each change handing over what to store", () => {
+    const when = { key: 'panel', on: true, off: false, fallback: true };
+    const change = vi.fn();
+    const [editor, draw] = appSettingsModel(
+      {
+        shared: [],
+        categories: [
+          {
+            id: 'editor',
+            label: 'Editor',
+            tile: 'editor',
+            sectionNotes: { One: 'A note.' },
+            rows: [
+              toggle('panel', { section: 'One', keywords: 'pane' }),
+              toggle('child', { section: 'One', parent: 'panel', when }),
+            ],
+          },
+          {
+            id: 'draw',
+            label: 'Draw',
+            parent: 'editor',
+            rows: [
+              {
+                kind: 'choice',
+                id: 'size',
+                label: 'Size',
+                description: '',
+                key: 'size',
+                options: [
+                  { id: 'small', label: 'Small', value: 's' },
+                  { id: 'large', label: 'Large', value: 'l' },
+                ],
+                fallback: 'small',
+              },
+              {
+                kind: 'slider',
+                id: 'zoom',
+                label: 'Zoom',
+                description: '',
+                key: 'zoom',
+                min: 0.5,
+                max: 1,
+                step: 0.25,
+                labels: ['50%', '75%', '100%'],
+                fallback: 1,
+              },
+            ],
+          },
+        ],
+      },
+      { all: {}, app: { panel: true, size: 'l' } },
+      change,
+    );
+    expect(editor).toMatchObject({ id: 'editor', sectionNotes: { One: { note: 'A note.' } } });
+    expect(editor!.icon).toBeTruthy();
+    expect(draw).toMatchObject({ id: 'draw', label: 'Draw', parent: 'editor' });
+    const [panel, child] = editor!.rows as SettingsToggleRow[];
+    expect(panel).toMatchObject({ key: 'panel', value: true, keywords: 'pane', section: 'One' });
+    expect(child).toMatchObject({ key: 'child', parent: 'panel' });
+    panel!.onChange(false);
+    expect(change).toHaveBeenLastCalledWith(expect.objectContaining({ key: 'panel' }), false);
+    const [size, zoom] = draw!.rows as [SettingsChoiceRow, SettingsSliderRow];
+    expect(size.value).toBe('large');
+    size.onChange('small');
+    expect(change).toHaveBeenLastCalledWith(expect.objectContaining({ key: 'size' }), 's');
+    expect([zoom.value, zoom.format(0.75)]).toEqual([1, '75%']);
+    zoom.onCommit(0.5);
+    expect(change).toHaveBeenLastCalledWith(expect.objectContaining({ key: 'zoom' }), 0.5);
+  });
+
+  it('names a sub-category by its path while its parent shows nothing', () => {
+    const when = { key: 'panel', on: true, off: false, fallback: true };
+    const [only] = appSettingsModel(
+      {
+        shared: [],
+        categories: [
+          { id: 'editor', label: 'Editor', tile: 'editor', rows: [toggle('hidden', { when })] },
+          { id: 'draw', label: 'Draw', parent: 'editor', rows: [toggle('pen')] },
+        ],
+      },
+      { all: {}, app: { panel: false } },
+      vi.fn(),
+    );
+    expect(only).toMatchObject({ id: 'draw', label: 'Editor › Draw' });
+    expect(only).not.toHaveProperty('parent');
+    // With its parent's tile.
+    expect(only!.icon).toBeTruthy();
   });
 
   it("loads each app's catalogue", async () => {

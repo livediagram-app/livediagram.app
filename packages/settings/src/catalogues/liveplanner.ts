@@ -131,6 +131,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'collaborate',
       label: 'Panels › Collaborate',
+      tile: 'panels',
       rows: [
         {
           kind: 'toggle',
@@ -138,6 +139,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Enable Collaborate Panel',
           description:
             "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
+          keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
           key: 'collaboratePanelEnabled',
           on: true,
           off: false,
@@ -153,12 +155,18 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'tours',
       label: 'Tours',
+      tile: 'tours',
+      sectionNotes: {
+        'Offer Again':
+          'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+      },
       rows: [
         {
           kind: 'toggle',
           id: 'formTourSeen',
           label: 'Forms Tour',
           description: 'The first time you open a Form tab.',
+          keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
           section: 'Offer Again',
           key: 'formTourSeen',
           on: false,
@@ -175,6 +183,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'projects',
       label: 'Plans',
+      tile: 'folder',
       rows: [
         {
           kind: 'toggle',
@@ -182,6 +191,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Show Home Banner',
           description:
             "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
+          keywords: 'home banner hero greeting welcome header top search explorer hide show close',
           section: 'Explorer',
           key: 'homeBanner',
           on: true,
@@ -198,12 +208,14 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'notifications',
       label: 'Account › Notifications',
+      tile: 'account',
       rows: [
         {
           kind: 'toggle',
           id: 'notifyProjectJoin',
           label: 'Someone Joins My Plan',
           description: 'A new person opens one of your shared plans.',
+          keywords: 'email join collaborator opened',
           section: 'Email',
           key: 'notifyProjectJoin',
           on: true,
@@ -221,6 +233,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Someone Fills In My Form',
           description:
             'Someone responds to a form in a plan you own (at most one email every 15 minutes per form).',
+          keywords: 'email form response survey submission answer',
           section: 'Email',
           key: 'notifyFormResponses',
           on: true,
