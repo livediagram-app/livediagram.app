@@ -57,8 +57,6 @@ export async function startE2EMedia({ run, waitForExit, port, state, apps }) {
       '--persist-to',
       state,
       // Only this stack's keys, never what a developer's .dev.vars names.
-      '--var',
-      'ENVIRONMENT:development',
       ...apps.flatMap((app) => ['--var', `${keyVar(app)}:${e2eMediaKey(app)}`]),
     ],
     { cwd: MEDIA_DIR },

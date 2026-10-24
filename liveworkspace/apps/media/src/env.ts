@@ -2,8 +2,6 @@ import type { App } from '@liveworkspace/index-client';
 import { MEDIA_APPS, type MediaApp } from '@liveworkspace/media';
 
 export interface Env {
-  // 'production', 'staging' or 'development'.
-  ENVIRONMENT: string;
   // The service's off switch: "false", "0" or "off" answers every route as missing. Unset is on.
   MEDIA_ENABLED?: string;
   MEDIA_DB: D1Database;

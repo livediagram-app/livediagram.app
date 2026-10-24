@@ -92,7 +92,6 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
   const bucket = memoryBucket();
   return {
     env: {
-      ENVIRONMENT: 'development',
       MEDIA_DB: db as unknown as D1Database,
       MEDIA: bucket as unknown as R2Bucket,
       MEDIA_KEY_LIVEDIAGRAM: 'ld-key',
