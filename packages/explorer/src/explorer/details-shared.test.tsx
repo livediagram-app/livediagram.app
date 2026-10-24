@@ -139,9 +139,22 @@ describe('the Details table', () => {
     page(index, { kind: 'all' }, { prefetchThumbnail: prefetch });
     await screen.findByText('Item 1');
     const row1 = document.querySelector('[data-item-row="item-1"]') as HTMLElement;
-    expect(within(row1).getByText('99+')).toBeTruthy();
+    // Every cell in words: the count beside its bubble, the type in its app's colour, what the person may do.
+    expect(within(row1).getByText('140')).toBeTruthy();
     expect(within(row1).getByText('140 comments')).toBeTruthy();
-    expect(row1.textContent).toContain('12 objects (3.4 KB)');
+    expect(within(row1).getByText('12 objects').getAttribute('title')).toBe('12 objects (3.4 KB)');
+    expect(within(row1).getByText('Plan')).toBeTruthy();
+    expect(row1.textContent).toMatch(/Can (edit|comment|view)/);
+    // The headers are words, never one letter.
+    expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual([
+      'Name',
+      'Type',
+      'Comments',
+      'Access',
+      'Size',
+      'Created',
+      'Updated',
+    ]);
     expect(
       within(document.querySelector('[data-item-row="item-2"]') as HTMLElement).getAllByText(
         'Not counted yet',

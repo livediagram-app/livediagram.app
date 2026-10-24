@@ -16,9 +16,9 @@ import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/dra
 import { LIST_CARD, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { FolderSolidIcon } from '../ui/icons';
+import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useCascade } from '../ui/useCascade';
-import { kindWords } from '../words';
+import { kindWords, siteOf } from '../words';
 import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
 import {
@@ -47,15 +47,36 @@ import { FolderMenu, ItemMenu } from './menus';
 import { ROW_HEIGHT, useFolderBits, useItemBits, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
 
-// Name, Type, Comments, Access, Size, Created, Updated, the menu: each column shows from its width up.
+// Name, Type, Comments, Access, Size, Created, Updated, the menu: each column shows from the list's width up (a
+// container query: the pane, not the window, is what they share), the name taking what is left.
 const GRID =
-  'grid items-center gap-2 grid-cols-[1fr_130px_40px] sm:grid-cols-[1fr_40px_120px_130px_40px] md:grid-cols-[1fr_40px_40px_40px_150px_140px_40px] lg:grid-cols-[1fr_40px_40px_40px_150px_140px_140px_40px]';
+  'grid items-center gap-3 grid-cols-[minmax(0,1fr)_6rem_2rem] @xl:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem_6rem_2rem] @3xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6rem_2rem] @5xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6.5rem_6rem_2rem]';
 
 const CELL = 'min-w-0 items-center';
 const cellClass = (id: DetailsColumnId) => {
   const c = DETAILS_COLUMNS.find((x) => x.id === id)!;
-  return `${CELL} ${SHOWN_FROM_CLASS[c.shownFrom] || 'flex'} ${ALIGN_CLASS[c.align]}`;
+  return `${CELL} ${SHOWN_FROM_CLASS[c.shownFrom]} ${ALIGN_CLASS[c.align]}`;
 };
+
+/** A header's sort arrow: up or down on the sorted column, a faint pair on the others while pointed at. */
+function SortArrow({ direction }: { direction: 'asc' | 'desc' | null }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className={`size-3 shrink-0 ${direction ? 'text-brand-600 dark:text-brand-300' : 'text-slate-300 opacity-0 group-hover/sort:opacity-100 dark:text-slate-600'}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {direction === 'asc' ? <path d="M8 13V3M4 7l4-4 4 4" /> : null}
+      {direction === 'desc' ? <path d="M8 3v10M4 9l4 4 4-4" /> : null}
+      {direction === null ? <path d="M5 6l3-3 3 3M5 10l3 3 3-3" /> : null}
+    </svg>
+  );
+}
 const CELLS = Object.fromEntries(DETAILS_COLUMNS.map((c) => [c.id, cellClass(c.id)])) as Record<
   DetailsColumnId,
   string
@@ -146,10 +167,10 @@ export function DetailsView({
   }
 
   return (
-    <div className={LIST_CARD}>
+    <div className={`@container ${LIST_CARD}`}>
       <div
         role="row"
-        className={`${GRID} border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400`}
+        className={`${GRID} border-b border-slate-200 bg-slate-50/95 px-4 py-2.5 text-xs font-medium text-slate-500 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400`}
       >
         {DETAILS_COLUMNS.map((c) => {
           const on = sort.column === c.id;
@@ -162,11 +183,12 @@ export function DetailsView({
                 aria-sort={on ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}
                 title={`Sort by ${c.label}`}
                 onClick={() => sortBy(c.id)}
-                className="truncate uppercase hover:text-slate-800 dark:hover:text-slate-200"
+                className={`group/sort -mx-1.5 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 transition hover:bg-slate-200/60 hover:text-slate-900 dark:hover:bg-slate-700/60 dark:hover:text-white ${
+                  c.align === 'end' ? 'flex-row-reverse' : ''
+                } ${on ? 'text-slate-900 dark:text-white' : ''}`}
               >
-                {c.iconOnly ? <span className="sr-only">{c.label}</span> : c.label}
-                {c.iconOnly ? <span aria-hidden>{c.label.charAt(0)}</span> : null}
-                {on ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}
+                <span className="truncate">{c.label}</span>
+                <SortArrow direction={on ? sort.direction : null} />
               </button>
             </span>
           );
@@ -222,8 +244,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
       {...drag}
     >
       <span className="flex min-w-0 items-center gap-2">
-        {/* Where the Type column is hidden, the name carries the folder icon. */}
-        <span aria-hidden className="shrink-0 text-amber-500 sm:hidden">
+        <span aria-hidden className="inline-flex shrink-0 text-amber-500 [&_svg]:size-4">
           <FolderSolidIcon />
         </span>
         {renaming ? (
@@ -251,7 +272,9 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
       </span>
       <span className={CELLS.comments} />
       <span className={CELLS.access} />
-      <span className={`${CELLS.size} text-xs tabular-nums text-slate-600 dark:text-slate-300`}>
+      <span
+        className={`${CELLS.size} truncate whitespace-nowrap text-xs tabular-nums text-slate-600 dark:text-slate-300`}
+      >
         {itemCount === undefined ? (
           <NoValue label={NOT_COUNTED} />
         ) : itemCount === 0 && elsewhere ? (
@@ -264,7 +287,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
         <DateCell at={f.createdAt} />
       </span>
       <span className={CELLS.updated}>
-        <DateCell at={f.updatedAt} />
+        <DateCell at={f.updatedAt} ago />
       </span>
       {renaming ? (
         <span />
@@ -324,6 +347,14 @@ const DetailsRow = memo(function DetailsRow({
       {...drag}
     >
       <span className="flex min-w-0 items-center gap-2">
+        {/* Its kind's glyph in its app's colour, so a row reads at a glance, as a folder's does. */}
+        <span
+          aria-hidden
+          className="inline-flex shrink-0 [&_svg]:size-4"
+          style={{ color: siteOf(item.app).accent }}
+        >
+          <ItemIcon />
+        </span>
         {options.showApp ? <AppMark app={item.app} /> : null}
         {item.favourite ? <FavouriteMarker /> : null}
         {renderItemMark?.(item, 'title')}
@@ -346,7 +377,7 @@ const DetailsRow = memo(function DetailsRow({
         <MadeByAiBadge item={item} />
       </span>
       <span className={CELLS.type}>
-        <TypeCell label={kind} />
+        <TypeCell app={item.app} label={kind} />
       </span>
       <span className={CELLS.comments}>
         <CommentsCell count={item.summary.comments} />
@@ -361,7 +392,7 @@ const DetailsRow = memo(function DetailsRow({
         <DateCell at={item.createdAt} />
       </span>
       <span className={`${CELLS.updated} justify-between gap-1.5`}>
-        <DateCell at={item.updatedAt} />
+        <DateCell at={item.updatedAt} ago />
         {renderItemMark?.(item, 'time')}
       </span>
       {renaming ? (

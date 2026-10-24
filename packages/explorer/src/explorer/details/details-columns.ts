@@ -15,56 +15,22 @@ export type DetailsColumn = {
   label: string;
   // The direction a first press sorts in.
   natural: SortDirection;
-  align: 'start' | 'center' | 'end';
-  // A narrow column of one icon, headed by an icon rather than its label.
-  iconOnly: boolean;
-  // The narrowest width that shows the column.
+  align: 'start' | 'end';
+  // The narrowest width of the list (a container query, not the window: the pane sits beside the sidebar) that
+  // shows the column: 'sm' 36rem, 'md' 48rem, 'lg' 64rem.
   shownFrom: 'always' | 'sm' | 'md' | 'lg';
 };
 
+// Every column is headed by its name (single letters over icon columns read as nothing), and every cell says
+// its value in words beside any icon (details-cells.tsx).
 export const DETAILS_COLUMNS: readonly DetailsColumn[] = [
-  {
-    id: 'name',
-    label: 'Name',
-    natural: 'asc',
-    align: 'start',
-    iconOnly: false,
-    shownFrom: 'always',
-  },
-  { id: 'type', label: 'Type', natural: 'asc', align: 'center', iconOnly: true, shownFrom: 'sm' },
-  {
-    id: 'comments',
-    label: 'Comments',
-    natural: 'desc',
-    align: 'center',
-    iconOnly: true,
-    shownFrom: 'md',
-  },
-  {
-    id: 'access',
-    label: 'Access',
-    natural: 'desc',
-    align: 'center',
-    iconOnly: true,
-    shownFrom: 'md',
-  },
-  { id: 'size', label: 'Size', natural: 'desc', align: 'end', iconOnly: false, shownFrom: 'sm' },
-  {
-    id: 'created',
-    label: 'Created',
-    natural: 'desc',
-    align: 'start',
-    iconOnly: false,
-    shownFrom: 'lg',
-  },
-  {
-    id: 'updated',
-    label: 'Updated',
-    natural: 'desc',
-    align: 'start',
-    iconOnly: false,
-    shownFrom: 'always',
-  },
+  { id: 'name', label: 'Name', natural: 'asc', align: 'start', shownFrom: 'always' },
+  { id: 'type', label: 'Type', natural: 'asc', align: 'start', shownFrom: 'sm' },
+  { id: 'comments', label: 'Comments', natural: 'desc', align: 'start', shownFrom: 'md' },
+  { id: 'access', label: 'Access', natural: 'desc', align: 'start', shownFrom: 'md' },
+  { id: 'size', label: 'Size', natural: 'desc', align: 'start', shownFrom: 'sm' },
+  { id: 'created', label: 'Created', natural: 'desc', align: 'start', shownFrom: 'lg' },
+  { id: 'updated', label: 'Updated', natural: 'desc', align: 'start', shownFrom: 'always' },
 ];
 
 const COLUMN = new Map(DETAILS_COLUMNS.map((c) => [c.id, c]));

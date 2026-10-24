@@ -55,3 +55,41 @@ export function formatDateTime(
   }
   return format.format(at);
 }
+
+const dateFormats = new Map<string, Intl.DateTimeFormat>();
+
+/** "23 Oct 2026" in the reader's locale, for the Created column. */
+export function formatDate(
+  at: number,
+  { locale, timeZone }: { locale?: string; timeZone?: string } = {},
+): string {
+  const key = `${locale ?? ''}|${timeZone ?? ''}`;
+  let format = dateFormats.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone });
+    dateFormats.set(key, format);
+  }
+  return format.format(at);
+}
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+/** How long ago, as a person says it: "Just now", "5 min ago", "3 hours ago", "Yesterday", "4 days ago", then the
+ *  date ("12 Oct 2026"). The Updated column reads this, its exact time in the cell's title. */
+export function formatAgo(
+  at: number,
+  { now = Date.now(), locale, timeZone }: { now?: number; locale?: string; timeZone?: string } = {},
+): string {
+  const ago = now - at;
+  if (ago < MINUTE) return 'Just now';
+  if (ago < HOUR) return `${Math.floor(ago / MINUTE)} min ago`;
+  if (ago < DAY) {
+    const hours = Math.floor(ago / HOUR);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  }
+  if (ago < 2 * DAY) return 'Yesterday';
+  if (ago < 7 * DAY) return `${Math.floor(ago / DAY)} days ago`;
+  return formatDate(at, { locale, timeZone });
+}

@@ -108,3 +108,18 @@ describe('the Details cells', () => {
     );
   });
 });
+
+describe('formatAgo', () => {
+  const now = Date.UTC(2026, 9, 24, 12, 0);
+  it('says how long ago as a person would, then the date', async () => {
+    const { formatAgo } = await import('./details-format');
+    const at = (ms: number) => formatAgo(now - ms, { now, locale: 'en-GB', timeZone: 'UTC' });
+    expect(at(20_000)).toBe('Just now');
+    expect(at(5 * 60_000)).toBe('5 min ago');
+    expect(at(60 * 60_000)).toBe('1 hour ago');
+    expect(at(3 * 3_600_000)).toBe('3 hours ago');
+    expect(at(30 * 3_600_000)).toBe('Yesterday');
+    expect(at(4 * 86_400_000)).toBe('4 days ago');
+    expect(at(30 * 86_400_000)).toBe('24 Sept 2026');
+  });
+});

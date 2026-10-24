@@ -328,6 +328,12 @@ Changes are optimistic: rename, favourite, move, Trash, restore and dismiss.
 Long lists stay small in the DOM:
 
 - **List and Details** use 48 px rows, windowed against whichever element scrolls.
+- **Details** is a table whose columns are headed by their names and whose cells say their values in words: the
+  item's glyph in its app's colour before its name, its type as a chip in that colour ("Plan"), its comments as a
+  bubble and a count, what the person may do ("Can edit"), its size, when it was made (the day) and when it last
+  changed ("2 hours ago"), each with its exact value in the title. Columns show by the list's own width (container
+  queries, since the pane sits beside the sidebar): Name and Updated always; Type and Size from 36rem; Comments and
+  Access from 48rem; Created from 64rem. A header press sorts, its arrow showing the direction.
 - **Cards** are revealed 60 at a time.
 
 The filter lens (`q` on a list view; liveplanner/docs/specs/013-workspace/explorer-filters.md) is parsed on the
