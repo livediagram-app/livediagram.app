@@ -40,6 +40,19 @@ async function settle() {
   for (let i = 0; i < 8; i++) await act(async () => await new Promise((r) => setTimeout(r, 0)));
 }
 
+// The panel's catalogue view (and the tokens panel) load lazily, and a cold import under a busy machine takes more
+// than a few ticks: wait until what a test reads is on the page, not for a fixed number of ticks.
+async function until(present: () => unknown) {
+  await vi.waitFor(
+    async () => {
+      await act(async () => await new Promise((r) => setTimeout(r, 0)));
+      if (!present()) throw new Error('not yet');
+    },
+    { timeout: 5000, interval: 10 },
+  );
+  await settle();
+}
+
 const switchFor = (rowKey: string) =>
   document.querySelector<HTMLButtonElement>(`[role="switch"][aria-labelledby="${rowKey}-label"]`)!;
 
@@ -63,7 +76,7 @@ async function open(
 ) {
   const onClose = vi.fn();
   act(() => root.render(<SiteSettingsDialog app={app} onClose={onClose} {...extra} />));
-  await settle();
+  await until(() => document.querySelector('nav[aria-label="Settings categories"]'));
   return onClose;
 }
 
@@ -197,7 +210,7 @@ describe('the Settings panel, for a guest on an app’s address', () => {
         />,
       ),
     );
-    await settle();
+    await until(() => document.querySelector('nav[aria-label="Settings categories"]'));
   }
 
   it('shows the app’s settings alone, as the editor keeps them in this browser, asking nothing', async () => {
@@ -246,6 +259,11 @@ describe('the Settings panel, opened on a section', () => {
         : json(200, { all: {}, app: {}, updatedAt: null }),
     );
     await open(null, { initialScope: 'all', initialCategoryId: 'account:tokens' });
+    await until(() =>
+      document
+        .querySelector('[data-settings-cell="tokens"]')
+        ?.textContent?.includes('No tokens yet'),
+    );
     const cell = document.querySelector('[data-settings-cell="tokens"]')!;
     expect(cell.textContent).toContain('Make a token');
     expect(cell.textContent).toContain('No tokens yet');

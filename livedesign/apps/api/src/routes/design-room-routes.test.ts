@@ -6,7 +6,7 @@
 // safe is that this route OVERWRITES every name on every path, so a client's own copy can never survive, and
 // that it reaches the room only with a grant the index signed for this design. These tests read the headers the
 // stub actually received rather than trusting the route's intent.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import { INDEX_GRANT_HEADER } from '@livedesign/api-schema';
 import type { Env } from '../types';
