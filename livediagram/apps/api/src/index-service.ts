@@ -35,5 +35,6 @@ export const indexFor = (env: Env, caller: GrantCaller): IndexClient | null =>
   indexService.clientFor(env, caller);
 
 // What a document pushes (document-outbox.ts): its summary, each tab's comments and actions, its Timeline events.
-export const indexAppClient = (env: Pick<Env, 'INDEX_ORIGIN' | 'INDEX_KEY'>): IndexAppClient | null =>
-  indexService.appClient(env);
+export const indexAppClient = (
+  env: Pick<Env, 'INDEX_ORIGIN' | 'INDEX_KEY'>,
+): IndexAppClient | null => indexService.appClient(env);

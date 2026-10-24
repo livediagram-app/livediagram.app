@@ -134,8 +134,8 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below, or the Drive spec's
    own), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
    The stack forwards `/api/index/*` to it, cookies dropped, as the router does.
-2. **media**: liveworkspace's media service (`liveworkspace/apps/media`, booted by its
-   `scripts/e2e-media.mjs`, which every product's stack can share) under `wrangler dev --local` on
+2. **media**: liveworkspace's media service (`liveworkspace/apps/media`, booted by
+   `liveworkspace/apps/media/scripts/e2e-media.mjs`, which every product's stack can share) under `wrangler dev --local` on
    `E2E_MEDIA_PORT` (8120), its D1 and R2 fresh each boot under `liveworkspace/apps/media/.wrangler/e2e-state-<port>`
    (migrations applied first), keyed for livediagram.app with a test-only key the api gets as `MEDIA_KEY` (and
    `MEDIA_URL` pointing at it). Uploads, the gallery and image bytes run end to end, as `import-images.spec.ts`

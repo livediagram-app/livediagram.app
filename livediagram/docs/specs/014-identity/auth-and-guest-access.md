@@ -10,10 +10,10 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 Every build offers sign-in: there is no build-time switch for it. The frontend always mounts the accounts bridge, `AuthControls` always shows, and `/sign-in/` and `/get-started/` always hand off to the accounts site. What a deployment configures is the api's accounts client (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`):
 
-| API configuration     | What visitors get                                                                                                                                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ACCOUNTS_*` set      | Guests and signed-in people coexist. The api verifies the Bearer: an account's access token or a guest token.                                                                                                                                                      |
-| `ACCOUNTS_*` unset    | `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured` and `/api/auth/*` answers 404 `sign_in_not_configured`: visitors have no identity, settle as signed out, and can only draw in documents in This Browser. Suits a quick local try-out. |
+| API configuration  | What visitors get                                                                                                                                                                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_*` set   | Guests and signed-in people coexist. The api verifies the Bearer: an account's access token or a guest token.                                                                                                                                                        |
+| `ACCOUNTS_*` unset | `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured` and `/api/auth/*` answers 404 `sign_in_not_configured`: visitors have no identity, settle as signed out, and can only draw in documents in This Browser. Suits a quick local try-out. |
 
 **Guests need the accounts site too**: a guest's identity is a guest token the liveworkspace accounts site mints ([Guest identity](#guest-identity)), so a deployment without it has no guests.
 

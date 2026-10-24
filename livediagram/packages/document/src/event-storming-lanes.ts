@@ -407,4 +407,3 @@ export function captureCandidate(
   }
   return best;
 }
-

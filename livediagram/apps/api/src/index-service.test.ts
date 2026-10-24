@@ -33,7 +33,9 @@ describe('index service', () => {
   it('serves a guest by their guest token', async () => {
     const env = {} as Env;
     const index = await indexServiceFor(env);
-    const token = await index.tokenFor('guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880', { guest: true });
+    const token = await index.tokenFor('guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880', {
+      guest: true,
+    });
     const { item } = await indexFor(env, { kind: 'bearer', token })!.createItem({
       app: 'livediagram',
       title: 'Sketch',

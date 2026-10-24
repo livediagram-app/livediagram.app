@@ -170,4 +170,3 @@ export function tallyPoll(poll: LivePoll, answers: Map<string, string | null>): 
   });
   return { rows, textAnswers, answered, skipped };
 }
-
