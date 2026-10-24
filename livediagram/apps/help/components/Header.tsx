@@ -1,5 +1,5 @@
 import { SiteHeader } from '@livediagram/ui';
-import { SearchInput } from '@/components/SearchInput';
+import { SearchInput } from '@liveworkspace/help-site/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's and
 // the Community's). Brand links back to the

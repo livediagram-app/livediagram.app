@@ -196,7 +196,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the diagram editor app (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help)
+  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects + R2, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
@@ -219,7 +219,7 @@ packages/
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   fake-google/  # in-memory Google Drive + OAuth, for tests only
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)
