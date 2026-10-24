@@ -1,12 +1,15 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDesignSchema } from './design-room/design-schema';
-import { nodeDesignSql, nodeTransaction } from './test-design-sql';
+import {
+  memoryWorkbenchNamespace,
+  nodeItemSql,
+  nodeTransaction,
+} from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@livedesign/api-schema';
 import type { GrantCaller, GrantOutcome, DesignGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DesignEnv } from './types';
-import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
 import { accountCredentials } from './auth/accounts';
 import { closeWorkbenchSessions } from './room-access-client';
 
@@ -22,7 +25,6 @@ import { closeWorkbenchSessions } from './room-access-client';
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
-
 export type SqliteD1 = {
   // The worker's bindings and the designs' (DESIGN_DB): every content module runs against it.
   env: DesignEnv;
@@ -35,7 +37,7 @@ export type SqliteD1 = {
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  const designSql = nodeDesignSql(sql);
+  const designSql = nodeItemSql(sql);
   migrateDesignSchema((q) => designSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_designs`
   // writes a started design's own row (what a create writes), and `test_share_links` holds the links the index
@@ -184,7 +186,11 @@ export type TestGrantCaller = {
   create: boolean;
 };
 
-function testGrantFor(sql: DatabaseSync, designId: string, who: TestGrantCaller): DesignGrant | null {
+function testGrantFor(
+  sql: DatabaseSync,
+  designId: string,
+  who: TestGrantCaller,
+): DesignGrant | null {
   const design = sql
     .prepare('SELECT owner_id, team_id, created_at FROM design WHERE id = ?')
     .get(designId) as { owner_id: string; team_id: string | null; created_at: number } | undefined;
@@ -267,16 +273,27 @@ function testDesignRooms(
       hasTab: async (designId: string, tabId: string) =>
         (await import('./db/tabs')).designHasTab(env, designId, tabId),
       exportCopy: async (designId: string, onlyTabId: string | null, redact: string | null) =>
-        (await import('./design-room/design-content')).exportDesignCopy(env, designId, onlyTabId, redact),
+        (await import('./design-room/design-content')).exportDesignCopy(
+          env,
+          designId,
+          onlyTabId,
+          redact,
+        ),
       joined: async (designId: string, personId: string) => {
-        const meta = await (await import('./design-room/design-content')).readDesignMeta(env, designId);
+        const meta = await (
+          await import('./design-room/design-content')
+        ).readDesignMeta(env, designId);
         if (!meta) return;
         await (
           await import('./email/notifications')
         ).notifyDesignJoin(env, { id: designId, ownerId: meta.ownerId, name: meta.name }, personId);
       },
       importCopy: async (designId: string, copy: unknown) =>
-        (await import('./design-room/design-content')).importDesignCopy(env, designId, copy as never),
+        (await import('./design-room/design-content')).importDesignCopy(
+          env,
+          designId,
+          copy as never,
+        ),
       // Everything the design stored goes, and the room hears it as it did (its `/purge`).
       purge: async (designId: string) => {
         sql.exec('SAVEPOINT purge');

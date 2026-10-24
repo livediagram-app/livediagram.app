@@ -2,12 +2,15 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDocumentSchema } from './document-room/document-schema';
-import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
+import {
+  memoryWorkbenchNamespace,
+  nodeItemSql,
+  nodeTransaction,
+} from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@livedocuments/api-schema';
 import type { GrantCaller, GrantOutcome, DocumentGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DocumentEnv } from './types';
-import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
 import { accountCredentials } from './auth/accounts';
 import { closeWorkbenchSessions } from './room-access-client';
 
@@ -33,7 +36,7 @@ export type SqliteD1 = {
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  const documentSql = nodeDocumentSql(sql);
+  const documentSql = nodeItemSql(sql);
   migrateDocumentSchema((q) => documentSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_documents`
   // writes a started document's own row (what a create writes), and `test_share_links` holds the links the index

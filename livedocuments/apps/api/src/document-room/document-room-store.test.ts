@@ -9,7 +9,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';
 import { mediaImages } from '../db/test-image-fixtures';
 import { mediaOwner } from '../media';
-import { nodeDocumentSql, nodeTransaction } from '../test-document-sql';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './document-outbox';
 import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
@@ -78,7 +78,7 @@ function documentNamespace(envOf: () => Env) {
     const state = {
       id,
       storage: {
-        sql: nodeDocumentSql(db),
+        sql: nodeItemSql(db),
         transactionSync: <T>(fn: () => T): T => {
           document.transactions += 1;
           return transaction(fn);

@@ -103,7 +103,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `INSERT OR IGNORE` outcomes. It answers the `PLAN_ROOM` RPCs from the same tables,
   keeps each person's workbench store in memory as `env.WORKBENCH`, and `flush` drains
   what the plans owe the index.
-- **A plan's own Durable Object in tests.** `src/test-plan-sql.ts` puts
+- **A plan's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
   `plan-room/plan-room-store.test.ts` runs the real worker against one real

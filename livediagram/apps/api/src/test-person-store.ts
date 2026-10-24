@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { PersonStore } from './person-store/person-store';
-import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from './types';
 
 // env.PERSON_STORE for node tests: one real PersonStore per person id, each on its own in-memory node:sqlite
@@ -16,7 +16,7 @@ export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
       const holder = { db: new DatabaseSync(':memory:') };
       const storage = {
         get sql() {
-          return nodeDocumentSql(holder.db);
+          return nodeItemSql(holder.db);
         },
         transactionSync: <T>(fn: () => T): T => nodeTransaction(holder.db)(fn),
         deleteAll: async () => {

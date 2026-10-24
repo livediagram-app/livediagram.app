@@ -1,12 +1,15 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migratePlanSchema } from './plan-room/plan-schema';
-import { nodePlanSql, nodeTransaction } from './test-plan-sql';
+import {
+  memoryWorkbenchNamespace,
+  nodeItemSql,
+  nodeTransaction,
+} from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import type { GrantCaller, GrantOutcome, PlanGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, PlanEnv } from './types';
-import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
 import { accountCredentials } from './auth/accounts';
 import { closeWorkbenchSessions } from './room-access-client';
 
@@ -31,7 +34,7 @@ export type SqliteD1 = {
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  const planSql = nodePlanSql(sql);
+  const planSql = nodeItemSql(sql);
   migratePlanSchema((q) => planSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_plans`
   // writes a started plan's own row (what a create writes), and `test_share_links` holds the links the index

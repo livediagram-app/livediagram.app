@@ -103,7 +103,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `DOCUMENT_ROOM` RPCs from the same tables, stands in for the index (grants, share links, folders), and gives each
   person an in-memory store (`PERSON_STORE`) and workbench store (`memoryWorkbenchNamespace`,
   `@liveworkspace/index-app/testing`).
-- **A document's own Durable Object in tests.** `src/test-document-sql.ts` puts
+- **A document's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
   `document-room/document-room-store.test.ts` runs the real worker against one real

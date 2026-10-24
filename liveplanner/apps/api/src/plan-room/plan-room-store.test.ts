@@ -6,7 +6,7 @@ import { cpuBudgetMs, cpuMsOfAsync } from '@liveplanner/vitest-config/cpu-time';
 import type { Element } from '@liveplanner/project';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { nodePlanSql, nodeTransaction } from '../test-plan-sql';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './plan-outbox';
 import { MAINTENANCE_EVERY_MS, PlanRoom } from './plan-room';
@@ -75,7 +75,7 @@ function planNamespace(envOf: () => Env) {
     const state = {
       id,
       storage: {
-        sql: nodePlanSql(db),
+        sql: nodeItemSql(db),
         transactionSync: <T>(fn: () => T): T => {
           plan.transactions += 1;
           return transaction(fn);

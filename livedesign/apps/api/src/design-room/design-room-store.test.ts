@@ -6,7 +6,7 @@ import { cpuBudgetMs, cpuMsOfAsync } from '@livedesign/vitest-config/cpu-time';
 import type { Element } from '@livedesign/design';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { nodeDesignSql, nodeTransaction } from '../test-design-sql';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './design-outbox';
 import { MAINTENANCE_EVERY_MS, DesignRoom } from './design-room';
@@ -75,7 +75,7 @@ function designNamespace(envOf: () => Env) {
     const state = {
       id,
       storage: {
-        sql: nodeDesignSql(db),
+        sql: nodeItemSql(db),
         transactionSync: <T>(fn: () => T): T => {
           design.transactions += 1;
           return transaction(fn);

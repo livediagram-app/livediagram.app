@@ -1,7 +1,7 @@
 // Tests only (`@liveworkspace/index-app/testing`): node:sqlite stand-ins for what the kit's Durable Objects run on.
 import { createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { nodeSql } from './test-sqlite';
+import { nodeItemSql, nodeSql, nodeTransaction } from './test-sqlite';
 import {
   WorkbenchCore,
   type WorkbenchHooks,
@@ -10,7 +10,7 @@ import {
   type WorkbenchStoreApi,
 } from './workbench';
 
-export { nodeSql };
+export { nodeItemSql, nodeSql, nodeTransaction };
 
 // A Durable Object's storage over a fresh in-memory database: its SQL, its alarm and deleteAll.
 export function memoryStorage(): WorkbenchStorage & { alarmAt: number | null } {
