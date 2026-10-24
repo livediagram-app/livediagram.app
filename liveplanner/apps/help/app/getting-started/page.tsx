@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Getting Started',
   description:
-    'New to liveplanner? Create your first diagram, learn the canvas, and share it with your team.',
+    'New to liveplanner? Create your first plan, learn the canvas, and share it with your team.',
   path: '/help/getting-started/',
 });
 

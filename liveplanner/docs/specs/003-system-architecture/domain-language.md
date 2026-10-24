@@ -3,9 +3,11 @@
 ## Project
 
 What a person makes in liveplanner is a **project**: a named set of Board, Sheet, Dashboard and Form tabs, its
-items, sharing and history. **Project** is its one name, in the interface, help, marketing, email, the descriptions
-agents read, and the code: the type (`Project`), its package, tables, API routes (`/api/projects`), room and URL
-(`/project/<id>`). "Document", "file" and "board" never name it. (A page's DOM `document` is the browser's, not this.)
+items, sharing and history. People see it called a **plan**: the interface, help, marketing, email and the
+descriptions agents read all say plan ("Creating your plan", "New Plan"). **Project** is its name in the code: the
+type (`Project`), its package, tables, API routes (`/api/projects`), room and URL (`/project/<id>`), and the CLI's
+`project` commands, until the move in liveworkspace/docs/one-explorer.md. "Document", "file" and "board" never name
+it. (A page's DOM `document` is the browser's, not this.)
 
 ## Mode, kind and template
 

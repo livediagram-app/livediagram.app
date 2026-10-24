@@ -290,8 +290,8 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from arrival to the editor: `/new`'s
 creating stage and the editor's own load (`ProjectLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your project"** to **"Opening your
-project"**; everything else stays put.
+Its label moves from **"Creating your plan"** to **"Opening your
+plan"**; everything else stays put.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the

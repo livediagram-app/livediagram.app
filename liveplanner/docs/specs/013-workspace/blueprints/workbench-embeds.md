@@ -388,7 +388,7 @@ the socket, WB11).
 
 | Phase       | Entered when                                               | Shows                                                                 | Leaves to                                                       |
 | ----------- | ---------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `reading`   | first render                                               | "Opening your project…"                                               | `redeeming` (ticket read), `refused('no-ticket')`               |
+| `reading`   | first render                                               | "Opening your plan…"                                                  | `redeeming` (ticket read), `refused('no-ticket')`               |
 | `redeeming` | `takeTicketFromAddress` returned a ticket                  | as `reading`                                                          | `binding`, `refused('ticket')`, `refused('mismatch')`, `failed` |
 | `binding`   | redeem answered with the address's `d`                     | as `reading`                                                          | `mounted`, `unbound`                                            |
 | `mounted`   | a valid `hello-ack` within `WORKBENCH_HANDSHAKE_MS`        | the editor                                                            | `ended(expired \| revoked \| trashed)`                          |
@@ -1138,14 +1138,14 @@ both know whose store to ask.
 
 ### Workbench page copy
 
-| Where                             | Copy                                                                                                                                           |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reading`, `redeeming`, `binding` | "Opening your project…" (WB33)                                                                                                                 |
-| `refused` (any)                   | Heading "Open this project from your workbench", body "This link works once, for a minute. Open the project again from your workbench." (WB33) |
-| `unbound`                         | "This view opens only inside <origin>." (spec), the origin in monospace                                                                        |
-| `ended` (expired, revoked)        | A line at the top centre: "Reconnect in <name> to keep editing." (spec); `<name>` from `hello-ack`                                             |
-| `ended` (trashed)                 | `ProjectTrashedCard` with `restorable={false}`                                                                                                 |
-| `failed`                          | `LoadErrorCard embed`                                                                                                                          |
+| Where                             | Copy                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reading`, `redeeming`, `binding` | "Opening your plan…" (WB33)                                                                                                                 |
+| `refused` (any)                   | Heading "Open this plan from your workbench", body "This link works once, for a minute. Open the project again from your workbench." (WB33) |
+| `unbound`                         | "This view opens only inside <origin>." (spec), the origin in monospace                                                                     |
+| `ended` (expired, revoked)        | A line at the top centre: "Reconnect in <name> to keep editing." (spec); `<name>` from `hello-ack`                                          |
+| `ended` (trashed)                 | `ProjectTrashedCard` with `restorable={false}`                                                                                              |
+| `failed`                          | `LoadErrorCard embed`                                                                                                                       |
 
 The status screens use `EmbedShell` (no header, no Explorer). **Open in liveplanner** (`WorkbenchOpenLink`): the last
 control at the right end of the tab bar, after Search and Settings, styled as they are: the external-link glyph and

@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board", and so do code identifiers, tables and routes.
+- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. People see it called a **plan**: copy, help, email and agent descriptions say plan; code identifiers, tables and routes say project. Neither ever says "document", "file" or "board".
 - **Mode** is how a tab is worked on; there is one, **Plan**, shared by everyone on the tab and never a type of project or tab.
 - **Kind** is what a tab is: a Board, Sheet, Dashboard or Form tab (a fresh tab is the general kind until Start Planning sets one).
 - **Template** is what a project was made from; a template family (Retrospectives, Kanban) is never a kind.
