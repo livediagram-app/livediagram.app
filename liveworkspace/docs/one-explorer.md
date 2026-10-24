@@ -109,9 +109,17 @@ What it forwards:
   liveworkspace.app, the app's cookies left behind and liveworkspace's never set on the app's origin. The page is
   never cached (`no-store`, as every page).
 - The site's build assets under `/_liveworkspace/…` (the site's `assetPrefix`), a path that never meets the app's
-  own `/_next` or `/live`. They are content-hashed and cached for a year.
+  own `/_next` or `/live`. They are content-hashed and cached for a year. Each router names its environment's
+  liveworkspace.app (`WORKSPACE_ORIGIN`: `http://localhost:3000` in local dev, `https://staging.liveworkspace.app`
+  on staging, production's by default), so the chunks always come from the build that made the page; a test in
+  `@liveworkspace/sites` (`workspace-proxy.test.ts`) holds all four routers to it.
 - `/api/workspace/account/…` to liveworkspace's `/api/account/…`: the few account reads the page makes (people's
   names, the person's teams and a team's members, their settings), with the page's bearer token.
+
+In local dev, `next dev`'s overlay font (`/__nextjs_font/…`, requested from the page's origin, not under the asset
+prefix) is not forwarded: the router sends it to the app's own editor dev server, which serves the same file. A 500
+on it means that dev server is unhealthy (a Turbopack cache error, for one), and restarting the app's `pnpm dev`
+clears it. Staging and production never request it.
 
 The page reads where it is from its own address and there is that app's page:
 

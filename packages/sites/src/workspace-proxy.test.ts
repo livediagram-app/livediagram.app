@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import {
   ACCOUNT_ROUTE,
@@ -352,4 +353,31 @@ describe('forwardToIndex', () => {
     await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', doFetch);
     expect(seen[1]!.headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(false);
   });
+});
+
+// Where each router finds liveworkspace.app, per environment: staging's routers must name staging's site, or a
+// staging page under /explorer would load `/_liveworkspace` chunks from production's build, whose hashes differ.
+describe('each router names its environment’s liveworkspace.app', () => {
+  const varsOf = (toml: string, section: string): string => {
+    const start = toml.indexOf(`[${section}]`);
+    if (start < 0) return '';
+    const rest = toml.slice(start + section.length + 2);
+    const next = rest.search(/^\[/m);
+    return next < 0 ? rest : rest.slice(0, next);
+  };
+  const originIn = (vars: string) => /^WORKSPACE_ORIGIN = "([^"]*)"/m.exec(vars)?.[1];
+
+  it.each(APP_NAMES)(
+    '%s: local dev the local site, staging the staging site, production the default',
+    (app) => {
+      const toml = readFileSync(
+        new URL(`../../../${app}/apps/router/wrangler.toml`, import.meta.url),
+        'utf8',
+      );
+      expect(originIn(varsOf(toml, 'env.local.vars'))).toBe('http://localhost:3000');
+      expect(originIn(varsOf(toml, 'env.staging.vars'))).toBe('https://staging.liveworkspace.app');
+      // Production's top-level vars leave it unset: routeToWorkspace falls back to PRODUCTION_WORKSPACE_ORIGIN.
+      expect(originIn(varsOf(toml, 'vars'))).toBeUndefined();
+    },
+  );
 });
