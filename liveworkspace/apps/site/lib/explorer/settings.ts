@@ -1,12 +1,14 @@
 'use client';
 
 // The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/accounts.md
-// "Settings"): whether Home's banner is hidden (`homeBanner`, the app's own scope, as each app's Settings shows it)
-// and whether anonymous events may be sent (`telemetryEnabled`, the `all` scope every app shares). One read per
+// "Settings"): whether Home's banner is hidden (`homeBanner`, a common setting in the `all` scope, an app's copy from
+// before it was shared counting until `all` has one) and whether anonymous events may be sent (`telemetryEnabled`,
+// the `all` scope too). One read per
 // app a page asks about, shared with the Settings panel (lib/app-settings.ts). A guest has no synced
 // settings: Home's banner is then this browser's own choice, and telemetry follows the browser.
 
 import { useCallback, useEffect, useState } from 'react';
+import { joinSettings } from '@liveworkspace/settings';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
 import type { AppScopes } from '@liveworkspace/settings-ui';
 import { settingsStore, type AppId } from '@/lib/app-settings';
@@ -50,18 +52,22 @@ export function useExplorerSettings(
   const onHideHero = useCallback(() => {
     trackHomeBannerOff();
     if (kind !== 'account') return;
-    // Shown hidden at once; written so every device opens Home without it. The app's Settings turns it back on.
+    // Shown hidden at once; written so every device, and every app's Home, opens without it. Any app's Settings
+    // turns it back on.
     setRead((now) => {
       if (now?.site !== site) return now;
-      const next = { ...now.scopes, app: { ...now.scopes.app, homeBanner: false } };
-      settingsStore.remember(site, next);
-      return { site, scopes: next };
+      const all = { ...now.scopes.all, homeBanner: false };
+      settingsStore.rememberShared(all);
+      return { site, scopes: { ...now.scopes, all } };
     });
-    void settingsStore.patchApp(site, { homeBanner: false }).then((result) => {
-      if (result.ok) settingsStore.remember(site, result.data);
+    void settingsStore.patchShared({ homeBanner: false }).then((result) => {
+      if (result.ok) settingsStore.rememberShared(result.data.all);
     });
   }, [kind, site]);
 
-  const heroHidden = kind === 'account' && scopes ? scopes.app.homeBanner === false : undefined;
+  const heroHidden =
+    kind === 'account' && scopes
+      ? joinSettings(scopes.all, scopes.app).homeBanner === false
+      : undefined;
   return { heroHidden, onHideHero };
 }

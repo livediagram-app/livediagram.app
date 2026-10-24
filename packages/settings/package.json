@@ -9,6 +9,7 @@
     "./catalogues/*": "./src/catalogues/*.ts",
     "./account": "./src/account.ts",
     "./device": "./src/device.ts",
+    "./common": "./src/common.ts",
     "./presence": "./src/presence.ts"
   },
   "scripts": {

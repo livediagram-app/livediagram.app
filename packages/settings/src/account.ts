@@ -6,7 +6,7 @@
 //
 // The Settings panel (@liveworkspace/settings-ui) draws these as its Account section, wherever it is opened:
 // liveworkspace.app, the Explorer on an app's address, and every editor.
-import { ALL_SETTING_KEYS, type AllSettingKey, type SettingsBlob } from './index';
+import { ALL_SETTING_KEYS, isCommonSetting, type AllSettingKey, type SettingsBlob } from './index';
 
 export interface AccountToggle {
   key: AllSettingKey;
@@ -123,10 +123,11 @@ export const EDITOR_ONLY_KEYS: readonly AllSettingKey[] = [
   'customSwatches',
 ];
 
-// Every shared key is either in the Account section or deliberately left to the apps.
+// Every shared key is in the Account section, in the Common group (a common setting, shown from the apps'
+// catalogues) or deliberately left to the apps.
 export function uncatalogued(): AllSettingKey[] {
   return ALL_SETTING_KEYS.filter(
-    (key) => !ACCOUNT_KEYS.has(key) && !EDITOR_ONLY_KEYS.includes(key),
+    (key) => !ACCOUNT_KEYS.has(key) && !EDITOR_ONLY_KEYS.includes(key) && !isCommonSetting(key),
   );
 }
 

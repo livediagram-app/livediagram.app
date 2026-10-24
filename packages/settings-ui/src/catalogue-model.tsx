@@ -2,7 +2,7 @@
 // scopes) as the Settings view's model, so the Settings panel draws another app's settings exactly as that app's
 // own Settings does (liveworkspace/docs/site.md "Settings"). Values are read from both scopes together; a change
 // hands the row's binding and the value to store to `change`, which saves it.
-import { joinSettings, type SettingsBlob } from '@liveworkspace/settings';
+import { isAllSetting, joinSettings, type SettingsBlob } from '@liveworkspace/settings';
 import {
   readChoiceValue,
   readSliderValue,
@@ -14,6 +14,7 @@ import {
   type CatalogueSlider,
   type StoredValue,
 } from '@liveworkspace/settings/catalogue';
+import { rowBindings } from '@liveworkspace/settings/common';
 import { SettingsCategoryTile, type SettingsTileId } from './glyphs';
 import type { SettingsCategory, SettingsRow } from './model';
 
@@ -69,6 +70,8 @@ function modelRow(
     ...(row.section ? { section: row.section } : {}),
     // Nested under its switch while that is shown (a nested row shows only while it is on).
     ...(row.parent && shown.has(row.parent) ? { parent: row.parent } : {}),
+    // A common setting, kept in `all`: changed here, it changes in every app that has it.
+    ...(rowBindings(row).every((binding) => isAllSetting(binding.key)) ? { allApps: true } : {}),
   };
   switch (row.kind) {
     case 'toggle':

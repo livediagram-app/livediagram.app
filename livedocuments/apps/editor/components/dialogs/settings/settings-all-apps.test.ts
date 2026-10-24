@@ -12,7 +12,11 @@ describe('rowSharedAcrossApps', () => {
     expect(rowSharedAcrossApps('uiScale')).toBe(true);
     expect(rowSharedAcrossApps('uiScale-cornerButtons')).toBe(true);
     expect(rowSharedAcrossApps('notifyComments')).toBe(true);
-    expect(rowSharedAcrossApps('mapSize')).toBe(false);
+    // A setting two or more apps have is one shared setting (liveworkspace/docs/accounts.md "Common settings").
+    expect(rowSharedAcrossApps('mapSize')).toBe(true);
+    expect(rowSharedAcrossApps('presentation-transition')).toBe(true);
+    expect(rowSharedAcrossApps('contentsPlacement')).toBe(true);
+    expect(rowSharedAcrossApps('notifyDocumentJoin')).toBe(false);
     expect(rowSharedAcrossApps('uiScaleLink')).toBe(false);
   });
 

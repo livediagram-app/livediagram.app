@@ -1,12 +1,17 @@
 // Filing one source's categories under a heading of the All view (the Account section, or an app): each category
 // and row id is prefixed with the heading's, so two apps' "Editor" or "notifyComments" never collide in one
 // dialog, and every reference between them (a sub-category's parent, a nested row's, a link's target, the power
-// user readout's lines) is prefixed with it.
+// user readout's lines) is prefixed with it. A readout line whose row is drawn under another heading (an editor's
+// common setting, under Common) is prefixed with that heading's (`groupOf`).
 import type { SettingsCategory, SettingsRow } from './model';
 
 export const groupedId = (group: string, id: string) => `${group}:${id}`;
 
-function prefixRow(group: string, row: SettingsRow): SettingsRow {
+function prefixRow(
+  group: string,
+  row: SettingsRow,
+  groupOf: (rowKey: string) => string = () => group,
+): SettingsRow {
   const key = groupedId(group, row.key);
   const parent = row.parent !== undefined ? { parent: groupedId(group, row.parent) } : {};
   switch (row.kind) {
@@ -19,8 +24,8 @@ function prefixRow(group: string, row: SettingsRow): SettingsRow {
         ...parent,
         lines: row.lines.map((line) => ({
           ...line,
-          rowKey: groupedId(group, line.rowKey),
-          categoryId: groupedId(group, line.categoryId),
+          rowKey: groupedId(groupOf(line.rowKey), line.rowKey),
+          categoryId: groupedId(groupOf(line.rowKey), line.categoryId),
         })),
       };
     default:
@@ -31,7 +36,10 @@ function prefixRow(group: string, row: SettingsRow): SettingsRow {
 export function groupCategories(
   group: string,
   categories: readonly SettingsCategory[],
-  { omit }: { omit?: (row: SettingsRow) => boolean } = {},
+  {
+    omit,
+    groupOf,
+  }: { omit?: (row: SettingsRow) => boolean; groupOf?: (rowKey: string) => string } = {},
 ): SettingsCategory[] {
   const kept = categories
     .map((category) => ({
@@ -46,6 +54,6 @@ export function groupCategories(
     group,
     // A sub-category whose parent was left out stands at the top level.
     ...(parent !== undefined && ids.has(parent) ? { parent: groupedId(group, parent) } : {}),
-    rows: rows.map((row) => prefixRow(group, row)),
+    rows: rows.map((row) => prefixRow(group, row, groupOf)),
   }));
 }

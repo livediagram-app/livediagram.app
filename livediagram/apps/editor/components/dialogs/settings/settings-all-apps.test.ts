@@ -10,8 +10,13 @@ describe('rowSharedByAllApps', () => {
     expect(rowSharedByAllApps('reduceMotion', true)).toBe(true);
     expect(rowSharedByAllApps('uiScale-panels', true)).toBe(true);
     expect(rowSharedByAllApps('uiScale-cornerButtons', true)).toBe(true);
-    expect(rowSharedByAllApps('showMinimap', true)).toBe(false);
+    // A setting two or more apps have is one shared setting (liveworkspace/docs/accounts.md "Common settings").
+    expect(rowSharedByAllApps('showMinimap', true)).toBe(true);
+    expect(rowSharedByAllApps('presentation-loop', true)).toBe(true);
+    expect(rowSharedByAllApps('presentationAutoAdvance', true)).toBe(true);
+    // livediagram's own.
     expect(rowSharedByAllApps('notifyDocumentJoin', true)).toBe(false);
+    expect(rowSharedByAllApps('whiteboardDockPosition', true)).toBe(false);
   });
 
   it('says nothing where preferences stay in this browser (no sign-in)', () => {

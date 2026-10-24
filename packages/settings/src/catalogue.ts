@@ -11,7 +11,7 @@
 // result in ./catalogues/<app>.ts, and a test beside its catalogue fails when the two drift.
 //
 // Pure data and helpers, with no editor code: the site loads one app's catalogue when its dialog opens.
-import { isAllSetting, type SettingsBlob } from './index';
+import { isAllSetting, isCommonSetting, type SettingsBlob } from './index';
 
 export type StoredValue = string | number | boolean | null;
 
@@ -341,7 +341,11 @@ function availability(row: SourceRow): 'always' | 'powerUser' | 'never' {
   return 'never';
 }
 
-const appScoped = (binding: CatalogueBinding) => !isAllSetting(binding.key);
+// A row the catalogue keeps: one over the app's own scope, or over a common setting (kept in `all`, and still the
+// app's to show on its own side). The other shared keys are shown elsewhere: the Account section's switches, and
+// the editors' chrome inside the editors.
+const catalogued = (binding: CatalogueBinding) =>
+  !isAllSetting(binding.key) || isCommonSetting(binding.key);
 
 // The row's event, as plain data.
 const withEvent = (event: SettingEvent | undefined) => (event ? { event: { ...event } } : {});
@@ -364,26 +368,26 @@ function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | nul
   }
   if (row.kind === 'toggle') {
     const toggle = deriveToggle(row);
-    return toggle && appScoped(toggle)
+    return toggle && catalogued(toggle)
       ? { kind: 'toggle', ...common, ...toggle, ...withEvent(row.event) }
       : null;
   }
   if (row.kind === 'choice') {
     const choice = deriveChoice(row);
-    return choice && appScoped(choice)
+    return choice && catalogued(choice)
       ? { kind: 'choice', ...common, ...choice, ...withEvent(row.event) }
       : null;
   }
   if (row.kind === 'slider') {
     const slider = deriveSlider(row);
-    return slider && appScoped(slider)
+    return slider && catalogued(slider)
       ? { kind: 'slider', ...common, ...slider, ...withEvent(row.event) }
       : null;
   }
   if (row.kind === 'toggleGroup' && row.toggles) {
     const toggles = row.toggles.flatMap((toggle) => {
       const bound = probeToggle(toggle.read.bind(toggle), toggle.write.bind(toggle) as Write);
-      return bound && appScoped(bound)
+      return bound && catalogued(bound)
         ? [{ id: toggle.key, label: toggle.label, ...bound, ...withEvent(toggle.event) }]
         : [];
     });
@@ -400,7 +404,7 @@ function deriveShared(categories: readonly SourceCategory[]): SharedToggle[] {
   for (const row of categories.flatMap((category) => category.rows)) {
     if (row.kind !== 'toggle' || !row.event) continue;
     const toggle = deriveToggle(row);
-    if (!toggle || appScoped(toggle) || toggle.field !== undefined || shared.has(toggle.key))
+    if (!toggle || catalogued(toggle) || toggle.field !== undefined || shared.has(toggle.key))
       continue;
     shared.set(toggle.key, { ...toggle, event: { ...row.event } });
   }

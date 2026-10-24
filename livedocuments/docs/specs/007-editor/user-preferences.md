@@ -26,10 +26,14 @@ table of its own for them.
   `ALL_SETTING_KEYS` (`@liveworkspace/settings`: telemetry, reduced
   motion, the notification switches, panel opacity, UI scale, middle-
   mouse pan, dock button names, power user mode, minimal chrome,
-  custom swatches) lives in `all`, so changing it here changes it in
+  custom swatches, and the editor settings two or more apps have:
+  the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover, Pages' Contents and Presenting) lives in `all`, so changing it here changes it in
   every app that has it; every other key is livedocuments' own. The api
   joins the two (`joinSettings`) on read and splits a patch
   (`splitSettings`) on write, so the editor only ever sees one flat set.
+  The editor settings that became shared in October 2026 were this app's own
+  before, so a value may still sit in this app's scope: `joinSettings` uses it
+  until `all` has one, and the first change writes `all` and drops the old copy.
 - **Owners.** An account's settings are kept under its user id; a
   guest's under `guest_<participant id>`, so guests have them too. Each
   scope holds at most 16 KB, and a value is replaced whole.
@@ -460,7 +464,7 @@ that is the only control.
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
 - **"All apps".** A row whose key every liveworkspace app shares
-  (`ALL_SETTING_KEYS`, UI Scale's part sliders included) carries a quiet
+  (`ALL_SETTING_KEYS`, UI Scale's part sliders and Presenting's options included) carries a quiet
   **All apps** line under its description, in the dialog's hint style, so
   a change turning up in another app is no surprise
   (`components/dialogs/settings/settings-all-apps.ts`). Where preferences
@@ -775,10 +779,14 @@ and the dialog stays as the one complete, browsable index of them.
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedocuments**
   (this app's logo and name) and **All** (liveworkspace's logo). livedocuments shows this app's own
   Settings, exactly as above, and asks the network for nothing. All shows every setting the account
-  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then each app's
-  settings under its name and logo, in the apps' order. This app's group is its own Settings minus
-  the shared switches the Account section already holds (a row marked "All apps" whose key is one of
-  the Account section's), so a setting never shows twice; the other apps' groups are their
+  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then **Common**
+  (liveworkspace's logo): every editor setting two or more apps have (`COMMON_SETTING_KEYS`,
+  liveworkspace/docs/accounts.md "Common settings"), once, in the categories the apps file them under
+  (Explorer for Show Home Banner); then each app's settings under its name and logo, in the apps'
+  order. This app's group is its own Settings minus the shared switches the Account section already
+  holds (a row marked "All apps" whose key is one of the Account section's) and minus its common
+  rows, which are drawn in Common instead (this editor's own rows, so a change there is counted and
+  synced as here), so a setting never shows twice; the other apps' groups are their own rows of their
   plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
   liveworkspace's account API through this app's router (`/api/workspace/account/settings/<app>`)
   with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.

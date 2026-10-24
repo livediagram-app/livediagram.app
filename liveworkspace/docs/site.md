@@ -208,8 +208,10 @@ built once here. It is shown here and, through each switched-on app's router, at
   help on sharing.
 - **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
   helps, loaded on first press) and a close this browser remembers, one for every app.
-- **Home's banner.** Closing it is the person's `homeBanner` setting in the app's own scope
-  (`/api/account/settings/:app`), so it stays closed in that app's editor too, and the other way round.
+- **Home's banner.** Closing it is the person's `homeBanner` setting, a common one kept in `all`
+  (`PATCH /api/account/settings`; read with the app's scopes, an app's old copy counting until `all` has one,
+  [accounts.md](accounts.md#common-settings)), so it stays closed in every app's Home and editor too, and the
+  other way round.
   A guest's close is kept in this browser.
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](telemetry.md#the-explorer-on-liveworkspaceapp)).
@@ -303,12 +305,14 @@ app's dialog) is gone, its parts now the panel's.
   liveworkspace's logo. The app's side shows that app's settings, from its plain-data catalogue
   (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](accounts.md#scopes)), in the app's own Settings view: its
   rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes, search,
-  the phone's push layout and back bar. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
+  the phone's push layout and back bar. Every setting the app uses is there, the common ones (below) included,
+  each of those marked **All apps** under its description. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
   for what only makes sense inside the editor (appearance, shortcuts, the editors' shared chrome such as UI scale).
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
-- **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then each app
-  under its name and logo, in the apps' order. Each heading is a single-open accordion, laid out as a category row (the
+- **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then
+  **Common** (liveworkspace's logo too), then each app under its name and logo, in the apps' order. Each setting shows
+  once. Each heading is a single-open accordion, laid out as a category row (the
   same padding, icon column and type size): only the group holding the current pane starts open, opening one folds
   the other, each eases open and shut, picking a category opens its group, and a search opens them all so no hit is
   hidden. Account holds what belongs to the person in every app, the `all`
@@ -319,9 +323,17 @@ app's dialog) is gone, its parts now the panel's.
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (a link to `/account/tokens`), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
-  something in an editor (UI scale, panel opacity and the rest) are left to each app's own group. Ids in All are
-  prefixed with their heading's (`account:notifications`, `livediagram.app:editor`), so two apps' categories and
-  rows never collide.
+  something in an editor (UI scale, panel opacity and the rest) are left to each app's own group. **Common** holds
+  every editor setting two or more apps have (`COMMON_SETTING_KEYS`, [accounts.md](accounts.md#common-settings)),
+  once, in the categories the apps file them under: Editor (with Pages and Presenting under it), Explorer, and
+  Panels › Collaborate, Layers, Map and Quick Style. It is built from the apps' catalogues (`commonCatalogue` in
+  `@liveworkspace/settings/common`), worded as the apps word them. Where the apps file a setting differently, the
+  platform's place is used: Show Home Banner sits under each app's own Documents, Plans or Designs, and under
+  **Explorer** here. A Common row reads `all`, falling back to an app's old copy as `joinSettings` does, and writes
+  `all`. Each app's group then holds only that app's own settings; an app left with none would be left out of the
+  rail rather than shown with a note (today each app keeps some of its own). Ids in All are prefixed with their
+  heading's (`account:notifications`, `common:editor`, `livediagram.app:editor`), so two apps' categories and rows
+  never collide.
 - **Addresses.** `/account/settings?app=<name>` opens the panel on that app (`?app=all` on All);
   `#profile`, `#notifications`, `#privacy`, `#accessibility` and `#tokens` open All on that Account category, which is
   where every email's unsubscribe link lands. Closing the panel leaves an **Open Settings** button on the page, for the
@@ -333,10 +345,12 @@ app's dialog) is gone, its parts now the panel's.
   (`GET /api/account/profile`). What is read is kept for the page's lifetime (`settingsStore` in
   `lib/app-settings.ts`), so opening the panel again, or switching sides, costs nothing.
 - **Saving.** Each change is shown at once and written alone, as a patch of just its key: an app's row to the app's
-  scope (`PATCH /api/account/settings/:app` `{ app }`), an Account switch to `all` (`PATCH /api/account/settings`
-  `{ all }`); put back with a note if the write fails; a slider saves on release, as in the app. The profile's name is
+  scope (`PATCH /api/account/settings/:app` `{ app }`), an Account switch, a Common row or a common setting's row on
+  an app's side to `all` (`PATCH /api/account/settings` `{ all }`; a field of an object, a Presenting option say,
+  writes the object with the rest kept, the old copy filling in where `all` has none); put back with a note if the write fails; a slider saves on release, as in the app. The profile's name is
   saved once typing pauses (800 ms), when the field is left, or as the page closes, never per keystroke; its colour
-  at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`). An app picks a
+  at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`); a Common row's
+  in the name of the app its wording came from (the app the panel was opened for when it has the setting). An app picks a
   change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with

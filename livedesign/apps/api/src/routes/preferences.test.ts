@@ -32,17 +32,28 @@ const call = (
 describe('GET /api/preferences', () => {
   it('answers both scopes as one set, in one accounts read', async () => {
     accounts.settings.set(`guest_${GUEST}`, {
-      all: { reduceMotion: true, mapSize: 'stray' },
-      app: { mapSize: 'tall', reduceMotion: false },
+      all: { reduceMotion: true, logoGuides: 'stray' },
+      app: { logoGuides: 'tall', reduceMotion: false },
       updatedAt: 1,
     });
     const res = await call('GET');
     expect(res.status).toBe(200);
     // A shared key only ever comes from `all`.
-    expect(await res.json()).toEqual({ prefs: { reduceMotion: true, mapSize: 'tall' } });
+    expect(await res.json()).toEqual({ prefs: { reduceMotion: true, logoGuides: 'tall' } });
     expect(accounts.calls).toEqual([
       { path: 'settings/read', body: { owner: `guest_${GUEST}`, app: 'livedesign.app' } },
     ]);
+  });
+
+  it("keeps a common setting's value from before it was shared, until `all` has one", async () => {
+    accounts.settings.set(`guest_${GUEST}`, {
+      all: { showMinimap: true },
+      app: { showMinimap: false, mapSize: 'tall', presentation: { loop: true } },
+      updatedAt: 1,
+    });
+    expect(await (await call('GET')).json()).toEqual({
+      prefs: { showMinimap: true, mapSize: 'tall', presentation: { loop: true } },
+    });
   });
 
   it('reads an account under its own id', async () => {
@@ -74,7 +85,7 @@ describe('GET /api/preferences', () => {
 describe('PUT /api/preferences', () => {
   it('splits a patch into the two scopes, in one write', async () => {
     const res = await call('PUT', {
-      body: { prefs: { reduceMotion: true, mapSize: 'tall', presentation: { speed: 2 } } },
+      body: { prefs: { reduceMotion: true, logoGuides: true, presentation: { speed: 2 } } },
     });
     expect(res.status).toBe(204);
     expect(accounts.calls).toEqual([
@@ -84,25 +95,41 @@ describe('PUT /api/preferences', () => {
           owner: `guest_${GUEST}`,
           app: 'livedesign.app',
           patch: {
-            all: { reduceMotion: true },
-            app: { mapSize: 'tall', presentation: { speed: 2 } },
+            // A common setting goes to `all`, and its copy from before it was shared goes.
+            all: { reduceMotion: true, presentation: { speed: 2 } },
+            app: { logoGuides: true, presentation: null },
           },
         },
       },
     ]);
   });
 
+  it('moves a common setting to `all` on its first change, so every app reads it', async () => {
+    accounts.settings.set(`guest_${GUEST}`, {
+      all: {},
+      app: { presentation: { speed: 1, loop: true }, logoGuides: true },
+      updatedAt: 1,
+    });
+    await call('PUT', { body: { prefs: { presentation: { speed: 2, loop: true } } } });
+    expect(accounts.settings.get(`guest_${GUEST}`)).toMatchObject({
+      all: { presentation: { speed: 2, loop: true } },
+      app: { logoGuides: true },
+    });
+    expect(accounts.settings.get(`guest_${GUEST}`)!.app).not.toHaveProperty('presentation');
+  });
+
   it('replaces each value whole, deletes on null, and leaves other keys alone', async () => {
     accounts.settings.set(`guest_${GUEST}`, {
       all: { notifyTips: false },
-      app: { presentation: { speed: 1, loop: true }, mapSize: 'short' },
+      app: { logoGuideStrength: 1, logoGuides: true },
       updatedAt: 1,
     });
-    await call('PUT', { body: { prefs: { presentation: { speed: 2 }, mapSize: null } } });
+    await call('PUT', { body: { prefs: { logoGuideStrength: 2, logoGuides: null } } });
     expect(accounts.settings.get(`guest_${GUEST}`)).toMatchObject({
       all: { notifyTips: false },
-      app: { presentation: { speed: 2 } },
+      app: { logoGuideStrength: 2 },
     });
+    expect(accounts.settings.get(`guest_${GUEST}`)!.app).not.toHaveProperty('logoGuides');
   });
 
   it('writes only the scope a patch touches', async () => {

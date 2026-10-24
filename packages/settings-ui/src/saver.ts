@@ -3,7 +3,7 @@
 // a write that fails puts that key back, unless a newer change to it has gone since. Kept outside React: the rows
 // carry `change`, and what the saves share (the scopes as last shown, each key's newest change, the writes on their
 // way) is never drawn.
-import type { SettingsBlob } from '@liveworkspace/settings';
+import { isAllSetting, joinSettings, type SettingsBlob } from '@liveworkspace/settings';
 import {
   storedPatch,
   type CatalogueBinding,
@@ -28,7 +28,8 @@ export interface ScopesSaverHandlers {
 export interface ScopesSaver {
   // Points the saver at the panel's current handlers.
   connect: (handlers: ScopesSaverHandlers) => void;
-  // A row of an app's catalogue changed.
+  // A row of an app's catalogue changed. A row over a shared key (a common setting) is written to `all`, counted as
+  // the app's row.
   changeApp: (app: SettingsAppId, binding: CatalogueBinding, stored: StoredValue) => void;
   // A switch of the Account section changed (the `all` scope).
   changeShared: (key: string, value: StoredValue) => void;
@@ -94,11 +95,41 @@ export function createScopesSaver({
     handlers.error(result.error);
   }
 
+  // One key of `all`, written whole.
+  function writeShared(key: string, value: unknown) {
+    const had = Object.hasOwn(current.all, key);
+    const previous = current.all[key];
+    void write(
+      `all:${key}`,
+      (scopes) => withShared(scopes, { ...scopes.all, [key]: value }),
+      (scopes) => {
+        const reverted = { ...scopes.all };
+        if (had) reverted[key] = previous;
+        else delete reverted[key];
+        return withShared(scopes, reverted);
+      },
+      async () => {
+        const result = await store.patchShared({ [key]: value });
+        return result.ok
+          ? { ok: true, settle: (scopes) => withShared(scopes, result.data.all) }
+          : { ok: false, error: result.error };
+      },
+    );
+  }
+
   return {
     connect: (next) => {
       handlers = next;
     },
     changeApp(app, binding, stored) {
+      if (isAllSetting(binding.key)) {
+        reportApp?.(app, binding, stored);
+        // A field is written into the object as the app reads it: `all`'s, else the app's copy from before it was
+        // shared, so the object's other fields are kept.
+        const base = joinSettings(current.all, current.apps[app] ?? {});
+        writeShared(binding.key, storedPatch(base, binding, stored)[binding.key]);
+        return;
+      }
       const before = current.apps[app] ?? {};
       const { key } = binding;
       const had = Object.hasOwn(before, key);
@@ -127,26 +158,9 @@ export function createScopesSaver({
       );
     },
     changeShared(key, value) {
-      const had = Object.hasOwn(current.all, key);
-      const previous = current.all[key];
       // The host counts it (and, turning telemetry off, waits for that event before it stops counting).
       void reportShared?.(key, value);
-      void write(
-        `all:${key}`,
-        (scopes) => withShared(scopes, { ...scopes.all, [key]: value }),
-        (scopes) => {
-          const reverted = { ...scopes.all };
-          if (had) reverted[key] = previous;
-          else delete reverted[key];
-          return withShared(scopes, reverted);
-        },
-        async () => {
-          const result = await store.patchShared({ [key]: value });
-          return result.ok
-            ? { ok: true, settle: (scopes) => withShared(scopes, result.data.all) }
-            : { ok: false, error: result.error };
-        },
-      );
+      writeShared(key, value);
     },
   };
 }

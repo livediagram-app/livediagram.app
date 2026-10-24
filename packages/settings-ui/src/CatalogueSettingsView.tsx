@@ -2,7 +2,8 @@
 
 // The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/site.md "Settings"): one
 // app's settings from its plain-data catalogue (liveworkspace.app, where no app's own Settings is loaded), or the
-// All view: the Account section, then each app's settings under its name and logo. Its own chunk, loaded only when
+// All view: the Account section, then Common (the settings two or more apps have, once), then each app's own
+// settings under its name and logo. Its own chunk, loaded only when
 // one of those is first shown, with each app's catalogue fetched beside it; an editor showing its own settings
 // never loads it.
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
@@ -12,8 +13,10 @@ import type {
   CatalogueBinding,
   StoredValue,
 } from '@liveworkspace/settings/catalogue';
+import { commonCatalogue, withoutCommonRows } from '@liveworkspace/settings/common';
 import { accountCategories, type AccountSection } from './account-model';
 import { catalogueModel } from './catalogue-model';
+import { COMMON_GROUP, commonModel, commonRowIds } from './common-model';
 import { groupCategories } from './groups';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
@@ -194,6 +197,20 @@ function ReadyView({
     saver.connect({ show: setValue, error: setError, saved: () => setSaved((n) => n + 1) });
   }, [saver]);
 
+  // The Common group's rows, from every catalogue read, in the apps' order: built once.
+  const common = useMemo(
+    () =>
+      mode === 'all'
+        ? commonCatalogue(
+            SETTINGS_APP_IDS.flatMap((app) => {
+              const catalogue = catalogues[app];
+              return catalogue ? [{ app, catalogue }] : [];
+            }),
+          )
+        : null,
+    [mode, catalogues],
+  );
+
   // Rebuilt only when what it reads changes, so a search keystroke keeps every row's identity (and the view's memo).
   const { shared } = account;
   const model = useMemo((): { categories: SettingsCategory[]; groups?: SettingsGroupHeading[] } => {
@@ -201,7 +218,8 @@ function ReadyView({
       const catalogue = catalogues[app];
       if (!catalogue) return [];
       return catalogueModel(
-        catalogue,
+        // In All, an app's group holds only its own settings: the common ones are under Common.
+        mode === 'all' ? withoutCommonRows(catalogue) : catalogue,
         { all: shared?.all ?? value.all, app: value.apps[app] ?? {} },
         (binding, stored) => saver.changeApp(app, binding, stored),
       );
@@ -219,20 +237,42 @@ function ReadyView({
         set: shared?.set ?? ((key, next) => saver.changeShared(key, next)),
       }),
     );
+    const commonIds = common ? commonRowIds(common) : new Set<string>();
+    if (common) {
+      const listed = commonModel({
+        common,
+        all: value.all,
+        apps: value.apps,
+        // An app's old copy of a common setting: the app the panel was opened for first.
+        order: current
+          ? [current, ...SETTINGS_APP_IDS.filter((app) => app !== current)]
+          : SETTINGS_APP_IDS,
+        ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
+        change: (app, binding, stored) => saver.changeApp(app, binding, stored),
+      });
+      if (listed.length > 0) {
+        groups.push({ id: COMMON_GROUP, label: 'Common', icon: renderLogo('all') });
+        categories.push(...listed);
+      }
+    }
     for (const app of SETTINGS_APP_IDS) {
       const listed =
         own && app === current
-          ? // The Account section holds the shared switches, so the app's copies of them are left out here.
+          ? // The Account section holds the shared switches and Common the common settings, so the app's copies of
+            // them are left out here (a readout line pointing at a common row points under Common).
             groupCategories(app, own, {
-              omit: (row) => row.allApps === true && ACCOUNT_KEYS.has(row.key),
+              omit: (row) =>
+                (row.allApps === true && ACCOUNT_KEYS.has(row.key)) || commonIds.has(row.key),
+              groupOf: (rowKey) => (commonIds.has(rowKey) ? COMMON_GROUP : app),
             })
           : groupCategories(app, appModel(app));
+      // An app left with no settings of its own is left out of the rail, rather than shown with a note.
       if (listed.length === 0) continue;
       groups.push({ id: app, label: APP_NAMES[app], icon: renderLogo(app) });
       categories.push(...listed);
     }
     return { categories, groups };
-  }, [mode, current, own, catalogues, value, shared, account, renderLogo, saver]);
+  }, [mode, current, own, catalogues, common, value, shared, account, renderLogo, saver]);
 
   return (
     <SettingsView

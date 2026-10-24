@@ -56,18 +56,18 @@ describe('PUT /api/preferences', () => {
   it('applies a patch: a nested value whole, null deletes, other keys stay', async () => {
     accounts.settings.set(GUEST, {
       all: { uiScalePanels: 0.9, telemetryEnabled: false },
-      app: { presentation: { speed: 'slow', loop: true } },
+      app: { sheetDefaults: { width: 'wide', frozen: true } },
     });
     const res = await handlePreferences(
       ctx('PUT', {
         owner: GUEST,
-        body: { prefs: { uiScalePanels: null, presentation: { speed: 'fast' } } },
+        body: { prefs: { uiScalePanels: null, sheetDefaults: { width: 'narrow' } } },
       }),
     );
     expect(res.status).toBe(204);
     expect(accounts.settings.get(GUEST)).toEqual({
       all: { telemetryEnabled: false },
-      app: { presentation: { speed: 'fast' } },
+      app: { sheetDefaults: { width: 'narrow' } },
     });
   });
 

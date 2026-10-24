@@ -15,7 +15,14 @@ describe('rowSharedAcrossApps', () => {
   });
 
   it('leaves a setting livedesign keeps for itself unmarked', () => {
-    expect(rowSharedAcrossApps('showMinimap')).toBe(false);
+    expect(rowSharedAcrossApps('logoGuides')).toBe(false);
+    expect(rowSharedAcrossApps('notifyDesignJoin')).toBe(false);
+  });
+
+  it('marks a setting two or more apps have (liveworkspace/docs/accounts.md "Common settings")', () => {
+    expect(rowSharedAcrossApps('showMinimap')).toBe(true);
+    expect(rowSharedAcrossApps('presentation-loop')).toBe(true);
+    expect(settingKeyOf('presentationAutoAdvance')).toBe('presentation');
   });
 
   it('marks a UI scale part by the preference it writes', () => {

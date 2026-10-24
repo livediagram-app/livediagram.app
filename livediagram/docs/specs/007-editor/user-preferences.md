@@ -23,12 +23,16 @@ table of its own for them.
 - **Two scopes.** The accounts Worker holds each person's settings in
   two scopes: `all`, the keys every app shares (`ALL_SETTING_KEYS` in
   `@liveworkspace/settings`: privacy and accessibility, the
-  notification switches, the editors' chrome, custom swatches), and
+  notification switches, the editors' chrome, custom swatches, and the
+  editor settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Presenting), and
   livediagram's own, `livediagram.app`. The api joins them into the one
   flat blob the editor knows (`joinSettings`) and splits a change back
   (`splitSettings`), in `apps/api/src/liveworkspace/settings.ts`. A shared
   key changed here changes in every app, and Settings marks those rows
   with a quiet "All apps" note.
+  The editor settings that became shared in October 2026 were this app's own
+  before, so a value may still sit in this app's scope: `joinSettings` uses it
+  until `all` has one, and the first change writes `all` and drops the old copy.
 - **Owners.** An account's settings are kept under its account id. A
   guest's are kept under `guest_<their guest id>`, so a guest who
   clears localStorage but keeps the same guest id still recovers them.
@@ -825,10 +829,14 @@ and the dialog stays as the one complete, browsable index of them.
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livediagram**
   (this app's logo and name) and **All** (liveworkspace's logo). livediagram shows this app's own
   Settings, exactly as above, and asks the network for nothing. All shows every setting the account
-  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then each app's
-  settings under its name and logo, in the apps' order. This app's group is its own Settings minus
-  the shared switches the Account section already holds (a row marked "All apps" whose key is one of
-  the Account section's), so a setting never shows twice; the other apps' groups are their
+  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then **Common**
+  (liveworkspace's logo): every editor setting two or more apps have (`COMMON_SETTING_KEYS`,
+  liveworkspace/docs/accounts.md "Common settings"), once, in the categories the apps file them under
+  (Explorer for Show Home Banner); then each app's settings under its name and logo, in the apps'
+  order. This app's group is its own Settings minus the shared switches the Account section already
+  holds (a row marked "All apps" whose key is one of the Account section's) and minus its common
+  rows, which are drawn in Common instead (this editor's own rows, so a change there is counted and
+  synced as here), so a setting never shows twice; the other apps' groups are their own rows of their
   plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
   liveworkspace's account API through this app's router (`/api/workspace/account/settings/<app>`)
   with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.

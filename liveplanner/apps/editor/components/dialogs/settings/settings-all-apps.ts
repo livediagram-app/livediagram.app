@@ -1,4 +1,4 @@
-import { isAllSetting } from '@liveworkspace/settings';
+import { isAllSetting, isAllSettingRow } from '@liveworkspace/settings';
 import { UI_SCALE_PARTS } from '@/lib/ui-scale';
 import { preferencesKeptLocally } from '@/lib/preferences-sync';
 
@@ -11,5 +11,6 @@ export function rowSharedAcrossApps(rowKey: string): boolean {
   // Where the api keeps no preferences (self-hosted, no liveworkspace accounts), they stay in this
   // browser and are shared with nothing.
   if (preferencesKeptLocally()) return false;
-  return isAllSetting(PART_KEYS.get(rowKey) ?? rowKey);
+  const part = PART_KEYS.get(rowKey);
+  return part ? isAllSetting(part) : isAllSettingRow(rowKey);
 }

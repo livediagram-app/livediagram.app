@@ -48,6 +48,15 @@ describe('readPreferences / writePreferences (liveworkspace settings)', () => {
     expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: false });
   });
 
+  it('keeps a common setting this app held before it was shared, until its first change moves it to all', async () => {
+    accounts.settings.set('user_a livediagram.app', { showMinimap: false, gridSnap: true });
+    expect(await readPreferences(env, 'user_a')).toEqual({ showMinimap: false, gridSnap: true });
+    await writePreferences(env, 'user_a', { showMinimap: true });
+    expect(accounts.settings.get('user_a all')).toEqual({ showMinimap: true });
+    expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: true });
+    expect(await readPreferences(env, 'user_a')).toEqual({ showMinimap: true, gridSnap: true });
+  });
+
   it('writes a guest under its guest_<uuid> id, and sends nothing for an empty patch', async () => {
     await writePreferences(env, GUEST, { gridSnap: true });
     expect(accounts.settings.get(`${GUEST} livediagram.app`)).toEqual({ gridSnap: true });

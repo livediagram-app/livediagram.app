@@ -455,9 +455,9 @@ Each setting is stored in one scope:
 
 - **`all`**: shown by every app that has the setting. Changing it in one app changes it everywhere.
   Which keys are shared is one list, `ALL_SETTING_KEYS` in `@liveworkspace/settings`
-  (`packages/settings`): privacy and accessibility, notifications, the editors' chrome and your own
-  colours. Its `splitSettings` and `joinSettings` turn an editor's flat preferences into the two
-  scopes and back.
+  (`packages/settings`): privacy and accessibility, notifications, the editors' chrome, your own
+  colours, and every editor setting two or more apps have (`COMMON_SETTING_KEYS`, below). Its
+  `splitSettings` and `joinSettings` turn an editor's flat preferences into the two scopes and back.
 - **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
   as `APP_SITES` in `@liveworkspace/sites` spells them): shown by that app only.
 
@@ -475,10 +475,36 @@ site shows it in the same view as the app, with only each row's value and change
 row's read and write against probe values, and a test beside each app's catalogue
 (`settings-site-catalogue.test.ts`) fails when the copy drifts; `UPDATE_SITE_CATALOGUE=1` writes it
 again. A row that isn't one stored value (a list, several keys at once) or isn't a preference at all
-(appearance, tokens, shortcuts) stays in the app's own Settings. Which shared switches the panel's Account section
-shows, and how they are worded, is plain data too, `@liveworkspace/settings/account`.
+(appearance, tokens, shortcuts) stays in the app's own Settings, and so does a shared key the panel shows elsewhere
+(the Account section's switches, the editors' chrome); a common setting's rows stay in each app's catalogue, so the
+app's own side shows them. Which shared switches the panel's Account section shows, and how they are worded, is
+plain data too, `@liveworkspace/settings/account`; the Common group is built from the catalogues
+(`commonCatalogue` in `@liveworkspace/settings/common`).
 
 A scope is one row, keyed by owner and scope, holding a JSON object of setting names to values.
+
+### Common settings
+
+A setting two or more apps have is one setting, kept in `all`: `COMMON_SETTING_KEYS` in
+`@liveworkspace/settings`, part of `ALL_SETTING_KEYS`. Changing it in any app, or under **Common** in the
+Settings panel's All view ([site.md](site.md#settings)), changes it in every app that has it. Today that is the
+Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels (`collaboratePanelEnabled`,
+`quickStylePanelEnabled`, `layersPanelEnabled`, `layersShowPreview`, `layersShowCount`, `layerHoverPreview`,
+`showMinimap`, `mapSize`, `mapDimOutside`), the canvas's `alignmentGuides`, `autoRebindArrows`,
+`elementIndicatorStyle` and `quickAddOnHover`, Pages' `contentsPlacement`, and Presenting (`presentation`, one
+object). Each has the same type, values and default in every app that has it. A key is shared only when it does
+mean the same everywhere: `notifyDocumentJoin` stays livediagram's and livedocuments' own, one of each app's
+"someone joins my …" emails beside liveplanner's `notifyProjectJoin` and livedesign's `notifyDesignJoin`, which
+someone may well want from one app and not another.
+
+These keys were each app's own until October 2026, so a person's values for them may still sit in an app's scope.
+Nothing is lost: `joinSettings` takes a shared key from `all` when `all` has it, and otherwise from the app's own
+scope, so each app keeps showing what it showed. The first change anywhere writes `all`, which then wins in
+every app; `splitSettings` also deletes the writing app's old copy (a `null` in its app patch), so a reset
+(deleting the key) can't bring an old value back there. Where the apps' old copies differ, the All view's Common
+group shows the one from the app the panel was opened for, else the first app in the apps' order that has one. No
+migration job runs: the accounts Worker stores keys without knowing what they mean, and the copies left in app
+scopes are a few bytes each.
 
 ### Writing is per key
 

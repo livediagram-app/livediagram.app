@@ -9,7 +9,7 @@ import {
   type SettingsRow,
   type SettingsTrack,
 } from '@liveworkspace/settings-ui';
-import { isAllSetting } from '@liveworkspace/settings';
+import { isAllSettingRow } from '@liveworkspace/settings';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import type { AppearanceSetting } from '@livediagram/ui';
 import { SHORTCUT_SECTIONS } from '@/components/dialogs/shortcut-sections';
@@ -40,12 +40,12 @@ import { SettingsTrashRow } from './SettingsTrashRow';
 // Whether a row's setting is one every liveworkspace app shares (ALL_SETTING_KEYS): changed here,
 // it changes in each of them (docs/specs/007-editor/user-preferences.md "Shared with every app").
 // A row's key is its preference's key, except a UI Scale part's (`uiScale-panels` is
-// `uiScalePanels`). Only where liveworkspace keeps the preferences: without sign-in they stay in
+// `uiScalePanels`) and a Presenting option's (`presentation-loop` is a field of `presentation`):
+// settingKeyOfRow. Only where liveworkspace keeps the preferences: without sign-in they stay in
 // this browser.
 export function rowSharedByAllApps(rowKey: string, synced = signInEnabled): boolean {
   if (!synced) return false;
-  const key = rowKey.replace(/^uiScale-(\w)/, (_, c: string) => `uiScale${c.toUpperCase()}`);
-  return isAllSetting(key);
+  return isAllSettingRow(rowKey);
 }
 
 // Fired before the write, so an opt-out event still reaches the wire ahead of the preference that

@@ -84,22 +84,41 @@ describe('the Settings panel, filtered to an app', () => {
   it('saves a change as a patch of just that key, in that app’s scope, and puts it back if refused', async () => {
     fetchMock.mockReturnValueOnce(json(200, { all: {}, app: {} }));
     await open('livediagram.app');
-    act(() => railButton('Editor')!.click());
-    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('true');
-    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: { alignmentGuides: false } }));
-    act(() => switchFor('alignmentGuides').click());
+    act(() => railButton('Notifications')!.click());
+    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('true');
+    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: { notifyDocumentJoin: false } }));
+    act(() => switchFor('notifyDocumentJoin').click());
     await settle();
     const [url, init] = fetchMock.mock.calls[1]!;
     expect(url).toBe('/api/account/settings/livediagram.app');
     expect(init?.method).toBe('PATCH');
-    expect(sent(1)).toEqual({ app: { alignmentGuides: false } });
+    expect(sent(1)).toEqual({ app: { notifyDocumentJoin: false } });
 
     fetchMock.mockReturnValueOnce(json(500, { error: 'failed' }));
-    act(() => switchFor('alignmentGuides').click());
-    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('true');
+    act(() => switchFor('notifyDocumentJoin').click());
+    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('true');
     await settle();
-    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
+    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('false');
     expect(document.querySelector('[role="alert"]')?.textContent).toMatch(/went wrong/);
+  });
+
+  it('saves a common setting to the `all` scope, as the app held it until then', async () => {
+    // Off in livediagram's own scope, from before the setting was shared.
+    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: { alignmentGuides: false } }));
+    await open('livediagram.app');
+    act(() => railButton('Editor')!.click());
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
+    expect(document.querySelector('#alignmentGuides-description')?.textContent).toContain(
+      'All apps',
+    );
+    fetchMock.mockReturnValueOnce(json(200, { all: { alignmentGuides: true } }));
+    act(() => switchFor('alignmentGuides').click());
+    await settle();
+    const [url, init] = fetchMock.mock.calls[1]!;
+    expect(url).toBe('/api/account/settings');
+    expect(init?.method).toBe('PATCH');
+    expect(sent(1)).toEqual({ all: { alignmentGuides: true } });
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('true');
   });
 
   it('closes on Escape, and reopens from the page’s copy', async () => {
@@ -134,6 +153,7 @@ describe('the Settings panel, on All', () => {
     ].map((p) => p.textContent);
     expect(headings).toEqual([
       'Account',
+      'Common',
       'livediagram',
       'liveplanner',
       'livedocuments',
