@@ -27,7 +27,9 @@ export interface AccountSection {
   // else a link to where it is set.
   renderProfile?: () => ReactNode;
   profileHref?: string;
-  // Where API tokens are made and revoked, when the host has no tokens of its own to show.
+  // The API tokens: drawn here where the host can make and revoke them (liveworkspace.app, with its session), else a
+  // link to where they are.
+  renderTokens?: () => ReactNode;
   tokensHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
@@ -72,9 +74,12 @@ function linkOut(
   };
 }
 
+const TOKENS_KEYWORDS =
+  'api token key mcp integration script developer access create revoke secret';
+
 /** The Account section's categories, by their own ids (the panel files them under the Account heading). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderProfile, profileHref, tokensHref, emails = true } = section;
+  const { all, set, renderProfile, profileHref, renderTokens, tokensHref, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -131,7 +136,29 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       ...(emails ? toggle(NOTIFICATION_ROWS, 'Email') : []),
     ],
   });
-  if (tokensHref) {
+  const tokens: SettingsRow | null = renderTokens
+    ? {
+        kind: 'custom',
+        key: 'apiTokens',
+        label: 'API Tokens',
+        description: 'One token works on every app’s API and MCP server.',
+        keywords: TOKENS_KEYWORDS,
+        section: 'API Tokens',
+        render: renderTokens,
+      }
+    : tokensHref
+      ? {
+          ...linkOut(
+            'apiTokens',
+            'API Tokens',
+            'One token works on every app’s API and MCP server. Make one for a script or an AI tool, and revoke it any time.',
+            tokensHref,
+            'Manage',
+          ),
+          keywords: TOKENS_KEYWORDS,
+        }
+      : null;
+  if (tokens) {
     categories.push({
       id: 'tokens',
       label: 'API Tokens',
@@ -141,18 +168,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
         </SettingsSubcategoryGlyph>
       ),
       ...parent,
-      rows: [
-        {
-          ...linkOut(
-            'apiTokens',
-            'API Tokens',
-            'One token works on every app’s API and MCP server. Make one for a script or an AI tool, and revoke it any time.',
-            tokensHref,
-            'Manage',
-          ),
-          keywords: 'api token key mcp integration script developer access create revoke secret',
-        },
-      ],
+      rows: [tokens],
     });
   }
   categories.push(
