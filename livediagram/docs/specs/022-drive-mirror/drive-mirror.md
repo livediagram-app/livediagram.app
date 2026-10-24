@@ -7,7 +7,7 @@ Double-clicking such a file in Drive opens it in livediagram.
 
 The mirror is a **copy**, never the document's home
 ([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
-livediagram's database stays the source of truth, so realtime collaboration
+livediagram's own storage stays the source of truth, so realtime collaboration
 and share links are untouched by it.
 
 Evidence for every Google claim below (scopes, tokens, quotas, fields) is in
@@ -147,7 +147,7 @@ this spec does not restate it.
 - **The root folder's name** comes from the deployment's address, with no
   setting, so the roots of different environments never share a name in one
   tester's Drive (each environment makes its own root: its own Google project,
-  database and `ldRoot`):
+  storage and `ldRoot`):
 
   | Host                                                                                                           | Root folder name            |
   | -------------------------------------------------------------------------------------------------------------- | --------------------------- |

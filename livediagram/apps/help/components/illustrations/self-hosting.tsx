@@ -27,7 +27,7 @@ export function StackOverview() {
       <Shape x={134} y={176} w={152} h={40} kind="rect" label="api Worker" labelTone="strong" />
       <Arrow from={[210, 140]} to={[210, 176]} />
 
-      {/* Storage the api owns */}
+      {/* Storage the api uses: the liveworkspace index, and its own Durable Objects */}
       <Shape x={30} y={172} w={84} h={48} kind="cylinder" label="Index" labelTone="strong" />
       <Shape x={306} y={172} w={88} h={48} kind="hexagon" label="Durable" labelTone="strong" />
       <Arrow from={[134, 196]} to={[114, 196]} tone="muted" />

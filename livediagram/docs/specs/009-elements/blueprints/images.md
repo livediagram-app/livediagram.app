@@ -22,13 +22,14 @@ Scope, by file:
 | `packages/media` (`@liveworkspace/media`)               | Limits, sniffing, guest owners, wire shapes, `createMediaClient`        |
 | `liveworkspace/apps/media`                              | The media service: bytes, gallery rows, dedupe, caps, JPEG strip, sweep |
 | `../liveworkspace/apps/media/migrations/0001_media.sql` | The media service's `images`, `refs` and `ref_sync`                     |
-| `apps/api/src/media.ts`                                 | The service client, owner naming, the owner index, the reference queue  |
+| `apps/api/src/media.ts`                                 | The service client, owner naming, the per-isolate owner memo            |
 | `apps/api/src/routes/images.ts`                         | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
 | `apps/api/src/routes/images.ts`                         | `usageOf`: `GET /api/images/usage`                                      |
-| `apps/api/src/db/image-grants.ts`                       | `documentMayServeImage`, `servableImageIds`: read `media_images`        |
-| `apps/api/src/index.ts`                                 | Pre-dispatch size gate, write limiter, `scheduled()` refs flush         |
+| `apps/api/src/db/image-grants.ts`                       | `documentMayServeImage`, `servableImageIds`, in the document's SQLite   |
+| `apps/api/src/index.ts`                                 | Pre-dispatch size gate, write limiter                                   |
+| `apps/api/src/document-room/document-outbox.ts`         | Sends a document's image set to the service as it changes               |
 | `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the preview and live image                     |
-| `apps/api/wrangler.toml`                                | `IMAGES` bucket (legacy images and snapshots), `MEDIA_KEY` note         |
+| `apps/api/wrangler.toml`                                | `IMAGES` bucket (document snapshots), `MEDIA_KEY` note                  |
 | `apps/api/hosted-vars.json`                             | Hosted livediagram.app's `MEDIA_URL` per environment                    |
 | `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
 | `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
@@ -50,32 +51,30 @@ Out of this blueprint, cited where they touch images: the reference index and th
 import pipeline (`apps/editor/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
 (`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
-account deletion and guest migration (`apps/api/src/db/account.ts`,
+account deletion and the guest merge (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
 
 ## Domain and naming
 
-| Term             | Identifier                                 | Meaning                                                                                     |
-| ---------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| Image element    | `ImageElement` (`type: 'image'`)           | Boxed element that shows one bitmap                                                         |
-| Image id         | `ImageElement.imageId: string \| null`     | The media service's image id; a `data:` URI offline; null = empty                           |
-| Placeholder      | `imageId === null`                         | The empty, dashed state awaiting a pick                                                     |
-| Media service    | `mediaClient(env)` (`MediaClient`)         | liveworkspace's image store; null without `MEDIA_KEY`                                       |
-| Media owner      | `mediaOwner(owner)`                        | The owner as the service knows them: an account id as is, a guest as `mediaGuestOwner`      |
-| Gallery          | `media.list(mediaOwner(owner))`            | Every image one owner has uploaded, in any app                                              |
-| Image summary    | `ImageSummary` (`imageSummary`)            | Wire DTO of one gallery row; the service's `app` dropped                                    |
-| Owner index      | `media_images`                             | Whose each image this api has met is, in its own owner names; `''` = unknown to the service |
-| Reference queue  | `media_ref_outbox`                         | Documents whose images changed since the service last heard                                 |
-| Dedupe key       | `(owner, sha256)` in the service           | SHA-256 of the uploaded (pre-strip) bytes, per owner, across apps                           |
-| Caps             | `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_…` | The service's per-person count and byte ceilings, across apps                               |
-| Metadata strip   | `stripJpegMetadata` (service)              | Byte-level removal of APPn and COM segments from a JPEG                                     |
-| Reference        | row of `image_refs` naming the id          | A tab places the image; see the index blueprint                                             |
-| Retention sweep  | the service's sweep; `runImageRetention`   | Daily reaping of unplaced images; the second only for legacy `images`                       |
-| Embed budget     | `IMAGE_EMBED_BUDGET_BYTES`                 | Raw bytes one server-side snapshot may inline                                               |
-| Export image map | `ExportImageMap`                           | `imageId → { href, image }` prefetched for a client export                                  |
-| Images available | `mediaClient(env) !== null`                | The deployment has `MEDIA_KEY`                                                              |
-| Legacy image     | a row of `images`                          | Uploaded before the media service; unserved until migrated                                  |
+| Term             | Identifier                                 | Meaning                                                                                |
+| ---------------- | ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Image element    | `ImageElement` (`type: 'image'`)           | Boxed element that shows one bitmap                                                    |
+| Image id         | `ImageElement.imageId: string \| null`     | The media service's image id; a `data:` URI offline; null = empty                      |
+| Placeholder      | `imageId === null`                         | The empty, dashed state awaiting a pick                                                |
+| Media service    | `mediaClient(env)` (`MediaClient`)         | liveworkspace's image store; null without `MEDIA_KEY`                                  |
+| Media owner      | `mediaOwner(owner)`                        | The owner as the service knows them: an account id as is, a guest as `mediaGuestOwner` |
+| Gallery          | `media.list(mediaOwner(owner))`            | Every image one owner has uploaded, in any app                                         |
+| Image summary    | `ImageSummary` (`imageSummary`)            | Wire DTO of one gallery row; the service's `app` dropped                               |
+| Owner memo       | `mediaImageOwner`, `image_owners`          | Whose each image is, as the service answered; `''` = unknown to the service            |
+| Dedupe key       | `(owner, sha256)` in the service           | SHA-256 of the uploaded (pre-strip) bytes, per owner, across apps                      |
+| Caps             | `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_…` | The service's per-person count and byte ceilings, across apps                          |
+| Metadata strip   | `stripJpegMetadata` (service)              | Byte-level removal of APPn and COM segments from a JPEG                                |
+| Reference        | row of `image_refs` naming the id          | A tab places the image; see the index blueprint                                        |
+| Retention sweep  | the service's sweep                        | Daily reaping of images no document in any app places                                  |
+| Embed budget     | `IMAGE_EMBED_BUDGET_BYTES`                 | Raw bytes one server-side snapshot may inline                                          |
+| Export image map | `ExportImageMap`                           | `imageId → { href, image }` prefetched for a client export                             |
+| Images available | `mediaClient(env) !== null`                | The deployment has `MEDIA_KEY`                                                         |
 
 Banned synonyms: "asset", "upload" as a noun for the stored row (say image), "photo" in code, "GC"
 (say retention sweep), "thumbnail" for a gallery tile (thumbnail is the document snapshot).
@@ -131,29 +130,28 @@ originalName: originalNameOf(...), sha256 })`. The service answers a known hash 
    (400 `invalid_dimensions`), sniffs (415 `unsupported_type`), dedupes on the body's hash, strips a
    JPEG (415 `malformed_jpeg`) and inserts with the caps repeated in the statement (403, or 409
    `upload_conflict`). A 401 or 5xx from it → 503 `images_unavailable`, logged.
-8. `rememberMediaImages(env, owner, [image.id])`.
-9. Not deduped: `waitUntil(recordImageUploaded(env, owner))`
+8. `rememberMediaOwner(image.id, mediaOwner(owner))`.
+9. Not deduped: `waitUntil(reportImagesUploaded(index, owner))`
    ([Timeline](../../013-workspace/timeline.md)). 200 `{ image: imageSummary(image), deduped }`.
 
 Invariants:
 
 - **I1 to I5** (bytes sniff as their type, no JPEG metadata, one image per owner and hash, the
   caps hold after any insert) are the service's.
-- **I6:** every image this api uploads or lists has a `media_images` row naming its owner as this
-  api names them.
+- **I6:** every image this api uploads or lists is remembered (per isolate) under its owner as the
+  service names them.
 
 ### Read (`GET /api/images/:id`)
 
-1. `mediaImageOwner(env, media, id, caller)`: the `media_images` row, else one `media.get(id)`
-   remembered with `INSERT OR IGNORE` (`''` when the service has no such image; a guest image of
+1. `mediaImageOwner(media, id, caller)`: the isolate's memo (at most 2,000 ids), else one `media.get(id)`
+   remembered (`''` when the service has no such image; a guest image of
    the caller's own comes back under the caller's guest id). No owner → 404. Not a document-scope
    workbench session, and the caller's resolved owner equals it → allowed.
 2. Otherwise, with `?d=<documentId>` (for a document-scope workbench session, only its own
-   document): `getDocumentMeta` finds the document outside the Trash, `gateGrant` returns a grant,
-   and, asked in parallel, the document places it (`documentRoom(env, d).placesImage(id,
-grant.tabScope)`, from the document's own index, [Image reference index](image-reference-index.md#readers))
-   and may serve it (`documentMayServeImage(d, id)`: ownership, the owner's live entitlement or a
-   [placement grant](../images.md#placement-grants)) → allowed; a placed but unservable image logs
+   document): `resolveDocumentGrant` returns the index's grant, then one RPC,
+   `documentRoom(env, d).servesImage(id, grant.tab)`, answers from the document's own SQLite that it
+   places the image ([Image reference index](image-reference-index.md#readers)) and may serve it
+   (ownership, the owner's live entitlement or a [placement grant](../images.md#placement-grants)) → allowed; a placed but unservable image logs
    `[images] not servable by document`. A tab-scoped visitor counts only
    their tab ([Tab-scoped share links](../../013-workspace/tab-scoped-share-links.md)). `[QB8]`
 3. Not allowed, or `media.bytes(id)` has no body → 404. Allowed → the bytes, `Content-Type` as
@@ -165,35 +163,27 @@ max-age=86400`.
 - `DELETE /api/images/:id`: owner only; `media.remove(mediaOwner(owner), id)`: the service
   answers 200 for a missing image, 403 `forbidden` for another owner's (passed on), else deletes
   its row, then its bytes (an R2 failure there is logged by the service and leaves only
-  unreachable bytes). Then `DELETE FROM media_images WHERE id = ?`; 200 `{ ok: true }`.
+  unreachable bytes). Then the memo forgets the id; 200 `{ ok: true }`.
 - `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, newest first, from every app;
-  `rememberMediaImages` for the listed ids (one statement that writes only changed rows).
-- `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `documents →
-document_images` ([Image reference index](image-reference-index.md#readers)), no tab
-  body read, each document once per image, this app's documents only. A document in the Trash
-  still counts ([Trash](../../013-workspace/trash.md)).
+  `rememberMediaOwner` for the listed ids.
+- `GET /api/images/usage`: owner only; `usageOf` asks the service for the owner's references, keeps
+  this app's documents and names each from the index ([Image reference index](image-reference-index.md#readers)),
+  no tab body read, each document once per image.
 
 ### Retention
 
 The media service sweeps its own images; this api reports what its documents place
 ([spec](../images.md#retention-unused-image-cleanup)):
 
-1. **Queue.** `mediaRefQueueSetStatement(env, documentId, ids)` runs first in a document's image
-   push (`document-room/document-outbox.ts`), in the push's D1 batch: it upserts
-   `(document_id, now)` when the document's set differs from its `document_images` rows.
-   `mediaRefQueueDocumentsStatement(env, where, params, onlyPlacing)` queues by a condition on
-   `documents d`: a removed document that placed images (`documentRemovalStatements`, first in its
-   batch).
-2. **Flush.** `scheduled()` calls `flushMediaRefs(env, cron === '0 3 * * *')` on both crons:
-   without a client it deletes the queue and returns 0; else it reads at most
-   `MEDIA_REFS_SYNC_MAX` rows oldest first, sends each document's `document_images` (at most `MEDIA_REFS_PER_DOCUMENT_MAX`, logging past it), `complete` when fewer
-   than the maximum were read, and on success deletes exactly the `(document_id, queued_at)` pairs
-   it read. An empty queue sends nothing unless `announce`, which sends `{ documents: [],
-complete: true }`. A failed send logs `[media] refs sync failed` and keeps the queue.
+1. **Key.** A change to a document's `image_refs` keys `images` in its outbox, in the writer's
+   transaction (`document-room/document-schema.ts`).
+2. **Push.** The room's alarm drains the outbox at most once a minute
+   (`document-room/document-outbox.ts`): it writes the placement grants, then `media.syncRefs` sends
+   the document's whole set (at most `MEDIA_REFS_PER_DOCUMENT_MAX`, logging past it), replacing what
+   the service held. A purged document sends an empty set. Without a client the key is dropped; a
+   failed send throws and keeps the key for the next drain.
 
-`runImageRetention` still runs on `0 3 * * *` over the legacy `images` table, owned end to end by
-the [Image reference index](image-reference-index.md) blueprint: the backfill, the completeness
-gate, the tripwire and the sweep. A null or `data:` id references nothing.
+A null or `data:` id references nothing.
 
 ### Client export and server snapshot
 
@@ -206,14 +196,14 @@ gate, the tripwire and the sweep. A null or `data:` id references nothing.
 - Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages`
   with `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image
   that does not fit is skipped and later smaller ones may still fit (D44). Only ids
-  `servableImageIds` returns are read (one query over `media_images` and `image_grants`). The
+  `servableImageIds` returns are read (from the document's `image_owners` and `image_grants`). The
   snapshot is drawn in the document's Durable Object (`renderDocumentImage`). No client: no embed. `[QB7]`
 
 ### Availability
 
 - `MEDIA_KEY` absent: every `/api/images*` route answers 503 `images_unavailable`, the snapshot
-  embed is a no-op and the reference queue is dropped each minute. The service refusing the key
-  (401) or failing (5xx) answers the same 503. The legacy sweep runs only with `IMAGES` bound.
+  embed is a no-op and a document's image key is dropped unsent. The service refusing the key
+  (401) or failing (5xx) answers the same 503.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
   `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
@@ -283,25 +273,12 @@ export const MEDIA_APP = 'livediagram.app';
 export function mediaClient(env: Pick<Env, 'MEDIA_KEY' | 'MEDIA_URL'>): MediaClient | null;
 export function mediaOwner(owner: string): Promise<string>;
 export function imageSummary(image: MediaImage): ImageSummary;
-export function rememberMediaImages(env: Env, owner: string, ids: string[]): Promise<void>;
+export function rememberMediaOwner(id: string, owner: string | null): void;
 export function mediaImageOwner(
-  env: Env,
   client: MediaClient,
   id: string,
   caller: string | null,
 ): Promise<string | null>;
-export function mediaRefQueueSetStatement(
-  env: Env,
-  documentId: string,
-  ids: string[],
-): D1PreparedStatement;
-export function mediaRefQueueDocumentsStatement(
-  env: Env,
-  where: string,
-  params: readonly unknown[],
-  onlyPlacing?: boolean,
-): D1PreparedStatement;
-export function flushMediaRefs(env: Env, announce?: boolean): Promise<number>;
 
 // apps/api/src/routes/images.ts: the decoded, length-capped X-Image-Original-Name
 export function originalNameOf(header: string | null): string | null;
@@ -338,66 +315,57 @@ read a 503 as `null` and `{}`.
 
 - **Media service** ([media.md](../../../../../liveworkspace/docs/media.md)): one row per image
   (`id`, owner, `app`, type, size, dimensions, hash, name, time) and its bytes in R2, keyed by id.
-- **D1 `media_images`** (the baseline, `WITHOUT ROWID`): `id` TEXT PK, `owner_id` TEXT
-  NOT NULL (an account id, a guest id, or `''` for an id the service does not know); index
-  `media_images_owner_idx`. Filled on upload, on gallery list, and on a byte-read miss. Never
-  emptied by a read; a deleted image's row goes with its delete.
-- **D1 `media_ref_outbox`** (`0101`, `WITHOUT ROWID`): `document_id` TEXT PK, `queued_at` INTEGER
-  (ms, moved on each change). Rows live until a successful send or a deploy without a key.
-- **D1 `images`** (`0014_images.sql`) and **R2 `IMAGES`**: the legacy images, unserved, kept for
-  their migration and swept by `runImageRetention`. The bucket also holds document snapshots under
-  `thumb/<documentId>` ([Document SVG snapshots](../../006-document/document-snapshots.md)).
+- **This api keeps no image rows of its own.** Whose an image is lives per isolate in
+  `mediaImageOwner`'s memo, and per document in its `image_owners` (an account id, a media guest
+  owner, or `''` for an id the service does not know) beside its `image_grants`
+  ([Image reference index](image-reference-index.md#data-and-persistence)).
+- **R2 `IMAGES`** holds document snapshots under `thumb/<documentId>`
+  ([Document SVG snapshots](../../006-document/document-snapshots.md)), not images.
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: the owner and the hash (`imageSummary` also drops `app`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
   was deleted renders **broken**. Undo restores the prior `imageId`.
 - **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): first
   `media.forgetOwner(mediaOwner(owner))`, which deletes every image the owner uploaded in any app
-  and throws on failure, then `DELETE FROM media_images WHERE owner_id = ?`, then the legacy
-  `IMAGES.delete(ids)` and `images` rows. An image a surviving shared tab still places, here or in
-  another app, renders **broken** (D142).
-  **Guest to account migration**: first `media.mergeOwner(mediaOwner(guest), account)`, which
-  throws on failure (idempotent, so a retry is safe); the service keeps on the guest an image whose
-  bytes the account already holds. The batch then writes
-  `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)` while the guest still
-  owns the documents, moves the documents, moves the legacy `images` (`UPDATE OR IGNORE`) and moves
-  every `media_images` row of the guest to the account. Every guest image the documents place
-  keeps serving in them by grant.
+  and throws on failure. An image a surviving shared tab still places, here or in another app,
+  renders **broken** (D142).
+  **Guest merge**: first `media.mergeOwner(mediaOwner(guest), mediaOwner(account))`, which throws
+  on failure (idempotent, so a retry is safe); the service keeps on the guest an image whose bytes
+  the account already holds. The index moves the documents themselves.
 - **Trash**: a trashed document keeps its content, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
-- **Reference index**: `image_refs` (in each document's own SQLite) and `document_images` (D1) are
-  derived from tab bodies and owned by the [Image reference index](image-reference-index.md) blueprint.
+- **Reference index**: `image_refs`, in each document's own SQLite, is derived from tab bodies and
+  owned by the [Image reference index](image-reference-index.md) blueprint.
 - **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Canvas convert
   ([Offline Mode](../../006-document/offline-mode.md)).
-- **Migration**: `media_images` and `media_ref_outbox` are in `0001_livediagram_baseline.sql`;
-  `document_images`, in the same baseline, belongs to the index blueprint.
+- **Schema**: the document's tables are made on first use (`document-room/document-schema.ts`); the
+  api has no D1 database and no migrations.
 
 ## Errors and edge cases
 
-| #   | Case                                                 | Handling                                                                                                                                                                                                 |
-| --- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E1  | SVG, HTML or other bytes declared as PNG             | Sniff mismatch, 415 `unsupported_type`                                                                                                                                                                   |
-| E2  | Truncated or malformed JPEG                          | 415 `malformed_jpeg`; nothing written                                                                                                                                                                    |
-| E3  | Lying `Content-Length`                               | Body re-checked after read, 413                                                                                                                                                                          |
-| E4  | Forged `X-Image-Sha256`                              | The service's early dedupe is owner-scoped; the body hash is recomputed before insert                                                                                                                    |
-| E4a | Workbench or token probing the gallery by hash       | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row                                                                                                          |
-| E5  | Same bytes uploaded concurrently                     | The service's unique index keeps one image; the other answers it `deduped: true`                                                                                                                         |
-| E5a | Racing uploads that together pass a cap              | The service refuses the later insert and deletes its bytes; 403 `gallery_full`, or 409                                                                                                                   |
-| E6  | Upload without a valid sha header at a full gallery  | The service checks the caps before body dedupe: 403 even when the bytes are already stored                                                                                                               |
-| E7  | Service refuses the key, or fails                    | 401 / 5xx → 503 `images_unavailable`, logged `[images] media service answered`                                                                                                                           |
-| E8  | Delete of a referenced image                         | 200; references render **broken**                                                                                                                                                                        |
-| E9  | Referenced id the service does not know              | `''` remembered, so later reads 404 without asking; canvas **broken**; snapshot placeholder                                                                                                              |
-| E10 | Snapshot images over the budget                      | Placeholder for each that does not fit                                                                                                                                                                   |
-| E11 | Offline `data:` id sent to the api                   | Not servable, placeholder in snapshots; canvas and client export use it directly                                                                                                                         |
-| E12 | Retention and reference edge cases                   | [Image reference index](image-reference-index.md#errors-and-edge-cases)                                                                                                                                  |
-| E13 | Share read of a document in the Trash                | `getDocument` misses it; 404                                                                                                                                                                             |
-| E14 | Account deletion when the service fails              | `forgetOwner` not ok throws before any row here is touched; the deletion can run again                                                                                                                   |
-| E17 | Legacy image (uploaded before the service)           | Unknown to the service: read 404 and remembered as `''`, canvas **broken**; its migration must clear those `''` rows (E18) and queue every document that places one, as nothing before the move was sent |
-| E18 | Image later known to the service, remembered as `''` | Stays unserved through a document until the owner lists their gallery or re-uploads it                                                                                                                   |
-| E19 | A document placing more than 1,000 images            | First 1,000 sent; logged; the rest could be swept by the service (unreachable under the cap)                                                                                                             |
-| E20 | Guest image from another app placed here             | Owner name matches nobody here: served only through a grant                                                                                                                                              |
-| E15 | Picker opened while the tab is locked / view role    | `openImagePickerFor` no-ops; placeholder shows "No image"                                                                                                                                                |
-| E16 | Image with zero natural height                       | `readImageDimensions` fails, "Could not read image dimensions."                                                                                                                                          |
+| #   | Case                                                 | Handling                                                                                        |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| E1  | SVG, HTML or other bytes declared as PNG             | Sniff mismatch, 415 `unsupported_type`                                                          |
+| E2  | Truncated or malformed JPEG                          | 415 `malformed_jpeg`; nothing written                                                           |
+| E3  | Lying `Content-Length`                               | Body re-checked after read, 413                                                                 |
+| E4  | Forged `X-Image-Sha256`                              | The service's early dedupe is owner-scoped; the body hash is recomputed before insert           |
+| E4a | Workbench or token probing the gallery by hash       | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row |
+| E5  | Same bytes uploaded concurrently                     | The service's unique index keeps one image; the other answers it `deduped: true`                |
+| E5a | Racing uploads that together pass a cap              | The service refuses the later insert and deletes its bytes; 403 `gallery_full`, or 409          |
+| E6  | Upload without a valid sha header at a full gallery  | The service checks the caps before body dedupe: 403 even when the bytes are already stored      |
+| E7  | Service refuses the key, or fails                    | 401 / 5xx → 503 `images_unavailable`, logged `[images] media service answered`                  |
+| E8  | Delete of a referenced image                         | 200; references render **broken**                                                               |
+| E9  | Referenced id the service does not know              | `''` remembered, so later reads 404 without asking; canvas **broken**; snapshot placeholder     |
+| E10 | Snapshot images over the budget                      | Placeholder for each that does not fit                                                          |
+| E11 | Offline `data:` id sent to the api                   | Not servable, placeholder in snapshots; canvas and client export use it directly                |
+| E12 | Retention and reference edge cases                   | [Image reference index](image-reference-index.md#errors-and-edge-cases)                         |
+| E13 | Share read of a document in the Trash                | The index grants no read; 404                                                                   |
+| E14 | Account deletion when the service fails              | `forgetOwner` not ok throws before any row here is touched; the deletion can run again          |
+| E18 | Image later known to the service, remembered as `''` | Stays unserved through that document until its `image_owners` row is asked again                |
+| E19 | A document placing more than 1,000 images            | First 1,000 sent; logged; the rest could be swept by the service (unreachable under the cap)    |
+| E20 | Guest image from another app placed here             | Owner name matches nobody here: served only through a grant                                     |
+| E15 | Picker opened while the tab is locked / view role    | `openImagePickerFor` no-ops; placeholder shows "No image"                                       |
+| E16 | Image with zero natural height                       | `readImageDimensions` fails, "Could not read image dimensions."                                 |
 
 ## Security and trust
 
@@ -425,19 +393,16 @@ read a 503 as `null` and `{}`.
 ## Performance and limits
 
 - Upload: the body read whole here (at most 10 MiB in memory), one service request (which does the
-  hash, the caps, the strip and the store), one `media_images` upsert.
-- Read: one `media_images` lookup (a miss adds one service `GET` and one insert, once per id), one
-  document row, and one call to the document beside one indexed grant query when read through a document, one service fetch whose
+  hash, the caps, the strip and the store).
+- Read: the owner memo (a miss adds one service `GET`, once per id per isolate), and when read
+  through a document one index grant and one call to the document, then one service fetch whose
   body is streamed on, not buffered.
-- Gallery list: one service request and one upsert that writes only changed rows.
+- Gallery list: one service request.
 - Saves: the index statements in the body's own transaction, in the document's SQLite; nothing is
-  written, and nothing pushed, when the set is unchanged. A changed set costs one push (one queue
-  statement, the set's rows, the grants) within about a minute.
-- Reference flush: per minute, one indexed read of at most 500 queued rows, one join for their
-  images, one service request, one delete; nothing when the queue is empty.
-- Usage: one join over the owner's documents and `document_images`, no tab body read; deduped in
-  flight on the client (`dedupeInFlight`).
-- Retention: budgets in [Image reference index](image-reference-index.md#performance-and-limits).
+  written, and nothing pushed, when the set is unchanged. A changed set costs one push (the grants
+  and one service request) within about a minute.
+- Usage: one service request and at most `USAGE_DOCUMENTS_MAX` index lookups, ten in flight, no tab
+  body read; deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
   at a time.
 - Client export: every distinct image fetched concurrently and held as a data URL plus a decoded
@@ -493,11 +458,10 @@ read a 503 as `null` and `{}`.
 | O5  | Client upload failure (GB5)    | `console.warn`  | `[image-upload] failed code=<token>`                                                   |
 | O6  | Service refused the key/failed | `console.error` | `[images] media service answered` + status, body                                       |
 | O7  | Placed but not servable        | `console.warn`  | `[images] not servable by document` + `{ documentId, imageId }`                        |
-| O8  | Reference sync failed          | `console.error` | `[media] refs sync failed` + status, body                                              |
+| O8  | Reference sync failed          | thrown          | `media refs sync failed: <status>`, kept for the next drain                            |
 | O9  | Document over one sync's limit | `console.error` | `[media] a document places more images than one sync carries` + `{ document, images }` |
 
-O6 to O9 exist; the cap and R2 failures are the service's own logs ([media.md](../../../../../liveworkspace/docs/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands. The retention and
-backfill fingerprints live in [Image reference index](image-reference-index.md#observability).
+O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md](../../../../../liveworkspace/docs/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands.
 
 ## Testing
 
@@ -514,14 +478,14 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | Read of another app's upload through a document      | `serves an image uploaded in another app…`                | `apps/api/src/routes/images.test.ts`             |
 | Workbench session read                               | `under a workbench session` suite                         | `apps/api/src/routes/images.test.ts`             |
 | Delete: owner, idempotent, forgotten here            | `DELETE` suite                                            | `apps/api/src/routes/images.test.ts`             |
-| Reference queue on save, link, unlink, removal       | `the reference queue` suite                               | `apps/api/src/media.test.ts`                     |
-| Flush: whole sets, complete, re-queued rows kept     | `flushMediaRefs` suite                                    | `apps/api/src/media.test.ts`                     |
+| A document's set pushed on change, kept on failure   | `a document's images` suite                               | `apps/api/src/media.test.ts`                     |
+| Owner asked once per image, forgotten on delete      | `whose an image is` suite                                 | `apps/api/src/media.test.ts`                     |
 | Account deletion and guest merge reach the service   | `the account` suite                                       | `apps/api/src/media.test.ts`                     |
 | Hosted profile points at the media service           | `turns telemetry on and points each environment…`         | `apps/api/src/hosted-vars.test.ts`               |
 | Sniff, strip, caps, dedupe, racing inserts           | the service's suites                                      | `liveworkspace/apps/media/src/*.test.ts`         |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
 | Usage from the index                                 | `usageOf`                                                 | `apps/api/src/routes/images.test.ts` (`usage`)   |
-| Retention, backfill, tripwire                        | [Image reference index](image-reference-index.md#testing) |                                                  |
+| Reference index and placement grants                 | [Image reference index](image-reference-index.md#testing) |                                                  |
 | Snapshot embeds, missing or unservable placeholder   | three `getDocumentThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`                 |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |
 | Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`       |
@@ -537,22 +501,21 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 ## Constants and configuration
 
-| Name                          | Value                                               | Provenance / safe range                                     |
-| ----------------------------- | --------------------------------------------------- | ----------------------------------------------------------- |
-| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                                  | Spec per-file cap; below the 100 MB Workers body limit      |
-| `MAX_IMAGE_MB`                | `10`                                                | Derived, for copy                                           |
-| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                                | Spec whitelist; SVG must never join                         |
-| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                                   | Non-image write cap in `limits.ts`                          |
-| `MEDIA_URL`                   | `https://liveworkspace.app/api/media`               | Client default; hosted per environment (`hosted-vars.json`) |
-| `MEDIA_KEY`                   | secret                                              | Matches the service's `MEDIA_KEY_LIVEDIAGRAM`; unset = off  |
-| `MEDIA_APP`                   | `'livediagram.app'`                                 | The service's app name for this api                         |
-| `MEDIA_REFS_SYNC_MAX`         | 500                                                 | `@liveworkspace/media`; the service's per-request limit     |
-| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                                | `@liveworkspace/media`; ten times the gallery cap           |
-| Reference flush               | every minute (`* * * * *`), announce at `0 3 * * *` | `wrangler.toml` crons                                       |
-| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                                   | Spec; 1 to 8 MiB keeps snapshots streamable                 |
-| Read `Cache-Control`          | `private, max-age=86400`                            | Spec; `private` is load-bearing                             |
-| Sniff window                  | first 16 bytes, minimum 12                          | Longest signature (WebP) needs 12                           |
-| Gallery placement size        | `240` px on the longer side                         | D40; literal `max` in `addImageFromGallery`                 |
-| `createImage` size            | 200 × 150                                           | D49                                                         |
-| `WRITE_RATE_LIMITER`          | 300 per 60 s                                        | `wrangler.toml`, namespace `1001`                           |
-| Buckets                       | `livediagram-images`, `…-images-staging`            | Legacy images and snapshots; separate per environment       |
+| Name                          | Value                                    | Provenance / safe range                                     |
+| ----------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                       | Spec per-file cap; below the 100 MB Workers body limit      |
+| `MAX_IMAGE_MB`                | `10`                                     | Derived, for copy                                           |
+| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                     | Spec whitelist; SVG must never join                         |
+| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                        | Non-image write cap in `limits.ts`                          |
+| `MEDIA_URL`                   | `https://liveworkspace.app/api/media`    | Client default; hosted per environment (`hosted-vars.json`) |
+| `MEDIA_KEY`                   | secret                                   | Matches the service's `MEDIA_KEY_LIVEDIAGRAM`; unset = off  |
+| `MEDIA_APP`                   | `'livediagram.app'`                      | The service's app name for this api                         |
+| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                     | `@liveworkspace/media`; ten times the gallery cap           |
+| Reference push                | at most once a minute per document       | The room's alarm (`document-room.ts`)                       |
+| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                        | Spec; 1 to 8 MiB keeps snapshots streamable                 |
+| Read `Cache-Control`          | `private, max-age=86400`                 | Spec; `private` is load-bearing                             |
+| Sniff window                  | first 16 bytes, minimum 12               | Longest signature (WebP) needs 12                           |
+| Gallery placement size        | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                 |
+| `createImage` size            | 200 × 150                                | D49                                                         |
+| `WRITE_RATE_LIMITER`          | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                           |
+| Buckets                       | `livediagram-images`, `…-images-staging` | Document snapshots; separate per environment                |

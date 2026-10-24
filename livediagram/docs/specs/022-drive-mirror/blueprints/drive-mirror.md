@@ -551,7 +551,7 @@ single-threaded call.
 | `pending_google_account_id`    | account link      | That account's `permissionId`; never on the wire                     |
 | `pending_expires_at`           | coordination      | Epoch ms; only its presence and time reach the wire                  |
 | `lease_*`                      | coordination      | Overwritten freely                                                   |
-| `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the documents table already holds      |
+| `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the index already holds                |
 | everything else                | mirror state      |                                                                      |
 
 Removal: a document or folder removed for good keeps no row. `listDriveItems` checks the ids its rows name against
@@ -612,12 +612,12 @@ re-creatable by reconnecting. `DELETE /api/drive/connection` deletes both tables
 
 ## Performance and limits
 
-- Server: `POST /drive/token` about once an active hour; D1 writes per active user-day: the page token (at most one
+- Server: `POST /drive/token` about once an active hour; person-store writes per active user-day: the page token (at most one
   per 10 minutes), the lease (at most one per 10 minutes of writing), item rows (one per upload or applied change).
 - Drive units per active two-hour day stay near the research's 1,600: one `changes.list` per poll, one
   `files.update` per content write, metadata updates only on real changes. Adoption lists run only when the root is
   missing.
-- `PUT /drive/items` carries at most `DRIVE_ITEMS_PUT_MAX` (100) rows, one D1 batch.
+- `PUT /drive/items` carries at most `DRIVE_ITEMS_PUT_MAX` (100) rows, one store transaction.
 - `localStorage` tombstones: about 80 bytes a row.
 
 ### Views follow
@@ -854,7 +854,7 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 | `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                                                                 | api-schema               | Spec                                                        |
 | `DRIVE_STATE_TTL_MS`                       | 10 min                                                                | api-schema               | Spec                                                        |
 | `DRIVE_ACCOUNT_SWITCH_TTL_MS`              | 30 min                                                                | api-schema               | Spec; time to read and answer the dialog; 10..60 min        |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                                                   | api-schema               | One D1 batch; D1 allows 1000 statements                     |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                                                   | api-schema               | One store transaction per request                           |
 | `DRIVE_ITEMS_PUT_BATCH`                    | 25                                                                    | cadence                  | D5                                                          |
 | `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                                 | cadence                  | Google multipart limit                                      |
 | `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                                                                  | cadence                  | Google's recommendation; min 220                            |

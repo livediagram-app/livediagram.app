@@ -925,7 +925,7 @@ low-threshold capture surface can least afford.
   is never moved, resized, re-kinded or re-worded — if the photo says something
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
-- **The photo is never stored, and never even sent.** Not R2, not D1, not
+- **The photo is never stored, and never even sent.** Not R2, not a Durable Object, not
   IndexedDB — and not the api either. The browser decodes
   it (honouring the EXIF orientation flag), detects on a downscaled working
   copy, cuts each detected sticky out of the full-resolution bitmap and

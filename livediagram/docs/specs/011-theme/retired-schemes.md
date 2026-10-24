@@ -73,8 +73,8 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 - a file import, since an exported file is a stored tab like any other;
 - a tab arriving from outside (an api write, a realtime peer), through `migrateIncomingTab`, before validation.
 
-It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline documents and files never reach D1.
+It runs at read time rather than as a storage migration because the rewrite needs the element model (per-kind colour
+fields), which SQL over a JSON blob cannot express safely, and because offline documents and files never reach the server.
 
 ## Properties
 

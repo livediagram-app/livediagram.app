@@ -145,9 +145,8 @@ a guest visit is still recorded in `shared_with` and counted as
   no address and is silently skipped);
 - no-ops when the owner's `notifyDocumentJoin` pref is `false`;
 - no-ops unless it wins the per-document throttle: at most one join email per
-  document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `documents.join_notified_at`, migration 0085; the new-comment email's rule
-  on its own column);
+  document per 15 minutes (a claim in the document's own `notify_claims`, `JOIN_NOTIFY_THROTTLE_MS`;
+  the new-comment email's rule on its own column);
 - otherwise sends the **document-joined** email: "Someone just opened
   _{document name}_", with a CTA back to the document.
 

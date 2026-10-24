@@ -754,7 +754,7 @@ whatever the answer; a newer `version` prints the notice (CLI43).
 
 ## Data and persistence
 
-No D1 table, no migration. Local files (CLI5):
+Nothing stored on the server beyond the device grant (below). Local files (CLI5):
 
 | File                                                  | Class   | Notes                                                                                                                                                                             |
 | ----------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -772,7 +772,7 @@ No D1 table, no migration. Local files (CLI5):
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
 `rename`. An unreadable or wrong-version derived file is ignored and rewritten; a malformed `config.toml` or
 `credentials.json` exits 2 naming the file and the line. Server state: the device grant's three KV keys, TTL 600 s;
-nothing in D1.
+nothing else.
 
 ## Errors and edge cases
 
@@ -1090,7 +1090,7 @@ Environment the CLI reads: `LIVEDIAGRAM_TOKEN`, `LIVEDIAGRAM_HOST`, `LIVEDIAGRAM
 `DO_NOT_TRACK`, `LIVEDIAGRAM_NO_UPDATE_CHECK`, `LIVEDIAGRAM_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
 Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livediagram.app`) and `CLI_MIN_VERSION` (unset until a
 release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
-`pnpm staging:check` holds; both documented in `docs/operations/self-hosting.md`. No new secret, binding or migration.
+`pnpm staging:check` holds; both documented in `docs/operations/self-hosting.md`. No new secret or binding.
 
 ## Assets and external resources
 

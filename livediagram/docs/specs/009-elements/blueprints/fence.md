@@ -68,7 +68,7 @@ A fence has no state of its own. Per walking character, every frame of `useAvata
 
 Invariants:
 
-- **I1:** no blocking state is written to the document, the room, D1 or undo.
+- **I1:** no blocking state is written to the document, the room, the index or undo.
 - **I2:** a character outside every fence's reach never ends a frame inside one.
 - **I3:** a character inside a fence's reach can always move away from it.
 - **I4:** teleports (portal), seating snaps and spawns do not pass through `fenceStep`.

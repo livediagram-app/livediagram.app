@@ -381,11 +381,11 @@ Community app (`apps/community`):
   otherwise walks the whole likes table in primary-key order to suit the `GROUP BY`.
 - Tag and text filters walk the listed posts newest first (by `idx_community_posts_new`), checking each; fine at the
   expected sizes, with FTS5 the next step (as for search).
-- Sync: one indexed read of `community_links` joined to `documents` and `share_links` per run (500 a batch, at most 10
-  a run), one request to the service, and one write statement per state on each side; an idle minute is two D1
-  reads and one request.
-- Hot paths outside the Community: the full document read adds one indexed subquery (`community_links` by
-  `document_id`); the tab save adds one indexed lookup (`document_tabs_by_tab`) only for a tab new to the document;
+- Sync: a canvas with a post asks the index from its own alarm, every `COMMUNITY_CHECK_MS`, and sends the service
+  what changed: one index request, at most one service request and one write to its `community_post` row; a canvas
+  with no post does nothing.
+- Hot paths outside the Community: the canvas's `community_post` holds one row at most, so reading it is constant
+  time; the tab save adds one indexed lookup (`document_tabs_by_tab`) only for a tab new to the document;
   the read gate adds the post check only for a Community link.
 - Bundles (measured against main at merge time, gzipped first load): the editor about +4 KB (+0.3%), the Explorer
   about +7 KB (+0.5%), the landing page +5.7 KB (the section itself), help +0.9 KB, the status page +0.6 KB. Kept
@@ -477,7 +477,7 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Spec rule                                  | Test                                                                                                                                           |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tag normalisation, input validation, query | packages/community/src/post.test.ts                                                                                                            |
-| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                                                                                     |
+| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (in-memory SQLite)                                                                              |
 | List filters, sorts, search, paging, trash | liveworkspace/apps/community/src/posts.test.ts (sqlite D1)                                                                                     |
 | Likes, reports, auto-hide, hidden is final | liveworkspace/apps/community/src/posts.test.ts, liveworkspace/apps/community/src/index.test.ts, `apps/api/src/routes/community-routes.test.ts` |
 | Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |

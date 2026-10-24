@@ -306,7 +306,7 @@ is a usage error (exit 2).
 | `LintFinding.message`, `fix` | derived | May quote a label (`quoteLabel`); the reader already holds the tab |
 | Compare rows                 | derived | Local to the CLI; nothing leaves the machine                       |
 
-No migration, no D1 column, no R2 object, no room op. `agent_changesets` rows do not carry the report; a reader
+Nothing stored: no column, no R2 object, no room op. `agent_changesets` rows do not carry the report; a reader
 re-lints the tab through the view.
 
 ## Errors and edge cases

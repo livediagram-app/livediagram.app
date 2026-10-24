@@ -118,14 +118,14 @@ document renders lazily.
   empty, so the row asks as before. The editor's own row follows its saves:
   after an autosave it says `empty` from the first tab when that tab is
   loaded, and keeps what the list said when it is not.
-- **The count is filled lazily, never by a bulk backfill.** The migration
-  only adds the column. A tab stored before it starts unknown and gets its
+- **The count is filled lazily, never by a bulk backfill.** The column
+  starts unknown. A tab stored before it starts unknown and gets its
   count from its next write, or from the thumbnail route: having parsed the
   body to render it, the route stamps a still-unknown count (in the
   request's `waitUntil`, best effort, never overwriting a known count). An
   old empty document is therefore asked for at most once. A deploy without
   the R2 binding renders no snapshot, so there its counts fill from writes only.
-- **Why no trigger and no backfill** (measured with SQLite, D1's engine,
+- **Why no trigger and no backfill** (measured with SQLite, the engine a Durable Object runs,
   sync off to isolate the work itself):
 
   | Tab body | Save, no count | Save, bound count | Save, trigger re-parse |
@@ -137,10 +137,10 @@ document renders lazily.
   A trigger re-parses the body and rewrites the row a second time, about
   ten times the cost of a 2 MB autosave, on the hot path (one save about
   every 600 ms per active editor). A one-statement backfill parses at about
-  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a full 10 GB D1
-  database needs over 20 s even before D1's replicated writes, against
-  D1's 30 s query limit and its guidance that a statement touching
-  hundreds of MB exceeds execution limits. Adding the column alone takes
+  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so it was ruled out
+  when every tab shared one 10 GB D1 database (over 20 s against D1's 30 s
+  query limit); each document now keeps its own tabs, so there is still
+  nothing to backfill in bulk. Adding the column alone takes
   under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
   shows the still, dashed sketch, captioned "Nothing drawn yet" where there
   is room. The no-snapshot 404 (past the access gate)

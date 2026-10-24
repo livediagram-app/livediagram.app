@@ -61,13 +61,11 @@ their `hello`.
 For "the owner can always take it back", the api forwards one more
 server-verified bit at upgrade — `X-Verified-Owner`. A boolean, carrying no
 identifier, so nothing about the anti-spoofing property changes. Every editor
-joins through a room ticket ([API](../015-api/api.md) "Realtime model"), so the
-bit is decided where the ticket is minted, by `ownsDocument` (a personal
-document's owner; a team document's verified owner while still a joined member),
-and rides the ticket's `owner` column (`ws_tickets`, migration 0096). The legacy
-bare-`?o=` owner leg, accepted until it is retired, sets it too. Before the
-ticket carried it, a signed-in owner, who always joined by ticket, was never
-seated as the owner and could lose the baton for good.
+joins through a room ticket ([API](../015-api/api.md) "Realtime model"), which is
+the index's grant itself, so the bit is read from it at the upgrade: the
+session's person is the grant's `owner`. Before the ticket carried it, a
+signed-in owner, who always joined by ticket, was never seated as the owner and
+could lose the baton for good.
 
 **Server-verified means the route must overwrite it, not just set it.** The room
 holds no identities, so it believes this header outright — which makes stamping

@@ -19,7 +19,7 @@ this blueprint adds only what the fifth mode changes.
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
 (`facilitate` → `workshop`), `LEGACY_PLACEMENT_DEFAULT_KEYS` (`mode:facilitate`), the
-`facilitateTourSeen` preference (`upgradeLegacyPreferences`, migration 0098) and the router's
+`facilitateTourSeen` preference (`upgradeLegacyPreferences`) and the router's
 `/help/canvas/facilitate-mode/` redirects. The facilitator (the baton) is a different thing and
 keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s
 (the Tools category's is `'tools'`); their six categories are

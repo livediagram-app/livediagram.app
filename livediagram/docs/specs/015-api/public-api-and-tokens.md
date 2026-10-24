@@ -176,7 +176,7 @@ source changes.
 
 A token grants its owner's **full** access — read AND write, the same surface
 the app has — **unless** it was minted **read-only** (the one scope that
-exists): a `read_only` column (migration 0039) that, when set, restricts the
+exists): a `read_only` flag on the token (kept by liveworkspace accounts) that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
 ([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
@@ -474,8 +474,8 @@ hardening landed first:
      collab key — see [Per-participant responses](../012-collaboration/participant-responses.md), which also
      explains why the owner id can't be it and why leaving the key claimable
      costs nothing.
-3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
-   mint/verify (`auth/`), signed-in-only `/api/tokens` routes (the team-route
+3. ✅ API tokens (`expires_at` fixed to +6 months), kept by liveworkspace accounts and
+   checked here (`db/api-tokens.ts`), signed-in-only `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it

@@ -1,8 +1,8 @@
 # Presentation mode
 
 > **Status: implemented.** The deck model and its pure helpers live in
-> `packages/document/src/slide-deck.ts`, persistence in migration 0041
-> (`documents.presentation`), and the editor surface in `useSlideDeck.ts`,
+> `packages/document/src/slide-deck.ts`, persistence in the document's own
+> `presentation` column (`document-room/document-schema.ts`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
 > `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
 > questions at the end are follow-ups, not blockers.
@@ -63,9 +63,9 @@ type StoredPresentation = { decks: Deck[] };
 
 ### Persistence
 
-This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
+This is the one part of the feature that is not free. Tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
 
-- A new `presentation TEXT NULL` column on `documents` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
+- A `presentation TEXT NULL` column on the document's own `document` row, holding the serialised `Deck`.
 - The api's document DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
 - Null / absent = no deck, which is every existing document.
 

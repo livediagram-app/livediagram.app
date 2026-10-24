@@ -258,7 +258,7 @@ nothing.)
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
-  Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
+  Per-PR previews would need a worker per PR, its own storage per PR and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's document.

@@ -253,8 +253,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   `'wrap'`). Logs `[editor-mode] whiteboard tab migrated to Draw { tabId, inked }`.
 - `migrateLegacyTextSizing` (in `migrateStoredElements`): `autoWidth: true` → `sizing: 'fit'`,
   `autoWidth: false` dropped; a stored `sizing` wins.
-- Telemetry history: D1 migration 0061 (draw_telemetry, since squashed into the baseline) renamed the
-  `Whiteboard` category to `Draw`.
+- Telemetry history: the stored `Whiteboard` category was renamed to `Draw`, so the lines continue.
 
 ## Errors and edge cases
 

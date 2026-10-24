@@ -175,7 +175,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ## Data and persistence
 
 - **Persisted in the tab body**: `link` (shared `ElementLink`), `meta` (four fields), colours and
-  the shared boxed fields. No D1 table, no R2 object.
+  the shared boxed fields. No table of its own, no R2 object.
 - **Never persisted**: the unfurl response beyond the four fields; image bytes (referenced by URL).
 - **Snapshot / restore**: `meta` travels with the element; undo can remove the meta step alone
   (D57). A restored card with a stale `meta.url` shows the bare URL.

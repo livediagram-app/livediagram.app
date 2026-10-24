@@ -844,7 +844,7 @@ Refusals (the `error` string, final copy):
   `isValidElement` / `isValidTab`, saved by the existing per-tab storage.
 - Image bytes are never written into elements (a data URL in a tab would breach `MAX_TAB_BYTES`);
   they live only in the in-memory pending list for the seam.
-- No D1 migration, no api change, no `api-schema` change.
+- No storage change, no api change, no `api-schema` change.
 - Undo: the import is one `commitTabs` entry; undo removes the new tabs and restores the active tab.
 
 ## Errors and edge cases
