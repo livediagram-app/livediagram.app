@@ -149,6 +149,19 @@ built once here. It is shown here and, through each switched-on app's router, at
   side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
+- **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
+  (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **GitHub** (the app's
+  open-source code; hidden on a phone), **Settings** and **Appearance** (Light, Dark or the system's, the site's one switch,
+  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in and
+  opens the account's settings on liveworkspace.app: the app's own (`/account/settings?app=<app>`, its dialog) for
+  someone who came from an app, else `/account/settings`. The toasts and a guest's sign-in banner stand above the bar.
+- **Search.** The bar's Search and Cmd/Ctrl+K open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
+  only when first opened): one field over the person's items (the index's `search` view, the words in the title or
+  folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help
+  articles in the app's help centre and, signed in, the sections of their account's settings. Items are asked for
+  once the typing pauses (200 ms), the request before cancelled; folders are read once per opening. Each group shows
+  at most 8. Picking an item opens it in its app, a folder or team opens it here, help opens in a new tab. The
+  header's field stays the filter for the list on screen.
 - **Links.** Each item opens in its own app, at the address the sites registry (`APP_ITEMS`) gives: its base
   URL, item path and share path. **New** goes to the app's new-item route, with the folder or team it was made
   from. Help links go to the app's help centre.
@@ -176,8 +189,6 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Home's banner.** Closing it is the person's `homeBanner` setting in the app's own scope
   (`/api/account/settings/:app`), so it stays closed in that app's editor too, and the other way round.
   A guest's close is kept in this browser.
-- **Appearance.** Light, dark or the system's, from the header beside the account control (the site's one
-  switch, `SiteAppearanceToggle`).
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
@@ -232,7 +243,7 @@ up in the timings, the routers can reach the site through a service binding inst
 option), which removes the public round trip.
 
 Its styles are in their own stylesheet, `app/explorer/explorer.css`, so the other pages don't carry them. The
-pages are `noindex`. Cmd/Ctrl+K moves to the search field.
+pages are `noindex`. Cmd/Ctrl+K opens the Search panel.
 
 ### Your account (`/account/…`)
 

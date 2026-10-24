@@ -15,16 +15,22 @@
 // (account, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
 // app's Take Offline and Sync (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and there alike,
 // over liveworkspace's account API (createTeamsHost with accountFetch).
+//
+// Under it all, the bottom bar the apps' Explorers had (ExplorerBottomBar.tsx): Search, which opens the Search panel
+// (loaded only when first wanted), GitHub, Settings and Appearance.
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
 } from 'react';
 import {
@@ -106,7 +112,14 @@ import {
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { heroHasRoom, loadHeroArt } from '@/lib/explorer/hero';
 import { loadWelcome } from '@/lib/explorer/welcome';
+import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { ExplorerHeader } from './ExplorerHeader';
+
+// The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
+const loadSearch = () => import('./ExplorerSearch');
+const ExplorerSearch = lazy(loadSearch);
+// The toasts and a guest's sign-in banner stand on the bottom bar.
+const FLOOR = { '--explorer-floor': EXPLORER_FLOOR } as CSSProperties;
 
 // The kind New makes, and "this app", for a person who came from no app: the first app on the index.
 const FALLBACK_APP: AppName = 'liveplanner';
@@ -407,29 +420,37 @@ export function ExplorerShell() {
       : [];
   }, [app, host]);
 
-  // Cmd/Ctrl+K: to the search field.
+  // The Search panel: the bottom bar's Search, or Cmd/Ctrl+K.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const prepareSearch = useCallback(() => void loadSearch(), []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== 'k') return;
-      const field = document.querySelector<HTMLInputElement>(
-        '[data-explorer] input[role="combobox"]',
-      );
       e.preventDefault();
-      if (field) field.focus();
-      else router.push('/explorer/search');
+      setSearchOpen(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [router]);
+  }, []);
+  // A result: the Explorer's own addresses move inside the page, anything else (an item, a settings page) loads.
+  const openResult = useCallback(
+    (href: string) => {
+      if (isExplorerHref(href)) router.push(href.replace(/^https?:\/\/[^/]+/, ''));
+      else window.location.assign(href);
+    },
+    [router],
+  );
 
-  // The app's own settings, on liveworkspace.app (where they are kept for the account): the Settings button the app's
-  // bottom bar had.
-  const settingsHref = host && signedIn ? workspaceHref(`/account/settings?app=${host}`) : null;
+  // The account's settings on liveworkspace.app, where they are kept: the app's own (its dialog there) for someone
+  // who came from an app, as the app's bottom bar had them.
+  const settingsHref = signedIn
+    ? workspaceHref(arrived.app ? `/account/settings?app=${arrived.app}` : '/account/settings')
+    : null;
   const header = useCallback(
-    ({ search }: { search: ReactNode }) => (
-      <ExplorerHeader app={arrived.app} search={search} settingsHref={settingsHref} />
-    ),
-    [arrived.app, settingsHref],
+    ({ search }: { search: ReactNode }) => <ExplorerHeader app={arrived.app} search={search} />,
+    [arrived.app],
   );
 
   // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.
@@ -446,6 +467,7 @@ export function ExplorerShell() {
     <div
       data-explorer-app={arrived.app ?? undefined}
       className="flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-950"
+      style={FLOOR}
     >
       {identity ? (
         <Explorer
@@ -509,6 +531,28 @@ export function ExplorerShell() {
           </main>
         </>
       )}
+      <ExplorerBottomBar
+        app={arrived.app}
+        appName={arrived.app ? siteOfApp(arrived.app).name : null}
+        onOpenSearch={openSearch}
+        onPrepareSearch={prepareSearch}
+        settingsHref={settingsHref}
+      />
+      {searchOpen ? (
+        <Suspense fallback={null}>
+          <ExplorerSearch
+            client={client}
+            app={shownFilter === 'app' ? app : null}
+            itemHref={itemHref}
+            teams={teams}
+            renderAppLogo={renderAppLogo}
+            helpApp={app}
+            signedIn={signedIn}
+            onOpen={openResult}
+            onClose={closeSearch}
+          />
+        </Suspense>
+      ) : null}
     </div>
   );
 }
