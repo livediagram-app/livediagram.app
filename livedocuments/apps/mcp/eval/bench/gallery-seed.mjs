@@ -55,7 +55,7 @@ export async function seedGalleries(apiDir, wanted) {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${key}`,
-          'X-Media-App': 'livedocuments',
+          'X-Media-App': 'livedocuments.app',
           'Content-Type': 'image/png',
           'X-Image-Width': String(width),
           'X-Image-Height': String(height),
