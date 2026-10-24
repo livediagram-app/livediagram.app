@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   INERT_PARSE_POLICY,
@@ -30,10 +30,13 @@ function sources(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-// The site's own code and the shared packages its pages render (the Explorer among them).
+// The site's own code and the shared packages its pages render (the Explorer among them). The tooling
+// configs (prettier-config, vitest-config, oxlint-config, next-config) have no src/: nothing of theirs renders.
 const files = [
   ...['app', 'components', 'lib'].flatMap((d) => sources(`${site}${d}`)),
-  ...readdirSync(`${root}packages`).flatMap((p) => sources(`${root}packages/${p}/src`)),
+  ...readdirSync(`${root}packages`)
+    .filter((p) => existsSync(`${root}packages/${p}/src`))
+    .flatMap((p) => sources(`${root}packages/${p}/src`)),
 ].map((f) => f.slice(root.length));
 const text = (f: string) => read(`${root}${f}`);
 
