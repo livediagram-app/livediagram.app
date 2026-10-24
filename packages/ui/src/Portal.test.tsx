@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Portal } from './Portal';
 
@@ -11,10 +11,8 @@ describe('Portal', () => {
     let measured: boolean | null = null;
     function Owner() {
       const ref = useRef<HTMLDivElement>(null);
-      const [, setSeen] = useState(false);
       useLayoutEffect(() => {
         measured = ref.current !== null && document.body.contains(ref.current);
-        setSeen(true);
       }, []);
       return (
         <Portal>
