@@ -1,4 +1,4 @@
-import { expandIpv6 } from '@livediagram/api-schema';
+import { expandIpv6 } from '@liveworkspace/sites/network';
 
 // The caller's IP for rate-limit keying — Cloudflare's `CF-Connecting-IP`, the
 // trusted client IP at the edge. Falls back to a fixed bucket when the header is
