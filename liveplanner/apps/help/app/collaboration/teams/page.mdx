@@ -5,25 +5,25 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Teams',
   description:
-    'Your liveworkspace teams in liveplanner: made and run on liveworkspace.app, with a shared library of plans every member can manage.',
+    'Your liveworkspace teams in liveplanner: made and run in the Explorer, with a shared library of plans every member can manage.',
   path: '/help/collaboration/teams/',
 });
 
 <ArticleLayout title="Teams" description="Your liveworkspace teams in liveplanner: roles, members, and a shared library everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
 
-A team is a named group of signed-in people. Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, and you make and run them on [liveworkspace.app](https://liveworkspace.app/account/teams). Each member has a role, either Admin or Member, and every team gets a shared library that all members can open and edit. Teams are not a paid tier: liveplanner is free, so the roles are about who may manage the team, not about unlocking features.
+A team is a named group of signed-in people. Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, and you make and run them in the Explorer, wherever it shows: the Explorer page and the editor's Explorer panel. Each member has a role, either Admin or Member, and every team gets a shared library that all members can open and edit. Teams are not a paid tier: liveplanner is free, so the roles are about who may manage the team, not about unlocking features.
 
 ## What a team is
 
-A team has a name and a list of members. To create one, choose **Manage Teams** at the bottom of the Explorer sidebar's **Spaces** group, which opens your teams on liveworkspace.app. The person who creates a team becomes its first Admin.
+A team has a name (up to 80 characters) and a list of members. To create one, choose **New Team**, the last row of the Explorer sidebar's **Spaces** group (in the editor's Explorer panel, it's on the rail under Spaces): give the team a name and, if you like, an organisation, and the new team opens. The person who creates a team becomes its first Admin.
 
 Teams need a signed-in account because they are keyed to your account identity and invites are matched by email. liveplanner itself always works without an account, and a share link can still be handed to a guest who edits without signing in.
 
-In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My Work, with **Manage Teams** as the last row. liveplanner learns your teams from your sign-in, so a team you join on liveworkspace.app shows up once your sign-in next refreshes, within the hour.
+In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My Work, with **New Team** as the last row. liveplanner learns your teams from your sign-in, so a team you join in another liveworkspace app shows up once your sign-in next refreshes, within the hour.
 
 ## Roles and invites
 
-There are two roles. **Admins** can invite people, change roles, rename the team, remove members, and delete the team, all on liveworkspace.app. **Members** can see the team and its members, work in the shared library, and leave. A team always keeps an Admin. See [Roles and Invites](/help/collaboration/teams/roles-and-invites/) for the details.
+There are two roles. **Admins** can invite people, change roles, rename the team, remove members, and delete the team, all from the team's card. **Members** can see the team and its members, work in the shared library, and leave. A team always keeps an Admin. See [Roles and Invites](/help/collaboration/teams/roles-and-invites/) for the details.
 
 ## The shared library
 
@@ -33,7 +33,7 @@ Inside a team's plans, its members are who you can [mention](/help/collaboration
 
 ## Leaving or deleting a team
 
-Leaving a team, or deleting it, happens on liveworkspace.app. Once you have left, you lose access to the team's library within a few minutes, including any of its plans you have open.
+Leaving a team (**Leave Team**), or deleting it (**Delete Team**, Admins only), happens on the ⋯ menu of its card, and takes you back to My Work with a short message. Once you have left, you lose access to the team's library within a few minutes, including any of its plans you have open.
 
 <Tip>
   If an invitation does not appear, make sure you are signed in with the same email address it was
