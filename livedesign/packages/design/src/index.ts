@@ -206,7 +206,7 @@ export type Tab = {
   // elements inherit the same theme colours by default. Unset = brand
   // defaults.
   theme?: string;
-  // Default font-family id for this tab (see packages/design/src/fonts.ts).
+  // Default font-family id for this tab (see ../packages/model-core/src/fonts.ts).
   // Every text-bearing element without its own `font` renders in this
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.

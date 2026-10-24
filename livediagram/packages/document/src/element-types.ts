@@ -173,7 +173,7 @@ export type ShapeElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -589,7 +589,7 @@ export type TextElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -760,7 +760,7 @@ export type TableElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -860,7 +860,7 @@ export type StickyElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -989,7 +989,7 @@ export type ImageElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -1095,7 +1095,7 @@ export type FreehandElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
