@@ -204,8 +204,7 @@ apps/
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
-  ui/             # this product's own UI (Brand, SiteHeader, SiteFooter, Select, chrome icons in src/icons), re-exporting
-                  # @liveworkspace/ui (Button, TextInput, Tooltip, Dialog, menus, hooks)
+  ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   project/       # project data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
