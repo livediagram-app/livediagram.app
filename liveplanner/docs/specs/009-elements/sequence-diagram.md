@@ -9,9 +9,8 @@ answered, self-calls looping out and back, replies dashed. A `shape: 'sequence'`
 ## Why
 
 A sequence diagram drawn by hand is dozens of elements kept in exact alignment: heads, lifelines, bars and a row of
-arrows per message, every one needing a nudge when a message is added in the middle. The editor already lays sequence
-diagrams out for Mermaid imports and agents (`layoutSequence`, [Mermaid](../020-import-export/mermaid.md) "Sequence
-diagrams (agents)"); this element keeps the list as the source, so inserting a message is typing one row.
+arrows per message, every one needing a nudge when a message is added in the middle. One layout draws them
+(`layoutSequence`, [Mermaid](../020-import-export/mermaid.md) "Sequence text"); this element keeps the list as the source, so inserting a message is typing one row.
 
 ## The element
 

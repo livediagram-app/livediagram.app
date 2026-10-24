@@ -1,22 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isValidTab } from '@liveplanner/project';
-import { agentBuiltTab } from './__fixtures__/agent-built-tab';
 import { edgeCasesTab } from './__fixtures__/edge-cases-tab';
 import { golden } from './__fixtures__/golden-path';
 import { largeTab } from './__fixtures__/large-tab';
 import { estimateTokens } from './budget';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
-
-describe('the agent-built tab', () => {
-  it('reads with its own slugs as refs, cheaper than prefixes (R7)', async () => {
-    const tab = agentBuiltTab();
-    expect(isValidTab(tab)).toBe(true);
-    const { text } = outlineView(buildViewModel(tab));
-    await expect(text).toMatchFileSnapshot(golden('agent-built.outline.txt'));
-    expect(text).toContain('→ payments "charge"');
-  });
-});
 
 describe('the 300-element tab (R20)', () => {
   const model = buildViewModel(largeTab());

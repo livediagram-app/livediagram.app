@@ -1,5 +1,4 @@
-// Mermaid sequenceDiagram, read into a sequence (docs/specs/020-import-export/mermaid.md "Sequence diagrams
-// (agents)"): participants, messages, activations, notes and fragments, in order, for sequence-layout.ts to draw.
+// Mermaid sequenceDiagram, read into a sequence (docs/specs/020-import-export/mermaid.md "Sequence text"): participants, messages, activations, notes and fragments, in order, for sequence-layout.ts to draw.
 // Pure and linear: one pass over the lines, each matched by anchored, non-backtracking patterns, since the text is
 // untrusted (any API token's changeset reaches it).
 

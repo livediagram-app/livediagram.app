@@ -74,8 +74,6 @@ export function wrapLabel(
 // The width of a label with no canvas to measure it: a rough share of the font size a character. Headless
 // renders wrap with it.
 export const LABEL_ESTIMATE_CHAR_EM = 0.55;
-// How much wider a bold glyph runs than a regular one, for an estimate of bold text.
-export const BOLD_EM = 1.06;
 export function estimatedLabelMeasure(size: number): (s: string) => number {
   return (s) => s.length * size * LABEL_ESTIMATE_CHAR_EM;
 }

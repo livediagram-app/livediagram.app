@@ -1,10 +1,10 @@
 // A sequence diagram drawn the way the sequence diagram template draws one (docs/specs/020-import-export/mermaid.md
-// "Sequence diagrams (agents)"): participants in a row of headed boxes over dashed lifelines, a row per message from
+// "Sequence text"): participants in a row of headed boxes over dashed lifelines, a row per message from
 // activation bar to activation bar, self-calls looping out and back, notes as stickies, fragments as frames across
 // every lifeline. Pure: a parsed sequence in, elements out.
 
 import { createArrow, createShape, createSticky, createText } from './factories';
-import { glyphWidth } from './graph-authoring';
+import { glyphWidth } from './glyph-width';
 import { arrowLabelFontSize } from './arrow-label';
 import { wrapBalanced } from './arrow-label-wrap';
 import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';

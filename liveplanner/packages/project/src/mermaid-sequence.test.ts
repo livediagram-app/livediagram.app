@@ -3,12 +3,19 @@ import {
   isSequenceDiagram,
   parseSequenceDiagram,
   SEQUENCE_MAX_PARTICIPANTS,
+  type SequenceDiagram,
 } from './mermaid-sequence';
-import { layoutGraph, graphFromMermaid } from './graph-input';
+import { layoutSequence } from './sequence-layout';
 import { arrowLabelPass } from './arrow-label-layout';
 import type { ArrowElement, Element } from './index';
 
-// docs/specs/020-import-export/mermaid.md "Sequence diagrams (agents)".
+// docs/specs/009-elements/sequence-diagram.md: a sequence read from Mermaid text, then drawn by layoutSequence.
+const readSequence = (src: string) => {
+  const r = parseSequenceDiagram(src);
+  return r.ok ? { ok: true as const, graph: r.diagram } : { ok: false as const, error: r.error };
+};
+const drawSequence = (diagram: SequenceDiagram, opts: { makeEdgeId?: () => string } = {}) =>
+  layoutSequence(diagram, opts.makeEdgeId ? { makeId: opts.makeEdgeId } : {});
 
 const text = `sequenceDiagram
   title Checkout
@@ -76,10 +83,10 @@ describe('parseSequenceDiagram', () => {
 
 describe('layoutSequence', () => {
   const draw = () => {
-    const g = graphFromMermaid(text);
+    const g = readSequence(text);
     if (!g.ok) throw new Error(g.error);
     let n = 0;
-    return layoutGraph(g.graph, { makeEdgeId: () => `x${n++}` });
+    return drawSequence(g.graph, { makeEdgeId: () => `x${n++}` });
   };
   const arrows = (els: Element[]) => els.filter((e): e is ArrowElement => e.type === 'arrow');
 
@@ -110,13 +117,13 @@ describe('layoutSequence', () => {
 
   it("fits a long message's label in its first gap on one line, its plate clear of its own line", () => {
     const long = 'GET /authorize (code_challenge, S256, state)';
-    const g = graphFromMermaid(
+    const g = readSequence(
       ['sequenceDiagram', 'participant A', 'participant B', 'participant C', `A->>C: ${long}`].join(
         '\n',
       ),
     );
     if (!g.ok) throw new Error(g.error);
-    const els = layoutGraph(g.graph, { makeEdgeId: () => 'x' });
+    const els = drawSequence(g.graph, { makeEdgeId: () => 'x' });
     const message = arrows(els).find((a) => a.label === long)!;
     const pass = arrowLabelPass(els);
     const layout = pass.layouts.get(message.id)!;
@@ -143,7 +150,7 @@ describe('layoutSequence', () => {
   });
 
   it('draws only the bars a diagram activates itself, none stacked on its answered calls', () => {
-    const g = graphFromMermaid(
+    const g = readSequence(
       [
         'sequenceDiagram',
         'participant A',
@@ -155,7 +162,7 @@ describe('layoutSequence', () => {
       ].join('\n'),
     );
     if (!g.ok) throw new Error(g.error);
-    const els = layoutGraph(g.graph);
+    const els = drawSequence(g.graph);
     const bars = els.filter((e) => e.type === 'shape' && e.shape === 'square' && e.width === 14);
     expect(bars.length).toBe(1);
     // The bar starts at the call the activate line follows, not a row later.
@@ -168,7 +175,7 @@ describe('layoutSequence', () => {
   });
 
   it('spans a fragment across the lifelines it involves, a nested one inside it', () => {
-    const g = graphFromMermaid(
+    const g = readSequence(
       [
         'sequenceDiagram',
         'participant A',
@@ -189,7 +196,7 @@ describe('layoutSequence', () => {
       ].join('\n'),
     );
     if (!g.ok) throw new Error(g.error);
-    const els = layoutGraph(g.graph);
+    const els = drawSequence(g.graph);
     const frames = els.filter(
       (e): e is Element & { x: number; width: number } => e.type === 'shape' && e.shape === 'frame',
     );
@@ -207,9 +214,9 @@ describe('layoutSequence', () => {
   });
 
   const framesOf = (lines: string[]) => {
-    const g = graphFromMermaid(['sequenceDiagram', ...lines].join('\n'));
+    const g = readSequence(['sequenceDiagram', ...lines].join('\n'));
     if (!g.ok) throw new Error(g.error);
-    const els = layoutGraph(g.graph) as (Element & { x: number; width: number })[];
+    const els = drawSequence(g.graph) as (Element & { x: number; width: number })[];
     return {
       els,
       frame: (op: string) =>
@@ -251,7 +258,7 @@ describe('layoutSequence', () => {
   });
 
   it("sets a guard right of its fragment's first lifeline, never across it", () => {
-    const g = graphFromMermaid(
+    const g = readSequence(
       [
         'sequenceDiagram',
         'participant A',
@@ -263,7 +270,7 @@ describe('layoutSequence', () => {
       ].join('\n'),
     );
     if (!g.ok) throw new Error(g.error);
-    const els = layoutGraph(g.graph);
+    const els = drawSequence(g.graph);
     const guardEl = els.find(
       (e) => e.type === 'text' && e.label === '[verifier valid]',
     ) as Element & { x: number };
@@ -271,30 +278,14 @@ describe('layoutSequence', () => {
     expect(guardEl.x).toBeGreaterThan(life.from.x);
   });
 
-  it('draws a sequence from a graph: nodes the participants, edges the messages, dashed a reply', () => {
-    const els = layoutGraph({
-      style: 'sequence',
-      nodes: [
-        { id: 'a', label: 'Client' },
-        { id: 'b', label: 'Server' },
-      ],
-      edges: [
-        { from: 'a', to: 'b', label: 'GET /' },
-        { from: 'b', to: 'a', label: '200', line: 'dashed' },
-      ],
-    });
-    const msgs = arrows(els).filter((a) => a.label);
-    expect(msgs.map((m) => m.label)).toEqual(['GET /', '200']);
-    expect(msgs[1]!.strokeStyle).toBe('dashed');
-  });
 });
 
 describe('late activations and notes', () => {
   const lay = (src: string) => {
-    const g = graphFromMermaid(src);
+    const g = readSequence(src);
     if (!g.ok) throw new Error(g.error);
     let n = 0;
-    return layoutGraph(g.graph, { makeEdgeId: () => `y${n++}` });
+    return drawSequence(g.graph, { makeEdgeId: () => `y${n++}` });
   };
 
   it('ends a message on the bar an activate line after it starts, not on the lifeline inside it', () => {
@@ -367,7 +358,7 @@ describe('late activations and notes', () => {
 
 describe('author activations', () => {
   it('keeps a + activation open past a reply, until its -', () => {
-    const g = graphFromMermaid(`sequenceDiagram
+    const g = readSequence(`sequenceDiagram
   participant B
   participant A
   B->>+A: Authorise
@@ -376,7 +367,7 @@ describe('author activations', () => {
   A-->>-B: Tokens`);
     if (!g.ok) throw new Error(g.error);
     let n = 0;
-    const els = layoutGraph(g.graph, { makeEdgeId: () => `z${n++}` });
+    const els = drawSequence(g.graph, { makeEdgeId: () => `z${n++}` });
     const bars = els.filter((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
       y: number;
       height: number;

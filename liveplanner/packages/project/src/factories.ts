@@ -25,7 +25,7 @@ import {
 import { packFreehandPoints } from './freehand-points';
 
 // The shape kind table + createShape live in './shape-factory'. Re-exported
-// here so every existing `from './factories'` import (graph-authoring) and the
+// here so every existing `from './factories'` import and the
 // package barrel resolve exactly as before.
 export { SHAPE_DEFAULT_SIZE, createShape } from './shape-factory';
 

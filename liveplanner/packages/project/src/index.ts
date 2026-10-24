@@ -520,7 +520,6 @@ export * from './table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
-export * from './er-hub-first';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
@@ -610,8 +609,6 @@ export * from './person-card';
 export * from './factories';
 export * from './whiteboard';
 export * from './segment-geometry';
-export * from './graph-authoring';
-export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
@@ -640,18 +637,12 @@ export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
 
-// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
-export * from './auto-layout-clusters';
-export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
 // Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
-// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+// §4.7a): raw elements made safe and finished tabs built.
 export * from './element-normalise';
-export * from './graph-input';
-export { KINK_RUN, arrowEndKey } from './graph-notches';
-export * from './graph-limits';
 export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.
@@ -667,7 +658,6 @@ export {
   type SequenceDiagram,
 } from './mermaid-sequence';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
-export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-plan-sheet';
@@ -717,7 +707,6 @@ export * from './arrow-path-hits';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
 export * from './arrow-orthogonal';
-export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
 export * from './element-grid';

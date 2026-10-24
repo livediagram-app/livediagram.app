@@ -3,12 +3,13 @@
 // naming what each shape kind the graph uses means, drawn in the diagram's own tones.
 
 import { unionRects } from './geometry-primitives';
-import { glyphWidth } from './graph-authoring';
-import { TONE_PRESET } from './graph-look';
+import { glyphWidth } from './glyph-width';
 import { isBoxed, type BoxedElement, type Element, type ShapeElement } from './index';
 
 // The template's muted caption grey (template-builders-flowchart.ts MUTED).
 export const GRAPH_MUTED = '#64748b';
+// The colour preset a muted node draws with.
+const MUTED_PRESET = 'outline';
 // Header geometry, the flowchart template's: title band, caption line, the gap down to the drawing.
 const TITLE_H = 44;
 const CAPTION_LINE_H = 22;
@@ -129,8 +130,8 @@ function keyCard(
   // Only where a kind's row shows its ordinary look: a kind all muted already shows the muted look in its own row.
   const muted = shapes.filter(
     (s) =>
-      s.colorPreset === TONE_PRESET.muted &&
-      shapes.some((o) => o.shape === s.shape && o.colorPreset !== TONE_PRESET.muted),
+      s.colorPreset === MUTED_PRESET &&
+      shapes.some((o) => o.shape === s.shape && o.colorPreset !== MUTED_PRESET),
   );
   const mutedKind =
     muted.length > 0
@@ -203,7 +204,7 @@ function keyCard(
         width: KEY_ICON_W,
         height: iconH,
         label: '',
-        colorPreset: TONE_PRESET.muted,
+        colorPreset: MUTED_PRESET,
       },
       {
         id: idOf(makeId, 'key-muted-label'),
@@ -229,7 +230,7 @@ const KEY_MUTED_MEANING = 'Exception or optional';
 function mostCommonPreset(shapes: ShapeElement[]): string | undefined {
   // A muted node is the exception, drawn quiet and dashed: the key shows a kind's ordinary look unless every one of
   // its kind is muted.
-  const ordinary = shapes.filter((s) => s.colorPreset !== TONE_PRESET.muted);
+  const ordinary = shapes.filter((s) => s.colorPreset !== MUTED_PRESET);
   const counts = new Map<string, number>();
   for (const s of ordinary.length ? ordinary : shapes)
     counts.set(s.colorPreset ?? '', (counts.get(s.colorPreset ?? '') ?? 0) + 1);

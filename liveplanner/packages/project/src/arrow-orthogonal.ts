@@ -38,7 +38,7 @@ export function orthogonalBends(
   if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') return undefined;
   const from = spreadEnd(arrow, 'from', elements);
   const to = spreadEnd(arrow, 'to', elements);
-  // One end on a side across the flow (a group's edge leaving its frame's side, auto-layout-cluster-seats.ts), the
+  // One end on a side across the flow (an edge leaving a frame's side), the
   // other along it: one bend, out of the side first, so the line meets each end square.
   const across = (anchor: Anchor) => {
     const side = anchorPrimarySide(anchor);
@@ -62,20 +62,6 @@ export function orthogonalBends(
         { dx: 0, dy: -half },
         { dx: 0, dy: half },
       ];
-}
-
-// Every angled arrow in `elements` given its two bends. One whose pinned ends
-// already line up runs straight: an angled style with nothing to bend drew a
-// zero-length elbow and turned its head sideways.
-export function withOrthogonalBends(elements: Element[], axis: 'TB' | 'LR'): Element[] {
-  return elements.map((el) => {
-    if (el.type !== 'arrow' || el.arrowStyle !== 'angled') return el;
-    const curvePoints = orthogonalBends(el, elements, axis);
-    if (curvePoints) return { ...el, curvePoints };
-    return el.from.kind === 'pinned' && el.to.kind === 'pinned'
-      ? { ...el, arrowStyle: 'straight' as const }
-      : el;
-  });
 }
 
 type Pt = { x: number; y: number };
