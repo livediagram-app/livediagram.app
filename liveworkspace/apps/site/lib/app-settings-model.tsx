@@ -98,9 +98,20 @@ function modelRow(
   }
 }
 
+/** A path's name, short enough for the dialog's rail ("Panels › Collaborate" was cut off): its group alone when
+ *  it is the only category shown from that group ("Panels"), else its own name ("Map", beside "Layers"). Account's
+ *  are always by their own name ("Notifications"): the whole dialog is the account's settings. */
+export function shortLabel(label: string, groups: ReadonlyMap<string, number>): string {
+  const parts = label.split(' › ');
+  if (parts.length < 2) return label;
+  const group = parts[0]!;
+  const own = parts.at(-1)!;
+  return group === 'Account' || (groups.get(group) ?? 0) > 1 ? own : group;
+}
+
 /** The app's categories with the rows showing now (a power user's only in Power User Mode, a nested
- *  row only while its switch is on), none left empty. A sub-category whose parent shows nothing is
- *  named by its path at the top level instead. */
+ *  row only while its switch is on), none left empty. A sub-category whose parent shows nothing sits at
+ *  the top level, under a short name (shortLabel). */
 export function appSettingsModel(
   catalogue: AppCatalogue,
   value: AppScopes,
@@ -112,6 +123,17 @@ export function appSettingsModel(
     .filter(({ rows }) => rows.length > 0);
   const ids = new Set(shownCategories.map(({ category }) => category.id));
   const byId = new Map(catalogue.categories.map((c) => [c.id, c]));
+  // Each category's full path: a sub-category shown without its parent is named under it.
+  const path = (category: AppCatalogue['categories'][number]) =>
+    category.parent !== undefined && !ids.has(category.parent)
+      ? `${byId.get(category.parent)?.label ?? category.parent} › ${category.label}`
+      : category.label;
+  // How many categories shown here share each path's group ("Panels" in "Panels › Map").
+  const groups = new Map<string, number>();
+  for (const { category } of shownCategories) {
+    const [group, rest] = path(category).split(' › ');
+    if (rest && group) groups.set(group, (groups.get(group) ?? 0) + 1);
+  }
   return shownCategories.map(({ category, rows }) => {
     const shownRows = new Set(rows.map((row) => row.id));
     const parent = category.parent;
@@ -121,10 +143,7 @@ export function appSettingsModel(
       category.tile ?? (parent !== undefined && !nested ? byId.get(parent)?.tile : undefined);
     return {
       id: category.id,
-      label:
-        parent !== undefined && !nested
-          ? `${byId.get(parent)?.label ?? parent} › ${category.label}`
-          : category.label,
+      label: shortLabel(path(category), groups),
       ...(nested ? { parent } : {}),
       ...(tile && TILES.has(tile)
         ? { icon: <SettingsCategoryTile id={tile as SettingsTileId} /> }

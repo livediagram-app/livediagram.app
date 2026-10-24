@@ -46,6 +46,8 @@ export function ExplorerBottomBar({
   onOpenSearch,
   onPrepareSearch,
   settingsHref,
+  onOpenSettings,
+  onPrepareSettings,
 }: {
   app: AppName | null;
   // The app's name, for Settings' hover card; null for none.
@@ -55,6 +57,10 @@ export function ExplorerBottomBar({
   onPrepareSearch: () => void;
   // The account's settings, for a person signed in; null hides Settings.
   settingsHref: string | null;
+  // The app's own Settings, opened in a dialog over the page (as the apps' Explorers did) rather than followed.
+  onOpenSettings?: () => void;
+  // Pointed at: the dialog's code and the app's catalogue are fetched ahead of the press.
+  onPrepareSettings?: () => void;
 }) {
   const repo = (app && REPOS[app]) ?? REPO_URL;
   const settingsLabel = appName ? `${appName} Settings` : 'Settings';
@@ -99,14 +105,29 @@ export function ExplorerBottomBar({
               : 'Your account’s settings, for every app.'
           }
         >
-          <a
-            href={settingsHref}
-            aria-label={settingsLabel}
-            data-explorer-settings=""
-            className={BTN}
-          >
-            <SettingsIcon size={16} />
-          </a>
+          {onOpenSettings ? (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              onPointerEnter={onPrepareSettings}
+              onFocus={onPrepareSettings}
+              aria-label={settingsLabel}
+              aria-haspopup="dialog"
+              data-explorer-settings=""
+              className={BTN}
+            >
+              <SettingsIcon size={16} />
+            </button>
+          ) : (
+            <a
+              href={settingsHref}
+              aria-label={settingsLabel}
+              data-explorer-settings=""
+              className={BTN}
+            >
+              <SettingsIcon size={16} />
+            </a>
+          )}
         </HoverCard>
       ) : null}
       <SiteAppearanceToggle look="rail" />

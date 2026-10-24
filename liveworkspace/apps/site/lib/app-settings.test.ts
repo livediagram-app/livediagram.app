@@ -6,7 +6,7 @@ import type {
   SettingsToggleRow,
 } from '@liveworkspace/settings-ui';
 import { appFromParam, isAppId, loadCatalogue, visibleRows } from './app-settings';
-import { appSettingsModel } from './app-settings-model';
+import { appSettingsModel, shortLabel } from './app-settings-model';
 
 const toggle = (id: string, extra: Partial<CatalogueRow> = {}) =>
   ({
@@ -118,7 +118,7 @@ describe('app settings', () => {
     expect(change).toHaveBeenLastCalledWith(expect.objectContaining({ key: 'zoom' }), 0.5);
   });
 
-  it('names a sub-category by its path while its parent shows nothing', () => {
+  it('names a sub-category by its parent while its parent shows nothing', () => {
     const when = { key: 'panel', on: true, off: false, fallback: true };
     const [only] = appSettingsModel(
       {
@@ -131,10 +131,23 @@ describe('app settings', () => {
       { all: {}, app: { panel: false } },
       vi.fn(),
     );
-    expect(only).toMatchObject({ id: 'draw', label: 'Editor › Draw' });
+    // Its group's name, the only one shown from it ("Panels › Collaborate" was cut off in the rail).
+    expect(only).toMatchObject({ id: 'draw', label: 'Editor' });
     expect(only).not.toHaveProperty('parent');
     // With its parent's tile.
     expect(only!.icon).toBeTruthy();
+  });
+
+  it('names a path short: its own name beside a sibling, and always under Account', () => {
+    const groups = new Map([
+      ['Panels', 2],
+      ['Account', 1],
+      ['Editor', 1],
+    ]);
+    expect(shortLabel('Panels › Map', groups)).toBe('Map');
+    expect(shortLabel('Account › Notifications', groups)).toBe('Notifications');
+    expect(shortLabel('Editor › Draw', groups)).toBe('Editor');
+    expect(shortLabel('Tours', groups)).toBe('Tours');
   });
 
   it("loads each app's catalogue", async () => {

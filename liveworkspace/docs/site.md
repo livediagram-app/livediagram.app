@@ -152,9 +152,12 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
   (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **GitHub** (the app's
   open-source code; hidden on a phone), **Settings** and **Appearance** (Light, Dark or the system's, the site's one switch,
-  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in and
-  opens the account's settings on liveworkspace.app: the app's own (`/account/settings?app=<app>`, its dialog) for
-  someone who came from an app, else `/account/settings`. The toasts and a guest's sign-in banner stand above the bar.
+  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in. For
+  someone who came from an app it opens that app's own Settings in a dialog over the Explorer, without leaving the
+  page (the same `AppSettingsDialog` "Your apps" opens, its code and the app's catalogue fetched when the button is
+  pointed at); from no app it goes to the account's settings, `/account/settings`. The dialog names a category
+  whose parent shows nothing by a short name: its group's when it is the only one shown from it ("Panels"), else its
+  own ("Layers", "Notifications": Account's always are). The toasts and a guest's sign-in banner stand above the bar.
 - **Search.** The bar's Search and Cmd/Ctrl+K open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
   only when first opened): one field over the person's items (the index's `search` view, the words in the title or
   folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help

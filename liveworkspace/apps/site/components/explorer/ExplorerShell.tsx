@@ -113,11 +113,18 @@ import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { heroHasRoom, loadHeroArt } from '@/lib/explorer/hero';
 import { loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
+import { loadCatalogue, type AppId } from '@/lib/app-settings';
+import { appSettingsLinks } from '@/lib/account-settings';
+import { listedApps, type ListedApp } from '@/lib/apps';
 import { ExplorerHeader } from './ExplorerHeader';
 
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
 const ExplorerSearch = lazy(loadSearch);
+// The app's own Settings dialog (the one "Your apps" opens on the settings page): fetched when Settings is pointed at
+// or pressed.
+const loadAppSettings = () => import('@/components/settings/AppSettingsDialog');
+const AppSettingsDialog = lazy(loadAppSettings);
 // The toasts and a guest's sign-in banner stand on the bottom bar.
 const FLOOR = { '--explorer-floor': EXPLORER_FLOOR } as CSSProperties;
 
@@ -448,6 +455,21 @@ export function ExplorerShell() {
   const settingsHref = signedIn
     ? workspaceHref(arrived.app ? `/account/settings?app=${arrived.app}` : '/account/settings')
     : null;
+  // Signed in and come from an app, Settings opens that app's own Settings in a dialog over the Explorer; from no
+  // app it goes to the account's settings page.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsApp = useMemo(() => {
+    if (!signedIn || !arrived.app) return null;
+    const id = siteOfApp(arrived.app).id;
+    const app = listedApps().find((a) => a.id === id);
+    const link = appSettingsLinks().find((l) => l.id === id);
+    return app && link ? { app: app as ListedApp & { id: AppId }, href: link.href } : null;
+  }, [signedIn, arrived.app]);
+  const prepareSettings = useCallback(() => {
+    if (!settingsApp) return;
+    void loadAppSettings();
+    void loadCatalogue(settingsApp.app.id);
+  }, [settingsApp]);
   const header = useCallback(
     ({ search }: { search: ReactNode }) => <ExplorerHeader app={arrived.app} search={search} />,
     [arrived.app],
@@ -537,7 +559,18 @@ export function ExplorerShell() {
         onOpenSearch={openSearch}
         onPrepareSearch={prepareSearch}
         settingsHref={settingsHref}
+        onOpenSettings={settingsApp ? () => setSettingsOpen(true) : undefined}
+        onPrepareSettings={settingsApp ? prepareSettings : undefined}
       />
+      {settingsOpen && settingsApp ? (
+        <Suspense fallback={null}>
+          <AppSettingsDialog
+            app={settingsApp.app}
+            settingsHref={settingsApp.href}
+            onClose={() => setSettingsOpen(false)}
+          />
+        </Suspense>
+      ) : null}
       {searchOpen ? (
         <Suspense fallback={null}>
           <ExplorerSearch
