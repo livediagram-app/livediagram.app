@@ -35,8 +35,8 @@ describe('SiteHeader', () => {
     );
   });
 
-  it('drops "Choose" only below 380px, so the bar fits a 360px and a 320px phone', () => {
-    expect(html).toMatch(/<span class="max-\[379px\]:hidden">Choose <\/span>Template/);
+  it('drops "Choose" only below 430px, so the bar fits every phone up to a 430px one', () => {
+    expect(html).toMatch(/<span class="max-\[429px\]:hidden">Choose <\/span>Template/);
   });
 
   it('no longer says Just Draw anywhere', () => {

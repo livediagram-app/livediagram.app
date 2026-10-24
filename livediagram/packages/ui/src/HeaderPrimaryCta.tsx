@@ -34,10 +34,11 @@ export function HeaderPrimaryCta({ ctaSurface }: { ctaSurface?: CtaSurface }) {
       ? ctaHref('/new', `${ctaSurface}.Header`)
       : '/new';
   const name = signedIn ? 'Open Explorer' : 'Choose Template';
-  // Below 380px each label drops its verb so the bar fits a 320px phone; the aria-label keeps it.
+  // Below 430px each label drops its verb so the bar fits a phone beside the longest wordmark
+  // (livedocuments: 421px with the verb); the aria-label keeps it.
   const label = (verb: string, noun: string) => (
     <>
-      <span className="max-[379px]:hidden">{verb} </span>
+      <span className="max-[429px]:hidden">{verb} </span>
       {noun}
     </>
   );

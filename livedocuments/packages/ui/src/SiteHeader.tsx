@@ -60,7 +60,10 @@ export function SiteHeader({
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
             the logo and CTA otherwise sit flush). Mobile also trims the side
-            padding to reclaim width, and the CTA is shrink-0 so it never squishes. */}
+            padding to reclaim width, and the CTA is shrink-0 so it never squishes. What makes the
+            bar fit a phone beside the longest wordmark (livedocuments): the primary drops its verb
+            below 430px, the Explorer link is a 40px folder below `sm`, and below 360px the logo is
+            the mark alone. */}
         <div
           className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
             wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
@@ -70,7 +73,13 @@ export function SiteHeader({
               vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
           <div className="flex shrink-0 items-center gap-2.5">
             <SiteSwitcher current={SITE_ID}>
-              <Brand href="/" size="md" className="relative touch-target-y" />
+              {/* Below 360px (a 320px phone) the mark alone, its name kept in the link's aria-label. */}
+              <Brand
+                href="/"
+                size="md"
+                className="relative touch-target-y"
+                wordmarkClassName="max-[359px]:hidden"
+              />
             </SiteSwitcher>
           </div>
           {center ? (

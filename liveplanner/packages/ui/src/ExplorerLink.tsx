@@ -22,7 +22,9 @@ export function ExplorerLink() {
       className={buttonClassName({
         variant: 'ghost',
         size: 'md',
-        className: 'relative shrink-0 touch-target-y !text-slate-600 dark:!text-slate-300',
+        // Below `sm`, the folder alone in a 40px square, so the bar fits a phone (SiteHeader).
+        className:
+          'relative shrink-0 touch-target-y max-sm:px-3 !text-slate-600 dark:!text-slate-300',
       })}
     >
       <FolderIcon aria-hidden className="text-brand-700 dark:text-brand-400" />

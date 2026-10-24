@@ -26,8 +26,8 @@ type BrandProps = {
   accentColor?: string;
   // Extra classes for the wordmark span ("live" + "planner"). The editor
   // passes `hidden sm:inline` here so the wordmark drops off the mobile
-  // header (the logo mark stays for orientation). Marketing surfaces leave
-  // this unset so the wordmark always shows.
+  // header (the logo mark stays for orientation). The site header
+  // hides it only below 360px, a 320px phone, so the bar fits.
   wordmarkClassName?: string;
 };
 
