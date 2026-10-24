@@ -9,6 +9,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
+│  ├─ help-site                every help centre's pages, components, styles, SEO and catalogue checks; each product binds its own
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
@@ -165,6 +166,12 @@ Each step is its own PR, and both products build and pass their tests after ever
    - `licences` is one engine, one contract for the /licences page and one pool of committed texts.
      Each product's `@<product>/licences` keeps its tables (apps, overrides, embedded works) and a
      generate script that hands them to `generateLicences`.
+   - `help-site` is one copy of the help centre around each product's articles: the layouts, pages and
+     components, the MDX styles, the SEO helpers (metadata, social cards, JSON-LD, sitemap), the styles
+     and the catalogue checks. Each help app binds it with `createHelpSite` on the server and a small
+     client provider. It keeps its articles and illustrations, catalogue, card art, header and footer,
+     home layout and page copy. The help pages' tints now follow each product's brand (livedocuments and
+     livedesign had kept livediagram's sky).
    - `diagram-lint` and `document-views` are not done yet.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
