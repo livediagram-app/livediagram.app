@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/editor/components/chrome/FloatingToolbar.tsx`                                                              | Caption under the flag; toolbar name                                             |
 | `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                                  | The rows, `parent`, the `presetSummary` kind; `SettingsRowContext.powerUserMode` |
 | `packages/settings-ui/src/SettingsCategoryPane.tsx` (root)                                                       | Nests a row's children under it as a named group; `onGoToRow`                    |
-| `packages/settings-ui/src/rows/PresetSummaryRow.tsx` (root)                                                      | The "Set By Power User Mode" readout                                             |
+| `packages/settings-ui/src/rows/SimpleRows.tsx` (root)                                                            | The "Set By Power User Mode" readout                                             |
 | `apps/editor/components/dialogs/settings/power-user-preset-rows.ts`                                              | Pure: preset lines, current value, changed or not, where each row lives          |
 | `apps/editor/components/dialogs/SettingsDialog.tsx`                                                              | Computes `powerUserMode` for the row context                                     |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                                         | `onShortcutUsed` after a key the handler claimed                                 |

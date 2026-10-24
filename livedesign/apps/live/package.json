@@ -38,6 +38,7 @@
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "next": "^16.4.1",

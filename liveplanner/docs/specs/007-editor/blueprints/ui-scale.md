@@ -215,7 +215,7 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 | Master clears parts; part writes own | `apps/editor/lib/ui-scale.test.ts` writing               |
 | Phone always 100%                    | `apps/editor/lib/ui-scale.test.ts`                       |
 | Slider row offers its default        | existing `settings-catalogue.test.ts` slider round-trips |
-| Rows commit, preview, grey out       | `settings-model.ui-scale.test.tsx`                       |
+| Rows commit, preview, grey out       | `SettingsCategoryPane.ui-scale.test.tsx`                 |
 | Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |
