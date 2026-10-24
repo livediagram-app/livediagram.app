@@ -133,6 +133,23 @@ describe('a session grant', () => {
     expect(ws.attachment).toMatchObject({ grantExp: T0 + 1_200_000, renewAsked: false });
   });
 
+  it("takes the document's owner and team from a fresh grant, and from no refused one", async () => {
+    const { document, join } = room();
+    const takeHead = vi
+      .spyOn(document as unknown as { takeHead: (g: unknown) => Promise<void> }, 'takeHead')
+      .mockResolvedValue();
+    const ws = join({ expMs: T0 + 600_000 });
+    await document.renewGrant(ws as unknown as WebSocket, 'forged');
+    expect(takeHead).not.toHaveBeenCalled();
+    await document.renewGrant(
+      ws as unknown as WebSocket,
+      grant({ owner: 'user_b', team: 'team_t', exp: (T0 + 1_200_000) / 1000 }),
+    );
+    expect(takeHead).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: 'user_b', team: 'team_t' }),
+    );
+  });
+
   it('ends the session when the fresh grant says something else (a level or tab changed)', async () => {
     const { document, join } = room();
     const ws = join({ expMs: T0 + 600_000 });
@@ -155,6 +172,31 @@ describe('a session grant', () => {
     vi.setSystemTime(T0 + 600_000);
     await document.alarm();
     expect(ws.closed?.code).toBe(GRANT_LAPSED_CLOSE);
+  });
+});
+
+describe('a room full of sessions', () => {
+  // The alarm walks every socket, and each `grant` frame is checked: both stay well inside a frame's budget at
+  // 1,000 sessions (measured ~1-3 ms per sweep, ~40-180 ms for 1,000 renewals).
+  it('asks, renews and lapses 1,000 sessions within budget', async () => {
+    const { document, join } = room();
+    const sockets = Array.from({ length: 1000 }, () => join({ expMs: T0 + 600_000 }));
+    vi.setSystemTime(T0 + 590_000);
+    let t = performance.now();
+    await document.alarm();
+    expect(performance.now() - t).toBeLessThan(250);
+    expect(sockets.every((ws) => kinds(ws).includes('grant-renew'))).toBe(true);
+
+    const fresh = grant({ exp: (T0 + 1_200_000) / 1000 });
+    t = performance.now();
+    for (const ws of sockets) await document.renewGrant(ws as unknown as WebSocket, fresh);
+    expect(performance.now() - t).toBeLessThan(2000);
+
+    vi.setSystemTime(T0 + 1_200_000);
+    t = performance.now();
+    await document.alarm();
+    expect(performance.now() - t).toBeLessThan(250);
+    expect(sockets.every((ws) => ws.closed?.code === GRANT_LAPSED_CLOSE)).toBe(true);
   });
 });
 

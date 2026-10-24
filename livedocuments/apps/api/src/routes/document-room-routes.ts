@@ -4,14 +4,13 @@
 // headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
 import {
-  capWorkbenchRole,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livedocuments/api-schema';
 import { workbenchStore } from '../workbench-store';
 import { indexService, linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, sealRoomTicket } from '@liveworkspace/index-app';
+import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import { personTagFor } from '../person-tag';
@@ -44,9 +43,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    const role: AccessLevel = workbench
-      ? capWorkbenchRole(claims.level, workbench.cap)
-      : claims.level;
+    const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
