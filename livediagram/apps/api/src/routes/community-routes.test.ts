@@ -718,14 +718,12 @@ describe('what a community link reveals', () => {
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: 'not_found' });
     // An ordinary link to the same canvas still asks for the password.
-    const own = (await (
+    const own = (
       await indexDoors(env, { kind: 'delegate', personId: AUTHOR, teams: [] })!.createShareLink(
         'd1',
-        {
-          level: 'view',
-        },
+        { level: 'view' },
       )
-    ).link) as { code: string };
+    ).link as { code: string };
     expect((await share(`/api/share/${own.code}`)).status).toBe(401);
   });
 
