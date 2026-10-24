@@ -185,7 +185,7 @@ export function AddTabToDocumentDialog({
   return (
     <OrganiseDialogFrame
       title="Add to Document"
-      sub="Link this tab into another document. It stays one live tab: edits show in both places."
+      sub="Copy this tab into another document. The copy is a separate tab: edits stay in the document they’re made in."
       onClose={onClose}
     >
       <input

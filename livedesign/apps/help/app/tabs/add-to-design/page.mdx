@@ -5,18 +5,18 @@ import { AddToDesignMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another Design',
   description:
-    'Add the active tab to another design you own, straight from the tab menu. Both designs share the same live tab, so an edit in one shows up in the other.',
+    'Copy the active tab into another design you own, straight from the tab menu. The copy is its own tab: edits in one design stay in that design.',
   path: '/help/tabs/add-to-design/',
 });
 
 <ArticleLayout
   title="Add a Tab to Another Design"
-  description="Reuse a tab elsewhere: add the active tab to another of your designs, and edits made in either place appear in both."
+  description="Reuse a tab elsewhere: copy the active tab into another of your designs, then change each one as you like."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one design belongs in another too: a glossary, a shared timeline, a set of slides two projects both rely on. **Add to Design** adds the active tab to another design you own, without leaving the editor.
+Sometimes a tab you built in one design belongs in another too: a glossary, a shared timeline, a set of slides two projects both rely on. **Add to Design** copies the active tab into another design you own, without leaving the editor.
 
 ## Adding a tab to another design
 
@@ -34,17 +34,12 @@ The option is greyed out when there is nowhere to add the tab to: if this is you
   <AddToDesignMenu />
 </Figure>
 
-## One tab, shared between designs
+## A copy, not a shared tab
 
-Add to Design doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either design and the change lands in the other as well. If the other design is already open in another window, reload it to see the latest edits.
-
-Two things stay per-design, so each design can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
-
-Removing the tab from one design doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last design containing it. Deleting a whole design works the same way: a tab it shares stays, with its history, in every other design it is in, and the delete confirmation tells you how many tabs that is before you go ahead.
+Add to Design puts a copy of the tab in the other design, as it is at that moment. From then on the two tabs are separate: edit, rename or delete either one and the other stays as it was. In the other design the copy sits outside any [tab folder](/help/tabs/tab-folders/).
 
 <Tip>
-  Prefer an independent copy you can tailor per project? Use **Duplicate** in the same menu first,
-  then add the duplicate to the other design.
+  Want a second copy in the same design instead? Use **Duplicate** in the same menu.
 </Tip>
 
 </ArticleLayout>
