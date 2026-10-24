@@ -10,7 +10,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
   },
@@ -41,7 +40,6 @@
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
     "@livedocuments/icons": "workspace:^",
-    "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/settings": "workspace:*",

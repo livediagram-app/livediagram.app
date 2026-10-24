@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@types/node": "^26.6.4",

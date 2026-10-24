@@ -3117,9 +3117,6 @@ importers:
       '@livedocuments/document-views':
         specifier: workspace:*
         version: link:../document-views
-      '@livedocuments/edit-operations':
-        specifier: workspace:*
-        version: link:../edit-operations
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
@@ -3127,6 +3124,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@livedocuments/edit-operations':
+        specifier: workspace:*
+        version: link:../edit-operations
       '@livedocuments/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -3527,9 +3527,6 @@ importers:
       '@livedocuments/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
-      '@livedocuments/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -3591,9 +3588,6 @@ importers:
       '@livedocuments/icons':
         specifier: workspace:^
         version: link:../icons
-      '@livedocuments/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
       '@livedocuments/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
