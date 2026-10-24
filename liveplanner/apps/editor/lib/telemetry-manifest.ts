@@ -25,7 +25,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Unresolved',
   'Agent·Opened',
   'Canvas·Changed',
-  'Canvas·Used',
   'Canvas·Zoomed',
   'Comment·Added',
   'Comment·Deleted',

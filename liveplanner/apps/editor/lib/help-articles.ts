@@ -33,10 +33,6 @@ export const HELP_ARTICLES = {
   mindMapOutline: 'plan/visualisations',
   panelOpacity: 'user-interface/settings',
   isometricMode: 'tabs/export-tabs',
-  // One key per tool panel, so every mode's panel can point at the article
-  // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
-  // pointing at nothing is a bug, the same way an unregistered article is.
-  formatPainter: 'user-interface/themes',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -162,10 +158,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   isometricMode: {
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
-  },
-  formatPainter: {
-    title: 'Learn about the Format Painter',
-    description: "Tips for copying one element's look onto others.",
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
