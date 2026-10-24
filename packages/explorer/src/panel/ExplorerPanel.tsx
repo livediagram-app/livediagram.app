@@ -899,11 +899,7 @@ function Pane({
         </div>
       </div>
       {members && section.kind === 'team' ? (
-        <TeamMembersDialog
-          teamId={section.id}
-          teamName={title}
-          onClose={() => setMembers(false)}
-        />
+        <TeamMembersDialog teamId={section.id} teamName={title} onClose={() => setMembers(false)} />
       ) : null}
     </div>
   );

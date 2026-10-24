@@ -406,7 +406,10 @@ function TeamMemberRow({
           <option value="admin">Admin</option>
         </select>
       ) : (
-        <span className="flex items-center gap-1.5" title={pinned ? 'The team’s only admin' : undefined}>
+        <span
+          className="flex items-center gap-1.5"
+          title={pinned ? 'The team’s only admin' : undefined}
+        >
           {pinned ? (
             <span className="text-[10px] text-slate-500 dark:text-slate-400">Only admin</span>
           ) : null}
@@ -418,7 +421,11 @@ function TeamMemberRow({
           type="button"
           onClick={onRemove}
           aria-label={
-            waiting ? `Withdraw invite to ${name}` : answered ? `Remove ${name} from list` : `Remove ${name}`
+            waiting
+              ? `Withdraw invite to ${name}`
+              : answered
+                ? `Remove ${name} from list`
+                : `Remove ${name}`
           }
           title={waiting ? 'Withdraw Invite' : answered ? 'Remove from List' : 'Remove Member'}
           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-700 dark:hover:text-rose-400"

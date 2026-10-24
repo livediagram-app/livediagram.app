@@ -600,7 +600,10 @@ describe("the account API, for the Explorer on an app's address (by the app's be
   });
 
   it('runs a team in place: makes, renames, invites and deletes it', async () => {
-    const made = await call('/teams', bearer('tok-ada', { method: 'POST', body: { name: 'Design' } }));
+    const made = await call(
+      '/teams',
+      bearer('tok-ada', { method: 'POST', body: { name: 'Design' } }),
+    );
     expect(made.status).toBe(201);
     const { id } = (await made.json()) as { id: string };
     const renamed = await call(

@@ -184,7 +184,7 @@ The journeys, one way each:
    - **The ⋯ menu**: Edit Team (name and organisation; admins), Leave Team (anyone but the only admin while
      others remain; leaving alone deletes the team, and says so), Delete Team (admins). Each asks once. Leaving
      or deleting goes to My Work, with a toast.
-   In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
+     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
    invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
    so in a toast. The account menu's **Teams** (`@liveworkspace/account-menu`, in every header) opens this view;

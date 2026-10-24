@@ -118,7 +118,10 @@ export function JoinPage() {
               >
                 {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
               </button>
-              <a href={INVITES_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
+              <a
+                href={INVITES_PATH}
+                className={`${BUTTON.secondary} relative touch-target-y py-2.5`}
+              >
                 Not now
               </a>
             </div>
@@ -186,7 +189,10 @@ export function Notice({
       <p className="mx-auto mt-3 max-w-sm text-slate-600 dark:text-slate-400">{body}</p>
       <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row">
         {children ?? (
-          <a href={INVITES_PATH} className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}>
+          <a
+            href={INVITES_PATH}
+            className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
+          >
             Go to your teams
           </a>
         )}

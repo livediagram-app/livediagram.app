@@ -248,11 +248,11 @@ Teams are not here: they are made and run in the Explorer, wherever it shows
 ([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)). The old addresses go there, permanently
 (`public/_redirects`, pinned by `lib/teams-redirects.test.ts`), so every link already sent keeps landing:
 
-| Old address                            | Goes to                       |
-| -------------------------------------- | ----------------------------- |
-| `/account/teams` (and with a `/`)      | `/explorer/invites`           |
-| `/account/teams/<id>` (and with a `/`) | `/explorer/team?id=<id>`      |
-| `/explorer?settings=teams`             | `/explorer/invites`           |
+| Old address                            | Goes to                  |
+| -------------------------------------- | ------------------------ |
+| `/account/teams` (and with a `/`)      | `/explorer/invites`      |
+| `/account/teams/<id>` (and with a `/`) | `/explorer/team?id=<id>` |
+| `/explorer?settings=teams`             | `/explorer/invites`      |
 
 **Settings**, `/account/settings` (`components/settings/SettingsPanel.tsx` and `ProfileCard.tsx`,
 the catalogue in `lib/account-settings.ts`): what belongs to the person in every app, the `all` scope

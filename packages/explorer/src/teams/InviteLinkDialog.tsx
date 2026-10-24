@@ -105,10 +105,20 @@ export function InviteLinkDialog({
       <DialogFooter>
         {link ? (
           <>
-            <Button variant="secondary" size="sm" disabled={busy} onClick={() => void change(onClear)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => void change(onClear)}
+            >
               Turn Off
             </Button>
-            <Button variant="secondary" size="sm" disabled={busy} onClick={() => void change(onReset)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => void change(onReset)}
+            >
               New Link
             </Button>
           </>

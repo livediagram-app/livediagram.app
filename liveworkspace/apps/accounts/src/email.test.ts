@@ -59,7 +59,13 @@ describe('inviteResponseEmail', () => {
   });
 
   it("opens the team's view in the Explorer", () => {
-    const email = inviteResponseEmail('https://liveworkspace.app/', 'Design', 'Ada', true, 'team_1');
+    const email = inviteResponseEmail(
+      'https://liveworkspace.app/',
+      'Design',
+      'Ada',
+      true,
+      'team_1',
+    );
     expect(email.html).toContain('href="https://liveworkspace.app/explorer/team?id=team_1"');
   });
 });

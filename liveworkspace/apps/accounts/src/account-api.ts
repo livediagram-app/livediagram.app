@@ -541,7 +541,12 @@ async function handleBearer(
     email: person.emailVerified && person.email ? person.email.toLowerCase() : null,
   };
   if (section === 'teams' || section === 'invitations') {
-    const teams = await teamRoutes(request, env, { ...actor, name: await accountName(db, actor.id) }, parts);
+    const teams = await teamRoutes(
+      request,
+      env,
+      { ...actor, name: await accountName(db, actor.id) },
+      parts,
+    );
     if (teams) return teams;
   }
   if (section === 'settings' && !id && method === 'GET') return sharedSettings(db, actor);

@@ -14,8 +14,7 @@ import { USER_ID } from './ids.ts';
 import { listMyInvitations, type Invitation } from './teams.ts';
 
 export type InvitationsAnswer =
-  | { ok: true; invitations: Invitation[] }
-  | { ok: false; status: number; error: string };
+  { ok: true; invitations: Invitation[] } | { ok: false; status: number; error: string };
 
 export async function pendingInvitations(
   db: D1Database,

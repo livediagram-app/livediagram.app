@@ -59,7 +59,11 @@ export type TeamResult<T> = { ok: true; value: T } | { ok: false; error: string 
 
 export type RemovedMember = { teamDeleted: boolean; removed: 'self' | 'invite' | 'member' };
 
-export type AnsweredInvitation = { teamId: string; teamName: string; status: 'joined' | 'declined' };
+export type AnsweredInvitation = {
+  teamId: string;
+  teamName: string;
+  status: 'joined' | 'declined';
+};
 
 export type TeamsHost = {
   /** The person's teams with their member counts, and the invitations waiting for them. */

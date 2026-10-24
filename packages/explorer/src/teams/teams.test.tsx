@@ -21,9 +21,30 @@ const details = (over: Partial<TeamDetails['team']> = {}): TeamDetails => ({
     ...over,
   },
   members: [
-    { id: 'm1', userId: 'user_me', email: 'me@x.test', name: 'Sam Doe', role: 'admin', status: 'joined' },
-    { id: 'm2', userId: 'user_ann', email: 'ann@x.test', name: 'Ann Lee', role: 'member', status: 'joined' },
-    { id: 'm3', userId: null, email: 'kai.moss@x.test', name: null, role: 'member', status: 'invited' },
+    {
+      id: 'm1',
+      userId: 'user_me',
+      email: 'me@x.test',
+      name: 'Sam Doe',
+      role: 'admin',
+      status: 'joined',
+    },
+    {
+      id: 'm2',
+      userId: 'user_ann',
+      email: 'ann@x.test',
+      name: 'Ann Lee',
+      role: 'member',
+      status: 'joined',
+    },
+    {
+      id: 'm3',
+      userId: null,
+      email: 'kai.moss@x.test',
+      name: null,
+      role: 'member',
+      status: 'invited',
+    },
   ],
   inviteLink: null,
 });
@@ -55,11 +76,17 @@ function fakeHost(team: TeamDetails | null = details(), over: Partial<TeamsHost>
     setRole: vi.fn(async () => ({ ok: true as const, value: null })),
     removeMember: vi.fn(async (_id, memberId) => ({
       ok: true as const,
-      value: { teamDeleted: false, removed: memberId === 'm1' ? ('self' as const) : ('member' as const) },
+      value: {
+        teamDeleted: false,
+        removed: memberId === 'm1' ? ('self' as const) : ('member' as const),
+      },
     })),
     resetInviteLink: vi.fn(async () => ({
       ok: true as const,
-      value: { url: 'https://liveworkspace.app/join?token=abc', expiresAt: Date.now() + 7 * 86_400_000 },
+      value: {
+        url: 'https://liveworkspace.app/join?token=abc',
+        expiresAt: Date.now() + 7 * 86_400_000,
+      },
     })),
     clearInviteLink: vi.fn(async () => ({ ok: true as const, value: null })),
     answer: vi.fn(),
@@ -69,7 +96,11 @@ function fakeHost(team: TeamDetails | null = details(), over: Partial<TeamsHost>
   return host;
 }
 
-function page(view: ExplorerView, host: TeamsHost | null, extra: Partial<React.ComponentProps<typeof Explorer>> = {}) {
+function page(
+  view: ExplorerView,
+  host: TeamsHost | null,
+  extra: Partial<React.ComponentProps<typeof Explorer>> = {},
+) {
   const onNavigate = vi.fn();
   render(
     <Explorer
@@ -149,7 +180,10 @@ describe('a team’s view', () => {
     const team = details();
     const host = fakeHost(team, {
       resetInviteLink: vi.fn(async () => {
-        team.inviteLink = { url: 'https://liveworkspace.app/join?token=abc', expiresAt: Date.now() };
+        team.inviteLink = {
+          url: 'https://liveworkspace.app/join?token=abc',
+          expiresAt: Date.now(),
+        };
         return { ok: true as const, value: team.inviteLink };
       }),
     });
@@ -177,7 +211,10 @@ describe('a team’s view', () => {
     fireEvent.change(within(form).getByLabelText('Team name'), { target: { value: 'Product' } });
     fireEvent.click(within(form).getByRole('button', { name: 'Save' }));
     await waitFor(() =>
-      expect(host.update).toHaveBeenCalledWith('t1', { name: 'Product', organisation: 'Northwind' }),
+      expect(host.update).toHaveBeenCalledWith('t1', {
+        name: 'Product',
+        organisation: 'Northwind',
+      }),
     );
     expect(await screen.findByRole('treeitem', { name: /Product/ })).toBeTruthy();
     expect(host.onTeamsChanged).toHaveBeenCalled();
@@ -233,7 +270,10 @@ describe('New Team', () => {
       expect(host.create).toHaveBeenCalledWith({ name: 'Ops', organisation: 'Acme' }),
     );
     await waitFor(() =>
-      expect(onNavigate).toHaveBeenCalledWith({ kind: 'team', id: 't-new' }, '/explorer/team?id=t-new'),
+      expect(onNavigate).toHaveBeenCalledWith(
+        { kind: 'team', id: 't-new' },
+        '/explorer/team?id=t-new',
+      ),
     );
     expect(await screen.findByRole('treeitem', { name: /^Ops/ })).toBeTruthy();
     expect(host.onTeamsChanged).toHaveBeenCalled();

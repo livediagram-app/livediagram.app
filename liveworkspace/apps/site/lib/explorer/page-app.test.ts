@@ -9,8 +9,7 @@ import { appAccount, appSignInHref, resetAppSession } from './app-session';
 import { accountFetch, resetWorkspaceIdentity, workspaceIdentity } from './token';
 import { explorerSilentSignInScript } from './silent';
 
-const token = (sub: string) =>
-  `h.${btoa(JSON.stringify({ sub })).replace(/=+$/, '')}.s`;
+const token = (sub: string) => `h.${btoa(JSON.stringify({ sub })).replace(/=+$/, '')}.s`;
 
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
