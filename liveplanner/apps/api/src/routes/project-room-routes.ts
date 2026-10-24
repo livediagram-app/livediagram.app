@@ -12,7 +12,7 @@ import { adderKeyFor } from '../adder-key';
 import { workbenchStore } from '../workbench-store';
 import { linkCodeOf, indexService } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, sealRoomTicket } from '@liveworkspace/index-app';
+import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import { personTagFor } from '../person-tag';
@@ -50,9 +50,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    const role: AccessLevel = workbench
-      ? capWorkbenchRole(claims.level, workbench.cap)
-      : claims.level;
+    const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).

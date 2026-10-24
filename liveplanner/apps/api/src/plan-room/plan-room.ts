@@ -4,9 +4,11 @@ import {
   FLUSH_RETRY_MS,
   ItemDb,
   type ItemHeadSync,
+  earliestRoomGrantDue,
   nextFlushAt,
-  openRoomTicket,
   recordItemEditor,
+  renewRoomGrant,
+  roomGrantStep,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -21,7 +23,6 @@ import {
   parseBuildId,
   ROOM_PING,
   ROOM_PONG,
-  capWorkbenchRole,
   type AccessLevel,
 } from '@liveplanner/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
@@ -626,18 +627,14 @@ export class PlanRoom extends DurableObject<Env> {
   // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
   // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
   // (its editor renews a minute early anyway, and sends each new grant unasked). A session still holding a
-  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all.
+  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all. The
+  // decisions are @liveworkspace/index-app's (room-ticket.ts).
 
-  // The earliest moment a session's grant needs the room: its ask, or its lapse once asked.
   private nextGrantDue(): number | null {
-    let due: number | null = null;
-    for (const ws of this.state.getWebSockets()) {
-      const s = this.readSession(ws);
-      if (!s?.grantExp) continue;
-      const at = s.renewAsked ? s.grantExp : s.grantExp - ROOM_GRANT_ASK_BEFORE_MS;
-      if (due === null || at < due) due = at;
-    }
-    return due;
+    return earliestRoomGrantDue(
+      this.state.getWebSockets().map((ws) => this.readSession(ws)),
+      ROOM_GRANT_ASK_BEFORE_MS,
+    );
   }
 
   // Ask the sessions whose grant is about to lapse, and close those whose grant has.
@@ -645,8 +642,8 @@ export class PlanRoom extends DurableObject<Env> {
     let lapsed = 0;
     for (const ws of this.state.getWebSockets()) {
       const s = this.readSession(ws);
-      if (!s?.grantExp) continue;
-      if (s.grantExp <= now) {
+      const step = roomGrantStep(s, now, ROOM_GRANT_ASK_BEFORE_MS);
+      if (step === 'lapsed') {
         try {
           ws.close(GRANT_LAPSED_CLOSE, 'grant-lapsed');
         } catch {
@@ -654,9 +651,7 @@ export class PlanRoom extends DurableObject<Env> {
         }
         this.opRates.delete(ws);
         lapsed++;
-        continue;
-      }
-      if (!s.renewAsked && s.grantExp - ROOM_GRANT_ASK_BEFORE_MS <= now) {
+      } else if (step === 'ask' && s?.grantExp) {
         this.sendTo(ws, { kind: 'grant-renew', expiresAt: s.grantExp });
         try {
           ws.serializeAttachment({ ...s, renewAsked: true } satisfies SessionAttachment);
@@ -674,26 +669,30 @@ export class PlanRoom extends DurableObject<Env> {
   async renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
     const env = this.roomEnv;
     const session = this.readSession(ws);
-    if (!env || !session?.projectId || typeof ticket !== 'string' || ticket.length > 8192) return;
-    const opened = await openRoomTicket(indexService, env, ticket, session.projectId);
-    if (!opened) {
+    if (!env || !session?.projectId) return;
+    const renewal = await renewRoomGrant(indexService, env, ticket, session.projectId, {
+      level: session.verifiedRole,
+      tab: session.tabScope,
+    });
+    if (renewal.kind === 'invalid') {
       console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;
     }
-    const { claims, workbench } = opened;
-    await this.takeHead(claims);
-    const level = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
-    if (level !== session.verifiedRole || (claims.tab ?? null) !== (session.tabScope ?? null)) {
-      console.info('[grant] renewal changed access', { from: session.verifiedRole, to: level });
+    if (renewal.kind === 'changed') {
+      console.info('[grant] renewal changed access', {
+        from: session.verifiedRole,
+        to: renewal.level,
+      });
       this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
       return;
     }
+    await this.takeHead(renewal.claims);
     const current = this.readSession(ws);
     if (!current) return;
     try {
       ws.serializeAttachment({
         ...current,
-        grantExp: claims.exp * 1000,
+        grantExp: renewal.grantExp,
         renewAsked: false,
       } satisfies SessionAttachment);
     } catch {
