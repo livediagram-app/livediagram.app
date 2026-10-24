@@ -78,7 +78,8 @@ describe('preview fonts', () => {
     expect(await previewFonts(['oswald'], FONTS, ok.fn)).toHaveLength(2);
     const many = fetcher();
     await previewFonts(
-      ['poppins', 'nunito', 'lora', 'abril-fatface', 'roboto-slab', 'permanent-marker'], FONTS,
+      ['poppins', 'nunito', 'lora', 'abril-fatface', 'roboto-slab', 'permanent-marker'],
+      FONTS,
       many.fn,
     );
     expect(many.calls.filter((c) => c.includes('css2')).length).toBeLessThanOrEqual(
