@@ -145,7 +145,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Hero art.** The picture on the right of Home's hero is the app's own, from its hero manifest
   (`@<app>/templates/hero.json`, generated from the components the app's Home draws), drawn by the Explorer's
   `HeroArt` as React elements (no HTML parsed, only boxes and shapes). It is loaded once per page, only on Home
-  with the hero shown and room for it (`lg` and up); an app that ships none (all but liveplanner and livedocuments today) shows none.
+  with the hero shown and room for it (`lg` and up). Every app ships one.
 - **Previews.** Real previews where the app serves one (`previewPath` in the registry; liveplanner's plan
   snapshot), asked with the person's workspace token and the item's share code. They are asked for only as a
   card nears the screen or a row is pointed at, at most 4 at a time, once per item version, and kept as up to

@@ -20,8 +20,18 @@ describe("Home's hero art on liveworkspace.app", () => {
     expect(loadHeroArt('liveplanner')).toBe(loadHeroArt('liveplanner'));
   });
 
-  it('shows none for an app that ships none', async () => {
-    await expect(loadHeroArt('livedesign')).resolves.toBeNull();
+  it("loads livediagram's pictures, the flowchart in front", async () => {
+    const art = await loadHeroArt('livediagram');
+    expect(art?.sheets.map((s) => s.id)).toEqual(['mindmap', 'retrospective', 'flowchart']);
+  });
+
+  it("loads livedesign's pictures, the logo in front", async () => {
+    const art = await loadHeroArt('livedesign');
+    expect(art?.sheets.map((s) => s.id)).toEqual([
+      'wireframe-mobile-app',
+      'wireframe-website',
+      'logo-design',
+    ]);
   });
 
   it('takes only a manifest it can draw', () => {

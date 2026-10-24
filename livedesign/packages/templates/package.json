@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./page-layout-build": "./src/page-layout-build.ts",
-    "./welcome.json": "./welcome.json"
+    "./welcome.json": "./welcome.json",
+    "./hero.json": "./hero.json"
   },
   "scripts": {
     "lint": "oxlint",

@@ -56,11 +56,17 @@ Top to bottom, left column:
   Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
   after what was typed, so the typing carries on uninterrupted.
 
-The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: the snapshot thumbnails of the
-person's three most recently saved designs of My Work, the newest in front and the two behind turned out to
-either side, each on a white sheet with a soft shadow. They are decoration (hidden from assistive technology, not
-links): Jump Back In is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
-keeps its width.
+The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: three template previews
+(`HERO_FAN` in `apps/live/components/panels/home/HeroTemplateFan.tsx`: a logo in front, a mobile-app and a website
+wireframe behind, turned out to either side), each on a white sheet with a soft shadow. **Nothing is fetched** to
+draw them. They are decoration (hidden from assistive technology, not links): Jump Back In is the way in.
+
+On liveworkspace.app, which carries none of the editor's code, the same previews ship as data in
+`packages/templates/hero.json` (the templates package's `hero.json` export), written from these components by
+[`hero-manifest.test.tsx`](../../../apps/live/components/panels/home/hero-manifest.test.tsx) through
+`@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx`
+in `apps/live`; without it the test fails when the file has drifted), and drawn there by the Explorer's `HeroArt`,
+loaded only on a wide screen.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again. Each runs over the `long` motion token

@@ -7,8 +7,10 @@ import type { HeroArtManifest } from '@liveworkspace/explorer';
 import type { AppName } from '@liveworkspace/sites';
 
 const FILES: Partial<Record<AppName, () => Promise<{ default: unknown }>>> = {
+  livediagram: () => import('@livediagram/templates/hero.json'),
   liveplanner: () => import('@liveplanner/templates/hero.json'),
   livedocuments: () => import('@livedocuments/templates/hero.json'),
+  livedesign: () => import('@livedesign/templates/hero.json'),
 };
 
 /** Whether a file is a manifest the Explorer can draw. */

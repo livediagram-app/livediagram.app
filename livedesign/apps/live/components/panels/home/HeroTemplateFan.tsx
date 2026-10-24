@@ -4,8 +4,10 @@
 // previews fanned, a logo in front and two wireframes behind, so the hero shows what can be made. The shared Explorer
 // (@liveworkspace/explorer) draws the hero and takes this as its `heroArt`; it loads only with the hero.
 
+import type { HeroSheet } from '@liveworkspace/explorer';
 import type { TemplateKind } from '@livedesign/templates';
 import { TemplatePicture } from '@/components/start/template-card';
+import { templateOf } from '@/components/start/start-template-items';
 
 /** The three previews fanned in the hero, the front one first. */
 export const HERO_FAN: readonly TemplateKind[] = [
@@ -35,4 +37,18 @@ export function HeroTemplateFan() {
       ))}
     </div>
   );
+}
+
+// The same previews as the sheets the shared Explorer fans (@liveworkspace/explorer HeroSheets), for the hero
+// manifest liveworkspace.app draws (hero-manifest.test.tsx): the backs first, the front sheet last. A template
+// preview is light-canvas art in both looks.
+export const HERO_TEMPLATES_LABEL = 'What a design can be';
+
+export function heroSheets(): HeroSheet[] {
+  return [HERO_FAN[1]!, HERO_FAN[2]!, HERO_FAN[0]!].map((kind) => ({
+    id: kind,
+    label: templateOf(kind).title,
+    light: <TemplatePicture kind={kind} />,
+    dark: <TemplatePicture kind={kind} />,
+  }));
 }
