@@ -49,6 +49,7 @@ import type {
   LinkComponent,
   LinkProps,
   Placement,
+  RenderAppLogo,
   RenderItemMark,
   RenderThumbnail,
   InboxHost,
@@ -112,6 +113,7 @@ export type ExplorerContextValue = {
   Link: LinkComponent;
   renderThumbnail?: RenderThumbnail;
   renderItemMark?: RenderItemMark;
+  renderAppLogo?: RenderAppLogo;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -205,6 +207,7 @@ export type ExplorerProviderProps = {
   viewerId?: string | null;
   renderThumbnail?: RenderThumbnail;
   renderItemMark?: RenderItemMark;
+  renderAppLogo?: RenderAppLogo;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -251,6 +254,7 @@ export function ExplorerProvider({
   viewerId = null,
   renderThumbnail,
   renderItemMark,
+  renderAppLogo,
   shareUrl,
   shareHost,
   inboxHost,
@@ -374,6 +378,7 @@ export function ExplorerProvider({
       Link,
       renderThumbnail,
       renderItemMark,
+      renderAppLogo,
       shareUrl,
       shareHost,
       inboxHost,
@@ -420,6 +425,7 @@ export function ExplorerProvider({
       Link,
       renderThumbnail,
       renderItemMark,
+      renderAppLogo,
       shareUrl,
       shareHost,
       inboxHost,

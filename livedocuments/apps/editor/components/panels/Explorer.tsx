@@ -1,11 +1,12 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
+import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
 import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
-import { ProductNavLinks } from '@livedocuments/ui';
+import { BrandMark, ProductNavLinks } from '@livedocuments/ui';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -26,6 +27,10 @@ import { trackOrganise } from '@/lib/explorer-organise';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
+
+// The filter's logos: this app's own, and liveworkspace's for All.
+const renderAppLogo: RenderAppLogo = (app) =>
+  app === 'all' ? <BrandMark accentColor={PLATFORM_SITE.accent} /> : <BrandMark />;
 
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
 // always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
@@ -128,6 +133,7 @@ function ExplorerImpl({
       collapsible
     >
       <ExplorerPanel
+        renderAppLogo={renderAppLogo}
         app="livedocuments"
         onOrganise={trackOrganise}
         client={indexClient}

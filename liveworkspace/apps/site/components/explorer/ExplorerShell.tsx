@@ -38,6 +38,7 @@ import {
   type LinkComponent,
   type NavigateOptions,
   type Placement,
+  type RenderAppLogo,
   type SidebarLink,
   type ThisBrowserHost,
   type ThisBrowserItem,
@@ -50,7 +51,8 @@ import {
   subscribeThisBrowser,
   thisBrowserKey,
 } from '@liveworkspace/explorer/this-browser';
-import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { BrandMark } from '@livediagram/ui';
+import { APP_ITEMS, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
@@ -107,6 +109,10 @@ import { ExplorerHeader } from './ExplorerHeader';
 
 // The kind New makes, and "this app", for a person who came from no app: the first app on the index.
 const FALLBACK_APP: AppName = 'liveplanner';
+// The filter's logos: the app's prism in its accent, and liveworkspace's own (the Wordmark's) for All Apps.
+const renderAppLogo: RenderAppLogo = (app) => (
+  <BrandMark accentColor={app === 'all' ? PLATFORM_SITE.accent : siteOfApp(app).accent} />
+);
 // The handoffs an address may carry, taken once and then dropped from it.
 const TRASHED_PARAM = 'trashed';
 const TITLE_PARAM = 'title';
@@ -455,6 +461,7 @@ export function ExplorerShell() {
           sidebarLinks={sidebarLinks}
           thisBrowser={thisBrowser}
           allLabel="All Apps"
+          renderAppLogo={renderAppLogo}
           // A guest is named people too: accounts answers this browser's guest for names alone.
           accounts={accounts}
           signedIn={signedIn}

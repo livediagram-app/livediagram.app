@@ -212,9 +212,18 @@ const segment = (active: boolean) =>
 
 /** This app's items, or every app's. */
 export function FilterToggle() {
-  const { app, filter, setFilter, kind } = useExplorer();
+  const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
   const { allLabel } = useHostExtras();
   const choose = (next: AppFilter) => () => setFilter(next);
+  // Each choice wears its logo: the app's, and the platform's for every app.
+  const logo = (of: AppFilter) => {
+    const node = renderAppLogo?.(of === 'app' ? app : 'all');
+    return node ? (
+      <span aria-hidden className="mr-1.5 inline-flex shrink-0 [&_svg]:size-4">
+        {node}
+      </span>
+    ) : null;
+  };
   return (
     <div role="group" aria-label="Show" className={SEGMENTS}>
       <button
@@ -224,6 +233,7 @@ export function FilterToggle() {
         title={`Only ${siteOf(app).name}'s ${kind.lowerMany}`}
         className={segment(filter === 'app')}
       >
+        {logo('app')}
         {kind.many}
       </button>
       <button
@@ -233,6 +243,7 @@ export function FilterToggle() {
         title="Every app's items"
         className={segment(filter === 'all')}
       >
+        {logo('all')}
         {allLabel}
       </button>
     </div>

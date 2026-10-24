@@ -82,6 +82,7 @@ import type {
   ItemHref,
   LinkComponent,
   Placement,
+  RenderAppLogo,
   RenderItemMark,
   RenderThumbnail,
   InboxHost,
@@ -144,6 +145,8 @@ export type ExplorerPanelProps = {
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name (RenderItemMark). */
   renderItemMark?: RenderItemMark;
+  /** The filter's logos, as on the Explorer page. */
+  renderAppLogo?: RenderAppLogo;
   Link?: LinkComponent;
   onOpenItem?: (href: string, item: Item) => void;
   basePath?: string;
@@ -206,6 +209,7 @@ function PanelInner({
   onOpenExplorer,
   renderThumbnail,
   renderItemMark,
+  renderAppLogo,
   Link,
   onOpenItem,
   basePath,
@@ -294,6 +298,7 @@ function PanelInner({
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
       renderItemMark={renderItemMark}
+      renderAppLogo={renderAppLogo}
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}
@@ -861,21 +866,29 @@ function MyWorkHeaderMenu({ onOpenRoot }: { onOpenRoot: () => void }) {
 
 // This app's items, or every app's: the Explorer page's own filter, as two quiet words.
 function FilterToggle() {
-  const { filter, setFilter, kind } = useExplorer();
-  const option = (value: AppFilter, label: string) => (
-    <button
-      type="button"
-      aria-pressed={filter === value}
-      onClick={() => setFilter(value)}
-      className={`h-6 cursor-pointer rounded px-1.5 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-500 ${
-        filter === value
-          ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
-          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
-      }`}
-    >
-      {label}
-    </button>
-  );
+  const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
+  const option = (value: AppFilter, label: string) => {
+    const logo = renderAppLogo?.(value === 'app' ? app : 'all');
+    return (
+      <button
+        type="button"
+        aria-pressed={filter === value}
+        onClick={() => setFilter(value)}
+        className={`flex h-6 cursor-pointer items-center rounded px-1.5 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-500 ${
+          filter === value
+            ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
+            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+        }`}
+      >
+        {logo ? (
+          <span aria-hidden className="mr-1 inline-flex shrink-0 [&_svg]:size-3.5">
+            {logo}
+          </span>
+        ) : null}
+        {label}
+      </button>
+    );
+  };
   return (
     <div
       role="group"

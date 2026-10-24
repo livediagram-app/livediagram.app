@@ -46,6 +46,9 @@ export type RenderThumbnail = (item: Item, size: 'row' | 'card') => ReactNode;
  *  folder. Called for every item drawn, so it returns quickly, and null for an item it has nothing to say about. */
 export type RenderItemMark = (item: Item, at: 'title' | 'time') => ReactNode;
 
+/** An app's logo, or the platform's for `'all'`: the filter's two choices wear them (the host owns the brands). */
+export type RenderAppLogo = (app: App | 'all') => ReactNode;
+
 /** What the Timeline reports, for the host's telemetry: a mode or filter changed (`Changed`, `Selected`), a page
  *  read (`Loaded`: More or Retry), a card, a stack or a card's menu opened (`Opened`), an entry or a stack taken
  *  off the reader's Timeline (`Removed`). `type` is always a fixed token. */

@@ -36,6 +36,7 @@ export type {
   ItemRef,
   LinkComponent,
   Placement,
+  RenderAppLogo,
   RenderItemMark,
   RenderThumbnail,
   InboxHost,

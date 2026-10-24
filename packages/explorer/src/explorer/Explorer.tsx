@@ -20,6 +20,7 @@ import type {
   ItemHref,
   LinkComponent,
   Placement,
+  RenderAppLogo,
   RenderItemMark,
   RenderThumbnail,
   InboxHost,
@@ -76,6 +77,8 @@ export type ExplorerProps = {
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
   renderItemMark?: RenderItemMark;
+  /** The filter's logos: the app's, and the platform's for All (RenderAppLogo). */
+  renderAppLogo?: RenderAppLogo;
   /** The host's link component (Next.js `Link`); a plain `<a>` by default. */
   Link?: LinkComponent;
   /** Opens an item from a menu; a page load by default. */
@@ -257,6 +260,7 @@ function ExplorerInner({
   onCreate,
   renderThumbnail,
   renderItemMark,
+  renderAppLogo,
   Link,
   onOpenItem,
   basePath,
@@ -335,6 +339,7 @@ function ExplorerInner({
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
       renderItemMark={renderItemMark}
+      renderAppLogo={renderAppLogo}
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}
