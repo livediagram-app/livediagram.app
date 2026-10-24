@@ -5,6 +5,7 @@ import { BrandMark, Dialog, lucideGlyph, useMediaQuery } from '@livediagram/ui';
 import { lucideExternalLink } from '@livediagram/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {
+  createDeviceSettingsStore,
   SETTINGS_DIALOG_CLASS,
   SETTINGS_DIALOG_SIZE,
   SettingsPanel,
@@ -47,18 +48,29 @@ const renderLogo = (id: SettingsAppId | 'all') => (
 // Settings renders (@liveworkspace/settings-ui SettingsPanel), opened for the app the person came from (its settings,
 // with All one click away) or for none (All). Its code, and each app's catalogue, load only when it first opens or
 // the pointer heads for Settings. Escape, the close button or a click outside closes it.
+//
+// For a guest (`guest`, the Explorer on an app's address): that app's settings alone, as its editor keeps them in this
+// browser (a device store over the app's own storage on this origin), with no switch, no All and no Account section,
+// and a footer that says so and offers Sign in.
 export default function SiteSettingsDialog({
   app,
+  guest = null,
   initialScope = null,
   initialCategoryId = null,
   onClose,
 }: {
-  app: AppId | null;
   // A targeted open's side of the switch (`?app=all`, a `#notifications` link), else this browser's last.
   initialScope?: SettingsScope | null;
   initialCategoryId?: string | null;
   onClose: () => void;
-}) {
+} & (
+  | { app: AppId | null; guest?: null }
+  | {
+      app: AppId;
+      // The guest: their id (`guest_<uuid>`, the owner the app's editor syncs as) and where Sign in goes.
+      guest: { ownerId: string | null; signInHref: string };
+    }
+)) {
   const isMobile = useMediaQuery(PHONE_QUERY);
   const [scope, setScope] = useSettingsScope(SCOPE_KEY, initialScope);
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
@@ -74,6 +86,16 @@ export default function SiteSettingsDialog({
           }
         : { renderProfile: () => <ProfileRow />, tokensHref: '/account/tokens' },
     [],
+  );
+  // A guest's: the browser copy the app's editor keeps, made once per opening.
+  const isGuest = guest !== null;
+  const guestOwner = guest?.ownerId ?? null;
+  const store = useMemo(
+    () =>
+      isGuest && app
+        ? createDeviceSettingsStore(app, { ownerId: () => guestOwner })
+        : settingsStore,
+    [isGuest, app, guestOwner],
   );
   const reportShared = useCallback(
     (key: string, value: StoredValue) => {
@@ -94,7 +116,7 @@ export default function SiteSettingsDialog({
     };
   }, []);
 
-  const showsApp = Boolean(site) && scope === 'app';
+  const showsApp = Boolean(site) && (scope === 'app' || Boolean(guest));
   return (
     <Dialog
       open
@@ -107,14 +129,15 @@ export default function SiteSettingsDialog({
       <SettingsUiKitProvider kit={APP_SETTINGS_KIT}>
         <SettingsPanel
           app={site && app ? { id: app, name: site.name } : null}
-          scope={scope}
+          scope={guest ? 'app' : scope}
           onScopeChange={setScope}
-          store={settingsStore}
+          allowAll={!guest}
+          store={store}
           account={account}
           renderLogo={renderLogo}
           reportApp={reportAppSetting}
           reportShared={reportShared}
-          errorMessage={settingsErrorMessage}
+          {...(guest ? {} : { errorMessage: settingsErrorMessage })}
           memoryKey={
             site
               ? `liveworkspace:app-settings-view:${site.name}:v1`
@@ -125,20 +148,37 @@ export default function SiteSettingsDialog({
           onClose={onClose}
           title="Settings"
           footer={
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-              <p className="min-w-0 flex-1 basis-56 text-[10px] text-slate-500 dark:text-slate-400">
-                Saved to your account as you change them. Each app uses them the next time it opens.
-              </p>
-              {showsApp && site && link ? (
+            guest ? (
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                <p className="min-w-0 flex-1 basis-56 text-[10px] text-slate-500 dark:text-slate-400">
+                  Saved in this browser as you change them. {site?.name ?? 'The app'} uses them the
+                  next time it opens.
+                </p>
                 <a
-                  href={link.href}
+                  href={guest.signInHref}
+                  data-settings-sign-in=""
                   className="relative touch-target-y inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-slate-700 underline-offset-2 hover:underline dark:text-slate-200"
                 >
-                  More in {site.name} Settings
-                  <OutIcon aria-hidden className="size-3.5" />
+                  Sign in to keep them on every device
                 </a>
-              ) : null}
-            </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                <p className="min-w-0 flex-1 basis-56 text-[10px] text-slate-500 dark:text-slate-400">
+                  Saved to your account as you change them. Each app uses them the next time it
+                  opens.
+                </p>
+                {showsApp && site && link ? (
+                  <a
+                    href={link.href}
+                    className="relative touch-target-y inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-slate-700 underline-offset-2 hover:underline dark:text-slate-200"
+                  >
+                    More in {site.name} Settings
+                    <OutIcon aria-hidden className="size-3.5" />
+                  </a>
+                ) : null}
+              </div>
+            )
           }
         />
       </SettingsUiKitProvider>

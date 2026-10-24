@@ -3,15 +3,16 @@
 import { useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
 import { ACCOUNT_MENU_KIT } from '@/components/account-menu-kit';
-import { signInHref } from '@/lib/accounts';
+import { signInHref, signUpHref } from '@/lib/accounts';
 import { signOut, useSession } from '@/lib/session';
 
 const noChange = () => () => {};
 
-// The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in person's menu
-// (AccountMenu from @liveworkspace/account-menu, the one every app's marketing header and the Explorer show too):
-// their avatar and name, opening their API tokens, Settings and Sign out. Until the page knows who is signed
-// in (lib/session.ts), it holds its place without showing either, so nothing jumps.
+// The header's account control (liveworkspace/docs/site.md "The header"): AccountMenu from
+// @liveworkspace/account-menu, the one every app's marketing header and the Explorer show too. Signed in, the person's
+// avatar and name, opening their API tokens, Settings and Sign out; signed out, the same control as Guest, opening
+// Sign in and Create account, each back to this page. Until the page knows who is signed in (lib/session.ts), the
+// Guest button holds the place, unseen, so nothing jumps.
 export function AccountControl() {
   const session = useSession();
   // This page, to come back to after signing in.
@@ -33,16 +34,13 @@ export function AccountControl() {
     );
   }
 
+  const checking = session.state === 'checking';
   return (
-    <a
-      href={signInHref(here)}
-      aria-hidden={session.state === 'checking' || undefined}
-      tabIndex={session.state === 'checking' ? -1 : undefined}
-      className={`relative touch-target-y rounded-md border border-slate-200 px-2.5 py-1.5 whitespace-nowrap text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${
-        session.state === 'checking' ? 'invisible' : ''
-      }`}
-    >
-      Sign in
-    </a>
+    <div aria-hidden={checking || undefined} className={checking ? 'invisible' : undefined}>
+      <AccountMenu
+        kit={ACCOUNT_MENU_KIT}
+        guest={{ signInHref: signInHref(here), signUpHref: signUpHref(here) }}
+      />
+    </div>
   );
 }

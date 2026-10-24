@@ -124,9 +124,9 @@ export async function appSignOut(): Promise<boolean> {
   return true;
 }
 
-/** The app's own sign-in, coming back to `here`. */
-export const appSignInHref = (here: string) =>
-  `/api/auth/sign-in?return_to=${encodeURIComponent(here)}`;
+/** The app's own sign-in, and its registration page, coming back to `here` (the account menu's, one for every
+ *  surface on an app's address). */
+export { appSignInHref, appSignUpHref } from '@liveworkspace/account-menu';
 
 // A guest's token, kept by the app on its origin under `<app>:v2:guest-token` (each app's lib/guest-token-key.ts),
 // and the app's guest handoff when there is none: the same keys the app's editor uses, so the two share one guest.

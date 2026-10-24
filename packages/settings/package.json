@@ -8,6 +8,7 @@
     "./catalogue": "./src/catalogue.ts",
     "./catalogues/*": "./src/catalogues/*.ts",
     "./account": "./src/account.ts",
+    "./device": "./src/device.ts",
     "./presence": "./src/presence.ts"
   },
   "scripts": {

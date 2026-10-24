@@ -8,13 +8,17 @@
 // (ExplorerBottomBar.tsx).
 //
 // On an app's own address (lib/explorer/page-app.ts) the page is the app's: the liveworkspace logo leads to
-// liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session.
+// liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session
+// (a guest's offering the guest's Settings, `guestSettings`).
 
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { SiteSwitcher } from '@livediagram/ui';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl } from '@/components/AccountControl';
-import { AppAccountControl } from '@/components/explorer/AppAccountControl';
+import {
+  AppAccountControl,
+  type GuestSettingsControl,
+} from '@/components/explorer/AppAccountControl';
 import { pageApp, workspaceOrigin } from '@/lib/explorer/page-app';
 import { Wordmark } from '@/components/Wordmark';
 import { AppLogo } from '@/components/landing/AppLogo';
@@ -22,7 +26,15 @@ import { listedApps } from '@/lib/apps';
 
 const noChange = () => () => {};
 
-export function ExplorerHeader({ app, search }: { app: AppName | null; search: ReactNode }) {
+export function ExplorerHeader({
+  app,
+  search,
+  guestSettings = null,
+}: {
+  app: AppName | null;
+  search: ReactNode;
+  guestSettings?: GuestSettingsControl | null;
+}) {
   // Null while prerendered and on liveworkspace.app.
   const host = useSyncExternalStore(noChange, pageApp, () => null);
   const listed = app ? listedApps().find((a) => a.id === siteOfApp(app).id) : undefined;
@@ -66,7 +78,7 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
           {search ? <div className="w-full max-w-md">{search}</div> : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {host ? <AppAccountControl /> : <AccountControl />}
+          {host ? <AppAccountControl settings={guestSettings} /> : <AccountControl />}
         </div>
       </div>
     </header>

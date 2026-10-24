@@ -100,6 +100,8 @@ const MESSAGES: Record<string, string> = {
   offline: 'Couldn’t reach your account. Check your connection and try again.',
   settings_too_large: 'Your settings are full. Reset some, then try again.',
   rate_limited: 'Too many changes just now. Wait a minute and try again.',
+  storage_unavailable:
+    'This browser isn’t letting settings be saved. Allow this site to store data, then try again.',
 };
 
 /** What the panel says when a read or write of the account's settings is refused. */

@@ -123,6 +123,19 @@ export async function appSignOut(
   return true;
 }
 
+/** The app's own sign-in, on the page's own origin, coming back to `here` (a path on it). */
+export const appSignInHref = (here: string) =>
+  `/api/auth/sign-in?return_to=${encodeURIComponent(here)}`;
+
+/** The app's own sign-in opening the accounts site's registration page, coming back to `here`. */
+export const appSignUpHref = (here: string) => `${appSignInHref(here)}&screen=sign-up`;
+
+/** The page's own path and query, to come back to after signing in; `/` outside a browser. */
+export function pageHere(): string {
+  if (typeof window === 'undefined') return '/';
+  return window.location.pathname + window.location.search;
+}
+
 /** An account page's link from an app's page: liveworkspace.app's (staging's from a staging app), in full. */
 export function workspacePageHref(path: string): string {
   const host = typeof window === 'undefined' ? '' : window.location.host;

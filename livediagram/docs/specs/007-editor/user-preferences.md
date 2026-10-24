@@ -85,6 +85,17 @@ status=<n>` or `save-not-confirmed`) leaves the mark, and the
     next load lets the cache win over the server's blob and sends
     what differs again, instead of the server reverting settings it
     never received.
+- **A guest's Settings in the Explorer**: the Explorer on this app's
+  address (`/explorer`, liveworkspace's, served through the router) gives a
+  guest this app's settings too, and changes them in this same cache
+  (`livediagram:user-preferences:v1`, one key at a time over the freshest copy)
+  rather than over the network. Each change also sets the unsynced mark
+  for the guest's `guest_<uuid>`, so this editor's next load keeps the
+  cache over the server's copy and sends it on, as for a save of its own
+  that never landed ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md#settings)
+  "A guest"). Renaming the key or the mark means changing
+  `DEVICE_PREFERENCES` in `@liveworkspace/settings/device` with it; the
+  settings-site-catalogue test fails until both agree.
 - **Cross-tab updates**: the browser's native `storage` event on
   the preferences key still fires across tabs in the same
   browser, so toggling in one tab updates every open editor and

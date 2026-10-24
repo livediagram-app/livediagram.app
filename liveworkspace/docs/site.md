@@ -40,9 +40,12 @@ boot script applies the choice before paint). The content runs `max-w-7xl` (1280
 shows from 1400px, where there is a gutter for it. Below that it is left out: the address is
 shareable as it is, and the device's own setting applies through System.
 
-- **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
-  (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
-  is followed, so the link can't send anyone elsewhere.
+- **Signed out**: the same control, as **Guest**: a neutral disc with a person glyph (not a presence colour, so it
+  never passes for someone), the word "Guest" (hidden on a phone) and the chevron, opening "Guest" over "Not signed
+  in", then **Sign in**, the menu's primary, which opens `/sign-in` with the page to come back to
+  (`?return=/telemetry`, say), and **Create account** (`/sign-up`, with the same `?return=`). Once signed in, the
+  page goes back there. Only a path on this site is followed, so the link can't send anyone elsewhere. A guest has
+  no settings on liveworkspace.app (see the Explorer's bottom bar), so the menu here offers none.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures: always two letters: the first
   letters of the first and last names (the full name, where the account has one), else a single name's first two, on a disc of the account's presence colour, set in Settings › Profile:
   a palette colour in its deep shade, a custom one as it is when white reads on it at AA and otherwise
@@ -58,18 +61,23 @@ shareable as it is, and the device's own setting applies through System.
   tokens.
 
 The site is static, so the control asks the accounts API (`GET /api/auth/get-session`, on this
-origin, with the session cookie) once the page is up. Until it hears, it keeps its place empty,
+origin, with the session cookie) once the page is up. Until it hears, it keeps the Guest button's place, invisible,
 so the bar doesn't jump. The sign-in pages leave it out: they are the sign-in.
 
-The menu is one component, `AccountMenu` in `@liveworkspace/account-menu` (`packages/account-menu`), and
-every place that shows a signed-in person uses it: this header, the Explorer on an app's address
+The menu is one component, `AccountMenu` in `@liveworkspace/account-menu` (`packages/account-menu`), signed in or
+as Guest (its `guest` prop: where Sign in and Create account go, and Settings where a guest has some), and
+every place that shows the account control uses it: this header, the Explorer on an app's address
 (`components/explorer/AppAccountControl.tsx`), and each app's marketing header (its `SiteHeader`, through the
 package's `AppAccountMenu`). Each passes in its own UI package's menu hooks (`useMenuButton`, `useMenu`,
 `useClickOutside`), so the keyboard and focus behaviour is the one every app's menus have, and says where the
 account pages are and what Sign out does. On an app's own pages the pages are liveworkspace.app's, in full,
 and Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
-([accounts.md](accounts.md#an-apps-signed-in-cookies)).
+([accounts.md](accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
+(`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
+is a stand-in from the package's light entry (`DeferredAccountMenu` in `@liveworkspace/account-menu/placeholder`):
+the menu's code is fetched only when the pointer or focus reaches it, and a press made before it arrives opens the
+menu once it has, so a visitor who never touches it costs no request.
 
 ### The front door (`/`)
 
@@ -161,8 +169,13 @@ built once here. It is shown here and, through each switched-on app's router, at
   **Appearance** (Light, Dark or the system's, the site's one switch, `SiteAppearanceToggle`), each named beside its
   icon on a wide screen (`md` up) and an icon alone on a narrow one. Their hover cards open upward, above the bar. Settings shows for a person signed in, and
   opens the Settings panel ([below](#settings)) in a dialog over the Explorer, without leaving the page: filtered to
-  the app the person came from (All one click away), or on All from no app. Its code, and the app's catalogue, are
-  fetched when the button is pointed at. The toasts and a guest's sign-in banner stand above the bar.
+  the app the person came from (All one click away), or on All from no app. On an app's address it shows for a
+  guest too, named for the app ("liveplanner Settings"), and opens that app's settings as kept in this browser
+  ([Settings](#settings), "A guest"); the Guest menu's **Settings** opens the same. On liveworkspace.app a guest
+  sees no Settings: a guest's settings live in each app's own storage on the app's address, which this origin
+  can't read, and the platform keeps no device settings of its own beyond Appearance, already on the bar. Its code,
+  and the app's catalogue, are fetched when the button is pointed at. The toasts and a guest's sign-in banner stand
+  above the bar.
 - **Search.** The bar's Search and Cmd/Ctrl+K open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
   only when first opened): one field over the person's items (the index's `search` view, the words in the title or
   folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help
@@ -329,6 +342,18 @@ app's dialog) is gone, its parts now the panel's.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
   the app's token; its Profile and API Tokens rows link to liveworkspace.app, since the profile and tokens are the
   session's.
+- **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section, no
+  profile or tokens. The settings are the ones the app's editor keeps for a guest in this browser, read and written
+  by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
+  shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
+  `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys
+  (`ALL_SETTING_KEYS`) and the app's own side by side, as the editor holds them. The panel reads it split into the
+  two scopes, as the accounts API answers, and writes only the key a change touches, over the freshest copy, so a
+  change made in an open editor tab meanwhile is kept. A write also marks the browser unsynced for the guest
+  (`<app>:user-preferences:unsynced`, holding the guest's `guest_<uuid>`), the editor's own mark for a save not yet
+  sent: the editor's next load lets this browser's copy win over the server's and sends it on, so the change is
+  what the editor shows the next time it opens. Nothing is sent from here. Its footer says the settings are saved in
+  this browser and offers **Sign in to keep them on every device** (the app's sign-in, back to the Explorer).
 - **The frame.** A dialog `60rem` wide on desktop (never more than 92% of the window), one fixed height (`44rem`, less
   on a short window), full screen on a phone; it traps focus, closes on Escape, a click outside or its close button.
 

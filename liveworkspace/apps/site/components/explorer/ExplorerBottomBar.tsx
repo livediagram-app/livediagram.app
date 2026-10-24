@@ -1,8 +1,9 @@
 'use client';
 
 // The Explorer's bottom bar (liveworkspace/docs/site.md "The Explorer", The bottom bar): stuck to the foot of the
-// page, as the apps' own Explorers had it, its controls on the right: Search, Settings and Appearance, each with its
-// name beside its icon on a wide screen, icons alone on a narrow one. Its hints are portalled and open upward.
+// page, as the apps' own Explorers had it, its controls on the right: Search, Settings (a guest's too, on an app's
+// address) and Appearance, each with its name beside its icon on a wide screen, icons alone on a narrow one. Its
+// hints are portalled and open upward.
 // The toasts and a guest's sign-in banner stand on it (`--explorer-floor`, EXPLORER_FLOOR).
 
 import { HoverCard, SearchIcon, SettingsIcon, SiteAppearanceToggle } from '@livediagram/ui';
@@ -24,6 +25,7 @@ export function ExplorerBottomBar({
   settingsHref,
   onOpenSettings,
   onPrepareSettings,
+  settingsKept = 'account',
 }: {
   // The app's name, for Settings' hover card; null for none.
   appName: string | null;
@@ -36,6 +38,8 @@ export function ExplorerBottomBar({
   onOpenSettings?: () => void;
   // Pointed at: the panel's code and the app's catalogue are fetched ahead of the press.
   onPrepareSettings?: () => void;
+  // Where the settings are kept: the account's, or (a guest on an app's address) this browser.
+  settingsKept?: 'account' | 'browser';
 }) {
   const settingsLabel = appName ? `${appName} Settings` : 'Settings';
   return (
@@ -62,7 +66,7 @@ export function ExplorerBottomBar({
           title={settingsLabel}
           description={
             appName
-              ? `Your ${appName} settings, kept for your account.`
+              ? `Your ${appName} settings, kept ${settingsKept === 'browser' ? 'in this browser' : 'for your account'}.`
               : 'Your account’s settings, for every app.'
           }
         >

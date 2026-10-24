@@ -110,6 +110,15 @@ export function signInHref(here: string, origin: string = currentOrigin()): stri
   return `/sign-in?${RETURN_PARAM}=${encodeURIComponent(here)}`;
 }
 
+// The create-account link for a page, back to it once registered; on an app's own address, the app's sign-in opening
+// the registration page.
+export function signUpHref(here: string, origin: string = currentOrigin()): string {
+  if (onAppAddress(origin)) {
+    return `/api/auth/sign-in?return_to=${encodeURIComponent(here)}&screen=sign-up`;
+  }
+  return `/sign-up?${RETURN_PARAM}=${encodeURIComponent(here)}`;
+}
+
 // ---------- Finishing a sign-in made on an app's own address ----------------------------------------------------
 // The session the pages made there must reach liveworkspace.app, where every app's sign-in finds it. So the last
 // step asks for a one-time hand-off and goes there, top level, and liveworkspace.app sends the browser straight on to

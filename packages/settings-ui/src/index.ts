@@ -68,5 +68,10 @@ export {
   type SettingsStore,
 } from './store';
 export { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
+export {
+  createDeviceSettingsStore,
+  splitDeviceSettings,
+  type DeviceSettingsOptions,
+} from './device-store';
 
 export { SETTINGS_DIALOG_CLASS, SETTINGS_DIALOG_SIZE } from './frame';

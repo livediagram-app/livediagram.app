@@ -456,14 +456,27 @@ export function ExplorerShell() {
     : null;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsApp: AppId | null = arrived.app ? (siteOfApp(arrived.app).id as AppId) : null;
+  // A guest's settings, on an app's address only: the app's, as its editor keeps them in this browser (this origin's
+  // storage). liveworkspace.app can't read them, and keeps no device settings of its own beyond Appearance, which is
+  // on the bar already, so a guest there gets no Settings.
+  const guestSettingsApp: AppId | null =
+    host && identity?.kind === 'guest' ? (siteOfApp(host).id as AppId) : null;
+  const hasSettings = signedIn || guestSettingsApp !== null;
+  const openSettings = useCallback(() => setSettingsOpen(true), []);
   const prepareSettings = useCallback(() => {
     void loadSettings();
     preloadSettingsPanel();
     if (settingsApp) void loadCatalogue(settingsApp);
   }, [settingsApp]);
+  const guestSettingsControl = useMemo(
+    () => (guestSettingsApp ? { onOpen: openSettings, onPrepare: prepareSettings } : null),
+    [guestSettingsApp, openSettings, prepareSettings],
+  );
   const header = useCallback(
-    ({ search }: { search: ReactNode }) => <ExplorerHeader app={arrived.app} search={search} />,
-    [arrived.app],
+    ({ search }: { search: ReactNode }) => (
+      <ExplorerHeader app={arrived.app} search={search} guestSettings={guestSettingsControl} />
+    ),
+    [arrived.app, guestSettingsControl],
   );
 
   // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.
@@ -534,7 +547,7 @@ export function ExplorerShell() {
         />
       ) : (
         <>
-          <ExplorerHeader app={arrived.app} search={null} />
+          <ExplorerHeader app={arrived.app} search={null} guestSettings={guestSettingsControl} />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-16 sm:px-6" aria-busy={!failed}>
             {failed ? (
               <p className="text-center text-sm text-slate-600 dark:text-slate-400">
@@ -549,12 +562,21 @@ export function ExplorerShell() {
         onOpenSearch={openSearch}
         onPrepareSearch={prepareSearch}
         settingsHref={settingsHref}
-        onOpenSettings={signedIn ? () => setSettingsOpen(true) : undefined}
-        onPrepareSettings={signedIn ? prepareSettings : undefined}
+        onOpenSettings={hasSettings ? openSettings : undefined}
+        onPrepareSettings={hasSettings ? prepareSettings : undefined}
+        settingsKept={signedIn ? 'account' : 'browser'}
       />
       {settingsOpen && signedIn ? (
         <Suspense fallback={null}>
           <SiteSettingsDialog app={settingsApp} onClose={() => setSettingsOpen(false)} />
+        </Suspense>
+      ) : settingsOpen && guestSettingsApp && identity ? (
+        <Suspense fallback={null}>
+          <SiteSettingsDialog
+            app={guestSettingsApp}
+            guest={{ ownerId: identity.sub, signInHref: explorerSignInHref }}
+            onClose={() => setSettingsOpen(false)}
+          />
         </Suspense>
       ) : null}
       {searchOpen ? (

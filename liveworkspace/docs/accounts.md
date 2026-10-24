@@ -344,7 +344,8 @@ whole site, so its public pages can tell who is signed in without loading the se
   the access token's lifetime on an open one), never with a request of its own.
 
 None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
-signed-in visitor sees their menu with no request, and a visitor makes none at all. Only a session from
+signed-in visitor sees their menu with no request, and a visitor makes none at all: they see the Guest button
+([site.md](site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Only a session from
 before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
 
 ## Signing in on the app's own address
@@ -515,6 +516,10 @@ the settings as they now are.
   shared switch), with `PATCH /api/account/settings/:app` `{ app }` patching the app's scope alone. A body's `all`
   is ignored there, and only the four apps' site ids are scopes. The profile is the session's only: on
   liveworkspace.app the panel sets it in place, elsewhere it links there.
+- **A guest's Settings panel** (the Explorer on an app's address, [site.md](site.md#settings) "A guest") calls
+  nothing. It reads and writes the guest's copy in the app's own storage on that address, the editor's
+  `<app>:user-preferences:v1`, and marks it unsynced for the guest, so the editor sends it on through its own
+  `/api/preferences` (as the guest's `guest_<uuid>` owner) the next time it opens.
 
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.

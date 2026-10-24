@@ -2,18 +2,21 @@
 
 // The header's account control for the Explorer shown on an app's own address (lib/explorer/page-app.ts): the app's
 // session rather than liveworkspace.app's. Signed in, the same menu as everywhere on the site, its account pages on
-// liveworkspace.app and its Sign out the app's (the page reloads as a guest); signed out, the app's own Sign in,
-// which comes back here.
+// liveworkspace.app and its Sign out the app's (the page reloads as a guest); signed out, the same control as Guest,
+// its Sign in and Create account the app's own, which come back here, and Settings, the guest's settings for this
+// app kept in this browser (`settings`, the bottom bar's).
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
 import { ACCOUNT_MENU_KIT } from '@/components/account-menu-kit';
-import { appAccount, appSignInHref, appSignOut } from '@/lib/explorer/app-session';
+import { appAccount, appSignInHref, appSignOut, appSignUpHref } from '@/lib/explorer/app-session';
 import { workspaceHref } from '@/lib/explorer/page-app';
 
 const noChange = () => () => {};
 
-export function AppAccountControl() {
+export type GuestSettingsControl = { onOpen: () => void; onPrepare: () => void };
+
+export function AppAccountControl({ settings = null }: { settings?: GuestSettingsControl | null }) {
   const [state, setState] = useState<
     { name: string; fullName: string | null; colour: string | null } | 'out' | 'checking'
   >('checking');
@@ -51,16 +54,19 @@ export function AppAccountControl() {
         }}
       />
     );
+  const checking = state === 'checking';
   return (
-    <a
-      href={appSignInHref(here)}
-      aria-hidden={state === 'checking' || undefined}
-      tabIndex={state === 'checking' ? -1 : undefined}
-      className={`relative touch-target-y rounded-md border border-slate-200 px-2.5 py-1.5 whitespace-nowrap text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${
-        state === 'checking' ? 'invisible' : ''
-      }`}
-    >
-      Sign in
-    </a>
+    <div aria-hidden={checking || undefined} className={checking ? 'invisible' : undefined}>
+      <AccountMenu
+        kit={ACCOUNT_MENU_KIT}
+        guest={{
+          signInHref: appSignInHref(here),
+          signUpHref: appSignUpHref(here),
+          ...(settings
+            ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }
+            : {}),
+        }}
+      />
+    </div>
   );
 }

@@ -1,18 +1,19 @@
 'use client';
 
-import { AppAccountMenu, type AccountMenuKit } from '@liveworkspace/account-menu';
-import { SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
 import {
-  lucideChevronDown,
-  lucideKey,
-  lucideSettings,
-} from '@livedesign/icons/lucide';
+  AppAccountMenu,
+  type AccountMenuKit,
+  type DeferredMenuProps,
+} from '@liveworkspace/account-menu';
+import { SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
+import { lucideChevronDown, lucideKey, lucideSettings } from '@livedesign/icons/lucide';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { useMenu, useMenuButton, type MenuInitialFocus } from './menu';
 import { useClickOutside } from './useClickOutside';
 
 // The account menu on this app's own pages (@liveworkspace/account-menu's AppAccountMenu), with this package's menu
-// hooks and icons and this app's hint cookie. Loaded lazily by SiteAccount, only for someone signed in.
+// hooks and icons and this app's hint cookie. Loaded lazily by SiteAccount: at once for someone signed in, and for a
+// visitor when the Guest button is first approached, carrying on from it (opened, or focused).
 const KIT: AccountMenuKit<MenuInitialFocus> = {
   useMenuButton,
   useMenu,
@@ -24,6 +25,6 @@ const KIT: AccountMenuKit<MenuInitialFocus> = {
   },
 };
 
-export default function SiteAccountMenu() {
-  return <AppAccountMenu hint={SIGNED_IN_HINT_COOKIE} kit={KIT} />;
+export default function SiteAccountMenu(arrival: DeferredMenuProps) {
+  return <AppAccountMenu hint={SIGNED_IN_HINT_COOKIE} kit={KIT} {...arrival} />;
 }

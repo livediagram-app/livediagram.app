@@ -163,6 +163,56 @@ describe('the Settings panel, on All', () => {
   });
 });
 
+describe('the Settings panel, for a guest on an app’s address', () => {
+  const KEY = 'livediagram:user-preferences:v1';
+  const MARK = 'livediagram:user-preferences:unsynced';
+
+  async function openAsGuest() {
+    const onClose = vi.fn();
+    act(() =>
+      root.render(
+        <SiteSettingsDialog
+          app="livediagram.app"
+          guest={{ ownerId: 'guest_abc', signInHref: '/api/auth/sign-in?return_to=%2Fexplorer' }}
+          onClose={onClose}
+        />,
+      ),
+    );
+    await settle();
+  }
+
+  it('shows the app’s settings alone, as the editor keeps them in this browser, asking nothing', async () => {
+    localStorage.setItem(KEY, JSON.stringify({ alignmentGuides: false, telemetryEnabled: false }));
+    await openAsGuest();
+    expect(document.querySelector('[aria-label="Show settings for"]')).toBeNull();
+    expect(railButton('Profile')).toBeUndefined();
+    act(() => railButton('Editor')!.click());
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
+    const footer = document.querySelector('[role="dialog"] footer')!;
+    expect(footer.textContent).toContain('Saved in this browser');
+    expect(footer.textContent).not.toContain('More in livediagram Settings');
+    expect(footer.querySelector('[data-settings-sign-in]')?.getAttribute('href')).toBe(
+      '/api/auth/sign-in?return_to=%2Fexplorer',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('writes a change into the editor’s copy, keeping its other keys, and marks it for the editor to send', async () => {
+    localStorage.setItem(KEY, JSON.stringify({ telemetryEnabled: false }));
+    await openAsGuest();
+    act(() => railButton('Editor')!.click());
+    act(() => switchFor('alignmentGuides').click());
+    await settle();
+    expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({
+      telemetryEnabled: false,
+      alignmentGuides: false,
+    });
+    expect(localStorage.getItem(MARK)).toBe('guest_abc');
+    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
 describe('/account/settings', () => {
   it('reads what the address names', () => {
     expect(settingsTarget('?app=livedesign', '')).toEqual({

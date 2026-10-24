@@ -2,10 +2,11 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useCallback, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AccountMenuKit } from './AccountMenu';
+import { AccountMenu, type AccountMenuKit } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { avatarColour } from './initials';
+import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
 
 // A stand-in for a UI package's menu hooks: open and close only. The real ones (useMenu, useMenuButton) have their
 // own suites in each UI package.
@@ -82,15 +83,31 @@ describe('appAccountOf', () => {
 });
 
 describe('AppAccountMenu', () => {
-  it('renders nothing, and asks nothing, for a visitor', () => {
-    const { container } = render(<AppAccountMenu hint={HINT} kit={kit} />);
-    expect(container.innerHTML).toBe('');
+  it('shows a visitor the Guest menu, asking nothing, its links the app’s own back to this page', () => {
+    window.history.replaceState(null, '', '/pricing?x=1');
+    render(<AppAccountMenu hint={HINT} kit={kit} />);
+    const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
+    expect(trigger.textContent).toContain('Guest');
+    expect(trigger.querySelector('[data-guest-avatar]')).not.toBeNull();
+    fireEvent.click(trigger);
+    const items = screen.getAllByRole('menuitem');
+    expect(items.map((i) => i.textContent)).toEqual([
+      'Sign in',
+      'Create accountFree, and one account for every app',
+    ]);
+    expect(items[0]!.getAttribute('href')).toBe('/api/auth/sign-in?return_to=%2Fpricing%3Fx%3D1');
+    expect(items[1]!.getAttribute('href')).toBe(
+      '/api/auth/sign-in?return_to=%2Fpricing%3Fx%3D1&screen=sign-up',
+    );
     expect(fetchMock).not.toHaveBeenCalled();
+    window.history.replaceState(null, '', '/');
   });
 
-  it('renders nothing in the static HTML, even signed in, so hydration matches', () => {
+  it('holds the avatar’s place in the static HTML, signed in or not, so hydration matches', () => {
+    const placeholder = renderToString(<AccountMenuPlaceholder />);
+    expect(renderToString(<AppAccountMenu hint={HINT} kit={kit} />)).toBe(placeholder);
     setCookies('lp_signed_in=1', 'lp_account=Ada');
-    expect(renderToString(<AppAccountMenu hint={HINT} kit={kit} />)).toBe('');
+    expect(renderToString(<AppAccountMenu hint={HINT} kit={kit} />)).toBe(placeholder);
   });
 
   it("shows the signed-in person's menu from the cookies, with no request", () => {
@@ -160,23 +177,123 @@ describe('AppAccountMenu', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('steps aside when the token says the session is gone', async () => {
+  it('turns to Guest when the token says the session is gone', async () => {
     setCookies('lp_signed_in=1');
     fetchMock.mockImplementation(async () => {
       document.cookie = 'lp_signed_in=0; path=/';
       return new Response('{"signedIn":false}', { status: 401 });
     });
-    const { container } = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} kit={kit} />);
     await act(async () => {});
-    expect(container.innerHTML).toBe('');
+    expect(screen.getByRole('button', { name: 'Guest, account menu' })).toBeTruthy();
   });
 
-  it('steps aside, rather than hold a placeholder forever, when the token request fails', async () => {
+  it('turns to Guest, rather than hold a placeholder forever, when the token request fails', async () => {
     setCookies('lp_signed_in=1');
     fetchMock.mockRejectedValue(new TypeError('offline'));
-    const { container } = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} kit={kit} />);
     await act(async () => {});
-    expect(container.innerHTML).toBe('');
+    expect(screen.getByRole('button', { name: 'Guest, account menu' })).toBeTruthy();
+  });
+
+  it('opens at once, and takes focus, when it arrives in place of the stand-in after a press', () => {
+    render(<AppAccountMenu hint={HINT} kit={kit} openOnMount />);
+    const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(trigger);
+  });
+});
+
+describe('AccountMenu as Guest', () => {
+  it('offers Settings where the surface has them: preparing on approach, and opening it as the menu closes', () => {
+    const onOpenSettings = vi.fn();
+    const onPrepareSettings = vi.fn();
+    render(
+      <AccountMenu
+        kit={kit}
+        guest={{
+          signInHref: '/sign-in',
+          signUpHref: '/sign-up',
+          onOpenSettings,
+          onPrepareSettings,
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Guest, account menu' }));
+    const settings = screen.getAllByRole('menuitem')[2]!;
+    expect(settings.textContent).toBe('SettingsKept in this browser');
+    fireEvent.pointerEnter(settings);
+    expect(onPrepareSettings).toHaveBeenCalled();
+    fireEvent.click(settings);
+    expect(onOpenSettings).toHaveBeenCalledOnce();
+    expect(screen.queryAllByRole('menuitem')).toHaveLength(0);
+  });
+
+  it('draws no person’s colour or initials', () => {
+    render(<AccountMenu kit={kit} guest={{ signInHref: '/a', signUpHref: '/b' }} />);
+    const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
+    expect(trigger.querySelector('[style]')).toBeNull();
+    expect(trigger.textContent).toBe('Guest');
+  });
+});
+
+describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
+  function Menu({ openOnMount, focusOnMount }: DeferredMenuProps) {
+    return (
+      <AccountMenu
+        kit={kit}
+        guest={{ signInHref: '/a', signUpHref: '/b' }}
+        openOnMount={openOnMount}
+        focusOnMount={focusOnMount}
+      />
+    );
+  }
+
+  it('costs nothing until approached: no request, and the menu’s code only on pointer or focus', async () => {
+    const load = vi.fn(() => Promise.resolve({ default: Menu }));
+    render(<DeferredAccountMenu load={load} />);
+    const standIn = screen.getByRole('button', { name: 'Guest, account menu' });
+    expect(load).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      fireEvent.pointerEnter(standIn);
+    });
+    expect(load).toHaveBeenCalledOnce();
+    // The menu takes the stand-in's place, closed.
+    const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('opens the menu once it arrives after a press made before', async () => {
+    let arrive!: () => void;
+    const load = vi.fn(
+      () =>
+        new Promise<{ default: typeof Menu }>((resolve) => {
+          arrive = () => resolve({ default: Menu });
+        }),
+    );
+    render(<DeferredAccountMenu load={load} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Guest, account menu' }));
+    await act(async () => arrive());
+    expect(load).toHaveBeenCalledOnce();
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+  });
+
+  it('asks again on the next approach when the code could not be fetched', async () => {
+    const load = vi
+      .fn<() => Promise<{ default: typeof Menu }>>()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValue({ default: Menu });
+    render(<DeferredAccountMenu load={load} />);
+    const standIn = screen.getByRole('button', { name: 'Guest, account menu' });
+    await act(async () => {
+      fireEvent.pointerEnter(standIn);
+    });
+    await act(async () => {
+      fireEvent.pointerEnter(standIn);
+    });
+    expect(load).toHaveBeenCalledTimes(2);
   });
 });
 
