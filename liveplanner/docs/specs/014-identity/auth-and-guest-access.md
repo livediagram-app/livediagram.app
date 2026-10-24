@@ -69,7 +69,7 @@ The two kinds of person coexist forever. A signed-in user can hand a share link 
 
 A guest's identity is liveworkspace's, so the same guest reaches the same things in every app.
 
-1. The first time a page needs an identity (`ensureGuestToken`, `apps/editor/lib/guest-token.ts`), it records a random `state` and where to come back to in `sessionStorage` and sends the browser to `GET /api/auth/guest?state=`. The api worker adds this app's accounts client and resource and redirects to the accounts site's `/api/auth/guest` ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Guests").
+1. The first time a page needs an identity (`ensureGuestToken`, `apps/editor/lib/guest-token.ts`), it records a random `state` and where to come back to in `sessionStorage` and sends the browser to `GET /api/auth/guest?state=`. The api worker checks the `state` (`isGuestHandoffState`), adds this app's accounts client and resource and redirects to the accounts site's `/api/auth/guest` (`guestHandoffUrl`, both from `@liveworkspace/auth-client`) ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Guests").
 2. The accounts site reads or sets its long-lived `lw_guest` cookie and redirects to `/auth/guest#guest_token=<jwt>&state=<state>`. The fragment keeps the token out of logs.
 3. `/auth/guest` (`apps/editor/app/auth/guest/`) checks the `state`, keeps the token in `localStorage` under `liveplanner:v2:guest-token`, and returns to the page it came from (a same-site path only). Every request then carries it as the Bearer, exactly as an account's access token is.
 
