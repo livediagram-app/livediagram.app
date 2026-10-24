@@ -58,9 +58,10 @@ export interface AccountMenuKit<Focus = unknown> {
   };
 }
 
-/** The account pages the menu leads to, as paths on liveworkspace.app. */
+/** The account pages the menu leads to, as paths on liveworkspace.app. Teams are made and run in the Explorer
+ *  (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"), so Teams opens its Invites, beside them. */
 export const ACCOUNT_PAGES = [
-  { href: '/account/teams', label: 'Teams', hint: 'Who you work with', icon: 'teams' },
+  { href: '/explorer/invites', label: 'Teams', hint: 'Who you work with', icon: 'teams' },
   { href: '/account/tokens', label: 'API tokens', hint: 'Connect tools and AI', icon: 'tokens' },
   {
     href: '/account/settings',

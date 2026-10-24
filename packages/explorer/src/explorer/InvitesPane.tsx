@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { teamErrorMessage, type PendingInvitation } from '../data/teams';
 import { useTeams } from '../teams/context';
 import { initialsOf } from '../teams/TeamCard';
+import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { MailIcon } from '../ui/library-icons';
@@ -29,6 +30,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
   // The invitations being answered, so their buttons wait.
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const invites = myTeams?.invitations ?? null;
+  const [newTeam, setNewTeam] = useState(false);
 
   async function reply(invite: PendingInvitation, accept: boolean) {
     setBusy((was) => new Set(was).add(invite.id));
@@ -52,6 +54,12 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
 
   return (
     <div data-explorer-view="invites">
+      {newTeam ? (
+        <NewTeamDialog
+          onClose={() => setNewTeam(false)}
+          onMade={(team) => navigate({ kind: 'team', id: team.id })}
+        />
+      ) : null}
       <PaneHeader title={SIDEBAR_LABELS.invites} onOpenNav={onOpenNav} showFilter={false} />
       {!canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
@@ -61,8 +69,12 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
         <EmptyState
           icon={<MailIcon size={28} />}
           title="No pending invites"
-          description="When someone invites you to a team, the invitation shows up here, to accept or decline."
-        />
+          description="When someone invites you to a team, the invitation shows up here, to accept or decline. Your teams are under Spaces; make one with New Team."
+        >
+          <Button size="sm" onClick={() => setNewTeam(true)}>
+            New Team
+          </Button>
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-3">
           {invites.map((invite) => {

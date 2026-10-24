@@ -45,7 +45,9 @@ shareable as it is, and the device's own setting applies through System.
   is followed, so the link can't send anyone elsewhere.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
-  (`components/AccountControl.tsx`): the name again, **API tokens** and **Settings** (the
+  (`components/AccountControl.tsx`): the name again, **Teams** (the Explorer's Invites,
+  `/explorer/invites`, where teams are made and answered; they are run in the Explorer,
+  [one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)), **API tokens** and **Settings** (the
   [Your account](#your-account-account) pages), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.

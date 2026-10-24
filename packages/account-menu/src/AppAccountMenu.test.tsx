@@ -90,7 +90,7 @@ describe('AppAccountMenu', () => {
       'Sign out',
     ]);
     // The account pages are liveworkspace.app's, in full.
-    expect(items[0]!.getAttribute('href')).toMatch(/\/account\/teams$/);
+    expect(items[0]!.getAttribute('href')).toMatch(/\/explorer\/invites$/);
     expect(items[0]!.getAttribute('href')).toMatch(/^https?:\/\//);
   });
 
