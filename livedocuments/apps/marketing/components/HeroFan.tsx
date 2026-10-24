@@ -218,7 +218,6 @@ export function HeroFan() {
         onClick={shuffle}
         disabled={shuffling !== null}
         aria-label="Shuffle templates"
-        title="Shuffle templates"
         className="flex size-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border border-brand-100 bg-white text-slate-500 shadow-sm transition hover:text-brand-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-default sm:size-10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
       >
         <svg
@@ -229,7 +228,7 @@ export function HeroFan() {
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`size-4 transition-transform duration-300 ${shuffling ? 'rotate-180' : ''}`}
+          className={`size-4 transition-transform duration-long ${shuffling ? 'rotate-180' : ''}`}
         >
           <path d="m18 14 4 4-4 4" />
           <path d="m18 2 4 4-4 4" />
