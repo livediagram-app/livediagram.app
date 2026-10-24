@@ -5,7 +5,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { indexClient } from '@/lib/index-client';
 import { trackOrganise } from '@/lib/explorer-organise';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
 // Settings › Designs › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new designs go

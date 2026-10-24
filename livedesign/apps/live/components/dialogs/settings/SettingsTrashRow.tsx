@@ -1,7 +1,7 @@
 'use client';
 
 import { explorerHref } from '@/lib/explorer-href';
-import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
+import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsTrashRowSpec } from './settings-catalogue';
 import { track } from '@/lib/telemetry';
 

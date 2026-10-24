@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { Button, GlyphDisc, SOLID_BRAND_DARK } from '@livedesign/ui';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { accountInitial } from '@/lib/account-avatar';
