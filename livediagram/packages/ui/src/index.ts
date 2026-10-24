@@ -73,7 +73,6 @@ export {
   SOLID_BRAND_DARK,
   SOLID_BRAND_DARK_CONTROL,
 } from './brand-classes';
-export * from './timeline';
 export * from './icons';
 export { CommunityPostTile } from './community/CommunityPostTile';
 export { CommunityAuthorBadge } from './community/CommunityAuthorBadge';

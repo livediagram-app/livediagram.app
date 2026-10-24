@@ -832,7 +832,7 @@ export * from './drawn-count';
 export { indefiniteArticle, withArticle } from './indefinite-article';
 // Slug ids (element refs, and anything else that mints a readable id from a name).
 export { cutSlug, slugText, uniqueSlug } from './slug';
-// Calendar days as whole day numbers, for month grids.
+// A day in milliseconds, for day arithmetic.
 export * from './civil-dates';
 // SHA-256 in every runtime, secure context or not.
 export { sha256, sha256Fallback } from './sha256';

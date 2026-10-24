@@ -428,27 +428,6 @@
   transform-origin: right center;
 }
 
-/* Date-pick highlight: pulses the day LABEL, not the group.
- *
- * Deliberately text-shadow on one line of text. A glow or border around
- * the whole day-group reads as a heavy "selected" frame, and a transform
- * is worse still — it promotes the group to its own compositing layer,
- * and tearing that layer down when the animation ends makes every bubble
- * inside briefly vanish. */
-@keyframes tl-date-pulse {
-  0%,
-  100% {
-    text-shadow: 0 0 0 rgb(14 165 233 / 0);
-  }
-  50% {
-    text-shadow: 0 0 12px rgb(14 165 233 / 0.9);
-  }
-}
-
-.tl-date-pulse {
-  animation: tl-date-pulse 0.7s ease-in-out 2;
-}
-
 /* Explorer list / card arrival (docs/specs/013-workspace/timeline.md §2.6 borrows the idea).
  *
  * The Timeline's fan-out comes from the RIGHT because that's where a
@@ -552,10 +531,6 @@
   .tl-fan-out-up {
     animation: none;
     opacity: 1;
-  }
-
-  .tl-date-pulse {
-    animation: none;
   }
 }
 
