@@ -245,9 +245,9 @@ skeleton, `EmbedFrame` and `PostStates`), and `CommunityHelpLink` (`packages/ui/
 a help-glyph link keyed by `COMMUNITY_HELP` in `packages/help-registry/src/community.ts`, `sharing` or `finding`,
 each an article href and its telemetry id, sent as `UI·Opened·<id>`).
 
-Snapshot and redaction (api): `getCommunityThumbnailSvg` (`apps/api/src/thumbnail.ts`) renders the first tab from the
-redacted board and caches it under `thumb-community/<documentId>`, apart from the owner's `thumb/<id>`, fresh while
-its R2 `customMetadata.renderedAt >= savedAt`;
+Snapshot and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
+`drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
+liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/previews.md`);
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
 document a community grant reads. `communityNetwork` (packages/community/src/network.ts) maps an address to its
 IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
@@ -496,7 +496,7 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Editor api client and error copy           | `apps/editor/lib/api/community.test.ts`                                                                                                        |
 | Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |
 | Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                                                                        |
-| Community snapshot cache                   | `apps/api/src/thumbnail.test.ts`                                                                                                               |
+| Community drawing redacted                 | `apps/api/src/thumbnail.test.ts`                                                                                                               |
 | Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
 | Community links, sync state                | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |
 | Service routes, keys, CORS                 | liveworkspace/apps/community/src/index.test.ts                                                                                                 |

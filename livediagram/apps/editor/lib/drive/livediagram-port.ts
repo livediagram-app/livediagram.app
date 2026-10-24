@@ -227,7 +227,8 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
       };
     },
     async loadSnapshotSvg(id) {
-      const res = await apiFetch(`${API_BASE}/documents/${encodeURIComponent(id)}/thumbnail`, {
+      // liveworkspace's preview of it (liveworkspace/docs/previews.md), through this app's router.
+      const res = await apiFetch(`${API_BASE}/previews/items/${encodeURIComponent(id)}`, {
         headers: await apiHeaders(ownerId),
       });
       return res.ok ? res.text() : null;

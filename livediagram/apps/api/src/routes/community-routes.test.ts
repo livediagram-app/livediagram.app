@@ -1,11 +1,13 @@
 // The Community end to end, this api and the liveworkspace Community service both real (docs/specs/025-community/
 // community.md; liveworkspace/docs/community.md): the owner's publish guards and Edit Listing, My Shares, the canvas's
 // check that keeps the service in step with where it stands at the index, the off switch, and how a community link
-// behaves on the share resolve, the live image and the copy route. The service's own rules (lists, likes, reports,
+// behaves on the share resolve, the drawing the canvas gives liveworkspace's previews (its export door) and the
+// copy route. The service's own rules (lists, likes, reports,
 // caching) are tested with the service; the index's share links, passwords and Trash are the index's, faked here
 // over `test_share_links`.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError, type IndexClient } from '@liveworkspace/index-client';
+import { documentRoom } from '../document-client';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { GrantCaller, ItemGrant } from '../index-service';
 import {
@@ -30,11 +32,8 @@ const { thumbnail, index } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../thumbnail', () => ({
-  getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
-  getDocumentTabImageSvg: vi.fn(async () => thumbnail.svg),
-  getCommunityThumbnailSvg: vi.fn(async () => thumbnail.svg),
   renderTabSvg: vi.fn(async () => thumbnail.svg),
-  renderDocumentImage: vi.fn(async () => thumbnail.svg),
+  drawDocument: vi.fn(async () => thumbnail.svg),
 }));
 vi.mock('../index-service', async (importOriginal) => {
   const original = await importOriginal<typeof import('../index-service')>();
@@ -266,6 +265,18 @@ const viaWorker = (ctx: ReturnType<typeof makeTestRouteContext>) =>
   ({ ...ctx, env: worker(), grant: undefined }) as unknown as ReturnType<
     typeof makeTestRouteContext
   >;
+
+// What the canvas's export door answers liveworkspace's previews for a link's code (liveworkspace/docs/previews.md):
+// whether the link is open is the index's to say, so this is only the canvas's own part, its Community post.
+const drawnFor = async (code: string) =>
+  (
+    await documentRoom(env, 'd1').exportImage({
+      format: 'svg',
+      tabId: null,
+      code,
+      ifVersion: null,
+    })
+  ).status;
 
 beforeEach(() => {
   db = sqliteD1();
@@ -555,34 +566,17 @@ describe('the community link', () => {
     const post = await publish();
     const visit = () =>
       handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env: worker() }));
-    const image = () =>
-      handleShare(
-        makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, { env: worker() }),
-      );
     expect((await visit()).status).toBe(200);
     db.sql.prepare("UPDATE document SET team_id = 'team-1' WHERE id = 'd1'").run();
     expect((await visit()).status).toBe(404);
-    expect((await image()).status).toBe(404);
-    db.sql.prepare("UPDATE document SET team_id = NULL WHERE id = 'd1'").run();
-    index.trashed.add('d1');
-    expect((await image()).status).not.toBe(200);
+    expect(await drawnFor(post.shareCode)).toBe('not_found');
   });
 
-  it("stops serving a hidden post's image", async () => {
+  it("stops drawing a hidden post's image", async () => {
     const post = await publish();
-    const image = (clerk: string | null = null) =>
-      handleShare(
-        makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, {
-          env: worker(),
-          accountUserId: clerk,
-        }),
-      );
-    const listed = await image();
-    expect(listed.status).toBe(200);
-    expect(listed.headers.get('Cache-Control')).toBe('public, max-age=30');
+    expect(await drawnFor(post.shareCode)).toBe('ok');
     await hideOnService(post.id);
-    expect((await image()).status).toBe(404);
-    expect((await image(AUTHOR)).status).toBe(404);
+    expect(await drawnFor(post.shareCode)).toBe('not_found');
   });
 
   it('counts a copy taken through it once per person, and names the copy after the post', async () => {
@@ -629,7 +623,7 @@ describe('switched off', () => {
     const share = (path: string) =>
       handleShare(makeTestRouteContext('GET', path, { env: worker() }));
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
-    expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
+    expect(await drawnFor(post.shareCode)).toBe('not_found');
     expect(count('SELECT COUNT(*) AS n FROM community_post')).toBe(1);
 
     env.COMMUNITY_ENABLED = undefined;
@@ -698,15 +692,13 @@ describe('what a community link reveals', () => {
     expect(own.status).toBe(200);
   });
 
-  it('answers a closed link with 404 alone, not trashed; its image behind a password too', async () => {
+  // Its drawing behind a share password is refused by the index before liveworkspace's previews ask the canvas
+  // (liveworkspace/docs/previews.md "Who may see one").
+  it('answers a closed link with 404 alone, not trashed', async () => {
     const post = await publish();
     index.trashed.add('d1');
     await check();
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
-    index.trashed.delete('d1');
-    index.password.add('d1');
-    await check();
-    expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
   });
 
   // The post's link is a public link at the index: a canvas that later took a share password closes it (404), so a

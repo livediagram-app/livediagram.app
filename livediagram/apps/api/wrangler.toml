@@ -7,13 +7,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8687
 
-# Bundle the share card's fonts (packages/render-png/fonts at the repo root, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
@@ -73,9 +66,9 @@ OAUTH_ISSUER = "https://mcp.livediagram.app"
 # Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
 # shows no Drive entry, which is the self-host default.
 
-# R2 bucket holding document snapshots (thumb/<documentId>, docs/specs/006-document/document-snapshots.md), and
-# the image bytes uploaded before images moved to liveworkspace's media service (MEDIA_KEY below), kept until
-# they are migrated. Created out of band via `wrangler r2 bucket create livediagram-images`.
+# R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service
+# (MEDIA_KEY below), until they are migrated. Snapshots and share cards are liveworkspace's previews now
+# (liveworkspace/docs/previews.md), so nothing writes here; its old thumb/ and share-card objects can go.
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livediagram-images"
@@ -347,8 +340,7 @@ OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.
 
-# Own bucket: `wrangler r2 bucket create livediagram-images-staging`. Sharing
-# production's would let staging's snapshot writes and purges reach production's.
+# Own bucket, kept like production's only for legacy uploaded image bytes.
 [[env.staging.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livediagram-images-staging"

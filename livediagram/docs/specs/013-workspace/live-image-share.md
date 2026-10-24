@@ -1,19 +1,11 @@
 # Live image share link
 
-> **Status: implemented, as part of [Document SVG snapshots](../006-document/document-snapshots.md).** The
-> endpoint and Share-dialog option below shipped, but two design points here are
-> now superseded by [Document SVG snapshots](../006-document/document-snapshots.md) — read it for the authoritative behaviour:
->
-> - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
->   from R2, refreshed render-on-read when the document has been saved since
->   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Document SVG snapshots](../006-document/document-snapshots.md)) — one
->   artifact, two delivery paths.
-> - **Renderer already shared.** The "main work" below (extracting the renderer
->   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@livediagram/document` (`packages/document/src/svg-render.ts`) and powers the
->   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@livediagram/render`
->   package was created.
+> **Status: implemented.** The image is liveworkspace's now, built once for every app
+> ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)): this app's router forwards
+> `/api/share/<code>/image.svg` to liveworkspace's previews, which ask the index whether the link is open, keep the
+> picture, and ask livediagram to draw it again after a save ([Document SVG snapshots](../006-document/document-snapshots.md),
+> "the export door"). The renderer is `renderElementsToSvg` in `@livediagram/document`; no `@livediagram/render`
+> package was created, so "Renderer sharing" below is history.
 >
 > The rest of this spec (URL shape, password exclusion, share dialog) holds.
 >
@@ -41,17 +33,16 @@ export).
 
 ## Endpoint
 
-`GET /api/share/<code>/image.svg` on the api worker:
+`GET /api/share/<code>/image.svg`, answered by liveworkspace's previews (forwarded by this app's router):
 
 1. Resolve `<code>` through the index (`resolveShare`, the single authority — expiry +
    role). 404 if missing / revoked / expired.
 2. If the document has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
-4. Render it to SVG ([Document SVG snapshots](../006-document/document-snapshots.md)) and return `Content-Type: image/svg+xml` with a short
-   `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
-   update without re-rendering on every view.
-
-The router already forwards `/api/*` to the api worker, so no router change.
+4. Serve the stored drawing, asking livediagram to draw it again when the document has been saved since
+   ([Document SVG snapshots](../006-document/document-snapshots.md)), as `Content-Type: image/svg+xml` with a short
+   `Cache-Control` (`public, max-age=30, stale-while-revalidate=300`) so embeds update without a drawing on every
+   view.
 
 ## Renderer sharing (the build's main work)
 
@@ -95,6 +86,5 @@ a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
 the Embed control uses). The menu also carries a **per-tab picker** (a
 `<select>`, shown when the document has more than one tab) that threads
 `?tab=<id>` into the copied URL / snippets; see
-[Document SVG snapshots](../006-document/document-snapshots.md#share-dialog) for the caching detail
-(a non-default tab renders on read, uncached). Out of scope for v1: a
+[Document SVG snapshots](../006-document/document-snapshots.md#share-dialog). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

@@ -8,6 +8,7 @@ import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route'
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 import {
   routeToWorkspace,
+  routeToPreviews,
   forwardToIndex,
   PRODUCTION_INDEX_ORIGIN,
 } from '@liveworkspace/sites/workspace-proxy';
@@ -36,6 +37,9 @@ export interface Env {
   // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
   WORKSPACE_ORIGIN?: string;
+  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -215,6 +219,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, { app: 'livediagram', origin: env.WORKSPACE_ORIGIN });
   if (workspace) return workspace;
+  // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  if (preview) return preview;
   // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);

@@ -29,7 +29,7 @@ closed.
 | `GET/PUT/DELETE /api/documents/:id/tabs/:tabId`  | Their tab only, with the level's usual rules; another tab is a 404; deleting their own tab is a 403 |
 | Comments, Q&A board                              | Their tab only; otherwise 404                                                                       |
 | `POST /api/documents/:id/copy`                   | A copy holding only their tab                                                                       |
-| `GET /api/documents/:id/thumbnail`               | Their tab's picture                                                                                 |
+| `GET /api/previews/items/:id` (liveworkspace's)  | Their tab's picture                                                                                 |
 | `GET /api/images/:id?d=`                         | Only images their tab references                                                                    |
 | `GET /api/share/:code/image.svg`                 | Always their tab; a `?tab=` naming another is a 404                                                 |
 | Room ticket and upgrade                          | Admitted with the level and the tab (below)                                                         |

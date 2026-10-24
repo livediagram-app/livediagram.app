@@ -82,12 +82,13 @@ import {
 } from './community-post';
 import { communityService, communityServiceConfigured } from '../community-service';
 import { anonymiseDocument } from './document-anonymise';
-import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
-import { ItemDb } from '@liveworkspace/index-app';
+import { drawDocument } from '../thumbnail';
+import { ItemDb, type ExportQuery, type ExportResult } from '@liveworkspace/index-app';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopy,
   importDocumentCopy,
+  readDocumentHead,
   readDocumentMeta,
   readDocumentOutline,
   type DocumentCopy,
@@ -148,6 +149,8 @@ import { answerDocumentRequest, type RouteIdentity } from './document-route';
 // legit client (cursor / laser broadcasts are throttled to a few dozen
 // per second), so this only ever bites a flood.
 const OP_RATE_CAP = 240;
+// What the export door answers a drawing as.
+const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 
 // Max size (chars) of a single inbound WebSocket frame. A cursor / select /
 // op frame is well under this; the cap stops a socket from broadcasting a
@@ -657,20 +660,37 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  async image(
-    documentId: string,
-    subject: ThumbnailSubject,
-    tabId: string | null,
-    community = false,
-  ): Promise<string | null> {
+  // The export door (liveworkspace/docs/previews.md, routes/internal-items.ts): the canvas drawn as an SVG, the first
+  // tab or one, with its last save as the version. Through the canvas's Community post's link it is the redacted
+  // drawing, and nothing while the post does not open the canvas. Unchanged since `ifVersion`, it is not drawn.
+  async exportImage(documentId: string, query: ExportQuery): Promise<ExportResult> {
     this.bindDocument(documentId);
-    return renderDocumentImage(
-      this.requireEnv(),
-      subject,
-      tabId,
+    if (!this.hasSchema()) return { status: 'not_found' };
+    const env = this.requireEnv();
+    const { meta, savedAt } = await readDocumentHead(env, documentId);
+    if (!meta) return { status: 'not_found' };
+    let community = false;
+    if (query.code !== null) {
+      const post = await readCommunityPost(env);
+      if (post?.shareCode === query.code) {
+        if (openCommunityCode(env, post, meta) !== query.code) return { status: 'not_found' };
+        community = true;
+      }
+    }
+    if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+    if (query.tabId !== null && !(await documentHasTab(env, documentId, query.tabId))) {
+      return { status: 'not_found' };
+    }
+    const svg = await drawDocument(
+      env,
+      { id: documentId, name: meta.name },
+      query.tabId,
       { defer: (p) => this.state.waitUntil(p) },
       community,
     );
+    return svg === null
+      ? { status: 'empty', version: savedAt }
+      : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

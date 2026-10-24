@@ -28,8 +28,8 @@ Scope, by file:
 | `apps/api/src/db/image-grants.ts`                       | `documentMayServeImage`, `servableImageIds`, in the document's SQLite   |
 | `apps/api/src/index.ts`                                 | Pre-dispatch size gate, write limiter                                   |
 | `apps/api/src/document-room/document-outbox.ts`         | Sends a document's image set to the service as it changes               |
-| `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the preview and live image                     |
-| `apps/api/wrangler.toml`                                | `IMAGES` bucket (document snapshots), `MEDIA_KEY` note                  |
+| `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the drawing the export door gives the previews |
+| `apps/api/wrangler.toml`                                | `IMAGES` bucket (legacy image bytes only), `MEDIA_KEY` note             |
 | `apps/api/hosted-vars.json`                             | Hosted livediagram.app's `MEDIA_URL` per environment                    |
 | `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
 | `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
@@ -319,8 +319,8 @@ read a 503 as `null` and `{}`.
   `mediaImageOwner`'s memo, and per document in its `image_owners` (an account id, a media guest
   owner, or `''` for an id the service does not know) beside its `image_grants`
   ([Image reference index](image-reference-index.md#data-and-persistence)).
-- **R2 `IMAGES`** holds document snapshots under `thumb/<documentId>`
-  ([Document SVG snapshots](../../006-document/document-snapshots.md)), not images.
+- **R2 `IMAGES`** keeps only the image bytes uploaded before the move, unserved; document previews are
+  liveworkspace's ([Document SVG snapshots](../../006-document/document-snapshots.md)).
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: the owner and the hash (`imageSummary` also drops `app`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
@@ -377,7 +377,7 @@ read a 503 as `null` and `{}`.
 - **Read authorisation.** Owner, or a reader of a document that references the id. Knowing an id
   is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
 - **Server-side embed.** Only ids `servableImageIds` returns are read, and only from the media
-  service, so a tab cannot pull a `thumb/<documentId>` snapshot or another document's image into
+  service, so a tab cannot pull another document's image into
   its public live image. `[QB7]`
 - **The service key.** `MEDIA_KEY` is a Worker secret, sent only to `MEDIA_URL` as a bearer token;
   it speaks for livediagram.app alone. A guest id never leaves this api: the service sees
@@ -486,7 +486,7 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
 | Usage from the index                                 | `usageOf`                                                 | `apps/api/src/routes/images.test.ts` (`usage`)   |
 | Reference index and placement grants                 | [Image reference index](image-reference-index.md#testing) |                                                  |
-| Snapshot embeds, missing or unservable placeholder   | three `getDocumentThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`                 |
+| Snapshot embeds, missing or unservable placeholder   | three `drawDocument` tests                                | `apps/api/src/thumbnail.test.ts`                 |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |
 | Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`       |
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/editor/lib/upload-image.test.ts`           |
@@ -518,4 +518,4 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | Gallery placement size        | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                 |
 | `createImage` size            | 200 × 150                                | D49                                                         |
 | `WRITE_RATE_LIMITER`          | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                           |
-| Buckets                       | `livediagram-images`, `…-images-staging` | Document snapshots; separate per environment                |
+| Buckets                       | `livediagram-images`, `…-images-staging` | Legacy image bytes only; separate per environment           |

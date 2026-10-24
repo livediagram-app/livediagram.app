@@ -25,7 +25,7 @@ What you do NOT need:
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
 2. **No database to create.** The api worker has no D1 database and no migrations: its data lives in the Durable Objects declared in `apps/api/wrangler.toml` (`new_sqlite_classes`), which make their own schema on first use. Where documents are filed (folders, favourites, the Trash), who may open them (share links and their passwords), the Timeline, teams and API tokens are liveworkspace's (the index at `INDEX_ORIGIN`, reached with `INDEX_KEY`, and the accounts Worker); without `INDEX_KEY` no document opens.
 
-3. **Create an R2 bucket** (optional, for document snapshots):
+3. **Create an R2 bucket** (optional; it only keeps image bytes uploaded before images moved to liveworkspace's media service, which also keeps every document's previews):
 
    ```sh
    pnpm exec wrangler r2 bucket create livediagram-images

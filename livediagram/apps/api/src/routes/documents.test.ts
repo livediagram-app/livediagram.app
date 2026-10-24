@@ -3,19 +3,6 @@ import type { DocumentDTO } from '../types';
 import { sqliteD1, testShareLink, testTrash, type SqliteD1 } from '../test-sqlite-d1';
 import type { ItemGrant } from '../index-service';
 
-// The images the thumbnail door draws (thumbnail.ts), stubbed so these cases pin its gate: a refused caller never
-// reaches the renderer.
-const { thumbnails } = vi.hoisted(() => ({
-  thumbnails: {
-    getDocumentThumbnailSvg: vi.fn(async (): Promise<string | null> => null),
-    getDocumentTabImageSvg: vi.fn(async (): Promise<string | null> => null),
-  },
-}));
-vi.mock('../thumbnail', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../thumbnail')>()),
-  ...thumbnails,
-}));
-
 // The index as these doors call it: the canvas's share links (a deleted tab's go with it), and the list.
 const { index } = vi.hoisted(() => ({
   index: {
@@ -78,8 +65,6 @@ beforeEach(() => {
   index.links = [];
   index.revoked = [];
   index.items = [];
-  thumbnails.getDocumentThumbnailSvg.mockReset().mockResolvedValue(null);
-  thumbnails.getDocumentTabImageSvg.mockReset().mockResolvedValue(null);
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
@@ -174,8 +159,6 @@ describe('a canvas in the Trash', () => {
       headers: { 'X-Share-Code': 'CODE2345' },
     });
     expect(visitor.status).toBe(404);
-    // Its snapshot still serves the Trash's rows (none drawn here, so a plain miss).
-    expect((await call(db, 'GET', '/api/documents/P/thumbnail')).status).toBe(404);
   });
 });
 
@@ -232,21 +215,6 @@ describe('a tab-scoped visitor', () => {
     const document = await read(await call(db, 'GET', '/api/documents/P', visitor));
     expect(document.tabs.map((t) => t.name)).toEqual(['', 'Roadmap']);
     expect(document.presentation).toBeNull();
-  });
-
-  it("gets its tab's image as the thumbnail, never the first tab's", async () => {
-    const db = await seeded();
-    testShareLink(db, 'P', 'SCOPED23', 'edit', 't2');
-    thumbnails.getDocumentTabImageSvg.mockResolvedValue('<svg>t2</svg>');
-    const res = await call(db, 'GET', '/api/documents/P/thumbnail', visitor);
-    expect(await res.text()).toBe('<svg>t2</svg>');
-    expect(thumbnails.getDocumentTabImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      't2',
-      false,
-    );
-    expect(thumbnails.getDocumentThumbnailSvg).not.toHaveBeenCalled();
   });
 
   // docs/specs/025-community/community.md "Viewing a post's document": through the post's link (as its room marks
@@ -394,16 +362,6 @@ describe('the tabs alone', () => {
   });
 });
 
-describe('the thumbnail', () => {
-  it('is a 404 the editor turns into an icon, for no grant and for no snapshot alike', async () => {
-    const db = await seeded();
-    const denied = await call(db, 'GET', '/api/documents/P/thumbnail', { owner: 'stranger' });
-    expect(denied.status).toBe(404);
-    // No image store bound in this test: nothing to serve.
-    expect((await call(db, 'GET', '/api/documents/P/thumbnail')).status).toBe(404);
-  });
-});
-
 describe('a delete', () => {
   it('is never the document own: only the index deletes (document-index-routes.ts), and the document keeps its content', async () => {
     const db = await seeded();
@@ -513,31 +471,6 @@ describe('a create carrying an Offline Mode sync', () => {
     expect((await read(await call(db, 'GET', '/api/documents/P'))).presentation).toBe(
       '{"decks":[]}',
     );
-  });
-});
-
-describe('the thumbnail door', () => {
-  it('never renders for a refused caller, and never marks that 404 cacheable', async () => {
-    const db = await seeded();
-    const res = await call(db, 'GET', '/api/documents/P/thumbnail', { owner: 'intruder' });
-    expect(res.status).toBe(404);
-    expect(res.headers.get('Cache-Control')).toBe('no-cache');
-    expect(thumbnails.getDocumentThumbnailSvg).not.toHaveBeenCalled();
-  });
-
-  it('serves the snapshot privately, and keeps an empty answer past the gate', async () => {
-    const db = await seeded();
-    thumbnails.getDocumentThumbnailSvg.mockResolvedValue('<svg>ok</svg>');
-    const res = await call(db, 'GET', '/api/documents/P/thumbnail');
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toContain('image/svg+xml');
-    expect(res.headers.get('Cache-Control')).toContain('private');
-    expect(await res.text()).toBe('<svg>ok</svg>');
-    // Past the gate and versioned by `?v=<savedAt>`: the browser keeps it rather than asking on every visit.
-    thumbnails.getDocumentThumbnailSvg.mockResolvedValue(null);
-    const empty = await call(db, 'GET', '/api/documents/P/thumbnail');
-    expect(empty.status).toBe(404);
-    expect(empty.headers.get('Cache-Control')).toBe('private, max-age=86400');
   });
 });
 

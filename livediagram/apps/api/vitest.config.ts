@@ -16,8 +16,6 @@ const GATE_KEEPERS = [
   'src/auth/**',
   'src/db/api-tokens.ts',
   'src/routes/share.ts',
-  // Link previews name a shared document (docs/specs/013-workspace/share-link-previews.md).
-  'src/routes/share-preview.ts',
   'src/routes/tokens.ts',
   // Who a room session is (the person the worker verified for it).
   'src/room-session.ts',

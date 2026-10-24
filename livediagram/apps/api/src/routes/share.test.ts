@@ -9,15 +9,12 @@ import { makeTestRouteContext } from './test-route-context';
 // link: routes/documents.ts), and a Community post's link opens read-only while the post is public. Recording the
 // visit and telling the owner of a first one are the index's (routes/internal-items.ts `joined`).
 
-const { resolveShare, handleDocuments, community, communityListing, previewSubject } = vi.hoisted(
-  () => ({
-    resolveShare: vi.fn(),
-    handleDocuments: vi.fn(),
-    community: vi.fn(),
-    communityListing: vi.fn(),
-    previewSubject: vi.fn(),
-  }),
-);
+const { resolveShare, handleDocuments, community, communityListing } = vi.hoisted(() => ({
+  resolveShare: vi.fn(),
+  handleDocuments: vi.fn(),
+  community: vi.fn(),
+  communityListing: vi.fn(),
+}));
 vi.mock('./index-adapters', async (original) => ({
   ...(await original<typeof import('./index-adapters')>()),
   clientFor: (ctx: { env: { NO_INDEX?: boolean } }) =>
@@ -27,17 +24,9 @@ vi.mock('./documents', () => ({ handleDocuments }));
 vi.mock('../document-client', () => ({
   documentRoom: () => ({ community, communityListing }),
 }));
-vi.mock('./share-preview', () => ({
-  previewSubject,
-  handleSharePreview: async (ctx: { segments: string[] }) =>
-    ctx.segments[3] === 'card' ? new Response('preview') : null,
-}));
-vi.mock('../document-image', () => ({ documentImageSvg: vi.fn() }));
 
-import { documentImageSvg } from '../document-image';
 import { handleShare } from './share';
 
-const doc = { id: 'd1', name: 'Payments flow', savedAt: 1, thumbRenderedAt: null };
 const LISTING = { postId: 'post1', title: 'Payments flow', author: { name: 'Ada' } };
 
 function call(
@@ -61,94 +50,22 @@ beforeEach(() => {
   );
   community.mockResolvedValue(null);
   communityListing.mockResolvedValue(LISTING);
-  previewSubject.mockResolvedValue({ doc, tabId: null, community: false });
-  vi.mocked(documentImageSvg).mockResolvedValue('<svg>live</svg>');
 });
 
-describe('the share router and link previews', () => {
-  it('answers with the preview module when it owns the path', async () => {
-    expect(await (await call('/api/share/C/card')).text()).toBe('preview');
-  });
-
-  it('404s everything this surface does not answer', async () => {
+describe('the share router', () => {
+  // A link's previews (image.svg, image.png, card) are liveworkspace's: the router sends them there
+  // (liveworkspace/docs/previews.md), so here they are paths like any other.
+  it('404s everything this surface does not answer, the previews included', async () => {
     for (const [method, path] of [
       ['POST', '/api/share/C'],
       ['GET', '/api/share'],
       ['GET', '/api/share/C/extra'],
+      ['GET', '/api/share/C/image.svg'],
+      ['GET', '/api/share/C/card'],
     ] as const) {
       expect((await call(path, { method })).status, `${method} ${path}`).toBe(404);
     }
     expect(resolveShare).not.toHaveBeenCalled();
-  });
-});
-
-describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md live image)', () => {
-  it('serves the drawing with a public stale-while-revalidate cache', async () => {
-    const res = await call('/api/share/C/image.svg');
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toContain('image/svg+xml');
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=30, stale-while-revalidate=300');
-    expect(await res.text()).toBe('<svg>live</svg>');
-    expect(previewSubject).toHaveBeenCalledWith(expect.anything(), 'C');
-    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
-      tabId: null,
-      community: false,
-    });
-  });
-
-  // previewSubject (share-preview.ts, tested there) is null for an unknown, revoked or expired code, a canvas in the
-  // Trash, one behind a share password (an <img> cannot supply it) and a Community post that is not public.
-  it('404s wherever the link opens nothing to an anonymous visitor, WITHOUT rendering', async () => {
-    previewSubject.mockResolvedValue(null);
-    expect((await call('/api/share/C/image.svg')).status).toBe(404);
-    expect((await call('/api/share/C/image.svg?tab=tab-2')).status).toBe(404);
-    expect(documentImageSvg).not.toHaveBeenCalled();
-  });
-
-  it('404s an empty document (nothing to draw)', async () => {
-    vi.mocked(documentImageSvg).mockResolvedValue(null);
-    expect((await call('/api/share/C/image.svg')).status).toBe(404);
-  });
-
-  it('renders the requested tab when ?tab= is present, and 404s one the canvas does not hold', async () => {
-    const res = await call('/api/share/C/image.svg?tab=tab-2');
-    expect(res.status).toBe(200);
-    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
-      tabId: 'tab-2',
-      community: false,
-    });
-    // Must NOT quietly serve the first tab when the requested one is bogus.
-    vi.mocked(documentImageSvg).mockResolvedValue(null);
-    expect((await call('/api/share/C/image.svg?tab=other-diagrams-tab')).status).toBe(404);
-  });
-
-  // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link's image is always its own tab.
-  describe('for a tab-scoped link', () => {
-    beforeEach(() => previewSubject.mockResolvedValue({ doc, tabId: 'tab-2', community: false }));
-
-    it('renders its tab when no tab is asked for, or that tab by name', async () => {
-      expect((await call('/api/share/C/image.svg')).status).toBe(200);
-      expect((await call('/api/share/C/image.svg?tab=tab-2')).status).toBe(200);
-      expect(vi.mocked(documentImageSvg).mock.calls.map((c) => c[2])).toEqual([
-        { tabId: 'tab-2', community: false },
-        { tabId: 'tab-2', community: false },
-      ]);
-    });
-
-    it('404s any other tab without rendering it', async () => {
-      expect((await call('/api/share/C/image.svg?tab=tab-1')).status).toBe(404);
-      expect(documentImageSvg).not.toHaveBeenCalled();
-    });
-  });
-
-  it("draws a public Community post's link redacted, with no stale window", async () => {
-    previewSubject.mockResolvedValue({ doc, tabId: null, community: true });
-    const res = await call('/api/share/C/image.svg');
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=30');
-    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
-      tabId: null,
-      community: true,
-    });
   });
 });
 

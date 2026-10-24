@@ -19,7 +19,6 @@ export type DocumentMeta = {
   teamId: string | null;
   source: string | null;
   createdAt: number;
-  thumbRenderedAt: number | null;
 };
 
 // What a document read takes from the document: its tabs in order (no body), its slide deck, and what it knows of
@@ -40,11 +39,9 @@ type DocumentHeadRow = {
   owner_id: string;
   team_id: string | null;
   source: string | null;
-  thumb_rendered_at: number | null;
 };
 
-const DOCUMENT_HEAD_COLS =
-  'presentation, saved_at, created_at, name, owner_id, team_id, source, thumb_rendered_at';
+const DOCUMENT_HEAD_COLS = 'presentation, saved_at, created_at, name, owner_id, team_id, source';
 
 function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
   if (!head || !head.created_at) return null;
@@ -54,7 +51,6 @@ function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
     teamId: head.team_id,
     source: head.source,
     createdAt: head.created_at,
-    thumbRenderedAt: head.thumb_rendered_at,
   };
 }
 
@@ -107,12 +103,21 @@ export async function readDocumentMeta(
   env: DocumentEnv,
   documentId: string,
 ): Promise<DocumentMeta | null> {
+  return (await readDocumentHead(env, documentId)).meta;
+}
+
+// What the document knows of itself and its last save, in one read: the export door's version
+// (liveworkspace/docs/previews.md), without the tab outline.
+export async function readDocumentHead(
+  env: DocumentEnv,
+  documentId: string,
+): Promise<{ meta: DocumentMeta | null; savedAt: number }> {
   const head = await env.DOCUMENT_DB.prepare(
     `SELECT ${DOCUMENT_HEAD_COLS} FROM document WHERE id = ?`,
   )
     .bind(documentId)
     .first<DocumentHeadRow>();
-  return metaOf(head ?? null);
+  return { meta: metaOf(head ?? null), savedAt: head?.saved_at ?? 0 };
 }
 
 // What a create or a first open writes about the document. A started document keeps its owner, team and
@@ -174,17 +179,6 @@ export async function renameDocument(
     .bind(name, savedAt, documentId)
     .run();
   return (res.meta.changes ?? 0) > 0;
-}
-
-// The snapshot cache's freshness stamp (thumbnail.ts).
-export async function markThumbRendered(
-  env: DocumentEnv,
-  documentId: string,
-  now: number,
-): Promise<void> {
-  await env.DOCUMENT_DB.prepare('UPDATE document SET thumb_rendered_at = ? WHERE id = ?')
-    .bind(now, documentId)
-    .run();
 }
 
 // docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new

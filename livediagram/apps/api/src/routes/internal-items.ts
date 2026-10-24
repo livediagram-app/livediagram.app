@@ -5,14 +5,15 @@
 // anonymised.
 //
 // Each is a call to the canvas's Durable Object (document-client.ts) or the person's own stores. Where the canvas is
-// filed, its sharing and its Trash are the index's; a purge also drops what the api keeps about the canvas beside it
-// (db/documents.ts `purgeDocumentRows`) and tells the media service it places nothing now. A notice is worked out
-// off the index's path: a share link made (the first-share milestone), or someone's first time in through a link
-// (the owner's "someone joined" email).
+// filed, its sharing and its Trash are the index's; a purge also tells the media service the canvas places nothing
+// now and drops its previews there (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's
+// path: a share link made (the first-share milestone), or someone's first time in through a link (the owner's
+// "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
+// MEDIA_KEY.
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
-import { purgeDocumentRows } from '../db/documents';
+import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
@@ -26,12 +27,13 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    exportKey: env.MEDIA_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
         await documentRoom(env, id).purge();
         // The media service hears the canvas places nothing now, so an image only it placed can be swept.
-        await Promise.all([purgeDocumentRows(env, id), forgetImageRefs(env, id)]);
+        await Promise.all([purgeDocumentPreviews(env, id), forgetImageRefs(env, id)]);
       },
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
@@ -68,6 +70,8 @@ export function handleInternalItems(
       personMerged: (guestId, userId) => mergeGuest(env, guestId, userId),
       // Their name off each canvas of someone else's that names them.
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`).
+      export: (id, query) => documentRoom(env, id).exportImage(query),
     },
   });
 }

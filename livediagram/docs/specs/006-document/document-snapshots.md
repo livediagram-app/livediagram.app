@@ -1,16 +1,20 @@
 # Document SVG snapshots
 
-A single cached SVG snapshot per document, used two ways:
+A document's picture, used three ways:
 
-1. **Explorer thumbnails** — a small preview on each row of the Recent /
+1. **Explorer thumbnails**: a small preview on each row of the Recent /
    folder lists so you can recognise a document without opening it.
-2. **Live image share** — an `<img>`-able URL ([Live image share link](../013-workspace/live-image-share.md)) that embeds the
+2. **Live image share**: an `<img>`-able URL ([Live image share link](../013-workspace/live-image-share.md)) that embeds the
    diagram in a README / wiki / doc and stays up to date.
+3. **Share card**: the picture a pasted share link previews with ([Share-link previews](../013-workspace/share-link-previews.md)).
 
-Both render the same artifact through the same DOM-free renderer; they
-differ only in how they're authorised and cached.
+**livediagram renders; liveworkspace stores and serves.** Previews are a liveworkspace platform feature, built
+once for every app ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)): its media service
+keeps every app's pictures in one bucket, decides when one is stale from the index's `updatedAt`, asks the index
+who may see it, and serves the Explorer's preview, the live image and the share card. The only part that is
+livediagram's is drawing a canvas, which happens where the canvas is.
 
-## Why one artifact, not two
+## Why a pre-rendered picture
 
 The document list endpoint (`GET /api/documents`) deliberately ships no
 element data ([Per-tab storage](per-tab-storage.md)) so listing 100 documents stays cheap. Rendering a
@@ -18,68 +22,59 @@ preview per row from element data would re-load exactly what the list
 avoids. So previews come from a **pre-rendered SVG**, not from element
 data at list time.
 
-Because SVG is vector, the same full-fidelity snapshot renders crisply
-as a 36px list thumbnail and as a full-size embed — there is no separate
-"thumbnail size" to generate. One stored artifact serves both surfaces.
+Because SVG is vector, the same full-fidelity drawing renders crisply
+as a 36px list thumbnail and as a full-size embed: there is no separate
+"thumbnail size" to generate.
 
-## Render-on-read, cached in R2
+## Renders for the platform: the export door
 
-The snapshot bytes live in R2 (the existing `IMAGES` bucket, key
-`thumb/<documentId>`); a `documents.thumb_rendered_at` column records when
-they were last rendered.
+`GET /api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<shareCode>]`, on the index's key or the
+media service's (`MEDIA_KEY`), answered by `@liveworkspace/index-app`'s internal door and the document's Durable
+Object (`exportImage`):
 
-On a read of either delivery path:
+- **200** the drawing (`image/svg+xml`), with an `ETag` naming the document's `saved_at`.
+- **304** when `If-None-Match` names the current `saved_at`: nothing drawn.
+- **204** nothing to draw (no tab, or an empty or unparseable one).
+- **404** no such document, a tab it does not hold, or a Community post's code while the post is not open.
 
-- **Fresh** (`thumb_rendered_at >= saved_at`): stream the stored R2
-  bytes. No render, no element load.
-- **Stale** (or never rendered, or the object is missing): render the
-  first tab with `renderElementsToSvg` (`@livediagram/document`, the same
-  DOM-free renderer the MCP worker uses), write it to R2, stamp
-  `thumb_rendered_at`, and return it. Icon elements render their real
-  glyph (line art + Technology brand tiles) via the
-  `@livediagram/icons/resolve` resolver the worker passes in — see
-  [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
-  worker reads each upload from the media service and inlines it as a base64 data URL
-  through `embedTabImages` (`@livediagram/api-schema`, shared with the
-  MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
-  so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, unknown to the media service, or not a recognised raster
-  format keeps its placeholder box.
+The drawing is the first tab, or `tab`, through `renderElementsToSvg` (`@livediagram/document`, the same DOM-free
+renderer the MCP worker uses). Icon elements render their real glyph (line art + Technology brand tiles) via the
+`@livediagram/icons/resolve` resolver; see [Technology icons](../010-palette/technology-icons.md) "Rendering". Image
+elements render their real picture: the object reads each upload from the media service and inlines it as a base64
+data URL through `embedTabImages` (`@livediagram/api-schema`, shared with the MCP preview,
+[MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget so a tab of large photos
+can't produce a multi-megabyte picture. An image past the budget, unknown to the media service, not one the
+document may serve, or not a recognised raster format keeps its placeholder box.
 
-This is **render-on-read**, not render-on-save, on purpose:
+When `code` is the document's open Community post's code, the drawing is made from the redacted tab
+([Community](../025-community/community.md) "Viewing a post's document"), so comment threads and the people on them
+never reach a public picture.
 
-- **Covers every write path.** `saved_at` is bumped by every tab write
-  (editor, collaborators, MCP server, API token), so the snapshot
-  invalidates uniformly regardless of who edited — no client upload to
-  keep in sync.
-- **No wasted renders.** A document is only rendered when it has been
-  edited _and_ subsequently viewed (in a list or an embed). A document
-  nobody opens never costs a render.
-- **Cheap steady state.** Once cached, reads are a straight R2 stream
-  until the next save.
+The object stores nothing and stamps nothing about pictures: whether a drawing is current, and who may see it, are
+the platform's. It is **render-on-read**, never render-on-save:
 
-An empty / unparseable first tab yields no snapshot (the endpoints 404
-and the row shows its generic icon). Deleting a document clears its R2
-object. The freshness column needs no backfill: the first read of each
-document renders lazily.
+- **Covers every write path.** Every tab write (editor, collaborators, MCP server, API token) moves the index's
+  `updatedAt` through the document's outbox, so the platform's copy goes stale uniformly.
+- **No wasted renders.** A document is drawn only when it has been edited _and_ then looked at. A save costs no
+  render at all.
+- **Cheap steady state.** Until the next save the platform serves its stored copy; asked again, the door answers
+  304 without drawing.
 
-## Delivery path 1 — Explorer thumbnail (owner-authed)
+Purging a document (routes/internal-items.ts) asks the media service to drop its previews
+(`DELETE /api/media/app/previews/:itemId`), best effort.
 
-`GET /api/documents/:id/thumbnail?v=<savedAt>`
+## Where a picture is asked for
 
-- Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
-  team member, or a valid share-code visitor.
-- A native `<img>` can't send auth headers, so the editor app fetches this
-  through the authenticated client and wraps the bytes in a blob URL
-  (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
-  the browser cache when the document changes; the worker ignores it.
-  `Cache-Control: private, max-age=86400`.
-- The index's grant gates it, and one call to the document's object answers
-  its `saved_at` and `thumb_rendered_at`, so a fresh snapshot costs that
-  call, the access gate and the R2 read. The full
-  document (participant and tab summaries) is never loaded for a preview.
-- A stale snapshot is returned as soon as it is rendered; the R2 write
-  and the freshness stamp run in the request's `waitUntil`.
+- **Explorer thumbnail**: `GET /api/previews/items/:id?v=<version>` on this app's own address, which the router
+  forwards to liveworkspace's previews (the editor's Explorer, the Welcome back card and the Drive mirror alike).
+  The editor fetches it through the authenticated client (a native `<img>` can't send auth headers) and wraps the
+  bytes in a blob URL; `?v=` only keys the browser's cache. Who may see it is the index's rule for the document
+  itself: the owner, a team member, or a share-code visitor (a tab-scoped one gets their tab).
+- **Live image**: `GET /api/share/:code/image.svg`, forwarded by the router the same way.
+- **Share card**: `GET /api/share/:code/image.png`, likewise.
+
+## The Explorer's thumbnail
+
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of
   requests / renders for rows the user never reaches.
@@ -120,11 +115,10 @@ document renders lazily.
   loaded, and keeps what the list said when it is not.
 - **The count is filled lazily, never by a bulk backfill.** The column
   starts unknown. A tab stored before it starts unknown and gets its
-  count from its next write, or from the thumbnail route: having parsed the
-  body to render it, the route stamps a still-unknown count (in the
+  count from its next write, or from the export door: having parsed the
+  body to draw it, the object stamps a still-unknown count (in the
   request's `waitUntil`, best effort, never overwriting a known count). An
-  old empty document is therefore asked for at most once. A deploy without
-  the R2 binding renders no snapshot, so there its counts fill from writes only.
+  old empty document is therefore asked for at most once.
 - **Why no trigger and no backfill** (measured with SQLite, the engine a Durable Object runs,
   sync off to isolate the work itself):
 
@@ -141,35 +135,11 @@ document renders lazily.
   when every tab shared one 10 GB D1 database (over 20 s against D1's 30 s
   query limit); each document now keeps its own tabs, so there is still
   nothing to backfill in bulk. Adding the column alone takes
-  under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
-  shows the still, dashed sketch, captioned "Nothing drawn yet" where there
-  is room. The no-snapshot 404 (past the access gate)
-  carries the same `private, max-age=86400` as the image, because it is
-  version-keyed too; an access-denied 404 carries no cache header.
+  under 5 ms on the same 500 MB table.
 
-## Delivery path 2 — Live image share (public, share-code-scoped)
-
-`GET /api/share/:code/image.svg` — this is [Live image share link](../013-workspace/live-image-share.md)'s endpoint.
-
-- Public: the share code in the URL is the only credential, matching a
-  share link's "anyone with the URL" semantics (an `<img>` can't carry
-  an auth header). Resolves through `getShareLink`, so revoking /
-  expiring the link kills the image too.
-- **Password-protected shares ([Share password](../013-workspace/share-password.md)) get no image**: an `<img>` can't
-  supply the password, so serving one would bypass the gate. The route
-  404s a gated document _before_ rendering, and the Share dialog hides the
-  live-image option while a password is set.
-- `Cache-Control: public, max-age=30, stale-while-revalidate=300` so an
-  embed stays close to live without hammering the origin (the bytes come
-  from R2; the worker only re-renders when the document was saved since).
-
-## Delivery path 3: Share card (public, share-code-scoped)
-
-`GET /api/share/:code/image.png`, the picture a pasted share link previews with
-([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
-behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
-the snapshots (`og/<documentId>`, `og-community/<documentId>`), stamped with its
-own render time, and deleted with them.
+- Degrades gracefully otherwise: nothing drawn, no access or the service
+  down → the row shows the still, dashed sketch, captioned "Nothing drawn
+  yet" where there is room.
 
 ### Share dialog
 
@@ -180,9 +150,8 @@ a menu to copy the URL, a Markdown `![](...)` snippet, or an HTML
 The menu also carries a **tab picker** (a `<select>` header, shown only
 when the document has more than one tab) so the copied URL / snippet can
 target any tab, not just the first ([Live image share link](../013-workspace/live-image-share.md)'s `?tab=<id>`). Picking the
-first tab clears back to the default (no `?tab=`, so the cached
-first-tab snapshot serves it); picking another appends `?tab=<id>` and
-the endpoint renders that tab **on read, uncached** (see Scope). The
+first tab clears back to the default (no `?tab=`); picking another appends `?tab=<id>`, which the
+platform stores as its own picture. The
 choice is document-wide, applying to every share link's image.
 
 ### Where thumbnails appear
@@ -259,27 +228,17 @@ documents + folders reuse the same `CardView`, sharing the
 there too. Team cards hide the visibility badge (every card is a team
 document, so a per-card badge is noise — the team list omits it as well).
 
-## Scope (v1)
+## Scope
 
-- **R2 cache is first-tab only.** The persisted snapshot
-  (`thumb/<documentId>`, one per document, shared by the Explorer
-  thumbnail and the default live image) always renders the **first**
-  tab. The live image's `?tab=<id>` selector ([Live image share link](../013-workspace/live-image-share.md)) now ships in the
-  Share dialog, but a non-default tab is rendered **on read and not
-  written to that cache** — the single per-document key + freshness stamp
-  has no room for a second tab, and per-tab embeds are niche. The
-  endpoint's `max-age=30, stale-while-revalidate=300` keeps repeat views
-  cheap without a persistent cache. So "first tab only" still describes
-  the cached artifact and the Explorer thumbnail, just no longer the
-  live image.
-- **No PNG.** SVG only — vector, tiny, headless-renderable. A rasterised
-  variant is out of scope.
+- **SVG from the app, PNG from the platform.** livediagram draws SVG only; the share card's PNG is liveworkspace's
+  ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)).
 - The List/Card toggle covers the main browse views and the team
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
 ## Self-hosting
 
-The whole feature is gated on the optional `IMAGES` R2 binding, exactly
-like the image gallery ([Image element + per-owner gallery](../009-elements/images.md)): with no bucket, both endpoints 404 and
-the Explorer row shows its icon. No new binding, no required SaaS.
+Pictures come from liveworkspace's media service. A deploy without `MEDIA_KEY` has no image service and no export
+door key from it: the Explorer row shows its sketch and a link previews with the brand card. livediagram's own
+`IMAGES` bucket is no longer part of this feature; it is kept only for image bytes uploaded before images moved to
+the media service.

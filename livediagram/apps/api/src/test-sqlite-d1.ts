@@ -350,19 +350,36 @@ function testDocumentRooms(
           identity as never,
           () => {},
         ),
-      image: async (
-        _documentId: string,
-        subject: unknown,
-        tabId: string | null,
-        community = false,
-      ) =>
-        (await import('./thumbnail')).renderDocumentImage(
-          env,
-          subject as never,
-          tabId,
-          {},
-          community,
-        ),
+      exportImage: async (
+        documentId: string,
+        query: { tabId: string | null; code: string | null; ifVersion: number | null },
+      ) => {
+        const content = await import('./document-room/document-content');
+        const { meta, savedAt } = await content.readDocumentHead(env, documentId);
+        if (!meta) return { status: 'not_found' };
+        // A Community post's link draws only while the post is open (document-room.ts exportImage).
+        const community = query.code === null ? null : await communityOf(documentId);
+        const onPost = community !== null && community.code === query.code;
+        if (onPost && !community.open) return { status: 'not_found' };
+        if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+        if (
+          query.tabId !== null &&
+          !(await (await import('./db/tabs')).documentHasTab(env, documentId, query.tabId))
+        ) {
+          return { status: 'not_found' };
+        }
+        const svg = await (
+          await import('./thumbnail')
+        ).drawDocument(env, { id: documentId, name: meta.name }, query.tabId, {}, onPost);
+        return svg === null
+          ? { status: 'empty', version: savedAt }
+          : {
+              status: 'ok',
+              body: svg,
+              contentType: 'image/svg+xml; charset=utf-8',
+              version: savedAt,
+            };
+      },
       hasTab: async (documentId: string, tabId: string) =>
         (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
       servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>

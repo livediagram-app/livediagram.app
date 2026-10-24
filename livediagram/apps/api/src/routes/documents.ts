@@ -38,10 +38,8 @@ import {
   json,
   notFound,
   payloadTooLarge,
-  svgImage,
 } from '../responses';
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
-import { documentImageSvg } from '../document-image';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -88,10 +86,6 @@ function isDocumentContext(ctx: RouteContext): ctx is DocumentRouteContext {
 // The longest document id the worker names a Durable Object by. Ids are UUIDs; this only stops a hostile create from
 // naming objects with megabyte ids.
 const MAX_DOCUMENT_ID = 200;
-
-// GET /api/documents/<id>/thumbnail.
-const isThumbnailRead = (method: string, segments: readonly string[]) =>
-  method === 'GET' && segments.length === 4 && segments[3] === 'thumbnail';
 
 function intentRejected(): Response {
   return json({ error: INTENT_INVALID }, { status: 400 });
@@ -237,44 +231,14 @@ async function documentTabs(ctx: DocumentRouteContext, id: string): Promise<Resp
   return itemTabsResponse(itemTabsOf(rows, grant.tabScope), CORS_HEADERS);
 }
 
-// /api/documents/<id>/thumbnail: the cached SVG snapshot (docs/specs/006-document/document-snapshots.md), served by
-// the canvas (its row holds the cache's freshness), gated by the grant like a read. A native <img> can't send auth
-// headers, so the editor fetches it with headers and wraps the bytes in a blob URL; a miss is a 404 the row turns
-// into its icon. A Community visitor's is drawn from the redacted tab, never the owner's snapshot.
-async function documentThumbnail(ctx: DocumentRouteContext, id: string): Promise<Response> {
-  const { env } = ctx;
-  const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
-  if (!grant) return notFound();
-  const meta = await readDocumentMeta(env, id);
-  const outline = meta ? await documentRoom(env, id).outline() : null;
-  if (!meta || !outline) return notFound();
-  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
-  // first-tab snapshot.
-  const svg = await documentImageSvg(
-    env,
-    { id, name: meta.name, savedAt: outline.savedAt, thumbRenderedAt: meta.thumbRenderedAt },
-    { tabId: grant.tabScope, community: grant.community === true },
-  );
-  // Nothing drawn (or no snapshot store). Past the gate, so this says nothing about access, and the URL carries
-  // `?v=<savedAt>`: the answer cannot change until the canvas does.
-  if (svg == null) {
-    return json(
-      { error: 'not_found' },
-      { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
-    );
-  }
-  // The client cache-busts via a `?v=<savedAt>` query param, so a long private max-age is safe.
-  return svgImage(svg, 'private, max-age=86400');
-}
-
 // Everything about one canvas, inside its Durable Object (document-room/document-route.ts).
 export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'documents') return notFound();
   // A canvas in the Trash answers its owner and team 410 `document_trashed`, as the index's grant says
-  // (docs/specs/013-workspace/trash.md); only its snapshot still serves, for the Trash's own rows.
-  if (ctx.grant?.trashed && segments.length >= 3 && !isThumbnailRead(request.method, segments))
-    return documentTrashed();
+  // (docs/specs/013-workspace/trash.md). Its preview still shows in the Trash's rows: that is liveworkspace's
+  // (liveworkspace/docs/previews.md), behind the index, which lets its owner and team see it.
+  if (ctx.grant?.trashed && segments.length >= 3) return documentTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') {
       const read = await readBody(ctx);
@@ -394,11 +358,6 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
   // /api/documents/<id>/tabs
   const tabsOf = itemTabsRequest(request.method, segments, 'documents');
   if (tabsOf) return documentTabs(ctx, tabsOf);
-
-  // /api/documents/<id>/thumbnail
-  if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {
-    return documentThumbnail(ctx, segments[2]!);
-  }
 
   // /api/documents/<id>
   if (segments.length === 3) {

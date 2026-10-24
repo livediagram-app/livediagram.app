@@ -81,7 +81,7 @@ export async function getPersonIdentity(
   if (!token) return null;
   if (isApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
 
-  // The Explorer's preview and tabs reads take any app's token (@liveworkspace/auth-client explorer-reads.ts): on
+  // The Explorer's tabs read takes any app's token (@liveworkspace/auth-client explorer-reads.ts): on
   // another app's address it asks as that app.
   const audience = audiencesFor(request, env.API_RESOURCE, 'documents');
   const claims = await verifierFor(issuer, audience)(token);

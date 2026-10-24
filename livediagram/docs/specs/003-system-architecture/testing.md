@@ -150,7 +150,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/auth/**`                                                         | Decides WHO a request is — access-token and guest-token checks, api tokens, the read/edit gates                                                               |
 | `src/db/api-tokens.ts`, `src/routes/tokens.ts`                        | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/routes/share.ts`, `src/routes/share-preview.ts`                  | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
+| `src/routes/share.ts`                                                 | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
 | `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-grants.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response

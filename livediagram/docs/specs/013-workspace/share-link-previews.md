@@ -32,37 +32,33 @@ gave nobody a reason to tell them apart or click.
 
 ## The share card
 
-`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width.
+`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
+liveworkspace's, built once for every app ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)
+"The share card"): this app's router forwards the address to liveworkspace's previews, and livediagram only draws
+the picture on it, through its export door ([Document SVG snapshots](../006-document/document-snapshots.md)).
 
 - **The picture is the live image's.** The same tab, the same rules: a tab-scoped link's own tab, otherwise the
   first tab; a Community link's redacted tab ([Live image share link](live-image-share.md),
   [Community](../025-community/community.md)). The drawing is fitted inside the card with 48 px of margin, centred,
-  never stretched or cropped, on the drawing's own background colour. A small drawing grows to
-  at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on a self-host): the request is redirected (302) to the
-  brand card, so the preview still has a picture.
+  never stretched or cropped, on the drawing's own background colour.
+- **Nothing to draw**: the request is redirected (302) to the brand card, so the preview still has a picture.
 - **Withheld exactly where the live image is**: a password-protected document, an unknown, revoked or expired code,
   a trashed document and a non-public Community post answer 404, and the page names none of them.
-- **Cached in R2** beside the snapshots: `og/<documentId>` for the first tab and `og-community/<documentId>` for a
-  Community link, each stamped with the time it was drawn and redrawn when the document has been saved since. A
-  tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a document
-  deletes both objects with its snapshots.
-- **Drawn by the shared resvg renderer** (`@liveworkspace/render-png/worker`, the MCP server's), with Inter as the
-  one font, so a card's text matches the MCP previews.
-- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`; a Community link's
-  `public, max-age=30`, so a hidden post's card cannot linger.
+- Stored, refreshed after a save, served and limited by the platform, as every app's are.
 
 ## The share page's head
 
 The editor app's worker fills in the shell's `<head>` for `/document/shared?s=<code>` before it is sent: the
 `<title>`, `description`, `og:title`, `og:description`, `og:image` (with its size and alt text), `twitter:title`,
-`twitter:description` and `twitter:image`. It asks the api for the link's preview with
-`GET /api/share/<code>/card`, which answers `{ name }` for a link whose preview names its document and 404 for every
-other row of the table above.
+`twitter:description` and `twitter:image`. The page head is liveworkspace's too (`createSharePage` in
+`@liveworkspace/media`, the same for every app); livediagram gives it only its share page's addresses and its words.
+It asks liveworkspace's previews for the link's preview with `GET /api/previews/share/<code>/card` (at
+`PREVIEWS_ORIGIN`, production's by default), which answers `{ name }` for a link whose preview names its document
+and 404 for every other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a self-host without the `API` service binding): the
-  shell goes out as built, with the brand card, and the editor works as before.
+- **The service has 1.5 s.** Slower or failing: the shell goes out as built, with the brand card, and the editor
+  works as before.
 - **The editor still sets its own title** once the document loads; the worker only decides what a crawler reads.
 
 ## Share roles
@@ -73,11 +69,8 @@ of that link sees, so it needs no gate beyond the link's own.
 
 ## Limits and abuse
 
-- The card and the share card share one per-network bucket on `SHARE_RATE_LIMITER` (key `share-preview:<network>`),
-  apart from the share resolve's, so an office opening a link together in a meeting never spends the editor's own
-  budget on previews. Both doors answer only what the live image already answers for the same code, so the bucket
-  adds no way to learn more from a guessed code.
-- The editor worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
-  the editor worker as one caller.
-- The card is drawn at most once per save per document (first tab, Community), and the PNG's longer side is never
-  more than 1200 px, so a vast board cannot exhaust a Worker's memory.
+- Both doors answer only what the live image already answers for the same code, so they add no way to learn more
+  from a guessed code. Their limits are the platform's ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)
+  "Cost and performance").
+- The editor worker passes the visitor's address on, so the service sees visitors, not the editor worker as one
+  caller.

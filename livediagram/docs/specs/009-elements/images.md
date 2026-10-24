@@ -46,7 +46,7 @@ Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio
 
 - **The media service** holds the bytes, one row per image, the dedupe (per person and bytes, across every app), the per-person caps and the EXIF stripping ([media.md](../../../../liveworkspace/docs/media.md) "Uploads"). The api calls it with `MEDIA_KEY` (`apps/api/src/media.ts`); a guest's id never leaves this api, which names a guest to the service by a hash of it.
 - **Each document's own Durable Object** keeps what it needs to serve its images, in its own SQLite (`apps/api/src/document-room/document-schema.ts`): `image_refs` (which images each tab places, the [reference index](#reference-index)), `image_owners` (each placed image's owner as the media service names them, asked once and kept, `''` for an id it doesn't know) and `image_grants` (the [placement grants](#placement-grants)). The api has no database of its own.
-- **Images from before the move** stay in the `images` table and the `livediagram-images` bucket, unserved, until they are migrated. The bucket also keeps document snapshots (`thumb/`).
+- **Images from before the move** stay in the `images` table and the `livediagram-images` bucket, unserved, until they are migrated. Document previews are liveworkspace's (`liveworkspace/docs/previews.md`), not in this bucket.
 
 ## Accepted formats and limits
 

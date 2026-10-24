@@ -396,6 +396,30 @@ describe('the caching rules', () => {
   });
 });
 
+describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+  it("sends every item's preview and a link's image and card to the previews service, never the api", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(new Request('https://livediagram.app/api/previews/items/d1?v=5'), env);
+      await router.fetch(new Request('https://livediagram.app/api/share/ABC/image.png'), {
+        ...env,
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+      });
+      expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
+        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
+      ]);
+      // What a link opens stays the api's.
+      await router.fetch(new Request('https://livediagram.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://livediagram.app/api/share/ABC']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe("liveworkspace's Explorer under this address (@liveworkspace/sites/workspace-proxy)", () => {
   const page = () =>
     new Response('<!doctype html><title>Explorer</title>', {

@@ -1,27 +1,35 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
-import { purgeDocumentRows } from './documents';
+import { purgeDocumentPreviews } from './documents';
 
-// When the index purges a canvas (an account closing, the Trash emptying; routes/internal-items.ts), the canvas's
-// SVG snapshots in R2 (docs/specs/006-document/document-snapshots.md, keyed thumb/<documentId>) are out of reach of
-// its Durable Object, so they must be deleted by key or they orphan in R2. Its images are the media service's.
+// When the index purges a canvas (an account closing, the Trash emptying; routes/internal-items.ts), its previews
+// are liveworkspace's (liveworkspace/docs/previews.md), so the purge asks the media service to drop them.
 
-describe('purgeDocumentRows snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {
-  it("bulk-deletes the canvas's snapshots (its own and the Community's) from R2 in one call", async () => {
-    const del = vi.fn().mockResolvedValue(undefined);
+const { deletePreviews } = vi.hoisted(() => ({ deletePreviews: vi.fn() }));
+vi.mock('../media', () => ({
+  mediaClient: (env: Env) => (env.MEDIA_KEY ? { deletePreviews } : null),
+}));
 
-    await purgeDocumentRows({ IMAGES: { delete: del } } as unknown as Env, 'd1');
-
-    expect(del).toHaveBeenCalledTimes(1);
-    expect(del).toHaveBeenCalledWith([
-      'thumb/d1',
-      'thumb-community/d1',
-      'og/d1',
-      'og-community/d1',
-    ]);
+describe('purgeDocumentPreviews (liveworkspace/docs/previews.md "Purging")', () => {
+  beforeEach(() => {
+    deletePreviews.mockReset();
   });
 
-  it('skips R2 cleanup when no bucket is bound (self-host) without throwing', async () => {
-    await expect(purgeDocumentRows({} as Env, 'd1')).resolves.toBeUndefined();
+  it("asks the media service to drop the canvas's previews", async () => {
+    deletePreviews.mockResolvedValue(undefined);
+    await purgeDocumentPreviews({ MEDIA_KEY: 'k' } as Env, 'd1');
+    expect(deletePreviews).toHaveBeenCalledWith('d1');
+  });
+
+  it('carries on when the service fails, and when there is none (self-host)', async () => {
+    deletePreviews.mockRejectedValue(new Error('down'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await expect(purgeDocumentPreviews({ MEDIA_KEY: 'k' } as Env, 'd1')).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('[purge] previews not dropped', {
+      documentId: 'd1',
+      error: 'Error: down',
+    });
+    await expect(purgeDocumentPreviews({} as Env, 'd1')).resolves.toBeUndefined();
+    warn.mockRestore();
   });
 });
