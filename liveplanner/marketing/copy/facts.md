@@ -70,7 +70,7 @@ team, not the individual.
 
 ## Licence and price
 
-- Proprietary: the source is not public, and nobody else can run a copy.
+- MIT licensed. The source is not public yet.
 - Free at liveplanner.app. No paid tier and no plan to introduce one.
 - No ads and no third-party trackers. Boards and sheets export (CSV, image,
   PDF, Markdown outline), so work is never locked in.

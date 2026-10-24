@@ -2,7 +2,7 @@
   "name": "@liveplanner/marketing",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3201",

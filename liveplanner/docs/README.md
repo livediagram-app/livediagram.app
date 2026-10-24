@@ -26,4 +26,4 @@ If a doc disagrees with a spec, the spec wins (and the doc is the bug). Docs lin
 
 ## Licence
 
-Proprietary, all rights reserved ([LICENSE](../LICENSE)). liveplanner is free to use; see [Business model + licence](./specs/002-project-scope/business-model-and-licence.md). Third-party components keep their own licences ([THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)).
+[MIT](../LICENSE). liveplanner is free to use; see [Business model + licence](./specs/002-project-scope/business-model-and-licence.md). Third-party components keep their own licences ([THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)).

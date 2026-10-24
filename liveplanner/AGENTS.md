@@ -240,7 +240,7 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 See [Business model + licence](docs/specs/002-project-scope/business-model-and-licence.md).
 
-- The codebase is **proprietary** (all rights reserved, every `package.json` is `UNLICENSED`) and its source is **not public**. Never add open-source, contributing, forking or self-hosting wording, or links to the repository, to anything users see.
+- The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and its source is **not public**. Never add contributing, forking or self-hosting wording, or links to the repository, to anything users see.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
 - liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
 - Optional integrations degrade, never break: sign-in (the liveworkspace accounts Worker) is optional, and when unset the api worker and live frontend degrade to pure-guest mode.

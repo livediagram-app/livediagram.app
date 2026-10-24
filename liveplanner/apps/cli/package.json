@@ -2,7 +2,7 @@
   "name": "@liveplanner/cli",
   "version": "0.3.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "liveplanner": "./src/bin.ts"

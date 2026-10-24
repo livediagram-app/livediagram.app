@@ -114,7 +114,7 @@ await writeFile(
       name: source.name,
       version: source.version,
       description: 'Read, build, edit and discuss liveplanner plans from the terminal.',
-      license: 'UNLICENSED',
+      license: 'MIT',
       type: 'module',
       bin: { liveplanner: 'liveplanner.mjs' },
       files: [

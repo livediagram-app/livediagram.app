@@ -48,4 +48,4 @@ The CLI counts which commands succeed (the command's name only: never arguments,
 count to the host it talks to. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or
 `DO_NOT_TRACK=1`.
 
-Free to use. Copyright (c) liveplanner, all rights reserved; see `LICENSE`. The notices of bundled third-party packages are in `THIRD_PARTY_LICENSES`.
+Free to use. MIT licensed; see `LICENSE`. The notices of bundled third-party packages are in `THIRD_PARTY_LICENSES`.

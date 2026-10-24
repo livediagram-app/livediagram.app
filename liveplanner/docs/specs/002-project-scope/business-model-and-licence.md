@@ -1,10 +1,10 @@
 # Business model + licence
 
-liveplanner is **proprietary software** run as one hosted service at [liveplanner.app](https://liveplanner.app) (not deployed yet). It is **free to use**: there is no paid tier and no plan to introduce one. Its source is not public.
+liveplanner is **MIT-licensed software** run as one hosted service at [liveplanner.app](https://liveplanner.app) (not deployed yet). It is **free to use**: there is no paid tier and no plan to introduce one. Its source is not public.
 
 ## Licence
 
-The codebase is **all rights reserved** (see `LICENSE` at the repo root). It is not open source: the source code is private, not published and not licensed for anyone to copy, modify, redistribute or deploy. Every `package.json` declares `"license": "UNLICENSED"`, including the packages published for people to run (the `liveplanner` CLI and the MCP server's registry entry, `server.json`), which are free to install and use but stay proprietary.
+The codebase is **MIT licensed** (see `LICENSE` at the repo root), like the other liveworkspace apps; the site footer says "MIT licensed." Every `package.json` declares `"license": "MIT"`, including the packages published for people to run (the `liveplanner` CLI and the MCP server's registry entry, `server.json`). The repository itself is not public yet.
 
 Third-party components keep their own licences. The MIT, Apache and other permissively licensed work the apps bundle requires attribution, so it is credited on the generated `/licences` page and in `THIRD_PARTY_NOTICES.md` ([Third-party licences](third-party-licences.md)).
 
