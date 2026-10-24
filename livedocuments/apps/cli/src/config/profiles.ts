@@ -4,8 +4,8 @@
 
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
-import { parseConfig, type ConfigFile } from './config-file';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
+import { parseConfig, type ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { configDir } from './paths';
 
 export const DEFAULT_HOST = 'https://livedocuments.app';

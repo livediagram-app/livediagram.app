@@ -3,7 +3,7 @@
 
 import type { Verb } from '@liveplanner/agent-verbs';
 import { CliError } from './cli-error';
-import { EXIT } from './exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { isRecord } from '@liveplanner/project';
 
 export type PrintMode = { json: boolean; fields?: string[]; quiet: boolean };

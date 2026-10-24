@@ -5,7 +5,7 @@
 
 import { errorTypeToken, pascalToken } from '@livediagram/api-schema';
 import { ApiError, postEvents } from '@liveworkspace/api-client';
-import type { ConfigFile } from './config/config-file';
+import type { ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { cacheDir } from './config/paths';
 import type { DebugLog } from './debug';
 import type { CliIo } from './io';

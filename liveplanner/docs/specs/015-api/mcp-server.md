@@ -93,7 +93,7 @@ This implements the OAuth flow Manager Toolkit uses:
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
    §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
    `@liveplanner/api-schema`), stored in KV with a TTL.
-   Rate-limited per IP. Authorize re-checks the scheme of the requested
+   Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
@@ -552,12 +552,12 @@ binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
 `delete_project` raw-fetch path reports a 5xx too. `<Tool>` is the running
 tool's PascalCase name (`Http503.UpdateProject`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
-every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
+every handler in (`tool-scope.ts`, over `../packages/mcp-kit/src/tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
 Every post (these reports and `Mcp·Used`) is handed to the request's
-`ctx.waitUntil` (`request-scope.ts`) so it outlives the response, and
+`ctx.waitUntil` (`../packages/mcp-kit/src/request-scope.ts`) so it outlives the response, and
 `Mcp·Used` is sent by `registerTool` only after a tool call succeeds
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Mcp).
 
@@ -770,7 +770,7 @@ Worker (no DOM, no React).
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
 - **Fonts.** The faces a tab uses beyond Inter (its elements', its own and a sheet's cells') are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
-  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`, over `../packages/mcp-kit/src/preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a

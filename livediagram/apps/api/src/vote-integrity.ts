@@ -1,5 +1,5 @@
 import { sha256Hex } from '@livediagram/api-schema';
-import { clientRateKey } from './client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { personTagFor } from './person-tag';
 import { json } from './responses';
 import type { DocumentRouteContext } from './routes/context';

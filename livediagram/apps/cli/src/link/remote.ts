@@ -5,7 +5,7 @@
 import type { VerbContext } from '@livediagram/agent-verbs';
 import { ApiError } from '@liveworkspace/api-client';
 import type { DocumentResponse, OverviewView } from '@livediagram/api-schema';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { SYNC_CONCURRENCY } from './constants';
 

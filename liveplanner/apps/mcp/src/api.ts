@@ -11,7 +11,7 @@ import {
   type TelemetryBatch,
 } from '@liveworkspace/telemetry';
 import type { Env } from './env';
-import { keepAlive } from './request-scope';
+import { keepAlive } from '@liveworkspace/mcp-kit/request-scope';
 import { currentTool } from './tool-scope';
 
 export { ApiError };

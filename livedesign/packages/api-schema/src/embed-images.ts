@@ -28,7 +28,7 @@
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
 import { pageImageIds, type Tab } from '@livedesign/design';
-import { bytesToBase64 } from './bytes';
+import { bytesToBase64 } from '@liveworkspace/api-kit/bytes';
 import { imagePixelSize } from './image-size';
 import { sniffImageType } from './image-sniff';
 

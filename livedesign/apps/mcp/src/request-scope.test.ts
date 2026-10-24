@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { postTelemetry, reportApiFailure } from './api';
 import type { Env } from './env';
-import { runInRequest } from './request-scope';
+import { runInRequest } from '@liveworkspace/mcp-kit/request-scope';
 
 // A telemetry post the runtime can cancel with the response is a post that may
 // never land (docs/specs/017-telemetry/telemetry.md Mcp). Inside a request, every post, the tool's

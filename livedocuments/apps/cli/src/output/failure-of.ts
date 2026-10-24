@@ -4,7 +4,7 @@
 import { AddressError, VerbRefusal } from '@livedocuments/agent-verbs';
 import { ApiError } from '@liveworkspace/api-client';
 import { CliError, type CliFailure } from './cli-error';
-import { EXIT, exitCodeForStatus } from './exit-codes';
+import { EXIT, exitCodeForStatus } from '@liveworkspace/cli-kit/exit-codes';
 
 // A request that never got an answer: no connection, a timeout, an abort.
 export const isNetworkFailure = (err: unknown): err is Error =>

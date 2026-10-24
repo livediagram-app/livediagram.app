@@ -18,12 +18,12 @@ import {
   type StatusRow,
   type VerbContext,
 } from '@livediagram/agent-verbs';
-import type { ConfigFile } from '../config/config-file';
+import type { ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import type { Profile } from '../config/profiles';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { LINK_FILE_NAME } from '../link/constants';
 import { readCoverage } from '../link/coverage';
 import { linksBelow, nearestLink } from '../link/find-links';

@@ -104,6 +104,9 @@ importers:
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -180,6 +183,12 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../../../packages/cli-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -553,9 +562,15 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/mcp-kit':
+        specifier: workspace:*
+        version: link:../../../packages/mcp-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -697,6 +712,9 @@ importers:
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../photo-engine
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -1167,6 +1185,9 @@ importers:
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -1255,6 +1276,12 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../../../packages/cli-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
@@ -1719,9 +1746,15 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/mcp-kit':
+        specifier: workspace:*
+        version: link:../../../packages/mcp-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -1857,6 +1890,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
@@ -2374,6 +2410,9 @@ importers:
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -2450,6 +2489,12 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../../../packages/cli-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -2838,9 +2883,15 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/mcp-kit':
+        specifier: workspace:*
+        version: link:../../../packages/mcp-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -2979,6 +3030,9 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -3419,6 +3473,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -3492,6 +3549,12 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../../../packages/cli-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -3877,9 +3940,15 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/mcp-kit':
+        specifier: workspace:*
+        version: link:../../../packages/mcp-kit
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -4033,6 +4102,9 @@ importers:
       '@liveplanner/sheets':
         specifier: workspace:*
         version: link:../sheets
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4917,6 +4989,37 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/api-kit:
+    dependencies:
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../sites
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/auth-client:
     dependencies:
       '@liveworkspace/sites':
@@ -4962,6 +5065,40 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/cli-kit:
+    dependencies:
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../api-kit
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../render-png
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5162,6 +5299,40 @@ importers:
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/mcp-kit:
+    dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../api-kit
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.32.1
+        version: 1.32.1(zod@4.6.7)
+      hono:
+        specifier: ^4.13.13
+        version: 4.13.13
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@vitest/coverage-v8':
         specifier: ^5.0.3
         version: 5.0.5(vitest@5.0.5)

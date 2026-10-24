@@ -14,7 +14,7 @@ import {
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { isNetworkFailure } from '../output/failure-of';
 
 // A network failure is retried at the next interval; this many in a row end the wait.

@@ -45,7 +45,7 @@ while.
 
 - **Google-only Clerk users** have no password, and they don't need one. Signing in with a code
   to the same address lands on the same account, because the import matched on the primary email.
-- **`isAccountIdShape`** (`livediagram/packages/api-schema/src/request-auth.ts`, renamed from `isClerkIdShape`)
+- **`isAccountIdShape`** (`packages/api-kit/src/request-auth.ts`, renamed from `isClerkIdShape`)
   holds for both: new accounts get `user_` ids too.
 - **Teams invites** match on the verified `email` claim, which every access token now carries.
   The Clerk dashboard step in `docs/operations/self-hosting.md` goes away.

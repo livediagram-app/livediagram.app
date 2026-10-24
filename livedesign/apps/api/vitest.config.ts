@@ -29,11 +29,11 @@ const GATE_KEEPERS = [
 
 export default defineProject({
   // The Workers runtime's own module, which node has not: the Durable Object base class the design's room extends
-  // (src/test-cloudflare-workers.ts).
+  // (@liveworkspace/api-kit's testing/cloudflare-workers.ts).
   resolve: {
     alias: {
       'cloudflare:workers': fileURLToPath(
-        new URL('./src/test-cloudflare-workers.ts', import.meta.url),
+        new URL('../../../packages/api-kit/src/testing/cloudflare-workers.ts', import.meta.url),
       ),
     },
   },

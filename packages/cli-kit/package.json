@@ -1,0 +1,46 @@
+{
+  "name": "@liveworkspace/cli-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./cli-error": "./src/cli-error.ts",
+    "./config-file": "./src/config-file.ts",
+    "./credentials": "./src/credentials.ts",
+    "./debug": "./src/debug.ts",
+    "./did-you-mean": "./src/did-you-mean.ts",
+    "./exit-codes": "./src/exit-codes.ts",
+    "./input": "./src/input.ts",
+    "./io": "./src/io.ts",
+    "./keychain": "./src/keychain.ts",
+    "./oauth": "./src/oauth.ts",
+    "./one-line": "./src/one-line.ts",
+    "./paths": "./src/paths.ts",
+    "./png": "./src/png.ts",
+    "./product": "./src/product.ts",
+    "./transport": "./src/transport.ts",
+    "./version": "./src/version.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

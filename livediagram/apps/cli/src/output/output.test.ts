@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AddressError, verbById, VerbRefusal } from '@livediagram/agent-verbs';
 import { ApiError } from '@liveworkspace/api-client';
 import { CliError, formatError } from './cli-error';
-import { EXIT, exitCodeForStatus } from './exit-codes';
+import { EXIT, exitCodeForStatus } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf, ISSUES_URL } from './failure-of';
 import { render } from './print';
 

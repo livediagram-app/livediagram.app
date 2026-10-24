@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Every product's MCP Worker: the Workers runtime, not a browser, and no Node types (async-hooks.d.ts
+    // declares the one Node API it uses).
+    "types": ["@cloudflare/workers-types"],
+    "lib": ["ES2024"],
+    "target": "ES2024",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

@@ -10,7 +10,7 @@ import { WAIT_SETTLE_MS } from '../commands/wait';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';
 import { formatError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { classifyRoomOp } from '../room/room-events';
 import { openRoomStream, type RoomStream } from '../room/room-stream';

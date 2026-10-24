@@ -22,6 +22,7 @@
     "@livedocuments/document-views": "workspace:*",
     "@livedocuments/edit-operations": "workspace:*",
     "@livedocuments/templates": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/api/src/comments.ts`                                                                                                  | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                                        |
 | `apps/api/src/routes/comment-routes.ts` (+ test)                                                                            | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list                                                                      |
 | `packages/project-views/src/comments.ts`                                                                                    | `commentHosts(model)`: the elements holding a thread in outline order, with ref and label                                                               |
-| `apps/api/src/routes/agent-presence-routes.ts` (+ test), `refusal-log.ts` (+ test)                                          | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`; `logRefusal` for both route families                                             |
+| `apps/api/src/routes/agent-presence-routes.ts` (+ test), `../packages/api-kit/src/refusal-log.ts` (+ test)                  | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`; `logRefusal` for both route families                                             |
 | `apps/api/src/routes/project-subresource-routes.ts`                                                                         | Dispatches to the two handlers above; loses the inline add and delete-own                                                                               |
 | `apps/api/src/routes/context.ts`                                                                                            | `deniedOnTab` moves here from the subresource routes; `gateParticipate`                                                                                 |
 | `apps/api/src/routes/project-room-routes.ts`                                                                                | The mint stores the person tag; the upgrade sets `X-Verified-Person`                                                                                    |
@@ -454,7 +454,7 @@ the tab pill.
 | `[room-mutation] el-delta did not reach the room`       | api, warn     | projectId, tabId, delta (its kind), error          |
 | `[agent-presence] skipped entry`                        | editor, debug | reason (`invalid_shape` with count, `unknown_tab`) |
 
-Refusals are logged once each, at the route family's entry (`logRefusal` in `apps/api/src/routes/refusal-log.ts`), from the
+Refusals are logged once each, at the route family's entry (`logRefusal` in `../packages/api-kit/src/refusal-log.ts`), from the
 answer's status and error code.
 
 Telemetry: `Agent·Present`, type `frontDoorOf(request)`, written with `reportServerEvent` in `waitUntil` when a

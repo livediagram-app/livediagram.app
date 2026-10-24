@@ -7,7 +7,7 @@ import {
   readDocumentConversion,
 } from '@livediagram/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
-import { clientRateKey } from '../client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { countCommunityCopy } from '../community-service';
 import { documentRoom } from '../document-client';
 import { capStoredName } from '../names';
@@ -46,8 +46,7 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
       // the browser that took it.
       const offline =
         readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER)) === 'offline';
-      const permanent =
-        offline || ['1', 'true'].includes(url.searchParams.get('permanent') ?? '');
+      const permanent = offline || ['1', 'true'].includes(url.searchParams.get('permanent') ?? '');
       await client.deleteItem(id, offline ? { permanent, reason: 'offline' } : { permanent });
       return new Response(null, { status: 204 });
     }
@@ -58,7 +57,8 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
       // own canvas name was never published.
       const share = shareAccessOf(request);
       const named = typeof body.name === 'string' ? capStoredName(body.name, null, 'document') : '';
-      const post = !named && share ? await documentRoom(ctx.env, id).communityPostTitle(share.code) : null;
+      const post =
+        !named && share ? await documentRoom(ctx.env, id).communityPostTitle(share.code) : null;
       const title = named || (post ? capStoredName(post, null, 'document') : '');
       // A copy through the post's open link counts toward it (docs/specs/025-community/community.md "Likes"): once
       // per copier, and at most a few from one network, so it is counted here, where the copier's network is

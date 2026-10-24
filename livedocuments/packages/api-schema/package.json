@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@livedocuments/document": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

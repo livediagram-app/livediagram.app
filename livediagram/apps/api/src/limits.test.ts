@@ -52,14 +52,20 @@ describe('docs/specs/021-event-storming/note-reader.md lists the error tokens th
     // responses.ts: a no-arg helper (`aiError()`) stands for the fixed token
     // its body returns, and `forbidden('x')` / `conflict('x')` carry theirs as
     // the argument. Reading only the inline literals would stop checking a
-    // token the moment its route switched to the helper.
-    const responses = readFileSync(`${ROOT}/apps/api/src/responses.ts`, 'utf8');
+    // token the moment its route switched to the helper. The helpers every api
+    // shares are @liveworkspace/api-kit's (`const signInRequired = (): Response =>`).
+    const responses = [
+      `${ROOT}/apps/api/src/responses.ts`,
+      `${ROOT}/../packages/api-kit/src/responses.ts`,
+    ]
+      .map((path) => readFileSync(path, 'utf8'))
+      .join('\n');
     const helperTokens = new Map(
       [
         ...responses.matchAll(
-          /export function (\w+)\(\): Response \{\s*return json\(\{ error: '([a-z_]+)'/g,
+          /(?:export function (\w+)\(\): Response \{\s*return|const (\w+) = \(\): Response =>)\s*json\(\{ error: '([a-z_]+)'/g,
         ),
-      ].map((m) => [m[1]!, m[2]!]),
+      ].map((m) => [(m[1] ?? m[2])!, m[3]!]),
     );
     const emitted = [
       ...[...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!),

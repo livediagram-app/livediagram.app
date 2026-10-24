@@ -14,7 +14,6 @@
 // in the api worker's D1 schema.
 
 import { sha256 } from './sha256-digest';
-import { bytesToBase64Url } from './bytes';
 
 function bytesToHex(buf: Uint8Array): string {
   let out = '';
@@ -27,12 +26,4 @@ function bytesToHex(buf: Uint8Array): string {
 
 export async function sha256Hex(bytes: BufferSource): Promise<string> {
   return bytesToHex(await sha256(bytes));
-}
-
-// The OAuth PKCE S256 code challenge for a verifier (RFC 7636 section 4.2): the
-// base64url SHA-256 of its ASCII bytes. The CLI computes it and the MCP server
-// checks it, so both take it from here and cannot drift.
-export async function pkceChallenge(verifier: string): Promise<string> {
-  const digest = await sha256(new TextEncoder().encode(verifier));
-  return bytesToBase64Url(digest);
 }

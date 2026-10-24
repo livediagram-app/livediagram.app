@@ -11,8 +11,8 @@ import {
   type Verb,
 } from '@livedesign/agent-verbs';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
-import { didYouMean } from './did-you-mean';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
+import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 
 type Routed =
   | { kind: 'top' }
@@ -26,9 +26,10 @@ export function route(words: readonly string[]): Routed {
   if (first === undefined) return { kind: 'top' };
   const top = TOP_LEVEL.find((t) => t === first);
   if (top) return { kind: 'verb', verb: verbById(top)!, rest: words.slice(1) };
-  const aliased = COMMAND_ALIASES[first];
+  // Own keys only: `constructor` is no alias, resource or command.
+  const aliased = Object.hasOwn(COMMAND_ALIASES, first) ? COMMAND_ALIASES[first] : undefined;
   if (aliased) return { kind: 'verb', verb: verbById(aliased)!, rest: words.slice(1) };
-  const resource = RESOURCE_ALIASES[first] ?? first;
+  const resource = Object.hasOwn(RESOURCE_ALIASES, first) ? RESOURCE_ALIASES[first]! : first;
   if (!RESOURCE_NAMES.includes(resource)) {
     const near = didYouMean(first, [
       ...RESOURCE_NAMES,

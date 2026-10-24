@@ -7,7 +7,7 @@ import { posix } from 'node:path';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { SYNC_LOCK_POLL_MS, SYNC_LOCK_WAIT_MS } from './constants';
 
 type LinkLock = { release(): Promise<void> };

@@ -42,7 +42,7 @@ import {
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
-import { clientRateKey } from '../client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
 import type { Env } from '../types';

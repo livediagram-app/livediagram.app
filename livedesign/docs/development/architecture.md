@@ -26,7 +26,7 @@ packages/
   telemetry-client/ this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/       this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ this product's brand ramps (rose) over @liveworkspace/tailwind-config's theme
-  (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
+  (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
   telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs)
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)

@@ -7,10 +7,10 @@ import { revOfEtag, type DocumentCommentsResponse } from '@livediagram/api-schem
 import { threadListingLines } from '@livediagram/document-views';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { classifyRoomOp, onTab, type RoomEvent } from '../room/room-events';
 import { openRoomStream } from '../room/room-stream';
-import { oneLine } from '../output/one-line';
+import { oneLine } from '@liveworkspace/cli-kit/one-line';
 
 export const WAIT_SETTLE_MS = 2_000;
 

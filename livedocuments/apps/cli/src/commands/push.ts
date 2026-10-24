@@ -14,7 +14,7 @@ import type { ChangesetResponse, DocumentResponse } from '@livedocuments/api-sch
 import type { Tab } from '@livedocuments/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { parsePullFile, pullFileText, tabHashes, type PullFile } from '../sync/pull-file';
 

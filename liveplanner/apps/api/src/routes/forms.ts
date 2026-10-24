@@ -10,7 +10,7 @@ import {
 import { formLook } from '@liveplanner/project';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@liveplanner/forms';
 import { typesOf } from '@liveplanner/items';
-import { clientIp, clientNetwork } from '../client-ip';
+import { clientIp, clientNetwork } from '@liveworkspace/api-kit/client-ip';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { formPlaceOf, pushFormInbox } from '../forms/form-inbox';
 import { planRoom } from '../plan-client';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { defineVerb, verbById, type Verb } from '@livediagram/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
-import { didYouMean } from './did-you-mean';
+import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 import { fieldsOf, flagOf } from './fields';
 import { splitGlobals } from './globals';
 import { parseVerbArgs } from './parse-flags';
@@ -56,6 +56,8 @@ describe('route', () => {
       message: 'unknown command "zzzzzz"',
       hint: 'livediagram --help',
     });
+    // An object's own keys only: a word that names a built-in property is no command.
+    expect(failureOf(() => route(['constructor']))).toMatchObject({ exit: 2, code: 'usage' });
     expect(failureOf(() => route(['tab', 'vew']))).toMatchObject({
       lines: ['did you mean: view'],
       hint: 'livediagram tab --help',

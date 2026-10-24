@@ -6,7 +6,7 @@ import {
   rateLimited,
   signInRequired,
 } from '../responses';
-import { clientRateKey } from '../client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
 

@@ -21,7 +21,7 @@ import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
-import { clientRateKey } from './client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
