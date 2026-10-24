@@ -234,7 +234,7 @@ describe('This Browser in the Explorer', () => {
 });
 
 describe('moving an item in or out of this browser', () => {
-  it('names the conversion and the item in the app page\'s address, and reads them back', () => {
+  it("names the conversion and the item in the app page's address, and reads them back", () => {
     const href = thisBrowserConvertHref('/offline', 'take-offline', 'doc 1');
     expect(href).toBe('/offline?convert=take-offline&item=doc+1');
     expect(readThisBrowserConversion(href.slice(href.indexOf('?')))).toEqual({

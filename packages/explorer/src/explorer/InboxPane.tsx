@@ -6,7 +6,7 @@
 // ./inbox/sections.
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CountBadge } from '../ui/CountBadge';
+import { CountBadge } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
 import { EMPTY_CTA, EmptyPane, SkeletonRows } from './EmptyPane';
 import { useExplorer } from './context';

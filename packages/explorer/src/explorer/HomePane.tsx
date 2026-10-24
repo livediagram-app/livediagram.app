@@ -18,7 +18,7 @@ import {
   sharedRecentlyLoader,
 } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag } from '../drag/drag';

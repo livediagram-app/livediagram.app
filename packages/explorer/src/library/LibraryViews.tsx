@@ -3,7 +3,7 @@
 // The Library's pages on the Explorer page: the Image Gallery and Shape Libraries, each under the pane header, drawn
 // from the host's source. A host without one (an app with no gallery) says so rather than showing an empty page.
 
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 import { ImageIcon, ShapesIcon } from '../ui/library-icons';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from '../explorer/context';

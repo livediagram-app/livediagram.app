@@ -11,8 +11,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { IndexClient, Level, ShareLinkExpiry } from '@liveworkspace/index-client';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
-import { Button } from '../ui/Button';
-import { CountBadge } from '../ui/CountBadge';
+import { Button } from '@liveworkspace/ui';
+import { CountBadge } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import type { ItemRef, ShareUrl } from '../types';
 import { kindWords } from '../words';

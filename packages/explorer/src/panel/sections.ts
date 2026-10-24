@@ -23,7 +23,11 @@ export type LibraryTab = 'gallery' | 'shape-libraries';
 
 export type PanelSectionGroup = { id: 'overview' | 'spaces' | 'more'; sections: PanelSection[] };
 
-export const SECTION_GROUP_TITLES = { overview: 'Overview', spaces: 'Spaces', more: 'More' } as const;
+export const SECTION_GROUP_TITLES = {
+  overview: 'Overview',
+  spaces: 'Spaces',
+  more: 'More',
+} as const;
 
 export const sectionKey = (s: PanelSection): string =>
   s.kind === 'team' ? `team:${s.id}` : s.kind;

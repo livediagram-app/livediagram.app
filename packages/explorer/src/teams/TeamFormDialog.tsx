@@ -5,7 +5,7 @@
 
 import { useId, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamResult } from '../data/teams';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { ORGANISATION_MAX, TEAM_NAME_MAX } from './rules';
 

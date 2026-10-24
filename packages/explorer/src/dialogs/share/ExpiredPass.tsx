@@ -4,7 +4,7 @@
 // and Delete in place of the hand-over buttons, since it no longer opens anything.
 
 import type { ShareLink } from '@liveworkspace/index-client';
-import { Button } from '../../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { TrashIcon } from '../../ui/icons';
 import { PassTicket, usePassExit } from './PassTicket';
 import { LIFETIMES, PASS_BIN } from './parts';

@@ -8,7 +8,7 @@
 
 import { useMemo, useState } from 'react';
 import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { FolderOutlineIcon } from '../ui/icons';
 import { ToastProvider, useToast } from '../ui/Toasts';

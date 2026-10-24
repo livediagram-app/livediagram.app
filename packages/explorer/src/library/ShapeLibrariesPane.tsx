@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 import { ShapesIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { PlainShapeTile } from './ShapePreview';

@@ -6,7 +6,7 @@
 // Escape or Skip ends it; the steps are fixed when it starts, so a tab added meanwhile can't shift them.
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Button } from '../../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import type { ShareTelemetry } from './types';
 
 export type TourStep = { id: string; title: string; body: string; target?: string };

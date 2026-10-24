@@ -1,4 +1,4 @@
-import { Button } from './Button';
+import { Button } from '@liveworkspace/ui';
 import { Dialog } from './Dialog';
 
 // A short yes-or-no question before something that cannot be undone (emptying the Trash, deleting a folder).

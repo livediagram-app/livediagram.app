@@ -8,7 +8,7 @@ import { memo, useCallback, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownFolderPreview } from '../data/useFolderPreviews';
 import type { ShownItem } from '../data/overlay';
-import { CountBadge } from '../ui/CountBadge';
+import { CountBadge } from '@liveworkspace/ui';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';

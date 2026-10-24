@@ -44,4 +44,3 @@ export const UploadIcon = lucide(
   </>,
   13,
 );
-

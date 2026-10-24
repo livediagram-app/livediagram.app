@@ -16,8 +16,9 @@ export const CARD_SHELL =
 export const CARD_PREVIEW =
   'flex h-48 w-full items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
 
-/** A solid brand control's dark-mode fill, a step lighter so it holds its contrast on a dark page. */
-export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-500';
+// A solid brand control's dark-mode fill is the design system's (it hovers a step deeper, never lighter, so white
+// text keeps its contrast).
+export { SOLID_BRAND_DARK_CONTROL } from '@liveworkspace/ui';
 
 export const FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';

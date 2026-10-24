@@ -4,7 +4,7 @@
 // plain folders and teams, so a host can use it without the rest of the Explorer.
 
 import { useState } from 'react';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import {
   PlacementBrowser,

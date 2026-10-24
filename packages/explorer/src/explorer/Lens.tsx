@@ -25,8 +25,8 @@ import {
   type LensIssue,
   type ParsedLens,
 } from '../lens';
-import { Button } from '../ui/Button';
-import { EmptyState } from '../ui/EmptyState';
+import { Button } from '@liveworkspace/ui';
+import { EmptyState } from '@liveworkspace/ui';
 import { CheckIcon, ChevronDownIcon, SearchIcon, SparkleIcon } from '../ui/icons';
 import { Portal } from '@liveworkspace/ui';
 import { withLens } from '../views';

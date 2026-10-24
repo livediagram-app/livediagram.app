@@ -9,7 +9,7 @@
 // gone), and is then unavailable; checking another clears its default, sending those back to the root. A team's
 // root is never a default.
 
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { useExplorer } from '../explorer/context';
 import { SIDEBAR_LABELS } from '../views';

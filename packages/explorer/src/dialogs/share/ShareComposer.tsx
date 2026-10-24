@@ -6,7 +6,7 @@
 
 import { useState, type KeyboardEvent } from 'react';
 import { SHARE_LINK_EXPIRIES, type Level, type ShareLinkExpiry } from '@liveworkspace/index-client';
-import { Button } from '../../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { HelpLink } from './HelpLink';
 import {
   DEFAULT_LEVEL,

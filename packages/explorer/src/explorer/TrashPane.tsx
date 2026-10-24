@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { InfoIcon, ItemIcon } from '../ui/icons';

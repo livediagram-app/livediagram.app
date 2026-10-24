@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
 import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { CloseIcon, LinkIcon, PencilIcon, TrashIcon } from '../ui/icons';

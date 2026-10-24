@@ -17,9 +17,7 @@ const N = 2000;
 // Generous for a slow CI machine; locally each render takes a few tens of milliseconds.
 const BUDGET_MS = 1000;
 
-const items: Item[] = Array.from({ length: N }, (_, i) =>
-  makeItem(i, { favourite: i % 7 === 0 }),
-);
+const items: Item[] = Array.from({ length: N }, (_, i) => makeItem(i, { favourite: i % 7 === 0 }));
 
 function Harness({ layout, raw }: { layout: 'list' | 'card' | 'details'; raw: Item[] }) {
   const { overlay } = useExplorer();

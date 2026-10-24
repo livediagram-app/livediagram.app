@@ -29,7 +29,7 @@ import {
   useTrashTarget,
   type DropPlace,
 } from '../drag/drag';
-import { CountBadge } from '../ui/CountBadge';
+import { CountBadge } from '@liveworkspace/ui';
 import { DROP_TARGET_RING } from '../ui/classes';
 import {
   ClockIcon,
@@ -263,7 +263,9 @@ export function SidebarRow({
             <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
             {marker}
             {badge !== undefined ? (
-              <CountBadge count={badge} tone={badgeTone} className="ml-1" />
+              <CountBadge tone={badgeTone} className="ml-1">
+                {badge}
+              </CountBadge>
             ) : null}
           </button>
         )}

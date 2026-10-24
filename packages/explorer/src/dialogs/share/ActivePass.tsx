@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
 import { timeLeftCompact } from '../../time';
-import { Button } from '../../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
 import { CopyMenu } from './CopyMenu';
 import { CodeGlyph, ImageGlyph, MarkdownGlyph, SmallClockGlyph } from './glyphs';

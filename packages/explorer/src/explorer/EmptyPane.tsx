@@ -3,7 +3,7 @@
 // What a view says when it has nothing (liveplanner's ExplorerEmptyState), in the list's own words.
 
 import type { ReactNode } from 'react';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 import { FOCUS_RING, SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
 import {
   ClockIcon,

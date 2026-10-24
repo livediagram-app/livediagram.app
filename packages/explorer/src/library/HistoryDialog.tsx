@@ -11,7 +11,7 @@ import { useExplorer } from '../explorer/context';
 import { renderTimelineEvent } from '../explorer/TimelinePane';
 import { SkeletonRows } from '../explorer/EmptyPane';
 import { Dialog, DialogCloseButton, DialogHeader } from '../ui/Dialog';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 import { HistoryIcon } from '../ui/library-icons';
 import { eventLabel, eventTone, groupByDay, timeLabel, toneColor } from '../timeline/model';
 import { isAbort } from '../data/errors';

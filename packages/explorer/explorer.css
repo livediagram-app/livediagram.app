@@ -2,6 +2,8 @@
    `--color-brand-*` ramp). A host imports this beside its Tailwind entry so Tailwind scans the package:
      @import '@liveworkspace/explorer/explorer.css'; */
 @source './src';
+/* The shared design system it draws with (@liveworkspace/ui): buttons, count badges, empty states, hover cards. */
+@source '../ui/src';
 
 /* The Timeline's arrivals (livediagram's tl-fan-out): a card is dealt in from the right, a collapsed run folds up
    from below, and a day picked in the filter's calendar pulses its label. Gone under reduced motion. */

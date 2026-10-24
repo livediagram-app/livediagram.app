@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { useFolderPreviews } from '../data/useFolderPreviews';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { CARD_GRID } from '../ui/classes';
 import { useExplorer } from './context';
 import { FolderCard, ItemCard, type RowOptions } from './rows';

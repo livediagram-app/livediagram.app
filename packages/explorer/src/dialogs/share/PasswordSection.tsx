@@ -7,7 +7,7 @@
 
 import { useRef, useState } from 'react';
 import { SHARE_PASSWORD_MAX } from '@liveworkspace/index-client';
-import { Button } from '../../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
 import type { ShareHelpHref } from './types';

@@ -88,7 +88,8 @@ export function PlacementBrowser({
     [hostTeams, made],
   );
   // The spaces are shown wherever there is a choice, and wherever New Team can make one.
-  const hasOverview = (showPersonal ? 1 : 0) + teams.length > 1 || Boolean(showPersonal && onCreateTeam);
+  const hasOverview =
+    (showPersonal ? 1 : 0) + teams.length > 1 || Boolean(showPersonal && onCreateTeam);
   // Opens where the current placement is: its space, and the folder holding it.
   const [space, setSpace] = useState<string | null>(
     () => chosen.teamId ?? (showPersonal ? PERSONAL : hasOverview ? null : (teams[0]?.id ?? null)),

@@ -4,7 +4,7 @@
 // one row, one section heading, one thumbnail size, one icon tile, one skeleton and one empty state, so every
 // section reads as the same surface whatever it lists.
 import type { KeyboardEvent, ReactNode } from 'react';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '@liveworkspace/ui';
 
 // A row's thumbnail box: the item's snapshot at the pane's size, framed like a little page.
 export const PANE_THUMB_BOX =
@@ -295,19 +295,19 @@ export function PaneIconButton({
   children: ReactNode;
 }) {
   return (
-      <button
-        type="button"
-        aria-label={label}
-        title={label}
-        onClick={onClick}
-        className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 shadow-sm transition focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 pointer-coarse:w-11 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 [&_svg]:h-4 [&_svg]:w-4 ${
-          tone === 'danger'
-            ? 'hover:bg-rose-50 hover:text-rose-600 hover:ring-rose-200 dark:hover:bg-rose-500/15 dark:hover:text-rose-300 dark:hover:ring-rose-400/40'
-            : 'hover:bg-brand-50 hover:text-brand-700 hover:ring-brand-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-200 dark:hover:ring-brand-400/40'
-        }`}
-      >
-        {children}
-      </button>
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 shadow-sm transition focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 pointer-coarse:w-11 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 [&_svg]:h-4 [&_svg]:w-4 ${
+        tone === 'danger'
+          ? 'hover:bg-rose-50 hover:text-rose-600 hover:ring-rose-200 dark:hover:bg-rose-500/15 dark:hover:text-rose-300 dark:hover:ring-rose-400/40'
+          : 'hover:bg-brand-50 hover:text-brand-700 hover:ring-brand-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-200 dark:hover:ring-brand-400/40'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

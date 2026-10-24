@@ -14,7 +14,7 @@ import {
   type Item,
 } from '@liveworkspace/index-client';
 import type { ShownFolderPreview } from '../data/useFolderPreviews';
-import { EmptyStateArt } from '../ui/EmptyState';
+import { EmptyStateArt } from '@liveworkspace/ui';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useExplorer } from './context';
 

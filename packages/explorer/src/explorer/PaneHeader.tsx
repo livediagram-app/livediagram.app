@@ -6,7 +6,7 @@
 // apply, else the one button).
 
 import { useState, type ReactNode } from 'react';
-import { Button } from '../ui/Button';
+import { Button } from '@liveworkspace/ui';
 import { PortalMenu } from '../ui/Menu';
 import {
   CaretDownIcon,
@@ -23,7 +23,7 @@ import { useExplorer } from './context';
 import { HelpButton } from './HomeHero';
 import { useHostExtras } from './host';
 import { useExtras, type ViewModeTelemetry } from './extras';
-import { HoverCard } from '../ui/HoverCard';
+import { HoverCard } from '@liveworkspace/ui';
 
 export type ViewMode = 'list' | 'card' | 'details';
 
