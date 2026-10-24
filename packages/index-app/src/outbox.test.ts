@@ -3,16 +3,12 @@ import { COLLAB_MAX_THREADS, IndexError, type IndexAppClient } from '@liveworksp
 import {
   capCollabPush,
   DRAIN_TABS,
-  drainOutboxTable,
+  drainIndexOutbox,
   editedOf,
   editKeyOf,
-  ensureOutboxSchema,
   FLUSH_IDLE_MS,
   FLUSH_MIN_GAP_MS,
   nextFlushAt,
-  outboxPending,
-  queueOutbox,
-  recordEditor,
   recordItemEditor,
   type SqlExec,
 } from './outbox';
@@ -47,25 +43,9 @@ const source = {
   summary: async () => ({ summary: { elements: 1 }, updatedAt: 5, ownerId: 'user_a' }),
 };
 
-describe('the outbox', () => {
-  it('keeps one key per thing and one edit per person', () => {
-    const sql = sqlite();
-    ensureOutboxSchema(sql);
-    queueOutbox(sql, 'summary');
-    queueOutbox(sql, 'summary');
-    queueOutbox(sql, 'tab', 't1');
-    recordEditor(sql, 'user_a', 1);
-    recordEditor(sql, 'user_a', 2);
-    recordEditor(sql, 'user_ab', 3);
-    const rows = sql.exec('SELECT kind, key FROM index_outbox ORDER BY id').toArray();
-    expect(rows).toEqual([
-      { kind: 'summary', key: '' },
-      { kind: 'tab', key: 't1' },
-      { kind: 'edit', key: 'user_a@2' },
-      { kind: 'edit', key: 'user_ab@3' },
-    ]);
-  });
+const row = (id: number, kind: string, key = '') => ({ id, kind, key });
 
+describe('the outbox', () => {
   it("keeps one edit per person per item in an app's own outbox table", () => {
     const sql = sqlite();
     sql.exec('CREATE TABLE outbox (id INTEGER PRIMARY KEY, plan_id TEXT, kind TEXT, key TEXT)');
@@ -83,26 +63,17 @@ describe('the outbox', () => {
     ]);
   });
 
-  it('pushes everything once, then is empty', async () => {
-    const sql = sqlite();
-    ensureOutboxSchema(sql);
-    queueOutbox(sql, 'summary');
-    queueOutbox(sql, 'tab', 't1');
-    recordEditor(sql, 'user_a', 7);
+  it('pushes everything once', async () => {
+    const rows = [row(1, 'summary'), row(2, 'tab', 't1'), row(3, 'edit', editKeyOf('user_a', 7))];
     const { client, calls } = fakeIndex();
     const onSummary = vi.fn(async () => {});
-    const out = await drainOutboxTable(sql, 'I', client, { ...source, onSummary });
-    expect(out).toEqual({ keys: 3, pushes: 3, more: false });
+    const out = await drainIndexOutbox('I', rows, client, { ...source, onSummary });
+    expect(out).toEqual({ done: [1, 2, 3], failures: [], pushes: 3, more: false });
     expect(calls.events).toEqual([{ type: 'edited', actorId: 'user_a', at: 7 }]);
     expect(onSummary).toHaveBeenCalledWith('user_a', 5);
-    expect(outboxPending(sql)).toBe(false);
   });
 
   it('keeps what failed, and drops what the index no longer holds', async () => {
-    const sql = sqlite();
-    ensureOutboxSchema(sql);
-    queueOutbox(sql, 'summary');
-    queueOutbox(sql, 'tab', 't1');
     const { client } = fakeIndex((kind) =>
       kind === 'collab'
         ? new Error('down')
@@ -110,25 +81,23 @@ describe('the outbox', () => {
           ? new IndexError(404, 'not_found')
           : null,
     );
-    await expect(drainOutboxTable(sql, 'I', client, source)).rejects.toThrow('down');
-    expect(sql.exec('SELECT kind FROM index_outbox').toArray()).toEqual([{ kind: 'tab' }]);
+    const rows = [row(1, 'summary'), row(2, 'tab', 't1')];
+    const out = await drainIndexOutbox('I', rows, client, source);
+    expect(out.done).toEqual([1]);
+    expect(out.failures).toEqual([new Error('down')]);
   });
 
   it(`takes at most ${DRAIN_TABS} tabs a drain`, async () => {
-    const sql = sqlite();
-    ensureOutboxSchema(sql);
-    for (let i = 0; i < DRAIN_TABS + 5; i++) queueOutbox(sql, 'tab', `t${i}`);
+    const rows = Array.from({ length: DRAIN_TABS + 5 }, (_, i) => row(i + 1, 'tab', `t${i}`));
     const { client, calls } = fakeIndex();
-    expect((await drainOutboxTable(sql, 'I', client, source)).more).toBe(true);
+    const out = await drainIndexOutbox('I', rows, client, source);
+    expect(out.more).toBe(true);
+    expect(out.done).toHaveLength(DRAIN_TABS);
     expect(calls.collab).toHaveLength(DRAIN_TABS);
-    expect((await drainOutboxTable(sql, 'I', client, source)).more).toBe(false);
   });
 
   it('drops every key without an index', async () => {
-    const sql = sqlite();
-    ensureOutboxSchema(sql);
-    queueOutbox(sql, 'summary');
-    expect((await drainOutboxTable(sql, 'I', null, source)).keys).toBe(1);
+    expect((await drainIndexOutbox('I', [row(1, 'summary')], null, source)).done).toEqual([1]);
   });
 });
 

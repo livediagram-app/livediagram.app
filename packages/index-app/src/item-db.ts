@@ -12,7 +12,7 @@
 //
 // `onWrite` runs only when a call changed a row (a statement or a trigger it fired: SQLite's `total_changes()`
 // moved). The room counts those calls to tell a request that wrote from a read (its edit key for the Timeline
-// and Most Used, outbox.ts recordEditor), so a read, a batch of reads, and a write that matched nothing call it
+// and Most Used, outbox.ts recordItemEditor), so a read, a batch of reads, and a write that matched nothing call it
 // never.
 
 // The slice of `SqlStorage` this uses, so a test can hand it node:sqlite.

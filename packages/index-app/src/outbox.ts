@@ -4,7 +4,7 @@
 // (`PUT /app/items/:id/events`), all with the app's key.
 //
 // The item keeps an outbox in its own SQLite: a key per changed thing, written in the same transaction as the
-// change (by triggers, or by `queueOutbox`), so no write path can forget one and a save makes no network call.
+// change (by triggers, or by the app's own writes), so no write path can forget one and a save makes no network call.
 // The room's alarm drains it on idle, at most once a minute (`nextFlushAt`), and deletes the keys it pushed. A key
 // written again meanwhile has a new id and stays for the next drain; a drain that fails keeps every key it did not
 // push and retries a minute later.
@@ -172,49 +172,16 @@ export async function drainIndexOutbox(
   return { done, failures, pushes: tasks.length, more: pending.length < rows.length };
 }
 
-// ---------- The outbox table, for an item whose Durable Object holds one item --------------------------------
+// ---------- The outbox table ----------------------------------------------------------------------------------
 
-// The slice of `SqlStorage` these use (a test hands it node:sqlite).
+// The slice of `SqlStorage` the kit uses (a test hands it node:sqlite).
 export type SqlExec = {
   exec(query: string, ...bindings: unknown[]): { toArray(): Record<string, unknown>[] };
 };
 
-export const INDEX_OUTBOX_SCHEMA = `
-CREATE TABLE IF NOT EXISTS index_outbox (
-  id   INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind TEXT    NOT NULL,
-  key  TEXT    NOT NULL
-);
-CREATE INDEX IF NOT EXISTS index_outbox_kind_key ON index_outbox (kind, key);
-`;
-
-export function ensureOutboxSchema(sql: SqlExec): void {
-  for (const statement of INDEX_OUTBOX_SCHEMA.split(';')) {
-    if (statement.trim()) sql.exec(statement);
-  }
-}
-
-// Queue a key, replacing an older copy of it (so the drain pushes the newest state once).
-export function queueOutbox(sql: SqlExec, kind: 'summary' | 'tab', key = ''): void {
-  sql.exec('DELETE FROM index_outbox WHERE kind = ? AND key = ?', kind, key);
-  sql.exec('INSERT INTO index_outbox (kind, key) VALUES (?, ?)', kind, key);
-}
-
-// A person's write to the item: replaces their edit key with one at `at`. Call it after a request that wrote, so
-// the edit is the person's who asked, never a guess from the content.
-export function recordEditor(
-  sql: SqlExec,
-  personId: string,
-  at: number,
-  table = 'index_outbox',
-): void {
-  const [from, to] = editKeyRange(personId);
-  sql.exec(`DELETE FROM ${table} WHERE kind = 'edit' AND key >= ? AND key < ?`, from, to);
-  sql.exec(`INSERT INTO ${table} (kind, key) VALUES ('edit', ?)`, editKeyOf(personId, at));
-}
-
-// The same for an app that keeps its own outbox table, keyed by the item (`plan_id`, `document_id`, `design_id`):
-// replaces the person's edit key on that item with one at `at`.
+// A person's write to the item, in an app's outbox table keyed by the item (`plan_id`, `document_id`, `design_id`):
+// replaces the person's edit key on that item with one at `at`. Call it after a request that wrote, so the edit is
+// the person's who asked, never a guess from the content.
 export function recordItemEditor(
   exec: (query: string, ...bindings: (string | number)[]) => unknown,
   outbox: { table: string; itemColumn: string },
@@ -235,29 +202,4 @@ export function recordItemEditor(
     itemId,
     editKeyOf(personId, at),
   );
-}
-
-export function outboxPending(sql: SqlExec): boolean {
-  return sql.exec('SELECT 1 FROM index_outbox LIMIT 1').toArray().length > 0;
-}
-
-// Read, push and clear: one drain of `index_outbox`. Throws the first failure after clearing what was pushed.
-export async function drainOutboxTable(
-  sql: SqlExec,
-  itemId: string,
-  client: IndexAppClient | null,
-  source: OutboxSource,
-): Promise<{ keys: number; pushes: number; more: boolean }> {
-  const rows = sql
-    .exec('SELECT id, kind, key FROM index_outbox ORDER BY id')
-    .toArray() as unknown as OutboxRow[];
-  const outcome = await drainIndexOutbox(itemId, rows, client, source);
-  if (outcome.done.length > 0) {
-    sql.exec(
-      'DELETE FROM index_outbox WHERE id IN (SELECT value FROM json_each(?))',
-      JSON.stringify(outcome.done),
-    );
-  }
-  if (outcome.failures.length > 0) throw outcome.failures[0];
-  return { keys: outcome.done.length, pushes: outcome.pushes, more: outcome.more };
 }
