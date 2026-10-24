@@ -356,6 +356,11 @@ by link are not on it.
   `assigneeName`; the assignee sees it too, wherever the item is), one turned done `action_done`. Each id is
   made from what it says, so a push sent again records nothing new, and nothing dated before the item was made
   (a copy's threads) is news. At most `COLLAB_EVENTS_MAX` (100) a push, the newest.
+- `share_link_expiring` warns an item's owner (them alone) before its share links stop working: one per item,
+  dated at the soonest expiry among its live links that lapse within `SHARE_EXPIRY_WARNING_MS` (a week), so it
+  waits in Upcoming (`expiresAt`, `links`: how many lapse in the week). Making, extending or deleting a link works
+  it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
+  reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
 - liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
   its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,

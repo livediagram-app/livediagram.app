@@ -103,6 +103,8 @@ export const MOST_USED_MAX = 8;
 //   one browser);
 // - the index, from an item's pushed comment threads and actions (`PUT /app/items/:id/collab/:tab`), so every
 //   app that reports its Inbox gets them: commented, comment_resolved, action_assigned, action_done;
+// - the index: share_link_expiring, dated at the soonest expiry of the item's live links that lapse within
+//   SHARE_EXPIRY_WARNING_MS (a daily pass, and at once when a link is made, extended or deleted), for its owner;
 // - an app's server: edited (APP_TIMELINE_EVENT_TYPES, about one item) and image_uploaded (APP_PERSON_EVENT_TYPES,
 //   about the person's gallery).
 // PERSON_TIMELINE_EVENT_TYPES are about no item (image_uploaded; taken_offline, whose item has gone): each keeps
@@ -123,6 +125,7 @@ export const ITEM_TIMELINE_EVENT_TYPES = [
   'action_assigned',
   'action_done',
   'synced',
+  'share_link_expiring',
 ] as const;
 export const PERSON_TIMELINE_EVENT_TYPES = ['image_uploaded', 'taken_offline'] as const;
 export const ACCOUNT_TIMELINE_EVENT_TYPES = [
@@ -158,6 +161,8 @@ export const TIMELINE_PLATFORM = 'liveworkspace' as const;
 export type TimelineApp = App | typeof TIMELINE_PLATFORM;
 // People one account event may reach directly (`p:<id>` or `t:<team>` scopes): a team's members and then some.
 export const ACCOUNT_EVENT_SCOPES_MAX = 250;
+// A share link lapsing within this is warned of on its item owner's Timeline (share_link_expiring).
+export const SHARE_EXPIRY_WARNING_MS = 7 * 24 * 60 * 60 * 1000;
 // An account event may be dated ahead (an API token's expiry) by at most this.
 export const ACCOUNT_EVENT_AHEAD_MS = 8 * 24 * 60 * 60 * 1000;
 // Collaboration events one collab push may make; past it, the newest.

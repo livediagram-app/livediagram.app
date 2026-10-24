@@ -124,3 +124,37 @@ describe('collaboration cards', () => {
     expect([assigned.description, assigned.meta]).toEqual(['Ship it', 'To you · by Ana']);
   });
 });
+
+describe('share link cards', () => {
+  it('warns ahead of a share link lapsing, and opens the item to extend it', () => {
+    const c = ctx();
+    const expiresAt = Date.UTC(2026, 10, 3, 12);
+    const one = renderTimelineEvent(
+      makeEvent(1, {
+        type: 'share_link_expiring',
+        actorId: null,
+        occurredAt: expiresAt,
+        detail: { expiresAt: String(expiresAt), links: '1' },
+      }),
+      c,
+    );
+    const date = new Date(expiresAt).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+    });
+    expect([one.label, one.meta]).toEqual([
+      'Share Link Expiring',
+      `A share link stops working on ${date} · Extend it in Share`,
+    ]);
+    one.onClick!();
+    expect(c.openItem).toHaveBeenCalled();
+    const two = renderTimelineEvent(
+      makeEvent(1, {
+        type: 'share_link_expiring',
+        detail: { expiresAt: String(expiresAt), links: '2' },
+      }),
+      ctx(),
+    );
+    expect(two.meta).toBe(`2 share links stop working on ${date} · Extend it in Share`);
+  });
+});

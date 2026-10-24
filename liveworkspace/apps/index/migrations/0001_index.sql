@@ -182,6 +182,8 @@ CREATE TABLE share_links (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX share_links_item ON share_links (item_id, created_at);
+-- The daily Share Link Expiring pass (src/share-expiry.ts): links lapsing within the week, by expiry.
+CREATE INDEX share_links_expires ON share_links (expires_at) WHERE expires_at IS NOT NULL;
 
 -- An item's share password: only its PBKDF2 hash (`pbkdf2-sha256$<iterations>$<salt>$<hash>`, as
 -- liveplanner stores it).

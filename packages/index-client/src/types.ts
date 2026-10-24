@@ -382,7 +382,8 @@ export type TimelineEvent = {
   // shared: { level }; created: { source, copiedFrom }; commented: { text, count, reply };
   // comment_resolved: { text }; action_assigned: { action, assigneeId, assigneeName }; action_done: { action };
   // image_uploaded: { count }; team_*: { teamId, memberName, role, from, inviteeId, left };
-  // token_*: { tokenId }; token_expiring: { expiresAt }.
+  // token_*: { tokenId }; token_expiring: { expiresAt }; share_link_expiring: { expiresAt, links } (the soonest
+  // expiry and how many links lapse in the week).
   detail: Record<string, string | null> | null;
   occurredAt: number;
   item: Item | null;

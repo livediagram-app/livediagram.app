@@ -56,6 +56,9 @@ const KEY =
   'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z';
 const KEY_OFF = 'M3 3l18 18M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912M9.75 14.25L2.909 21.09';
 const CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
+// livediagram's glyph for a share link about to expire.
+const BELL =
+  'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0';
 
 // Exhaustive over the event types, so a new type fails the build until it has a mark; a test keeps them distinct.
 export const EVENT_GLYPH_PATHS: Record<TimelineEventType, string> = {
@@ -75,6 +78,7 @@ export const EVENT_GLYPH_PATHS: Record<TimelineEventType, string> = {
   image_uploaded: PHOTO,
   taken_offline: CLOUD_OFF,
   synced: CLOUD,
+  share_link_expiring: BELL,
   team_invite_sent: ENVELOPE,
   team_joined: USER_PLUS,
   team_declined: X_CIRCLE,

@@ -254,6 +254,13 @@ export function renderTimelineEvent(
     case 'action_done':
       description = detail.action ?? undefined;
       break;
+    case 'share_link_expiring': {
+      const links = Number(detail.links ?? '1') || 1;
+      const when = Number(detail.expiresAt ?? event.occurredAt) || event.occurredAt;
+      const date = new Date(when).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+      meta = `${links > 1 ? `${links} share links stop` : 'A share link stops'} working on ${date} · Extend it in Share`;
+      break;
+    }
   }
   // An item in the Trash opens the Trash, where it can be restored; anything else opens in its own app.
   const open = item.trashedAt

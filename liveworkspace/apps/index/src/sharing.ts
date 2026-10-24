@@ -33,6 +33,7 @@ import { parseListFilters, sharedWithUpsert } from './items';
 import { filterClauses } from './lists';
 import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { hashSharePassword } from './password-hash';
+import { expiringEventId, expiringStatements } from './share-expiry';
 import { eventStatements } from './timeline';
 import {
   decorate,
@@ -197,6 +198,8 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
         at: now,
         when: { sql: 'EXISTS (SELECT 1 FROM share_links WHERE code = ?)', args: [link.code] },
       }),
+      // A link lapsing within the week warns its owner at once.
+      ...(link.expires_at !== null ? expiringStatements(db, id, now) : []),
     ]);
     if (res!.meta.changes === 0) return conflict('share_link_limit');
     // The app's first-share email (notices.ts).
@@ -214,6 +217,7 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     await db.batch([
       db.prepare('DELETE FROM share_links WHERE item_id = ?').bind(id),
       db.prepare('DELETE FROM shared_with WHERE item_id = ?').bind(id),
+      db.prepare('DELETE FROM timeline_events WHERE id = ?').bind(expiringEventId(id)),
       ...(results.length > 0
         ? eventStatements(db, {
             itemId: id,
@@ -284,6 +288,7 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
         actorId: caller.person?.id ?? null,
         at: Date.now(),
       }),
+      ...(link.expires_at !== null ? expiringStatements(db, link.item_id, Date.now()) : []),
     ]);
     tellRevoked(ctx, loaded.row, [link.code]);
     return noContent();
@@ -291,11 +296,12 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && segments[2] === 'extend' && method === 'POST') {
     // Another round of its lifetime, from now, whether it is live or lapsed.
     if (link.expiry === 'never') return badRequest('never_expires');
-    const expiresAt = Date.now() + SHARE_LINK_EXPIRY_MS[link.expiry];
-    await db
-      .prepare('UPDATE share_links SET expires_at = ? WHERE code = ?')
-      .bind(expiresAt, link.code)
-      .run();
+    const now = Date.now();
+    const expiresAt = now + SHARE_LINK_EXPIRY_MS[link.expiry];
+    await db.batch([
+      db.prepare('UPDATE share_links SET expires_at = ? WHERE code = ?').bind(expiresAt, link.code),
+      ...expiringStatements(db, link.item_id, now),
+    ]);
     return json({ link: toLink({ ...link, expires_at: expiresAt }) });
   }
   return notFound();

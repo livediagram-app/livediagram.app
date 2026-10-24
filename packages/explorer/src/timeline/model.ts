@@ -165,6 +165,7 @@ const LABELS: Partial<Record<TimelineEventType, string>> = {
   image_uploaded: 'Images Uploaded',
   taken_offline: 'Taken Offline',
   synced: 'Synced to the Cloud',
+  share_link_expiring: 'Share Link Expiring',
   team_invite_sent: 'Invite Sent',
   team_joined: 'Member Joined',
   team_declined: 'Invite Declined',
@@ -218,6 +219,7 @@ const TONE_BY_TYPE: Record<TimelineEventType, TimelineTone> = {
   team_renamed: 'structural',
   // Forward-dated: access is about to change, the amber a reader expects for "before it bites".
   token_expiring: 'structural',
+  share_link_expiring: 'structural',
   created: 'create',
   edited: 'create',
   restored: 'create',
@@ -284,6 +286,7 @@ const CATEGORY_BY_TYPE: Record<TimelineEventType, TimelineCategory> = {
   restored: 'deletions',
   shared: 'sharing',
   unshared: 'sharing',
+  share_link_expiring: 'sharing',
   team_invite_sent: 'teams',
   team_joined: 'teams',
   team_declined: 'teams',
@@ -347,6 +350,7 @@ export type TimelineStack = { key: string; bucket: string; events: TimelineEvent
 const BUCKET_ALIASES: Partial<Record<TimelineEventType, string>> = {
   shared: 'sharing',
   unshared: 'sharing',
+  share_link_expiring: 'sharing',
   trashed: 'trash',
   restored: 'trash',
   commented: 'comments',
