@@ -57,11 +57,6 @@ export type ActivityThread = ActivityPlace & {
   mentionsYou: boolean;
 };
 
-export type ActivityReadResult = {
-  actions: ActivityAction[];
-  threads: ActivityThread[];
-};
-
 // Ceiling per kind (actions, threads) on one read. The page is an inbox, not a history: a
 // reader with more than this outstanding is not going to scroll to the
 // hundredth, and the cap keeps the response bounded without paging.

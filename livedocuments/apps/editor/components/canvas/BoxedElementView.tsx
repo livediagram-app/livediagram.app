@@ -38,7 +38,6 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
-import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
@@ -419,7 +418,6 @@ function BoxedElementViewImpl({
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
           (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
           the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
-      <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
         <SketchFace
           active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
         >
@@ -515,7 +513,6 @@ function BoxedElementViewImpl({
             iconCaptionBand={iconCaptionBand}
           />
         </SketchFace>
-      </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}

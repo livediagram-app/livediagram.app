@@ -14,7 +14,6 @@ import {
   lucideCloudUpload,
   lucideDownload,
   lucideExternalLink,
-  lucideFolder,
   lucideHouse,
   lucideImage,
   lucideShare2,
@@ -32,10 +31,6 @@ import {
 // drawing and a `size` prop, so a caller asks for the pixels it needs
 // rather than picking between near-copies.
 //
-// Two folders are kept on purpose, because both are genuinely used:
-// FolderSolidIcon (the page's filled folder, which morphs open) and
-// FolderOutlineIcon (the line folder of the panel tree and the menus).
-//
 // The close / dismiss X is not here: it is CloseIcon in @livedocuments/ui.
 
 type IconProps = { size?: number };
@@ -50,22 +45,6 @@ function G16({ size, children }: { size: number; children: ReactNode }) {
 }
 
 // ---------- Tree + folders -----------------------------------------
-
-// The page's filled folder, which opens when its subtree is expanded.
-export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?: boolean }) {
-  return (
-    <Glyph size={size} units={16} filled>
-      {open ? (
-        <path d="M1.5 4.5a1.5 1.5 0 0 1 1.5-1.5h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39h4.05A1.5 1.5 0 0 1 14.5 6.5H1.5v-2zm0 3h13l-.93 4.65a1.5 1.5 0 0 1-1.47 1.2H3.9a1.5 1.5 0 0 1-1.47-1.2L1.5 7.5z" />
-      ) : (
-        <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39H13a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 13 13H3a1.5 1.5 0 0 1-1.5-1.5v-7z" />
-      )}
-    </Glyph>
-  );
-}
-
-// The line folder: the panel tree's folders, and every menu's Change Folder / folder chip.
-export const FolderOutlineIcon = lucideGlyph(lucideFolder, 12);
 
 // Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {

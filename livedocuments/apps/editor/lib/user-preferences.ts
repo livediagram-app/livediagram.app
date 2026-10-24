@@ -208,8 +208,8 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // A canvas pattern of the person's own, kept from livediagram's Draw mode:
-  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
+  // A canvas pattern from livediagram's Draw mode. Nothing reads it any more; preferences-sync drops it first
+  // when the blob does not fit.
   drawPattern?: 'blank' | 'grid' | 'graph';
   // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md
   // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read

@@ -328,8 +328,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `data-finish-keep`, `stroke-width="2"` to 1) and `svgMarkerFace(markup, id, face)` (clips, definitions,
   foreignObjects and the marker body held; each part kept with its line removed, its marker after it, in its own
   transform), called by `svgBoxed` by `faceFinishOf`.
-- Canvas: the wrapper carries `data-face-finish` and `FaceFinishProvider` (`useFaceFinish`, `useFaceShadow` for
-  inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
+- Canvas: the wrapper carries `data-face-finish`; `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
   flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
   hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
   `useFaceFinishPass(rootRef, finish, id)` re-takes on settle (`watchUntilSettled` with `ignore` for its own

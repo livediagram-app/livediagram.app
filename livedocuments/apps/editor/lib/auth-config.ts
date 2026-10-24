@@ -16,7 +16,7 @@ export const e2eAuthEnabled = process.env.NEXT_PUBLIC_E2E_AUTH === '1';
 // liveworkspace.app, where the account's API tokens are run (teams are run in the Explorer) (liveworkspace/docs/accounts.md):
 // the app links there rather than managing either itself. NEXT_PUBLIC_ACCOUNTS_SITE_URL points a
 // staging build at staging.liveworkspace.app.
-export const accountsSiteUrl = (
+const accountsSiteUrl = (
   process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || 'https://liveworkspace.app'
 ).replace(/\/+$/, '');
 export const manageTokensUrl = `${accountsSiteUrl}/explorer?settings=tokens`;

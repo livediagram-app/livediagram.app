@@ -3,7 +3,7 @@
 // shared DELETE shape, and the module-level token / share-password
 // state. The per-domain call collections (documents, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
-import type { ApiToken, LiveDoc, Folder, ShareLink, ShareRole } from '@livedocuments/api-schema';
+import type { LiveDoc, ShareRole } from '@livedocuments/api-schema';
 import {
   BUILD_ID_HEADER,
   DOCUMENT_FORMAT_HEADER,
@@ -127,24 +127,6 @@ export async function apiFetch(
 // types come from `@livedocuments/api-schema`, as do the envelopes the
 // MCP server reads too (DocumentResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
-export type FolderResponse = { folder: Folder };
-export type FoldersResponse = { folders: Folder[] };
-export type TokensResponse = { tokens: ApiToken[] };
-// POST /api/tokens returns the one-time plaintext secret alongside the new
-// token's public metadata (the secret is never retrievable again).
-export type CreateTokenResponse = {
-  token: string;
-  id: string;
-  name: string | null;
-  expiresAt: number;
-};
-// The share-links list doubles as the owner's read of the document's
-// share password (docs/specs/013-workspace/share-password.md): owner-only endpoint, so it's safe in the
-// clear. `password` is null when the document has no password.
-// The share password itself is never returned, only whether one is set: the
-// api keeps a hash (docs/specs/013-workspace/share-password.md).
-export type ShareLinksResponse = { links: ShareLink[]; passwordSet: boolean };
-export type SharePasswordResponse = { passwordSet: boolean };
 // GET /api/participants/<id>. `null` when you ask for your own id before you have saved a profile
 // (docs/specs/015-api/api.md); another absent id is a 404.
 export type ParticipantResponse = {

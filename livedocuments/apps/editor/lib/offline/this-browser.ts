@@ -12,6 +12,5 @@ const list = thisBrowserPublisher<OfflineDocumentRecord>(
   (opens) => localOpensOf(opens)?.lastOpenedAt ?? null,
 );
 
-export const thisBrowserItemOf = list.itemOf;
 export const publishThisBrowser = list.publish;
 export const noteThisBrowser = list.note;

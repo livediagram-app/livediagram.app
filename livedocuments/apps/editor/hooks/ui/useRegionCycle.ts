@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 
 /** The regions, in screen order. */
 export const EDITOR_REGIONS = ['header', 'palette', 'canvas', 'controls', 'tabs'] as const;
-export type EditorRegion = (typeof EDITOR_REGIONS)[number];
 
 const FOCUSABLE =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

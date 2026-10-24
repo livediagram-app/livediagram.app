@@ -26,9 +26,6 @@ export const WORKBENCH_NAME_MAX_LENGTH = 40;
 export const WORKBENCH_ORIGIN_MAX_LENGTH = 255;
 export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 
-// A pairing code is 16 random bytes, base64url without padding.
-export const WORKBENCH_HANDLE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
-
 // A ticket is 16 random bytes, base64url without padding, then a dot and the id of the person's workbench store
 // at liveworkspace (64 hex), so it reaches their store with no one signed in.
 export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
@@ -59,10 +56,6 @@ export function capWorkbenchRole(role: WorkbenchRole, ceiling?: WorkbenchRole): 
 // What a ticket, session or pairing reaches: one document, or the person's whole workspace.
 export const WORKBENCH_SCOPES = ['document', 'workspace'] as const;
 export type WorkbenchScope = (typeof WORKBENCH_SCOPES)[number];
-
-export function isWorkbenchScope(value: unknown): value is WorkbenchScope {
-  return WORKBENCH_SCOPES.some((scope) => scope === value);
-}
 
 // A workspace pairing also covers the document scope; a document pairing never covers the workspace, so reaching
 // the whole workspace is always its own approval.

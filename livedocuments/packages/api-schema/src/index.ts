@@ -301,12 +301,6 @@ export type TeamInviteLinkInfo = {
   alreadyMember: boolean;
 };
 
-// Result of joining via an invite link.
-export type TeamInviteLinkJoin = {
-  teamId: string;
-  alreadyMember: boolean;
-};
-
 // ---------------------------------------------------------------------
 // Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------

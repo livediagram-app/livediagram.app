@@ -154,24 +154,6 @@
   opacity: 0;
   animation: fa-b-tip 6s ease-in-out infinite;
 }
-/* A key going down and held: Shift through a drag, ⌘ while the palette shows its keys. */
-@keyframes fa-b-key {
-  0%,
-  8% {
-    transform: translateY(0);
-  }
-  12%,
-  84% {
-    transform: translateY(1.6px);
-  }
-  90%,
-  100% {
-    transform: translateY(0);
-  }
-}
-.fa-b-key {
-  animation: fa-b-key 6s ease-in-out infinite;
-}
 @media (prefers-reduced-motion: reduce) {
   .fa-b-go {
     animation: none !important;
@@ -194,8 +176,7 @@
     animation: none !important;
     opacity: 0 !important;
   }
-  .fa-b-drag,
-  .fa-b-key {
+  .fa-b-drag {
     animation: none !important;
     transform: none !important;
   }

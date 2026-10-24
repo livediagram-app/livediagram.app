@@ -27,12 +27,6 @@ export function setPaletteDragPreview(next: PaletteDragPreview | null): void {
   listeners.notify();
 }
 
-// The drag in flight, read outside render (a dragover handler), and told when it ends.
-export function getPaletteDragPreview(): PaletteDragPreview | null {
-  return current;
-}
-export const subscribePaletteDragPreview = listeners.subscribe;
-
 export function usePaletteDragPreview(): PaletteDragPreview | null {
   return useSyncExternalStore(
     listeners.subscribe,
