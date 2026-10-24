@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { extractExcalidrawScene } from './excalidraw-embedded';
 
 const SCENE = JSON.stringify({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { capLabel, GRAPH_LABEL_MAX } from './label-box';
 
 // A label is a heading (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):

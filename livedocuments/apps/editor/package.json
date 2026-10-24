@@ -57,7 +57,7 @@
     "@livedocuments/next-config": "workspace:*",
     "@livedocuments/oxlint-config": "workspace:*",
     "@livedocuments/tailwind-config": "workspace:*",
-    "@livedocuments/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import { accountsServiceFor } from '../test-accounts-service';

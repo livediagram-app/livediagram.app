@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ElementAction, Element, Tab } from '@liveplanner/project';
 import type { PlanBoardSetup } from '@liveplanner/items';
 import {

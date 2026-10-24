@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livedesign/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import { RANDOM_UUID_BOOT_SCRIPT } from '@livedesign/ui';
 import {

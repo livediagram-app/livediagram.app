@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { svgElements } from './svg-tokens';
-import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('svgElements', () => {
   it('reads each element tag and its attributes', () => {

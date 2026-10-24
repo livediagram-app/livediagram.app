@@ -24,7 +24,7 @@
     "@livediagram/edit-operations": "workspace:*",
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

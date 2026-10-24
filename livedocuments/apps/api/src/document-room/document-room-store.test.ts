@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import { setGrantVerifierForTests } from '../index-service';
-import { cpuBudgetMs, cpuMsOfAsync } from '@livedocuments/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livedocuments/document';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';

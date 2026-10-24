@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
-import { sentJson } from '@livedocuments/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livedocuments/api-schema';
 import { elementFingerprint, type Element } from '@livedocuments/document';
 import { testShareLink } from '../test-sqlite-d1';

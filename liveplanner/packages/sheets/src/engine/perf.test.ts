@@ -2,7 +2,7 @@
 // allow: 50,000 filled cells, 20,000 of them formulas. CI machines are slower and shared, so the asserted budget
 // is a multiple of the laptop target.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { Workbook } from './workbook';
 import { cellKey, type Sheet } from '../sheet';
 import { compileFormula } from '../formula/stored';

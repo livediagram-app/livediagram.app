@@ -1,6 +1,6 @@
 // The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages").
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { layOutPages, type LaidOutPage } from '@livedesign/design';
 import { besideSideInsets, computeFitBelow } from './viewport';
 import {

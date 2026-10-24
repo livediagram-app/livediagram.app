@@ -1,4 +1,4 @@
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   glyphWidth,

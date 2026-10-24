@@ -53,7 +53,7 @@
     "@liveplanner/next-config": "workspace:*",
     "@liveplanner/oxlint-config": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",

@@ -1,4 +1,4 @@
-import { defineProject } from '@livedocuments/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // The generator's logic is pure and fully covered
 // (docs/specs/002-project-scope/blueprints/third-party-licences.md "Testing");

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentText } from '@livedesign/vitest-config/sent-request';
+import { sentText } from '@liveworkspace/vitest-config/sent-request';
 import type { Tab } from '@livedesign/design';
 import { apiLoadTabRevisioned, apiSaveTab, flushDesignSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';

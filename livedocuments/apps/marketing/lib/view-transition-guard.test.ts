@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@livedocuments/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 
 import { VIEW_TRANSITION_GUARD_SCRIPT } from './view-transition-guard';
 

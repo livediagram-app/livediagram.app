@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livedesign/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livedesign/api-schema';
 import { elementFingerprint, type Element } from '@livedesign/design';
 import { testShareLink } from '../test-sqlite-d1';

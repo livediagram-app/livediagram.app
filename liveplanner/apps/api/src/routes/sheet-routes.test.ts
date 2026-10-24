@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@liveplanner/api-schema';
 import { emptyLayout, type SheetWrite } from '@liveplanner/sheets';
 import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';

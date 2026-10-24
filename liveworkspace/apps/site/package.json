@@ -52,7 +52,7 @@
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@livedocuments/agent-verbs": "workspace:*",
     "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/templates": "workspace:*",

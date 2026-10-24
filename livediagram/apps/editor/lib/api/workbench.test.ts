@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { WorkbenchSessionResponse } from '@livediagram/api-schema';
 import { registerTokenProvider, setTokenProvider } from './core';
 import {

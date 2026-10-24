@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { embedTabImages } from '@livedesign/api-schema';
 import { renderElementsToSvg, type Tab } from '@livedesign/design';
 import { createPngRenderer } from '@liveworkspace/render-png';
-import { cpuBudgetMs, cpuMsOfAsync } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
   PREVIEW_IMAGE_BUDGET_BYTES,
   PREVIEW_IMAGE_BUDGET_PIXELS,

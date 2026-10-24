@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 // Guards the wiring in vitest.config.ts, not the library: if `setupFiles`
-// ever drops `@livedesign/vitest-config/react-cleanup`, renders leak across
+// ever drops `@liveworkspace/vitest-config/react-cleanup`, renders leak across
 // tests again and React work scheduled on an orphaned root wakes after the
 // jsdom teardown. That failure is a load-dependent CI flake; this is the
 // cheap deterministic version of it.

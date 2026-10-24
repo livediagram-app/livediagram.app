@@ -2,7 +2,7 @@
 import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livediagram/vitest-config/sent-request';
+import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import type { CommunityPost } from '@livediagram/api-schema';
 import { resetCommunityEnabledForTests } from '@livediagram/ui';
 import { CommunityShowcase } from './CommunityShowcase';

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 
 import { closeWorkbenchSessions } from './room-access-client';
 import type { Env } from './types';

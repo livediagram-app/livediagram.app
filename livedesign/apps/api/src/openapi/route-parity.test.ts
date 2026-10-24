@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs } from '@liveworkspace/vitest-config/cpu-time';
 import { ROUTE_MANIFEST } from './manifest';
 import {
   candidatePaths,

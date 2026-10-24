@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livediagram/vitest-config/sent-request';
+import { sentForm } from '@liveworkspace/vitest-config/sent-request';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { deleteAccount } from '../db/account';

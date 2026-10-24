@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createPinnedArrow, createShape, type Element } from '@liveplanner/project';
 import { cleanupElements, type CleanupKind } from './tab-cleanup';
 

@@ -13,11 +13,11 @@ step, and has a Jest-compatible API so tests read conventionally.
 There is **no per-app runner divergence** — every workspace that has tests uses
 Vitest with the same shared config.
 
-## Shared config: `@livedocuments/vitest-config`
+## Shared config: `@liveworkspace/vitest-config`
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
-place: `packages/vitest-config`. It sits alongside the other shared configs
-(`oxlint-config`, `prettier-config`, `tailwind-config`).
+place: the monorepo's `packages/vitest-config`. It sits alongside the other shared configs
+(`oxlint-config`, `prettier-config`; `tailwind-config` is still this product's own).
 
 It exports:
 
@@ -28,7 +28,7 @@ It exports:
 A workspace's `vitest.config.ts` is therefore one line in the common case:
 
 ```ts
-import { defineProject } from '@livedocuments/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 export default defineProject();
 ```
 
@@ -36,7 +36,7 @@ export default defineProject();
 React component tests):
 
 ```ts
-import { defineProject } from '@livedocuments/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 export default defineProject({ test: { environment: 'jsdom' } });
 ```
 
@@ -54,7 +54,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter) measures it with
-  `cpuMsOf` (or `cpuMsOfAsync`) from `@livedocuments/vitest-config/cpu-time`, never
+  `cpuMsOf` (or `cpuMsOfAsync`) from `@liveworkspace/vitest-config/cpu-time`, never
   `performance.now()`. Turbo runs every package's suite at once, and a
   wall-clock budget also counts the time a test waits for a core, which made
   those tests flake on a busy machine. CPU time still catches the regression
@@ -63,10 +63,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **An inline script is tested as the browser runs it.** A boot script ships as a string the page
   inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
   very string with `runInlineScript(source, globals)` from
-  `@livedocuments/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  `@liveworkspace/vitest-config/inline-script`: a classic script in its own realm whose globals are
   the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
-- **A stubbed fetch reads what it was sent** through `@livedocuments/vitest-config/sent-request`:
+- **A stubbed fetch reads what it was sent** through `@liveworkspace/vitest-config/sent-request`:
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
   `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
   test rather than read as `[object Blob]`.
@@ -78,7 +78,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
   run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
   `CI=0` is a developer's machine) or the run collects coverage (the shared
-  Vitest config passes `LIVEDOCUMENTS_COVERAGE` to its workers). Three is enough
+  Vitest config passes `LIVEWORKSPACE_COVERAGE` to its workers). Three is enough
   beside a 4x slower runner because each budget keeps its own room over the
   local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
   work measures) needs neither.
@@ -349,7 +349,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of
-  `@livedocuments/vitest-config`, one copy for the repo rather than one per
+  `@liveworkspace/vitest-config`, one copy for the repo rather than one per
   workspace — which calls Testing Library's `cleanup` in an `afterEach`,
   guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
   `globals: true`, which this repo does not use, so a file that rendered

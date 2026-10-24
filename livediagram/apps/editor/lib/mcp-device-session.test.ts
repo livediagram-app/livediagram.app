@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { MCP_ORIGIN } from './mcp-config';
 import { completeDevice, denyDevice, fetchDeviceSession, userCodeOf } from './mcp-device-session';
 

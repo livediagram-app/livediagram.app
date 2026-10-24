@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@livediagram/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
 import { API_BASE } from './api/base';

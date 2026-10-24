@@ -18,7 +18,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -23,7 +23,7 @@
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

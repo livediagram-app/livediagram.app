@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { FormLinkResponse, PublicFormResponse } from '@liveplanner/api-schema';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import { ITEMS_MAX, presetSetup, type Item } from '@liveplanner/items';

@@ -1,4 +1,4 @@
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // The verb catalogue is pure: every line and branch is covered, the suites' fakes aside
 // (docs/specs/015-api/blueprints/cli.md).

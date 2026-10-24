@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createShape, settleStacks, type Element, type ShapeElement } from './index';
 
 // docs/specs/009-elements/blueprints/stack.md "Performance and limits": settling runs at every commit, so a large

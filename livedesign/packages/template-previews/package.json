@@ -27,7 +27,7 @@
   "devDependencies": {
     "@livedesign/oxlint-config": "workspace:*",
     "@livedesign/tailwind-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",

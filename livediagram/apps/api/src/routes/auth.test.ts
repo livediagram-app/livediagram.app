@@ -1,4 +1,4 @@
-import { sentForm, sentUrl } from '@livediagram/vitest-config/sent-request';
+import { sentForm, sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 

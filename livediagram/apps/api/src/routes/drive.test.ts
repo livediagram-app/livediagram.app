@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livediagram/vitest-config/sent-request';
+import { sentForm } from '@liveworkspace/vitest-config/sent-request';
 import {
   bytesToBase64,
   DRIVE_ACCOUNT_SWITCH_TTL_MS,

@@ -5,7 +5,7 @@ import type { BoardNote } from './event-storming-photo-match';
 import type { PhotoAddition } from './event-storming-photo';
 import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
 import { ES_LANE_PITCH, ES_NOTE_GAP, isOnLane, laneIndexAt } from './event-storming-lanes';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // Photo import placement (docs/specs/021-event-storming/event-storming.md "Always on a lane", Photo import).
 // The photographs that matter are the dense ones: rows closer together than a
