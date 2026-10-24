@@ -36,7 +36,7 @@ describe('the public surface', () => {
     const rejection = refused(
       applyEditOperations(sprintDashboard(), [{ op: 'rm', target: 'm77' }]),
     );
-    expect(formatRejections([rejection])[0]).toBe('error target_not_found · op 1');
+    expect(formatRejections([rejection])[0]).toBe('error target_not_found · op 1 · rm m77');
     expect(formatRejections([rejection]).at(-1)).toBe('nothing was applied');
   });
 
