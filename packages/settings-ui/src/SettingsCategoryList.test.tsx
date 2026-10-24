@@ -103,3 +103,48 @@ describe('SettingsCategoryList sub-categories', () => {
     expect(onSelect).toHaveBeenLastCalledWith('layers');
   });
 });
+
+describe('the All view’s groups', () => {
+  const categories = [
+    { id: 'profile', label: 'Profile', group: 'account', rows: [] },
+    { id: 'privacy', label: 'Privacy', group: 'account', rows: [] },
+    { id: 'editor', label: 'Editor', group: 'livediagram', rows: [] },
+    { id: 'canvas', label: 'Canvas', group: 'liveplanner', rows: [] },
+  ] as unknown as Parameters<typeof SettingsCategoryList>[0]['categories'];
+  const groups = [
+    { id: 'account', label: 'Account' },
+    { id: 'livediagram', label: 'livediagram' },
+    { id: 'liveplanner', label: 'liveplanner' },
+  ];
+  const ui = (selected: string | null, searching = false) => (
+    <SettingsCategoryList
+      categories={categories}
+      groups={groups}
+      selected={selected}
+      onSelect={() => {}}
+      variant="sidebar"
+      searching={searching}
+    />
+  );
+  const heading = (name: string) => screen.getByRole('button', { name, expanded: undefined });
+  const expanded = (name: string) => heading(name).getAttribute('aria-expanded');
+
+  it('starts collapsed but the group holding the current pane, and folds open and shut', () => {
+    renderWithKit(ui('profile'));
+    expect(expanded('Account')).toBe('true');
+    expect(expanded('livediagram')).toBe('false');
+    expect(expanded('liveplanner')).toBe('false');
+    fireEvent.click(heading('livediagram'));
+    expect(expanded('livediagram')).toBe('true');
+    fireEvent.click(heading('Account'));
+    expect(expanded('Account')).toBe('false');
+  });
+
+  it('opens the group of a category picked from elsewhere, and every group while searching', () => {
+    const view = renderWithKit(ui('profile'));
+    view.rerender(ui('canvas'));
+    expect(expanded('liveplanner')).toBe('true');
+    view.rerender(ui('canvas', true));
+    expect(expanded('livediagram')).toBe('true');
+  });
+});
