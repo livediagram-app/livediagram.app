@@ -16,8 +16,6 @@
 import {
   LINT_VIEW_NAME,
   TAB_VIEW_NAMES,
-  TEAM_RECENT_INCLUDE,
-  TEAM_RECENT_LIMIT,
 } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
@@ -262,30 +260,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "List the caller's documents (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [
-      {
-        name: 'include',
-        required: false,
-        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty documents of the teams the caller has joined, newest first, each with its \`teamName\`.`,
-      },
-    ],
     responseSchema: {
       type: 'object',
       properties: {
         documents: { type: 'array', items: ref('DocumentSummary') },
-        teamRecent: {
-          type: 'array',
-          items: {
-            allOf: [
-              ref('DocumentSummary'),
-              {
-                type: 'object',
-                properties: { teamName: { type: 'string' } },
-                required: ['teamName'],
-              },
-            ],
-          },
-        },
       },
       required: ['documents'],
     },

@@ -299,8 +299,7 @@ This is the only welcome surface so it sets the mobile floor for the rest of the
 Returning users get a **"Jump Back In" card** pinned to the right of the
 centred wizard (desktop `xl+` only — below that the wizard owns the width):
 the 5 most recently-saved documents they own or that sit in a team they have
-joined (the same list as the landing page's Welcome back,
-[Returning visitor](../019-marketing/returning-visitor.md)), each row opening that
+joined, as the index lists them, each row opening that
 document directly, with a relative "saved N ago" line. A team document's name
 follows the team mark (the Explorer's team icon), read out as "<team> team:". It is a side affordance,
 deliberately separate from the create flow, and hidden entirely for someone

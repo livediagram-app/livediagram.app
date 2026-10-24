@@ -534,7 +534,8 @@ export * from './document-views';
 // The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
 export * from './lint';
 export * from './ref-errors';
-// Returning visitor (docs/specs/019-marketing/returning-visitor.md).
+// The retired returning-visitor note's storage names, and the snapshot SVG helpers
+// (docs/specs/019-marketing/returning-visitor.md, docs/specs/006-document/document-snapshots.md).
 export * from './recent-diagrams';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request

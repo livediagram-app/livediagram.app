@@ -9,11 +9,9 @@ import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { DocumentListItem } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
-import { apiFetchDocumentThumbnailSvg } from '@/lib/api-client';
-import { rememberRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 
 // One page: the pickers show the most recent few, and search filters what is here.
-export const PLAN_LIST_LIMIT = 100;
+export const DOCUMENT_LIST_LIMIT = 100;
 // Waits at most this long for an idle moment.
 const IDLE_TIMEOUT_MS = 4_000;
 
@@ -29,22 +27,10 @@ export function documentListItem(item: Item): DocumentListItem {
   };
 }
 
-// The person's live documents. Each read also refreshes the landing page's note of the most recent ones
-// (docs/specs/019-marketing/returning-visitor.md), as listing them always has.
-export async function fetchDocumentList(ownerId: string): Promise<DocumentListItem[]> {
-  const page = await indexClient.listItems({ app: 'livediagram', limit: PLAN_LIST_LIMIT });
+// The person's live documents.
+export async function fetchDocumentList(): Promise<DocumentListItem[]> {
+  const page = await indexClient.listItems({ app: 'livediagram', limit: DOCUMENT_LIST_LIMIT });
   const live = page.items.filter((item) => item.trashedAt === null);
-  rememberRecentDiagrams(
-    live.map((item) => ({
-      id: item.id,
-      name: item.title,
-      savedAt: item.updatedAt,
-      empty: item.summary.empty === true,
-      opensIn: null,
-      hiddenFromRecent: item.hiddenFromRecent === true,
-    })),
-    (id, savedAt) => apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
-  );
   return live.map(documentListItem);
 }
 
@@ -57,7 +43,8 @@ function whenIdle(run: () => void): () => void {
   return () => window.clearTimeout(handle);
 }
 
-// `enabled` once the document has loaded for a person (not a workbench, not before hydration).
+// `enabled` once the document has loaded for a person (not a workbench, not before hydration). A change of
+// `ownerId` (signing in or out) reads the list again.
 export function useDocumentList(
   enabled: boolean,
   ownerId: string,
@@ -71,7 +58,7 @@ export function useDocumentList(
     if (!enabled) return;
     let live = true;
     const cancel = whenIdle(() => {
-      fetchDocumentList(ownerId)
+      fetchDocumentList()
         .then((list) => {
           if (live) setDocumentList(list);
         })

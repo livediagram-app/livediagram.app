@@ -34,9 +34,8 @@ defaults"):
 - **Jump Back In's** Most Used (`used`) leaves them out too.
 - The Explorer lays the change over every loaded list at once (the overlay), and takes it back with a toast when
   the index refuses.
-- The landing page's note of recent diagrams ([Returning visitor](../019-marketing/returning-visitor.md)) and the
-  `/new` page's Jump Back In card (`apps/editor/app/new/RecentDocumentsCard.tsx`) leave out what the index says is
-  hidden.
+- The `/new` page's Jump Back In card (`apps/editor/app/new/RecentDocumentsCard.tsx`) leaves out what the index
+  says is hidden.
 
 ## No badge anywhere else
 

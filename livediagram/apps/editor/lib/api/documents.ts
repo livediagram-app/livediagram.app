@@ -280,8 +280,7 @@ export async function apiFetchDocumentThumbnailUrl(
 
 // The document's preview SVG, liveworkspace's (liveworkspace/docs/previews.md: the router sends /api/previews there),
 // through the authenticated client; null on 404 / 503 (nothing drawn, no access, the service down). `version` is
-// only the browser's cache key. Behind the Explorer's thumbnails and the landing page's Welcome back
-// (docs/specs/019-marketing/returning-visitor.md).
+// only the browser's cache key. Behind the Explorer's thumbnails.
 export async function apiFetchDocumentThumbnailSvg(
   ownerId: string,
   documentId: string,

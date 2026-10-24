@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY } from '@livediagram/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livediagram/document';
 import {
@@ -165,18 +164,7 @@ describe('the hero', () => {
     );
   });
 
-  it('deals the template fan for everyone, a returning visitor with recent work included', () => {
-    const note = (n: number) =>
-      JSON.stringify({
-        v: 1,
-        diagrams: Array.from({ length: n }, (_, i) => ({
-          id: `d${i + 1}`,
-          name: `Diagram ${i + 1}`,
-          savedAt: Date.now() - (i + 1) * 3600e3,
-          mode: 'diagram',
-        })),
-      });
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(6));
+  it('deals the template fan for everyone, never a card to Explorer Home', () => {
     render(<Hero />);
     expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
     expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();

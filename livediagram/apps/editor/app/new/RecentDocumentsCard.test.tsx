@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
 
-// /new's Jump Back In (docs/specs/007-editor/new-document-route.md; docs/specs/019-marketing/returning-visitor.md):
+// /new's Jump Back In (docs/specs/007-editor/new-document-route.md):
 // your newest canvases and your teams', as the index lists them, merged by save, a team one marked with its team.
 
 const page = vi.hoisted(() => ({ items: [] as Partial<Item>[] }));

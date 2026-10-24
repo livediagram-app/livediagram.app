@@ -66,7 +66,7 @@ Purging a document (routes/internal-items.ts) asks the media service to drop its
 ## Where a picture is asked for
 
 - **Explorer thumbnail**: `GET /api/previews/items/:id?v=<version>` on this app's own address, which the router
-  forwards to liveworkspace's previews (the editor's Explorer, the Welcome back card and the Drive mirror alike).
+  forwards to liveworkspace's previews (the editor's Explorer and the Drive mirror alike).
   The editor fetches it through the authenticated client (a native `<img>` can't send auth headers) and wraps the
   bytes in a blob URL; `?v=` only keys the browser's cache. Who may see it is the index's rule for the document
   itself: the owner, a team member, or a share-code visitor (a tab-scoped one gets their tab).

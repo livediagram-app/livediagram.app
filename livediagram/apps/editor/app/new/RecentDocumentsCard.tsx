@@ -14,7 +14,7 @@ type RecentItem = { id: string; name: string; savedAt: number | null; teamName: 
 
 // A small "jump back in" card that pops out to the RIGHT of the new-document
 // wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved canvases the person
-// owns or that sit in a team they have joined (docs/specs/019-marketing/returning-visitor.md), as the index lists
+// owns or that sit in a team they have joined, as the index lists
 // them (one page of livediagram's items, newest first). Deliberately separate from the create flow: it's a side affordance
 // for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each

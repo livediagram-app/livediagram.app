@@ -17,7 +17,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served from the snapshot cache ([Document SVG snapshots](../006-document/document-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the document's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`), the editor worker's head rewrite, and the brand card everywhere else
-- ./hide-from-recent.md - when working on Hide from Recent / Show in Recent: per person, on the index's opens, left out of Recent, Jump Back In, the landing page's note and `/new`'s card (index)
+- ./hide-from-recent.md - when working on Hide from Recent / Show in Recent: per person, on the index's opens, left out of Recent, Jump Back In and `/new`'s card (index)
 - ./recent-folder-chip.md - when working on the location chip on rows of lists that span places (index)
 - ./folder-content-previews.md - when working on a folder card's mosaic: the index's `GET /folders/previews` and livediagram's canvas preview (index)
 - ./tags.md - tags (removed from the Explorer)

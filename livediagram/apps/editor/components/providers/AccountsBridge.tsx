@@ -109,7 +109,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       createdAt: null,
     },
     getToken,
-    // The landing page sign-out returns to must not show the account's recent diagrams
+    // Clears what the retired returning-visitor note left in this browser
     // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       await endSession();

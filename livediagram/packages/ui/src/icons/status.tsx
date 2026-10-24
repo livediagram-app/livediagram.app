@@ -48,5 +48,5 @@ export function SparkleIcon({ size = 14, ...rest }: IconProps) {
 export const CircleXIcon = lucideGlyph(lucideCircleX, 28);
 
 // Two people: a team (docs/specs/013-workspace/teams.md), its spaces in the Explorer and its documents
-// wherever they are listed beside your own, such as the landing page's Welcome back.
+// wherever they are listed beside your own, such as /new's Jump Back In.
 export const TeamIcon = lucideGlyph(lucideUsers, 13);

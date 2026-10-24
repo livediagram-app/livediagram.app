@@ -1,6 +1,6 @@
 # Returning visitor
 
-Status: shipped (the hero fan retired, October 2026)
+Status: retired (the hero fan, October 2026; the recent-diagrams note after it)
 
 ## What
 
@@ -11,49 +11,25 @@ recent work: the hero is for starting something new, and the Explorer is where t
 Until October 2026 a browser with at least three recent items saw its four most recent on that fan instead, with a
 card to Explorer Home (and before that, **Welcome back**). That went, so every app's hero is the same.
 
-The recent snapshot below stays: other pages read it.
+## The recent-diagrams note (retired)
 
-## The recent-diagrams snapshot
+The landing page read those recent items from a note the editor left in the browser, since the static marketing
+site never calls the api: up to six diagrams under `livediagram:recent-diagrams:v1` in `localStorage`, and their
+snapshot SVGs in Cache Storage (`livediagram-recent-thumbs-v2`, before that `-v1`). The editor refreshed it every
+time it listed your documents, and fetched a thumbnail for each one that changed. With the hero fan gone nothing
+read it, so the editor no longer writes it, and the api's `GET /api/documents?include=team-recent`, which fed
+it your teams' documents, went with the move of the library to the liveworkspace index.
 
-The marketing site is static and fast; it loads no sign-in code and does not call the api. So it never asks
-the server who you are. Instead **the editor leaves a note** in the browser for the landing page to read,
-on the same origin (the router serves `/` and `/explorer` from one host).
+- **Forgotten on sign-out:** a browser can still hold a note from an earlier visit, with an account's diagram
+  names and previews in it. Signing out (and deleting the account) removes the note and both thumbnail caches
+  before the session ends, so the next person on a shared computer never finds them. The storage names stay in
+  `@livediagram/api-schema` for that alone.
 
-- **What:** up to six diagrams, newest save first: id, name, last saved time, the mode it opens in, and
-  the team whose library holds it (null for your own). Stored in `localStorage` under
-  `livediagram:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
-  note written before `teamName` reads as your own diagrams.
-- **Which:** your documents and your teams', merged by save: the personal library the editor lists for
-  you (`GET /api/documents` plus this browser's Offline Mode documents) and, from the same request
-  (`?include=team-recent`), the twelve newest documents in the libraries of the teams you have
-  **joined** (never one you are only invited to; [Team shared documents](../013-workspace/team-shared-documents.md)).
-  Twelve is the note's six twice over, so a few hidden from Recent still leave six. Most recently saved
-  first, leaving out **empty** documents (nothing drawn, nothing to come back to) and any you have
-  **hidden from Recent** ([Hide from Recent](../013-workspace/hide-from-recent.md)). The /new page's Jump
-  back in card shows the same merge. Documents shared with you by link are not in it: they open through
-  their link, which the note does not hold.
-- **When:** every time the editor lists your documents (the Explorer, the editor, the /new page), so it
-  is as fresh as your last visit to the app, and again at once when you hide a diagram from Recent or
-  return one to it. With none left to show, the note is removed.
-- **Thumbnails:** each diagram's snapshot SVG ([Document snapshots](../006-document/document-snapshots.md))
-  is kept beside the note in the browser's Cache Storage (`livediagram-recent-thumbs-v1`), keyed by id
-  and save time, fetched by the editor through its authenticated client when a listed diagram's entry is
-  missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
-  not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its
-  tile's placeholder. An Offline Mode document is remembered as having none without asking: its rows
-  never send a request ([Offline Mode](../006-document/offline-mode.md#this-browser-badge--explorer)); a request that failed outright (no network) is simply asked again on
-  the next list. The landing page reads them from the cache, never the
-  network, and shows them as `<img>` (an SVG image runs no script).
-- **Forgotten on sign-out:** signing out clears the note and the thumbnails before the session ends, so
-  the landing page it returns to (and the next person on a shared computer) never shows the account's
-  diagrams. Deleting the account does the same.
+The `/new` page's Jump Back In card is not this note: it reads the index directly
+([New document route](../007-editor/new-document-route.md#jump-back-in-recent-documents-card)).
 
 ## Performance
 
-No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per document card), after
-hydration. The landing page loads no sign-in code, no api client. The editor's side costs one `localStorage`
-write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
-team documents ride the editor's existing document list (no new request): one more query on the api,
-which reads each joined team document's first-tab count to skip the empty ones and draws the full
-summary for the twelve it keeps, so it grows with the size of your teams' libraries (about 1 ms at
-1,000 team documents, 9 ms at 10,000, measured on SQLite).
+Listing your documents no longer writes `localStorage` or fetches thumbnails into Cache Storage, so the editor's
+document list is one index read and nothing else. Sign-out costs one `localStorage` removal and two Cache Storage
+deletes.
