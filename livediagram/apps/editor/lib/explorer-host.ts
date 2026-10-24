@@ -53,9 +53,12 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
   useEffect(() => {
     if (!signedIn) return;
     let live = true;
-    void currentBearer().then((token) => {
-      if (live) setTeams(teamsOfToken(token));
-    });
+    currentBearer()
+      .then((token) => {
+        if (live) setTeams(teamsOfToken(token));
+      })
+      // A session that could not hand out a token names no teams; the list stays as it was.
+      .catch(() => {});
     return () => {
       live = false;
     };

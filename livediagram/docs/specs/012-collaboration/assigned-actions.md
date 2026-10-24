@@ -141,7 +141,8 @@ Clicking it opens the **Assign Action dialog** (its own component under
   files the canvas into that team's library root through the index ([Team shared documents](../013-workspace/team-shared-documents.md),
   `indexClient.updateItem` with the team id) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
-  signed-in user with no teams gets the create-a-team link instead; a
+  signed-in user with no teams gets the create-a-team link instead (the
+  Explorer's Invites, `/explorer/invites`, beside the teams); a
   signed-in user **not a member of the document's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).

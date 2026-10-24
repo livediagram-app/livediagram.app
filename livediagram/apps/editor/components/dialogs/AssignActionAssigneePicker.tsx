@@ -1,4 +1,5 @@
 import { initialsOf } from '@/lib/identity';
+import { explorerHref } from '@/lib/explorer-href';
 import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
@@ -164,7 +165,7 @@ export function AssigneePicker({
             <p>
               Actions assign to the document&apos;s team.{' '}
               <a
-                href="/explorer/team"
+                href={explorerHref('invites')}
                 className="font-medium text-brand-700 underline dark:text-brand-400"
               >
                 Create or join a team
