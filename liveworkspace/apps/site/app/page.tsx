@@ -1,6 +1,7 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideCheck } from '@livediagram/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
+import type { Metadata } from 'next';
 import { type CSSProperties, Fragment } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -12,6 +13,8 @@ import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 // What each app is for, in the order work moves through them, for the hero's one sentence.
 const STEPS: Partial<Record<SiteId, string>> = {

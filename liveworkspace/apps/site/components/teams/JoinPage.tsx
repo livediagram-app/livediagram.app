@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { accountApi, errorMessage, type JoinPreview } from '@/lib/account-api';
-import { signInHref } from '@/lib/accounts';
+import { signInHref, signUpHref } from '@/lib/accounts';
 import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
@@ -138,7 +138,7 @@ export function JoinPage() {
                   Sign in to join
                 </a>
                 <a
-                  href={`/sign-up?return=${encodeURIComponent(here)}`}
+                  href={signUpHref(here)}
                   className={`${BUTTON.secondary} relative touch-target-y py-2.5`}
                 >
                   Create an account

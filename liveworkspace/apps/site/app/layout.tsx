@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://liveworkspace.app'),
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: '/' },
+  // No canonical here: each page names its own, so a page without one never claims to be the home page.
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

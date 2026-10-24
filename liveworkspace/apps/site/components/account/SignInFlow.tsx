@@ -13,6 +13,7 @@ import {
   signedOAuthQuery,
   type SignInOptions,
 } from '@/lib/accounts';
+import { workspaceOrigin } from '@/lib/explorer/page-app';
 import { useLocationSearch } from '@/lib/location-search';
 import { loadTurnstile, type Turnstile } from '@/lib/turnstile';
 import {
@@ -196,7 +197,8 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     setBusy(null);
     if (!result.ok) {
       setDigits(EMPTY_CODE);
-      digitBoxes.current[0]?.focus();
+      // After the render that enables the boxes again: a disabled box takes no focus.
+      requestAnimationFrame(() => digitBoxes.current[0]?.focus());
       return setError(
         result.data.code === 'TOO_MANY_ATTEMPTS'
           ? 'Too many wrong codes. Request a new one.'
@@ -284,8 +286,11 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     // Under an app's address, until Google may come back to it: the same request on liveworkspace.app's own page,
     // which starts Google there (`#google`) and signs in there, as it always has.
     if (onAppAddress() && given && !given.googleOnApps) {
+      // liveworkspace.app's address for this one when the options name none, so the page always leaves (a bare
+      // `#google` on this page would only change the hash).
+      const accounts = given.accountsUrl || workspaceOrigin();
       return window.location.assign(
-        `${given.accountsUrl}${window.location.pathname}${window.location.search}#google`,
+        `${accounts}${window.location.pathname}${window.location.search}#google`,
       );
     }
     storage((s) => s.setItem(GOOGLE_MARK, '1'));
