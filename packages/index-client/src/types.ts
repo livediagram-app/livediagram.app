@@ -21,13 +21,11 @@ export type ItemSummary = {
   comments?: number;
   bytes?: number;
   mode?: string;
-  // Nothing to draw: no tab, or an empty first tab (no thumbnail is asked for).
+  // Nothing to draw: no tab, or an empty first tab (no preview is asked for, liveworkspace/docs/previews.md).
   empty?: boolean;
   // Whether any tab holds anything (an element, a page, a form). False, the index's daily clean-up moves the item to
   // the Trash once it has been unchanged for EMPTY_ITEM_STALE_MS.
   hasContent?: boolean;
-  // A media key, or null.
-  thumbnail?: string | null;
   // Anyone can find it: listed in a public gallery (livediagram's Community). The Explorer's Public badge.
   public?: boolean;
   [k: string]: unknown;
@@ -364,7 +362,12 @@ export type UpdateShareLinkInput = { level?: Level; tabId?: string | null };
 // A link visitor's credentials, sent as headers.
 export type ShareAccess = { code: string; password?: string | null };
 
-export type ShareResolution = { item: Item; level: Level; tabId: string | null };
+// `public`: a Community post's link (liveworkspace/docs/previews.md). Absent from an index that predates it.
+export type ShareResolution = { item: Item; level: Level; tabId: string | null; public?: boolean };
+
+// `GET /items/:id`: the item, and how the caller reaches it: the one tab a link confines them to, and the public
+// link's code when that is their only way in (liveworkspace/docs/previews.md). Absent from an older index.
+export type ItemRead = { item: Item; tabId?: string | null; publicCode?: string | null };
 
 // One Timeline entry: what happened, to which item, by whom, as it was then. `title` is the item's name
 // when it happened (or the team's, the token's, the gallery's for an event about no item); `item` is the item

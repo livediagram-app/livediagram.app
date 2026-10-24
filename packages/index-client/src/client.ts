@@ -37,6 +37,7 @@ import type {
   ShareAccess,
   ShareLink,
   ShareResolution,
+  ItemRead,
   SharedWithItem,
   TimelinePage,
   TimelineQuery,
@@ -153,7 +154,7 @@ export function createIndexClient({
     createItem: (input: CreateItemInput) =>
       call<{ item: Item; grant: GrantResponse }>('/items', { method: 'POST', body: input }),
     getItem: (id: string, share?: ShareAccess | null) =>
-      call<{ item: Item }>(`/items/${enc(id)}`, { share }),
+      call<ItemRead>(`/items/${enc(id)}`, { share }),
     updateItem: (id: string, input: UpdateItemInput) =>
       call<{ item: Item }>(`/items/${enc(id)}`, { method: 'PATCH', body: input }),
     // To the Trash, or with `permanent` gone for good.

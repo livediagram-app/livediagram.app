@@ -54,7 +54,13 @@ export async function linkAccess(
     if (!password) return fail(401, 'password_required');
     if (!(await verifySharePassword(link.hash, password))) return fail(403, 'password_invalid');
   }
-  return { level: link.level, tabId: link.tab_id, via: 'link', code: link.code };
+  return {
+    level: link.level,
+    tabId: link.tab_id,
+    via: 'link',
+    code: link.code,
+    ...(link.public ? { public: true as const } : {}),
+  };
 }
 
 // What the caller may do with a row. A trashed item is reached only by its owner and team.

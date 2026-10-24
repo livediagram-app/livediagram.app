@@ -41,6 +41,8 @@ export type Access = {
   tabId: string | null;
   via: 'owner' | 'team' | 'link';
   code: string | null;
+  // Reached through a public link (a Community post's): what the app shows such a link is its own to decide.
+  public?: true;
 };
 
 export const MANAGER_VIAS = new Set<Access['via']>(['owner', 'team']);

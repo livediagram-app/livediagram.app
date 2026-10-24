@@ -355,7 +355,8 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
     }
   }
   const [item] = await decorate(env, person, [row], new Map([[row.id, access]]));
-  return json({ item, level: access.level, tabId: access.tabId });
+  // `public`: a Community post's link, whose live image and card its app decides on (liveworkspace/docs/previews.md).
+  return json({ item, level: access.level, tabId: access.tabId, public: link.public === 1 });
 }
 
 // GET /shared and DELETE /shared/:itemId.
