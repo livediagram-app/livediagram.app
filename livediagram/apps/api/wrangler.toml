@@ -192,16 +192,6 @@ type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
 
-# Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
-# docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
-# reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
 # Separate namespace. Absent binding → allow (self-host).
@@ -408,12 +398,6 @@ name = "DRIVE_TOKEN_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"

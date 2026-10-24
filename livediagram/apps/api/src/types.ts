@@ -154,9 +154,6 @@ export type Env = {
   // 20/60s per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // (a self-host) allows every read.
-  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
   // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
   WORKBENCH_TICKET_RATE_LIMITER?: {
