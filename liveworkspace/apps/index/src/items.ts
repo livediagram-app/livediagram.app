@@ -743,6 +743,7 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
     tabId: access.tabId,
     ownerId: row.owner_id,
     teamId: row.team_id,
+    trashed: row.trashed_at !== null,
   });
   if (!grant) return fail(503, 'grants_unavailable');
   // Through a link: Opened by a Visitor, on the owner's Timeline.

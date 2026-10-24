@@ -121,8 +121,8 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the editor app's
-`output: 'export'` static bundle plus the real api worker on local Durable Objects and a local liveworkspace index,
-so it exercises exactly what ships, not a dev-only code path.
+`output: 'export'` static bundle plus the real api worker on local Durable Objects and a local liveworkspace index
+and media service, so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livediagram/editor build` first; an old `out/` fails audits for code that has since changed.
 
@@ -134,12 +134,18 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below, or the Drive spec's
    own), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
    The stack forwards `/api/index/*` to it, cookies dropped, as the router does.
-2. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
+2. **media**: liveworkspace's media service (`liveworkspace/apps/media`, booted by its
+   `scripts/e2e-media.mjs`, which every product's stack can share) under `wrangler dev --local` on
+   `E2E_MEDIA_PORT` (8120), its D1 and R2 fresh each boot under `liveworkspace/apps/media/.wrangler/e2e-state-<port>`
+   (migrations applied first), keyed for livediagram.app with a test-only key the api gets as `MEDIA_KEY` (and
+   `MEDIA_URL` pointing at it). Uploads, the gallery and image bytes run end to end, as `import-images.spec.ts`
+   and `drawio-import.spec.ts` need.
+3. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
    each document's content in its own local Durable Object (no migration to apply).
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe), and `AI_ALLOWED_ORIGINS` blanked with `--var` (production
    declares it in `[vars]`, which would refuse the localhost editor).
-3. **live**: the static `apps/editor/out` served by a minimal Node
+4. **live**: the static `apps/editor/out` served by a minimal Node
    server that reproduces what the production router +
    editor worker do (so clean routes and the document placeholder resolve
    identically to prod):
@@ -166,7 +172,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
      each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
      the suite runs in parallel, and the tests beside it keep the build they loaded.
-4. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3113`),
+5. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3113`),
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
@@ -191,8 +197,8 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 
 `pnpm --filter @livediagram/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3115`, api `:8115`, marketing `:3116`, index `:8117`), so a guest stack already up on `:3102` is never
-reused for it; the workbench run has its own too (live `:3121`, api `:8121`, marketing `:3122`, index `:8118`).
+(live `:3115`, api `:8115`, marketing `:3116`, index `:8117`, media `:8116`), so a guest stack already up on `:3102` is never
+reused for it; the workbench run has its own too (live `:3121`, api `:8121`, marketing `:3122`, index `:8118`, media `:8122`).
 The stack also stands in for the accounts Worker (in every run but the Drive one, whose spec serves its own
 key and JWKS, which the api and the index then trust instead; guests get their identity from it and the api
 keeps no settings or profiles of its own, so guest runs need it too, and it answers the settings, profile,

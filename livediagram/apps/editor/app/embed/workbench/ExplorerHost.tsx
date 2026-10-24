@@ -15,6 +15,7 @@ import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from '
 import {
   Explorer,
   type ExplorerView,
+  type FolderShown,
   type LensTelemetryType,
   type TimelineTelemetry,
   type HomeTelemetry,
@@ -27,6 +28,7 @@ import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
+import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
@@ -96,10 +98,13 @@ export function ExplorerHost({
   view,
   header,
   children,
+  onFolderShown,
 }: {
   view: ExplorerView;
   header?: (search: ReactNode, chrome: ExplorerChrome) => ReactNode;
   children?: (chrome: ExplorerChrome) => ReactNode;
+  // The folder on screen, once its list is in (a workspace frame's place says it).
+  onFolderShown?: (shown: FolderShown) => void;
 }) {
   const router = useAppNavigation();
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
@@ -161,6 +166,7 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
         renderThumbnail={renderDocumentThumbnail}
+        renderItemMark={driveItemMarks(accountUserId ?? null)}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
@@ -169,6 +175,7 @@ export function ExplorerHost({
         onOrganise={trackOrganise}
         lensTemplates={CANVAS_TEMPLATE_FAMILIES}
         defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
+        onFolderShown={onFolderShown}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}
         imports={explorerImports}

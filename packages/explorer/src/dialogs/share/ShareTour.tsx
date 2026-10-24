@@ -120,7 +120,7 @@ export function ShowMeButton({ tour }: { tour: ShareTour }) {
 type Box = { left: number; top: number; width: number; height: number };
 
 /** The ring round the step's control and the card that explains it, over the dialog. */
-export function ShareTourStage({ tour }: { tour: ShareTour }) {
+export function ShareTourStage({ tour, helpHref }: { tour: ShareTour; helpHref?: string }) {
   const [box, setBox] = useState<Box | null>(null);
   const target = tour.step?.target;
   useLayoutEffect(() => {
@@ -190,6 +190,16 @@ export function ShareTourStage({ tour }: { tour: ShareTour }) {
           {tour.step.title}
         </p>
         <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{tour.step.body}</p>
+        {last && helpHref ? (
+          <a
+            href={helpHref}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-block text-xs font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
+          >
+            Read about sharing
+          </a>
+        ) : null}
         <div className="mt-3 flex items-center gap-2">
           {last ? null : (
             <button

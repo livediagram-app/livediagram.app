@@ -241,13 +241,17 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
   "tab": null,
   "team": null,
   "owner": "user_…",
+  "trashed": true,
   "iat": 0,
   "exp": 0,
   "jti": "…"
 }
 ```
 
-`team` and `owner` are the item's team and owner as the index has them when it signs. The item's Durable Object
+`team` and `owner` are the item's team and owner as the index has them when it signs. `trashed` is there only for an
+item in the Trash (granted to its owner and team alone; a link reaches nothing), so the app answers it as trashed
+rather than missing (livediagram: 410 `document_trashed`); `POST /items/:id/grant` says `trashed: true` beside it.
+An app never keeps such a grant in its cache, so a restore is seen on the next request. The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.

@@ -57,6 +57,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   sql.exec(`CREATE TEMP TABLE test_share_links (
     code TEXT PRIMARY KEY, document_id TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'edit',
     tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, password TEXT NULL)`);
+  sql.exec(`CREATE TEMP TABLE test_trash (document_id TEXT PRIMARY KEY)`);
 
   // Drain what the canvases owe (their outboxes). A call made while a drain runs waits for it; one made from inside
   // the drain (by its async context) returns at once.
@@ -141,6 +142,7 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
         level: grant.level,
         tabId: grant.tab,
         expiresAt: grant.exp * 1000,
+        ...(grant.trashed ? { trashed: true as const } : {}),
       };
     },
     // An item the caller reaches (by the same rule as a grant), as the index lists it; 404 otherwise.
@@ -219,6 +221,8 @@ function testGrantFor(
     .prepare('SELECT owner_id, team_id, created_at FROM document WHERE id = ?')
     .get(documentId) as
     { owner_id: string; team_id: string | null; created_at: number } | undefined;
+  // In the Trash: its owner and team are granted, saying so; a link reaches nothing.
+  const trashed = sql.prepare('SELECT 1 FROM test_trash WHERE document_id = ?').get(documentId);
   const grant = (
     level: AccessLevel,
     tab: string | null,
@@ -234,13 +238,14 @@ function testGrantFor(
     exp: Math.floor(Date.now() / 1000) + 600,
     shareCode: code,
     token: `test-grant:${documentId}:${sub}`,
+    ...(trashed ? { trashed: true } : {}),
   });
   if (!document || !document.created_at)
     return who.create && who.person ? grant('edit', null, who.person, null) : null;
   if (who.person && who.person === document.owner_id) return grant('edit', null, who.person, null);
   if (who.person && document.team_id && who.teams.includes(document.team_id))
     return grant('edit', null, who.person, null);
-  if (who.code) {
+  if (who.code && !trashed) {
     const link = sql
       .prepare(
         'SELECT role, tab_id, expires_at FROM test_share_links WHERE code = ? AND document_id = ?',
@@ -273,6 +278,11 @@ export function testShareLink(
       'INSERT INTO test_share_links (code, document_id, role, tab_id, created_at, expires_at) VALUES (?, ?, ?, ?, 1, ?)',
     )
     .run(code, documentId, role, tabId, expiresAt);
+}
+
+// A canvas moved to the Trash, as the index would hold it (testGrantFor).
+export function testTrash(db: SqliteD1, documentId: string): void {
+  db.sql.prepare('INSERT OR IGNORE INTO test_trash (document_id) VALUES (?)').run(documentId);
 }
 
 // A started canvas, as a create writes it: its own row (owner, name, team).

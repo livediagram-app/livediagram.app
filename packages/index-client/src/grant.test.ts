@@ -69,6 +69,12 @@ describe('createGrantVerifier', () => {
     await expect(verify(await grant({ owner: '' }))).resolves.toBeNull();
   });
 
+  it('reads an item in the Trash, and nothing else as one', async () => {
+    expect(await verify(await grant({ trashed: true }))).toMatchObject({ trashed: true });
+    expect(await verify(await grant({ trashed: 'yes' }))).not.toHaveProperty('trashed');
+    expect(await verify(await grant())).not.toHaveProperty('trashed');
+  });
+
   it("refuses another app's grant", async () => {
     await expect(verify(await grant({}, { aud: 'livediagram' }))).resolves.toBeNull();
   });

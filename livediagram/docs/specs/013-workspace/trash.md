@@ -48,10 +48,11 @@ is lost: its stars, share links, history and images stay where they are and come
 references stay referenced until the purge, so the unused-image retention never reaps them from under a restorable
 canvas ([Images](../009-elements/images.md)).
 
-The index grants nothing on a trashed canvas, so every door about it answers as for a canvas that does not exist
-(404), and its room admits nobody. An open session is closed when its grant lapses (`4007`); its editor asks the
-index for a fresh grant, gets none, and stays out ([API](../015-api/api.md) "A grant lapses; the session renews
-it").
+The index grants a trashed canvas to its owner and team alone, and their grant says it is in the Trash (`trashed`).
+Every door about it answers them `410 document_trashed` (the workbench's ticket mint and session redemption among
+them), and anyone else, a share-link visitor included, as for a canvas that does not exist (404). Only its snapshot
+still serves, for the Trash's own rows. Its room admits nobody: trashing closes its sockets (`document-trashed`), an
+upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it.
 
 When the api answers a canvas as not found, the editor asks the index whether it is in the Trash
 (`isTrashedInIndex`, `apps/editor/lib/document-trashed.ts`): the index's item outlives the trashing, so it can tell a
@@ -100,8 +101,8 @@ events are liveworkspace's ([telemetry.md](../../../../liveworkspace/docs/teleme
 
 - **A mark, not a move.** Trashing marks the index's item; the canvas's content stays in its Durable Object,
   untouched, which is what makes restore exact.
-- **Fail closed.** A trashed canvas gets no grant, so a door nobody remembered answers not-found rather than serving
-  it.
+- **Fail closed.** A trashed canvas's grant says so, and every door under `/api/documents/<id>` answers it 410
+  before its handler runs (`handleDocumentRequest`), so a door nobody remembered never serves it.
 - **No "deleted by".** The Trash does not record who binned a canvas.
 - **The image gallery still counts a trashed canvas as using its images.** It references them until the purge, and
   deleting such an image would break the canvas the moment it is restored.

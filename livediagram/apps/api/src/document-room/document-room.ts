@@ -955,6 +955,13 @@ export class DocumentRoom extends DurableObject<Env> {
       this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
       return;
     }
+    // A fresh grant on a canvas since moved to the Trash ends the session, as the trashing itself does.
+    if (renewal.claims.trashed) {
+      this.closeSockets((each) =>
+        each === ws ? [DOCUMENT_TRASHED_CLOSE, 'document-trashed'] : null,
+      );
+      return;
+    }
     await this.takeHead(renewal.claims);
     const current = this.readSession(ws);
     if (!current) return;

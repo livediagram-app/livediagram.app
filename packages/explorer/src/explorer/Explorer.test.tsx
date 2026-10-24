@@ -62,6 +62,81 @@ describe('<Explorer>', () => {
     expect(document.querySelector('[data-folder-row="f1"]')).toBeTruthy();
   });
 
+  it('badges an item Public when its app says anyone can find it', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { summary: { public: true } }), makeItem(2)],
+    });
+    renderExplorer(index, { kind: 'all' });
+    await waitFor(() => expect(rows().length).toBe(2));
+    const badge = (n: number) =>
+      document.querySelector(`[data-item-row="${makeItem(n).id}"]`)!.textContent ?? '';
+    expect(badge(1)).toContain('Public');
+    expect(badge(2)).not.toContain('Public');
+    expect(badge(2)).toContain('Private');
+  });
+
+  it("draws the host's marks beside each item's name and Updated time, in rows and cards", async () => {
+    const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
+    const renderItemMark = vi.fn((item: Item, at: 'title' | 'time') =>
+      item.id === makeItem(1).id ? <i data-mark={`${at}:${item.id}`} /> : null,
+    );
+    const { unmount } = renderExplorer(index, { kind: 'all' }, { renderItemMark });
+    await waitFor(() => expect(rows().length).toBe(2));
+    const first = document.querySelector(`[data-item-row="${makeItem(1).id}"]`)!;
+    expect(first.querySelector(`[data-mark="title:${makeItem(1).id}"]`)).toBeTruthy();
+    expect(first.querySelector(`[data-mark="time:${makeItem(1).id}"]`)).toBeTruthy();
+    const second = document.querySelector(`[data-item-row="${makeItem(2).id}"]`)!;
+    expect(second.querySelector('[data-mark]')).toBeNull();
+    unmount();
+    localStorage.setItem('liveworkspace:explorer-view-mode', 'card');
+    renderExplorer(index, { kind: 'all' }, { renderItemMark });
+    await waitFor(() =>
+      expect(
+        document.querySelector(`[data-item-card="${makeItem(1).id}"] [data-mark^="time:"]`),
+      ).toBeTruthy(),
+    );
+  });
+
+  it("moves a team folder's address onto its team's page in place, keeping its lens", async () => {
+    const index = createFakeIndex({
+      folders: [
+        {
+          id: 'ft',
+          name: 'Team Specs',
+          parentId: null,
+          teamId: 'team1',
+          ownerId: 'u',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        {
+          id: 'fp',
+          name: 'Mine',
+          parentId: null,
+          teamId: null,
+          ownerId: 'u',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ],
+    });
+    const { onNavigate, unmount } = renderExplorer(
+      index,
+      { kind: 'folder', id: 'ft', q: 'road' } as ExplorerView,
+      { teams: [{ id: 'team1', name: 'Team One' }] },
+    );
+    await waitFor(() => expect(onNavigate).toHaveBeenCalled());
+    const [to, href, options] = onNavigate.mock.calls[0]!;
+    expect(to).toMatchObject({ kind: 'team', id: 'team1', folderId: 'ft', q: 'road' });
+    expect(href).toContain('team1');
+    expect(options).toEqual({ replace: true });
+    unmount();
+    // A personal folder stays where it is.
+    const own = renderExplorer(index, { kind: 'folder', id: 'fp' });
+    await screen.findByRole('heading', { name: 'Mine' });
+    expect(own.onNavigate).not.toHaveBeenCalled();
+  });
+
   it('says the app’s kind: New Plan on liveplanner, New Canvas on livediagram', async () => {
     const index = createFakeIndex();
     const { onCreate, unmount } = renderExplorer(index, { kind: 'folder', id: 'f9' });

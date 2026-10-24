@@ -743,10 +743,11 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 - `ready` (workspace) once, when the Explorer first mounts: `{ scope: 'workspace', role }` (`role` the session's).
 - `place` (`useWorkspacePlaceMessages`) after every move and whenever a field of the current place changes, only
-  when it differs from the last sent (WB63): Explorer views from the Explorer's state (`view` = `placeView(node)`:
-  the `SelectedNode` kind, `folderId` and `folderName` for `folder`, `documentCount` =
-  `documentsByFolder.get(folderId)?.length ?? 0` for `folder`, the three null on every other view), once the
-  Explorer's lists are in; a document from the editor (`view: 'document'`, `documentId`, `documentName`, `tabId`,
+  when it differs from the last sent (WB63): Explorer views from the frame's address (`view` = the Explorer view's
+  kind; `folderId` for a folder, or a team's page at a folder) and, for a folder, what the shared Explorer tells once
+  its list is in (`onFolderShown`: `folderName`, and `documentCount` = the canvases directly in it, counted from the
+  pages read), the three null on every other view. A frame started on a team's folder is moved onto its team's page
+  at that folder, in place, by the shared Explorer (WB52); a document from the editor (`view: 'document'`, `documentId`, `documentName`, `tabId`,
   `tabName`, `role` the editor's `sessionRole`, the folder fields null). Logged `[workbench] place { view }`.
 - The editor in a workspace frame sends `place` where the document scope sends `ready`, and `tab`, `selection` and
   `reveal` as in the document scope; on an Explorer view they do nothing.

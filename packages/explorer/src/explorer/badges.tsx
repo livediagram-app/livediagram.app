@@ -1,7 +1,7 @@
 'use client';
 
 // The marks an item carries in rows, cards and its menu header (liveplanner's project-badges.tsx): the
-// visibility badge (Shared, Team, Private), Made by AI, the favourite star, the folder chip, and, in the All filter,
+// visibility badge (Public, Shared, Team, Private), Made by AI, the favourite star, the folder chip, and, in the All filter,
 // which app it belongs to.
 
 import { memo, type MouseEvent } from 'react';
@@ -22,8 +22,21 @@ const BADGE =
 export function VisibilityBadge({
   item,
 }: {
-  item: Pick<Item, 'sharedVia' | 'teamId'> & { hasLinks?: boolean };
+  item: Pick<Item, 'sharedVia' | 'teamId'> & { hasLinks?: boolean; summary?: Item['summary'] };
 }) {
+  // Public wins: listed where anyone can find it (livediagram's Community) is the widest audience there is.
+  if (item.summary?.public === true) {
+    return (
+      <span
+        title="Public: anyone can find it, view it and make their own copy."
+        data-visibility="public"
+        className={`${BADGE} bg-pink-50 text-pink-700 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30`}
+      >
+        <SharedDotGlyph />
+        Public
+      </span>
+    );
+  }
   if (item.sharedVia || item.hasLinks) {
     return (
       <span
