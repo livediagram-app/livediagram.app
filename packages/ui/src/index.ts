@@ -75,3 +75,7 @@ export { useVisualViewportBand } from './useVisualViewportBand';
 export { Glyph, type IconProps } from './icons/Glyph';
 export { lucideGlyph } from './icons/lucide-glyph';
 export { Prims } from './icons/Prims';
+// The breadcrumb trail every marketing site and help centre draws, and the BreadcrumbList JSON-LD that
+// describes it.
+export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
+export { breadcrumbJsonLd, type BreadcrumbCrumb } from './breadcrumb-json-ld';

@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from './icons/Glyph';
 
-// The breadcrumb trail shared by the marketing site and the help centre: a
+// The breadcrumb trail every app's marketing site and help centre share: a
 // home-icon root, chevron separators, and truncating labels.
 //
 // Only the TRAIL lives here, not the bar around it. The two surfaces genuinely
