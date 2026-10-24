@@ -55,8 +55,14 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   const raw = (path: string, init: RequestInit = {}) => {
     const headers = new Headers(init.headers);
     for (const [key, value] of Object.entries(options.headers())) headers.set(key, value);
-    if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-    const signal = options.timeoutMs ? AbortSignal.timeout(options.timeoutMs) : init.signal;
+    // A string body is JSON; a FormData, Blob or stream body names its own type (the browser sets a form's boundary).
+    if (typeof init.body === 'string' && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    // The timeout and the caller's own signal both apply: either one aborts.
+    const timeout = options.timeoutMs ? AbortSignal.timeout(options.timeoutMs) : null;
+    const signal =
+      timeout && init.signal ? AbortSignal.any([timeout, init.signal]) : (timeout ?? init.signal);
     return options.fetch(
       new Request(`${options.baseUrl}${path}`, { ...init, headers, ...(signal ? { signal } : {}) }),
     );

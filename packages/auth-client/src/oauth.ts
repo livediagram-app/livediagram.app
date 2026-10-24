@@ -115,7 +115,8 @@ export function guestHandoffUrl(options: GuestHandoffOptions): string {
   return url.toString();
 }
 
-function basicAuthorization(credentials: ClientCredentials): string {
+// The app's client credentials as HTTP Basic, each part URL-encoded as OAuth asks (and the accounts Worker reads).
+export function basicAuthorization(credentials: ClientCredentials): string {
   return `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`;
 }
 

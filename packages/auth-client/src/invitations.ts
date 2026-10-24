@@ -6,6 +6,7 @@
 // (INVITATIONS_TTL_MS) and calls for the same account at the same moment share one request. The memory
 // is bounded (INVITATIONS_CACHE_MAX accounts, the oldest forgotten first).
 
+import { call } from './account';
 import type { ClientCredentials } from './oauth';
 
 export interface PendingInvitation {
@@ -41,16 +42,7 @@ async function fetchInvitations(
   userId: string,
   fetcher: typeof fetch,
 ): Promise<PendingInvitation[]> {
-  const base = credentials.accountsUrl.replace(/\/+$/, '');
-  const response = await fetcher(`${base}/api/account/internal/invitations`, {
-    method: 'POST',
-    headers: {
-      authorization: `Basic ${btoa(`${credentials.clientId}:${credentials.clientSecret}`)}`,
-      accept: 'application/json',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ userId }),
-  });
+  const response = await call(credentials, '/invitations', { method: 'POST', body: { userId } }, fetcher);
   if (!response.ok) throw new Error(`invitations failed: ${response.status}`);
   const { invitations } = (await response.json()) as { invitations?: unknown };
   return Array.isArray(invitations) ? (invitations as PendingInvitation[]) : [];

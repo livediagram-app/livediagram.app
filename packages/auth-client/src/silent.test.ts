@@ -142,6 +142,8 @@ describe('the boot script', () => {
     expect(boot({ cookie: 'lp_signed_in=0' }).to).not.toBeNull();
     // Another app's hint on the same host isn't this one's.
     expect(boot({ cookie: 'xlp_signed_in=1; lp_signed_inx=1' }).to).not.toBeNull();
+    // Nor is a value that only starts with the mark.
+    expect(boot({ cookie: 'lp_signed_in=10' }).to).not.toBeNull();
   });
 
   it('stays put after the person signed out of this app', () => {

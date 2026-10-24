@@ -375,6 +375,14 @@ describe('forwardToIndex', () => {
     await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', doFetch);
     expect(seen[1]!.headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(false);
   });
+
+  it('refuses to forward to its own site, rather than loop', async () => {
+    const doFetch = upstream(new Response('ok'));
+    const request = new Request('https://livediagram.app/api/index/items');
+    const res = await forwardToIndex(request, new URL(request.url), 'https://livediagram.app', doFetch);
+    expect(res.status).toBe(508);
+    expect(doFetch).not.toHaveBeenCalled();
+  });
 });
 
 // Where each router finds liveworkspace.app, per environment: staging's routers must name staging's site, or a

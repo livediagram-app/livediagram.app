@@ -127,6 +127,24 @@ describe('createApiClient', () => {
     });
     await expect(api.json('/x')).rejects.toThrow();
   });
+
+  it("keeps the caller's abort beside a timeout", async () => {
+    const { seen, fetch } = recorder(() => Response.json({}));
+    const api = createApiClient({ baseUrl: base, fetch, headers: () => ({}), timeoutMs: 60_000 });
+    const controller = new AbortController();
+    await api.json('/x', { signal: controller.signal });
+    controller.abort();
+    expect(seen[0]!.signal.aborted).toBe(true);
+  });
+
+  it('names JSON only for a string body', async () => {
+    const { seen, fetch } = recorder(() => Response.json({}));
+    const api = createApiClient({ baseUrl: base, fetch, headers: () => ({}) });
+    const form = new FormData();
+    form.set('file', new Blob(['x']), 'x.txt');
+    await api.json('/upload', { method: 'POST', body: form });
+    expect(seen[0]!.headers.get('Content-Type')).toMatch(/^multipart\/form-data; boundary=/);
+  });
 });
 
 describe('postEvents', () => {

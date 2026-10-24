@@ -45,9 +45,16 @@ export function createPngRenderer(loaders: PngLoaders): {
   return {
     async renderPng(svg, scale = 1, maxSide, extraFonts = []) {
       await ensureWasm(loaders.wasm);
-      fonts ??= Promise.all([loaders.font(), loaders.bold()]).then((all) =>
-        all.map((bytes) => new Uint8Array(bytes)),
-      );
+      if (!fonts) {
+        const loading = Promise.all([loaders.font(), loaders.bold()]).then((all) =>
+          all.map((bytes) => new Uint8Array(bytes)),
+        );
+        // As with the wasm, a failed load is tried again by the next render rather than kept as broken.
+        loading.catch(() => {
+          if (fonts === loading) fonts = null;
+        });
+        fonts = loading;
+      }
       const options = {
         font: {
           fontBuffers: [...(await fonts), ...extraFonts],
@@ -57,19 +64,26 @@ export function createPngRenderer(loaders: PngLoaders): {
       };
       const at = (zoom: number) =>
         new Resvg(svg, zoom === 1 ? options : { ...options, fitTo: { mode: 'zoom', value: zoom } });
-      let resvg = at(scale);
-      // The SVG's own size (resvg's width / height, before any zoom) is known once parsed; drawn past the
-      // bound, it is parsed again at the zoom that fits.
-      const side = Math.max(resvg.width, resvg.height);
-      if (maxSide !== undefined && side * scale > maxSide) {
-        resvg.free();
-        resvg = at(maxSide / side);
+      let resvg: ReturnType<typeof at> | null = at(scale);
+      // Freed whatever happens: the wasm's memory is not the garbage collector's.
+      try {
+        // The SVG's own size (resvg's width / height, before any zoom) is known once parsed; drawn past the
+        // bound, it is parsed again at the zoom that fits.
+        const side = Math.max(resvg.width, resvg.height);
+        if (maxSide !== undefined && side * scale > maxSide) {
+          resvg.free();
+          resvg = null;
+          resvg = at(maxSide / side);
+        }
+        const image = resvg.render();
+        try {
+          return { png: image.asPng(), width: image.width, height: image.height };
+        } finally {
+          image.free();
+        }
+      } finally {
+        resvg?.free();
       }
-      const image = resvg.render();
-      const result = { png: image.asPng(), width: image.width, height: image.height };
-      image.free();
-      resvg.free();
-      return result;
     },
   };
 }

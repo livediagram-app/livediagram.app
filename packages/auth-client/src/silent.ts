@@ -291,7 +291,7 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   return (
     `(function(){try{` +
     `var w=window,d=document,l=location,n=navigator,c=d.cookie||'';` +
-    `function has(k,v){return new RegExp('(?:^|;\\\\s*)'+k+'='+(v||'[^;\\\\s]')).test(c)}` +
+    `function has(k,v){return new RegExp('(?:^|;\\\\s*)'+k+'='+(v?v+'(?:;|$)':'[^;\\\\s]')).test(c)}` +
     // A frame (an embed, the workbench, a preview), a crawler or other automated browser, or no cookies to come
     // back with.
     `if(w.top!==w.self||n.webdriver||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +

@@ -278,9 +278,7 @@ async function forwardToWorkspace(
     else headers.delete('Cookie');
   }
   headers.set(WORKSPACE_PROXY_HEADER, options.app);
-  const client = request.headers.get('CF-Connecting-IP');
-  if (client) headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
-  else headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  carryVisitorAddress(request, headers);
   headers.set('X-Forwarded-Host', url.host);
   // Built from the request itself, so its method and body come along as they are.
   const forwarded = new Request(new Request(target.toString(), request), {
@@ -328,12 +326,19 @@ export function forwardToIndex(
   doFetch: typeof fetch = fetch,
 ): Promise<Response> {
   const target = new URL(`${url.pathname}${url.search}`, origin);
+  if (target.host === url.host) return Promise.resolve(loop('INDEX_ORIGIN is this site'));
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
-  const client = request.headers.get('CF-Connecting-IP');
-  if (client) forwarded.headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
-  else forwarded.headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  carryVisitorAddress(request, forwarded.headers);
   return doFetch(forwarded);
+}
+
+// The visitor's address, as the platform's services count it (@liveworkspace/sites/network visitorAddress): the
+// connection's own, never one the caller sent.
+function carryVisitorAddress(request: Request, headers: Headers): void {
+  const client = request.headers.get('CF-Connecting-IP');
+  if (client) headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
+  else headers.delete(WORKSPACE_CLIENT_IP_HEADER);
 }
 
 // ---------- Previews, on the app's address ---------------------------------------------------------------------------
@@ -372,8 +377,6 @@ export function routeToPreviews(
   if (target.host === url.host) return Promise.resolve(loop('PREVIEWS_ORIGIN is this site'));
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
-  const client = request.headers.get('CF-Connecting-IP');
-  if (client) forwarded.headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
-  else forwarded.headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  carryVisitorAddress(request, forwarded.headers);
   return doFetch(forwarded);
 }

@@ -5,7 +5,7 @@
 // sign-ups and milestones, accounts' emails, and reporting activity for the onboarding series. These send the client secret, so they run
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
-import type { ClientCredentials } from './oauth';
+import { basicAuthorization, type ClientCredentials } from './oauth';
 
 const ACCOUNT_PATH = '/api/account/internal';
 
@@ -37,12 +37,8 @@ export interface MintedToken {
   secret: string;
 }
 
-function basic(credentials: ClientCredentials): string {
-  const pair = `${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`;
-  return `Basic ${btoa(pair)}`;
-}
-
-// One internal call to the account API with the app's client credentials (also workbench.ts's).
+// One internal call to the account API with the app's client credentials (also workbench.ts's and
+// invitations.ts's).
 export async function call(
   credentials: ClientCredentials,
   path: string,
@@ -52,7 +48,7 @@ export async function call(
   return fetcher(`${credentials.accountsUrl.replace(/\/+$/, '')}${ACCOUNT_PATH}${path}`, {
     method: init.method,
     headers: {
-      authorization: basic(credentials),
+      authorization: basicAuthorization(credentials),
       accept: 'application/json',
       ...(init.body === undefined ? {} : { 'content-type': 'application/json' }),
     },
