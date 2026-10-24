@@ -139,12 +139,7 @@ jobs:
           node scripts/hosted-vars.mjs build-env ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} >> "$GITHUB_ENV"
 
       - name: Build all apps
-        # Whether the editor app shows sign-in is baked into `next build`
-        # at this step (apps/editor/lib/auth-config.ts): on exactly when the
-        # api below is given an accounts client, so the two always agree.
-        # Unset, the editor app runs in guest-only mode.
         env:
-          NEXT_PUBLIC_SIGN_IN_ENABLED: ${{ secrets.ACCOUNTS_CLIENT_ID != '' && 'true' || '' }}
           # Which MCP host the editor app points at. Empty in production (the
           # app's own default is the hosted one); staging passes
           # mcp-staging.liveplanner.app so a staging OAuth flow stays inside

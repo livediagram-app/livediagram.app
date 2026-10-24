@@ -4,8 +4,7 @@
 // the signed-in user here with a `session` (and a display-only `client` name +
 // `to` redirect host). On approve we mint an lwt_ token via the api
 // (signed-in) and hand it to the MCP's /oauth/complete bound to a one-time
-// PKCE code, then bounce the browser to the client's redirect. Signed-in only;
-// absent end-to-end without sign-in.
+// PKCE code, then bounce the browser to the client's redirect. Signed-in only.
 import { Suspense, use, useEffect, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
@@ -13,7 +12,6 @@ import { CLI_CLIENT_ID } from '@liveplanner/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
-import { signInEnabled } from '@/lib/auth-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
 import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
@@ -70,16 +68,6 @@ function Consent() {
     );
   }
 
-  if (!signInEnabled) {
-    return (
-      <OauthShell>
-        <h1 className={AUTH_TITLE}>Connecting apps isn’t available</h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          This deployment doesn’t have accounts enabled, so there’s nothing to connect to.
-        </p>
-      </OauthShell>
-    );
-  }
   if (!authLoaded) {
     return (
       <OauthShell>

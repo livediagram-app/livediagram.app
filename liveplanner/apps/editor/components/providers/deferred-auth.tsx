@@ -3,12 +3,9 @@
 // The auth surface the app tree consumes. The session itself comes from a
 // lazily-loaded bridge (AccountsBridge, via AuthProvider) that publishes this
 // state; until it lands the defaults below describe "not settled yet", which
-// every consumer already handles. A deployment without sign-in
-// (docs/specs/002-project-scope/business-model-and-licence.md: sign-in is optional and purely
-// additive) never loads the bridge, and the defaults are its final state.
+// every consumer already handles.
 
 import { createContext, useContext } from 'react';
-import { sessionsEnabled } from '@/lib/auth-config';
 
 // The subset of the account the app actually renders (AuthControls
 // menu, the Settings identity card, the bootstrap's display name).
@@ -45,10 +42,9 @@ export type DeferredAuthState = {
   confirmIdentity?: () => Promise<boolean>;
 };
 
-// Without sessions the defaults ARE the final state (settled guest
-// mode); with them they are the "still loading" state.
+// The "still loading" state, until the accounts bridge publishes the session.
 export const DEFERRED_AUTH_DEFAULT: DeferredAuthState = {
-  authLoaded: !sessionsEnabled,
+  authLoaded: false,
   isSignedIn: false,
   userId: null,
   user: null,

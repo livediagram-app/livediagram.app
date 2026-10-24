@@ -92,9 +92,9 @@ Run from the repo root:
 
 Turbo caches results, so re-running with no changes is a no-op.
 
-## Enabling sign-in locally (optional)
+## Signing in locally (optional)
 
-The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register liveplanner with its accounts API:
+The editor always offers sign-in, and works as a guest when the api has no accounts settings. To exercise the signed-in code paths, run liveworkspace beside it and register liveplanner with its accounts API:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
 2. Register liveplanner once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts), and `--app liveplanner.app` is the app the client speaks for: the accounts Worker keeps liveplanner's own settings and sign-ups under it. The secret is printed once:
@@ -111,9 +111,6 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 3. Drop the values into the two env files:
 
    ```sh
-   # apps/editor/.env.local (gitignored)
-   NEXT_PUBLIC_SIGN_IN_ENABLED=true
-
    # apps/api/.dev.vars (gitignored)
    ACCOUNTS_URL=http://localhost:3000
    API_RESOURCE=http://localhost/api

@@ -316,19 +316,11 @@ out cleanly:
 
 Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
 
-### 3.7 Deployments without sign-in
+### 3.7 An api without sign-in
 
-API tokens are gated on **auth being enabled**, exactly as teams and sign-in
-are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-deployment that hasn't configured sign-in runs in pure-guest mode, and in that
-mode the feature is **absent end to end** — there is no API Tokens category to
-open and no way to mint one:
+Sign-in is always offered in the editor ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+Settings API Tokens category is always listed; a guest sees why it is empty and a Sign In link.
 
-- **Frontend** — the Settings API Tokens category (and the AI Tools link row to
-  it) renders only when `signInEnabled` (`apps/editor/lib/auth-config.ts`, derived
-  from `NEXT_PUBLIC_SIGN_IN_ENABLED === 'true'`). This is the **same
-  flag** that already hides the teams / sign-in sections of the sidebar, so when
-  auth is off the category simply isn't in the list.
 - **Backend** — a token is checked with the liveworkspace accounts Worker, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
   ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so no token
@@ -381,9 +373,8 @@ hardening landed first:
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page,
-   rendered only when `signInEnabled` so it's absent on a deployment without sign-in
-   ([§3.7](#37-deployments-without-sign-in)).
+   replaced the original Explorer "API tokens" page
+   ([§3.7](#37-an-api-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live

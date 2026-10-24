@@ -24,10 +24,9 @@ Sections, top to bottom:
 
 - **Current Project** — the active project's row. Click to rename in place; the row's ellipsis menu surfaces Rename, Duplicate, and Delete for the current project (moved here from the editor header).
 - **Overview, Spaces and More** — the Explorer sidebar's three groups, built from the same rows, layout rules and keyboard model at the panel's width; rows with projects open in place, the rest go to their Explorer page ([Explorer structure](../013-workspace/explorer-structure.md)).
-- **Sign-in nudge** — a dashed-border card at the bottom of the Explorer body that surfaces the value of accounts (cross-device persistence) where the user is looking at their library. Three states driven by the deployment + session:
-  - **Sign-in disabled** (a deployment without auth): "No sign-in on this deployment" with the body "Your projects are saved, but only this browser can open them. Clear its site data and you lose them." The projects are on the server; it is the guest id that lives in the browser. No button.
-  - **Sign-in enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your projects and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
-  - **Sign-in enabled, signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
+- **Sign-in nudge** — a dashed-border card at the bottom of the Explorer body that surfaces the value of accounts (cross-device persistence) where the user is looking at their library. Two states driven by the session:
+  - **Signed out**: "Sign in to keep your content" with body "A free account keeps your projects and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
+  - **Signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 
 Project rows show a small chain-link glyph (the shared `SharedProjectIcon`) beside the name when the project has an active share link (`shareCode` non-null, carried through from the `/api/projects` summary), with a "Has a share link" hover card, so an owner can tell at a glance which of their projects are shared. The glyph is suppressed on the row for the currently-open project, whose share state already shows in the Current Project section.
 

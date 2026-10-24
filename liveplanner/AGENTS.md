@@ -243,7 +243,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 - The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and its source is **not public**. Never add contributing, forking or self-hosting wording, or links to the repository, to anything users see.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
 - liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
-- Optional integrations degrade, never break: sign-in (the liveworkspace accounts Worker) is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
+- Optional integrations degrade, never break: the editor always offers sign-in (the liveworkspace accounts Worker), and when the api has no accounts settings every visitor settles as a guest.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
@@ -251,7 +251,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
 - Server-only secrets (the accounts client secret, Resend, the index key) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 

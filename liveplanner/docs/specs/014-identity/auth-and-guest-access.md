@@ -6,24 +6,18 @@
 
 We don't put auth in front of the core experience. We add auth where it _enables_ something the user wants (sharing, syncing, collaborating, paying).
 
-## Three deployment modes
+## Sign-in is always offered
 
-| Mode                 | Configuration                                                                                                                                                | Frontend                                                                                                                               | API worker                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Hybrid (production)  | `NEXT_PUBLIC_SIGN_IN_ENABLED=true` + the api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`                                | The accounts bridge asks for the session; a guest fetches a guest token from liveworkspace. Guests and signed-in people coexist.       | Verifies the Bearer: an account's access token or a guest's token. |
-| Guest-only           | The flag unset (a deployment without sign-in, such as local development, per [Business model + licence](../002-project-scope/business-model-and-licence.md)) | No bridge. Auth routes show "not enabled" notice. The guest handoff comes straight back without a token, so a visitor has no identity. | No Bearer to verify: every caller is treated as a link visitor.    |
-| Guest-only (partial) | Frontend flag on, api unconfigured                                                                                                                           | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles as a guest and cannot sign in.                            | As guest-only.                                                     |
+Every build of the editor offers sign-in; there is no switch to turn it off (the old `NEXT_PUBLIC_SIGN_IN_ENABLED` flag and its guest-only notices are gone). Guests and signed-in people always coexist: the root layout mounts the accounts bridge, the header shows Sign in, and the Explorer and editor show their sign-in nudges.
 
-The first two are the supported modes. The third is a misconfiguration — useful for debugging, not for prod. Without the accounts site there is no guest identity either, so a guest-only deployment keeps projects in This Browser and opens shared plans through their links; anything the index must record (a cloud plan, the Explorer's lists) needs liveworkspace.
+| The api's accounts settings                                                                     | Frontend                                                                                                                         | API worker                                                         |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` set (production) | The accounts bridge asks for the session; a guest fetches a guest token from liveworkspace. Guests and signed-in people coexist. | Verifies the Bearer: an account's access token or a guest's token. |
+| Unset (local development without liveworkspace running)                                         | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles without an identity and cannot sign in.             | No Bearer to verify: every caller is treated as a link visitor.    |
 
-The `signInEnabled` flag (`apps/editor/lib/auth-config.ts`) is the single source of truth on the frontend. Every sign-in-aware module reads it (or `sessionsEnabled`, which also counts the test-only e2e bridge) and picks one of two implementations at module load:
+Without the accounts site there is no guest identity either, so an api without accounts settings keeps projects in This Browser and opens shared plans through their links; anything the index must record (a cloud plan, the Explorer's lists) needs liveworkspace.
 
-- `AuthProvider` mounts no bridge, so the deferred auth context settles as a guest.
-- `useAccountBootstrap` returns a stable stub (`isSignedIn: false`, `authLoaded: true`, `accountUserId: null`).
-- `AuthControls` renders nothing.
-- `/sign-in/` and `/get-started/` render an `AuthDisabledNotice` with a "Continue as guest" CTA.
-
-Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-time constant — no per-render cost and sign-in-only code paths can be tree-shaken out of guest-only builds.
+`apps/editor/lib/auth-config.ts` keeps one build-time switch, `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, test builds only), which swaps the accounts bridge for the e2e bridge; a real build never sets it, so the bridge is never bundled.
 
 **At most one session request per page load.** The root layout's `AuthProvider` is deferred: the app tree consumes `DeferredAuthContext`, and a lazily-loaded `AccountsBridge` (`apps/editor/components/providers/AccountsBridge.tsx`, an async chunk) asks the api for the session with one `POST /api/auth/token` and publishes the result. A browser without the `lp_signed_in` hint ([below](#guest-projects-start-on-liveplanner)) has no session to find, so it settles as a guest at once and asks nothing: a guest's page load makes no auth request. It holds the access token in memory only, reuses it until a minute before it expires, and shares one refresh among concurrent asks (each refresh rotates the refresh token, so two at once would race). Signing in and out are full-page visits, so no state from before signing in survives into the signed-in page.
 
