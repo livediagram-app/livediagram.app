@@ -45,7 +45,6 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   // Canvas / themes
@@ -244,10 +243,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   recentDesigns: {
     title: 'Learn about Recent',
     description: 'Your most recently opened designs, personal and team, in one list.',
-  },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related designs across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',

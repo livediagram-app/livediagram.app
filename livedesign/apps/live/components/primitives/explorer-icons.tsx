@@ -6,7 +6,6 @@ import {
   lucideGlyph,
   PencilIcon as SharedPencilIcon,
   PlusIcon as SharedPlusIcon,
-  Prims,
   SparkleIcon as SharedSparkleIcon,
   TrashIcon as SharedTrashIcon,
 } from '@livedesign/ui';
@@ -16,17 +15,10 @@ import {
   lucideDownload,
   lucideExternalLink,
   lucideFolder,
-  lucideFolderRoot,
   lucideHistory,
   lucideHouse,
   lucideImage,
-  lucideKey,
-  lucideLibrary,
-  lucideMail,
-  lucidePalette,
   lucideShare2,
-  lucideStar,
-  lucideTag,
 } from '@livedesign/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
@@ -60,24 +52,6 @@ function G16({ size, children }: { size: number; children: ReactNode }) {
 
 // ---------- Tree + folders -----------------------------------------
 
-// The tree's disclosure chevron: points right, turns down when `open`.
-// (The accordion chevron that points down and flips is
-// components/primitives/ChevronIcon, a different control.)
-export function TreeChevronIcon({ open = false, size = 10 }: IconProps & { open?: boolean }) {
-  return (
-    <Glyph
-      size={size}
-      units={10}
-      style={{
-        transform: open ? 'rotate(90deg)' : 'none',
-        transition: 'transform var(--transition-duration-micro)',
-      }}
-    >
-      <path d="M3.5 2 6.5 5l-3 3" />
-    </Glyph>
-  );
-}
-
 // The page's filled folder, which opens when its subtree is expanded.
 export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?: boolean }) {
   return (
@@ -110,46 +84,14 @@ export function DesignIcon({ size = 13 }: IconProps) {
   );
 }
 
-// The Inbox (docs/specs/013-workspace/inbox.md): a tray with a tick, what's waiting on you, as
-// opposed to the Timeline's spine of what happened.
-export function InboxIcon({ size = 13 }: IconProps) {
-  return (
-    <G16 size={size}>
-      {/* Drawn half a unit high of the grid's middle, so its ink centres in a tile (optical-alignment.md). */}
-      <path d="M2 9V11.5a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 11.5V9" />
-      <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
-      <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
-    </G16>
-  );
-}
-
-// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the design is
-// starred, hollow when it isn't, so a menu row's glyph carries the state
-// alongside its label.
-export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: boolean }) {
-  return (
-    <Glyph size={size} units={24} fill={filled ? 'currentColor' : 'none'}>
-      <Prims prims={lucideStar} />
-    </Glyph>
-  );
-}
-
 export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
-// Painter's palette: a tag's colour.
-export const PaletteIcon = lucideGlyph(lucidePalette, 13);
-export const KeyIcon = lucideGlyph(lucideKey, 13);
 // A team: one drawing, shared with the landing page (@livedesign/ui).
 export { TeamIcon } from '@livedesign/ui';
-export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
 // designs (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
-export const MyDesignsIcon = lucideGlyph(lucideFolderRoot, 13);
-export const LibraryIcon = lucideGlyph(lucideLibrary, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
-// A luggage tag: Tags (docs/specs/013-workspace/tags.md), the sidebar row and the design menu's verb.
-export const TagIcon = lucideGlyph(lucideTag, 13);
 
 // ---------- Verbs ----------------------------------------------------
 
