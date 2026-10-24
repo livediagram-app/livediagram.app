@@ -35,15 +35,14 @@ export function handOverFor(app: AppName): ShareHandOver | undefined {
   };
 }
 
-/** An item's tabs, as its app's API answers the workspace token: the tabs alone where the app serves them (an app on
- *  the index kit, `{ tabs }`), else its item read (`{ [tabsKey]: { tabs } }`). None when the app keeps them to itself
+/** An item's tabs, as its app's API answers the workspace token (`{ tabs }`). None when the app keeps them to itself
  *  or the read fails (a pass then opens every tab). */
 export async function loadTabsOf(
   item: Pick<Item, 'app' | 'id' | 'sharedVia'>,
   doFetch: typeof fetch = fetch,
 ): Promise<{ id: string; name: string }[]> {
   if (!isAppName(item.app)) return [];
-  const { tabsPath, tabsKey } = APP_ITEMS[item.app].share;
+  const { tabsPath } = APP_ITEMS[item.app].share;
   if (!tabsPath) return [];
   try {
     const token = await workspaceToken();
@@ -55,9 +54,7 @@ export async function loadTabsOf(
       credentials: 'omit',
     });
     if (!res.ok) return [];
-    const body = (await res.json()) as { tabs?: unknown } & Record<string, unknown>;
-    const tabs =
-      tabsKey === null ? body.tabs : (body[tabsKey] as { tabs?: unknown } | undefined)?.tabs;
+    const { tabs } = (await res.json()) as { tabs?: unknown };
     if (!Array.isArray(tabs)) return [];
     return tabs.flatMap((tab: unknown) => {
       const t = tab as { id?: unknown; name?: unknown };
