@@ -228,7 +228,7 @@ CREATE UNIQUE INDEX items_plan_key ON items(plan_id, item_key);
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
   `INSERT` (create). A lost `rev` race retries up to `ITEM_WRITE_RETRIES` from a fresh read, then `409 item_busy`.
 - `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `readItem`, `readItems`, `insertItems`,
-  `updateItemAtRev`, `updateItemsAtRev`, `deleteItemRow`, `copyItemsStatements`; `itemFromRow`: row ↔ `Item`.
+  `updateItemAtRev`, `updateItemsAtRev`, `deleteItemRow`; `itemFromRow`: row ↔ `Item`.
 
 ## Interfaces and contracts: REST
 

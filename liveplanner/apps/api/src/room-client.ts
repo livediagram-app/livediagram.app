@@ -369,15 +369,6 @@ export async function broadcastShareOp(
   await broadcastOp(env, projectId, op, op.kind);
 }
 
-// Tell a project's realtime room that the project was moved to the Trash
-// (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Best-effort like the share-op
-// broadcast: the stored write is the change, and a session the room misses still
-// has every save refused with project_trashed.
-export async function broadcastProjectTrashed(env: Env, projectId: string): Promise<void> {
-  await broadcastOp(env, projectId, { kind: 'project-trashed' }, 'project-trashed');
-}
-
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
 // so a set or clear that cannot reach it throws `RoomUnavailableError` (the route answers 503, PR11).
 const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;

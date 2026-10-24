@@ -471,27 +471,3 @@ export function deleteSheetStatement(
     sheetId,
   );
 }
-
-// A project copy's sheets (copyProject): each source tab's sheets under the copy's id for that tab; the sheet
-// ids stay, so the copy's Sheet elements still frame them.
-export function copySheetsStatements(
-  env: PlanEnv,
-  sourceId: string,
-  newId: string,
-  tabIdMap: ReadonlyMap<string, string>,
-  now: number,
-): D1PreparedStatement[] {
-  return [...tabIdMap].flatMap(([oldTab, newTab]) => [
-    env.PLAN_DB.prepare(
-      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
-       SELECT ?, id, ?, title, layout, 0, cell_count, cell_bytes, created_at, ?, updated_by
-         FROM sheets WHERE plan_id = ? AND tab_id = ?`,
-    ).bind(newId, newTab, now, sourceId, oldTab),
-    env.PLAN_DB.prepare(
-      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format)
-       SELECT ?, c.sheet_id, c.row_id, c.col_id, c.input, c.format
-         FROM sheet_cells c JOIN sheets s ON s.plan_id = c.plan_id AND s.id = c.sheet_id
-        WHERE c.plan_id = ? AND s.tab_id = ?`,
-    ).bind(newId, sourceId, oldTab),
-  ]);
-}

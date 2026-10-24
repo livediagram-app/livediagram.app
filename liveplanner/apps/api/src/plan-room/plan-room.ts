@@ -302,7 +302,6 @@ export class PlanRoom extends DurableObject<Env> {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
       broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
       closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
-      closeAllIfTrashed: (op) => this.closeAllIfTrashed(op),
       clearAgentsFor: (op) => this.clearAgentsFor(op),
       closeSessionsForAccessChange: (close) => this.closeSessionsForAccessChange(close),
       purge: () => this.purge(),
@@ -954,14 +953,6 @@ export class PlanRoom extends DurableObject<Env> {
     this.shares.clear();
     this.maintenanceAt = null;
     console.info('[room] purged');
-  }
-
-  // After a project-trashed op has gone out, close every socket
-  // (docs/specs/013-workspace/trash.md): the project is in the Trash, and its
-  // admission refuses every new join until it is restored.
-  private closeAllIfTrashed(op: unknown): void {
-    if ((op as { kind?: unknown } | null)?.kind !== 'project-trashed') return;
-    this.closeSockets(() => [PROJECT_TRASHED_CLOSE, 'project-trashed']);
   }
 
   // Put a mutation into the ordered stream: a seq, the catch-up log, every

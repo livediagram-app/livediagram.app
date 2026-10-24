@@ -1419,27 +1419,6 @@ describe('PlanRoom tab-scoped sessions', () => {
     });
   }
 
-  it('closes every socket with 4004 when the project is trashed, after telling them', async () => {
-    // docs/specs/013-workspace/trash.md: open sessions end the moment the
-    // project goes to the Trash, each told why.
-    const { room, state } = newRoom();
-    const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
-    const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
-    scopedSession(state, owner, presence('p-o', 'edit'), null);
-    scopedSession(state, visitor, presence('p-v', 'view'), 't2', 'CODE2345');
-    await room.fetch(
-      new Request('https://room/broadcast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ op: { kind: 'project-trashed' } }),
-      }),
-    );
-    for (const ws of [owner, visitor]) {
-      expect(ops(ws)).toEqual([{ kind: 'project-trashed' }]);
-      expect(ws.closed).toEqual([4004, 'project-trashed']);
-    }
-  });
-
   // docs/specs/015-api/api.md "Access changes end the sessions they affect": the api's internal
   // /close-sessions ends only the matched sessions, with 4005, and broadcasts nothing.
   describe('POST /close-sessions', () => {

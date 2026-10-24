@@ -72,7 +72,7 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
 - `apps/api/src/db/sheets.ts`: `listSheets(env, docId, { tabId?, ids? })` (sheets then their cells, two queries),
   `readSheetHead(env, docId, id)` (the row without cells), `readCells(env, docId, sheetId, keys)`,
   `insertSheetStatements`, `cellWriteStatements(env, docId, sheetId, applied)`, `layoutWriteStatement(..., rev)`,
-  `deleteSheetStatement`, `copySheetsStatements(env, sourceId, newId, onlyTabIds?)`, `sheetCounts(env, docId)`;
+  `deleteSheetStatement`, `sheetCounts(env, docId)`;
   re-exported from `db/index.ts`. Row ↔ `Sheet` in the same file (`sheetFromRows`).
 - **Cell writes by `json_each`**: the changed cells go as one JSON parameter per statement, so a 5,000-cell
   write is a handful of statements whatever SQLite's 100-parameter cap in a Durable Object. From the engine's landed write the api builds
@@ -258,14 +258,11 @@ REFERENCED`;
 REFERENCED`.
        Each is bounded by the project's sheets (`PROJECT_SHEETS_MAX`, the `sheets` primary key prefix), and is one
        index probe that matches nothing for a project without sheets.
-  - `sheetRefCopyStatement(env, fromTabId, toTabId)`: `INSERT INTO sheet_refs SELECT ?2, sheet_id FROM sheet_refs
-WHERE tab_id = ?1` (a copied project's tabs, without a parse).
 - **Where it runs**: `tabWriteStatements` (every editor save and every changeset) appends
   `sheetRefReplaceStatements` after the tabs and `plan_tabs` upserts (the FK and the triggers read them). The
   settling runs in the triggers, per reference added or removed, so a write whose references are unchanged settles
   nothing. `seedTabs`
-  appends `sheetRefReplaceStatements` per tab (its sheets are seeded after). The project copy appends
-  `sheetRefCopyStatement` per tab. `deleteTabRow` runs `sheetSettleStatements` after unlinking: the link the triggers
+  appends `sheetRefReplaceStatements` per tab (its sheets are seeded after). `deleteTabRow` runs `sheetSettleStatements` after unlinking: the link the triggers
   find the project by is gone first (the tab's rows go by the FK cascade, or stop counting through the join). `swapTabData` changes no element, so it
   adds nothing. A create stores `unreferenced_since = CASE WHEN REFERENCED THEN NULL ELSE now END`, so a sheet whose
   element never reaches the api expires too.

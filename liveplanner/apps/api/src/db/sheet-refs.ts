@@ -65,17 +65,6 @@ export function sheetSettleStatements(
   ];
 }
 
-// A copied tab references what its source did (a copied project's tabs, copied without a parse).
-export function sheetRefCopyStatement(
-  env: PlanEnv,
-  fromTabId: string,
-  toTabId: string,
-): D1PreparedStatement {
-  return env.PLAN_DB.prepare(
-    'INSERT OR IGNORE INTO sheet_refs (tab_id, sheet_id) SELECT ?2, sheet_id FROM sheet_refs WHERE tab_id = ?1',
-  ).bind(fromTabId, toTabId);
-}
-
 // A sheet just made notes when nothing references it yet, so one whose element never reaches the api expires too.
 export function sheetNoteUnreferencedStatement(
   env: PlanEnv,

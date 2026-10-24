@@ -10,7 +10,6 @@ export type InternalRoom = {
   broadcastSystemOp: (op: unknown) => void;
   broadcastOrderedSystemOp: (op: unknown) => void;
   closeSessionsOfChangedLink: (op: unknown) => void;
-  closeAllIfTrashed: (op: unknown) => void;
   clearAgentsFor: (op: unknown) => Promise<void>;
   closeSessionsForAccessChange: (close: AccessCloseMatch) => void;
   purge: () => Promise<void>;
@@ -49,7 +48,6 @@ export async function answerInternal(
     if (body.ordered === true) room.broadcastOrderedSystemOp(op);
     else room.broadcastSystemOp(op);
     room.closeSessionsOfChangedLink(op);
-    room.closeAllIfTrashed(op);
     await room.clearAgentsFor(op);
     return new Response(null, { status: 204 });
   }

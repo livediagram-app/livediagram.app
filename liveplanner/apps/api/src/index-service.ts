@@ -11,12 +11,7 @@ import {
   type GrantOutcome,
   type ItemGrant,
 } from '@liveworkspace/index-app';
-import type {
-  GrantClaims,
-  IndexAppClient,
-  IndexClient,
-  ShareAccess,
-} from '@liveworkspace/index-client';
+import type { IndexAppClient, IndexClient, ShareAccess } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export { indexApiUrl, linkCodeOf };
@@ -31,13 +26,6 @@ export type PlanGrant = ItemGrant;
 
 export const setGrantVerifierForTests = indexService.setGrantVerifierForTests;
 export const clearGrantCacheForTests = indexService.clearGrantCacheForTests;
-
-// The claims of a grant for this plan, or null for a missing, forged, expired or misaddressed one.
-export const verifyPlanGrant = (
-  env: Pick<Env, 'INDEX_ORIGIN'>,
-  token: string | null | undefined,
-  planId: string,
-): Promise<GrantClaims | null> => indexService.verifyGrant(env, token, planId);
 
 export { itemGrantOf as planGrantOf } from '@liveworkspace/index-app';
 

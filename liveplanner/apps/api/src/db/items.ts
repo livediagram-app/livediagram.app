@@ -241,32 +241,3 @@ export async function deleteItemRow(
   if (!row) return null;
   return { rev: revOf(results[1]), item: itemFromRow(row) };
 }
-
-// A project copy takes the items with it, ids and keys unchanged, so every card on the copied
-// tabs still finds its item (docs/specs/026-plan/items.md "Copies and exports"). `onlyIds` limits
-// a tab-scoped visitor's copy to the items their tab shows.
-export function copyItemsStatements(
-  env: PlanEnv,
-  sourceId: string,
-  targetId: string,
-  onlyIds: readonly string[] | null,
-): D1PreparedStatement[] {
-  const filter = onlyIds === null ? '' : ` AND id IN (SELECT value FROM json_each(?))`;
-  const binds: unknown[] = [
-    targetId,
-    sourceId,
-    ...(onlyIds === null ? [] : [JSON.stringify(onlyIds)]),
-  ];
-  return [
-    env.PLAN_DB.prepare(
-      `INSERT INTO items (plan_id, ${COLUMNS})
-       SELECT ?, ${COLUMNS} FROM items WHERE plan_id = ?${filter}`,
-    ).bind(...binds),
-    env.PLAN_DB.prepare(
-      `UPDATE plan SET
-         items_rev = (SELECT items_rev FROM plan WHERE id = ?2),
-         items_next_key = (SELECT items_next_key FROM plan WHERE id = ?2)
-       WHERE id = ?1`,
-    ).bind(targetId, sourceId),
-  ];
-}
