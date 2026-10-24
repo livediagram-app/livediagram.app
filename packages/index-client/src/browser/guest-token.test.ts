@@ -59,9 +59,24 @@ it('asks again with fewer than 30 days left', () => {
 });
 
 describe('the handoff', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('leaves on the next task, never inside the call that starts it', () => {
+    void tokens().startGuestHandoff();
+    expect(w.assign).not.toHaveBeenCalled();
+    vi.runAllTimers();
+    expect(w.assign).toHaveBeenCalledOnce();
+  });
+
   it("leaves for the api's guest door with a state, and keeps the token that comes back for it", () => {
     const t = tokens();
     void t.startGuestHandoff();
+    vi.runAllTimers();
     const url = new URL(w.assign.mock.calls[0]![0] as string, 'http://localhost');
     expect(url.pathname).toBe('/api/auth/guest');
     const state = url.searchParams.get('state')!;
@@ -79,12 +94,14 @@ describe('the handoff', () => {
   it("keeps nothing for a stranger's state, and starts no other handoff for a while", () => {
     const t = tokens();
     void t.startGuestHandoff();
+    vi.runAllTimers();
     expect(t.completeGuestHandoff(`#guest_token=${guestTokenFor('guest_x')}&state=wrong`).ok).toBe(
       false,
     );
     expect(w.win.localStorage.getItem(KEY)).toBeNull();
     w.assign.mockReset();
     void t.startGuestHandoff();
+    vi.runAllTimers();
     expect(w.assign).not.toHaveBeenCalled();
   });
 

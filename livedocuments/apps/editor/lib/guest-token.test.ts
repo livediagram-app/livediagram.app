@@ -60,8 +60,23 @@ describe('refresh window', () => {
 });
 
 describe('the handoff', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('leaves on the next task, never inside the call that starts it', () => {
+    void startGuestHandoff();
+    expect(assign).not.toHaveBeenCalled();
+    vi.runAllTimers();
+    expect(assign).toHaveBeenCalledOnce();
+  });
+
   it('leaves for the api’s guest door with a state, and keeps the token that comes back for it', () => {
     void startGuestHandoff();
+    vi.runAllTimers();
     expect(assign).toHaveBeenCalledOnce();
     const url = new URL(assign.mock.calls[0]![0] as string, 'http://localhost');
     expect(url.pathname).toMatch(/\/auth\/guest$/);
@@ -77,11 +92,13 @@ describe('the handoff', () => {
 
   it('keeps nothing for a stranger’s state, and starts no other handoff for a while', () => {
     void startGuestHandoff();
+    vi.runAllTimers();
     const done = completeGuestHandoff(`#guest_token=${guestTokenFor('guest_x')}&state=wrongstate1`);
     expect(done.ok).toBe(false);
     expect(localStorage.getItem(GUEST_TOKEN_STORAGE_KEY)).toBeNull();
     assign.mockReset();
     void startGuestHandoff();
+    vi.runAllTimers();
     expect(assign).not.toHaveBeenCalled();
   });
 

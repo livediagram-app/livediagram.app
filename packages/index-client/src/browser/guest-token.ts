@@ -134,7 +134,10 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
       handoffKey,
       JSON.stringify({ state, returnTo: returnTo ?? `${pathname}${search}${hash}` }),
     );
-    window.location.assign(`${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`);
+    // On the next task, never inside the caller's own: a handoff begun from a React effect would otherwise fire
+    // beforeunload mid-commit, where the editors' unload flush (flushSync) cannot run.
+    const to = `${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`;
+    setTimeout(() => window.location.assign(to), 0);
     return new Promise(() => {});
   };
 
