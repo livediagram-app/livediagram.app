@@ -136,7 +136,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'list-and-card-views': '#0ea5e9',
   timeline: '#8b5cf6',
   activity: '#f43f5e',
-  timeline: '#d97706',
   folders: '#f59e0b',
   'default-folders': '#f59e0b',
   filters: '#6366f1',
