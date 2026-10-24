@@ -85,7 +85,6 @@ export const ROOT_TYPES = [
   'WorkbenchPairingRequestView',
   'WorkbenchPairing',
   'WorkbenchPairingsResponse',
-  'TimelineEvent',
   'ActivityAction',
   'ActivityThread',
   'ActivityCard',

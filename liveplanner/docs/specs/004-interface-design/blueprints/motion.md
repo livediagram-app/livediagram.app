@@ -341,7 +341,6 @@ logging, because motion isn't a decision point.
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
 | Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                      |
 | Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx` |

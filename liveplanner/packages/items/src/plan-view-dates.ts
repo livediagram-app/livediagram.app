@@ -1,6 +1,5 @@
 // Calendar days for the plan views (docs/specs/026-plan/plan-views.md): a `YYYY-MM-DD` date field as a
-// whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it. The
-// timeline's month grid (packages/ui/src/timeline/monthCells.ts) shares the same arithmetic.
+// whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it.
 export const DAY_MS = 86_400_000;
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 

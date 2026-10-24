@@ -340,11 +340,10 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because real bugs could not be caught without it, both in the
+  This exists because a real bug could not be caught without it, in the
   Timeline, whose state lives in hooks rather than in pure helpers:
   `useTimelineFeed.test.tsx` covers one scope's fetched-period cache leaking
-  into another's ([Timeline](../013-workspace/timeline.md) §3.4), and `useTimelineControls.test.tsx` covers a
-  Clear filters button that cleared only half the filters. Each fails if its
+  into another's ([Timeline](../013-workspace/timeline.md) §3.4). It fails if its
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of

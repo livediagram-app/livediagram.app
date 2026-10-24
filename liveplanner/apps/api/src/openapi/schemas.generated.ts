@@ -4513,47 +4513,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'kind'],
     type: 'object',
   },
-  KnownTimelineEventType: {
-    enum: [
-      'project_created',
-      'project_renamed',
-      'project_duplicated',
-      'project_moved',
-      'project_edited',
-      'project_offline',
-      'project_synced',
-      'project_opened_by_visitor',
-      'project_copied_by_visitor',
-      'folder_created',
-      'folder_deleted',
-      'comment_added',
-      'comment_resolved',
-      'action_assigned',
-      'action_completed',
-      'share_link_created',
-      'share_link_expiring',
-      'team_created',
-      'team_invite_received',
-      'team_invite_accepted',
-      'team_invite_declined',
-      'team_member_joined',
-      'team_member_left',
-      'team_member_removed',
-      'team_role_changed',
-      'team_project_added',
-      'team_project_removed',
-      'team_renamed',
-      'team_deleted',
-      'team_invite_link_enabled',
-      'team_invite_link_disabled',
-      'token_created',
-      'token_revoked',
-      'token_expiring',
-      'theme_saved',
-      'theme_deleted',
-    ],
-    type: 'string',
-  },
   Layer: {
     additionalProperties: false,
     properties: {
@@ -9268,72 +9227,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   TextSizing: {
     enum: ['fit', 'wrap'],
     type: 'string',
-  },
-  TimelineEvent: {
-    additionalProperties: false,
-    properties: {
-      actorId: {
-        type: ['string', 'null'],
-      },
-      description: {
-        type: ['string', 'null'],
-      },
-      eventType: {
-        $ref: '#/components/schemas/TimelineEventType',
-      },
-      id: {
-        type: 'string',
-      },
-      occurredAt: {
-        type: 'number',
-      },
-      snapshot: {
-        additionalProperties: {},
-        type: 'object',
-      },
-      sourceId: {
-        type: 'string',
-      },
-      sourceType: {
-        $ref: '#/components/schemas/TimelineSourceType',
-      },
-      title: {
-        type: 'string',
-      },
-    },
-    required: [
-      'id',
-      'sourceType',
-      'sourceId',
-      'eventType',
-      'title',
-      'description',
-      'occurredAt',
-      'actorId',
-      'snapshot',
-    ],
-    type: 'object',
-  },
-  TimelineEventType: {
-    anyOf: [
-      {
-        $ref: '#/components/schemas/KnownTimelineEventType',
-      },
-      {
-        type: 'string',
-      },
-    ],
-  },
-  TimelineSourceType: {
-    anyOf: [
-      {
-        type: 'string',
-      },
-      {
-        enum: ['project', 'team', 'account'],
-        type: 'string',
-      },
-    ],
   },
   TimerMode: {
     enum: ['countdown', 'stopwatch'],
