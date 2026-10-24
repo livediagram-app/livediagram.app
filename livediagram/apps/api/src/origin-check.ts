@@ -2,8 +2,8 @@
 // filter (docs/specs/017-telemetry/telemetry.md). The relay rejects requests whose Origin
 // header is present and isn't the api worker's own origin so casual
 // drive-by cross-site posters can't inflate the public usage chart,
-// but local dev legitimately serves different ports (the live
-// editor on :3002 posting to the api worker on :8687), and those
+// but local dev legitimately serves different ports (the
+// editor on :3102 posting to the api worker on :8687), and those
 // should be allowed through. This
 // helper widens the filter to treat any localhost-to-localhost pair
 // as same-origin enough for dev. Production never sees a localhost

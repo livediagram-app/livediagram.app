@@ -176,20 +176,6 @@ export async function renameDocument(
   return (res.meta.changes ?? 0) > 0;
 }
 
-// The team the index files the document in, as a grant names it: kept so the document's own reads (emails, the
-// image share check) know it without asking. A move between spaces reaches here on the next request with a grant.
-export async function keepDocumentTeam(
-  env: DocumentEnv,
-  documentId: string,
-  teamId: string | null,
-): Promise<void> {
-  await env.DOCUMENT_DB.prepare(
-    'UPDATE document SET team_id = ?2 WHERE id = ?1 AND created_at > 0 AND team_id IS NOT ?2',
-  )
-    .bind(documentId, teamId)
-    .run();
-}
-
 // The snapshot cache's freshness stamp (thumbnail.ts).
 export async function markThumbRendered(
   env: DocumentEnv,

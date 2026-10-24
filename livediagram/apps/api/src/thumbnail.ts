@@ -251,7 +251,7 @@ function stampUnknownCount(
 }
 
 // Turn a stored tab body into an SVG, shared by the first-tab snapshot and
-// the per-tab live image. A Form tab draws its form. Null when the body is
+// the per-tab live image. Null when the body is
 // absent, unparseable, or has nothing to draw (an empty canvas has no
 // meaningful thumbnail; the row shows its icon instead).
 async function renderTabBodyToSvg(
