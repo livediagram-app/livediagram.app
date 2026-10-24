@@ -6,7 +6,6 @@ import {
   HINT_LONG_PRESS_MS,
   HINT_LONG_PRESS_SLOP_PX,
   HINT_TOUCH_LINGER_MS,
-  PREVIEW_OPEN_DELAY_MS,
   TOOLTIP_OPEN_DELAY_MS,
   type HintKind,
 } from './hint-constants';
@@ -54,7 +53,6 @@ type HintState = {
 const OPEN_DELAY_MS: Record<HintKind, number> = {
   tooltip: TOOLTIP_OPEN_DELAY_MS,
   'hover-card': 0,
-  preview: PREVIEW_OPEN_DELAY_MS,
 };
 
 type Timer = ReturnType<typeof setTimeout> | null;

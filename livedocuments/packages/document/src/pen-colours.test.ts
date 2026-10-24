@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import {
   PEN_BOARDS,
   PEN_COLOUR_NAMES,
-  WHITEBOARD_BOARD,
-  WHITEBOARD_INK,
+  PEN_INK,
   YELLOW_DARK_CONTRAST,
   contrastRatio,
   hexOklch,
@@ -41,12 +41,13 @@ describe('pen stock colours', () => {
     ]);
   });
 
-  it('tunes against the whiteboard boards, whose ink is itself 4.5:1 or more', () => {
-    expect(PEN_BOARDS).toEqual(WHITEBOARD_BOARD);
+  it("tunes against the Default theme's canvases, whose ink is itself 4.5:1 or more", () => {
+    expect(PEN_BOARDS).toEqual({
+      light: DEFAULT_BACKGROUND_COLOR,
+      dark: DARK_CANVAS_BACKGROUND_COLOR,
+    });
     for (const board of ['light', 'dark'] as const) {
-      expect(contrastRatio(WHITEBOARD_INK[board], WHITEBOARD_BOARD[board])).toBeGreaterThanOrEqual(
-        4.5,
-      );
+      expect(contrastRatio(PEN_INK[board], PEN_BOARDS[board])).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -83,8 +84,8 @@ describe('pen stock colours', () => {
     expect(isPenColourName('ink')).toBe(true);
     expect(PEN_COLOUR_NAMES).not.toContain('ink');
     expect(penColourLabel('ink')).toBe('Ink');
-    expect(penColourHex('ink', 'light')).toBe(WHITEBOARD_INK.light);
-    expect(penColourHex('ink', 'dark')).toBe(WHITEBOARD_INK.dark);
+    expect(penColourHex('ink', 'light')).toBe(PEN_INK.light);
+    expect(penColourHex('ink', 'dark')).toBe(PEN_INK.dark);
   });
 
   it('says which board a custom colour is hard to see on, and offers a nearby readable one', () => {

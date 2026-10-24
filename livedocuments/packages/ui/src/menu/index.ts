@@ -30,4 +30,3 @@ export { MenuTreeContext, useMenuKind, type MenuKind, type MenuTree } from './me
 export { useMenu, type MenuHandle, type SurfaceProps, type UseMenuOptions } from './useMenu';
 export { useMenuButton, type MenuButton } from './useMenuButton';
 export { useControlMenu, type UseControlMenuOptions } from './useControlMenu';
-export { MENU_PANEL, menuRadioRowClass } from './menu-classes';

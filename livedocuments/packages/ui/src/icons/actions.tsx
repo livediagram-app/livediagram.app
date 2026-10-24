@@ -1,12 +1,8 @@
 import type { IconPrim } from '@livedocuments/icons';
 import {
-  lucideArrowDown,
-  lucideArrowUp,
   lucideColumns2,
   lucideCopy,
   lucideCopyPlus,
-  lucideIndentDecrease,
-  lucideIndentIncrease,
   lucideLayoutGrid,
   lucideLock,
   lucideLockOpen,
@@ -44,11 +40,6 @@ const CENTRED_CHECK: readonly IconPrim[] = [{ t: 'path', d: 'M20 6.5 9 17.5l-5-5
 export const CheckIcon = lucideGlyph(CENTRED_CHECK, 12);
 // A paint roller: the format painter (copy one element's style onto others).
 export const FormatPainterIcon = lucideGlyph(lucidePaintRoller, 14);
-// Indent / outdent a line of a list, and move a line up or down (the outline editor).
-export const IndentIcon = lucideGlyph(lucideIndentIncrease, 14);
-export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 14);
-export const ArrowUpIcon = lucideGlyph(lucideArrowUp, 14);
-export const ArrowDownIcon = lucideGlyph(lucideArrowDown, 14);
 // Two panes side by side: open a tab beside the one you are on (docs/specs/007-editor/split-view.md).
 export const SideBySideIcon = lucideGlyph(lucideColumns2, 16);
 // Corner brackets: fit the view to its content.

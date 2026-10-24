@@ -1,7 +1,7 @@
-import { PREVIEW_WARMUP_MS, TOOLTIP_WARMUP_MS, type HintKind } from './hint-constants';
+import { TOOLTIP_WARMUP_MS, type HintKind } from './hint-constants';
 
 // Page-wide hint state: the one open hint (spec: one at a time) and the
-// warm-up clocks of the hints that wait before opening (tooltip, preview). Module state, because hints are independent React
+// warm-up clock of the hint that waits before opening (a tooltip). Module state, because hints are independent React
 // trees with no common provider.
 
 // A hint identifies itself with a token that lives as long as it does, so
@@ -14,7 +14,6 @@ let holder: Holder | null = null;
 // The kinds with an open delay, and how long each stays warm after one of them closes.
 const WARMUP_MS: Partial<Record<HintKind, number>> = {
   tooltip: TOOLTIP_WARMUP_MS,
-  preview: PREVIEW_WARMUP_MS,
 };
 const closedAt = new Map<HintKind, number>();
 
@@ -33,9 +32,8 @@ export function releaseHint(token: HintToken, kind: HintKind, now: number): void
   if (holder?.token === token) holder = null;
 }
 
-// A tooltip or a preview may skip its delay while another of its kind is open
-// or has just closed: scanning a row of controls reads each name at once, and
-// moving down a table shows each row's preview at once. A hover card has no
+// A tooltip may skip its delay while another is open or has just closed:
+// scanning a row of controls reads each name at once. A hover card has no
 // delay to skip.
 export function isHintWarm(kind: HintKind, now: number): boolean {
   const warmup = WARMUP_MS[kind];

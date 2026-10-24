@@ -563,7 +563,6 @@ export * from './icon-weight';
 export * from './rich-text';
 
 export * from './factories';
-export * from './whiteboard';
 export * from './segment-geometry';
 export * from './duplicate';
 export * from './polyline';

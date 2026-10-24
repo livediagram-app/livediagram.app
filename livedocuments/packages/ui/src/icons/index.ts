@@ -3,17 +3,13 @@ export { Glyph, type IconProps } from './Glyph';
 export { lucideGlyph } from './lucide-glyph';
 export { Prims } from './Prims';
 export {
-  ArrowDownIcon,
-  ArrowUpIcon,
   CheckIcon,
   CloseIcon,
   CopyIcon,
   DuplicateIcon,
   FitViewIcon,
   FormatPainterIcon,
-  IndentIcon,
   LockIcon,
-  OutdentIcon,
   PencilIcon,
   PlusIcon,
   RefreshIcon,
@@ -26,9 +22,7 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   EllipsisIcon,
-  MaximizeIcon,
   MenuIcon,
-  MinimizeIcon,
   SearchIcon,
 } from './navigation';
 export {

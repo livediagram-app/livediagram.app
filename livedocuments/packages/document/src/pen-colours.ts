@@ -1,5 +1,5 @@
 // The stock colours (docs/specs/004-interface-design/colour-picker.md "The colours"): Ink
-// (the board's own, WHITEBOARD_INK), then eight named colours, each stored by name
+// (the board's own, PEN_INK), then eight named colours, each stored by name
 // ("blue") and drawn in the version tuned for the board it is shown on: darker on the light board,
 // lighter on the dark one. Each version is found in OKLCH: the hue and chroma stay, the lightness
 // walks in from the board's far end until the colour would drop under its contrast on that board
@@ -56,7 +56,7 @@ export type PenColourName = typeof INK_PEN_COLOUR | typeof GREY_PEN_COLOUR | Hue
 /** The eight hued stock colours, in the pickers' order after Ink. */
 export const PEN_COLOUR_NAMES: readonly HuedPenColourName[] = PEN_COLOURS.map((c) => c.id);
 
-// The ink per appearance (WHITEBOARD_INK): at least 4.5:1 on its board.
+// The ink per appearance: at least 4.5:1 on its board.
 export const PEN_INK: Readonly<Record<Appearance, string>> = {
   light: '#1c1917',
   dark: '#e2e8f0',
@@ -68,8 +68,8 @@ export const PEN_STOCK_CONTRAST = 6;
 // WCAG 1.4.11: under this, a custom colour is hard to see on a board.
 const PEN_MIN_CONTRAST = 3;
 
-// The boards the versions are tuned against: WHITEBOARD_BOARD, repeated here to keep this a leaf
-// (a test pins them equal).
+// The boards the versions are tuned against: the Default theme's canvas per appearance (./canvas-colors), repeated
+// here to keep this a leaf (a test pins them equal).
 export const PEN_BOARDS: Readonly<Record<Appearance, string>> = {
   light: '#fbfaf7',
   dark: '#0d121a',

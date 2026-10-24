@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { claimHint, isHintWarm, releaseHint, resetHintRegistry } from './hint-registry';
-import { PREVIEW_WARMUP_MS, TOOLTIP_WARMUP_MS } from './hint-constants';
+import { TOOLTIP_WARMUP_MS } from './hint-constants';
 
 afterEach(() => resetHintRegistry());
 
@@ -49,17 +49,6 @@ describe('hint registry', () => {
     expect(isHintWarm('tooltip', 0)).toBe(false);
     releaseHint(closeToken, 'hover-card', 0);
     expect(isHintWarm('tooltip', 1)).toBe(false);
-  });
-
-  it('warms previews by previews, apart from tooltips', () => {
-    const token = {};
-    claimHint(token, () => {}, 'preview');
-    expect(isHintWarm('preview', 0)).toBe(true);
-    expect(isHintWarm('tooltip', 0)).toBe(false);
-    releaseHint(token, 'preview', 1_000);
-    expect(isHintWarm('preview', 1_000 + PREVIEW_WARMUP_MS - 1)).toBe(true);
-    expect(isHintWarm('preview', 1_000 + PREVIEW_WARMUP_MS)).toBe(false);
-    expect(isHintWarm('tooltip', 1_001)).toBe(false);
   });
 
   it('never warms a hover card, which has no delay', () => {
