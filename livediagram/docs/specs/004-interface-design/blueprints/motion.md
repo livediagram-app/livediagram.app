@@ -11,9 +11,9 @@ Scope, by file:
 | `../packages/style-guards/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
 | `../packages/style-guards/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
-| `apps/editor/app/globals.css`                                             | Editor chrome motion only                                                          |
-| `apps/editor/app/canvas-motion.css`                                       | Editor canvas motion, moved out of `globals.css` unchanged                         |
-| `apps/editor/e2e/motion-budget.spec.ts`                                   | The runtime guard                                                                  |
+| `apps/editor/app/globals.css`                                           | Editor chrome motion only                                                          |
+| `apps/editor/app/canvas-motion.css`                                     | Editor canvas motion, moved out of `globals.css` unchanged                         |
+| `apps/editor/e2e/motion-budget.spec.ts`                                 | The runtime guard                                                                  |
 
 ## Domain and naming
 
@@ -349,12 +349,12 @@ logging, because motion isn't a decision point.
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                              |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, community, ui and template-previews |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                         |
-| Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                           |
-| Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx`      |
-| Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                            |
-| The root takes no View Transition part       | `apps/editor/app/view-transitions.test.ts`                                                         |
-| View Transition classes stay in their files  | `apps/editor/app/view-transitions.test.ts`                                                         |
-| Slide moves animate, reduced motion cuts     | `apps/editor/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                       |
+| Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                         |
+| Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx`  |
+| Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                          |
+| The root takes no View Transition part       | `apps/editor/app/view-transitions.test.ts`                                                       |
+| View Transition classes stay in their files  | `apps/editor/app/view-transitions.test.ts`                                                       |
+| Slide moves animate, reduced motion cuts     | `apps/editor/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                     |
 
 ### The runtime guard
 

@@ -154,7 +154,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 | Share roles in Workshop                                                                   | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
 | Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                              |
 | Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
-| Explorer Opens in chip                                                                    | `packages/explorer/src/lens/lens.test.ts`                                                                                             |
+| Explorer Opens in chip                                                                    | `packages/explorer/src/lens/lens.test.ts`                                                                                  |
 | OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |
 
 ## Defaults ledger

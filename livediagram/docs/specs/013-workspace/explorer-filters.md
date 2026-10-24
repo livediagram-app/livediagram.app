@@ -76,7 +76,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
 | Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only           | `space`      |
 
 - **Template** is the template family a canvas was made from, read from the creation intent the index keeps
-  (`template:retrospective`, `template:kanban`): livediagram's families, labelled Retrospective and Kanban
+  (`template:retrospective`): livediagram's one family, labelled Retrospective
   (`CANVAS_TEMPLATE_FAMILIES`, `apps/editor/lib/canvas-template-families.ts`; liveworkspace.app's Explorer names the
   same families for livediagram). A template picked after creation does not change it
   ([Default folders](default-folders.md#a-template-picked-after-creation)).

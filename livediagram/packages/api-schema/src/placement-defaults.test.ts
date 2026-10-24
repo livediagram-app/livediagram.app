@@ -107,7 +107,11 @@ describe('readCreationIntent', () => {
 
   it('reads every field', () => {
     expect(
-      readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'retrospective' }),
+      readCreationIntent({
+        mode: 'diagram',
+        tabKind: 'event-storming',
+        templateFamily: 'retrospective',
+      }),
     ).toEqual({
       ok: true,
       intent: { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'retrospective' },

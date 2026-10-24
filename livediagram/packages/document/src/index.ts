@@ -3,7 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
@@ -424,12 +423,7 @@ export type Tab = {
 // --- Type guards -----------------------------------------------------------
 
 export { takesTypedLabel } from './element-types';
-export {
-  DEFAULT_TAB_KIND,
-  stampTabKind,
-  tabKindOf,
-  type TabKind,
-} from './tab-kind';
+export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './accent-edge';
 export * from './card';
 export * from './chip';

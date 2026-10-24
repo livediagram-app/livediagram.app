@@ -134,4 +134,3 @@ export function indexIntentOf(intent: CreationIntent | null): string | null {
   if (!intent) return null;
   return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
 }
-

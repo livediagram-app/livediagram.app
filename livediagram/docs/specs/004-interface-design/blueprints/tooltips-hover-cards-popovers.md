@@ -7,18 +7,18 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                 | Role                                                                           |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `packages/ui/src/hint/hint-constants.ts`             | Every timing and size, named                                                   |
-| `packages/ui/src/hint/place-hint.ts`                 | Pure placement: trigger rect + surface size + viewport to a layout             |
-| `packages/ui/src/hint/hint-registry.ts`              | Module state: the one open hint, and the tooltip warm-up clock                 |
-| `packages/ui/src/hint/trigger-text.ts`               | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
-| `packages/ui/src/hint/useHint.ts`                    | The state machine: pointer, focus, press, long press, Escape, grace            |
-| `packages/ui/src/hint/HintSurface.tsx`               | The portal, the measured layout, the pointer triangle, the two looks           |
-| `packages/ui/src/Tooltip.tsx`                        | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
-| `packages/ui/src/HoverCard.tsx`                      | `HoverCard`: title + description, instant, on the layout wrapper it always had |
-| `packages/ui/src/index.ts`                           | Exports `Tooltip`, `HoverCard` and their prop types                            |
-| `packages/oxlint-config/native-title.ts`             | `livediagram/no-native-title`: native `title` outside the exceptions           |
+| File                                                   | Role                                                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `packages/ui/src/hint/hint-constants.ts`               | Every timing and size, named                                                   |
+| `packages/ui/src/hint/place-hint.ts`                   | Pure placement: trigger rect + surface size + viewport to a layout             |
+| `packages/ui/src/hint/hint-registry.ts`                | Module state: the one open hint, and the tooltip warm-up clock                 |
+| `packages/ui/src/hint/trigger-text.ts`                 | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
+| `packages/ui/src/hint/useHint.ts`                      | The state machine: pointer, focus, press, long press, Escape, grace            |
+| `packages/ui/src/hint/HintSurface.tsx`                 | The portal, the measured layout, the pointer triangle, the two looks           |
+| `packages/ui/src/Tooltip.tsx`                          | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
+| `packages/ui/src/HoverCard.tsx`                        | `HoverCard`: title + description, instant, on the layout wrapper it always had |
+| `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                            |
+| `packages/oxlint-config/native-title.ts`               | `livediagram/no-native-title`: native `title` outside the exceptions           |
 | `apps/editor/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                 |
 | `apps/editor/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                   |
 
@@ -258,19 +258,19 @@ surface.
 
 ## Constants and configuration
 
-| Constant                  | Value | Provenance                                                 | Safe range |
-| ------------------------- | ----- | ---------------------------------------------------------- | ---------- |
-| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                       | 300–1000   |
-| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                       | 300–1000   |
-| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                       | 400–1000   |
-| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                       | 300–800    |
-| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed             | 50–300     |
+| Constant                  | Value | Provenance                                                   | Safe range |
+| ------------------------- | ----- | ------------------------------------------------------------ | ---------- |
+| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                         | 300–1000   |
+| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                         | 300–1000   |
+| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                         | 400–1000   |
+| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                         | 300–800    |
+| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed               | 50–300     |
 | `HINT_LONG_PRESS_MS`      | 500   | Spec; `apps/editor/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
-| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                        | 6–16       |
-| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                       | 1000–3000  |
-| `TOOLTIP_GAP_PX`          | 6     | D29                                                        | 4–10       |
-| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                     | 6–14       |
-| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `packages/ui/src/popover.ts`                     | 4–16       |
+| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                          | 6–16       |
+| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                         | 1000–3000  |
+| `TOOLTIP_GAP_PX`          | 6     | D29                                                          | 4–10       |
+| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                       | 6–14       |
+| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `packages/ui/src/popover.ts`                       | 4–16       |
 
 ## Assets and external resources
 

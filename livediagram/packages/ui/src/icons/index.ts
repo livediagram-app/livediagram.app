@@ -44,12 +44,7 @@ export {
   NoteIcon,
   TidyMapIcon,
 } from './badges';
-export {
-  EDITOR_MODE_ICONS,
-  FlowchartIcon,
-  FlipchartIcon,
-  MarkerIcon,
-} from './drawing-kinds';
+export { EDITOR_MODE_ICONS, FlowchartIcon, FlipchartIcon, MarkerIcon } from './drawing-kinds';
 export {
   LayersStackIcon,
   RedoIcon,
