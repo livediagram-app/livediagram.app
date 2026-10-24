@@ -8,8 +8,13 @@
 import type { Item } from '@liveplanner/items';
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { RouteIdentity } from './plan-room/plan-route';
-import type { ThumbnailSubject } from './thumbnail';
-import type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
+import type {
+  ExportQuery,
+  ExportResult,
+  ShareAnswer,
+  ShareMessage,
+  SharedTabCopy,
+} from '@liveworkspace/index-app';
 import type { Env } from './types';
 
 export type PlanRoomClient = {
@@ -18,8 +23,8 @@ export type PlanRoomClient = {
   // One API request about this plan, answered inside its Durable Object by the same handlers as before
   // (plan-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
-  // The snapshot image a reader gets (thumbnail.ts), drawn where the content is.
-  image(subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
+  // The plan drawn for liveworkspace's previews (the export door, plan-room.ts `exportImage`), where the content is.
+  exportImage(query: ExportQuery): Promise<ExportResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // One card, by id (a mention email reads the comment from the card itself).
@@ -51,7 +56,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
   return {
     outline: () => room.outline(planId),
     route: (request, identity) => room.route(planId, request, identity),
-    image: (subject, tabId) => room.image(planId, subject, tabId),
+    exportImage: (query) => room.exportImage(planId, query),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     item: (itemId) => room.item(planId, itemId),
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
@@ -70,7 +75,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
 export type PlanRoomRpc = {
   outline(planId: string): Promise<PlanOutline>;
   route(planId: string, request: Request, identity: RouteIdentity): Promise<Response>;
-  image(planId: string, subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
+  exportImage(planId: string, query: ExportQuery): Promise<ExportResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   item(planId: string, itemId: string): Promise<Item | null>;
   exportCopy(

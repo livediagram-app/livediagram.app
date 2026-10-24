@@ -2,7 +2,11 @@
 // projects module used to make against D1: the tab outline a project read carries, the type catalogue, the plan
 // row a create makes, and a copy's export and import. Runs inside the plan's Durable Object, on `env.PLAN_DB`.
 
-import { itemIdsShownOnTab, readItemTypeCatalogue, type ItemTypeCatalogue } from '@liveplanner/items';
+import {
+  itemIdsShownOnTab,
+  readItemTypeCatalogue,
+  type ItemTypeCatalogue,
+} from '@liveplanner/items';
 import type { TabItemElement } from '@liveplanner/items';
 import { remapTabLinks, type Element } from '@liveplanner/project';
 import { redactTabDataAuthors } from '../comments';
@@ -23,7 +27,6 @@ export type PlanMeta = {
   tabKind: string | null;
   templateFamily: string | null;
   createdAt: number;
-  thumbRenderedAt: number | null;
 };
 
 // What a project read takes from the plan: its tabs in order (no body), its type catalogue, and what it knows
@@ -49,11 +52,10 @@ type PlanHeadRow = {
   opens_in: string | null;
   tab_kind: string | null;
   template_family: string | null;
-  thumb_rendered_at: number | null;
 };
 
 const PLAN_HEAD_COLS =
-  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family, thumb_rendered_at';
+  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family';
 
 function metaOf(head: PlanHeadRow | null): PlanMeta | null {
   if (!head || !head.created_at) return null;
@@ -66,7 +68,6 @@ function metaOf(head: PlanHeadRow | null): PlanMeta | null {
     tabKind: head.tab_kind,
     templateFamily: head.template_family,
     createdAt: head.created_at,
-    thumbRenderedAt: head.thumb_rendered_at,
   };
 }
 
@@ -186,13 +187,6 @@ export async function renamePlan(
   return (res.meta.changes ?? 0) > 0;
 }
 
-// The snapshot cache's freshness stamp (thumbnail.ts).
-export async function markThumbRendered(env: PlanEnv, planId: string, now: number): Promise<void> {
-  await env.PLAN_DB.prepare('UPDATE plan SET thumb_rendered_at = ? WHERE id = ?')
-    .bind(now, planId)
-    .run();
-}
-
 // docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new
 // comment, at most once per window. One conditional UPDATE, so a burst of comment saves can't each fire one.
 export async function claimCommentNotify(
@@ -255,7 +249,14 @@ export type PlanCopy = {
   itemTypes: string | null;
   itemsRev: number;
   itemsNextKey: number;
-  tabs: { id: string; name: string; orderIndex: number; folder: string | null; data: string; elementCount: number | null }[];
+  tabs: {
+    id: string;
+    name: string;
+    orderIndex: number;
+    folder: string | null;
+    data: string;
+    elementCount: number | null;
+  }[];
   items: Record<string, unknown>[];
   sheets: Record<string, unknown>[];
   cells: Record<string, unknown>[];
@@ -483,7 +484,9 @@ export async function importPlanCopy(
     if (ids.length === 0) continue;
     stmts.push(
       db
-        .prepare('INSERT OR IGNORE INTO sheet_refs (tab_id, sheet_id) SELECT ?, value FROM json_each(?)')
+        .prepare(
+          'INSERT OR IGNORE INTO sheet_refs (tab_id, sheet_id) SELECT ?, value FROM json_each(?)',
+        )
         .bind(tab.id, JSON.stringify(ids)),
     );
   }

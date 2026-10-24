@@ -1,85 +1,48 @@
-# Project SVG snapshots
+# Project previews
 
-A single cached SVG snapshot per project, used two ways:
+A project's picture, used three ways: the **Explorer thumbnail** on each row, so a project is recognised without
+opening it; the **live image** a share link embeds in a README or wiki
+([Live image share link](../013-workspace/live-image-share.md)); and the **share card** a pasted link previews with
+([Share-link previews](../013-workspace/share-link-previews.md)).
 
-1. **Explorer thumbnails** — a small preview on each row of the Recent /
-   folder lists so you can recognise a project without opening it.
-2. **Live image share** — an `<img>`-able URL ([Live image share link](../013-workspace/live-image-share.md)) that embeds the
-   diagram in a README / wiki / doc and stays up to date.
+All three are liveworkspace's previews ([previews.md](../../../../liveworkspace/docs/previews.md)): one service, built once for every app, stores them,
+decides when they are stale, checks who may see them against the index and serves them. liveplanner only **renders
+for the platform**: it draws a project when the service asks, through its export door, and keeps nothing.
 
-Both render the same artifact through the same DOM-free renderer; they
-differ only in how they're authorised and cached.
+## What liveplanner draws
 
-## Why one artifact, not two
+The export door (`GET /api/internal/items/:id/export?format=svg[&tab=<id>]`, [previews.md](../../../../liveworkspace/docs/previews.md) "The export door")
+is answered by the plan's Durable Object, where the content is (`plan-room.ts` `exportImage`):
 
-The project list endpoint (`GET /api/projects`) deliberately ships no
-element data ([Per-tab storage](per-tab-storage.md)) so listing 100 projects stays cheap. Rendering a
-preview per row from element data would re-load exactly what the list
-avoids. So previews come from a **pre-rendered SVG**, not from element
-data at list time.
+- The **first tab**, or the tab asked for, drawn with `renderElementsToSvg` (`@liveplanner/project`, the same DOM-free
+  renderer the MCP worker uses). A Form tab draws its form as respondents see it on its tab's look (`formArt` from
+  `@liveplanner/plan-art`, since a form is not an element). A Board draws its project's cards, a Sheet its window of
+  cells, a Dashboard its page laid out with its metrics and charts counted from the cards. Icon elements render their
+  real glyph via `@liveplanner/icons/resolve` ([Technology icons](../010-palette/technology-icons.md) "Rendering").
+  liveplanner takes no image uploads, so an image placeholder left by a diagram template draws as its empty box.
+- The **version** is the plan's `saved_at`, which every tab, card and Sheet write that lands moves, whoever made it
+  (editor, collaborators, MCP server, API token). The service sends the version it holds as `If-None-Match`; an
+  unchanged plan answers `304` without drawing.
+- **Nothing to draw** (no tab, an empty or unparseable first tab) answers `204`, and the service remembers it, so the
+  row shows its sketch. A tab the plan does not hold, or a plan never started, is `404`.
+- It is drawn **on request, never on save**: a project nobody looks at never costs a drawing.
 
-Because SVG is vector, the same full-fidelity snapshot renders crisply
-as a 36px list thumbnail and as a full-size embed — there is no separate
-"thumbnail size" to generate. One stored artifact serves both surfaces.
+Who may see a picture (the owner, a team member, a link visitor, a tab-scoped link's own tab only, never through a
+password-protected link) is the index's rule, checked by the service on every read. The door itself answers only the
+index's key or the media service's (`MEDIA_KEY`). When the index purges a plan, the api asks the service to drop its
+previews (`db/projects.ts` `purgePlanPreviews`).
 
-## Render-on-read, cached in R2
+## Why a stored picture, not element data
 
-The snapshot bytes live in R2 (the `SNAPSHOTS` bucket, `liveplanner-snapshots`, key
-`thumb/<projectId>`); a `projects.thumb_rendered_at` column records when
-they were last rendered.
+The project lists deliberately ship no element data ([Per-tab storage](per-tab-storage.md)) so listing 100 projects
+stays cheap; drawing a preview per row from element data would re-load exactly what the list avoids. Because SVG is
+vector, one drawing serves the 36px thumbnail and the full-size embed alike.
 
-On a read of either delivery path:
+## The Explorer thumbnail
 
-- **Fresh** (`thumb_rendered_at >= saved_at`): stream the stored R2
-  bytes. No render, no element load.
-- **Stale** (or never rendered, or the object is missing): render the
-  first tab (a Form tab as its form, the picture respondents see on its
-  tab's look: `formArt` from `@liveplanner/plan-art`, as the MCP preview
-  draws it, since a form is not an element) with `renderElementsToSvg` (`@liveplanner/project`, the same
-  DOM-free renderer the MCP worker uses), write it to R2, stamp
-  `thumb_rendered_at`, and return it. Icon elements render their real
-  glyph (line art + Technology brand tiles) via the
-  `@liveplanner/icons/resolve` resolver the worker passes in — see
-  [Technology icons](../010-palette/technology-icons.md) "Rendering". liveplanner takes no image uploads, so an image
-  placeholder left by a diagram template draws as its empty placeholder box
-  and a snapshot reads nothing but the project's own rows.
+The editor asks `GET /api/previews/items/:id?v=<savedAt>` through the authenticated client (its router forwards it to
+the service) and wraps the bytes in a blob URL; `v` is only the browser's cache key.
 
-This is **render-on-read**, not render-on-save, on purpose:
-
-- **Covers every write path.** `saved_at` is bumped by every tab write
-  (editor, collaborators, MCP server, API token), and by every card write
-  and Sheet write that lands (a board draws its cards and a Sheet its
-  cells, which live in their own tables: in the statement each already
-  runs on the project row, never moving the time back), so the snapshot
-  invalidates uniformly regardless of who edited — no client upload to
-  keep in sync.
-- **No wasted renders.** A project is only rendered when it has been
-  edited _and_ subsequently viewed (in a list or an embed). A project
-  nobody opens never costs a render.
-- **Cheap steady state.** Once cached, reads are a straight R2 stream
-  until the next save.
-
-An empty / unparseable first tab yields no snapshot (the endpoints 404
-and the row shows its generic icon). Deleting a project clears its R2
-object. The freshness column needs no backfill: the first read of each
-project renders lazily.
-
-## Delivery path 1 — Explorer thumbnail (owner-authed)
-
-`GET /api/projects/:id/thumbnail?v=<savedAt>`
-
-- Read-gated exactly like `GET /api/projects/:id`: the owner, a joined
-  team member, or a valid share-code visitor.
-- A native `<img>` can't send auth headers, so the editor app fetches this
-  through the authenticated client and wraps the bytes in a blob URL. `?v=<savedAt>` busts
-  the browser cache when the project changes; the worker ignores it.
-  `Cache-Control: private, max-age=86400`.
-- One read of the plan's own row gates it: `getProjectThumbMeta` returns the owner, team,
-  name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
-  snapshot costs that query, the access gate and the R2 read. The full
-  project (participant and tab summaries) is never loaded for a preview.
-- A stale snapshot is returned as soon as it is rendered; the R2 write
-  and the freshness stamp run in the request's `waitUntil`.
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of
   requests / renders for rows the user never reaches.
@@ -122,11 +85,10 @@ project renders lazily.
   builder edit), which stamps it afresh; nothing reads the bodies to fill it.
 - **The count is filled lazily, never by a bulk backfill.** The schema
   only adds the column. A tab stored before it starts unknown and gets its
-  count from its next write, or from the thumbnail route: having parsed the
-  body to render it, the route stamps a still-unknown count (in the
-  request's `waitUntil`, best effort, never overwriting a known count). An
-  old empty project is therefore asked for at most once. A deploy without
-  the R2 binding renders no snapshot, so there its counts fill from writes only.
+  count from its next write, or from a drawing: having parsed the
+  body to draw it, the export door stamps a still-unknown count (in the
+  object's `waitUntil`, best effort, never overwriting a known count). An
+  old empty project is therefore asked for at most once.
 - **Why no trigger and no backfill** (measured with SQLite,
   sync off to isolate the work itself):
 
@@ -141,63 +103,8 @@ project renders lazily.
   every 600 ms per active editor). A one-statement backfill parses at about
   480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a backfill would wake every plan's object to parse its
   whole content for a count the next write fills anyway. Adding the column alone takes
-  under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
-  shows the still, dashed sketch, captioned "Nothing drawn yet" where there
-  is room. The no-snapshot 404 (past the access gate)
-  carries the same `private, max-age=86400` as the image, because it is
-  version-keyed too; an access-denied 404 carries no cache header.
+  under 5 ms on the same 500 MB table.
 
-## Delivery path 2 — Live image share (public, share-code-scoped)
-
-`GET /api/share/:code/image.svg` — this is [Live image share link](../013-workspace/live-image-share.md)'s endpoint.
-
-- Public: the share code in the URL is the only credential, matching a
-  share link's "anyone with the URL" semantics (an `<img>` can't carry
-  an auth header). Resolves the code with the index, so revoking /
-  expiring the link kills the image too.
-- **Password-protected shares ([Share password](../013-workspace/share-password.md)) get no image**: an `<img>` can't
-  supply the password, so serving one would bypass the gate. The route
-  404s a gated project _before_ rendering.
-- `Cache-Control: public, max-age=30, stale-while-revalidate=300` so an
-  embed stays close to live without hammering the origin (the bytes come
-  from R2; the worker only re-renders when the project was saved since).
-
-## Delivery path 3: Share card (public, share-code-scoped)
-
-`GET /api/share/:code/image.png`, the picture a pasted share link previews with
-([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
-behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
-the snapshots (`og/<projectId>`), stamped with its
-own render time, and deleted with them.
-
-### Share dialog
-
-The shared Share dialog from `@liveworkspace/explorer` offers no live-image control: it makes, lists
-and turns off links only. The address is built by hand from a link's code,
-`/api/share/<code>/image.svg`, with `?tab=<id>` to pick a tab other than the first. Picking the
-first tab, or leaving `?tab=` off, serves the cached snapshot.
-
-## Scope (v1)
-
-- **R2 cache is first-tab only.** The persisted snapshot
-  (`thumb/<projectId>`, one per project, shared by the Explorer
-  thumbnail and the default live image) always renders the **first**
-  tab. The live image's `?tab=<id>` selector ([Live image share link](../013-workspace/live-image-share.md)) is honoured,
-  but a non-default tab is rendered **on read and not
-  written to that cache** — the single per-project key + freshness stamp
-  has no room for a second tab, and per-tab embeds are niche. The
-  endpoint's `max-age=30, stale-while-revalidate=300` keeps repeat views
-  cheap without a persistent cache. So "first tab only" still describes
-  the cached artifact and the Explorer thumbnail, just no longer the
-  live image.
-- **No PNG.** SVG only — vector, tiny, headless-renderable. A rasterised
-  variant is out of scope.
-- The List/Card toggle covers the main browse views and the team
-  library; the "Shared With Me" page keeps its fixed layout (it already
-  shows the thumbnail).
-
-## Without image storage
-
-The whole feature is gated on the optional `SNAPSHOTS` R2 binding (it caches
-nothing but snapshots and share cards): with no bucket, both endpoints 404 and
-the Explorer row shows its icon. No new binding, no required SaaS.
+- Degrades gracefully otherwise: nothing drawn, no access or the service
+  down → the row shows the still, dashed sketch, captioned "Nothing drawn
+  yet" where there is room.

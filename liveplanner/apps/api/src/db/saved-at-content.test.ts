@@ -5,7 +5,7 @@ import { deleteItemRow, insertItems, updateItemAtRev, updateItemsAtRev } from '.
 import { projectSavedStatement, headWriteStatement } from './sheets';
 
 // A card or a Sheet's cells are part of the project (docs/specs/006-project/project-snapshots.md): a write to
-// either marks it saved, as a tab write does, so the Explorer's "Updated" line and its snapshot follow it. Only a
+// either marks it saved, as a tab write does, so the Explorer's "Updated" line and its preview follow it. Only a
 // write that landed does.
 
 const T0 = 1_700_000_000_000;
@@ -23,7 +23,11 @@ function insert(
 }
 
 // A started plan's own row.
-function liveDoc(sql: ReturnType<typeof sqliteD1>['sql'], id: string, opts: { savedAt?: number } = {}) {
+function liveDoc(
+  sql: ReturnType<typeof sqliteD1>['sql'],
+  id: string,
+  opts: { savedAt?: number } = {},
+) {
   insert(sql, 'test_plans', {
     id,
     owner_id: 'owner',

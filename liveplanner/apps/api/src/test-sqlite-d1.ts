@@ -268,8 +268,33 @@ function testPlanRooms(
           identity as never,
           () => {},
         ),
-      image: async (_planId: string, subject: unknown, tabId: string | null) =>
-        (await import('./thumbnail')).renderPlanImage(env, subject as never, tabId, {}),
+      exportImage: async (
+        planId: string,
+        query: { tabId: string | null; ifVersion: number | null },
+      ) => {
+        const outline = await (
+          await import('./plan-room/plan-content')
+        ).readPlanOutline(env, planId);
+        if (!outline.meta) return { status: 'not_found' };
+        const version = outline.savedAt;
+        if (query.ifVersion === version) return { status: 'unchanged', version };
+        if (
+          query.tabId !== null &&
+          !(await (await import('./db/tabs')).planHasTab(env, planId, query.tabId))
+        ) {
+          return { status: 'not_found' };
+        }
+        const svg = await (
+          await import('./thumbnail')
+        ).drawPlan(
+          env,
+          { id: planId, name: outline.meta.name, itemTypes: outline.itemTypes },
+          query.tabId,
+        );
+        return svg === null
+          ? { status: 'empty', version }
+          : { status: 'ok', body: svg, contentType: 'image/svg+xml; charset=utf-8', version };
+      },
       hasTab: async (planId: string, tabId: string) =>
         (await import('./db/tabs')).planHasTab(env, planId, tabId),
       item: async (planId: string, itemId: string) =>

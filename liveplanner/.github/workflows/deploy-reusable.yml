@@ -67,6 +67,9 @@ on:
       # liveplanner's key at the central index (liveworkspace/docs/one-explorer-contracts.md).
       INDEX_KEY:
         required: false
+      # liveplanner's key at liveworkspace's media service, which serves its previews (liveworkspace/docs/previews.md).
+      MEDIA_KEY:
+        required: false
       TELEMETRY_KEY:
         required: false
 
@@ -304,6 +307,7 @@ jobs:
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       INDEX_KEY: ${{ secrets.INDEX_KEY }}
+      MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
@@ -373,6 +377,19 @@ jobs:
         run: |
           printf '%s' "$INDEX_KEY" \
             | pnpm exec wrangler secret put INDEX_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
+      # MEDIA_KEY (liveworkspace/docs/previews.md) is liveplanner's key at liveworkspace's media service, the same
+      # value as the service's MEDIA_KEY_LIVEPLANNER: the service draws previews through the export door with it,
+      # and the api drops a purged plan's previews with it. Empty/unset leaves the worker's copy untouched.
+      - name: Sync MEDIA_KEY secret
+        if: ${{ env.MEDIA_KEY != '' }}
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          printf '%s' "$MEDIA_KEY" \
+            | pnpm exec wrangler secret put MEDIA_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # TELEMETRY_KEY (docs/specs/017-telemetry/telemetry.md) is liveplanner's Worker key for liveworkspace's
       # central telemetry service, and has to hold the SAME value on the api and mcp workers as the

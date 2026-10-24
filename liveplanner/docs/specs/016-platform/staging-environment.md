@@ -17,7 +17,6 @@ runs in the ones holding people's projects.
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `liveplanner-<app>`                  | `liveplanner-<app>-staging`                |
-| R2           | `liveplanner-snapshots`              | `liveplanner-snapshots-staging`            |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
@@ -71,8 +70,8 @@ prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **R2 bucket** and **KV namespace**, and talks to liveworkspace's staging index and
-accounts. The api has no D1. Durable Objects come free: a different script is a different DO namespace, so the staging
+Staging gets its own **KV namespace**, and talks to liveworkspace's staging index, accounts and media service (its
+previews). The api has no D1. Durable Objects come free: a different script is a different DO namespace, so the staging
 `PLAN_ROOM` (and every plan's content in it) is already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
@@ -167,6 +166,7 @@ value the deploy workflow syncs:
 | `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                |
 | `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                          |
 | `INDEX_KEY_STAGING`              | staging api                     | liveplanner's key at the staging index: the same value as staging liveworkspace's `INDEX_KEY_LIVEPLANNER`. Never production's. |
+| `MEDIA_KEY_STAGING`              | staging api                     | liveplanner's key at the staging media service, which serves its previews: the same value as its `MEDIA_KEY_LIVEPLANNER`.      |
 | `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEPLANNER` ([Telemetry](../017-telemetry/telemetry.md)).       |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
@@ -205,14 +205,13 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the two data stores exist, and their ids are committed:
+**Done** — the data store exists, and its id is committed:
 
-| Resource | Name                            | Where the id lives       |
-| -------- | ------------------------------- | ------------------------ |
-| R2       | `liveplanner-snapshots-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`          | `apps/mcp/wrangler.toml` |
+| Resource | Name                   | Where the id lives       |
+| -------- | ---------------------- | ------------------------ |
+| KV       | `mcp-oauth-kv-staging` | `apps/mcp/wrangler.toml` |
 
-Both were created in `ENAM`, Cloudflare's default for the account rather than a
+It was created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
 staging ever needs to reproduce production's read latency, that is the knob.
 

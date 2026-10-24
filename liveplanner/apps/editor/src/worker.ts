@@ -7,9 +7,9 @@
 import { TRUSTED_TYPES_CSP } from '@liveplanner/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
-// API is optional: the share page's link preview (./share-page.ts) asks it for the project's name, and without it
-// the page is served as built.
-type Env = { ASSETS: AssetsBinding; API?: Fetcher };
+// PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the
+// project's name (liveworkspace/docs/previews.md). Unset means production's; staging names its own.
+type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 
 // Defense-in-depth response headers. None of these block existing
 // functionality; they shut down whole classes of attack surface that
@@ -83,7 +83,9 @@ export default {
         const shell = () => env.ASSETS.fetch(new Request(rewritten.toString(), request));
         // A share link's page names its project for link previews (docs/specs/013-workspace/share-link-previews.md).
         if (isSharePagePath(url.pathname)) {
-          return withSecurityHeaders(await sharePage(request, env.API, shell));
+          return withSecurityHeaders(
+            await sharePage(request, shell, { previewsOrigin: env.PREVIEWS_ORIGIN }),
+          );
         }
         return withSecurityHeaders(await shell());
       }
@@ -113,4 +115,4 @@ export default {
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
-import { isSharePagePath, sharePage, type Fetcher } from './share-page';
+import { isSharePagePath, sharePage } from './share-page';

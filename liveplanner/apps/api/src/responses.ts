@@ -65,10 +65,8 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-project/project-snapshots.md project snapshots). Same CORS treatment as
-// `json` so the editor app's blob-URL fetch works cross-origin in dev; the
-// caller picks the `Cache-Control` (private + long for the owner
-// thumbnail, public + short for the live share image).
+// An SVG image body (a tab drawn on request, routes/tab-render-route.ts). Same CORS treatment as `json` so the
+// editor app's blob-URL fetch works cross-origin in dev; the caller picks the `Cache-Control`.
 const SVG_CSP =
   "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
   'font-src https://fonts.gstatic.com; img-src data:; sandbox';
@@ -82,16 +80,6 @@ export function svgImage(body: string, cacheControl: string): Response {
   // keeps a future slip there from becoming stored XSS. Fonts and inline
   // data images (what a snapshot actually uses) still load.
   headers.set('Content-Security-Policy', SVG_CSP);
-  headers.set('X-Content-Type-Options', 'nosniff');
-  return new Response(body, { headers });
-}
-
-// A PNG image body (the share card, docs/specs/013-workspace/share-link-previews.md), with `svgImage`'s CORS and the
-// caller's `Cache-Control`. A raster runs no script, so it needs no CSP.
-export function pngImage(body: Uint8Array | ReadableStream, cacheControl: string): Response {
-  const headers = new Headers(CORS_HEADERS);
-  headers.set('Content-Type', 'image/png');
-  headers.set('Cache-Control', cacheControl);
   headers.set('X-Content-Type-Options', 'nosniff');
   return new Response(body, { headers });
 }

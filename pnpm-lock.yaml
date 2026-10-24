@@ -116,9 +116,6 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
-      '@liveworkspace/render-png':
-        specifier: workspace:*
-        version: link:../../../packages/render-png
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -341,6 +338,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1286,9 +1286,6 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
-      '@liveworkspace/render-png':
-        specifier: workspace:*
-        version: link:../../../packages/render-png
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1520,6 +1517,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2585,9 +2585,6 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
-      '@liveworkspace/render-png':
-        specifier: workspace:*
-        version: link:../../../packages/render-png
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2722,6 +2719,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -3734,9 +3734,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
-      '@liveworkspace/render-png':
+      '@liveworkspace/media':
         specifier: workspace:*
-        version: link:../../../packages/render-png
+        version: link:../../../packages/media
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -3877,6 +3877,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -5037,9 +5040,15 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../../../packages/render-png
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1

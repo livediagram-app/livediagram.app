@@ -31,7 +31,6 @@ import { handleParticipants } from './routes/participants';
 import { handlePreferences } from './routes/preferences';
 import { handleFolders } from './routes/folders';
 import { handleShare } from './routes/share';
-import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { handleWorkbench } from './routes/workbench';
@@ -249,11 +248,9 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (a deployment without it).
-  // A link's live image and preview (routes/share-preview.ts) take their own bucket, so a room of people opening
-  // one link together never spends the editor's share resolve on previews.
+  // A link's previews are liveworkspace's (liveworkspace/docs/previews.md), so only the resolve itself counts here.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
-    const ip = clientRateKey(request);
-    const key = isSharePreviewPath(segments) ? `share-preview:${ip}` : ip;
+    const key = clientRateKey(request);
     if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
   }
 

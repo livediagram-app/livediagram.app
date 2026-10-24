@@ -123,9 +123,7 @@ Routes that need a person answer 400 via the shared `missingAuth()` helper when 
 | Method     | Path                                                                         | Auth  | Notes                                                                                                                                                                                                                                                                                                                                                                                |
 | ---------- | ---------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | GET        | `/api/share/:code`                                                           | none  | Resolves a share code through the index to `{ project: { id, name }, role, tabId }`; `tabId` is a tab-scoped link's tab (null = every tab). With `X-Share-Password` when the plan has one: 401 `password_required` without it, 403 `password_invalid` when wrong ([Share password](../013-workspace/share-password.md)). 404 for a code that opens nothing.                          |
-| GET        | `/api/share/:code/image.svg`                                                 | none  | The [live image](../013-workspace/live-image-share.md).                                                                                                                                                                                                                                                                                                                              |
-| GET        | `/api/share/:code/card`                                                      | none  | A link preview's text ([Share-link previews](../013-workspace/share-link-previews.md)): `{ name }`, read by the editor worker to name the project in the share page's head. 404 wherever the live image is: a dead code, a trashed project, a share password.                                                                                                                        |
-| GET        | `/api/share/:code/image.png`                                                 | none  | A link preview's picture ([Share-link previews](../013-workspace/share-link-previews.md)): the live image's drawing fitted onto a 1200 x 630 PNG, R2-cached per save; 302 to the brand card when there is nothing to draw; 404 as the card.                                                                                                                                          |
+| GET        | `/api/share/:code/image.svg`, `image.png`, `card`                            | none  | The [live image](../013-workspace/live-image-share.md), a link's share card (`image.png`) and its name for the share page's head (`card`): liveworkspace's previews, which the router forwards there ([previews.md](../../../../liveworkspace/docs/previews.md)); they never reach this api.                                                                                         |
 | GET / POST | `/api/forms/:code`, `/api/forms/:code/responses`, `/api/forms/:code/reports` | none  | A published form ([Forms](../030-forms/forms.md#filling-in-a-form)): the form as respondents see it (`no-store`), a response made into one card (201 `{ number }`; 400 `invalid_answers`, 409 `form_closed`, 413 `form_full`, 429 `form_busy`), and a report. Every miss is `404 form_not_found`. Limited per network by `FORM_RATE_LIMITER`, outside the owner-keyed write limiter. |
 | POST       | `/api/projects/:id/share`                                                    | index | For API clients (the MCP server, the CLI): body `{ role?: 'view' \| 'participate' \| 'edit', expiry?, tabId? }`; the index makes the link (it decides who may) and answers 201 `{ link }`.                                                                                                                                                                                           |
 
@@ -246,8 +244,7 @@ may store it but asks the server again before reusing it. Without it a browser m
 the server has since changed: Chromium holds a `410` with no explicit expiry indefinitely, so a
 share-link visitor who once saw a project deleted would keep seeing it after the owner restored
 it. Not `no-store`: the browser's cache drains a stored answer's body, and without it an answer
-whose caller never reads the body holds its request open. SVG snapshots and share cards set their own
-policies.
+whose caller never reads the body holds its request open. The tab render sets its own policy.
 
 ## Rate limiting
 
@@ -304,7 +301,7 @@ workbench confinement, body caps) and hands every request under `/api/projects/:
 to the plan's object, `planRoom(env, id).route(request, identity)` (typed RPC, `plan-client.ts`). The object
 rebuilds the route context from that identity and the grant and runs the handlers against its own SQLite as
 `env.PLAN_DB` (`@liveworkspace/index-app` `item-db.ts`, the D1 surface over `ctx.storage.sql`, which tells the room only of calls that changed a row, so a read never counts as an edit). The editor's wire protocol is unchanged. Other RPCs: `outline` (a project read's tab
-list), `image` (thumbnails, drawn where the content is), `hasTab`, `item`, `exportCopy` / `importCopy` (a project
+list), `exportImage` (a drawing for liveworkspace's previews, the export door's), `hasTab`, `item`, `exportCopy` / `importCopy` (a project
 copy), `purge` and `revokeCodes`.
 
 **A save is one call and one transaction.** The tab `PUT` reaches the object in one RPC and writes the body, its
@@ -318,7 +315,7 @@ SQLite; `plan-room-store.test.ts` keeps budgets on them): a 1 MB tab saves in ab
 **Upkeep.** Each object runs its own daily upkeep from its alarm: sheets unreferenced for 30 days expire, and
 changesets past their retention go.
 
-**Duration.** The object is billed while it runs a request or an alarm. Content requests and thumbnail renders now
+**Duration.** The object is billed while it runs a request or an alarm. Content requests and preview drawings
 run there rather than in the worker, so a plan under heavy API traffic keeps its object awake for that traffic; an
 idle plan costs nothing, and sockets still hibernate.
 
@@ -326,14 +323,16 @@ idle plan costs nothing, and sockets still hibernate.
 
 Server-to-server doors into a plan's content for liveworkspace's index (`routes/internal-items.ts`). The caller
 sends `Authorization: Bearer <INDEX_KEY>`, compared in constant time; a wrong key is 401, and without `INDEX_KEY`
-set every path is a plain 404. Each is one RPC to the plan's object.
+set every path is a plain 404. The export door alone also takes liveworkspace's media service's key (`MEDIA_KEY`),
+which draws previews through it. Each is one RPC to the plan's object.
 
-| Method | Path                                    | Body         | Answer                                                                                                                                                                                                   |
-| ------ | --------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/internal/items/:from/copy-to/:to` | `{ tabId? }` | 201 `{ ok, tabs, items }`; 404 when `:from` (or its tab) holds nothing; 409 `copy_conflict` when `:to` already holds content                                                                             |
-| DELETE | `/api/internal/items/:id`               |              | 200 `{ ok }`: every session ends and everything the plan stored goes (`deleteAll`)                                                                                                                       |
-| POST   | `/api/internal/items/:id/revoke`        | `{ codes }`  | 200 `{ ok, closed }`: the sessions those share codes admitted end now (at most 500 codes)                                                                                                                |
-| POST   | `/api/internal/items/:id/notices`       | a notice     | 202 `{ ok }` at once: `shared` sends the first-share milestone, `joined` the owner's "someone joined" email from the plan's room (one-explorer-contracts.md "Notices"); 400 for a body that is no notice |
+| Method | Path                                    | Body                 | Answer                                                                                                                                                                                                                                   |
+| ------ | --------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/internal/items/:from/copy-to/:to` | `{ tabId? }`         | 201 `{ ok, tabs, items }`; 404 when `:from` (or its tab) holds nothing; 409 `copy_conflict` when `:to` already holds content                                                                                                             |
+| DELETE | `/api/internal/items/:id`               |                      | 200 `{ ok }`: every session ends and everything the plan stored goes (`deleteAll`), and the media service drops its previews                                                                                                             |
+| GET    | `/api/internal/items/:id/export`        | `?format=svg[&tab=]` | 200 the plan's first tab (or `tab`) as SVG with its save as the `ETag`; 304 for `If-None-Match` of that save; 204 nothing to draw; 404 no such plan or tab ([previews.md](../../../../liveworkspace/docs/previews.md) "The export door") |
+| POST   | `/api/internal/items/:id/revoke`        | `{ codes }`          | 200 `{ ok, closed }`: the sessions those share codes admitted end now (at most 500 codes)                                                                                                                                                |
+| POST   | `/api/internal/items/:id/notices`       | a notice             | 202 `{ ok }` at once: `shared` sends the first-share milestone, `joined` the owner's "someone joined" email from the plan's room (one-explorer-contracts.md "Notices"); 400 for a body that is no notice                                 |
 
 ## Realtime model
 
@@ -464,9 +463,8 @@ A new owner-keyed table adds a row here, a statement to `deleteAccount`, and an 
 
 Before the first deploy:
 
-1. Create the snapshot bucket: `pnpm --filter @liveplanner/api exec wrangler r2 bucket create liveplanner-snapshots`.
-2. Set the worker's secrets ([Deployment](../016-platform/deployment.md)).
+1. Set the worker's secrets ([Deployment](../016-platform/deployment.md)).
 
-There is no database to create and nothing to migrate: each plan's object and each workbench creates its own SQLite on first use.
+There is no bucket and no database to create (a plan's previews are liveworkspace's, [previews.md](../../../../liveworkspace/docs/previews.md)) and nothing to migrate: each plan's object and each workbench creates its own SQLite on first use.
 
 After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `liveplanner-api` means the API must deploy before the router.

@@ -9,13 +9,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8887
 
-# Bundle the share card's fonts (packages/render-png/fonts at the repo root, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only liveplanner.app runs with is NOT here: TELEMETRY_ENABLED lives in
 # `hosted-vars.json`, which the deploy workflow adds
@@ -42,15 +35,8 @@ INDEX_ORIGIN = "https://liveworkspace.app"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
-# R2 bucket caching each project's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and
-# live image) and share card (docs/specs/006-project/project-snapshots.md). The binding
-# name `SNAPSHOTS` is what `src/types.ts` reads via the Env type. The bucket must be created
-# out of band via `wrangler r2 bucket create liveplanner-snapshots` (production) or the
-# dashboard. Leaving the binding absent locally only turns the snapshot doors off: they
-# answer 404 and the Explorer row keeps its icon.
-[[r2_buckets]]
-binding = "SNAPSHOTS"
-bucket_name = "liveplanner-snapshots"
+# No bucket: a plan's previews (the Explorer thumbnail, a link's live image and share card) are liveworkspace's
+# (liveworkspace/docs/previews.md), drawn through the export door on request and stored by its media service.
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -191,6 +177,13 @@ simple = { limit = 60, period = 60 }
 # index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-liveplanner-index-key` in
 # `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
 # liveplanner. Unset, no plan opens.
+#
+# MEDIA_KEY is liveplanner's key at liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which
+# serves every plan's previews (liveworkspace/docs/previews.md): the service calls the export door with it, and a
+# purge drops the plan's previews with it. The service holds the same value as MEDIA_KEY_LIVEPLANNER. Never in
+# [vars]: `MEDIA_KEY=dev-liveplanner-media-key` and `MEDIA_URL=http://localhost:8792/api/media` in `.dev.vars`
+# locally; the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the deploy workflow, in production and
+# staging. MEDIA_URL unset means production's (https://liveworkspace.app/api/media); staging sets its own below.
 
 # TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
@@ -239,15 +232,11 @@ RESEND_FROM = "liveplanner staging <hello@liveplanner.app>"
 
 # Staging's own index (see the top-level [vars]).
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
+# Staging's media service, which serves its previews (MEDIA_KEY, above).
+MEDIA_URL = "https://staging.liveworkspace.app/api/media"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"
-
-# Own bucket: `wrangler r2 bucket create liveplanner-snapshots-staging`. Sharing
-# production's would let staging overwrite or delete real snapshots.
-[[env.staging.r2_buckets]]
-binding = "SNAPSHOTS"
-bucket_name = "liveplanner-snapshots-staging"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `liveplanner-api-staging` is a different

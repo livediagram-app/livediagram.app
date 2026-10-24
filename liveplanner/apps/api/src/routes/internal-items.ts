@@ -4,13 +4,14 @@
 // and a copy into a new plan.
 //
 // Each is a call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
-// Trash are the index's; a purge also drops what the api keeps about the plan beside it (db/projects.ts
-// `purgePlanRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
+// Trash are the index's; a purge also drops the plan's previews at liveworkspace's media service (db/projects.ts
+// `purgePlanPreviews`). The export door draws a plan for those previews (liveworkspace/docs/previews.md), on the
+// index's key or the media service's (MEDIA_KEY). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
-import { purgePlanRows } from '../db/projects';
+import { purgePlanPreviews } from '../db/projects';
 import { planRoom } from '../plan-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
@@ -22,14 +23,17 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    exportKey: env.MEDIA_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
         await planRoom(env, id).purge();
-        await purgePlanRows(env, id);
+        await purgePlanPreviews(env, id);
       },
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
+      // The plan drawn for liveworkspace's previews, by its Durable Object, where the content is.
+      export: (id, query) => planRoom(env, id).exportImage(query),
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),
       // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>

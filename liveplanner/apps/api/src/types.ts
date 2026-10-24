@@ -61,10 +61,14 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // R2 bucket caching each project's SVG snapshot (`thumb/<id>`) and share card
-  // (docs/specs/006-project/project-snapshots.md). Optional so a deploy without R2 still runs:
-  // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
-  SNAPSHOTS?: R2Bucket;
+  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which serves every plan's previews
+  // (liveworkspace/docs/previews.md): its API's base URL (`https://liveworkspace.app/api/media`; locally
+  // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
+  // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
+  // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge
+  // leaves the plan's previews to lapse.
+  MEDIA_URL?: string;
+  MEDIA_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

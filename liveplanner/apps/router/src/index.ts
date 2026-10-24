@@ -8,6 +8,7 @@ import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 import {
   routeToWorkspace,
+  routeToPreviews,
   forwardToIndex,
   PRODUCTION_INDEX_ORIGIN,
 } from '@liveworkspace/sites/workspace-proxy';
@@ -37,6 +38,9 @@ export interface Env {
   // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
   // production's; staging and local dev name their own.
   INDEX_ORIGIN?: string;
+  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -198,6 +202,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, { app: 'liveplanner', origin: env.WORKSPACE_ORIGIN });
   if (workspace) return workspace;
+  // Every plan's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  if (preview) return preview;
   // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
   // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
   if (hasPrefix(url.pathname, INDEX_PATH)) {

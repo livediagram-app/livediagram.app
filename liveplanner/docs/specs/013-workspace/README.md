@@ -25,6 +25,6 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./timeline.md - when looking for the Timeline, What Happened, History or Team Activity (removed)
 - ./embeds.md - when working on Read-only embeds (`/embed`): the iframe-able share view
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
-- ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served from the snapshot cache ([Project SVG snapshots](../006-project/project-snapshots.md))
+- ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served by liveworkspace's previews ([Project previews](../006-project/project-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the project's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`), the editor worker's head rewrite, and the brand card everywhere else
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

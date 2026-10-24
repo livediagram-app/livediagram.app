@@ -2,7 +2,7 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.liveplanner.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects, R2 and KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.liveplanner.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects and KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
@@ -11,13 +11,13 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
 | `apps/editor`    | `liveplanner-editor`    | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `liveplanner-api`       | Worker (Durable Objects + R2), no D1.                                         |
+| `apps/api`       | `liveplanner-api`       | Worker (Durable Objects), no D1 and no R2.                                    |
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `liveplanner-router`    | Worker (service bindings to the other five).                                  |
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]` and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 
@@ -115,14 +115,15 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so an environment that sets none still deploys:
 
-| Secret                   | Synced to       | See                                                                                                                                                 |
-| ------------------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
-| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
-| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                            |
-| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
-| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEPLANNER` |
-| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                            |
+| Secret                   | Synced to       | See                                                                                                                                                                          |
+| ------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                                                     |
+| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEPLANNER`                          |
+| `MEDIA_KEY`              | api             | liveworkspace's media service, which serves every plan's previews ([previews.md](../../../../liveworkspace/docs/previews.md)): the same value as its `MEDIA_KEY_LIVEPLANNER` |
+| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                                                     |
 
 The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
 

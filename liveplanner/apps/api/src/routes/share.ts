@@ -1,16 +1,14 @@
-// What a share link opens, for API clients (index-adapters.ts), and what it shows without opening (share-preview.ts).
+// What a share link opens, for API clients (index-adapters.ts). What it shows without opening (its live image, its
+// share card and the name on its page's head) is liveworkspace's previews (liveworkspace/docs/previews.md): the
+// router sends `/api/share/<code>/image.svg|image.png|card` there, and they never reach this api.
 
 import { notFound, json } from '../responses';
 import type { RouteContext } from './context';
 import { clientFor, refusal } from './index-adapters';
-import { handleSharePreview } from './share-preview';
 
 // GET /api/share/:code.
 export async function handleShare(ctx: RouteContext): Promise<Response> {
   const { request, segments } = ctx;
-  // The live image and the link preview's doors (share-preview.ts).
-  const preview = await handleSharePreview(ctx);
-  if (preview) return preview;
   const code = segments[2];
   if (!code || segments.length !== 3 || request.method !== 'GET') return notFound();
   const client = clientFor(ctx);

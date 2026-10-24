@@ -10,6 +10,7 @@ import { readRecordedIntent } from '../project-intent-row';
 import { planRoom } from '../plan-client';
 import { isProjectSource } from '@liveplanner/api-schema';
 import type { PlanMeta, PlanOutline } from '../plan-room/plan-content';
+import { mediaClient } from '../media';
 
 function projectOf(
   id: string,
@@ -61,47 +62,18 @@ export async function getProjectMeta(
   return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// The R2 key of a plan's cached first-tab snapshot (docs/specs/006-project/project-snapshots.md).
-export function thumbnailKey(projectId: string): string {
-  return `thumb/${projectId}`;
-}
-
-// The R2 key of a plan's cached share card (docs/specs/013-workspace/share-link-previews.md).
-export function shareCardKey(projectId: string): string {
-  return `og/${projectId}`;
-}
-
-// Every cached snapshot a plan can have, for the paths that delete it.
-export function snapshotKeys(projectId: string): string[] {
-  return [thumbnailKey(projectId), shareCardKey(projectId)];
-}
-
-// What drawing a plan's image needs (its name, last save and snapshot stamp), in one call to its Durable Object.
-// Null for a plan never started.
-export type ProjectThumbMeta = {
-  id: string;
-  name: string;
-  savedAt: number;
-  thumbRenderedAt: number | null;
-};
-
-export async function getProjectThumbMeta(env: Env, id: string): Promise<ProjectThumbMeta | null> {
-  const outline = await planRoom(env, id).outline();
-  const meta = outline.meta;
-  if (!meta) return null;
-  return {
-    id,
-    name: meta.name,
-    savedAt: outline.savedAt,
-    thumbRenderedAt: meta.thumbRenderedAt ?? null,
-  };
-}
-
-// What R2 holds about a plan, for when the index purges it (routes/internal-items.ts): its cached snapshots, in one
-// delete. Its form links and reports are in its own Durable Object (wiped with it), and the index's form row and
-// code cascade with the item. Workbench tickets and sessions scoped to it are in their owners' workbench stores: a
-// ticket lapses in a minute, and a session's every request is gated on the plan's grant, which a purged plan
-// never gets again.
-export async function purgePlanRows(env: Env, id: string): Promise<void> {
-  if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id));
+// What liveworkspace keeps of a plan's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// (routes/internal-items.ts): its previews go too. Its form links and reports are in its own Durable Object (wiped
+// with it), and the index's form row and code cascade with the item. Workbench tickets and sessions scoped to it are
+// in their owners' workbench stores: a ticket lapses in a minute, and a session's every request is gated on the
+// plan's grant, which a purged plan never gets again. Best effort: a preview the purge misses is unreachable (every
+// read asks the index).
+export async function purgePlanPreviews(env: Env, id: string): Promise<void> {
+  const media = mediaClient(env);
+  if (!media) return;
+  try {
+    await media.deletePreviews(id);
+  } catch (err) {
+    console.warn('[purge] previews not dropped', { projectId: id, error: String(err) });
+  }
 }

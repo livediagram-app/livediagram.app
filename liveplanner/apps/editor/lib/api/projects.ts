@@ -256,8 +256,9 @@ export async function apiFetchProjectThumbnailUrl(
   return { url: blobUrl, backgroundColor };
 }
 
-// The snapshot SVG's text, through the authenticated client; null on 404 / 403 / 503 (empty
-// project, no access, no R2). Behind the Explorer's thumbnails and the landing page's Welcome back
+// The project's preview SVG, liveworkspace's (liveworkspace/docs/previews.md: the router sends /api/previews there),
+// through the authenticated client; null on 404 / 503 (nothing drawn, no access, the service down). `version` is
+// only the browser's cache key. Behind the Explorer's thumbnails and the landing page's Welcome back
 // (docs/specs/019-marketing/returning-visitor.md).
 export async function apiFetchProjectThumbnailSvg(
   ownerId: string,
@@ -267,7 +268,7 @@ export async function apiFetchProjectThumbnailSvg(
   const params = new URLSearchParams();
   if (opts.version != null) params.set('v', String(opts.version));
   const qs = params.toString();
-  const url = `${API_BASE}/projects/${encodeURIComponent(projectId)}/thumbnail${qs ? `?${qs}` : ''}`;
+  const url = `${API_BASE}/previews/items/${encodeURIComponent(projectId)}${qs ? `?${qs}` : ''}`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
   const res = await apiFetch(url, { headers });
   if (!res.ok) return null;

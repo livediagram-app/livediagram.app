@@ -25,12 +25,12 @@
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/plan-art": "workspace:*",
-    "@liveworkspace/render-png": "workspace:*",
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },

@@ -11,6 +11,8 @@ import {
   roomGrantStep,
   owesShares,
   ShareSchedule,
+  type ExportQuery,
+  type ExportResult,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -65,7 +67,7 @@ import { planHasTab } from '../db/tabs';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
-import { renderPlanImage, type ThumbnailSubject } from '../thumbnail';
+import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage, type SharedTabCopy } from './tab-shares';
 import { planRoom } from '../plan-client';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
@@ -97,7 +99,7 @@ import { answerPlanRequest, type RouteIdentity } from './plan-route';
 //     its vocabulary without changing the room. Two edits to the same element are last-writer-wins in room order.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
-// below). Content requests and thumbnail renders now run here rather than in the worker, so a plan with heavy
+// below). Content requests and preview drawings run here rather than in the worker, so a plan with heavy
 // API traffic keeps its object awake for that traffic; an idle plan costs nothing.
 //
 // WebSocket HIBERNATION (why this shape): sockets are accepted via
@@ -157,6 +159,9 @@ const SHARE_LINK_CHANGED_CLOSE = 4003;
 
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
+// What the export door answers a drawing as.
+const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
+
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both used to be crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
@@ -518,15 +523,26 @@ export class PlanRoom extends DurableObject<Env> {
     return response;
   }
 
-  async image(
-    planId: string,
-    subject: ThumbnailSubject,
-    tabId: string | null,
-  ): Promise<string | null> {
+  // The export door (liveworkspace/docs/previews.md, routes/internal-items.ts): the plan drawn as an SVG, the first
+  // tab or one, with its last save as the version. Unchanged since `ifVersion`, it is not drawn. A plan never
+  // started is not found, and asking does not start it.
+  async exportImage(planId: string, query: ExportQuery): Promise<ExportResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
     this.bindPlan(planId);
-    return renderPlanImage(this.requireEnv(), subject, tabId, {
+    const env = this.requireEnv();
+    const { meta, savedAt, itemTypes } = await readPlanOutline(env, planId);
+    if (!meta) return { status: 'not_found' };
+    if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+    if (query.tabId !== null && !(await planHasTab(env, planId, query.tabId))) {
+      return { status: 'not_found' };
+    }
+    const svg = await drawPlan(env, { id: planId, name: meta.name, itemTypes }, query.tabId, {
       defer: (p) => this.state.waitUntil(p),
     });
+    return svg === null
+      ? { status: 'empty', version: savedAt }
+      : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
   async hasTab(planId: string, tabId: string): Promise<boolean> {

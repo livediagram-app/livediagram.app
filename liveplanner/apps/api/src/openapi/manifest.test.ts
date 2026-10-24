@@ -249,16 +249,12 @@ describe('buildOpenApiProject', () => {
     expect(doc.components.schemas.Error).toBeDefined();
   });
 
-  it('advertises the SVG endpoints (snapshots and the tab render) as image/svg+xml, the rest as JSON', () => {
+  it('advertises the SVG endpoint (the tab render) as image/svg+xml, the rest as JSON', () => {
     const doc = buildOpenApiProject() as {
       paths: Record<string, Record<string, { responses: Record<string, { content?: object }> }>>;
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
-    expect(svg.map((r) => r.path).sort()).toEqual([
-      '/projects/{id}/tabs/{tabId}/render.svg',
-      '/projects/{id}/thumbnail',
-      '/share/{code}/image.svg',
-    ]);
+    expect(svg.map((r) => r.path).sort()).toEqual(['/projects/{id}/tabs/{tabId}/render.svg']);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);

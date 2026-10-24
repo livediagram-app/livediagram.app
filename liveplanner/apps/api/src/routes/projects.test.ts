@@ -308,16 +308,6 @@ describe('the tabs alone', () => {
   });
 });
 
-describe('the thumbnail', () => {
-  it('is a 404 the editor turns into an icon, for no grant and for no snapshot alike', async () => {
-    const db = await plan();
-    const denied = await call(db, 'GET', '/api/projects/P/thumbnail', { owner: 'stranger' });
-    expect(denied.status).toBe(404);
-    // No image store bound in this test: nothing to serve.
-    expect((await call(db, 'GET', '/api/projects/P/thumbnail')).status).toBe(404);
-  });
-});
-
 describe('a delete', () => {
   it('is never the plan own: only the index deletes (project-index-routes.ts), and the plan keeps its content', async () => {
     const db = await plan();

@@ -18,8 +18,6 @@ const GATE_KEEPERS = [
   'src/db/shared.ts',
   'src/db/ws-tickets.ts',
   'src/routes/share.ts',
-  // Link previews name a shared project (docs/specs/013-workspace/share-link-previews.md).
-  'src/routes/share-preview.ts',
   'src/routes/shared.ts',
   'src/routes/tokens.ts',
   'src/routes/project-share-routes.ts',
@@ -31,7 +29,9 @@ export default defineProject({
   // (src/test-cloudflare-workers.ts).
   resolve: {
     alias: {
-      'cloudflare:workers': fileURLToPath(new URL('./src/test-cloudflare-workers.ts', import.meta.url)),
+      'cloudflare:workers': fileURLToPath(
+        new URL('./src/test-cloudflare-workers.ts', import.meta.url),
+      ),
     },
   },
   test: {

@@ -33,17 +33,8 @@ import {
   type CreationIntent,
 } from '@liveplanner/api-schema';
 import { getProject, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import {
-  badRequest,
-  CORS_HEADERS,
-  forbidden,
-  json,
-  notFound,
-  payloadTooLarge,
-  svgImage,
-} from '../responses';
+import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { projectDates, isProjectSource } from '@liveplanner/api-schema';
-import { projectImageSvg } from '../project-image';
 import { redactProjectForReader, redactProjectForScope } from '../redact-project';
 import { answerOverview, parseViewQuery } from './project-views-route';
 import { handleProjectSharedTabs } from './project-shared-tabs-route';
@@ -220,34 +211,6 @@ async function startedProject(ctx: PlanRouteContext, id: string): Promise<Projec
   console.info('[projects] started on open', { projectId: id });
   ctx.waitUntil?.(notifyMilestone(ctx.env, grant.sub));
   return getProject(ctx.env, id);
-}
-
-// /api/projects/<id>/thumbnail: the cached SVG snapshot (docs/specs/006-project/project-snapshots.md), served by
-// the plan (its row holds the cache's freshness), gated by the grant like a read. A native <img> can't send
-// auth headers, so the editor fetches it with headers and wraps the bytes in a blob URL; a miss is a 404 the
-// row turns into its icon.
-async function projectThumbnail(ctx: PlanRouteContext, id: string): Promise<Response> {
-  const { env } = ctx;
-  const grant = await gateGrant(ctx, id);
-  if (!grant) return notFound();
-  const meta = await readPlanMeta(env, id);
-  const outline = meta ? await planRoom(env, id).outline() : null;
-  if (!meta || !outline) return notFound();
-  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
-  // first-tab snapshot.
-  const svg = await projectImageSvg(
-    env,
-    { id, name: meta.name, savedAt: outline.savedAt, thumbRenderedAt: meta.thumbRenderedAt },
-    grant.tabScope,
-  );
-  if (svg == null) {
-    return json(
-      { error: 'not_found' },
-      { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
-    );
-  }
-  // The client cache-busts via a `?v=<savedAt>` query param, so a long private max-age is safe.
-  return svgImage(svg, 'private, max-age=86400');
 }
 
 // /api/projects/<id>/tabs: the plan's tabs alone, `{ tabs: [{ id, name, kind }] }` (@liveworkspace/index-app
@@ -462,11 +425,6 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
       return json({ project: liveDoc }, { status: 201 });
     }
-  }
-
-  // /api/projects/<id>/thumbnail
-  if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {
-    return projectThumbnail(ctx, segments[2]!);
   }
 
   // /api/projects/<id>/tabs

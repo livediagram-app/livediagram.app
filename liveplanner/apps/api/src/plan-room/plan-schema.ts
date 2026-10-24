@@ -37,9 +37,7 @@ CREATE TABLE IF NOT EXISTS plan (
   tab_kind            TEXT    NULL,
   template_family     TEXT    NULL,
   -- The comment email's throttle (email/notifications.ts).
-  comment_notified_at INTEGER NULL,
-  -- When the cached first-tab snapshot in R2 was drawn (thumbnail.ts): fresh while at or after saved_at.
-  thumb_rendered_at   INTEGER NULL
+  comment_notified_at INTEGER NULL
 );
 
 CREATE TABLE IF NOT EXISTS tabs (

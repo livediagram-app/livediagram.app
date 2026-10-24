@@ -41,4 +41,5 @@ jobs:
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       INDEX_KEY: ${{ secrets.INDEX_KEY }}
+      MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}

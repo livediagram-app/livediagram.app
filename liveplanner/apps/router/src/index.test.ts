@@ -364,9 +364,7 @@ describe('the caching rules', () => {
       DEPLOY_ENV: 'local',
       EDITOR: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
     };
-    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe(
-      'no-store',
-    );
+    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
@@ -390,6 +388,30 @@ describe('the caching rules', () => {
     expect((await dispatch('/api/docs', env)).headers.get('Cache-Control')).toBe(
       'public, max-age=60',
     );
+  });
+});
+
+describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+  it("sends every plan's preview and a link's image and card to the previews service, never the api", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(new Request('https://liveplanner.app/api/previews/items/p1?v=5'), env);
+      await router.fetch(new Request('https://liveplanner.app/api/share/ABC/image.png'), {
+        ...env,
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+      });
+      expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
+        'https://liveworkspace.app/api/previews/items/p1?v=5',
+        'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
+      ]);
+      // What a link opens stays the api's.
+      await router.fetch(new Request('https://liveplanner.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://liveplanner.app/api/share/ABC']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
