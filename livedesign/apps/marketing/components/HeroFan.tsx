@@ -3,7 +3,7 @@
 import { ctaHref } from '@livedesign/api-schema';
 import { TemplatePreview } from '@livedesign/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livedesign/templates';
-import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livedesign/ui';
+import { PREFERS_REDUCED_MOTION, Tooltip, useMediaQuery } from '@livedesign/ui';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   HERO_FAN_OPENING,
@@ -206,31 +206,32 @@ export function HeroFan() {
         );
       })}
       {/* A fresh hand on demand (docs/specs/019-marketing/marketing-site.md "Hero"): to the right of the cards. */}
-      <button
-        type="button"
-        onClick={shuffle}
-        disabled={shuffling !== null}
-        aria-label="Shuffle templates"
-        title="Shuffle templates"
-        className="flex size-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border border-brand-100 bg-white text-slate-500 shadow-sm transition hover:text-brand-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-default sm:size-10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
-      >
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`size-4 transition-transform duration-300 ${shuffling ? 'rotate-180' : ''}`}
+      <Tooltip label="Shuffle templates">
+        <button
+          type="button"
+          onClick={shuffle}
+          disabled={shuffling !== null}
+          aria-label="Shuffle templates"
+          className="flex size-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border border-brand-100 bg-white text-slate-500 shadow-sm transition hover:text-brand-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-default sm:size-10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
         >
-          <path d="m18 14 4 4-4 4" />
-          <path d="m18 2 4 4-4 4" />
-          <path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22" />
-          <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
-          <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />
-        </svg>
-      </button>
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`size-4 transition-transform duration-long ${shuffling ? 'rotate-180' : ''}`}
+          >
+            <path d="m18 14 4 4-4 4" />
+            <path d="m18 2 4 4-4 4" />
+            <path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22" />
+            <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
+            <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />
+          </svg>
+        </button>
+      </Tooltip>
     </div>
   );
 }

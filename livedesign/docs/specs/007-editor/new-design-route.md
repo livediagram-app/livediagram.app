@@ -350,9 +350,9 @@ creating stage and the editor's own load (`DesignLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
 Its label moves from **"Creating your design"** (detail line "Setting up a
 fresh canvas") to **"Opening your design"** ("Getting everything in place");
-everything else stays put. Both name a design, never a document or diagram:
-a new design is made on the canvas, where its pages sit, whichever template
-it starts from.
+everything else stays put. Both name what livedesign makes, a design, and a
+new one is made on the canvas, where its pages sit, whichever template it
+starts from.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the

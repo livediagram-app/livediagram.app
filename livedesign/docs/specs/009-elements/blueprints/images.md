@@ -390,7 +390,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
   indexed lookup on `image_refs` in the design's SQLite, then the bytes streamed from the service;
   no tab body is read.
 - Reference sync: one outbox key in the transaction that changes a design's images; the
-  design's alarm sends its whole set, at most `MEDIA_REFS_PER_DOCUMENT_MAX` ids, in one request.
+  design's alarm sends its whole set, at most the media contract's per-item cap of ids, in one request.
 - Usage: one service request, then one index read per design named, 8 at a time, at most 200;
   deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one

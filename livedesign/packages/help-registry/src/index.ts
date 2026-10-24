@@ -1464,7 +1464,7 @@ export const articles: Article[] = [
     description:
       "The full-page library every liveworkspace app shares: Designs or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my designs list manage browse sidebar overview spaces more keyboard navigation tree search all apps every app filter canvases documents liveworkspace duplicate copy design',
+      'library home dashboard files my designs list manage browse sidebar overview spaces more keyboard navigation tree search all apps every app filter canvases liveworkspace duplicate copy design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
