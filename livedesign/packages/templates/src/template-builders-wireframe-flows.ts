@@ -74,10 +74,6 @@ export const WIREFRAME_FLOWS: Record<WireframeFlowKind, WireframeFlow> = {
   },
 };
 
-export function isWireframeFlow(kind: string): kind is WireframeFlowKind {
-  return Object.hasOwn(WIREFRAME_FLOWS, kind);
-}
-
 /** A flow's pages: one wireframe page per screen, in its device, named for the screen. */
 export function wireframeFlowPages(kind: WireframeFlowKind): Page[] {
   const flow = WIREFRAME_FLOWS[kind];

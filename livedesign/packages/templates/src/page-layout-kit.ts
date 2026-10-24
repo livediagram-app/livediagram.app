@@ -1,9 +1,8 @@
 // The page layouts' shared kit (docs/specs/007-editor/pages-mode.md "Layouts"): element
 // factories placed in a page's content box, a headline sized to its box, the heading every layout
-// opens with, and the numbered discs a tall page stacks its steps in.
+// opens with.
 import {
   createImage,
-  createPinnedArrow,
   createCalloutCard,
   createShape,
   createText,
@@ -127,34 +126,4 @@ export function heading(k: Kit, label: string, lead?: string): { els: Element[];
   if (!lead) return { els, top: h + u * 6 };
   els.push(k.text(0, h + u * 2, k.box.width * 0.9, u * 9, lead, { textSize: 'lg' }));
   return { els, top: h + u * 15 };
-}
-
-// Numbered discs down the page, a step's name and note beside each, joined by arrows.
-export function verticalSteps(
-  k: Kit,
-  top: number,
-  rows: readonly (readonly [string, string])[],
-  disc: (i: number) => string,
-  discSize: TextElement['textSize'] = 'lg',
-): Element[] {
-  const { width: W, height: H } = k.box;
-  const { u } = k;
-  const rowH = (H - top) / rows.length;
-  const d = Math.min(rowH * 0.6, u * 16);
-  const els: Element[] = [];
-  const discs: ShapeElement[] = [];
-  rows.forEach(([name, note], i) => {
-    const y = top + i * rowH;
-    const c = k.shape('circle', 0, y, d, d, { label: disc(i), textBold: true, textSize: discSize });
-    discs.push(c);
-    els.push(
-      c,
-      k.text(d + u * 6, y, W - d - u * 6, u * 7, name, { textSize: 'lg', textBold: true }),
-      k.text(d + u * 6, y + u * 8, W - d - u * 6, Math.max(u * 4, rowH - u * 9), note),
-    );
-  });
-  for (let i = 1; i < discs.length; i += 1) {
-    els.push(createPinnedArrow(discs[i - 1]!.id, 's', discs[i]!.id, 'n'));
-  }
-  return els;
 }
