@@ -89,7 +89,8 @@ for the index API. The page is built once, by liveworkspace.app, and shown at li
 at each app's own `/explorer` (see [The Explorer on each app's address](#the-explorer-on-each-apps-address)).
 The page wears the colours of the app the person came from, its header shows the
 liveworkspace logo and then that app's logo (which leads back), and a filter shows "this app's items" or
-"All Apps". Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
+"All Apps". Reached on liveworkspace.app from no app (its account menu's **Explorer**, say), it is in no app and
+shows every app's items, All Apps. Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
 
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
 Canvas, and so on. It goes to the app's new-item route, where the app creates the Durable Object and
@@ -148,9 +149,10 @@ The page reads where it is from its own address and there is that app's page:
   app's guest token, both of which the index takes. The accounts Worker takes the same token on its account reads.
   The app's silent sign-in runs on the page, as in the app's editor.
 - **The header.** The liveworkspace logo leads to liveworkspace.app, the app's logo to the app's home, and the
-  account menu is the app's: Sign In and Sign Out are the app's, its account pages are on liveworkspace.app.
-- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Account and
-  settings pages (and the addresses that retired to them) go to liveworkspace.app.
+  account menu is the app's: Sign In and Sign Out are the app's, and its Settings opens the Settings panel here,
+  in place.
+- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Only what needs
+  liveworkspace.app's session (the profile, API tokens) links there, to the panel on that section.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
@@ -166,8 +168,9 @@ The page reads where it is from its own address and there is that app's page:
   the teams as they now are.
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
   origin (`imagesPath`, `shapeLibrariesPath`). Signed in, the bottom bar has a Settings button beside Appearance,
-  opening the Settings panel in place, filtered to the app with All beside it ([site.md](site.md#settings)); `?settings=`
-  addresses go to the panel on liveworkspace.app (`/account/settings…`) ([site.md](site.md#the-explorer-explorer)).
+  opening the Settings panel in place, filtered to the app with All beside it ([site.md](site.md#settings)), as the
+  account menu's Settings does; `?settings=` addresses open the same panel here, on the section they name
+  ([site.md](site.md#the-explorer-explorer)).
 - **Telemetry.** Every event counts for the app, sent to liveworkspace.app's telemetry service.
 
 The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets are cached at the edge); see

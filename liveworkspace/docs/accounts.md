@@ -142,12 +142,13 @@ that copy, which reaches the app two ways:
 
 A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and MCP server, read
 and write or read only, for six months. Only its SHA-256 hash is kept; the secret is shown once.
-An account holds up to 20. They are made and revoked on `/account/tokens`.
+An account holds up to 20. They are made and revoked in the Settings panel, Account › API Tokens
+(`/explorer?settings=tokens` on liveworkspace.app, [site.md](site.md#settings)).
 
 Connecting an AI tool in an app (its MCP OAuth flow) makes one too: the app's consent page sends
 the person's access token to liveworkspace (`POST /api/account/internal/tokens`), which makes the
 token for whoever that access token belongs to and only for an access token minted for that app.
-So the connection shows on `/account/tokens` and works on every app.
+So the connection shows among the API tokens in Settings and works on every app.
 
 An app checks a presented token with `POST /api/account/internal/tokens/verify`, which answers
 the account, its verified email, read-only and the account's teams. `createTokenChecker` in
@@ -176,7 +177,7 @@ message, so it can't be turned off.
 - **The email**, "Your liveworkspace API token expires soon", names the token and the day it
   expires, says what stops working when it lapses, and gives the three steps: make a fresh token,
   update whatever uses the old one, revoke the old one. Its button, "Manage your tokens", goes to
-  `<BASE_URL>/account/tokens`. Tokens last six months, and this is the only reminder sent for each.
+  `<BASE_URL>/explorer?settings=tokens` (the Settings panel on API Tokens). Tokens last six months, and this is the only reminder sent for each.
 - **Sending.** The daily cron (`17 9 * * *`) picks the live tokens (not revoked, not expired) that
   expire within seven days and haven't been warned, whose owner has a verified address: at most 100
   a run, the soonest to expire first, in one query on a partial index holding only those not yet
@@ -681,7 +682,8 @@ it sends, with the same timings and tips each app's own series had:
 - **Turning tips off** is the `notifyTips` setting, `false`, in the `all` scope
   ([Settings](#settings)), so it holds in every app. A stage someone has turned off is stamped and
   not sent. Each email that can be turned off links (and sends `List-Unsubscribe`) to the account's
-  settings on liveworkspace.app (`<BASE_URL>/account/settings`), where someone signed out signs in
+  notification settings on liveworkspace.app (`<BASE_URL>/explorer?settings=notifications`, the Settings panel on
+  Notifications), where someone signed out signs in
   and comes back. Its other links go to the app the email speaks for (below).
 - **The app a sign-up came through** is kept on the row (`signup_app`,
   `migrations/0009_signup_app.sql`) when the account is made: the app of the OAuth client whose

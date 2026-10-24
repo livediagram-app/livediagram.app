@@ -55,10 +55,11 @@ shareable as it is, and the device's own setting applies through System.
   app's `<prefix>account_colour` cookie, [accounts.md](accounts.md#an-apps-signed-in-cookies)), and a
   new pick in Settings › Profile repaints this header at once) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
-  (`components/AccountControl.tsx`): the name again over "Your account", **API tokens** and **Settings** (the
-  [Your account](#your-account-account) pages), and **Sign out**, which ends
-  the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
-  tokens.
+  (`components/AccountControl.tsx`): the name again over "Your account", **Explorer** (this site's own
+  `/explorer`, every app's work at once, [The Explorer](#the-explorer-explorer)), **Settings**, which opens the
+  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign out**,
+  which ends the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
+  tokens. API tokens are a category of the panel, not a menu item.
 
 The site is static, so the control asks the accounts API (`GET /api/auth/get-session`, on this
 origin, with the session cookie) once the page is up. Until it hears, it keeps the Guest button's place, invisible,
@@ -69,9 +70,14 @@ as Guest (its `guest` prop: where Sign in and Create account go, and Settings wh
 every place that shows the account control uses it: this header, the Explorer on an app's address
 (`components/explorer/AppAccountControl.tsx`), and each app's marketing header (its `SiteHeader`, through the
 package's `AppAccountMenu`). Each passes in its own UI package's menu hooks (`useMenuButton`, `useMenu`,
-`useClickOutside`), so the keyboard and focus behaviour is the one every app's menus have, and says where the
-account pages are and what Sign out does. On an app's own pages the pages are liveworkspace.app's, in full,
-and Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
+`useClickOutside`), so the keyboard and focus behaviour is the one every app's menus have, and says what
+Settings and Sign out do. **Settings never leaves the address the person is on**: signed in or as a guest, it is a
+button (`onOpenSettings`, with `onPrepareSettings` fetching the panel's code when the pointer or focus reaches it)
+wherever the surface has the panel: this site's header (its own lazily loaded panel), and the Explorer, here and on
+an app's address (the Explorer's panel). A surface with no panel of its own, an app's marketing page, links instead
+to that app's own Explorer on the same address with the panel open (`/explorer?settings=all`, `settingsHref`). Only
+liveworkspace.app's header adds **Explorer** (`explorerHref`): on an app's address the app's own Explorer is a click
+away already. On an app's own pages Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
 ([accounts.md](accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
@@ -155,11 +161,13 @@ built once here. It is shown here and, through each switched-on app's router, at
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](accounts.md)). Signing out here asks again.
-- **Which app.** The app the person came from: `?from=`, then the referrer, then the last app used here
-  (kept in this browser). The page wears that app's colours (its brand ramp, light and dark) and opens filtered
-  to its items, with **All Apps** one click away. The switch reads the app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its
-  accent, and liveworkspace's own for All Apps (the apps' Explorer panels do the same). Someone who came straight here sees every app's items in
-  liveworkspace's own colours.
+- **Which app.** The app the person came from: `?from=`, then the referrer. The page wears that app's colours (its
+  brand ramp, light and dark) and opens filtered to its items, with **All Apps** one click away. The switch reads the
+  app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its accent, and
+  liveworkspace's own for All Apps (the apps' Explorer panels do the same). Someone who came straight here (the
+  account menu's **Explorer**, a bookmark, a page of this site) is in no app: they see every app's items, Home and
+  Recent included, in liveworkspace's own colours. The last app used here (kept in this browser) only picks what
+  **New** makes and whose welcome and hero Home shows; it no longer filters the lists.
 - **The header.** The liveworkspace logo (with the site switcher), a slanted hairline with equal space either
   side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
@@ -171,7 +179,8 @@ built once here. It is shown here and, through each switched-on app's router, at
   opens the Settings panel ([below](#settings)) in a dialog over the Explorer, without leaving the page: filtered to
   the app the person came from (All one click away), or on All from no app. On an app's address it shows for a
   guest too, named for the app ("liveplanner Settings"), and opens that app's settings as kept in this browser
-  ([Settings](#settings), "A guest"); the Guest menu's **Settings** opens the same. On liveworkspace.app a guest
+  ([Settings](#settings), "A guest"); the account menu's **Settings**, signed in or as a guest, opens the same
+  panel the bar does. On liveworkspace.app a guest
   sees no Settings: a guest's settings live in each app's own storage on the app's address, which this origin
   can't read, and the platform keeps no device settings of its own beyond Appearance, already on the bar. Its code,
   and the app's catalogue, are fetched when the button is pointed at. The toasts and a guest's sign-in banner stand
@@ -222,9 +231,14 @@ built once here. It is shown here and, through each switched-on app's router, at
   them (`lib/explorer/new-team.ts` `renewIdentity`).
 - **This Browser.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
   browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
-- **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link) goes to the
-  Settings panel on `/account/settings`: notifications to `#notifications` (All, on Notifications), the profile to
-  `#profile`, privacy to `#privacy`, an app's own settings to `?app=<app>`. `?ended=revoked` says, once, that the link a plan was open through was revoked.
+- **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
+  `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
+  page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
+  `tokens`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
+  side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
+  out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
+  app side opens as the guest's panel. `?ended=revoked` says, once, that the link a plan was open through was revoked.
   `?trashed=<id>&title=` offers Undo for an item just moved to the Trash. Each is dropped from the address once
   read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
@@ -250,9 +264,9 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   (`components/explorer/AppAccountControl.tsx`). Teams are run here as on liveworkspace.app; after a change the
   page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
-  (`appOrigin`); account and settings pages go to liveworkspace.app (`workspaceHref`); share links are
-  always the app's public site. The Settings panel opens here in place, its Profile and API Tokens rows linking to
-  liveworkspace.app, where the session that sets them lives.
+  (`appOrigin`); share links are always the app's public site. The Settings panel opens here in place (the bottom
+  bar, the account menu, `?settings=`), its Profile and API Tokens rows linking to the panel on liveworkspace.app
+  (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that sets them lives.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
 - **Telemetry** goes to liveworkspace.app's `/api/telemetry`, always for the app (the service takes a page's
@@ -273,14 +287,20 @@ pages are `noindex`. Cmd/Ctrl+K opens the Search panel.
 
 ### Your account (`/account/…`)
 
-Where a signed-in person runs what belongs to their account rather than to an app
-([accounts.md](accounts.md)): `/account/tokens` (making an API token, seeing it once, and revoking it, the AI
-tools connected in an app among them) and `/account/settings`, which opens the Settings panel ([below](#settings)).
-Each is a tab of the same frame (`components/settings/AccountShell.tsx`). `/account` opens Settings. Signed out,
-the pages ask them to sign in and come back. They read and write `/api/account/*` on this origin with the session
-cookie (`lib/account-api.ts`), and are kept out of search. API tokens stay a page of their own: making one shows
-its secret once, with room to copy it, which reads better as a page than as a row of a dialog; the panel's API
-Tokens row links to it.
+There are no account pages any more: what belongs to the account rather than to an app (the profile, the emails,
+privacy, accessibility and API tokens) is in the Settings panel ([below](#settings)), which opens in place from the
+account menu on every surface and from the Explorer's bottom bar. The old addresses stay, because emails and
+bookmarks carry them: each is a tiny page that sends the browser on to the Explorer with the panel open on the same
+section (`lib/account-redirect.ts`, `replace`, so Back doesn't land on it):
+
+| Old address                                                | Goes to                                     |
+| ---------------------------------------------------------- | ------------------------------------------- |
+| `/account`, `/account/settings`                            | `/explorer?settings=all`                    |
+| `/account/settings#profile` (`#notifications`, `#privacy`, `#accessibility`, `#tokens`) | `/explorer?settings=profile` (and so on) |
+| `/account/settings?app=<name>` (`?app=all`, `#apps`)       | `/explorer?settings=<name>` (`all`)         |
+| `/account/tokens`                                          | `/explorer?settings=tokens`                 |
+
+The panel reads and writes `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`).
 
 Teams are not here: they are made and run in the Explorer, wherever it shows
 ([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)). The old addresses go there, permanently
@@ -296,10 +316,10 @@ Teams are not here: they are made and run in the Explorer, wherever it shows
 
 One Settings panel for every setting the account has: `SettingsPanel` in `@liveworkspace/settings-ui`, the same
 one each app's editor opens as its Settings (each app's docs/specs/007-editor/user-preferences.md "This app or
-All"). Here it is `components/settings/SiteSettingsDialog.tsx`, opened by `/account/settings`
-(`components/settings/SettingsLanding.tsx`) and by the Explorer's Settings button. There is no other settings page:
-the old page of cards (Profile, Notifications, Privacy and accessibility, and a "Your apps" card per app opening that
-app's dialog) is gone, its parts now the panel's.
+All"). Here it is `components/settings/SiteSettingsDialog.tsx`, opened by the account menu's **Settings** on any
+page of this site (`components/AccountControl.tsx`), and in the Explorer by its bottom bar, its account menu and
+`?settings=` ([The Explorer](#the-explorer-explorer)). There is no settings page: `/account/settings` only sends
+the browser on to the Explorer with the panel open ([Your account](#your-account-account)).
 
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
   liveworkspace's logo. The app's side shows that app's settings, from its plain-data catalogue
@@ -320,7 +340,10 @@ app's dialog) is gone, its parts now the panel's.
   collaborators see, with a preview of their cursor and avatar, `ProfileCard.tsx`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it
   **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
-  assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (a link to `/account/tokens`), then
+  assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
+  secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
+  `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
+  address a link to the same category on liveworkspace.app, since tokens are the session's), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to each app's own group. **Common** holds
@@ -334,10 +357,10 @@ app's dialog) is gone, its parts now the panel's.
   rail rather than shown with a note (today each app keeps some of its own). Ids in All are prefixed with their
   heading's (`account:notifications`, `common:editor`, `livediagram.app:editor`), so two apps' categories and rows
   never collide.
-- **Addresses.** `/account/settings?app=<name>` opens the panel on that app (`?app=all` on All);
-  `#profile`, `#notifications`, `#privacy`, `#accessibility` and `#tokens` open All on that Account category, which is
-  where every email's unsubscribe link lands. Closing the panel leaves an **Open Settings** button on the page, for the
-  same app; the address drops the category it named.
+- **Addresses.** `/explorer?settings=<section>` opens the panel there, on liveworkspace.app or an app's address:
+  `?settings=<app>` on that app (`?settings=all` on All); `profile`, `notifications`, `privacy`, `accessibility` and
+  `tokens` open All on that Account category, which is where every email's unsubscribe link lands. The address drops
+  `?settings=` once read, so closing the panel leaves the Explorer as it was.
 - **Loading.** The panel's All view and catalogue view are their own chunk, fetched when the panel first opens (or
   the pointer heads for Settings); each app's catalogue is its own chunk too. The app's side reads that app's scopes
   once (`GET /api/account/settings/:app`, which answers `all` too); All reads each app's once, and the `all` scope
@@ -411,8 +434,8 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 - No analytics. The one cookie is the accounts session, set by the accounts API when someone
   signs in. Served under an app's address, the sign-in pages leave only short-lived `lw_flow.`
   cookies there, on `/api/workspace/auth`, which the hand-off clears. Every page asks the
-  accounts API whether someone is signed in; the dashboard and the
-  account pages also call their APIs. All of it is on this origin.
+  accounts API whether someone is signed in; the dashboard, the Explorer and the
+  Settings panel also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door, Comparison and the dashboard are indexable: title, description, canonical,
