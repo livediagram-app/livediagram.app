@@ -9,8 +9,6 @@ import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { DesignListItem } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
-import { apiFetchDesignThumbnailSvg } from '@/lib/api-client';
-import { rememberRecentDesigns } from '@/lib/recent-designs-snapshot';
 
 // One page: the pickers show the most recent few, and search filters what is here.
 export const DESIGN_LIST_LIMIT = 100;
@@ -29,23 +27,10 @@ export function designListItem(item: Item): DesignListItem {
   };
 }
 
-// The person's live designs. Each read also refreshes the landing page's note of the most recent ones
-// (docs/specs/019-marketing/returning-visitor.md), as listing them always has.
-export async function fetchDesignList(ownerId: string): Promise<DesignListItem[]> {
+// The person's live designs.
+export async function fetchDesignList(): Promise<DesignListItem[]> {
   const page = await indexClient.listItems({ app: 'livedesign', limit: DESIGN_LIST_LIMIT });
-  const live = page.items.filter((item) => item.trashedAt === null);
-  rememberRecentDesigns(
-    live.map((item) => ({
-      id: item.id,
-      name: item.title,
-      savedAt: item.updatedAt,
-      empty: item.summary.empty === true,
-      opensIn: null,
-      hiddenFromRecent: item.hiddenFromRecent === true,
-    })),
-    (id, savedAt) => apiFetchDesignThumbnailSvg(ownerId, id, { version: savedAt }),
-  );
-  return live.map(designListItem);
+  return page.items.filter((item) => item.trashedAt === null).map(designListItem);
 }
 
 function whenIdle(run: () => void): () => void {
@@ -71,7 +56,7 @@ export function useDesignList(
     if (!enabled) return;
     let live = true;
     const cancel = whenIdle(() => {
-      fetchDesignList(ownerId)
+      fetchDesignList()
         .then((list) => {
           if (live) setDesignList(list);
         })

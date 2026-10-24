@@ -492,6 +492,7 @@ export * from './lint';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
 export * from './recent-designs';
+export * from './snapshot-svg';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
 // presented, for `livedesign auth status`. `role` is `full` or `read-only`.

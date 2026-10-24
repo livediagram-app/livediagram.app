@@ -1,199 +1,36 @@
 // @vitest-environment jsdom
 
-// The editor's half of the returning visitor (docs/specs/019-marketing/returning-visitor.md, "The
-// recent-designs snapshot"): the note it leaves, the thumbnails it caches beside it, and forgetting
-// both on sign-out.
+// The recent-designs note's leftovers (docs/specs/019-marketing/returning-visitor.md "The old note"): signing
+// out clears an old note and its thumbnails.
 
 import {
   RECENT_DESIGNS_KEY,
   RECENT_THUMBS_CACHE,
-  parseRecentDesigns,
-  recentThumbPath,
-  type DesignSummary,
+  RECENT_THUMBS_CACHE_LEGACY,
 } from '@livedesign/api-schema';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-// A Cache Storage stand-in: jsdom has none. One map of url → Response per named cache.
-function fakeCaches() {
-  const stores = new Map<string, Map<string, Response>>();
-  const open = async (name: string) => {
-    if (!stores.has(name)) stores.set(name, new Map());
-    const store = stores.get(name)!;
-    return {
-      keys: async () => [...store.keys()].map((url) => new Request(url)),
-      match: async (url: string) => store.get(url)?.clone(),
-      put: async (url: string, res: Response) => void store.set(url, res),
-      delete: async (req: Request | string) =>
-        store.delete(typeof req === 'string' ? req : req.url),
-    };
-  };
-  return {
-    stores,
-    api: { open, delete: async (name: string) => stores.delete(name) },
-  };
-}
-
-const doc = (id: string, savedAt: number, extra: Partial<DesignSummary> = {}): DesignSummary =>
-  ({
-    id,
-    name: `Doc ${id}`,
-    savedAt,
-    empty: false,
-    opensIn: 'diagram',
-    ...extra,
-  }) as DesignSummary;
-
-const thumbUrl = (id: string, savedAt: number) =>
-  new URL(recentThumbPath(id, savedAt), location.origin).href;
-
-const note = () => parseRecentDesigns(localStorage.getItem(RECENT_DESIGNS_KEY));
-
-let caches: ReturnType<typeof fakeCaches>;
-
-// The module keeps per-page state (forgotten, the latest list), so each test loads a
-// fresh copy.
-async function load() {
-  vi.resetModules();
-  return import('./recent-designs-snapshot');
-}
-
-// The thumbnail sync runs on idle (a timer here): wait until the cache settles to what is expected.
-async function settled(check: () => void) {
-  await vi.waitFor(check, { timeout: 1000, interval: 5 });
-}
-
-beforeEach(() => {
-  localStorage.clear();
-  caches = fakeCaches();
-  vi.stubGlobal('caches', caches.api);
-});
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { forgetRecentDesigns } from './recent-designs-snapshot';
 
 afterEach(() => {
+  localStorage.clear();
   vi.unstubAllGlobals();
 });
 
-describe('rememberRecentDesigns', () => {
-  it('notes the six newest saves, leaving out empty designs and those hidden from Recent', async () => {
-    const { rememberRecentDesigns } = await load();
-    const docs = [
-      ...Array.from({ length: 8 }, (_, i) => ({ ...doc(`d${i}`, i), hiddenFromRecent: i === 7 })),
-      doc('blank', 99, { empty: true }),
-    ];
-
-    rememberRecentDesigns(docs, async () => '<svg/>');
-
-    expect(note().map((d) => d.id)).toEqual(['d6', 'd5', 'd4', 'd3', 'd2', 'd1']);
-  });
-
-  it('removes the note when nothing is left to show', async () => {
-    const { rememberRecentDesigns } = await load();
-    rememberRecentDesigns([doc('a', 1)], async () => null);
-    expect(note()).toHaveLength(1);
-
-    rememberRecentDesigns([doc('a', 1, { empty: true })], async () => null);
-
-    expect(localStorage.getItem(RECENT_DESIGNS_KEY)).toBeNull();
-  });
-
-  it('caches each snapshot, remembers one the server has none for, and prunes the rest', async () => {
-    const { rememberRecentDesigns } = await load();
-    const fetchSvg = vi.fn(async (id: string) => (id === 'none' ? null : `<svg id="${id}"/>`));
-    const thumbs = await caches.api.open(RECENT_THUMBS_CACHE);
-    await thumbs.put(thumbUrl('gone', 1), new Response('<svg/>'));
-
-    rememberRecentDesigns([doc('a', 2), doc('none', 1)], fetchSvg);
-
-    await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(2));
-    expect(await (await thumbs.match(thumbUrl('a', 2)))?.text()).toBe('<svg id="a"/>');
-    expect((await thumbs.match(thumbUrl('none', 1)))?.status).toBe(404);
-    expect(await thumbs.match(thumbUrl('gone', 1))).toBeUndefined();
-  });
-
-  it('asks again next time for a snapshot whose request failed, and not for one already cached', async () => {
-    const { rememberRecentDesigns } = await load();
-    let online = false;
-    const fetchSvg = vi.fn(async () => {
-      if (!online) throw new Error('offline');
-      return '<svg/>';
-    });
-
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await settled(() => expect(fetchSvg).toHaveBeenCalledTimes(1));
-    expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size ?? 0).toBe(0);
-
-    online = true;
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(1));
-
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await new Promise((r) => setTimeout(r, 20));
-    expect(fetchSvg).toHaveBeenCalledTimes(2);
-  });
-
-  it('runs one sync at a time, then one more pass for a list that landed meanwhile', async () => {
-    const { rememberRecentDesigns } = await load();
-    let release: () => void = () => {};
-    const gate = new Promise<void>((r) => (release = r));
-    const fetchSvg = vi.fn(async (id: string) => {
-      if (id === 'a') await gate;
-      return `<svg id="${id}"/>`;
-    });
-
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await settled(() => expect(fetchSvg).toHaveBeenCalledWith('a', 1));
-    rememberRecentDesigns([doc('b', 2), doc('a', 1)], fetchSvg);
-    await new Promise((r) => setTimeout(r, 20));
-    expect(fetchSvg).not.toHaveBeenCalledWith('b', 2);
-
-    release();
-
-    await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(2));
-    expect(fetchSvg).toHaveBeenCalledWith('b', 2);
-  });
-
-  it('writes only the note where the browser has no Cache Storage', async () => {
-    vi.stubGlobal('caches', undefined);
-    Reflect.deleteProperty(window, 'caches');
-    const { rememberRecentDesigns } = await load();
-    const fetchSvg = vi.fn(async () => '<svg/>');
-
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await new Promise((r) => setTimeout(r, 20));
-
-    expect(note()).toHaveLength(1);
-    expect(fetchSvg).not.toHaveBeenCalled();
-  });
-});
-
 describe('forgetRecentDesigns', () => {
-  it('clears the note and the thumbnails, and nothing in flight writes them back', async () => {
-    const { forgetRecentDesigns, rememberRecentDesigns } = await load();
-    rememberRecentDesigns([doc('a', 1)], async () => '<svg/>');
-    await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(1));
+  it('clears an old note and both thumbnail caches', async () => {
+    const names = new Set([RECENT_THUMBS_CACHE, RECENT_THUMBS_CACHE_LEGACY, 'other']);
+    vi.stubGlobal('caches', { delete: async (name: string) => names.delete(name) });
+    localStorage.setItem(RECENT_DESIGNS_KEY, '{"v":1,"designs":[]}');
 
     await forgetRecentDesigns();
-    rememberRecentDesigns([doc('b', 2)], async () => '<svg/>');
-    await new Promise((r) => setTimeout(r, 20));
 
     expect(localStorage.getItem(RECENT_DESIGNS_KEY)).toBeNull();
-    expect(caches.stores.has(RECENT_THUMBS_CACHE)).toBe(false);
+    expect([...names]).toEqual(['other']);
   });
 
-  it('stops a sync that is under way', async () => {
-    const { forgetRecentDesigns, rememberRecentDesigns } = await load();
-    let release: () => void = () => {};
-    const gate = new Promise<void>((r) => (release = r));
-    const fetchSvg = vi.fn(async () => {
-      await gate;
-      return '<svg/>';
-    });
-    rememberRecentDesigns([doc('a', 1)], fetchSvg);
-    await settled(() => expect(fetchSvg).toHaveBeenCalled());
-
+  it('clears the note where the browser has no Cache Storage', async () => {
+    localStorage.setItem(RECENT_DESIGNS_KEY, '{"v":1,"designs":[]}');
     await forgetRecentDesigns();
-    release();
-    await new Promise((r) => setTimeout(r, 20));
-
-    expect(caches.stores.has(RECENT_THUMBS_CACHE)).toBe(false);
+    expect(localStorage.getItem(RECENT_DESIGNS_KEY)).toBeNull();
   });
 });

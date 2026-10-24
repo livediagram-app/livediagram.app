@@ -16,8 +16,6 @@
 import {
   LINT_VIEW_NAME,
   TAB_VIEW_NAMES,
-  TEAM_RECENT_INCLUDE,
-  TEAM_RECENT_LIMIT,
 } from '@livedesign/api-schema';
 import { NAME_MAX_LENGTH } from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
@@ -249,31 +247,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "List the caller's designs (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [
-      {
-        name: 'include',
-        required: false,
-        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty designs of the teams the caller has joined, newest first, each with its \`teamName\`.`,
-      },
-    ],
     responseSchema: {
       type: 'object',
-      properties: {
-        designs: { type: 'array', items: ref('DesignSummary') },
-        teamRecent: {
-          type: 'array',
-          items: {
-            allOf: [
-              ref('DesignSummary'),
-              {
-                type: 'object',
-                properties: { teamName: { type: 'string' } },
-                required: ['teamName'],
-              },
-            ],
-          },
-        },
-      },
+      properties: { designs: { type: 'array', items: ref('DesignSummary') } },
       required: ['designs'],
     },
     statuses: [200, 401],
