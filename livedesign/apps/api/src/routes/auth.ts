@@ -29,6 +29,8 @@ import {
   authorizeUrl,
   createPkcePair,
   exchangeCode,
+  guestHandoffUrl,
+  isGuestHandoffState,
   randomState,
   refreshTokens,
   type TokenSet,
@@ -312,24 +314,25 @@ function noStore(cookies: string[] = []): Headers {
 }
 
 // A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
-// site with this app's client, which answers with a year-long guest token in the fragment of /auth/guest. Routed
-// through here so the client id and resource live in one place; the editor makes and checks `state` itself.
-const GUEST_STATE = /^[A-Za-z0-9_-]{8,200}$/;
-
+// site with this app's client (@liveworkspace/auth-client guestHandoffUrl), which answers with a year-long guest
+// token in the fragment of /auth/guest. Routed through here so the client id and resource live in one place; the
+// editor makes and checks `state` itself.
 function guest(request: Request, env: Env, config: Configured | null): Response {
-  const state = new URL(request.url).searchParams.get('state') ?? '';
-  if (!GUEST_STATE.test(state)) return json({ error: 'invalid_state' }, { status: 400 });
+  const state = new URL(request.url).searchParams.get('state');
+  if (!isGuestHandoffState(state)) return json({ error: 'invalid_state' }, { status: 400 });
   // No accounts site to ask: straight back, saying so, and the page carries on without a guest identity.
   if (!config) {
     const back = new URLSearchParams({ error: 'guest_not_configured', state });
     return redirect(`${appOrigin(env, request)}/auth/guest#${back.toString()}`, []);
   }
-  const to = new URL(`${config.accountsUrl.replace(/\/+$/, '')}/api/auth/guest`);
-  to.searchParams.set('client_id', config.clientId);
-  to.searchParams.set('redirect_uri', `${appOrigin(env, request)}/auth/guest`);
-  to.searchParams.set('state', state);
-  to.searchParams.set('resource', config.resource);
-  return redirect(to.toString(), []);
+  const to = guestHandoffUrl({
+    accountsUrl: config.accountsUrl,
+    clientId: config.clientId,
+    redirectUri: `${appOrigin(env, request)}/auth/guest`,
+    state,
+    resource: config.resource,
+  });
+  return redirect(to, []);
 }
 
 // Signing out of livedesign only: the accounts site keeps its own session, so signing in again
