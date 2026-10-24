@@ -244,7 +244,7 @@ export function layoutMindTree(
   // Differs from `flow` only when switching flows: a tree's branches read top
   // to bottom, and that is the order the new arrangement should keep.
   orderFlow: MindFlow = flow,
-  // An order to lay siblings out in instead of the drawn one (an outline save, mind-outline.ts):
+  // An order to lay siblings out in instead of the drawn one (an outline save, in livediagram):
   // a rank per node, lower first. A balanced map then deals its branches out afresh.
   order?: ReadonlyMap<ElementId, number>,
 ): MindLayout {

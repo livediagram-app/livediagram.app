@@ -119,8 +119,6 @@ What makes room for a scaled surface:
   cluster's height scaled and the inset and gap not.
   `nearestSnapCorner(geom, extents, scale)` uses it, fed by `usePanelDock`'s
   `useUiScale('cornerButtons')`, so snap detection matches the landing.
-- `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
-  the toolbar's scale, the top corners' offset while the strip spans them.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
   `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.

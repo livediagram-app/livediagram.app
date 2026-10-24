@@ -164,7 +164,3 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   avatar: 'Avatar',
   flowchart: 'Flowchart',
 };
-
-export function componentTelemetryType(kind: ComponentKind): string {
-  return COMPONENT_TELEMETRY[kind];
-}

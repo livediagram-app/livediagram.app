@@ -204,45 +204,12 @@ export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-// --- The collaboration family (docs/specs/012-collaboration/temperature-check.md, decision-record.md) -----
-// In-house members share one 16-unit frame; the rest are Lucide (thermometer).
-
-function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
-  return (
-    <Glyph size={size} units={16}>
-      {children}
-    </Glyph>
-  );
-}
+// --- The collaboration family (docs/specs/012-collaboration/temperature-check.md): Lucide's thermometer.
 
 export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
       <Prims prims={lucideThermometer} />
-    </Glyph>
-  );
-}
-
-export function DecisionIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a record card with a tick in its corner chip */}
-      <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
-      <path d="M4.8 6.2h4.4" />
-      <path d="M4.8 9h2.6" />
-      <path d="M9.4 10.6l1.3 1.3 2.2-2.6" />
-    </CollabGlyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
-export function SessionVoteIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="3" y="5" width="18" height="14" rx="2.2" />
-      <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
     </Glyph>
   );
 }

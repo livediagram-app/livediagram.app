@@ -49,10 +49,6 @@ export function CanvasThemeProvider({
   return <CanvasThemeContext.Provider value={theme}>{children}</CanvasThemeContext.Provider>;
 }
 
-export function useCanvasTheme(): ThemeDefinition | null {
-  return useContext(CanvasThemeContext);
-}
-
 /** The categorical ramp the active tab's theme gives its charts, as the canvas hands them: for the
  *  previews drawn by the export renderer (minimap, layer rows, layout previews), which otherwise fall
  *  back to the built-in ramp and show charts in other colours (docs/specs/009-elements/pie-chart.md).

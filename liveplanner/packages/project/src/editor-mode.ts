@@ -14,11 +14,6 @@ export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];
 
 export const EDITOR_MODES: readonly EditorMode[] = EDITOR_MODE_CATALOGUE.map((m) => m.id);
 
-/** "Plan": the mode's name as the interface shows it. */
-export function editorModeLabel(mode: EditorMode): string {
-  return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.label;
-}
-
 export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }

@@ -76,13 +76,6 @@ export const MIND_SPACINGS: readonly MindSpacing[] = ['tight', 'compact', 'comfo
 /** The gaps every map had before spacing existed, so a map without one keeps its shape. */
 export const DEFAULT_MIND_SPACING: MindSpacing = 'comfortable';
 
-export const MIND_SPACING_LABEL: Record<MindSpacing, string> = {
-  tight: 'Tight',
-  compact: 'Compact',
-  comfortable: 'Comfortable',
-  wide: 'Wide',
-};
-
 /** The factor each spacing scales both gaps by. */
 const MIND_SPACING_SCALE: Record<MindSpacing, number> = {
   tight: 0.5,

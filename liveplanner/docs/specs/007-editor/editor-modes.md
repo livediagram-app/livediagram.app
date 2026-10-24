@@ -11,9 +11,9 @@ tab's start. The other four, the switch and everything that existed only for the
 
 ## Domain language
 
-| Term            | Means                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.      |
+| Term            | Means                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.        |
 | **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/project/src/editor-mode.ts`). |
 
 - "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor
@@ -23,7 +23,7 @@ tab's start. The other four, the switch and everything that existed only for the
 ## Where the mode is named
 
 The mode is no longer stored on a tab, but it is still named wherever a project's mode is recorded or sent, so it
-stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `editorModeLabel`, `isEditorMode`):
+stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `isEditorMode`):
 
 - **A project's recorded creation intent** (`intent.mode`, the `opens_in` column, `ProjectSummary.opensIn`;
   [Default folders](../013-workspace/default-folders.md) "Recorded intent"): `plan` for every new project.

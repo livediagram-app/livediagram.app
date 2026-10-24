@@ -2,8 +2,6 @@
 
 // A swatch's target: the touch-targets floor (docs/specs/004-interface-design/touch-targets.md).
 const SWATCH_TARGET_PX = 24;
-// The chip inside it: the Draw and Quick Style chip.
-export const SWATCH_CHIP_PX = 20;
 const SWATCH_GAP_PX = 4;
 // One row holds the ten standard colours exactly.
 const COLOURS_PER_ROW = 10;

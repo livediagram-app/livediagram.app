@@ -66,9 +66,3 @@ export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
 // The explicit styles shown as their own commands, in display order.
 // 'smart' stays the plain "Auto Layout" entry rather than joining this row.
 export const AUTO_LAYOUT_STYLE_IDS = ['flow-down', 'flow-right', 'tree', 'mindmap'] as const;
-
-// The Tidy Up popover's tiles, in the order the spec gives: Smart first, then the explicit styles.
-export const AUTO_LAYOUT_TILE_ORDER: readonly AutoLayoutChoice[] = [
-  'smart',
-  ...AUTO_LAYOUT_STYLE_IDS,
-];

@@ -81,16 +81,16 @@ ColourPicker({
 
 ### Surfaces
 
-| Surface                        | File                                                                                                         | Leading                     | Standard                                                                                                                                         | Value                                                                      |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| Element menu colour rows       | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                               | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`                                             |
-| Plan card type                 | `components/plan/ColourSwatches.tsx` (`TypeColourButton`)                                                    | none                        | strong light hex                                                                                                                                 | hex                                                                        |
-| Plan card Colour               | `ColourSelect` (same file, a `ColourField`)                                                                  | None                        | strong light hex                                                                                                                                 | hex / undefined                                                            |
-| Plan column                    | `components/plan/PlanColumnPopover.tsx`                                                                      | No colour                   | strong light hex; column colours as `extra`                                                                                                      | hex / null                                                                 |
-| Form cover background          | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`)         | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                                                     |
-| Canvas, pattern                | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                                    | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                                                        |
-| Rich-text colour               | `components/canvas/RichTextToolbar.tsx`                                                                      | none                        | strong hex for the canvas                                                                                                                        | hex                                                                        |
-| Pie and legend rows            | `components/palette/context-menu-data-editors.tsx`                                                           | none                        | strong light hex                                                                                                                                 | hex                                                                        |
+| Surface                  | File                                                                                                 | Leading                     | Standard                                                                                                                                         | Value                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| Element menu colour rows | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                       | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange` |
+| Plan card type           | `components/plan/ColourSwatches.tsx` (`TypeColourButton`)                                            | none                        | strong light hex                                                                                                                                 | hex                            |
+| Plan card Colour         | `ColourSelect` (same file, a `ColourField`)                                                          | None                        | strong light hex                                                                                                                                 | hex / undefined                |
+| Plan column              | `components/plan/PlanColumnPopover.tsx`                                                              | No colour                   | strong light hex; column colours as `extra`                                                                                                      | hex / null                     |
+| Form cover background    | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined         |
+| Canvas, pattern          | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                           | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                            |
+| Rich-text colour         | `components/canvas/RichTextToolbar.tsx`                                                              | none                        | strong hex for the canvas                                                                                                                        | hex                            |
+| Pie and legend rows      | `components/palette/context-menu-data-editors.tsx`                                                   | none                        | strong light hex                                                                                                                                 | hex                            |
 
 ## Behaviour and state
 
@@ -153,15 +153,14 @@ from typed constants; nothing is injected as markup.
 
 Constants (`apps/editor/components/colour/colour-metrics.ts`):
 
-| Constant                 | Value | Why                           |
-| ------------------------ | ----- | ----------------------------- |
-| `SWATCH_TARGET_PX`       | 24    | the touch-targets floor       |
-| `SWATCH_CHIP_PX`         | 20    | the Draw and Quick Style chip |
-| `SWATCH_GAP_PX`          | 4     | the Draw row                  |
-| `COLOURS_PER_ROW`        | 10    | one row of standard colours   |
-| `COLOUR_PICKER_WIDTH`    | 276   | 10 × 24 + 9 × 4               |
-| `COLOUR_POPOVER_PADDING` | 12    | the popover's inset           |
-| `YOUR_COLOURS_MAX`       | 12    | the old per-user cap          |
+| Constant                 | Value | Why                         |
+| ------------------------ | ----- | --------------------------- |
+| `SWATCH_TARGET_PX`       | 24    | the touch-targets floor     |
+| `SWATCH_GAP_PX`          | 4     | the Draw row                |
+| `COLOURS_PER_ROW`        | 10    | one row of standard colours |
+| `COLOUR_PICKER_WIDTH`    | 276   | 10 × 24 + 9 × 4             |
+| `COLOUR_POPOVER_PADDING` | 12    | the popover's inset         |
+| `YOUR_COLOURS_MAX`       | 12    | the old per-user cap        |
 
 Headings: 10px, semibold, uppercase, slate-500, 6px above their row. Quick Style: `QUICK_ROW_TARGETS` = 10 (Ink, eight
 hued, More colours), so the panel is 258px.

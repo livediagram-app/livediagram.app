@@ -247,8 +247,7 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   header, turns into **Hide Header and Tabs** (`aria-expanded` says which) and folds them again. So
   what lives in the bars stays one press away: Share or Make a Copy, the project's name and
   badges, the role pill, the tabs and their menus, Add Tab, Search, Settings and the appearance
-  toggle. The strip's row keeps the handle's 54px clear on its right (`LANDSCAPE_HANDLE_ROOM`: the
-  46px card and the row's 8px gap), so a long strip scrolls short of it rather than under it. The
+  toggle. The
   choice lasts while the project is open in that window: not saved, not synced, and a
   fresh load starts folded.
 - **The bars come back on their own** when something needs them: a rename asked for elsewhere (the

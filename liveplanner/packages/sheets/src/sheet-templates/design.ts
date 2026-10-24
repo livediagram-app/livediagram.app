@@ -98,8 +98,3 @@ export const CENTRE: FormatPatch = { ha: 'c' };
 export const day = (today: number, days = 0): StarterCell => ({ n: today + days, date: true });
 // Literal text, never read as a number or a date (a phone number, an invoice number).
 export const text = (s: string): StarterCell => ({ s });
-
-// Body rows of a table at `head` row: sheet row numbers (1-based) of its first and last body row.
-export function bodyRows(head: number, count: number): { first: number; last: number } {
-  return { first: head + 2, last: head + 1 + count };
-}

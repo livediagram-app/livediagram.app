@@ -10,7 +10,6 @@ import {
 import { lucideStickyNote, lucideType } from '@liveplanner/icons/lucide';
 import { Glyph, Prims } from '@liveplanner/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
-import { tileCaption } from './tile-caption';
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
@@ -205,14 +204,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
 
 export function tileById(id: string): PaletteTileDef | undefined {
   return PALETTE_TILES.find((t) => t.id === id);
-}
-
-// The tile's short human name: the explicit caption where one is set,
-// otherwise derived from the action label the same way IconButton derives
-// its tile caption ("Add Web Browser" → "Web Browser", "Pencil (freehand)"
-// → "Pencil"). Used by the Search panel's add-to-canvas entries.
-export function tileDisplayName(def: PaletteTileDef): string {
-  return tileCaption(def.label, def.caption);
 }
 
 /** A Plan category's tiles: the ones of that section, in catalogue order. */

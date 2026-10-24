@@ -14,15 +14,6 @@ export type ZoneMark =
 const BAR_PX = 8;
 const EDGE_PX = 6;
 
-export function sameZone(a: DashboardZone, b: DashboardZone): boolean {
-  if (a.kind !== b.kind) return false;
-  if (a.kind === 'slot' && b.kind === 'slot') return a.slotId === b.slotId;
-  if (a.kind === 'row-gap' && b.kind === 'row-gap') return a.index === b.index;
-  return (
-    a.kind === 'slot-gap' && b.kind === 'slot-gap' && a.rowId === b.rowId && a.index === b.index
-  );
-}
-
 // The mark for `zone`, in the page's own coordinates (its box on screen, `page`, at its scroll).
 export function zoneMark(
   zone: DashboardZone,

@@ -61,9 +61,6 @@ export function canvasGestureNow(): CanvasGestureState {
   return reported;
 }
 
-/** Called whenever the reported gesture changes (a gesture opening or closing). */
-export const subscribeCanvasGesture = listeners.subscribe;
-
 const serverSnapshot = (): CanvasGestureState => 'idle';
 
 export function useCanvasGesture(): CanvasGestureState {

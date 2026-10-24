@@ -118,26 +118,6 @@ export function TransportButton({
   );
 }
 
-export function StudioCallout({
-  tone = 'info',
-  children,
-}: {
-  tone?: 'info' | 'warn';
-  children: ReactNode;
-}) {
-  return (
-    <p
-      className={`rounded-lg px-2.5 py-1.5 text-[11px] leading-snug ${
-        tone === 'warn'
-          ? 'bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200'
-          : 'bg-slate-50 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300'
-      }`}
-    >
-      {children}
-    </p>
-  );
-}
-
 export function StudioLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
