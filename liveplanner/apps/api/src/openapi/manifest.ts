@@ -1371,6 +1371,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401],
   },
   {
+    method: 'POST',
+    path: '/teams',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      'Make a team on liveworkspace with you as its admin: the same team in every app, managed on liveworkspace.app.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        organisation: { type: ['string', 'null'] },
+      },
+      required: ['name'],
+    },
+    responseSchema: wrap('team', 'Team'),
+    statuses: [201, 400, 401, 409, 503],
+  },
+  {
     method: 'GET',
     path: '/teams/{id}/library',
     segment: 'teams',
