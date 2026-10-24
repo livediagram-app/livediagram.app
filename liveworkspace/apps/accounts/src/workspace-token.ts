@@ -12,6 +12,7 @@ import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Env } from './env.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { GUEST_COOKIE, readGuestCookie, signGuestCookie } from './guests.ts';
+import { networkOf } from './rate-limit.ts';
 import { RESOURCES } from './resources.ts';
 import { teamsClaim } from './teams.ts';
 
@@ -84,8 +85,7 @@ export async function workspaceToken(
     secret,
   );
   if (!known && env.GUEST_LIMITER) {
-    const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-    if (!(await env.GUEST_LIMITER.limit({ key: `ip:${ip}` })).success) {
+    if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
       return Response.json({ error: 'rate_limited' }, { status: 429, headers: NO_STORE });
     }
   }

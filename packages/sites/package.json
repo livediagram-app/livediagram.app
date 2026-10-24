@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./workspace-proxy": "./src/workspace-proxy.ts"
+    "./workspace-proxy": "./src/workspace-proxy.ts",
+    "./network": "./src/network.ts"
   },
   "scripts": {
     "lint": "oxlint",

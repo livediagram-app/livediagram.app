@@ -27,6 +27,7 @@ import { GUEST_ID, USER_ID } from './ids.ts';
 import { sameSecret } from './secrets.ts';
 import { pendingInvitations } from './internal-invitations.ts';
 import { recordActivity, signupAppOf } from './lifecycle.ts';
+import { rangeOf } from './rate-limit.ts';
 import {
   isNotifyKey,
   MAX_NOTIFY_KEYS,
@@ -227,16 +228,10 @@ async function handleOpen(
 // Team·Removed's type for who went (removeMember), as the apps have always named it.
 const REMOVED_TYPES = { self: 'Self', invite: 'Invite', member: 'Member' } as const;
 
-// A network: an IPv4 /24 or an IPv6 /48, so one machine can't dodge the limit by changing address.
-function network(ip: string): string {
-  if (ip.includes(':')) return ip.split(':').slice(0, 3).join(':');
-  return ip.split('.').slice(0, 3).join('.');
-}
-
+// Per network (an IPv4 /24 or an IPv6 /48), so one machine can't dodge the limit by changing address.
 async function overLinkLimit(request: Request, env: Env, door = 'team-link'): Promise<boolean> {
   if (!env.TEAM_LINK_LIMITER) return false;
-  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${network(ip)}` })).success;
+  return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${rangeOf(request)}` })).success;
 }
 
 // Display names by id: what collaborators see on a cursor or a comment anyway. Names only, up to MAX_PROFILE_IDS

@@ -1,7 +1,4 @@
-import {
-  WORKSPACE_CLIENT_IP_HEADER,
-  WORKSPACE_PROXY_HEADER,
-} from '@liveworkspace/sites/workspace-proxy';
+import { addressRange, visitorAddress } from '@liveworkspace/sites/network';
 import type { Env } from './env.ts';
 
 // True when this code request should be refused. Two limits:
@@ -36,8 +33,13 @@ async function emailOf(request: Request): Promise<string | null> {
 // and that is counted instead, apart from direct visitors. A caller could name any address there, but each code still
 // needs Turnstile to send and allows three tries, and the per-address limit holds whatever the network.
 export function networkOf(request: Request): string {
-  const proxied = request.headers.get(WORKSPACE_PROXY_HEADER);
-  const client = request.headers.get(WORKSPACE_CLIENT_IP_HEADER);
-  if (proxied && client) return `via:${client}`;
-  return request.headers.get('cf-connecting-ip') ?? 'unknown';
+  const { address, via } = visitorAddress(request);
+  return via ? `via:${address}` : address;
+}
+
+// The visitor's range (an IPv4 /24 or an IPv6 /48), counted the same way, for a door a person could otherwise
+// dodge by changing address.
+export function rangeOf(request: Request): string {
+  const { address, via } = visitorAddress(request);
+  return via ? `via:${addressRange(address)}` : addressRange(address);
 }

@@ -20,7 +20,7 @@ import {
 } from './guests.ts';
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { withSessionColour } from './profiles.ts';
-import { overCodeLimit } from './rate-limit.ts';
+import { networkOf, overCodeLimit } from './rate-limit.ts';
 
 const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
@@ -52,8 +52,7 @@ export default {
     if (request.method === 'GET') {
       if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
       if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
-        const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-        if (!(await env.GUEST_LIMITER.limit({ key: `ip:${ip}` })).success) {
+        if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
           return Response.json({ error: 'rate_limited' }, { status: 429 });
         }
         return guestHandoff(request, env, getAuth(env));
@@ -161,45 +160,54 @@ export default {
   // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); owners of API tokens that expire
   // within a week are warned, once per token, and see it on their Timelines ("API tokens"); and the settings and profiles
   // of guests who can never come back are deleted ("Guests who never come back").
+  // Each step is isolated (`step`): one that throws is logged and the run goes on to the next.
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
-    const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
-    if (purges.sent + purges.failed > 0)
-      console.log('[accounts] index purges', JSON.stringify(purges));
+    await step('index purges', async () => {
+      const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
+      if (purges.sent + purges.failed > 0)
+        console.log('[accounts] index purges', JSON.stringify(purges));
+    });
     // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts), the oldest beyond
     // TIMELINE_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.
-    const trimmed = await trimTimelineOutbox(env.AUTH_DB);
-    if (trimmed > 0)
-      console.warn('[accounts] timeline events dropped, over the outbox limit', trimmed);
-    const timeline = await flushTimeline(
-      env.AUTH_DB,
-      indexPurgeConfig(env),
-      TIMELINE_CALLS_PER_RUN,
-    );
-    if (timeline.sent > 0 || timeline.waiting)
-      console.log('[accounts] timeline events', JSON.stringify(timeline));
+    await step('timeline', async () => {
+      const trimmed = await trimTimelineOutbox(env.AUTH_DB);
+      if (trimmed > 0)
+        console.warn('[accounts] timeline events dropped, over the outbox limit', trimmed);
+      const timeline = await flushTimeline(
+        env.AUTH_DB,
+        indexPurgeConfig(env),
+        TIMELINE_CALLS_PER_RUN,
+      );
+      if (timeline.sent > 0 || timeline.waiting)
+        console.log('[accounts] timeline events', JSON.stringify(timeline));
+    });
     // Every run: a welcome that failed is tried again within 15 minutes. Once a day: the whole series.
     const daily = controller.cron !== PURGE_RETRY_CRON;
-    const lifecycle = await runLifecycle(
-      env.AUTH_DB,
-      env,
-      lifecycleSender(env),
-      daily ? undefined : ['welcome'],
-    );
-    if (daily || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
-      console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
-    }
+    await step('lifecycle', async () => {
+      const lifecycle = await runLifecycle(
+        env.AUTH_DB,
+        env,
+        lifecycleSender(env),
+        daily ? undefined : ['welcome'],
+      );
+      if (daily || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
+        console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
+      }
+    });
     if (!daily) return;
-    const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
-      sendTeamInviteEmail(env, {
-        to: reminder.to,
-        teamName: reminder.teamName,
-        inviterName: reminder.inviterName ?? '',
-        declineToken: reminder.declineToken,
-        stage: reminder.stage,
-        app: reminder.inviterApp,
-      }),
-    );
-    console.log('[teams] invitation sweep', JSON.stringify(result));
+    await step('invitation sweep', async () => {
+      const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
+        sendTeamInviteEmail(env, {
+          to: reminder.to,
+          teamName: reminder.teamName,
+          inviterName: reminder.inviterName ?? '',
+          declineToken: reminder.declineToken,
+          stage: reminder.stage,
+          app: reminder.inviterApp,
+        }),
+      );
+      console.log('[teams] invitation sweep', JSON.stringify(result));
+    });
     try {
       const tokens = await sweepExpiringTokens(env.AUTH_DB, env, (email) => sendEmail(env, email));
       if (tokens.sent + tokens.failed > 0) {
@@ -217,13 +225,26 @@ export default {
         console.error('[tokens] expiry Timeline note failed', error);
       }
       // The reminders and warnings that went, one batch per app once both sweeps are done.
-      await flushServerEvents(env);
+      await step('server events', async () => {
+        await flushServerEvents(env);
+      });
     }
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
-    const guests = await sweepIdleGuests(env.AUTH_DB);
-    if (guests > 0) console.log('[guests] idle guests swept', guests);
+    await step('idle guests', async () => {
+      const guests = await sweepIdleGuests(env.AUTH_DB);
+      if (guests > 0) console.log('[guests] idle guests swept', guests);
+    });
   },
 } satisfies ExportedHandler<Env>;
+
+// One cron step: a failure is logged and the run goes on to the next, so one broken step never starves the rest.
+async function step(name: string, run: () => Promise<void>): Promise<void> {
+  try {
+    await run();
+  } catch (error) {
+    console.error(`[accounts] cron step failed: ${name}`, error);
+  }
+}
 
 const lifecycleSender =
   (env: Env): SendEmail =>
