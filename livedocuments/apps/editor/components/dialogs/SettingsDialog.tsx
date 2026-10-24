@@ -1,33 +1,16 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { DialogCloseButton, NoMatches } from '@livedocuments/ui';
+import { useCallback, useMemo, useRef } from 'react';
+import { SettingsUiKitProvider, SettingsView } from '@liveworkspace/settings-ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import {
-  SettingsCategoryList,
-  SettingsSubcategoryLinks,
-} from '@/components/dialogs/settings/SettingsCategoryList';
-import { SettingsCategoryPane } from '@/components/dialogs/settings/SettingsCategoryPane';
-import { NavChevron } from '@/components/primitives/NavChevron';
-import { SearchInput } from '@/components/primitives/SearchInput';
-import {
-  firstMatchingCategory,
-  searchSettings,
-} from '@/components/dialogs/settings/settings-search';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
-import {
-  visibleCategories,
-  type SettingsCategorySpec,
-} from '@/components/dialogs/settings/settings-catalogue';
-import type { SettingsCategoryId } from '@/components/dialogs/settings/settings-icons';
-import {
-  useRememberedSettingsView,
-  useSettingsViewMemory,
-} from '@/components/dialogs/settings/useSettingsViewMemory';
+import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
+import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
+import { settingsModel } from '@/components/dialogs/settings/settings-model';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { signInEnabled } from '@/lib/auth-config';
@@ -53,12 +36,10 @@ type SettingsDialogProps = {
 // stacked on one screen, where finding a setting meant opening groups until
 // one of them held it.
 //
-// It takes BOTH of that app's shapes, on the viewport each belongs to:
-//   - phone: a root list of categories that pushes a pane, with a back bar.
-//   - desktop: the iPad split view, categories in a rail, the pane beside
-//     them, so the whole map stays visible and nothing has to be pushed.
-// One catalogue and one pane component feed both, so the two layouts cannot
-// disagree about what a category contains.
+// It takes BOTH of that app's shapes, on the viewport each belongs to: a phone's root list that
+// pushes a pane, and the desktop's rail beside the pane. The view is shared with every liveworkspace
+// app and liveworkspace.app (@liveworkspace/settings-ui, "One Settings view for every app"); this
+// frames it, binds this editor's catalogue to it (settings-model.tsx) and relaunches tours on close.
 export function SettingsDialog({
   settings,
   onChange,
@@ -93,56 +74,19 @@ export function SettingsDialog({
     [emailEnabled, signedIn, powerUserMode, settings, workbench],
   );
 
-  // The category the reader chose; null is the phone's root list. Desktop
-  // reads null as "the first category" (see `selected` below), so one piece
-  // of state serves both layouts, across a resize or rotate too.
-  // A targeted open wins, including on a phone, where it lands on the pushed
-  // pane rather than the root list. Without one, the dialog reopens where it
-  // was last left.
-  const target = (focus?.categoryId ?? initialCategoryId ?? null) as SettingsCategoryId | null;
-  const remembered = useRememberedSettingsView();
-  const restore = target ? null : remembered;
-  const [selectedId, setSelectedId] = useState<SettingsCategoryId | null>(
-    target ?? (restore?.categoryId as SettingsCategoryId | null | undefined) ?? null,
+  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
+  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
+  // search keystroke.
+  const model = useMemo(
+    () => settingsModel(categories, settings, onChange),
+    [categories, settings, onChange],
   );
 
-  const [query, setQuery] = useState('');
-  // The row to ring: a targeted open's, or one the power user preset readout
-  // went to (docs/specs/007-editor/power-user-mode.md#in-settings).
-  const [goTo, setGoTo] = useState(focus ?? null);
-  const offeredRowKeys = useMemo(
-    () => new Set(categories.flatMap((c) => c.rows.map((r) => r.key))),
-    [categories],
-  );
-  const result = useMemo(() => searchSettings(categories, query), [categories, query]);
-
-  // While searching, the rail shows every category (with a match badge) and
-  // the pane shows only what matched.
-  //
-  // Following the results with the selection is a DESKTOP-only fix, for the
-  // pane sitting empty beside a rail full of hits. On a phone there is no
-  // pane until you tap one, so doing it there would push a category open the
-  // moment you started typing and hide the badges you were searching for.
-  const effectiveId = isMobile ? selectedId : firstMatchingCategory(result, selectedId);
-  // Desktop never shows an empty pane beside the rail: no selection, or one
-  // not (yet) among the visible categories (a remembered one whose capability
-  // has not loaded), shows the first category without forgetting the choice.
-  const selected: SettingsCategorySpec | null =
-    result.categories.find((c) => c.id === effectiveId) ??
-    (isMobile || result.searching ? null : (result.categories[0] ?? null));
-
-  const { paneRef, onPaneScroll, forgetRestore } = useSettingsViewMemory({
-    categoryId: selected?.id ?? null,
-    restore,
-  });
-
-  const select = (id: SettingsCategoryId) => {
-    forgetRestore();
-    setSelectedId(id);
-    // Which categories people actually open is the signal for whether this
-    // reorganisation helped, and for what belongs on the first screen next.
+  // Which categories people actually open is the signal for whether this
+  // reorganisation helped, and for what belongs on the first screen next.
+  const onCategoryOpened = useCallback((id: string) => {
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
-  };
+  }, []);
 
   // Tours › "Slides Tour", "Infographic Tour", "Article Tour" (docs/specs/007-editor/pages-tour.md): no
   // handoff flag to arm, as the Pages tour offers itself on working with each kind of page; turning a kind's row on
@@ -153,12 +97,6 @@ export function SettingsDialog({
     if (pagesOwed.some((k) => !pagesOwedAtOpen.current.includes(k))) requestPagesTourRelaunch();
     onClose();
   };
-
-  // The phone shows the root list until a category is picked; desktop always
-  // shows the split. Only the phone's pushed pane gets a back control, and a
-  // sub-category's goes back to its parent's pane, the screen that pushed it.
-  const showBack = isMobile && selected !== null;
-  const backTo = categories.find((c) => c.id === selected?.parent) ?? null;
 
   return (
     <Dialog
@@ -181,123 +119,26 @@ export function SettingsDialog({
       // its screen, which is what a pushed pane wants.
       className="max-h-[calc(100%-2rem)] sm:h-[min(42rem,calc(100%-6rem))] sm:max-h-[min(42rem,calc(100%-6rem))]"
     >
-      <header className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        {showBack ? (
-          <button
-            type="button"
-            onClick={() => setSelectedId(backTo?.id ?? null)}
-            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
-          >
-            <NavChevron direction="back" />
-            {backTo?.label ?? 'Settings'}
-          </button>
-        ) : null}
-        <h2 className="flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-          {showBack ? selected?.label : 'Settings'}
-        </h2>
-        <DialogCloseButton compact onClick={close} />
-      </header>
-
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* The rail. On the phone it IS the root screen, so it takes the
-            whole width and disappears once a category is pushed. */}
-        {!isMobile || !selected ? (
-          <div
-            className={
-              isMobile
-                ? 'w-full overflow-y-auto p-4'
-                : 'w-48 shrink-0 overflow-y-auto border-r border-slate-200 dark:border-slate-800'
-            }
-          >
-            {/* Above the first category, in both layouts: the rail IS the
-                root screen on a phone, so one placement serves both. */}
-            <div className={isMobile ? 'mb-3' : 'px-2 pt-2'}>
-              <SearchInput
-                value={query}
-                onChange={setQuery}
-                placeholder="Search settings"
-                ariaLabel="Search settings"
-                clearAriaLabel="Clear the settings search"
-                clearDescription="Clear the settings search and show every category."
-              />
-            </div>
-            <SettingsCategoryList
-              categories={result.categories}
-              selected={isMobile ? null : (selected?.id ?? null)}
-              onSelect={select}
-              variant={isMobile ? 'root' : 'sidebar'}
-              searching={result.searching}
-            />
-            {isMobile && result.searching && result.totalMatches === 0 ? (
-              <NoMatches
-                size="regular"
-                className="mt-4"
-                things="settings"
-                query={query}
-                onClear={() => setQuery('')}
-              />
-            ) : null}
-          </div>
-        ) : null}
-
-        {selected ? (
-          <div
-            // Remount the scroller on category change so a pane always starts
-            // at the top rather than inheriting the previous one's offset.
-            key={selected.id}
-            ref={paneRef}
-            onScroll={onPaneScroll}
-            data-settings-pane
-            className="min-w-0 flex-1 overflow-y-auto px-4 py-4"
-          >
-            <SettingsCategoryPane
-              category={selected}
-              settings={settings}
-              onChange={onChange}
-              focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
-              focusSectionId={selected.id === initialCategoryId ? initialSectionId : null}
-              offeredRowKeys={offeredRowKeys}
-              onGoToRow={(categoryId, rowKey) => {
-                setQuery('');
-                select(categoryId);
-                setGoTo({ categoryId, rowKey });
-              }}
-              onOpenCategory={(categoryId) => {
-                setQuery('');
-                select(categoryId);
-                setGoTo(null);
-              }}
-            />
-            {/* A phone's way down to a parent's sub-categories: the root
-                list has no accordion to open, so the pane lists them. */}
-            {isMobile ? (
-              <SettingsSubcategoryLinks
-                parent={selected}
-                categories={categories}
-                onSelect={select}
-              />
-            ) : null}
-          </div>
-        ) : result.searching && !isMobile ? (
-          <div className="flex min-w-0 flex-1 items-center justify-center px-6 py-10">
-            <NoMatches
-              size="regular"
-              things="settings"
-              query={query}
-              onClear={() => setQuery('')}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-        <p className="text-[10px] text-slate-500 dark:text-slate-400">
-          {/* A guest has no account to sync to: their settings follow them in this browser only. */}
-          {signedIn
-            ? 'Settings sync to your account and apply to every document you open, on every device you sign in from.'
-            : 'Settings are kept in this browser and apply to every document you open. Sign in to have them on your other devices too.'}
-        </p>
-      </footer>
+      <SettingsUiKitProvider kit={SETTINGS_KIT}>
+        <SettingsView
+          categories={model}
+          isMobile={isMobile}
+          onClose={close}
+          focus={focus ?? null}
+          initialCategoryId={initialCategoryId ?? null}
+          initialSectionId={initialSectionId}
+          memoryKey="livedocuments:settings-view:v1"
+          onCategoryOpened={onCategoryOpened}
+          footer={
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              {/* A guest has no account to sync to: their settings follow them in this browser only. */}
+              {signedIn
+                ? 'Settings sync to your account and apply to every document you open, on every device you sign in from.'
+                : 'Settings are kept in this browser and apply to every document you open. Sign in to have them on your other devices too.'}
+            </p>
+          }
+        />
+      </SettingsUiKitProvider>
     </Dialog>
   );
 }

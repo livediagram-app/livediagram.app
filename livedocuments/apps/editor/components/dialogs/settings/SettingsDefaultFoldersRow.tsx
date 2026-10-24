@@ -5,7 +5,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { trackOrganise } from '@/lib/explorer-organise';
 import { indexClient } from '@/lib/index-client';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
 // Settings › Documents › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new documents
