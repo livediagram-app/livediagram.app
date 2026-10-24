@@ -27,13 +27,12 @@ import {
   type Raster,
   type Rect,
 } from '@livedesign/photo-engine';
+import { coarsePointer } from './coarse-pointer';
 import type { PhotoSession } from './session';
 import { rasterizeText, textBox } from './text-raster';
 
 export function pixelCap(): number {
-  return typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
-    ? PHOTO_PIXEL_CAP_COARSE
-    : PHOTO_PIXEL_CAP;
+  return coarsePointer() ? PHOTO_PIXEL_CAP_COARSE : PHOTO_PIXEL_CAP;
 }
 
 /** Why a size is refused, if it is. */

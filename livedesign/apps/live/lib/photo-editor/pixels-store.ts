@@ -4,6 +4,7 @@
 // blob not uploaded yet is asked again after 1, 2, 4 and 8 seconds.
 import { PHOTO_TILE, type PixelSource, type Raster } from '@livedesign/photo-engine';
 import { fetchBlob, type PhotoBlobScope } from './blob-client';
+import { coarsePointer } from './coarse-pointer';
 import { photoWorkers } from './photo-worker-client';
 
 export const TILE_CACHE_BYTES_DESKTOP = 512 * 1024 * 1024;
@@ -197,8 +198,4 @@ export class PixelsStore {
     this.own.clear();
     this.used = 0;
   }
-}
-
-function coarsePointer(): boolean {
-  return typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 }

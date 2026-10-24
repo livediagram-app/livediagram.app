@@ -223,7 +223,7 @@ type Photo = {
 
 - WebGL 2, one context per photo surface (`apps/live/lib/photo-editor/gl/gl-compositor.ts`): an RGBA8 texture per (layer, tile),
   mipmapped (`LINEAR_MIPMAP_LINEAR` down, `NEAREST` up from `HARD_EDGES_FROM` screen px a photo px, `LINEAR`
-  under it), uploaded again only when its tile changed; the least recently drawn go past `GPU_TILE_BYTES_*`.
+  under it), uploaded again only when its tile changed; the least recently drawn go past `GPU_TILE_BYTES_DESKTOP`, or `GPU_TILE_BYTES_COARSE` on a coarse pointer (`apps/live/lib/photo-editor/coarse-pointer.ts`).
 - Each frame: per layer in stack order, its visible tiles drawn into a layer buffer (with mask and clip), then a
   full-screen blend pass onto the accumulator with the blend mode's GLSL (`apps/live/lib/photo-editor/gl/shaders.ts`, the same formulas as
   `blend.ts`, `HARD_MIX_GIVE` included), opacity and dissolve noise; adjustment layers run on the accumulator
