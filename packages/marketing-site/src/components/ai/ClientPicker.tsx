@@ -8,10 +8,10 @@ import {
   lucideMessagesSquare,
   lucideSquareCode,
 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveplanner/ui';
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { lucideGlyph } from '@liveworkspace/ui';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 
-import { AI_CLIENT_GROUPS, AI_CLIENTS, type AiClient, type AiClientGroup } from '@/lib/ai-clients';
+import { AI_CLIENT_GROUPS, type AiClient, type AiClientGroup } from '../../lib/ai-clients';
 
 import { CodeSnippet } from './CodeSnippet';
 import { StepText } from './StepText';
@@ -33,9 +33,12 @@ const DownIcon = lucideGlyph(lucideArrowDown, 14);
 
 const groupId = (group: AiClientGroup) => `ai-group-${group.toLowerCase().replace(/\s+/g, '-')}`;
 
-const ORDERED = AI_CLIENT_GROUPS.flatMap((g) => AI_CLIENTS.filter((c) => c.group === g));
-
-export function ClientPicker() {
+// The product's clients (aiClients), grouped in the spec's order.
+export function ClientPicker({ clients }: { clients: readonly AiClient[] }) {
+  const ORDERED = useMemo(
+    () => AI_CLIENT_GROUPS.flatMap((g) => clients.filter((c) => c.group === g)),
+    [clients],
+  );
   const [active, setActive] = useState(ORDERED[0]!.id);
   const tabs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -67,7 +70,7 @@ export function ClientPicker() {
     const onHash = () => fromHash(false);
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+  }, [ORDERED]);
 
   function select(id: string, focus = false) {
     setActive(id);

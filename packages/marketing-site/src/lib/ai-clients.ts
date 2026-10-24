@@ -1,0 +1,256 @@
+// The Build with AI page's clients, as data (docs/specs/019-marketing/build-with-ai.md "The clients", in each
+// product). One address feeds every snippet, so the page can never show two: the product hands over its name and
+// this deployment's MCP address (a self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the
+// hosted one), and keeps its starter prompts, which are its own.
+
+export type AiClientGroup = 'Chat apps' | 'Coding agents' | 'Editors' | 'Anything else';
+
+export const AI_CLIENT_GROUPS: readonly AiClientGroup[] = [
+  'Chat apps',
+  'Coding agents',
+  'Editors',
+  'Anything else',
+];
+
+export type AiClientStep = {
+  /** The instruction, one sentence. `**bold**` marks a menu or button name. */
+  text: string;
+  /** A command or config to copy. */
+  code?: { lang: 'bash' | 'json' | 'toml' | 'text'; code: string; label?: string };
+  /** A button that opens the place the step happens (a settings page, a one-click install). */
+  action?: { href: string; label: string; external?: boolean };
+};
+
+export type AiClient = {
+  /** Stable, also the URL hash that opens this tab (`/ai#cursor`). */
+  id: string;
+  name: string;
+  group: AiClientGroup;
+  blurb: string;
+  steps: AiClientStep[];
+  /** A closing line: where to look when a third-party label has moved, or a plan caveat. */
+  note?: string;
+};
+
+// Cursor's one-click install: base64 of the same JSON its mcp.json takes for one server
+// (cursor.com/docs/context/mcp/install-links).
+export function cursorInstallLink(url: string, name: string): string {
+  const config = btoa(JSON.stringify({ url }));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(name)}&config=${encodeURIComponent(config)}`;
+}
+
+// VS Code's URL handler: the server's JSON, stringified and URL-encoded
+// (code.visualstudio.com/api/extension-guides/ai/mcp).
+export function vscodeInstallLink(url: string, name: string): string {
+  return `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name, type: 'http', url }))}`;
+}
+
+const json = (value: unknown) => JSON.stringify(value, null, 2);
+
+/** What the client list says about the product it connects. */
+export type AiProduct = {
+  /** The product's name, as people see it and as each client names the server (`livediagram`). */
+  name: string;
+  /** This deployment's MCP address, from the product's api schema (`mcpEndpoint(resolveMcpOrigin(...))`). */
+  mcpUrl: string;
+  /** The hosted MCP host a self-hoster swaps for their own (`mcp.livediagram.app`). */
+  hostedMcpHost: string;
+};
+
+/** The clients the page walks through, in the spec's order, each pointed at the product's one MCP address. */
+export function aiClients({ name, mcpUrl, hostedMcpHost }: AiProduct): readonly AiClient[] {
+  const MCP_URL = mcpUrl;
+  const MCP_NAME = name;
+  return [
+    {
+      id: 'claude',
+      name: 'Claude',
+      group: 'Chat apps',
+      blurb: 'On the web and the desktop app',
+      steps: [
+        {
+          text: 'Open **Settings**, then **Connectors**, in Claude.',
+          action: {
+            href: 'https://claude.ai/settings/connectors',
+            label: 'Open Claude connectors',
+            external: true,
+          },
+        },
+        {
+          text: `Choose **Add custom connector**, name it ${name} and paste the address as its URL.`,
+          code: { lang: 'text', code: MCP_URL, label: 'URL' },
+        },
+        {
+          text: `Choose **Connect**, then approve on the ${name} page that opens.`,
+        },
+      ],
+      note: 'A connector you add on the web shows up in Claude Desktop too. On a Team or Enterprise plan, an owner may need to add it first.',
+    },
+    {
+      id: 'chatgpt',
+      name: 'ChatGPT',
+      group: 'Chat apps',
+      blurb: 'Connectors in developer mode',
+      steps: [
+        {
+          text: 'In ChatGPT, open **Settings**, then **Apps & Connectors**, then **Advanced settings**, and switch on **Developer mode**.',
+          action: {
+            href: 'https://chatgpt.com/#settings/Connectors',
+            label: 'Open ChatGPT settings',
+            external: true,
+          },
+        },
+        {
+          text: `Choose **Create**, name it ${name}, paste the address as the MCP server URL and pick **OAuth**.`,
+          code: { lang: 'text', code: MCP_URL, label: 'URL' },
+        },
+        {
+          text: `Approve on the ${name} page that opens, then pick ${name} from the tools menu in a new chat.`,
+        },
+      ],
+      note: 'Developer mode depends on your ChatGPT plan, and OpenAI moves its menus now and then: look for custom connectors in Settings.',
+    },
+    {
+      id: 'claude-code',
+      name: 'Claude Code',
+      group: 'Coding agents',
+      blurb: 'One command in your terminal',
+      steps: [
+        {
+          text: `Add ${name} for every project:`,
+          code: {
+            lang: 'bash',
+            code: `claude mcp add --transport http --scope user ${MCP_NAME} ${MCP_URL}`,
+          },
+        },
+        {
+          text: `In a Claude Code session, run **/mcp**, choose ${name} and **Authenticate**. Approve in the browser.`,
+          code: { lang: 'text', code: '/mcp', label: 'In Claude Code' },
+        },
+      ],
+      note: `Working in a repository? The ${name} CLI is another way in, on the same account.`,
+    },
+    {
+      id: 'codex',
+      name: 'Codex',
+      group: 'Coding agents',
+      blurb: "OpenAI's coding agent",
+      steps: [
+        {
+          text: 'Add the server:',
+          code: { lang: 'bash', code: `codex mcp add ${MCP_NAME} --url ${MCP_URL}` },
+        },
+        {
+          text: 'Sign in, and approve in the browser:',
+          code: { lang: 'bash', code: `codex mcp login ${MCP_NAME}` },
+        },
+      ],
+      note: `Prefer config files? Add [mcp_servers.${MCP_NAME}] with url = "${MCP_URL}" to ~/.codex/config.toml.`,
+    },
+    {
+      id: 'gemini',
+      name: 'Gemini CLI',
+      group: 'Coding agents',
+      blurb: "Google's agent in your terminal",
+      steps: [
+        {
+          text: 'Add the server:',
+          code: { lang: 'bash', code: `gemini mcp add --transport http ${MCP_NAME} ${MCP_URL}` },
+        },
+        {
+          text: 'In Gemini CLI, sign in and approve in the browser:',
+          code: { lang: 'text', code: `/mcp auth ${MCP_NAME}`, label: 'In Gemini CLI' },
+        },
+      ],
+    },
+    {
+      id: 'cursor',
+      name: 'Cursor',
+      group: 'Editors',
+      blurb: 'One click, or one line of config',
+      steps: [
+        {
+          text: `Add ${name} to Cursor in one click:`,
+          action: { href: cursorInstallLink(MCP_URL, MCP_NAME), label: 'Add to Cursor' },
+        },
+        {
+          text: 'Or add it by hand to **~/.cursor/mcp.json**:',
+          code: {
+            label: 'mcp.json',
+            lang: 'json',
+            code: json({ mcpServers: { [MCP_NAME]: { url: MCP_URL } } }),
+          },
+        },
+        {
+          text: `In Cursor’s MCP settings, choose to sign in to ${name}, then approve in the browser.`,
+        },
+      ],
+    },
+    {
+      id: 'vscode',
+      name: 'VS Code',
+      group: 'Editors',
+      blurb: 'GitHub Copilot’s agent mode',
+      steps: [
+        {
+          text: `Add ${name} to VS Code in one click:`,
+          action: { href: vscodeInstallLink(MCP_URL, MCP_NAME), label: 'Add to VS Code' },
+        },
+        {
+          text: 'Or add it by hand to **.vscode/mcp.json**:',
+          code: {
+            lang: 'json',
+            code: json({ servers: { [MCP_NAME]: { type: 'http', url: MCP_URL } } }),
+          },
+        },
+        {
+          text: 'Start the server when VS Code asks, allow the sign-in, and use it from Copilot Chat in agent mode.',
+        },
+      ],
+    },
+    {
+      id: 'windsurf',
+      name: 'Windsurf',
+      group: 'Editors',
+      blurb: 'Cascade’s MCP config',
+      steps: [
+        {
+          text: 'In Cascade, open the MCP settings and choose to view the raw config (**mcp_config.json**).',
+        },
+        {
+          text: `Add ${name} to it:`,
+          code: {
+            lang: 'json',
+            code: json({ mcpServers: { [MCP_NAME]: { serverUrl: MCP_URL } } }),
+          },
+        },
+        {
+          text: `Refresh the servers, then sign in to ${name} and approve in the browser.`,
+        },
+      ],
+    },
+    {
+      id: 'other',
+      name: 'Any client',
+      group: 'Anything else',
+      blurb: 'Anything that speaks remote MCP',
+      steps: [
+        {
+          text: 'Add a remote MCP server (HTTP, sometimes called Streamable HTTP) with this address:',
+          code: { lang: 'text', code: MCP_URL, label: 'URL' },
+        },
+        {
+          text: `If the tool can sign in to servers (OAuth), it finds ${name}’s sign-in by itself: there is no client id or secret to enter.`,
+        },
+        {
+          text: `If it can’t, create an API token in ${name}’s **Settings**, under **Account**, **API Tokens**, and send it as a header:`,
+          code: { lang: 'text', code: 'Authorization: Bearer lwt_…', label: 'Header' },
+        },
+      ],
+      note: `Running your own ${name}? Use your own MCP host in place of ${hostedMcpHost}, still ending in /mcp.`,
+    },
+  ];
+}
+
+/** A prompt to paste into a connected tool: the product's own, naming it so the AI picks the right server. */
+export type StarterPrompt = { title: string; prompt: string };

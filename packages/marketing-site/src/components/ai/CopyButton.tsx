@@ -1,7 +1,7 @@
 'use client';
 
 import { lucideCheck, lucideCopy } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, useCopiedFlash } from '@liveplanner/ui';
+import { lucideGlyph, useCopiedFlash } from '@liveworkspace/ui';
 
 const CopyIcon = lucideGlyph(lucideCopy, 14);
 const CheckIcon = lucideGlyph(lucideCheck, 14);
@@ -21,7 +21,7 @@ export function CopyButton({
 }: {
   text: string;
   label?: string;
-  /** What is copied, after the label in the accessible name ("Copy the address", "Copy prompt: Plan a launch"). */
+  /** What is copied, after the label in the accessible name ("Copy the address", "Copy prompt: Map a codebase"). */
   what: string;
   tone?: 'light' | 'dark' | 'brand';
   size?: 'sm' | 'xs';

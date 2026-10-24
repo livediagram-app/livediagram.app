@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 // Every link marketing makes into the help centre must land on a registered article or category
 // (docs/specs/019-marketing/marketing-site.md); a renamed or retired article otherwise 404s quietly.
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const SOURCE_DIRS = ['app', 'components', 'lib'];
+// The shared marketing pages (@liveworkspace/marketing-site) link into this app's help centre too.
+const SOURCE_DIRS = ['app', 'components', 'lib', '../../../packages/marketing-site/src'];
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
