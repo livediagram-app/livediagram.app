@@ -37,7 +37,7 @@ All under `/api/teams`, account Bearer or API token required, handled by `apps/a
 - `GET /api/teams/:id` — team + member list + `myRole` (`inviteLink` is always null). Members only.
 - `GET /api/teams/:id/library` — the team's folders and designs ([Team Shared Designs](team-shared-designs.md)).
 - `GET /api/teams/:id/access-check`, `POST /api/teams/:id/notify-action`, `POST /api/teams/:id/notify-mention` — as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe; the two notices need a signed-in session.
-- The routes that would administer a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) answer **`410 { error: 'teams_moved', manageAt }`**, where `manageAt` is liveworkspace.app's teams page.
+- Administering a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) happens on liveworkspace.app's teams page; this API has no routes for it.
 
 Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live in `@livedesign/api-schema`.
 

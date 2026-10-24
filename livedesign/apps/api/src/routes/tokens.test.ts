@@ -41,28 +41,20 @@ beforeEach(() => {
 });
 
 // Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/accounts.md "API
-// tokens"): the management routes say where, for anyone, and touch nothing.
+// tokens"): this app routes only /api/tokens/current, and touches nothing for anything else.
 describe('token management is on liveworkspace.app', () => {
-  it('answers 410 with where to manage tokens', async () => {
-    for (const [method, path, accountUserId] of [
-      ['GET', '/api/tokens', 'user_1'],
-      ['POST', '/api/tokens', 'user_1'],
-      ['DELETE', '/api/tokens/tok_1', 'user_1'],
-      ['GET', '/api/tokens', null],
+  it('404s every other tokens route', async () => {
+    for (const [method, path] of [
+      ['GET', '/api/tokens'],
+      ['POST', '/api/tokens'],
+      ['DELETE', '/api/tokens/tok_1'],
+      ['GET', '/api/tokens/a/b'],
+      ['GET', '/api/other'],
     ] as const) {
-      const res = await handleTokens(makeCtx(method, path, { accountUserId }));
-      expect(res.status, `${method} ${path}`).toBe(410);
-      expect(await res.json()).toEqual({
-        error: 'tokens_moved',
-        manageAt: 'https://liveworkspace.app/account/tokens',
-      });
+      const res = await handleTokens(makeCtx(method, path, { accountUserId: 'user_1' }));
+      expect(res.status, `${method} ${path}`).toBe(404);
     }
     expect(db.revokePresentedToken).not.toHaveBeenCalled();
-  });
-
-  it('404s anything the surface does not route', async () => {
-    expect((await handleTokens(makeCtx('GET', '/api/tokens/a/b'))).status).toBe(404);
-    expect((await handleTokens(makeCtx('GET', '/api/other'))).status).toBe(404);
   });
 });
 

@@ -934,36 +934,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- API tokens ----
   {
     method: 'GET',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: "List the caller's API tokens (metadata only; the secret is never returned).",
-    auth: 'clerk',
-    responseSchema: listOf('tokens', 'ApiToken'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Mint an API token. The secret is returned once, here only.',
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { name: { type: 'string' } } },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        token: { type: 'string', description: 'The secret, shown once.' },
-        id: { type: 'string' },
-        name: { type: ['string', 'null'] },
-        expiresAt: { type: 'number' },
-      },
-      required: ['token', 'id', 'expiresAt'],
-    },
-    statuses: [201, 400, 401, 409],
-  },
-  {
-    method: 'GET',
     path: '/tokens/current',
     segment: 'tokens',
     tag: 'API tokens',
@@ -984,15 +954,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/tokens/{id}',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Revoke an API token.',
-    auth: 'clerk',
-    statuses: [204, 401, 404],
   },
 
   // ---- Shared with you ----
@@ -1215,86 +1176,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/teams/invite-link/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: an old team invite link. Answers 410 teams_moved with manageAt; join links are opened on liveworkspace.app.',
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'GET',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-link/{token}/join',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: joining through an old team invite link. Answers 410 teams_moved with manageAt; join links are opened on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: renaming a team. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: deleting a team. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: making a team's invite link. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: turning a team's invite link off. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'GET',
     path: '/teams/{id}/members',
     segment: 'teams',
     tag: 'Teams',
@@ -1303,46 +1184,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     responseSchema: listOf('members', 'TeamMember'),
     statuses: [200, 401, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/members',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: inviting someone by email. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/members/{memberId}/accept',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: accepting an invitation. Answers 410 teams_moved with manageAt; invitations are answered on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: changing a member's role. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: removing a member or leaving. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
   },
   {
     method: 'GET',

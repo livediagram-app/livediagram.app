@@ -2,7 +2,7 @@
 // (index-adapters.ts), and a team's people, for the editor's assignee picker and @-mention list
 // (assigned-actions.md, comment-mentions.md). Making a team is the one write: liveworkspace makes it for the
 // person signed in (team-create.ts). Renaming and deleting a team, invitations, roles and leaving are
-// liveworkspace.app's, and answer 410 with where to go.
+// liveworkspace.app's.
 
 import type { TeamListItem, TeamMember } from '@livedesign/api-schema';
 import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
@@ -22,7 +22,6 @@ const teamAccess = createTeamAccess();
 // (liveworkspace manages them).
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const { request, segments } = ctx;
-  if (managedOnLiveworkspace(request.method, segments)) return teamsMoved(ctx);
   if (segments.length === 2 && request.method === 'POST') return createTeam(ctx);
   if (request.method !== 'GET') return notFound();
   const owner = requireOwner(ctx);
@@ -80,31 +79,6 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return json({ members });
   }
   return notFound();
-}
-
-// What liveworkspace.app runs: exactly the administration routes this API used to serve.
-function managedOnLiveworkspace(method: string, segments: string[]): boolean {
-  switch (segments.length) {
-    case 3:
-      return method === 'PUT' || method === 'DELETE';
-    case 4:
-      if (segments[2] === 'invite-link') return method === 'GET';
-      if (segments[2] === 'invite-decline') return method === 'GET' || method === 'POST';
-      if (segments[3] === 'invite-link') return method === 'POST' || method === 'DELETE';
-      return segments[3] === 'members' && method === 'POST';
-    case 5:
-      if (segments[2] === 'invite-link') return segments[4] === 'join' && method === 'POST';
-      return segments[3] === 'members' && (method === 'PUT' || method === 'DELETE');
-    case 6:
-      return segments[3] === 'members' && segments[5] === 'accept' && method === 'POST';
-    default:
-      return false;
-  }
-}
-
-function teamsMoved(ctx: RouteContext): Response {
-  const accounts = (ctx.env.ACCOUNTS_URL ?? 'https://liveworkspace.app').replace(/\/+$/, '');
-  return json({ error: 'teams_moved', manageAt: `${accounts}/account/teams` }, { status: 410 });
 }
 
 function inTeam(ctx: RouteContext, owner: string, teamId: string): Promise<boolean> {

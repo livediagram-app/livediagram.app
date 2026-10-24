@@ -1,6 +1,5 @@
 // /api/tokens — API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API
-// tokens"): made, listed and revoked on liveworkspace.app, so the management routes answer 410 with
-// where to go. What stays is the token a request presented:
+// tokens"): made, listed and revoked on liveworkspace.app. This app serves only the token a request presented:
 //
 //   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
 //   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
@@ -13,20 +12,10 @@ import { getParticipant } from '../accounts/profiles';
 import { workbenchStore } from '../workbench-store';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments } = ctx;
-  if (segments[1] !== 'tokens') return notFound();
-  if (segments[2] === 'current' && segments.length === 3) return handleCurrentToken(ctx);
-  const managed =
-    (segments.length === 2 && (request.method === 'GET' || request.method === 'POST')) ||
-    (segments.length === 3 && request.method === 'DELETE');
-  if (!managed) return notFound();
-  return json(
-    {
-      error: 'tokens_moved',
-      manageAt: `${(env.ACCOUNTS_URL ?? 'https://liveworkspace.app').replace(/\/+$/, '')}/account/tokens`,
-    },
-    { status: 410 },
-  );
+  const { segments } = ctx;
+  if (segments[1] === 'tokens' && segments[2] === 'current' && segments.length === 3)
+    return handleCurrentToken(ctx);
+  return notFound();
 }
 
 // The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"), as liveworkspace

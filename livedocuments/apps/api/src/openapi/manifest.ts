@@ -864,36 +864,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- API tokens ----
   {
     method: 'GET',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: "List the caller's API tokens (metadata only; the secret is never returned).",
-    auth: 'clerk',
-    responseSchema: listOf('tokens', 'ApiToken'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Mint an API token. The secret is returned once, here only.',
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { name: { type: 'string' } } },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        token: { type: 'string', description: 'The secret, shown once.' },
-        id: { type: 'string' },
-        name: { type: ['string', 'null'] },
-        expiresAt: { type: 'number' },
-      },
-      required: ['token', 'id', 'expiresAt'],
-    },
-    statuses: [201, 400, 401, 409],
-  },
-  {
-    method: 'GET',
     path: '/tokens/current',
     segment: 'tokens',
     tag: 'API tokens',
@@ -914,15 +884,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/tokens/{id}',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Revoke an API token.',
-    auth: 'clerk',
-    statuses: [204, 401, 404],
   },
 
   // ---- Shared with you ----

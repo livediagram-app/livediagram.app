@@ -75,8 +75,7 @@ storing tokens itself, the account-level design below supersedes it.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
-- **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app and
+- **Management** is on liveworkspace.app; this app has no routes for listing, minting or revoking tokens. The Settings dialog's API Tokens row links to liveworkspace.app and
   lists the account's paired workbenches with Unpair.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
@@ -310,7 +309,7 @@ out cleanly:
 - A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
   front door like any dead token (§3.3).
 
-Every other `/api/tokens` route answers `410 tokens_moved` (see the head of §3).
+Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
 
 ### 3.7 Self-hosting
 
