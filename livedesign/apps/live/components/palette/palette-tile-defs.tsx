@@ -715,7 +715,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Avatar',
     description:
-      'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
+      'Avatar. A circular image. Click to drop or drag to size; double-click it to pick / upload a photo.',
     noTint: true,
     needsImage: true,
     action: { type: 'component', kind: 'avatar' },
@@ -736,7 +736,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Card',
     description:
-      'Card. A content card with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
+      'Card. A content card with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Click to drop or drag to size.',
     filled: true,
     action: { type: 'shape', kind: 'card' },
     variants: CARD_PRESET_TILES,
@@ -1170,7 +1170,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Banner',
     description:
-      'Banner. A themed title block (an accent bar with a title and subtitle) to head your page. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
+      'Banner. A themed title block (an accent bar with a title and subtitle) to head your page. Click to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
     noTint: true,
     action: { type: 'component', kind: 'banner' },
     icon: (
@@ -1189,7 +1189,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Callout',
     description:
-      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a design. Tap to drop or drag to size; double-click to edit the body.',
+      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a design. Click to drop or drag to size; double-click to edit the body.',
     noTint: true,
     action: { type: 'component', kind: 'callout' },
     icon: (
@@ -1248,7 +1248,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Hero',
     description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
+      'Hero. A large image with a title and supporting line on a themed caption card. Click to drop or drag to size; double-click the image to set it, click the caption to edit it.',
     noTint: true,
     needsImage: true,
     action: { type: 'component', kind: 'hero' },

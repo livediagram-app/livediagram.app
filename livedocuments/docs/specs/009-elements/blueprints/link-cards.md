@@ -228,7 +228,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
   16 px favicon or glyph, title (12 px semibold, `line-clamp-2`, `textColor`), destination (10 px,
   truncated), and a right arrow that nudges on hover when followable.
 - **Palette**: `tools:link-card`, "Add Link Card", Behaviour group, "move" tile group; draw banner
-  "Tap to drop or drag to draw a link card".
+  "Click to drop or drag to draw a link card" ("Tap to drop …" on a phone).
 - **Export**: rect with `rx` 6 and the card's fill and stroke, no text (D56).
 
 ## Accessibility

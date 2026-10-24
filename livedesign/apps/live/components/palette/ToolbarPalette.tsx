@@ -302,7 +302,7 @@ export function ToolbarPalette(props: Props) {
       })
     : null;
 
-  // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
+  // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
   const beforeSearch = () => {
     if (pendingDraw) tileActions.cancelDraw?.();
   };

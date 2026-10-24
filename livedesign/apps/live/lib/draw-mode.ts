@@ -98,7 +98,7 @@ export type PendingDraw =
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<Extract<PendingDraw, { type: 'shape' }>, 'variant' | 'name'>;
 
-// The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it,
+// The shape the banner names ("Click to drop or drag to draw Square"), as the tile the person just picked names it,
 // else as the palette and the selection badge name its kind (shapeKindLabel: Square, Circle).
 function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): string {
   return intent.name ?? shapeKindLabel(intent.kind);
@@ -153,34 +153,36 @@ export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
 // draw Rectangle"); tools read in plain English ("Drag to draw an
 // arrow") because there's no kind dimension to disambiguate.
 export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
+  // The press that drops names the pointer in use, as the flyout's hint does: a click, or a phone's tap.
+  const press = isMobile ? 'Tap' : 'Click';
   switch (intent.type) {
     case 'shape':
-      return `Tap to drop or drag to draw ${shapeIntentName(intent)}`;
+      return `${press} to drop or drag to draw ${shapeIntentName(intent)}`;
     case 'text':
-      return 'Tap to drop or drag to place text';
+      return `${press} to drop or drag to place text`;
     case 'sticky':
-      return 'Tap to drop or drag to draw a sticky note';
+      return `${press} to drop or drag to draw a sticky note`;
     case 'image':
-      return 'Tap to drop or drag to draw image bounds';
+      return `${press} to drop or drag to draw image bounds`;
     case 'table':
-      return 'Tap to drop or drag to draw a table';
+      return `${press} to drop or drag to draw a table`;
     case 'link-card':
-      return 'Tap to drop or drag to draw a link card';
+      return `${press} to drop or drag to draw a link card`;
     case 'video':
       // Names the service the tile promised (docs/specs/009-elements/embed-providers.md) rather than saying
       // "video" for all six, so the banner confirms which one is queued. The
       // 16:9 note is the one surprising thing about this drag, so it earns
       // its place on desktop; a phone-width banner can't hold it.
       return isMobile
-        ? `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
-        : `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
+        ? `${press} to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
+        : `${press} to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
     case 'arrow':
       // The Line is the arrow without its heads, and its tile says Line (docs/specs/008-canvas/canvas-and-palette.md).
       return intent.ends === 'none'
-        ? 'Tap to drop or drag to draw a line'
-        : 'Tap to drop or drag to draw an arrow';
+        ? `${press} to drop or drag to draw a line`
+        : `${press} to drop or drag to draw an arrow`;
     case 'component':
-      return `Tap to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
+      return `${press} to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
     case 'freehand':
       // Freehand is gestural only (no tap-to-drop): it collects the
       // pointer stream, so it keeps the bare "Drag to draw". The

@@ -324,7 +324,7 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
   built in `EditorElementDialogs`; error "That isn't a link we can embed. Check it starts with
   https:// — or, for a named service, that it is a link to a real file." [QC9]. Help link:
   `embedElements` (D72).
-- **Draw banner.** "Tap to drop or drag to draw <Label> (stays 16:9)", without the parenthesis on
+- **Draw banner.** "Click to drop or drag to draw <Label> (stays 16:9)" ("Tap to drop …" on a phone), without the parenthesis on
   mobile; no provider reads as Website (D71).
 - **Palette.** Group row "Embed", blurb "Load a page on the canvas", count badge; six tiles with
   captions YouTube, Vimeo, Loom, Figma, Google Docs, Website [QC9].

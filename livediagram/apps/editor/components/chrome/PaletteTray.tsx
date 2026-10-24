@@ -156,7 +156,7 @@ export function PaletteTray({
           {lead}
         </span>
         {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
-            ("Tap to drop or drag to draw Squ…"). */}
+            ("Click to drop or drag to draw Squ…"). */}
         <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
         {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
       </div>

@@ -141,7 +141,7 @@ A strip shows one category at a time, so finding an element means knowing which 
 
 - **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put while the bar swipes.
-- **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), since it sits
+- **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), since it sits
   where the panel hangs.
 - **The popover** hangs from the button's right edge, 26rem wide (spanning the screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a strip menu: opening it closes any other (a flyout, the selection mode), and a press outside or Escape closes it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it had fallen to the page. **S** opens it too, wherever the strip is shown; everywhere else S keeps its old meaning, the legacy alias of Select. The field's clear button (×, once there is text) clears the query and returns to the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of the Pages palette, each once however many

@@ -143,7 +143,7 @@ export function ToolbarPalette(props: Props) {
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
   const crowded = useStripCrowded(cardRef, leading == null);
 
-  // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
+  // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
   const beforeSearch = () => {
     if (pendingDraw) tileActions.cancelDraw?.();
   };
