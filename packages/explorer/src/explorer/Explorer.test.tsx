@@ -63,6 +63,19 @@ describe('<Explorer>', () => {
     expect(document.querySelector('[data-folder-row="f1"]')).toBeTruthy();
   });
 
+  it('badges an item Public when its app says anyone can find it', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { summary: { public: true } }), makeItem(2)],
+    });
+    renderExplorer(index, { kind: 'all' });
+    await waitFor(() => expect(rows().length).toBe(2));
+    const badge = (n: number) =>
+      document.querySelector(`[data-item-row="${makeItem(n).id}"]`)!.textContent ?? '';
+    expect(badge(1)).toContain('Public');
+    expect(badge(2)).not.toContain('Public');
+    expect(badge(2)).toContain('Private');
+  });
+
   it("draws the host's marks beside each item's name and Updated time, in rows and cards", async () => {
     const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
     const renderItemMark = vi.fn((item: Item, at: 'title' | 'time') =>

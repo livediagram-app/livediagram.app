@@ -24,6 +24,8 @@ export type ItemSummary = {
   empty?: boolean;
   // A media key, or null.
   thumbnail?: string | null;
+  // Anyone can find it: listed in a public gallery (livediagram's Community). The Explorer's Public badge.
+  public?: boolean;
   [k: string]: unknown;
 };
 

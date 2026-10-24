@@ -106,7 +106,7 @@ export async function readContentSummary(
   env: DocumentEnv,
   documentId: string,
 ): Promise<{ summary: ContentSummary; savedAt: number; ownerId: string | null }> {
-  const [tabs, stats, document] = await env.DOCUMENT_DB.batch([
+  const [tabs, stats, document, community] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
       // An article's writing lives in `articles`, not in `elements`, and a body that is not JSON fails safe as
       // content: only a tab whose count is 0 is parsed for either.
@@ -126,6 +126,12 @@ export async function readContentSummary(
     env.DOCUMENT_DB.prepare(`SELECT ${documentStatsSql('?1')}`).bind(documentId),
     env.DOCUMENT_DB.prepare('SELECT saved_at, owner_id FROM document WHERE id = ?').bind(
       documentId,
+    ),
+    // Listed in the Community (community-post.ts): a post not hidden after reports, whose canvas the listing last
+    // heard was public (nothing heard yet, just after publishing, counts).
+    env.DOCUMENT_DB.prepare(
+      `SELECT 1 AS listed FROM community_post
+        WHERE hidden_at IS NULL AND (sent_state IS NULL OR sent_state = 'public') LIMIT 1`,
     ),
   ]);
   const tabRows = (tabs?.results ?? []) as {
@@ -148,6 +154,7 @@ export async function readContentSummary(
       tabCounts,
       stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
       hasContent,
+      communityListed: (community?.results?.length ?? 0) > 0,
     },
     savedAt: head?.saved_at ?? 0,
     ownerId: head?.owner_id || null,
@@ -164,6 +171,8 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     comments: summary.stats?.comments ?? 0,
     bytes: summary.stats?.bytes ?? 0,
     empty: isEmptyCount(summary.firstTabCount),
+    // Listed in the public Community: the Explorer's Public badge (@liveworkspace/explorer VisibilityBadge).
+    ...(summary.communityListed ? { public: true } : {}),
   };
 }
 

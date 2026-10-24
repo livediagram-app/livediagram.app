@@ -245,6 +245,20 @@ BEGIN
   DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id);
   INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id;
 END;
+-- A Community post listed, hidden, moved or taken down changes whether the canvas is public, which its summary says.
+CREATE TRIGGER IF NOT EXISTS outbox_community_insert AFTER INSERT ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_delete AFTER DELETE ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
 CREATE TRIGGER IF NOT EXISTS outbox_image_insert AFTER INSERT ON image_refs
 BEGIN
   DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'images', '' FROM document_tabs WHERE tab_id = NEW.tab_id);
