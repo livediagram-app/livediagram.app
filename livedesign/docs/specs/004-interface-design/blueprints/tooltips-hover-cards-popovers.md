@@ -31,7 +31,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
 | Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
-| Preview       | `useRowPreview`, `data-hint="preview"`                     | A picture of what the control opens, after 600 ms                  |
+| Preview       | `data-hint="preview"`                                      | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
 | Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
@@ -77,7 +77,7 @@ pointer events from bubbling, and the hint must still see them.
 | T10 | `pointermove`, touch, `pressTimer` pending | moved > `HINT_LONG_PRESS_SLOP_PX`     | cancel `pressTimer`                                                                        |
 | T11 | `pointerup` / `pointercancel`, touch       |                                       | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
 | T12 | `click` (capture)                          | `suppressClick`                       | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
-| T13 | design `keydown` `Escape` while open     |                                       | close; `dismissed`; the event keeps propagating (spec)                                     |
+| T13 | design `keydown` `Escape` while open       |                                       | close; `dismissed`; the event keeps propagating (spec)                                     |
 | T14 | another hint opens (registry)              |                                       | close at once                                                                              |
 | T15 | unmount                                    |                                       | clear every timer; release the registry                                                    |
 
@@ -164,7 +164,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 
 | Case                                               | Handling                                                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rendered on the server (no `design`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
+| Rendered on the server (no `design`)               | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
 | `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                                                                                                                                                                                                                                                 |
 | Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead                                                                                                                                             |
 | Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                                                                                                                                           |
