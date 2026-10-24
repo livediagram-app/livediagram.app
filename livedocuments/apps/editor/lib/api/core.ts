@@ -14,7 +14,6 @@ import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import type { Tab } from '@livedocuments/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { readGuestToken } from '../guest-token';
-import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 import { withDocumentGrant } from './document-grants';
@@ -90,15 +89,9 @@ export function wsUrl(path: string): string {
   return `${proto}//${window.location.host}${API_BASE}${path}`;
 }
 
-// Every api request goes through here rather than bare `fetch` so a
-// successful WRITE can be announced (write-signal.ts): the Timeline
-// re-reads itself off that signal, which is what lets a delete or a
-// rename show up on the feed without a browser refresh (docs/specs/013-workspace/timeline.md
-// §2.4b). Reads stay silent, and so do the feed's own endpoints —
-// dismissing a card must not make the feed re-read itself to notice.
-//
-// Transparent otherwise: same arguments, same Response, and a network
-// failure still throws to the caller before any signal is raised.
+// Every api request goes through here rather than bare `fetch`, so what every request needs (a document's grant,
+// a workbench session's confinement, the server release signal, the network-error report) lives in one place.
+// Transparent otherwise: same arguments, same Response, and a network failure still throws to the caller.
 // `documentGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself and
 // cannot wait for one (a beforeunload handler runs to its end before anything it awaits).
 export async function apiFetch(
@@ -122,17 +115,12 @@ export async function apiFetch(
     reportNetworkError(method, input, err);
     throw err;
   }
-  if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
   void noteWorkbenchResponse(init, res);
   // The server release signal rides every response: the document format number and the live build
   // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
   noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
   noteServerBuild(res.headers?.get(BUILD_ID_HEADER));
   return res;
-}
-
-function isTimelinePath(url: string): boolean {
-  return url.startsWith(`${API_BASE}/timeline`);
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
@@ -474,12 +462,6 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
-    // When this DELETE ends an entity the Timeline narrates (a document, a
-    // folder, a theme, a team), name it in the feed's terms so the feed
-    // can drop the entity's earlier cards at once, the way the worker's
-    // cascade does server-side (docs/specs/013-workspace/timeline.md §3.5). Omit for a DELETE that
-    // merely changes something (a share link, a favourite).
-    purge?: { sourceType: string; sourceId: string };
   },
 ): Promise<void> {
   const res = await apiFetch(url, {
@@ -494,7 +476,6 @@ export async function apiDelete(
   } else {
     await expectOkVoid(res, opts.action);
   }
-  if (opts.purge && res.ok) notifyApiWrite({ purge: opts.purge });
 }
 
 // Strip fields that ride on the Tab type for the editor's convenience

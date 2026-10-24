@@ -19,7 +19,6 @@ vi.mock('../guest-token', () => guest);
 import {
   API_BASE,
   ApiError,
-  apiDelete,
   apiFetch,
   apiHeaders,
   expectOk,
@@ -36,7 +35,6 @@ import {
   WorkbenchConfinedError,
   tabForWire,
 } from './core';
-import { resetApiWriteListeners, subscribeApiWrites } from './write-signal';
 import { setApiErrorReporter, setApiWarningReporter } from './error-report';
 
 const H = (h: HeadersInit) => h as Record<string, string>;
@@ -220,60 +218,6 @@ describe('expectOk / expectOkOrNull / expectOkVoid', () => {
   it('expectOkVoid resolves on 2xx and throws otherwise', async () => {
     await expect(expectOkVoid(ok({}), 'del')).resolves.toBeUndefined();
     await expect(expectOkVoid(err(403), 'del')).rejects.toBeInstanceOf(ApiError);
-  });
-});
-
-// The write signal the Timeline re-reads off (docs/specs/013-workspace/timeline.md §2.4b). Raised
-// from the one place every request passes through, so no call site has
-// to remember it — and only for a write that actually landed.
-describe('apiFetch / apiDelete write signal', () => {
-  const heard = vi.fn();
-  beforeEach(() => {
-    resetApiWriteListeners();
-    heard.mockReset();
-    subscribeApiWrites(heard);
-  });
-
-  it('announces a successful non-GET', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
-    expect(heard).toHaveBeenCalledWith({});
-    vi.unstubAllGlobals();
-  });
-
-  it('stays silent for a GET, a failed write, and the feeds own endpoints', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/documents`);
-    await apiFetch(`${API_BASE}/timeline/events/e1`, { method: 'DELETE' });
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
-    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
-    expect(heard).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
-  });
-
-  it('names the entity a DELETE ended, after the plain signal', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
-    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete document',
-      purge: { sourceType: 'document', sourceId: 'd1' },
-    });
-    expect(heard.mock.calls.map(([s]): unknown => s)).toEqual([
-      {},
-      { purge: { sourceType: 'document', sourceId: 'd1' } },
-    ]);
-    vi.unstubAllGlobals();
-  });
-
-  it('does not name the entity when the DELETE found nothing to end', async () => {
-    // A tolerated 404: nothing was removed, so nothing should vanish
-    // from the feed on the strength of it.
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
-    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete document',
-      purge: { sourceType: 'document', sourceId: 'd1' },
-    });
-    expect(heard).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
   });
 });
 

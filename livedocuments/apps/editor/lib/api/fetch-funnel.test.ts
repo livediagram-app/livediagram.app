@@ -3,14 +3,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // Every request the api client makes goes through `apiFetch` in core.ts, which
-// is the one place that sees them all. Today it raises the write signal that
-// makes the Timeline notice a change without a refresh; the point is that it is
-// the funnel, so anything it grows later applies everywhere at once.
+// is the one place that sees them all: a document's grant, a workbench session's
+// confinement and the server release signal ride on it, so anything it grows
+// later applies everywhere at once.
 //
 // A module calling `fetch` directly still works, which is what makes this worth
-// pinning: activity.ts did, and because its call is a GET and the signal only
-// fires on writes, nothing behaved differently and nothing failed. It would
-// have quietly opted out of whatever came next.
+// pinning: it would quietly opt out of all of that.
 
 const API_DIR = fileURLToPath(new URL('.', import.meta.url));
 
