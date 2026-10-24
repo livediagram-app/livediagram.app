@@ -1,27 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Policies',
   description:
     "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
-  path: '/help/policies/',
-});
+  lede: "How to report a security issue privately. The terms and privacy policy for liveplanner.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy.",
+};
+
+export const metadata = supportCategoryMetadata(site, 'policies', COPY);
 
 export default function PoliciesPage() {
-  const articles = getArticlesByCategory('policies');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/policies/', articles: articles }}
-      title="Policies"
-      lede="How to report a security issue privately. The terms and privacy policy for liveplanner.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="policies" copy={COPY} />;
 }

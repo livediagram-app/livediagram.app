@@ -59,7 +59,7 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 | ---- | ------------------- | ------- |
 
 Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
-ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`),
+ones among them), `../packages/help-site/src/components/ArticleShell.tsx` (reads `textContent`),
 and `apps/editor/components/plan/AddCardPopover.tsx` (catches React events bubbling out of a portal).
 
 ### The React Compiler's reach

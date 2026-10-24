@@ -198,7 +198,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the planner app: the project editor, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help)
+  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -221,7 +221,7 @@ packages/
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ # this product's brand ramps (violet) over @liveworkspace/tailwind-config's theme
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), page-background, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

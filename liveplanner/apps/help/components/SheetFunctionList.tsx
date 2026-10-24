@@ -4,7 +4,7 @@
 // with the article's own heading, table and code pieces (raw tags skip the MDX map: an unstyled table that ran off a
 // phone's edge, its Example column out of reach).
 import { FUNCTION_DOCS, FUNCTION_FAMILIES } from '@liveplanner/sheets';
-import { InlineCode, SectionHeading, Table, Td, Th } from '@/mdx-components';
+import { InlineCode, SectionHeading, Table, Td, Th } from '@liveworkspace/help-site/mdx-components';
 
 export function SheetFunctionList() {
   return (
