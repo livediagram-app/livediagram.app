@@ -83,7 +83,7 @@ export function Label({
       muted: 'fill-slate-400',
       strong: 'fill-slate-800',
       accent: 'fill-brand-600',
-      // White on a solid accent in both appearances (see app/help-art.css).
+      // White on a solid accent in both appearances (see packages/help-site/src/help-art.css).
       onAccent: 'fill-white help-art-as-drawn',
     }[tone];
   return (

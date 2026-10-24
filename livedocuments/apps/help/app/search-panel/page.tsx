@@ -1,7 +1,11 @@
-import { FeatureCategoryIndex, featureCategoryMetadata } from '@/components/FeatureCategoryIndex';
+import {
+  FeatureCategoryIndex,
+  featureCategoryMetadata,
+} from '@liveworkspace/help-site/components/FeatureCategoryIndex';
+import { site } from '@/lib/help-site';
 
-export const metadata = featureCategoryMetadata('search-panel');
+export const metadata = featureCategoryMetadata(site, 'search-panel');
 
 export default function SearchPanelCategoryPage() {
-  return <FeatureCategoryIndex slug="search-panel" />;
+  return <FeatureCategoryIndex site={site} slug="search-panel" />;
 }

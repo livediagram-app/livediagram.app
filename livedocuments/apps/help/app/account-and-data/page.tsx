@@ -1,26 +1,17 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Account and Data',
   description: 'Guest access, signing in, syncing, exporting, and deleting your data.',
-  path: '/help/account-and-data/',
-});
+  lede: 'How identity works, what an account adds, and how to manage your data.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'account-and-data', COPY);
 
 export default function AccountAndDataPage() {
-  const articles = getArticlesByCategory('account-and-data');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/account-and-data/', articles: articles }}
-      title="Account and Data"
-      lede="How identity works, what an account adds, and how to manage your data."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="account-and-data" copy={COPY} />;
 }
