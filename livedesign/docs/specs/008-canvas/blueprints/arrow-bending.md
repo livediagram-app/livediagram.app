@@ -112,10 +112,10 @@ scales a free arrow.
 
 | Name                   | Value | Provenance / safe range                               |
 | ---------------------- | ----- | ----------------------------------------------------- |
-| `BEND_T_MIN`           | 0.2   | Keeps a grab beside a head from exploding; 0.1 to 0.3 |
+| `BEND_T_MIN`           | 0.05  | A cubic has no leverage at its very ends; 0.02 to 0.2 |
 | `DOUBLE_PRESS_MS`      | 450   | Existing, moved to double-press                       |
 | `DOUBLE_PRESS_SLOP_PX` | 8     | Screen px between the two presses; 4 to 16            |
-| `MOVE_FRAME_PAD_PX`    | 12    | Frame clearance round the route; 8 to 24              |
+| `MOVE_FRAME_PAD_PX`    | 20    | Edge handles clear of the endpoint grips; 12 to 32    |
 | `MOVE_FRAME_HIT_PX`    | 10    | Grab band width of the frame edge; 8 to 16            |
 | `MAX_CURVE_POINTS`     | 5000  | A path's node limit (MAX_PATH_NODES); 1000 to 5000    |
 

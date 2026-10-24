@@ -18,8 +18,6 @@ import { personTagFor } from '../person-tag';
 import { adderKeyFor } from '../adder-key';
 import type { WorkbenchContext } from './context';
 
-vi.mock('../db/workbench', () => ({ noteWorkbenchSessionRoom: vi.fn(async () => undefined) }));
-
 const NOW = Math.floor(Date.now() / 1000);
 
 // A stand-in for the index's signature: `G.<base64 claims>`. Anything else is forged.

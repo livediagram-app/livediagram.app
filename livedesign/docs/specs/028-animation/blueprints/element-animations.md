@@ -322,8 +322,8 @@ in `../liveworkspace/apps/site/app/telemetry/livedesign/event-explanations.ts`.
 
 | Constant                | Value           | Provenance                                   | Safe range |
 | ----------------------- | --------------- | -------------------------------------------- | ---------- |
-| `TEXT_ANIM_MAX_LETTERS` | 400             | a long paragraph; bounds per-frame restyling | 100–1000   |
-| `TEXT_ANIM_MAX_WORDS`   | 120             | a long sticky note                           | 40–300     |
+| `TEXT_ANIM_MAX_LETTERS` | 60              | a title or label; per-frame restyle measured | 30–200     |
+| `TEXT_ANIM_MAX_WORDS`   | 60              | a short paragraph; the same measurement      | 20–200     |
 | Reveal share            | 0.45            | reveal reads as a gesture, not a wait (EA2)  | 0.3–0.6    |
 | Hold end / faded        | 0.86 / 0.93     | long enough to read; a short clear           | 0.7–0.95   |
 | `FLICKER_SHARE`         | 0.12            | a sign with a few bad letters                | 0.05–0.3   |

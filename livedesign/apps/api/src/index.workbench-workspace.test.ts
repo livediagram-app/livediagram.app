@@ -33,7 +33,6 @@ vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/designs', () => stub('handleDesigns'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
-vi.mock('./routes/forms', () => stub('handleForms'));
 vi.mock('./routes/participants', () => stub('handleParticipants'));
 vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
