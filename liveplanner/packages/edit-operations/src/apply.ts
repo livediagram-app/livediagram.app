@@ -7,6 +7,7 @@
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@liveplanner/api-schema';
 import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@liveplanner/project';
 import { finalise } from './finalise';
+import { formatOperation } from './format-operation';
 import { applyAdd } from './operations/add';
 import { applyTest } from './operations/test-fields';
 import { applyRm } from './operations/rm';
@@ -36,6 +37,15 @@ function applyOperation(
   }
 }
 
+// The refused operation in its canonical line form, for the header `error <code> · op <n> · <op>`
+// (docs/specs/024-agents/blueprints/edit-operations.md "Rejections").
+function withOp(rejection: EditRejection, operations: readonly EditOperation[]): EditRejection {
+  const operation = rejection.operation === undefined ? undefined : operations[rejection.operation - 1];
+  return operation && rejection.op === undefined
+    ? { ...rejection, op: formatOperation(operation) }
+    : rejection;
+}
+
 function rejected(
   log: EditLog,
   rejection: EditRejection,
@@ -44,7 +54,7 @@ function rejected(
   const at = rejection.operation;
   const op = at === undefined ? 'none' : operations[at - 1]!.op;
   log('[edit-ops] rejected', { code: rejection.code, operation: at ?? 0, op });
-  return { errors: [rejection] };
+  return { errors: [withOp(rejection, operations)] };
 }
 
 export function applyEditOperations(
@@ -83,8 +93,8 @@ export function applyEditOperations(
     return {
       errors: [
         ...rejected(log, unmatched[0]!, operations).errors,
-        ...unmatched.slice(1),
-        ...(stoppedBy ? [stoppedBy] : []),
+        ...unmatched.slice(1).map((rejection) => withOp(rejection, operations)),
+        ...(stoppedBy ? [withOp(stoppedBy, operations)] : []),
       ],
     };
   }
