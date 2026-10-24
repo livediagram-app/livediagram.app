@@ -1,15 +1,22 @@
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  CLI_CLIENT_ID,
   DEVICE_CODE_GRANT,
   DEVICE_CODE_TTL_S,
   DEVICE_SLOW_DOWN_S,
-} from '@livediagram/api-schema';
-import type { Env } from './env';
-import { registerOauthRoutes } from './oauth';
+} from '@liveworkspace/api-kit/oauth';
+import { cliClients } from './oauth-clients';
+import { registerOauthRoutes, type OauthServer } from './oauth';
 
-// The device grant (docs/specs/015-api/blueprints/cli.md "The device grant", CLI36).
+// A product's MCP env, as far as the authorization server reads it, and its configuration: a CLI client of its own
+// and a consent page on its editor (here example.app, the hosted default when CONSENT_BASE_URL is unset).
+type Env = { OAUTH_KV: KVNamespace; CONSENT_BASE_URL?: string };
+const SERVER: OauthServer<Env> = {
+  appBase: (env) => env.CONSENT_BASE_URL ?? 'https://example.app',
+  builtInClients: cliClients('example-cli', 'example CLI'),
+};
+
+// The device grant (each product's docs/specs/015-api/blueprints/cli.md "The device grant", CLI36).
 
 // `afterGet` runs once a read has taken its value and before it returns it: a stand-in for a stale KV read.
 let afterGet: ((key: string) => Promise<void>) | null = null;
@@ -34,8 +41,8 @@ let now: number;
 
 beforeEach(() => {
   app = new Hono<{ Bindings: Env }>();
-  registerOauthRoutes(app);
-  env = { OAUTH_KV: mockKV(), API: {} as Fetcher, CONSENT_BASE_URL: 'https://live.test' };
+  registerOauthRoutes(app, SERVER);
+  env = { OAUTH_KV: mockKV(), CONSENT_BASE_URL: 'https://live.test' };
   now = Date.UTC(2026, 9, 6, 12);
   vi.spyOn(Date, 'now').mockImplementation(() => now);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
@@ -69,14 +76,14 @@ type Started = {
 async function start(): Promise<Started> {
   const res = await app.request(
     '/oauth/device_authorization',
-    form({ client_id: CLI_CLIENT_ID }),
+    form({ client_id: 'example-cli' }),
     env,
   );
   expect(res.status).toBe(200);
   return (await res.json()) as Started;
 }
 
-const poll = async (deviceCode: string, clientId = CLI_CLIENT_ID) => {
+const poll = async (deviceCode: string, clientId = 'example-cli') => {
   const res = await app.request(
     '/oauth/token',
     form({ grant_type: DEVICE_CODE_GRANT, device_code: deviceCode, client_id: clientId }),
@@ -108,13 +115,13 @@ describe('starting', () => {
     for (let i = 0; i < 20; i++) await start();
     const limited = await app.request(
       '/oauth/device_authorization',
-      form({ client_id: CLI_CLIENT_ID }),
+      form({ client_id: 'example-cli' }),
       env,
     );
     expect(limited.status).toBe(429);
     const elsewhere = await app.request(
       '/oauth/device_authorization',
-      form({ client_id: CLI_CLIENT_ID }, '5.6.7.8'),
+      form({ client_id: 'example-cli' }, '5.6.7.8'),
       env,
     );
     expect(elsewhere.status).toBe(200);
@@ -126,7 +133,7 @@ describe('the device page', () => {
     const s = await start();
     const typed = s.user_code.toLowerCase().replace('-', ' ');
     const found = await app.request(`/oauth/device/session/${encodeURIComponent(typed)}`, {}, env);
-    expect(await found.json()).toEqual({ clientName: 'livediagram CLI' });
+    expect(await found.json()).toEqual({ clientName: 'example CLI' });
     expect((await app.request('/oauth/device/session/BBBB-BBBB', {}, env)).status).toBe(404);
     expect((await app.request('/oauth/device/session/nope', {}, env)).status).toBe(404);
   });
@@ -244,7 +251,7 @@ describe('polling', () => {
 });
 
 describe('malformed requests', () => {
-  it('answers each with its refusal, and a host without a consent base links livediagram.app', async () => {
+  it('answers each with its refusal, and a host without a consent base links example.app', async () => {
     const bad = { method: 'POST', body: '{', headers: { 'Content-Type': 'application/json' } };
     expect((await app.request('/oauth/device/complete', bad, env)).status).toBe(400);
     expect((await app.request('/oauth/device/deny', bad, env)).status).toBe(400);
@@ -262,6 +269,6 @@ describe('malformed requests', () => {
       ).json(),
     ).toEqual({ error: 'invalid_client' });
     delete env.CONSENT_BASE_URL;
-    expect((await start()).verification_uri).toBe('https://livediagram.app/oauth/device');
+    expect((await start()).verification_uri).toBe('https://example.app/oauth/device');
   });
 });

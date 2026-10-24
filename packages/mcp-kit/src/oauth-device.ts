@@ -5,9 +5,7 @@
 // Only the page writes `device:` after it starts (approve, deny); polls write only `devicepoll:`, so a poll that read
 // the record before an approval can never write it back as pending (KV reads can be a minute stale across regions).
 
-import { appBase } from './tool-helpers';
 import {
-  randomBase64Url,
   DEVICE_CODE_TTL_S,
   DEVICE_POLL_INTERVAL_S,
   DEVICE_SLOW_DOWN_S,
@@ -15,12 +13,13 @@ import {
   isUserCode,
   newUserCode,
   normaliseUserCode,
-  objectOrEmpty,
-} from '@livedesign/api-schema';
+} from '@liveworkspace/api-kit/oauth';
+import { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
+import { randomBase64Url } from '@liveworkspace/api-kit/bytes';
 import type { Context, Hono } from 'hono';
-import type { Env } from './env';
-import { builtInClient } from './oauth-clients';
+import { builtInClient, type OauthEnv } from './oauth-clients';
 import { formText } from './oauth-form';
+import type { OauthServer } from './oauth';
 
 type DeviceRecord = {
   clientId: string;
@@ -52,7 +51,7 @@ const log = (event: string, fields: Record<string, unknown> = {}) =>
 
 // A per-IP counter in KV over a fixed window, as registration counts; true when the caller is over it.
 async function overLimit(
-  env: Env,
+  env: OauthEnv,
   name: string,
   ip: string,
   limit: { max: number; windowS: number },
@@ -69,19 +68,20 @@ async function overLimit(
   return false;
 }
 
-const ipOf = (c: Context<{ Bindings: Env }>) => c.req.header('CF-Connecting-IP') ?? 'unknown';
+const ipOf = (c: { req: { header(name: string): string | undefined } }) =>
+  c.req.header('CF-Connecting-IP') ?? 'unknown';
 
 const ttlUntil = (endsAt: number) =>
   Math.max(KV_MIN_TTL_S, Math.ceil((endsAt - Date.now()) / 1000));
 
-async function save(env: Env, deviceCode: string, record: DeviceRecord): Promise<void> {
+async function save(env: OauthEnv, deviceCode: string, record: DeviceRecord): Promise<void> {
   await env.OAUTH_KV.put(deviceKey(deviceCode), JSON.stringify(record), {
     expirationTtl: ttlUntil(record.endsAt),
   });
 }
 
 async function savePoll(
-  env: Env,
+  env: OauthEnv,
   deviceCode: string,
   endsAt: number,
   poll: PollState,
@@ -92,14 +92,14 @@ async function savePoll(
 }
 
 // A finished grant: both keys go.
-async function forget(env: Env, deviceCode: string): Promise<void> {
+async function forget(env: OauthEnv, deviceCode: string): Promise<void> {
   await env.OAUTH_KV.delete(deviceKey(deviceCode));
   await env.OAUTH_KV.delete(pollKey(deviceCode));
 }
 
 // The pending record a typed user code names, with its device code; null for an unknown or expired code.
 async function pendingByUserCode(
-  env: Env,
+  env: OauthEnv,
   typed: unknown,
 ): Promise<{ deviceCode: string; record: DeviceRecord } | null> {
   if (typeof typed !== 'string') return null;
@@ -114,11 +114,14 @@ async function pendingByUserCode(
 
 const randomBytes = (n: number) => crypto.getRandomValues(new Uint8Array(n));
 
-export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
+export function registerDeviceRoutes<E extends OauthEnv>(
+  app: Hono<{ Bindings: E }>,
+  server: OauthServer<E>,
+): void {
   app.post('/oauth/device_authorization', async (c) => {
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const clientId = formText(form, 'client_id');
-    const client = builtInClient(clientId);
+    const client = builtInClient(server.builtInClients, clientId);
     if (!client) return c.json({ error: 'invalid_client' }, 400);
     if (await overLimit(c.env, 'device-start', ipOf(c), START_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
@@ -137,7 +140,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
       expirationTtl: DEVICE_CODE_TTL_S,
     });
     log('started', { clientId });
-    const page = `${appBase(c.env)}/oauth/device`;
+    const page = `${server.appBase(c.env)}/oauth/device`;
     return c.json({
       device_code: deviceCode,
       user_code: formatUserCode(userCode),
@@ -196,13 +199,14 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
 }
 
 // POST /oauth/token with the device grant: the CLI's poll.
-export async function handleDeviceToken(
-  c: Context<{ Bindings: Env }>,
+export async function handleDeviceToken<E extends OauthEnv>(
+  c: Context<{ Bindings: E }>,
+  server: OauthServer<E>,
   form: Record<string, unknown>,
 ): Promise<Response> {
   const deviceCode = formText(form, 'device_code');
   const clientId = formText(form, 'client_id');
-  if (!builtInClient(clientId)) return c.json({ error: 'invalid_client' }, 400);
+  if (!builtInClient(server.builtInClients, clientId)) return c.json({ error: 'invalid_client' }, 400);
   const record = deviceCode
     ? await c.env.OAUTH_KV.get<DeviceRecord>(deviceKey(deviceCode), 'json')
     : null;

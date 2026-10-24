@@ -1,5 +1,6 @@
-// The running request's `waitUntil` (docs/specs/017-telemetry/telemetry.md Mcp, docs/specs/015-api/mcp-server.md §4.12), so a
-// fire-and-forget telemetry post outlives the response.
+/// <reference path="./async-hooks.d.ts" />
+// The running request's `waitUntil` (each product's docs/specs/017-telemetry/telemetry.md Mcp and
+// docs/specs/015-api/mcp-server.md §4.12), so a fire-and-forget telemetry post outlives the response.
 //
 // The MCP transport returns its JSON response as soon as the tool resolves,
 // and the Workers runtime may cancel any subrequest still in flight once the

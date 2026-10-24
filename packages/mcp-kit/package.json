@@ -1,0 +1,36 @@
+{
+  "name": "@liveworkspace/mcp-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./app": "./src/app.ts",
+    "./oauth": "./src/oauth.ts",
+    "./oauth-clients": "./src/oauth-clients.ts",
+    "./preview-fonts": "./src/preview-fonts.ts",
+    "./request-scope": "./src/request-scope.ts",
+    "./tool-scope": "./src/tool-scope.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "hono": "^4.13.13"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261007.1",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

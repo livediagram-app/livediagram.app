@@ -17,6 +17,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
+│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts; each product hands in its server and OAuth config
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
