@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs the benchmark: each task, on each model, a number of times, as a real headless Claude session with the
 // livedesign MCP mounted and nothing else (docs/instructions/evaluate-mcp-output.md). Each run gets its own fresh
-// library (a token minted for a throwaway owner), so runs never see each other's designs. Writes, per run,
+// library (a token minted for a throwaway account), so runs never see each other's designs. Writes, per run,
 // runs/<round>/<task>-<model>-<n>.{jsonl,snapshot.json} (and .base.jsonl for an edit task's first turn).
 //
 //   node bench/run.mjs --round r1 [--tasks all|<area>|<ids>] [--models haiku,sonnet,opus] [--repeat 2]
@@ -9,7 +9,6 @@
 //
 // Needs the local MCP + api running (MCP_URL, default http://127.0.0.1:8798/mcp) and the `claude` CLI signed in.
 import { spawn, spawnSync } from 'node:child_process';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -29,7 +28,6 @@ export const SYSTEM_PROMPT =
   'You are Claude, an AI assistant made by Anthropic, chatting with a user who has connected the livedesign ' +
   'connector. Use its tools to do what they ask, then reply to them. The current date is Friday 16 October 2026.';
 const RUN_TIMEOUT_MS = 20 * 60_000;
-const TOKEN_TTL_MS = 30 * 86_400_000;
 
 const { values: opts } = parseArgs({
   options: {
@@ -45,42 +43,36 @@ if (!opts.round) throw new Error('--round is required');
 const OUT = resolve(HERE, '../runs', opts.round);
 mkdirSync(OUT, { recursive: true });
 
-// Every run's plain token and its owner, minted into local D1 in one write before the round starts.
-function mintTokens(count) {
-  const now = Date.now();
-  const tokens = [];
-  const rows = [];
-  for (let i = 0; i < count; i++) {
-    const token = `lwt_${randomBytes(32).toString('base64url')}`;
-    const owner = `bench_${opts.round}_${randomUUID().slice(0, 8)}`;
-    const hash = createHash('sha256').update(token).digest('hex');
-    tokens.push({ token, owner });
-    rows.push(
-      `insert into api_tokens(id,owner_id,token_hash,name,created_at,expires_at,revoked,read_only) values` +
-        `('${randomUUID()}','${owner}','${hash}','bench',${now},${now + TOKEN_TTL_MS},0,0);`,
-    );
-  }
-  const file = join(mkdtempSync(join(tmpdir(), 'ldbench-sql-')), 'mint.sql');
-  writeFileSync(file, rows.join('\n'));
-  const res = spawnSync(
-    'corepack',
-    [
-      'pnpm',
-      'exec',
-      'wrangler',
-      'd1',
-      'execute',
-      'DB',
-      '--local',
-      '--persist-to',
-      '.wrangler/state',
-      '--file',
-      file,
-    ],
-    { cwd: opts['api-dir'], encoding: 'utf8' },
-  );
-  if (res.status !== 0) throw new Error(`Minting tokens failed:\n${res.stderr || res.stdout}`);
-  return tokens;
+// Every run's plain token and its owner: a throwaway account each, made by the local liveworkspace accounts Worker
+// (its development-only `POST /api/auth/internal/bench-accounts`, liveworkspace/apps/accounts/src/bench-accounts.ts)
+// in one call before the round starts. ACCOUNTS_URL is the accounts origin the api checks tokens with (its
+// .dev.vars ACCOUNTS_URL, else http://localhost:3000); ADMIN_TOKEN is the accounts Worker's own.
+async function mintTokens(count) {
+  const res = await fetch(`${accountsUrl()}/api/auth/internal/bench-accounts`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${process.env.ADMIN_TOKEN ?? 'local-admin-token'}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ count, name: `bench ${opts.round}` }),
+  });
+  if (res.status !== 201)
+    throw new Error(`Minting tokens failed: ${res.status} ${await res.text()}`);
+  const { accounts } = await res.json();
+  return accounts.map((a) => ({ token: a.token, owner: a.userId }));
+}
+
+function accountsUrl() {
+  if (process.env.ACCOUNTS_URL) return process.env.ACCOUNTS_URL.replace(/\/+$/, '');
+  const vars = join(opts['api-dir'], '.dev.vars');
+  const line = existsSync(vars)
+    ? readFileSync(vars, 'utf8')
+        .split('\n')
+        .find((l) => l.startsWith('ACCOUNTS_URL='))
+    : undefined;
+  return (
+    line?.slice('ACCOUNTS_URL='.length).trim().replace(/^"|"$/g, '') || 'http://localhost:3000'
+  ).replace(/\/+$/, '');
 }
 
 // One headless turn; answers the transcript. `resume` continues an earlier turn's session (an edit task).
@@ -185,9 +177,9 @@ async function main() {
   const jobs = [];
   for (let n = 1; n <= repeat; n++)
     for (const model of models) for (const task of tasks) jobs.push({ task, model, n });
-  const tokens = mintTokens(jobs.length);
+  const tokens = await mintTokens(jobs.length);
   jobs.forEach((j, i) => Object.assign(j, tokens[i]));
-  // Each run's token (local D1 only; runs/ is gitignored), so its library can be read again after the round.
+  // Each run's token (a local account only; runs/ is gitignored), so its library can be read again after the round.
   const prior = existsSync(join(OUT, 'tokens.json'))
     ? JSON.parse(readFileSync(join(OUT, 'tokens.json'), 'utf8'))
     : {};
@@ -201,13 +193,13 @@ async function main() {
   const toSeed = jobs.filter(
     (j) => j.task.gallery && !existsSync(join(OUT, `${j.task.id}-${j.model}-${j.n}.snapshot.json`)),
   );
-  const galleries = seedGalleries(
+  const galleries = await seedGalleries(
     opts['api-dir'],
     toSeed.map((j) => ({ owner: j.owner, pictures: j.task.gallery })),
   );
   for (const j of toSeed) j.gallery = galleries.get(j.owner);
   // The tool list this round ran against, so a later round can compare what the assistant was offered.
-  const client = await connect({ url: MCP_URL, token: tokens[0] });
+  const client = await connect({ url: MCP_URL, token: tokens[0].token });
   writeFileSync(
     join(OUT, 'round.json'),
     JSON.stringify(
