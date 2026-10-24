@@ -13,6 +13,9 @@
 //                                                            person, and anonymise them in up to 100 items
 //   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
 //                                                            for the guest to the account
+//   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=]   the item drawn as a file, for liveworkspace's
+//                                                            previews (liveworkspace/docs/previews.md) and, next, the
+//                                                            Drive mirror. Also takes the app's MEDIA_KEY (`exportKey`).
 //
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
@@ -41,6 +44,42 @@ const IP_TEXT = /^[0-9A-Fa-f:.]{2,45}$/;
 
 export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'conflict';
 
+// ---------- The export door (liveworkspace/docs/previews.md "The export door") --------------------------------------
+
+// What an item can be exported as. `svg`: the first tab (or `tabId`) drawn, the platform's previews. The Drive
+// mirror adds its own formats here.
+export const EXPORT_FORMATS = ['svg'] as const;
+export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+
+export type ExportQuery = {
+  format: ExportFormat;
+  // One tab, or null for the first.
+  tabId: string | null;
+  // The public link (a Community post's) the reader came in by: the app draws what that link may show, or refuses
+  // (`not_found`) when it shows nothing now. Null for everyone else.
+  code: string | null;
+  // The version the caller already holds (`If-None-Match`): `unchanged` when it is still the content's, undrawn.
+  ifVersion: number | null;
+};
+
+// `version`: the content's last save (epoch ms), sent back as the ETag.
+export type ExportResult =
+  | { status: 'ok'; body: string | Uint8Array; contentType: string; version: number }
+  | { status: 'empty'; version: number }
+  | { status: 'unchanged'; version: number }
+  | { status: 'not_found' };
+
+const isExportFormat = (value: unknown): value is ExportFormat =>
+  typeof value === 'string' && (EXPORT_FORMATS as readonly string[]).includes(value);
+
+// An ETag of a version, and the version an If-None-Match names (weak or strong, the first of a list).
+export const exportEtag = (version: number): string => `"${version}"`;
+export function etagVersion(header: string | null): number | null {
+  const first = header?.split(',')[0]?.trim().replace(/^W\//, '');
+  const match = first ? /^"(\d{1,16})"$/.exec(first) : null;
+  return match ? Number(match[1]) : null;
+}
+
 export type InternalItemHandlers = {
   // Drop everything the item stores (its Durable Object, and anything the app keeps beside it).
   purge: (itemId: string) => Promise<unknown>;
@@ -61,10 +100,14 @@ export type InternalItemHandlers = {
   personMerged?: (guestId: string, userId: string) => Promise<unknown>;
   // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
+  // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
+  export?: (itemId: string, query: ExportQuery) => Promise<ExportResult>;
 };
 
 export type InternalItemsOptions = {
   key: string | undefined;
+  // A second key the export door alone takes: the app's MEDIA_KEY, which liveworkspace's previews call it with.
+  exportKey?: string | undefined;
   handlers: InternalItemHandlers;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -133,13 +176,51 @@ async function personClosed(request: Request, person: string, handlers: Internal
   );
 }
 
+// GET /api/internal/items/:id/export: the item as a file, or why not.
+async function exportItem(
+  url: URL,
+  request: Request,
+  id: string,
+  run: NonNullable<InternalItemHandlers['export']>,
+): Promise<Response> {
+  const format = url.searchParams.get('format') ?? 'svg';
+  if (!isExportFormat(format)) return badRequest('unknown format');
+  const tab = url.searchParams.get('tab');
+  const code = url.searchParams.get('code');
+  if ((tab !== null && !validId(tab)) || (code !== null && !validId(code))) {
+    return badRequest('invalid tab or code');
+  }
+  const result = await run(id, {
+    format,
+    tabId: tab,
+    code,
+    ifVersion: etagVersion(request.headers.get('If-None-Match')),
+  });
+  if (result.status === 'not_found') return notFound();
+  const headers = new Headers({ ETag: exportEtag(result.version), 'Cache-Control': 'no-store' });
+  if (result.status === 'unchanged') return new Response(null, { status: 304, headers });
+  if (result.status === 'empty') return new Response(null, { status: 204, headers });
+  headers.set('Content-Type', result.contentType);
+  return new Response(result.body, { status: 200, headers });
+}
+
+const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
+
 export async function handleInternalItems(
   request: Request,
-  { key, handlers, waitUntil = (p) => void p }: InternalItemsOptions,
+  { key, exportKey, handlers, waitUntil = (p) => void p }: InternalItemsOptions,
 ): Promise<Response> {
-  const pathname = new URL(request.url).pathname;
-  if (!key || !isInternalItemsPath(pathname)) return notFound();
-  if (!(await bearerMatches(request, key))) return json({ error: 'unauthorized' }, 401);
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+  if (!isInternalItemsPath(pathname)) return notFound();
+  // The export door takes either key; every other door the index's alone.
+  const exporting = EXPORT_PATH.test(pathname) && request.method === 'GET';
+  const keys = exporting ? [key, exportKey] : [key];
+  const present = keys.filter((k): k is string => Boolean(k));
+  if (present.length === 0) return notFound();
+  let allowed = false;
+  for (const k of present) if (await bearerMatches(request, k)) allowed = true;
+  if (!allowed) return json({ error: 'unauthorized' }, 401);
   const parts = pathname.split('/');
   if (parts[3] === 'people') {
     const person = parts[4] ?? '';
@@ -155,6 +236,9 @@ export async function handleInternalItems(
   const rest = parts.slice(4);
   const id = rest[0];
   if (!validId(id)) return notFound();
+
+  if (exporting)
+    return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);
