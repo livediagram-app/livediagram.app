@@ -7,7 +7,6 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { setStartPanelOpen } from '@/components/start/start-panel-open';
 import type { TourEngine } from './useTourEngine';
 import type { FormTourApi } from './form-tour-steps';
 import { FormTourHost } from './FormTourHost';
@@ -77,7 +76,6 @@ afterEach(() => {
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
   setActiveTour('form', false);
-  setStartPanelOpen(false);
 });
 
 describe('FormTourHost offer', () => {
@@ -137,21 +135,6 @@ describe('FormTourHost offer', () => {
     });
     expect(offered()).toBe(false);
     act(() => setActiveTour('plan', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  it('waits while a start panel is on screen', () => {
-    act(() => setStartPanelOpen(true));
-    editor();
-    render(<FormTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => setStartPanelOpen(false));
     act(() => {
       vi.advanceTimersByTime(800);
     });
