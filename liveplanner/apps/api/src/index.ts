@@ -15,7 +15,7 @@ import { handleOauthExchange } from './routes/oauth';
 import { PlanRoom } from './plan-room/plan-room';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { clientIp, clientNetwork, clientRateKey } from './client-ip';
+import { clientIp, clientNetwork, clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { MAX_BODY_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleEvents } from './routes/events';

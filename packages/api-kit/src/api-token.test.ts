@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { API_TOKEN_PREFIX, isApiTokenFormat } from './api-token-format';
+import { API_TOKEN_PREFIX, isApiTokenFormat } from './api-token';
 
 describe('isApiTokenFormat', () => {
   it('tells an lwt_ token from a JWT and from a short string', () => {

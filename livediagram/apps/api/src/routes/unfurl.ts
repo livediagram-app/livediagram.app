@@ -7,7 +7,7 @@
 
 import type { UnfurlResult } from '@livediagram/api-schema';
 import { badRequest, json, notFound, rateLimited } from '../responses';
-import { clientRateKey } from '../client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import type { RouteContext } from './context';
 
 const FETCH_TIMEOUT_MS = 8000;

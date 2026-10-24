@@ -1,5 +1,5 @@
-// Base64 encoders for raw bytes, shared by the api and mcp workers and the
-// live editor. Worker-safe: `btoa` + `String.fromCharCode` only, no Node
+// Base64 encoders for raw bytes, shared by every product's api and mcp Workers, CLI and
+// editor. Worker-safe: `btoa` + `String.fromCharCode` only, no Node
 // Buffer, so the same code runs in Cloudflare Workers, browsers, and Node.
 // Each app used to carry its own copy (image data URLs, font embedding, the
 // PNG encoder, OAuth PKCE, HMAC and token encoding), and the copies had

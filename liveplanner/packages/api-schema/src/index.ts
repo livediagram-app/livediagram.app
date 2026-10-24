@@ -434,30 +434,36 @@ export type ParticipantPresence = {
 };
 
 // Canonical SHA-256 hex digest and PKCE challenge, shared by the workers and the CLI (see ./sha256.ts).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The project format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { PROJECT_FORMAT, PROJECT_FORMAT_HEADER, parseProjectFormat } from './project-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
   isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
@@ -532,7 +538,7 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './project-source';
 export * from './catalogues';
 export * from './comment-threads';

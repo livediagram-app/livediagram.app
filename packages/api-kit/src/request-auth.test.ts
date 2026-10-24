@@ -21,26 +21,23 @@ describe('bearerTokenOf', () => {
 
 describe('isLoopbackHostname', () => {
   it('knows IPv4, IPv6 and the name, as URL reports them', () => {
-    for (const u of ['http://localhost:3300', 'http://127.0.0.1', 'http://[::1]:8987']) {
+    for (const u of ['http://localhost:3100', 'http://127.0.0.1', 'http://[::1]:8787']) {
       expect(isLoopbackHostname(new URL(u).hostname)).toBe(true);
     }
-    expect(isLoopbackHostname('livedocuments.app')).toBe(false);
+    expect(isLoopbackHostname('example.app')).toBe(false);
   });
 });
 
 describe('isAccountIdShape', () => {
-  // An account `sub` in the GUEST header is always a replay of a harvested
-  // account id: the real guest credential is a server-minted UUID, and a
-  // signed-in client sends Authorization instead. Unlike the signature gate
-  // this needs no rollout, so the worker refuses the shape outright.
+  // An account is `user_…`, a guest `guest_<uuid>`: a signed-in client with no
+  // session token never falls back to the guest token for its account id.
   it('is true for an account id', () => {
     expect(isAccountIdShape('user_2abcDEF456')).toBe(true);
   });
 
-  it('is false for the guest UUIDs the server actually mints', () => {
-    // Exactly what POST /api/guest-id returns (crypto.randomUUID()).
-    expect(isAccountIdShape(crypto.randomUUID())).toBe(false);
-    expect(isAccountIdShape('7f3c1a8e-2b4d-4f6a-9c1e-5d8b0a2f4c6d')).toBe(false);
+  it("is false for a guest's id", () => {
+    expect(isAccountIdShape(`guest_${crypto.randomUUID()}`)).toBe(false);
+    expect(isAccountIdShape('guest_7f3c1a8e-2b4d-4f6a-9c1e-5d8b0a2f4c6d')).toBe(false);
   });
 
   it('does not over-match ids that merely mention a user', () => {
@@ -53,7 +50,7 @@ describe('isAccountIdShape', () => {
 describe('oauthRedirectUrl', () => {
   it('takes https anywhere and http only on a loopback host', () => {
     expect(oauthRedirectUrl('https://claude.ai/cb')?.pathname).toBe('/cb');
-    for (const u of ['http://localhost:3300/cb', 'http://127.0.0.1/cb', 'http://[::1]:8987/cb'])
+    for (const u of ['http://localhost:3100/cb', 'http://127.0.0.1/cb', 'http://[::1]:8787/cb'])
       expect(oauthRedirectUrl(u)).not.toBeNull();
     expect(oauthRedirectUrl('http://example.com/cb')).toBeNull();
   });

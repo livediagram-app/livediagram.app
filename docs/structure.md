@@ -7,6 +7,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
+│  ├─ api-kit                  the Workers' and CLIs' small protocol helpers: bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, rate-limit keys
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer

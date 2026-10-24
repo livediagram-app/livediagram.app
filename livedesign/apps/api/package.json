@@ -23,6 +23,7 @@
     "@livedesign/page-lint": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
     "@livedesign/templates": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

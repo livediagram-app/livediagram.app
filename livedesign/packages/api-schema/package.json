@@ -18,6 +18,7 @@
   "dependencies": {
     "@livedesign/design": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

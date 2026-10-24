@@ -17,7 +17,7 @@ import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { handleEvents } from './routes/events';
 import { handleImages } from './routes/images';
-import { clientRateKey } from './client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { PHOTO_BATCH_BYTES } from '@livedesign/photo-engine';
 import { handleAccount } from './routes/account';

@@ -10,7 +10,7 @@ import {
 } from '@livediagram/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { clientRateKey } from '../client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';

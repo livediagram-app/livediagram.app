@@ -380,13 +380,19 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 // The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
 export { sha256 } from './sha256-digest';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
@@ -399,20 +405,20 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The design format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DESIGN_FORMAT, DESIGN_FORMAT_HEADER, parseDesignFormat } from './design-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
   isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
@@ -504,7 +510,7 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './design-source';
 export * from './catalogues';
 export * from './comment-threads';

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/community": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"

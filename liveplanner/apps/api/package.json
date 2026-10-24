@@ -26,6 +26,7 @@
     "@liveplanner/project-views": "workspace:*",
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

@@ -1,4 +1,4 @@
-// Two small request-reading rules the api and mcp workers both apply. Each
+// Small request-reading rules every product's api and mcp Workers apply. Each
 // worker used to spell them out inline, and the copies drifted: the api took
 // the bearer token without trimming it (so "Bearer  tok" failed there and
 // passed on mcp), only the api's CORS check knew `[::1]` is loopback, so
@@ -14,7 +14,7 @@ export function bearerTokenOf(authorization: string | null | undefined): string 
 }
 
 // Loopback hostnames as `new URL(...).hostname` returns them. IPv6 keeps its
-// brackets there (`new URL('http://[::1]:3100').hostname === '[::1]'`), so the
+// brackets there (`new URL('http://[::1]:3000').hostname === '[::1]'`), so the
 // literal stays bracketed.
 export function isLoopbackHostname(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
@@ -36,14 +36,9 @@ export function oauthRedirectUrl(uri: string): URL | null {
   return url.protocol === 'http:' && isLoopbackHostname(url.hostname) ? url : null;
 }
 
-// A account id, the shape that is never a legitimate GUEST header.
-//
-// The guest credential is always a server-minted UUID (POST /api/guest-id).
-// A account `sub` in `X-Owner-Id` is therefore a replay of a harvested account
-// id (team member lists expose them), and the api worker refuses it outright
-// (apps/api/src/index.ts). The editor applies the same rule from the other
-// side: a signed-in client with no session token never sends its account id
-// as the guest header (apps/editor/lib/api/core.ts `apiHeaders`).
+// An account id (`user_…`), as against a guest's (`guest_…`). A signed-in
+// client with no session token never falls back to the guest token for its
+// account id (each editor's lib/api/core.ts).
 export function isAccountIdShape(ownerId: string): boolean {
   return ownerId.startsWith('user_');
 }

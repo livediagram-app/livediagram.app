@@ -15,7 +15,7 @@ import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { clientRateKey } from './client-ip';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleCatalogues } from './routes/catalogues';
