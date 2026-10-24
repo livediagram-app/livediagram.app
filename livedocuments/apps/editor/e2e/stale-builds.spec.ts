@@ -2,19 +2,19 @@ import type { Page } from '@playwright/test';
 import { BUILD_ID_HEADER } from '@livedocuments/api-schema';
 import { expect, test } from './fixtures';
 
-// Stale builds (docs/specs/016-platform/stale-builds.md), in dark mode, on the Explorer, whose
-// sections are separate routes. A deploy is simulated by the api reporting a newer build id than the
-// one this export was built with.
+// Stale builds (docs/specs/016-platform/stale-builds.md), in dark mode, on the editor: moving between
+// two documents and back once a newer build is live. A deploy is simulated by the api reporting a newer
+// build id than the one this export was built with.
 
 const CRASH = "This page couldn't load";
+const CANVAS = '[data-canvas-a11y-root]';
 
-async function openExplorer(page: Page, path = '/explorer/inbox') {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto(path);
-  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible({
-    timeout: 30_000,
-  });
+// A new blank document (/new?blank=1), which the editor opens at /document/<id>: answers its id.
+async function openNewDocument(page: Page): Promise<string> {
+  await page.goto('/new?blank=1');
+  await page.waitForURL(/\/document\//, { timeout: 30_000 });
+  await page.locator(CANVAS).waitFor({ timeout: 30_000 });
+  return new URL(page.url()).pathname.split('/').pop()!;
 }
 
 // Every page load the browser makes (not client transitions).
@@ -31,11 +31,13 @@ test.describe('stale builds', () => {
   test.afterEach(async ({ page }) => {
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
-  // (The tests of a section whose code chunk is gone went with the Explorer's own section views: the shared
-  // Explorer draws every section from one chunk.)
 
-  test('once a newer build is live, links and back are full page loads', async ({ page }) => {
-    await openExplorer(page);
+  test('once a newer build is live, another document and back are full page loads', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    const first = await openNewDocument(page);
     // Counted first, so an export built without an id skips at once rather than waiting for a meta
     // tag that never comes.
     const meta = page.locator('meta[name="livedocuments-build"]');
@@ -50,19 +52,16 @@ test.describe('stale builds', () => {
       });
     });
     await page.reload();
-    await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
-    // The Explorer's own api calls carry the newer id.
+    await page.locator(CANVAS).waitFor({ timeout: 30_000 });
+    // The editor's own api calls carry the newer id.
     await page.waitForLoadState('networkidle');
     const loads = pageLoads(page);
-    await page.getByRole('treeitem', { name: /^Home/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/home']);
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('treeitem', { name: /^Inbox/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/inbox']);
+    await openNewDocument(page);
     await page.waitForLoadState('networkidle');
     await page.goBack();
-    await expect.poll(() => loads.length).toBe(3);
-    await expect(page).toHaveURL(/\/explorer\/home\/?$/);
+    await expect(page).toHaveURL(new RegExp(`/document/${first}$`));
+    await expect.poll(() => loads.at(-1)).toBe(`/document/${first}`);
+    await expect(page.locator(CANVAS)).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(CRASH)).toHaveCount(0);
   });
 });

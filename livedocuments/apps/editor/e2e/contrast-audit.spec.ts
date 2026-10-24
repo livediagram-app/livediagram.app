@@ -2,7 +2,6 @@ import { auditContrast, type ContrastReport } from './contrast';
 import {
   CANVAS,
   darkVisitor,
-  documentRow,
   freshDarkPage,
   seedDocument,
   shareLink,
@@ -72,14 +71,12 @@ test.describe('Contrast audit, dark mode', () => {
     await visitor.context().close();
   });
 
-  // My Work, which lists the seeded document as a row.
-  test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    const owner = await mintGuest(page.request);
-    await seedDocument(page, owner, new URL(baseURL!).origin);
-    await darkVisitor(page, owner);
-    await page.goto('/explorer/all');
-    await documentRow(page, 'Contrast').waitFor();
-    expectAA(await auditContrast(page), 'Explorer, My Work');
+  // This Browser (/offline), the one listing the editor serves itself: the shared Explorer is liveworkspace's.
+  test('This Browser', async ({ page, pageErrors }) => {
+    await darkVisitor(page);
+    await page.goto('/offline');
+    await page.getByRole('heading', { name: 'This Browser' }).waitFor();
+    expectAA(await auditContrast(page), 'This Browser');
     expectNoPageErrors(pageErrors);
   });
 });

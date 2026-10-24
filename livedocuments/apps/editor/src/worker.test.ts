@@ -23,16 +23,8 @@ describe('editor worker editor route', () => {
 
   it('leaves other paths to the static assets', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://livedocuments.app/explorer/recent'), e);
-    expect(seen).toEqual(['/explorer/recent']);
-  });
-
-  it('lands /explorer on Home', async () => {
-    for (const path of ['/explorer', '/explorer/']) {
-      const res = await worker.fetch(new Request(`https://livedocuments.app${path}`), env().env);
-      expect(res.status).toBe(302);
-      expect(res.headers.get('Location')).toBe('https://livedocuments.app/explorer/home');
-    }
+    await worker.fetch(new Request('https://livedocuments.app/offline'), e);
+    expect(seen).toEqual(['/offline']);
   });
 });
 
@@ -40,7 +32,7 @@ describe('editor worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/document/abc', '/embed', '/explorer/home', '/oauth/consent']) {
+    for (const path of ['/document/abc', '/embed', '/offline', '/oauth/consent']) {
       const res = await worker.fetch(new Request(`https://livedocuments.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }

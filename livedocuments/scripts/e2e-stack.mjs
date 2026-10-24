@@ -46,7 +46,6 @@ import {
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
 import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
-import { EXPLORER_LANDING_PATH } from '../apps/editor/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
   WORKSPACE_FRAME_PAGE,
@@ -500,12 +499,6 @@ function startLiveServer() {
       return;
     }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
-    // Match the worker's /explorer → Home redirect, from the same constant.
-    if (pathname === '/explorer' || pathname === '/explorer/') {
-      res.writeHead(302, { Location: EXPLORER_LANDING_PATH });
-      res.end();
-      return;
-    }
     // Cloudflare's assets layer (`html_handling` defaults to
     // "auto-trailing-slash") answers `/new/` — whose file is `new.html`, not
     // `new/index.html` — with a redirect to `/new`, query intact. Without

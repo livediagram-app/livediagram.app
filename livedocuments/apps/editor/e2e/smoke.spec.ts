@@ -40,15 +40,6 @@ test('the editor header switches sites from its logo, with no apps menu', async 
   expectNoPageErrors(pageErrors);
 });
 
-test('the explorer renders for a guest', async ({ page, pageErrors }) => {
-  await page.goto('/explorer');
-  // The sidebar's Overview rows are always present for a guest
-  // (docs/specs/013-workspace/explorer-structure.md).
-  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
-  await expect(page.getByRole('treeitem', { name: /^Shared With Me/ })).toBeVisible();
-  expectNoPageErrors(pageErrors);
-});
-
 test('create a blank document, add a shape, and it survives a reload', async ({
   page,
   pageErrors,

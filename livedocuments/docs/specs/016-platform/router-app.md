@@ -126,7 +126,7 @@ The router **also runs locally**, so `pnpm dev` gives you the production URL sha
 | --------- | ------------------------------------------------------------------- |
 | router    | `http://localhost:3300/` — everything, stitched like production     |
 | marketing | `http://localhost:3301/`                                            |
-| live      | `http://localhost:3302/new`, `/explorer/recent`, ... (clean routes) |
+| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes) |
 | help      | `http://localhost:3304/help` (basePath baked in)                    |
 | api       | `http://localhost:8987/api/...` (wrangler dev)                      |
 
