@@ -1,4 +1,5 @@
 import {
+  BRAND_APPS,
   brandLogoSvg as sharedLogoSvg,
   brandMarkSvg as sharedMarkSvg,
   type BrandApp,
@@ -13,6 +14,12 @@ export const brandMarkSvg = (options: Omit<Parameters<typeof sharedMarkSvg>[0], 
   sharedMarkSvg({ app: BRAND_APP, ...options });
 
 export const brandLogoSvg = (scheme: PrismScheme) => sharedLogoSvg(BRAND_APP, scheme);
+
+/** The app's accent as a hex colour, light and dark, for a colour that is mixed rather than named by a class. */
+export const BRAND_ACCENT: Record<PrismScheme, string> = {
+  light: BRAND_APPS[BRAND_APP].lockup.light.accent,
+  dark: BRAND_APPS[BRAND_APP].lockup.dark.accent,
+};
 
 export {
   BRAND_MARK_VIEWBOX,

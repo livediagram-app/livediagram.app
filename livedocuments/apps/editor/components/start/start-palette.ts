@@ -12,6 +12,8 @@ import {
   type Tab,
   type ThemeDefinition,
 } from '@livedocuments/document';
+// Default's accent is the app's own (start-diagramming.md "Look"), never a stand-in blue.
+import { BRAND_ACCENT } from '@livedocuments/ui';
 
 export type StartPalette = {
   surface: string;
@@ -37,7 +39,7 @@ const DARK: StartPalette = {
   card: '#0f172a',
   text: '#e2e8f0',
   muted: '#94a3b8',
-  focus: '#60a5fa',
+  focus: BRAND_ACCENT.dark,
 };
 
 const LIGHT: StartPalette = {
@@ -48,7 +50,7 @@ const LIGHT: StartPalette = {
   text: '#0f172a',
   // Slate 500 leaned 8% toward the ink: 4.8:1 on the column (slate 500 itself was 4.3:1), so muted words read at AA.
   muted: '#5d6d83',
-  focus: '#2563eb',
+  focus: BRAND_ACCENT.light,
 };
 
 // Readable ink reaches this contrast on its fill (WCAG AA for body text).

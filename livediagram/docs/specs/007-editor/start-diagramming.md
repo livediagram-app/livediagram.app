@@ -170,7 +170,8 @@ They are kept for the browser tab only and read once (`start-query.ts`).
 
 - **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus
   ring, a card's hover) the theme's stroke and its ink the theme's text, through `startPalette`, which keeps the ink readable on the paper (`start-palette.ts`, `useStartPalette`). A theme with no colours
-  of its own (Default) leaves the app's light or dark look. The tours wear the same palette
+  of its own (Default) leaves the app's light or dark look, its accent the app's brand colour (`BRAND_APPS` in
+  `../packages/brand/src/apps.ts`). The tours wear the same palette
   ([Diagram tour](editor-tour.md) "Look").
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).

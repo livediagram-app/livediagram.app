@@ -120,7 +120,7 @@ once (`start-query.ts`).
 - **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus
   ring, a card's hover) the theme's stroke and its ink the theme's text, kept readable on the paper
   (`start-palette.ts`, `useStartPalette`). A theme with no colours of its own (Default) leaves the app's light or dark
-  look. The Pages tour wears the same palette.
+  look, its accent the app's brand colour (`BRAND_APPS` in `../packages/brand/src/apps.ts`). The Pages tour wears the same palette.
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
