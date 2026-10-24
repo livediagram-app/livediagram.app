@@ -351,7 +351,7 @@ Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `fold
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `projects` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
 `account`, `migrate`, `guest-id`, `oauth`, every write to `preferences` and `participants`, and every
-`workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
+`workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
 
 ### Route effects under a session
@@ -620,7 +620,7 @@ Everything else is `confined`, among it (Never the account): `account`, `migrate
 `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`,
 `teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
 (team administration), `projects/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
-`events` and `unfurl` are called without credentials and never see `lvw_`.
+`events` is called without credentials and never sees `lvw_`.
 
 #### Route effects under a workspace session
 

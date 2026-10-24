@@ -1048,14 +1048,13 @@ export type AnnotationElement = {
 
 // See docs/specs/009-elements/link-cards.md. A rectangular bookmark element: the user sets
 // its URL via the normal element-link UI (`link` with `{ kind: 'url' }`),
-// and the editor fetches a preview (title / site / favicon / image) through
-// the api worker's `/api/unfurl` endpoint and caches it in `meta`. The
-// metadata rides the normal tab sync, so peers + reloads get it for free.
+// and draws the preview (title / site / favicon / image) cached in `meta`,
+// which livediagram's editor fetched from its worker (liveplanner fetches
+// none). The metadata rides the normal tab sync.
 // Resizable like a shape; carries the shared boxed fields (mostly
 // always-undefined, mirroring AnnotationElement) for the generic code paths.
 // Only the fields the card actually renders (title / image / favicon).
-// The unfurl endpoint also returns siteName + description, but nothing
-// draws them, so they aren't cached onto the element or persisted.
+// siteName + description are never drawn, so they aren't cached.
 export type LinkCardMeta = {
   // The URL this metadata was fetched for — guards against showing stale
   // preview after the link changes.
@@ -1074,8 +1073,8 @@ export type LinkCardElement = {
   y: number;
   width: number;
   height: number;
-  // Cached unfurl preview for `link` (a url-kind ElementLink). Absent until
-  // a URL is set + fetched; the card shows the bare URL meanwhile.
+  // Cached preview for `link` (a url-kind ElementLink). Absent → the card
+  // shows the bare URL.
   meta?: LinkCardMeta;
   // fillColor = card background; strokeColor = card border; textColor = the
   // title/site text.

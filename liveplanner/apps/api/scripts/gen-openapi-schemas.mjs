@@ -105,7 +105,6 @@ export const ROOT_TYPES = [
   'ProjectCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
-  'UnfurlResult',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

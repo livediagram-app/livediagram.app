@@ -476,21 +476,6 @@ export type CapabilitiesResponse = {
   emailEnabled?: boolean;
 };
 
-// Per-day buckets for the trend charts on the dashboard. `days` is
-// 30 UTC-midnight timestamps oldest -> newest; `totals[i]` is total
-// events on `days[i]`; `byCategory[category][i]` is the per-category
-// count on the same day. Pre-aggregated server-side so the dashboard
-// can render the sparkline + stacked-area without any client work.
-//
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
-
 export * from './access-levels';
 export * from './cta-sources';
 export * from './page-views';

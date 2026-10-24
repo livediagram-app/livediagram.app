@@ -1299,11 +1299,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
-    // this `commit` — e.g. the link-card unfurl resolves a few seconds
-    // after the URL is set — and mapping over the stale snapshot would
-    // write the element back as it was BEFORE the in-between edit, silently
-    // dropping it (the bug where a link-card reset to "Add a link" once its
-    // preview fetch landed).
+    // this `commit` — e.g. a fetch that resolves a few seconds later — and
+    // mapping over the stale snapshot would write the element back as it was
+    // BEFORE the in-between edit, silently dropping it.
     // A Participant's edit is checked against the live tab before it lands (guardCommit may refuse it with a
     // notice, so it runs once, here, not inside the update).
     if (participant.participating) {

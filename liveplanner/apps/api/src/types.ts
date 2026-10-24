@@ -83,10 +83,6 @@ export type Env = {
   // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
   // absent (a deployment without it) → "allow".
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md) — an unauthenticated
-  // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
-  // absent (a deployment without it) → "allow".
-  UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain

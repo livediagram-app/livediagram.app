@@ -14,9 +14,7 @@
 
 import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@liveplanner/project';
-import { apiUnfurl } from '@/lib/api-client';
 import { isSafeFollowUrl } from '@/lib/url-safety';
-import { track } from '@/lib/telemetry';
 
 type ElementLinksDeps = {
   // The active selection resolved to ids. The link writers no-op on an
@@ -77,41 +75,6 @@ export function useElementLinks(deps: ElementLinksDeps) {
         return { ...el, link };
       }),
     );
-    // Link-card unfurl (docs/specs/009-elements/link-cards.md): when a URL lands on a link-card, fetch its
-    // preview ONCE here (the setter) and cache it on the element; peers get
-    // it via the normal tab sync. Fails soft — the card shows the bare URL. Only a link card draws a preview,
-    // so a URL linked from any other element is never sent to the unfurl endpoint.
-    const linksACard =
-      link?.kind === 'url' &&
-      tabs.some((t) => t.elements.some((el) => ids.has(el.id) && el.type === 'link-card'));
-    if (link?.kind === 'url' && linksACard) {
-      const url = link.url;
-      void apiUnfurl(url).then((meta) => {
-        if (!meta) return;
-        commit((els) =>
-          els.map((el) =>
-            ids.has(el.id) &&
-            el.type === 'link-card' &&
-            el.link?.kind === 'url' &&
-            el.link.url === url
-              ? // Key the cached meta to the REQUESTED url (the one on the
-                // element's link), not the server's final post-redirect url —
-                // otherwise a redirect (trailing slash / https / www, which is
-                // most URLs) makes meta.url !== link.url and LinkCardView
-                // discards the preview, so the card looks like it lost its link.
-                // Cache ONLY the rendered fields — the unfurl response
-                // also carries siteName/description the card never draws,
-                // and spreading them here persisted them into every project.
-                {
-                  ...el,
-                  meta: { url, title: meta.title, image: meta.image, favicon: meta.favicon },
-                }
-              : el,
-          ),
-        );
-        track('Element', 'Changed', 'LinkUnfurled');
-      });
-    }
   };
 
   const followLink = (link: ElementLink) => {

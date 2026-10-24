@@ -94,14 +94,6 @@ type = "ratelimit"
 namespace_id = "1004"
 simple = { limit = 30, period = 60 }
 
-# Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
-# page fetch for link-card previews. 60/60s is plenty for a user dropping
-# bookmark cards. Separate namespace. Absent binding → check skipped (a deployment without it).
-[[unsafe.bindings]]
-name = "UNFURL_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1005"
-simple = { limit = 60, period = 60 }
 
 # Per-token read throttle for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5): an external
 # integration's reads, keyed on the token id, so one runaway script can't hammer
@@ -251,11 +243,6 @@ type = "ratelimit"
 namespace_id = "1004"
 simple = { limit = 30, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "UNFURL_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1005"
-simple = { limit = 60, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "API_TOKEN_READ_RATE_LIMITER"

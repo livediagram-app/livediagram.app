@@ -10,7 +10,7 @@ but their code is still in `packages/project` and `apps/editor` and cites these 
 
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./annotations.md - when working on Annotations: Palette marker (themed circle + note glyph): hover to read its note, click to edit
-- ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
+- ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, drawing its cached preview (liveplanner fetches none)
 - ./progress.md - when working on Progress elements: Horizontal bar + donut ring shapes showing a 0–100 percentage, with fill animations (fill/pulse/stripes)
 - ./shape-markers.md - when working on Shape markers: Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band
 - ./timeline-rail.md - when reading how the old Timeline rail became the Timeline concept graphic, or the composite-component pattern it set

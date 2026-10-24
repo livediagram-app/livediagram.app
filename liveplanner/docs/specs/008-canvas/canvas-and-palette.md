@@ -308,7 +308,7 @@ The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent out
 - **Line** — the same tool without the heads (`arrowEnds: 'none'`): the same element, gesture and click-to-connect, so a plain line and an arrow are both one tile away. No key (`A` is the Arrow). Its pointers are added in the Pointer accordion like any arrow's. Telemetry: `Element·Added·Line`.
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 - **Annotation** — drops a note marker (a fixed-size themed circle + note glyph) at the viewport centre: hover to read its note above everything, click to edit it. See [Annotations](../009-elements/annotations.md).
-- **Link Card** — draws a rectangular bookmark (same tap-or-drag gesture as a shape); double-click to set its URL (the normal link picker), and the worker unfurls a preview (favicon / title / site / image). See [Link cards](../009-elements/link-cards.md).
+- **Link Card** — draws a rectangular bookmark (same tap-or-drag gesture as a shape); double-click to set its URL (the normal link picker); in livediagram the worker fetched a preview (favicon / title / site / image), which liveplanner does not. See [Link cards](../009-elements/link-cards.md).
 
 ### Components category
 
@@ -1341,7 +1341,6 @@ A shape can carry an inline **text label**.
   `svg-bidi.ts` in `@liveplanner/project`), and any other line is written exactly as before.
 
 ### Edit vs modes
-
 
 ## Locking
 

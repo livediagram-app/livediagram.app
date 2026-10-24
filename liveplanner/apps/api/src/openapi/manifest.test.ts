@@ -164,7 +164,7 @@ describe('rate-limited operations declare 429', () => {
   it('covers a read only when a token or an IP budget can reach it', () => {
     // A read no token can reach is never throttled, and documenting a 429
     // there would send an integrator writing retry logic for a status that
-    // cannot occur. `/unfurl` declares its own (per-IP, SSRF guard).
+    // cannot occur.
     for (const route of ROUTE_MANIFEST.filter((r) => r.method === 'GET')) {
       const expected =
         route.tokenUsable === true || route.segment === 'share' || route.statuses.includes(429);

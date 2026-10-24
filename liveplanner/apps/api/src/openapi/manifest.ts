@@ -1409,19 +1409,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 403, 404, 409],
   },
 
-  // ---- Link unfurl ----
-  {
-    method: 'GET',
-    path: '/unfurl',
-    segment: 'unfurl',
-    tag: 'Meta',
-    summary: 'Server-side link unfurl for link cards (SSRF-safe, rate-limited).',
-    auth: 'public',
-    query: [{ name: 'url', required: true, description: 'The URL to unfurl.' }],
-    responseSchema: 'UnfurlResult',
-    statuses: [200, 400, 429],
-  },
-
   // ---- Telemetry ----
   {
     method: 'POST',

@@ -11,7 +11,7 @@ const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:']);
 // Normalise a user-entered address for storage. Prepends `https://` to a bare
 // host (no scheme), then returns the address only when its scheme is allowed;
 // null for an empty or unsafe-scheme input. Preserves the entered string (so
-// the unfurl cache keys stay stable) rather than re-serialising via URL.href.
+// a stored link compares equal to what was typed) rather than re-serialising via URL.href.
 export function normaliseUrl(raw: string): string | null {
   const t = raw.trim();
   if (!t) return null;

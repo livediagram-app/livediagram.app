@@ -9264,31 +9264,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'name', 'teamId', 'teamName', 'trashedAt', 'purgeAt', 'reason'],
     type: 'object',
   },
-  UnfurlResult: {
-    additionalProperties: false,
-    properties: {
-      description: {
-        type: 'string',
-      },
-      favicon: {
-        type: 'string',
-      },
-      image: {
-        type: 'string',
-      },
-      siteName: {
-        type: 'string',
-      },
-      title: {
-        type: 'string',
-      },
-      url: {
-        type: 'string',
-      },
-    },
-    required: ['url'],
-    type: 'object',
-  },
   ValidationKind: {
     enum: ['list', 'range', 'check', 'num', 'date', 'text'],
     type: 'string',

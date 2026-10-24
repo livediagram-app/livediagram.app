@@ -22,7 +22,6 @@ import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
-import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleProjects } from './routes/projects';
 import { handleForms } from './routes/forms';
@@ -316,8 +315,6 @@ async function routeApiRequest(
         return handleCatalogues(ctx);
       case 'openapi.json':
         return handleOpenapi(ctx);
-      case 'unfurl':
-        return await handleUnfurl(ctx);
       case 'events':
         return await handleEvents(ctx);
       case 'share':

@@ -97,8 +97,7 @@ export function createAnnotation(x: number, y: number): AnnotationElement {
 }
 
 // A link-card / bookmark (docs/specs/009-elements/link-cards.md) at (x, y). No link yet — the user sets
-// the URL via the link picker, and the editor fills `meta` from the unfurl
-// endpoint. Default size suits a favicon + title row above an optional image.
+// the URL via the link picker; `meta` holds a cached preview when there is one. Default size suits a favicon + title row above an optional image.
 export function createLinkCard(x: number, y: number): LinkCardElement {
   return {
     id: crypto.randomUUID(),

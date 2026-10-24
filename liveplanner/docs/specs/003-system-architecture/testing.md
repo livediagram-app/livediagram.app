@@ -274,7 +274,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     (cascades, schema steps), the `PlanRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (projects, tabs, items, sheets,
     forms, share, thumbnails, folders, teams, trash, changesets, workbench,
-    OAuth, unfurl, events), email lifecycle, the OpenAPI
+    OAuth, events), email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
