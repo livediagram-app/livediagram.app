@@ -19,7 +19,7 @@
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
-import { generateKeyPairSync, randomBytes, randomUUID, sign, verify } from 'node:crypto';
+import { generateKeyPairSync, randomUUID, sign, verify } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import {
@@ -45,6 +45,7 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
+import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
 import {
   isWorkspaceFramePath,
   WORKSPACE_FRAME_PAGE,
@@ -192,7 +193,6 @@ const accountsRecords = {
   seq: Date.now(),
   teams: new Map(),
   members: new Map(),
-  tokens: new Map(),
   // `${owner} ${scope}` → that scope's settings; owner → { name, color, createdAt }.
   settings: new Map(),
   profiles: new Map(),
@@ -256,20 +256,9 @@ function seedMember({ teamId, userId = null, email, role = 'member', status = 'j
   return member;
 }
 
-function seedToken({ userId, email = null, name = 'API token', readOnly = false }) {
-  const secret = `lwt_${b64url(randomBytes(32))}`;
-  const token = {
-    id: randomUUID(),
-    userId,
-    email,
-    name,
-    readOnly,
-    expiresAt: Date.now() + 90 * 24 * 3600 * 1000,
-    revoked: false,
-  };
-  accountsRecords.tokens.set(secret, token);
-  return { id: token.id, name, readOnly, expiresAt: token.expiresAt, secret };
-}
+// The account's API tokens, with each token's teams claim (packages/auth-client e2e-token-stand-in.ts, shared with
+// the other apps' stacks).
+const accountTokens = createTokenStandIn(ACCOUNTS_PATH, teamsClaim);
 
 // The claims of an access token this stack minted and that hasn't expired, or null.
 function accessTokenClaims(jwt) {
@@ -397,25 +386,10 @@ async function answerAccountApi(req, route, url, res) {
       members: [{ id: me.id, name: null, email, role: 'admin' }],
     });
   }
-  if (route === '/tokens/verify') {
-    const token = accountsRecords.tokens.get(body.token);
-    if (!token || token.revoked || token.expiresAt <= Date.now()) {
-      return sendJson(res, 404, { error: 'unknown_token' });
-    }
-    return sendJson(res, 200, {
-      tokenId: token.id,
-      userId: token.userId,
-      name: token.name,
-      email: token.email,
-      readOnly: token.readOnly,
-      expiresAt: token.expiresAt,
-      teams: teamsClaim(token.userId),
-    });
-  }
   if (route === '/tokens') {
     const claims = accessTokenClaims(body.accessToken);
     if (!claims) return sendJson(res, 401, { error: 'invalid_token' });
-    const minted = seedToken({
+    const minted = accountTokens.seed({
       userId: claims.sub,
       email: claims.email ?? null,
       name: body.name,
@@ -423,20 +397,8 @@ async function answerAccountApi(req, route, url, res) {
     });
     return sendJson(res, 201, minted);
   }
-  if (route === '/tokens/revoke') {
-    const token = accountsRecords.tokens.get(body.token);
-    if (!token || token.revoked) return sendJson(res, 404, { error: 'unknown_token' });
-    token.revoked = true;
-    return sendJson(res, 204);
-  }
-  if (route === '/tokens/live') {
-    const live = new Set(
-      [...accountsRecords.tokens.values()]
-        .filter((t) => !t.revoked && t.expiresAt > Date.now())
-        .map((t) => t.id),
-    );
-    return sendJson(res, 200, { live: (body.ids ?? []).filter((id) => live.has(id)) });
-  }
+  const token = accountTokens.answer(route, body);
+  if (token) return sendJson(res, token.status, token.body);
   return sendJson(res, 404, { error: 'not_found' });
 }
 
@@ -447,7 +409,7 @@ async function answerSeed(req, route, res) {
   const body = await readJson(req);
   if (route === 'team') return sendJson(res, 200, withoutSeq(seedTeam(body)));
   if (route === 'member') return sendJson(res, 200, withoutSeq(seedMember(body)));
-  if (route === 'token') return sendJson(res, 200, seedToken(body));
+  if (route === 'token') return sendJson(res, 200, accountTokens.seed(body));
   return sendJson(res, 404, { error: 'not_found' });
 }
 

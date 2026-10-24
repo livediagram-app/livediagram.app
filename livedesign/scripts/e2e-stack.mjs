@@ -20,7 +20,7 @@
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import {
@@ -46,6 +46,7 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
+import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
 import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
@@ -127,6 +128,9 @@ const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
 // audience is its own API_RESOURCE, exactly as against the real accounts Worker.
 const ACCOUNTS_PATH = '/e2e/accounts';
+// The account's API tokens (made on liveworkspace.app): a spec seeds one at /e2e/accounts/__seed/token, and the api
+// checks it through the account API as in production (packages/auth-client e2e-token-stand-in.ts).
+const accountTokens = createTokenStandIn(ACCOUNTS_PATH);
 const API_RESOURCE = 'https://e2e.livedesign.test/api';
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
@@ -473,6 +477,7 @@ function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const liveOut = buildFor(req);
+    if (accountTokens.serve(req, res, pathname)) return;
     if (serveAccountsStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
