@@ -55,6 +55,8 @@ describe('route', () => {
       message: 'unknown command "zzzzzz"',
       hint: 'liveplanner --help',
     });
+    // An object's own keys only: a word that names a built-in property is no command.
+    expect(failureOf(() => route(['constructor']))).toMatchObject({ exit: 2, code: 'usage' });
     expect(failureOf(() => route(['tab', 'vew']))).toMatchObject({
       lines: ['did you mean: view'],
       hint: 'liveplanner tab --help',

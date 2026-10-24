@@ -5,6 +5,9 @@ import type { CliIo } from './io';
 import { CliError } from './output/cli-error';
 import { EXIT } from './output/exit-codes';
 
+// An absolute path on any system the CLI runs on: POSIX `/x`, Windows `C:\x` or `C:/x`, and a UNC `\\host\x`.
+const ABSOLUTE_PATH = /^(?:\/|[A-Za-z]:[\\/]|\\\\)/;
+
 export function inputReader(io: CliIo): (path: string) => Promise<string> {
   return async (path) => {
     if (path === '-') {
@@ -17,7 +20,7 @@ export function inputReader(io: CliIo): (path: string) => Promise<string> {
         });
       return io.readStdin();
     }
-    const text = await io.files.read(path.startsWith('/') ? path : `${io.cwd}/${path}`);
+    const text = await io.files.read(ABSOLUTE_PATH.test(path) ? path : `${io.cwd}/${path}`);
     if (text === null)
       throw new CliError({ exit: EXIT.usage, code: 'usage', message: `no file ${path}` });
     return text;
