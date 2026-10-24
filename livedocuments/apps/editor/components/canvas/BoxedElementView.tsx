@@ -418,101 +418,101 @@ function BoxedElementViewImpl({
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
           (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
           the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
-        <SketchFace
-          active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
-        >
-          <AccentEdgeOverlay
-            element={withTagAccent(element, tagColours)}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          />
-          {element.type === 'shape' && element.shape === 'pointer-note' ? (
-            <PointerNoteOverlay
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              editable={isSelected && !readOnly && !isLocked}
-              onSetTip={onSetPointerTip}
-            />
-          ) : null}
-          <ShapeContentRouter
+      <SketchFace
+        active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+      >
+        <AccentEdgeOverlay
+          element={withTagAccent(element, tagColours)}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+        />
+        {element.type === 'shape' && element.shape === 'pointer-note' ? (
+          <PointerNoteOverlay
             element={element}
-            isEditing={isEditing}
-            artAnimClass={artAnimClass}
-            accent={accent}
-            textColor={textColor}
-            remoteBorderColor={remoteBorderColor}
-            isLocked={isLocked}
-            isSelected={isSelected}
-            readOnly={readOnly}
-            onToggleChecklistItem={onToggleChecklistItem}
-            chartPalette={chartPalette}
-            fontFamily={fontFamily}
-            svgAnim={svgAnim}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            editable={isSelected && !readOnly && !isLocked}
+            onSetTip={onSetPointerTip}
           />
-          {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+        ) : null}
+        <ShapeContentRouter
+          element={element}
+          isEditing={isEditing}
+          artAnimClass={artAnimClass}
+          accent={accent}
+          textColor={textColor}
+          remoteBorderColor={remoteBorderColor}
+          isLocked={isLocked}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          onToggleChecklistItem={onToggleChecklistItem}
+          chartPalette={chartPalette}
+          fontFamily={fontFamily}
+          svgAnim={svgAnim}
+        />
+        {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
           composite dash patterns. When one of those is picked, stroke the
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
-          {element.type === 'shape' &&
-          !sketch &&
-          !isSvgRenderedShape(element.shape) &&
-          !remoteBorderColor &&
-          !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
-            <BoxBorderOverlay
-              shape={element.shape}
-              width={element.width}
-              height={element.height}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
-              dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-              radiusPx={cornerPx}
-            />
-          ) : null}
-          {/* Browser-only HTML chrome overlay. SVG handles only the
+        {element.type === 'shape' &&
+        !sketch &&
+        !isSvgRenderedShape(element.shape) &&
+        !remoteBorderColor &&
+        !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+          <BoxBorderOverlay
+            shape={element.shape}
+            width={element.width}
+            height={element.height}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
+            dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+            radiusPx={cornerPx}
+          />
+        ) : null}
+        {/* Browser-only HTML chrome overlay. SVG handles only the
           outer frame + divider so the user's border style applies;
           the dots / nav / URL bar render here so their geometry is
           fixed-pixel and doesn't deform with the box's aspect
           ratio. */}
-          {element.type === 'shape' && element.shape === 'browser' ? (
-            <BrowserChrome
-              stroke={
-                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-              }
-            />
-          ) : null}
-
-          {/* Whatever this element shows in place of a plain label: a pressable
-          face, a drawn body, or the label itself. See ElementFaceRouter. */}
-          <ElementFaceRouter
-            element={element}
-            isEditing={isEditing}
-            isSelected={isSelected}
-            readOnly={readOnly}
-            writable={writable}
-            fontFamily={fontFamily}
-            imageContext={imageContext}
-            tabSummaries={tabSummaries}
-            onCommitTable={onCommitTable}
-            onFollowLink={onFollowLink}
-            onLinkCell={onLinkCell}
-            onSetPageHeading={onSetPageHeading}
-            onSetWebRows={onSetWebRows}
-            onSetHeroCaptionLine={onSetHeroCaptionLine}
-            label={label}
-            labelNode={labelNode}
-            // Clear of the indicators and on the label body (a cylinder's, under its lid).
-            contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
-            textColor={textColor}
-            textSize={textSize}
-            alignX={alignX}
-            alignY={alignY}
-            isLocked={isLocked}
-            remoteBorderColor={remoteBorderColor}
-            inlineIcon={inlineIcon}
-            marker={marker}
-            iconCaptionBand={iconCaptionBand}
+        {element.type === 'shape' && element.shape === 'browser' ? (
+          <BrowserChrome
+            stroke={
+              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            }
           />
-        </SketchFace>
+        ) : null}
+
+        {/* Whatever this element shows in place of a plain label: a pressable
+          face, a drawn body, or the label itself. See ElementFaceRouter. */}
+        <ElementFaceRouter
+          element={element}
+          isEditing={isEditing}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          writable={writable}
+          fontFamily={fontFamily}
+          imageContext={imageContext}
+          tabSummaries={tabSummaries}
+          onCommitTable={onCommitTable}
+          onFollowLink={onFollowLink}
+          onLinkCell={onLinkCell}
+          onSetPageHeading={onSetPageHeading}
+          onSetWebRows={onSetWebRows}
+          onSetHeroCaptionLine={onSetHeroCaptionLine}
+          label={label}
+          labelNode={labelNode}
+          // Clear of the indicators and on the label body (a cylinder's, under its lid).
+          contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+          textColor={textColor}
+          textSize={textSize}
+          alignX={alignX}
+          alignY={alignY}
+          isLocked={isLocked}
+          remoteBorderColor={remoteBorderColor}
+          inlineIcon={inlineIcon}
+          marker={marker}
+          iconCaptionBand={iconCaptionBand}
+        />
+      </SketchFace>
       {element.type === 'image' ? sketchOverlay() : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}

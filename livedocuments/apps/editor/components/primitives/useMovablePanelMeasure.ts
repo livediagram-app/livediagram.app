@@ -9,9 +9,7 @@ import type { MovablePanelProps } from './MovablePanel.types';
 export function bottomPanelTopLimit(panelRect: Pick<DOMRect, 'left' | 'right'>): number {
   const canvas = document.querySelector('main[data-region="canvas"], main[aria-label="Canvas"]');
   let top = canvas ? canvas.getBoundingClientRect().top : 0;
-  for (const el of document.querySelectorAll(
-    '[data-toolbar-palette] [data-tour-id="palette"]',
-  )) {
+  for (const el of document.querySelectorAll('[data-toolbar-palette] [data-tour-id="palette"]')) {
     const r = el.getBoundingClientRect();
     if (r.height > 0 && panelRect.right > r.left && panelRect.left < r.right)
       top = Math.max(top, r.bottom);

@@ -229,9 +229,7 @@ async function targets(page: Page): Promise<{ shape: Point; bare: Point }> {
         return (
           !!hit &&
           !!hit.closest('[data-canvas-a11y-root]') &&
-          !hit.closest(
-            '[data-element-id], [data-floating-panel], header, nav',
-          )
+          !hit.closest('[data-element-id], [data-floating-panel], header, nav')
         );
       };
       for (let y = 220; y < h - 260; y += 37)

@@ -35,10 +35,4 @@ export {
 } from './status';
 export { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from './badges';
 export { EDITOR_MODE_ICONS, PagesIcon } from './drawing-kinds';
-export {
-  LayersStackIcon,
-  RedoIcon,
-  SettingsIcon,
-  ThemeLookIcon,
-  UndoIcon,
-} from './editor-chrome';
+export { LayersStackIcon, RedoIcon, SettingsIcon, ThemeLookIcon, UndoIcon } from './editor-chrome';
