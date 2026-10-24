@@ -1070,13 +1070,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3v9M9 9l3 3 3-3" />
     </Glyph>
   ),
-  // A luggage tag with its eyelet: a label you put on a design.
-  tags: (
-    <Glyph>
-      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
-      <circle cx="8" cy="8" r="1.5" />
-    </Glyph>
-  ),
   'export-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />

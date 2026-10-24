@@ -1,38 +1,35 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TeamSpacesSidebar } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Team Spaces',
   description:
-    'Each team you belong to is a top-level space in the Explorer sidebar, beside My Work, with its shared folders beneath it and your pending invites close by.',
+    'Each team you belong to is a space in the Explorer sidebar beside My Work, with its folders beneath it. Teams are made and run on liveworkspace.app.',
   path: '/help/explorer/team-spaces/',
 });
 
 <ArticleLayout
   title="Team Spaces"
-  description="Browse the teams you belong to and their shared folders right in the Explorer, and keep an eye on pending invites."
+  description="Browse the teams you belong to and their shared folders right in the Explorer."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-Each team you belong to is a space of its own in the Explorer sidebar: a top-level row under **Spaces**, right after your own [My Work](/help/explorer/personal-space/). Expand a team to walk its shared folders. Teams are made and run on [liveworkspace.app](https://liveworkspace.app/account/teams); for how teams and roles work, see the [Teams guide](/help/collaboration/teams/).
-
-<Figure caption="The Spaces group when signed in: My Work, each team with its member count and shared folders, and Manage Teams.">
-  <TeamSpacesSidebar />
-</Figure>
+Each team you belong to is a space of its own in the Explorer sidebar: a row under **Spaces**, right after your own [My Work](/help/explorer/personal-space/). For how teams, roles and invites work, see the [Teams guide](/help/collaboration/teams/).
 
 ## Your teams
 
-Each team you are a member of appears as a row with the team glyph, and a badge showing the member count once the team has more than one person. Click a team to open its page; expand it with the arrow to walk its shared folder tree without leaving the sidebar, and click a folder to open the team page with that folder already showing. A team with no folders yet has no arrow.
+Each team you are a member of appears as a row with the team glyph. Click a team to open its library; expand it with the arrow to walk its folders without leaving the sidebar, and click a folder to open it.
 
-Team-shared designs live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-designs/), separate from My Work. The team page holds that library, the member list, and the team's own activity feed, which includes what happened before you joined. Admins see **Manage on liveworkspace.app** at the top, where they invite people, change roles, rename or delete the team.
+A team's library holds the team's folders and items, from every liveworkspace app, and every member can manage them ([Team Shared Designs](/help/collaboration/teams/team-shared-designs/)). At the top of the team's page sit how many have joined and its members, each with their role, and **Manage on liveworkspace.app**, where the team is run. On a team's library, **Create** offers **New Design** and **New Folder**, so what you make lands in the team.
 
-The editor's Explorer panel (behind the menu button) lists your teams too, so you can reach team designs without leaving the design you are in.
+The editor's Explorer panel (behind the menu button) lists your teams in its rail too, so you can reach team designs without leaving the design you are in.
 
 ## Manage Teams
 
-**Manage Teams**, the last row of Spaces, opens your teams on liveworkspace.app. Create a team there, invite people by email, and answer invitations sent to you. A team you create or join shows up here within a few minutes, usually at once. To make a team without leaving livedesign, use the **New Team** tile in **Change Folder** on a design's menu: the design goes straight into it.
+Teams belong to your liveworkspace account, not to livedesign, and are made, renamed, staffed and deleted on liveworkspace.app. **Manage Teams**, the last row of Spaces, takes you there. Invitations wait there too, and are answered there. To make a team without leaving livedesign, use the **New Team** tile when you move a design: the design goes straight into it.
+
+The teams the Explorer shows come from your sign-in: a team you make or join on liveworkspace.app appears here once livedesign next refreshes your sign-in, within the hour, when you load the Explorer again. Signing out and back in brings it at once.
 
 ## Invites
 
@@ -40,6 +37,6 @@ When someone invites you to a team, **Invites** appears in Spaces with the numbe
 
 ## Signed-in only
 
-Teams need an account, so team rows and Manage Teams appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place ("Free, and your guest designs come with you"). On deployments configured without authentication, neither appears, since teams cannot exist without it.
+Teams need an account, so team rows and Manage Teams appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place ("Free, and your guest designs come with you").
 
 </ArticleLayout>

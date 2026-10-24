@@ -1,69 +1,55 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { MyDesignsTree } from '@/components/illustrations/explorer';
 
 export const metadata = helpMetadata({
   title: 'My Work and Folders',
   description:
-    'Organise My Work, your own library: unfiled designs sit at its root beside nested folders you create to group work by project, customer or topic.',
+    'Organise My Work, your own library: unfiled items sit at its root beside nested folders you create, with Unsorted and Favourites to find things again.',
   path: '/help/explorer/personal-space/',
 });
 
 <ArticleLayout
   title="My Work and Folders"
-  description="Your own library: folders you can nest as deep as you like, and the designs you have not filed at its root. Every design has an obvious home."
+  description="Your own library: folders you can nest as deep as you like, and the items you have not filed at its root."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**My Work** is your own library: the [designs](/explorer/all) you have created, organised however suits you. It is the first row under **Spaces** in the Explorer sidebar, a top-level folder with everything of yours beneath it. Each team you belong to sits beside it as a space of its own ([Team spaces](/help/explorer/team-spaces/)).
+**My Work** is your own library: the [designs](/explorer/all) you have created, and with **All** chosen, everything you made in the other liveworkspace apps too. It is the first row under **Spaces** in the Explorer sidebar. Each team you belong to sits beside it as a space of its own ([Team Spaces](/help/explorer/team-spaces/)).
 
-A design lives in exactly one place: My Work, a team, or this browser. Moving it changes where it lives. Everything else in the sidebar, Home, Inbox, Timeline and Shared With Me, is a view that gathers designs from wherever they live.
+An item lives in exactly one place: My Work or a team. Moving it changes where it lives. Everything else in the sidebar (Home, Inbox, Timeline, Shared With Me, and the Library's Recent, Favourites and Unsorted) is a view that gathers items from wherever they live.
 
 ## The root of My Work
 
-Opening **My Work** lists its folders first, then every design you have not filed into a folder, newest first. A freshly created design lands there, unless you chose a place for it or set a default folder, so it always has an obvious home without you deciding anything first.
+Opening **My Work** lists its folders first, then every item of yours that is not in a folder. A freshly created design lands there unless you made it inside a folder or set a [default folder](/help/explorer/folders/default-folders/), so it always has an obvious home without you deciding anything first. Filing an item into a folder moves it out of the root; moving it back to **My Work** puts it there again.
 
-Designs an AI tool made for you sit there too, like any other, and carry a **Made by AI** badge. To see only those, wherever they are filed, use the **Made by AI** filter ([Search and filter designs](/help/explorer/filters/)).
+Designs an AI tool made for you sit there too, like any other, and carry a **Made by AI** badge. To see only those, wherever they are filed, use the **Made by AI** filter ([Search and Filter Designs](/help/explorer/filters/)).
 
-Filing a design into a folder of your own moves it out of the root; moving it back to **My Work** puts it there again.
+## This Browser
 
-Designs saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) are yours too, but they live in this browser rather than in My Work: they collect under **This Browser**, in the sidebar's **More** group, which shows while there is at least one (one you file into one of your folders is listed there too). Wherever one is listed, a **This Browser** pill marks it, because clearing this browser's site data deletes it.
+Designs saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) are yours too, but they live in this browser rather than in My Work: they collect under **This Browser**, in the sidebar's **More** group. Wherever one is listed, a **This Browser** pill marks it, because clearing this browser's site data deletes it. When you are signed in, **Sync Design** moves one into your account.
 
-### Favourites
+## Unsorted
 
-Choose **Favourite** in the menu of any design of yours or your team's to star it. It's the answer to a busy team library: a shared folder fills up with designs that aren't all yours to care about, and starring the handful that are marks them with an amber star wherever they are listed. The same menu reads **Unfavourite** to take it back off. Your starred designs are gathered at [/explorer/favourites](/explorer/favourites), from your own folders and every team you're in, each row showing where the design actually lives. Favourites has no sidebar row, so bookmark that address if you use it often.
+**Unsorted**, under **Library** in the sidebar's More group, lists every item in no folder: yours and your teams'. It is the quickest way to find what still needs filing.
 
-**Starring is yours alone.** Favouriting a design in a team folder doesn't favourite it for your teammates, and there's no limit on how many you keep.
+## Favourites
+
+Choose **Add to Favourites** in any item's menu to star it. It marks the handful of items you care about with a star wherever they are listed, and the same menu reads **Remove from Favourites** to take it back off. Your starred items are gathered under **Favourites**, in the sidebar's Library, from your own folders and every team you're in, each showing where it actually lives.
+
+**Starring is yours alone.** Favouriting an item in a team folder doesn't favourite it for your teammates.
 
 ## Folders
 
-Folders give your library structure without forcing it. Every design is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat at the root when you do not.
-
-<Figure caption="My Work: the folders you create, nested as deep as a project needs, then the designs at its root.">
-  <MyDesignsTree />
-</Figure>
-
-<Step n={1}>
-  Create a folder with **Create**, then **New Folder**, at the top of the page (on My Work it adds
-  one at the top level). Each folder's own menu offers **New Subfolder** for deeper levels.
-</Step>
-<Step n={2}>
-  Move a design with its **Change Folder** menu item, which opens a browser of your folders and
-  teams. You can also drag a design straight onto a folder, on the Explorer page or in the editor's
-  Explorer panel.
-</Step>
-<Step n={3}>Rename, move (**Change Folder**) or delete a folder from its menu.</Step>
-
-Deleting a folder is safe for its contents (you confirm first): the designs and subfolders inside move up into the folder it sat in (or to the root of My Work for a top-level folder), so nothing is ever lost when you tidy up. You can also make a folder the [default](/help/explorer/folders/default-folders/) for new designs. See [Folders](/help/explorer/folders/) for the details.
+Folders give your library structure without forcing it. Create one with **Create**, then **New Folder**, at the top of My Work; move an item with **Change Folder** in its menu, or drag it onto a folder; and rename, move or delete a folder from its own menu. Deleting a folder never deletes what is inside: it moves up a level. See [Folders](/help/explorer/folders/) for the details.
 
 ## Two places to browse
 
-You will meet My Work in two forms: the **[full-page Explorer](/help/explorer/explorer-page/)**, modelled on a desktop file browser, and the compact **[Explorer panel](/help/explorer/explorer-panel/)** behind the editor's menu button for finding a design mid-task, where **My Work** opens in place to its folders and designs. Both work whether or not you are signed in: a guest sees the designs and folders their own browser owns, and can sign in later to carry that work into an account.
+You will meet My Work in two forms: the **[full-page Explorer](/help/explorer/explorer-page/)**, and the compact **[Explorer panel](/help/explorer/explorer-panel/)** behind the editor's menu button. Both work whether or not you are signed in: a guest has a library of their own, and signing in carries it into the account.
 
 <Tip>
-  Do not over-organise on day one. Start at the root, and pull designs into folders once a real
-  grouping emerges. Folders are easy to add and rearrange whenever you need them.
+  Do not over-organise on day one. Start at the root, and pull items into folders once a real
+  grouping emerges.
 </Tip>
 
 </ArticleLayout>

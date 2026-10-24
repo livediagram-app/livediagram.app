@@ -166,7 +166,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your designs, folders, teams and images easy to find and manage.',
-    articleCount: 14,
+    articleCount: 13,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -1482,18 +1482,7 @@ export const articles: Article[] = [
     description:
       "The full-page library every liveworkspace app shares: Designs or All, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my designs my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Your Library',
-  },
-  {
-    slug: 'tags',
-    title: 'Tags',
-    description:
-      'Coloured labels you put on your items to group related ones together, across folders, teams and apps.',
-    keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
+      'library home dashboard files my designs list manage browse sidebar overview spaces more keyboard navigation tree search all apps every app filter canvases documents liveworkspace duplicate copy design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1504,7 +1493,7 @@ export const articles: Article[] = [
     description:
       'The compact in-editor Explorer: a rail of sections beside a list, opening designs in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch designs diagrams files library in editor menu button hamburger popover open more menu new share export github',
+      'sidebar rail switch designs library in editor menu button hamburger popover open explorer every app new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1523,7 +1512,7 @@ export const articles: Article[] = [
     slug: 'timeline',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view and the Timeline: what you use most and last, and what happened.',
+      'The Explorer\u2019s landing view and the Timeline: what you use most and last, what was shared with you recently, and what happened.',
     keywords:
       'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
@@ -1534,9 +1523,9 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every design: open actions and comment threads.',
+      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross design all designs cross diagram all diagrams local only offline this browser',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps all designs local only offline this browser',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1547,7 +1536,7 @@ export const articles: Article[] = [
     description:
       'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
+      'history last opened latest previously recently opened folder location where filed chip owner hide from recent show in recent exclude remove clutter twelve design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1557,7 +1546,7 @@ export const articles: Article[] = [
     title: 'Shared With Me',
     description: 'Items other people have shared with you through a link, collected in one place.',
     keywords:
-      'shared with me received from others incoming shares collaborations dismiss role owner',
+      'shared with me received from others incoming shares links collaborations remove dismiss role owner design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1587,7 +1576,7 @@ export const articles: Article[] = [
     description:
       'Narrow any design list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
+      'search find filter filters chips pill pills narrow refine query token tokens opens in made by ai generated edited date last week recent people me others owner space team shared unsorted folder name subfolders lens results clear design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

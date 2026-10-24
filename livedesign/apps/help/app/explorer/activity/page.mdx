@@ -1,70 +1,48 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { InboxSections } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Inbox',
   description:
-    'Use the Explorer Inbox to see what is outstanding for you in every design: open actions assigned to or by you, and your comment threads.',
+    'The Explorer Inbox lists what is outstanding for you in every liveworkspace app: actions assigned to you or by you, and open comment threads.',
   path: '/help/explorer/activity/',
 });
 
 <ArticleLayout
   title="Inbox"
-  description="What is waiting on you right now, across every design: open actions and the comment threads you are part of."
+  description="What is waiting on you right now: actions assigned to you or by you, and the comment threads you are part of."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-The **Inbox** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group, just above the [Timeline](/help/explorer/timeline/#the-timeline). Where the Timeline tells you what _happened_, the Inbox tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
-
-<Figure caption="Three sections, each with its count, and rows that open the design at the element in question.">
-  <InboxSections />
-</Figure>
+The **Inbox** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. It lists what is still _open_ for you, in one place for every liveworkspace app: the [actions](/help/collaboration/assigned-actions/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
 
 ## What lands here
 
-Everything on the page comes from one of your designs, so the row always knows where it is from.
+The page has up to three sections for your designs, each with a count beside its heading:
 
-- **Assigned to You:** every open action whose assignee is you, on any design you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across designs.
-- **You Assigned:** open actions you assigned to somebody else. They are here so you can see what you are waiting _on_, not just what is waiting on you.
-- **Open Comment Threads:** unresolved threads you are in. That means threads you wrote a comment in, threads where a teammate [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), and threads on designs you own. A thread you were mentioned in carries a **Mentioned You** hint, and a row on your own design that you have not replied to yet carries a small **Your design** hint, so you can tell them apart.
+- **Assigned to You:** every open action assigned to you, until it is done. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list.
+- **Assigned by You:** open actions you gave to someone else, so you can follow them up.
+- **Open Comment Threads:** unresolved threads you are part of: on your own designs, threads you wrote in, and threads where someone [mentioned you](/help/collaboration/comments/#mentioning-a-teammate). A thread you were mentioned in carries a **Mentioned You** hint, and one on your own design that you have not replied to yet carries a **Your design** hint.
 
-The sections appear in that order, each with a count beside its heading, and a section with nothing in it is left out. When all three are empty the page says **Nothing waiting on you**.
+A section with nothing in it is left out. Done actions and resolved threads are not listed: the Inbox is a list of what is outstanding, not a history. When nothing is waiting, the page says **Nothing waiting on you**.
 
-Done actions and resolved threads are not listed. The Inbox is a list of what is outstanding, not a history; the [Timeline](/help/explorer/timeline/#the-timeline) and each design's own **Collaborate** panel keep the past.
+With **Designs** chosen at the top of the page, the Inbox lists only what comes from your designs; with **All**, it lists every app's, and each row names its app. Other apps can add their own kinds of row there, such as a **Form Responses** section.
 
-## Reading a row
+## Reading and opening a row
 
-A row leads with a glyph for its kind (the action clipboard or the comment bubble), then the action's name or, for a thread, the element it hangs off. Under that is the action's description or the latest comment. The last line says where the row is from: a chip with the design's name (a team design's chip carries the team glyph), then the element and the tab.
-
-On the right is the person: the assignee for an action (brand-tinted and labelled **You** when that is you), or the latest commenter for a thread, with how long ago the most recent change was beneath. Hovering the avatar names them (a **You Assigned** row reads "Assigned to" and the name) and, for a thread, says how many comments it holds.
-
-Rows are ordered by their most recent change, newest first, within each section. Each kind of row is capped at 100, far more than anyone scrolls through.
-
-## Opening a row
-
-Click a row and the design opens on the right tab with the element selected, scrolled into view, and its action or comment popover already open, the same place a **Collaborate** panel row takes you inside the editor. From there you complete the action, reassign it, resolve the thread, or reply, with the editor's usual rules about who can edit what.
-
-If the element has been deleted since the page loaded, the design still opens on that tab; there is simply nothing left to select.
+Each row names the item it is from and the thing it is about, with the latest change, and on the right the person behind it with how long ago. Click a row and the design opens at that spot, with the action or thread ready, so you can reply, resolve or finish it there. A row from another app opens in that app.
 
 ## The badge
 
-The Inbox row in the sidebar shows a count of the open actions **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it shows **0** when nothing is waiting, so you can tell from any other Explorer section whether something needs you, or that you are all done.
-
-## Guests and signing in
-
-The Inbox works without an account, like the rest of livedesign. Signed out, you can still assign actions to yourself and comment on your own designs, and both show up here.
-
-**Your Inbox follows you when you sign up.** Actions you gave yourself and threads you wrote in as a guest still read as yours after you create an account, alongside the designs that move with you.
+The Inbox row in the sidebar shows a count of the open actions **assigned to you**, so you can tell from any other page whether something needs you. Work you handed out and comment threads are not counted.
 
 ## Designs saved only in this browser
 
-Designs saved only in This Browser (Offline Mode) show up here too: their open actions and comment threads are listed with everything else, and counted in the badge. Each of their rows carries a **This Browser** pill, because the design is kept in this browser and nowhere else. Nobody else sees those rows, and another browser or device won't list them.
+Designs saved only in This Browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) show up here too: their open actions and comment threads are listed with everything else, and counted in the badge. Each of their rows carries a **This Browser** pill, because the design is kept in this browser and nowhere else. Nobody else sees those rows, and another browser or device won't list them.
 
-<Tip>
-  Clearing this browser's site data deletes a design in This Browser, and its rows go with it.
-  Sync the design to keep it on livedesign and see its actions from anywhere.
-</Tip>
+## Guests and signing in
+
+The Inbox works without an account, like the rest of livedesign. When you sign in, what you did as a guest moves to your account with your designs.
 
 </ArticleLayout>
