@@ -5,7 +5,7 @@ import { runInTool as runLabelled } from '@liveworkspace/mcp-kit/tool-scope';
 
 export { currentTool } from '@liveworkspace/mcp-kit/tool-scope';
 
-/** Run a tool handler with its telemetry label ('update_document' -> 'UpdateDocument'). */
+/** Run a tool handler with its telemetry label ('update_project' -> 'UpdateProject'). */
 export function runInTool<T>(toolName: string, fn: () => T): T {
   return runLabelled(pascalToken(toolName), fn);
 }
