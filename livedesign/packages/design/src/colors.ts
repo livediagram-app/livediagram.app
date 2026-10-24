@@ -172,10 +172,6 @@ export function inkOn(color: string): string {
   return bestInk(color, '#0f172a', '#ffffff');
 }
 
-// The green that means FINISHED: a resolved comment thread, a done action
-// (docs/specs/012-collaboration/assigned-actions.md). One value, so every surface agrees on what done looks like.
-export const COLLAB_DONE_COLOR = '#16a34a';
-
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
 // (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
 // at 3:1 or better on both, white text. Sticky notes, images, link cards

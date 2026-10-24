@@ -34,9 +34,6 @@ function charEm(ch: string): number {
   return EM.other;
 }
 
-// How much wider a bold line sets than a regular one, as the headless renders estimate a bold label.
-export const BOLD_EM = 1.06;
-
 /** The estimated width of `text` on one line, in ems of its font size. */
 export function textAdvanceEm(text: string): number {
   let em = 0;

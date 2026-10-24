@@ -26,10 +26,6 @@ import { pageMargin, type LaidOutPage, type Page, type PageRect } from './page';
 
 type WireframeLike = Pick<Page, 'kind' | 'device' | 'orientation'>;
 
-export function isWireframePage(page: Pick<Page, 'kind'>): boolean {
-  return page.kind === 'wireframe';
-}
-
 /** A wireframe page's device geometry (its frame from the page's top-left), else null. */
 export function pageDeviceGeometry(page: WireframeLike): DeviceGeometry | null {
   if (page.kind !== 'wireframe') return null;

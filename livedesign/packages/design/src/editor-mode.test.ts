@@ -3,7 +3,6 @@ import {
   DEFAULT_EDITOR_MODE,
   EDITOR_MODE_CATALOGUE,
   EDITOR_MODES,
-  editorModeLabel,
   isEditorMode,
   opensInOf,
   parseEditorMode,
@@ -14,7 +13,7 @@ describe('editor modes', () => {
   it('are Pages alone, Pages by default', () => {
     expect(EDITOR_MODES).toEqual(['pages']);
     expect(DEFAULT_EDITOR_MODE).toBe('pages');
-    expect(EDITOR_MODE_CATALOGUE.map((m) => editorModeLabel(m.id))).toEqual(['Pages']);
+    expect(EDITOR_MODE_CATALOGUE.map((m) => m.label)).toEqual(['Pages']);
   });
 
   it('recognises Pages and nothing else', () => {

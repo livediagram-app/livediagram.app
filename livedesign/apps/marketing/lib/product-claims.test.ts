@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@livedesign/design';
-
 import { COMPARISONS } from './alternatives';
 import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
@@ -83,39 +81,4 @@ describe('product claims in marketing copy', () => {
       expect(hits).toEqual([]);
     });
   }
-});
-
-// A sentence that walks through the modes lists them in the editor's own order (Workshop after
-// Draw since #548), the order the mode switch shows.
-describe('mode lists in marketing copy', () => {
-  const labels = EDITOR_MODES.map(editorModeLabel);
-  // Every string on its own, so one field's sentence never runs into the next field's.
-  const strings = (v: unknown): string[] =>
-    typeof v === 'string'
-      ? [v]
-      : v && typeof v === 'object'
-        ? Object.values(v).flatMap(strings)
-        : [];
-  const fields = [
-    ...COMPARISONS.alternatives.flatMap((a) =>
-      strings(a).map((text) => ({ where: `alternatives/${a.slug}`, text })),
-    ),
-    ...copy.filter((c) => !c.where.startsWith('alternatives/')),
-  ];
-  it('name the modes in the editor order', () => {
-    const wrong = fields.flatMap(({ where, text }) =>
-      text
-        .split(/(?<=[.!?])\s+/)
-        .map((sentence) => {
-          const found = labels
-            .map((label) => ({ label, at: sentence.search(new RegExp(`\\b${label}\\b`)) }))
-            .filter((m) => m.at >= 0);
-          return { sentence, found };
-        })
-        .filter(({ found }) => found.length >= 4)
-        .filter(({ found }) => found.some((m, i) => i > 0 && m.at < found[i - 1]!.at))
-        .map(({ sentence }) => `${where}: ${sentence.slice(0, 80)}`),
-    );
-    expect(wrong).toEqual([]);
-  });
 });

@@ -260,9 +260,6 @@ const WIREFRAME_PARTS: Record<
   },
 };
 
-/** The Wireframe palette's variants, in palette order. */
-export const WIREFRAME_PART_VARIANTS = Object.keys(WIREFRAME_PARTS);
-
 /** The badge presets' variants, in palette order after the New preset (no variant). */
 export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;
 
