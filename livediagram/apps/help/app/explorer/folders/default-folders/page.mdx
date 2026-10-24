@@ -5,51 +5,58 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Default Folders',
   description:
-    'Send new documents to a folder you choose instead of My Work, set from a folder menu or Settings.',
+    'Send new canvases to a folder you choose instead of My Work, by mode, kind or template, set from a folder menu or Settings.',
   path: '/help/explorer/folders/default-folders/',
 });
 
 <ArticleLayout
   title="Default Folders"
-  description="Choose where a new document lands when you create it without picking a place."
+  description="Choose where a new canvas lands when you create it without picking a place."
   categoryTitle="Explorer"
   categorySlug="explorer"
   parentArticle={{ title: 'Folders', slug: 'folders' }}
   subArticles={getSubArticles('folders').filter((a) => a.slug !== 'default-folders')}
 >
 
-A **default folder** is where your new documents go when you create one without choosing a place. With none set, they land in My Work. Your default is your own: teammates choose theirs. The liveworkspace index keeps them for your account or guest identity, so they follow you to any browser, and it files each new document by them.
+A **default folder** is where your new canvases go when you create one without choosing a place. With none set, they land in My Work. Your defaults are your own: teammates choose theirs. The liveworkspace index keeps them for your account or guest identity, so they follow you to any browser, and it files each new canvas by them.
 
 ## Setting a default from a folder
 
-Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as Default for…**. Under **New canvases that open as**, tick **Canvases**, or a template family such as **Retrospective canvases**. The default points at one folder, so ticking it here moves it from wherever it was; unticking it sends new documents back to My Work.
+Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as Default for…**. Under **New canvases that open as**, tick what this folder should collect:
 
-**My Work** has the same menu: a ticked entry there means new documents land in My Work. Choosing it when unticked clears your default folder.
+- **Canvases**: every new canvas that no more specific entry claims.
+- **Diagrams**, **Whiteboards** or **Sessions**: new canvases that open in that mode.
+- **Event Storming boards**: new canvases whose first tab is an Event Storming board.
+- **Retrospective canvases** or **Kanban canvases**: new canvases made from one of those templates.
 
-You can use a team's folders too, as long as you are a member of the team. A team's own top level cannot be a default: create inside the team to put a document there.
+Each entry points at one folder, so ticking it here moves it from wherever it was; unticking it sends those canvases back to My Work. One folder can hold several entries.
+
+**My Work** has the same menu: a ticked entry there means those canvases land in My Work. Choosing it when unticked clears that default.
+
+You can use a team's folders too, as long as you are a member of the team. A team's own top level cannot be a default: create inside the team to put a canvas there.
 
 ## Seeing your defaults
 
-Your default folder shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel. Hover it to read "Default folder for new canvases".
+A default folder shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel. Hover it to read what it collects, such as "Default folder for new canvases and whiteboards".
 
-## When you create a document
+## When you create a canvas
 
-**New Canvas** never asks where a document goes: it is filed in your default folder, or in My Work when you have none.
+**New Canvas** never asks where a canvas goes: it is filed in the default folder for the most specific entry that has one (its kind, then its template, then its mode, then **Canvases**), or in My Work when none does.
 
-- Starting from inside a folder or a team keeps you there: that folder wins over your default.
-- To file one document somewhere else, use **Change Folder** on it afterwards.
+- Starting from inside a folder or a team keeps you there: that folder wins over your defaults.
 - A template picked on a new canvas's start screen counts too: pick a Retrospective or Kanban template on a canvas you just made, and the canvas goes to that family's default folder (or your Canvases default), with a note saying where. A canvas you made inside a folder stays there.
+- To file one canvas somewhere else, use **Change Folder** on it afterwards.
 - As a guest it works the same way, and your folders and defaults move to your account when you sign in.
 
 ## In Settings
 
-**Settings > Documents > Default Folders** shows the folder new documents go to, or My Work. **Change** picks a folder; **Clear** sends new documents back to My Work.
+**Settings > Documents > Default Folders** (**Where New Canvases Go**) shows the folder each entry sends new canvases to, or My Work. **Change** picks a folder; **Clear** sends those canvases back to My Work.
 
-If your default folder has been deleted, or belongs to a team you have left, the row says so, for example "Drafts (deleted), using My Work", and new documents go to My Work. Deleting a folder that is one of your defaults warns you first.
+If a default folder has been deleted, or belongs to a team you have left, the row says "A folder you can no longer reach", with where those canvases go instead: your **Canvases** default folder, or My Work. Deleting a folder that is one of your defaults warns you first.
 
 <Tip>
-  Defaults only decide where a new document starts. Moving a document later, or changing a default,
-  never moves documents you already have.
+  Defaults only decide where a new canvas starts. Moving a canvas later, or changing a default,
+  never moves canvases you already have.
 </Tip>
 
 </ArticleLayout>

@@ -1677,7 +1677,7 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+      "The full-page library every liveworkspace app shares: Canvases or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
       'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
@@ -1721,7 +1721,7 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
+      'The compact in-editor Explorer: a rail of sections beside a list, opening canvases in place.',
     keywords:
       'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
     category: 'Explorer',
@@ -1732,7 +1732,7 @@ export const articles: Article[] = [
     slug: 'list-and-card-views',
     title: 'List, Card and Details Views',
     description:
-      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+      'Toggle browse views between preview cards, compact rows and a sortable details table.',
     keywords:
       'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
@@ -1754,7 +1754,7 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every document: open actions and comment threads.',
+      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser',
     category: 'Explorer',
@@ -1764,7 +1764,8 @@ export const articles: Article[] = [
   {
     slug: 'recent',
     title: 'Recent Documents',
-    description: 'The documents that changed most recently, across every folder, team and share.',
+    description:
+      'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
       'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
     category: 'Explorer',
@@ -1802,7 +1803,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'filters',
-    title: 'Search and Filter Documents',
+    title: 'Search and Filter Canvases',
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:

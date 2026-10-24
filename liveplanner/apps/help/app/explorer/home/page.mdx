@@ -4,48 +4,62 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Home',
   description:
-    'The Explorer opens on Home: the items you opened last, what other people shared with you recently, and what they did to your plans.',
+    'The Explorer opens on Home: the plans you use most and last, what was shared with you recently, and what other people did while you were away.',
   path: '/help/explorer/home/',
 });
 
 <ArticleLayout
   title="Home"
-  description="Where the Explorer opens: a greeting with your counts and search, the items you were last in, what was shared with you recently, and what other people did."
+  description="Where the Explorer opens: the plans you use most and last, what was shared with you recently, and what other people did while you were away."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/). It answers the question you bring back with you: **what was I working on?**
+**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/) and the [Timeline](/help/explorer/timeline/). It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
-## The greeting
-
-Home opens with a greeting across the top of the page. Under it, two pills say how many plans you have in **My Work** and whether anything waits in your **Inbox**; click one to go there. A pill shows once its count has arrived, so it never says "0 plans" while your plans are still loading. The search field sits right there in the greeting, with **New Plan** inside it, so the first screen always offers a way to find something or start something. On a wide screen a Board, a Sheet, a Dashboard and a Form fan out beside it: a glimpse of what a plan can hold.
+Home opens with a greeting across the top of the page. Under it, two pills say how many plans you have and whether anything waits in your **Inbox**; click one to go there. The search field sits right there in the greeting, with **New Plan** inside it, so the first screen always offers a way to find something or start something. A pill shows once its count has arrived, so it never says "0 plans" while your plans are still loading. On a wide screen a Board, a Sheet, a Dashboard and a Form fan out beside it: a glimpse of what a plan can hold.
 
 Prefer a plainer Home? Press the **×** beside **Help** in the greeting's corner to hide it. Home then opens with its title and the search field in the header, like every other page, and stays that way on your other devices. Turn it back on in **Settings > Plans** with **Show Home Banner**.
 
+Your first visit looks different. With nothing made yet, Home welcomes you and offers ways to start instead: the search field looks through the templates, **Start Blank** offers a Blank Plan, a Blank Spreadsheet and a Blank Form, and below it sit the most popular templates, each one click from a new plan. If you have used liveplanner before and see nothing, **Sign In** brings your plans back. Once you have a plan, Home shows your work instead.
+
+Below the greeting, Home is one column: **Jump Back In**, then **Shared With You Recently**, then **What Happened**, each with its link at the right of its heading.
+
 ## Jump Back In
 
-**Jump Back In** shows up to eight items as cards. First come the ones you use most, as large cards under **Most Used**: the items you opened on the most days in the last 90, each saying how many ("Used on 6 days"). Then come the ones you opened most recently, as smaller cards under **Recent**, each saying when ("Opened 2 hours ago"). Each has a preview and its name; click one to open it. On a phone they share one strip you scroll sideways, ending in a **See More** tile. **See More** at the right of the heading opens [Recent](/help/explorer/recent/), the full list.
+**Jump Back In** holds eight plans within reach: the **four you used most**, then the **four you used last**.
 
-With **Plans** chosen at the top of the page, Jump Back In shows only your plans; with **All**, it shows whatever you opened last in any liveworkspace app, and opening a Canvas or a Design takes you to its app.
+- **Most Used** counts the days you opened, edited or made a plan over the last 90 days. A plan you open most days stays put; one glance does not push it aside.
+- **The last ones** are the plans you opened, edited or made most recently, newest first.
+- **What you make is in at once**, opened or not: a new plan, a duplicate, a single imported plan, or one an AI tool made for you. An import of several plans at once is the exception, so a big import never pushes your work aside; those join when you first open one.
+- A plan is never shown twice: if one of the last ones is also among the most used, it stays with the most used, and the next most recent takes its place.
 
-Before you have opened anything, the section offers **New Plan** instead.
+On a computer or a tablet they sit as cards in two groups: **Most Used** first, with a line under each saying on how many days you used it, then **Recent**, saying when you last used each. On a phone they share one strip you scroll sideways, taking turns, and the strip ends in a **See More** tile.
+
+Each plan shows a picture of its first tab, with its name underneath; click one to open it. A plan saved only in this browser wears the **This Browser** pill and takes its place like any other, counted in this browser. Plans in the [Trash](/help/account-and-data/trash/), and ones whose share link has lapsed or whose team you have left, never appear. With nothing yet to show, the section says "The plans you use most and last will gather here."
+
+Opening a plan is private: it counts towards your own Jump Back In, and nobody else ever sees that you opened it.
+
+**See More** opens [Recent](/help/explorer/recent/): the 12 plans you opened most recently, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
 
 ## Shared With You Recently
 
-Below it, **Shared With You Recently** shows the latest items other people shared with you through a link. **See All** opens [Shared With Me](/help/explorer/shared-with-you/). The section is left out until something has been shared with you.
+Under Jump Back In sit the four items most recently [shared with you](/help/explorer/shared-with-you/) through a link. **See All** opens Shared With Me.
 
 ## What Happened
 
-Last comes **What Happened**: what other people did to the plans you can open while you were away, newest first, under a heading for each day. Each entry says who did what to which plan, such as **Sam Lee renamed Budget 2027**, with what changed ("Was “Budget”"), where the plan lives and when. Click an entry to open the plan. Anything since you last looked at your [Timeline](/help/explorer/timeline/) carries a **New** pill.
+Below Jump Back In, **What Happened** lists what **other people** did to plans you can open in the last 14 days, under day headings (**Today**, **Yesterday**, then the date): comments and replies, threads resolved, a day of edits, actions assigned or completed, and plans shared into one of your teams. Each entry says who did it, what they did, which plan, and where it lives (its team or **My Work**, then its folder, or **Shared by** and the owner), and opens the plan when you click it. When nobody else has done anything in that time, Home leaves the section out, and **See More** and **See Timeline** only show once there is something to follow.
 
-When several people worked on one plan on the same day, they share one entry, such as **Sam Lee and Ana Ruiz edited and renamed Budget 2027**. Click it to see each change.
+"Plans you can open" means your own, your teams', and those shared with you through a link that still works. A link that only reaches [one tab](/help/collaboration/sharing/one-tab/) adds nothing here.
 
-What you did yourself is never listed here. **See Timeline** opens the full [Timeline](/help/explorer/timeline/), with your own doings too. Comments and actions waiting on you are in the [Inbox](/help/explorer/activity/). The section is left out until someone else has done something.
+When several people worked on the same plan on the same day, they share **one entry**: their avatars overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture", with where it lives, how many updates there were and the time of the latest underneath. Click it to see every action underneath, newest first. A sentence names at most three people, then "and 2 others".
 
-<Tip>
-  Opening an item is private: it counts towards your own Jump Back In, and nobody else sees that you
-  opened it.
-</Tip>
+Anything that arrived since you last looked carries a **New** pill, as on the Timeline. The very first time you visit, nothing is marked: a whole history marked new would tell you nothing.
+
+What Happened has no filters, on purpose. Whether someone simply looked at a plan is theirs to know, so opens never appear here.
+
+**See Timeline**, at the end of the heading, opens the [Timeline](/help/explorer/timeline/): everything that has happened, your own doings included, with filters and a calendar. Comments and actions waiting on you are in the [Inbox](/help/explorer/activity/).
+
+Visiting Home does not count as having caught up: what is marked New here is still new on the Timeline, and the count on the sidebar's Timeline row clears when you read the Timeline.
 
 </ArticleLayout>
