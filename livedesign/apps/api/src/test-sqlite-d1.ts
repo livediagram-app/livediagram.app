@@ -272,12 +272,12 @@ function testDesignRooms(
         (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
       hasTab: async (designId: string, tabId: string) =>
         (await import('./db/tabs')).designHasTab(env, designId, tabId),
-      exportCopy: async (designId: string, onlyTabId: string | null, redact: string | null) =>
+      exportCopy: async (designId: string, onlyTabId: string | null, copierId: string | null) =>
         (await import('./design-room/design-content')).exportDesignCopy(
           env,
           designId,
           onlyTabId,
-          redact,
+          copierId,
         ),
       joined: async (designId: string, personId: string) => {
         const meta = await (
@@ -348,10 +348,10 @@ export async function testCopyDesign(
   owner: string,
   name: string,
   onlyTabId: string | null = null,
-  redactAuthorsFor: string | null = null,
+  copierId: string | null = null,
 ): Promise<import('./types').DesignDTO | null> {
   const content = await import('./design-room/design-content');
-  const copy = await content.exportDesignCopy(env, sourceId, onlyTabId, redactAuthorsFor);
+  const copy = await content.exportDesignCopy(env, sourceId, onlyTabId, copierId);
   if (!copy) return null;
   await content.importDesignCopy(env, newId, copy);
   const now = Date.now();

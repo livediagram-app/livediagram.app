@@ -251,19 +251,25 @@ export type DesignCopy = {
 };
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and no slide deck,
-// which spans the design's tabs). `redactAuthorsFor`: anyone but the owner copies the comments as the tab read
-// serves them to them.
+// which spans the design's tabs). `copierId`: who copies (null when the index did not say); anyone but the owner
+// copies the comments as the tab read serves them to them, every author id but their own blanked.
 export async function exportDesignCopy(
   env: DesignEnv,
   designId: string,
   onlyTabId: string | null,
-  redactAuthorsFor: string | null,
+  copierId: string | null,
 ): Promise<DesignCopy | null> {
   const design = await env.DESIGN_DB.prepare(
-    'SELECT presentation, opens_in, tab_kind FROM design WHERE id = ?',
+    'SELECT presentation, opens_in, tab_kind, owner_id FROM design WHERE id = ?',
   )
     .bind(designId)
-    .first<{ presentation: string | null; opens_in: string | null; tab_kind: string | null }>();
+    .first<{
+      presentation: string | null;
+      opens_in: string | null;
+      tab_kind: string | null;
+      owner_id: string | null;
+    }>();
+  const redactAuthorsFor = copierId !== null && copierId !== design?.owner_id ? copierId : null;
   const tabRows = await env.DESIGN_DB.prepare(
     `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
        FROM design_tabs dt

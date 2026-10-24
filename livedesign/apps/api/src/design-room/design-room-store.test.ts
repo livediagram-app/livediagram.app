@@ -605,6 +605,46 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(again.status).toBe(409);
   });
 
+  it("keeps other people's comment authors off a copy made by anyone but the owner", async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDesign(w, 'A');
+    const source = w.designs.get('A')!.db;
+    const { owner_id: owner } = source.prepare('SELECT owner_id FROM design').get() as {
+      owner_id: string;
+    };
+    const comment = (id: string, authorId: string) => ({
+      id,
+      text: 'hi',
+      createdAt: 0,
+      authorName: id,
+      authorColor: '#000',
+      authorId,
+    });
+    const thread = { comments: [comment('c1', owner), comment('c2', 'user_visitor')] };
+    source
+      .prepare('UPDATE tabs SET data = ?, rev = rev + 1')
+      .run(JSON.stringify({ elements: [{ ...box('a'), commentThread: thread }] }));
+    const authorsIn = (id: string) =>
+      (
+        JSON.parse(
+          (w.designs.get(id)!.db.prepare('SELECT data FROM tabs').get() as { data: string }).data,
+        ) as { elements: { commentThread: { comments: { authorId?: string }[] } }[] }
+      ).elements[0]!.commentThread.comments.map((c) => c.authorId ?? null);
+
+    const visitor = await w.send(
+      'POST',
+      '/api/internal/items/A/copy-to/V',
+      { by: 'user_visitor' },
+      auth,
+    );
+    expect(visitor.status).toBe(201);
+    expect(authorsIn('V')).toEqual([null, 'user_visitor']);
+
+    const own = await w.send('POST', '/api/internal/items/A/copy-to/O', { by: owner }, auth);
+    expect(own.status).toBe(201);
+    expect(authorsIn('O')).toEqual([owner, 'user_visitor']);
+  });
+
   // A workbench ticket or session on the design stays in its person's workbench store (src/workbench-store.ts)
   // until it expires or is swept, reaching nothing: the index grants nothing on a design that is gone.
   it('purges a design: every row and every session', async () => {

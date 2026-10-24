@@ -28,8 +28,9 @@ export type DesignRoomClient = {
   // Whether the design places image `imageId` (on `onlyTabId`, for a tab-scoped reader) and may serve it
   // (db/image-grants.ts designServesImage). The caller has checked the reader's grant on this design.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
-  // A copy's two halves (design-content.ts).
-  exportCopy(onlyTabId: string | null, redactAuthorsFor: string | null): Promise<DesignCopy | null>;
+  // A copy's two halves (design-content.ts). `copierId`: who copies, so anyone but the owner takes the comments
+  // without other people's author ids.
+  exportCopy(onlyTabId: string | null, copierId: string | null): Promise<DesignCopy | null>;
   importCopy(copy: DesignCopy): Promise<void>;
   // The design is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
@@ -59,7 +60,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     hasTab: (tabId) => room.hasTab(designId, tabId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
-    exportCopy: (onlyTabId, redact) => room.exportCopy(designId, onlyTabId, redact),
+    exportCopy: (onlyTabId, copierId) => room.exportCopy(designId, onlyTabId, copierId),
     importCopy: (copy) => room.importCopy(designId, copy),
     purge: () => room.purge(designId),
     revokeCodes: (codes, reason) => room.revokeCodes(designId, codes, reason),
@@ -82,7 +83,7 @@ export type DesignRoomRpc = {
   exportCopy(
     designId: string,
     onlyTabId: string | null,
-    redact: string | null,
+    copierId: string | null,
   ): Promise<DesignCopy | null>;
   importCopy(designId: string, copy: DesignCopy): Promise<void>;
   purge(designId: string): Promise<void>;

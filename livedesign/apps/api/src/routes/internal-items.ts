@@ -48,8 +48,9 @@ export function handleInternalItems(
       // designs are the index's to move.
       personMerged: (guestId, userId) => mergeMediaOwner(env, guestId, userId),
       anonymise: (id, personId) => designRoom(env, id).anonymise(personId),
-      copy: async (from, to, tabId) => {
-        const copy = await designRoom(env, from).exportCopy(tabId, null);
+      copy: async (from, to, tabId, copier) => {
+        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them.
+        const copy = await designRoom(env, from).exportCopy(tabId, copier.by);
         // No such design, or no such tab in it.
         if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
         // The target is a new design: a copy into one that already holds this content fails its keys, and nothing

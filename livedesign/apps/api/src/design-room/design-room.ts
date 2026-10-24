@@ -563,10 +563,10 @@ export class DesignRoom extends DurableObject<Env> {
   async exportCopy(
     designId: string,
     onlyTabId: string | null,
-    redactAuthorsFor: string | null,
+    copierId: string | null,
   ): Promise<DesignCopy | null> {
     this.bindDesign(designId);
-    return exportDesignCopy(this.requireEnv(), designId, onlyTabId, redactAuthorsFor);
+    return exportDesignCopy(this.requireEnv(), designId, onlyTabId, copierId);
   }
 
   async importCopy(designId: string, copy: DesignCopy): Promise<void> {
