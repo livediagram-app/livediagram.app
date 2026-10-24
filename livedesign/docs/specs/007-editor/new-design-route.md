@@ -245,7 +245,7 @@ page), logging `[new] restored, back out <target>`.
   empty tab that opens on its start (Start Making Pages). An unknown template kind is ignored rather than guessed,
   so a stale link makes a design, not a 404; a retired kind opens its replacement.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-design/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), livedesign for everyone else. Decided at commit by
+  says: This Browser for a guest, livedesign for a signed-in person. Decided at commit by
   `resolveSaveLocation` (`app/new/useNewDesignLocation.ts`): a guest never waits, a browser that looks signed in
   waits for identity, so a signed-in person is never handed a design in This Browser. A guest's This Browser
   design is created without waiting for identity at all ([Offline Mode → Instant
@@ -348,8 +348,11 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DesignLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your design"** to **"Opening your
-design"**; everything else stays put.
+Its label moves from **"Creating your design"** (detail line "Setting up a
+fresh canvas") to **"Opening your design"** ("Getting everything in place");
+everything else stays put. Both name a design, never a document or diagram:
+a new design is made on the canvas, where its pages sit, whichever template
+it starts from.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the

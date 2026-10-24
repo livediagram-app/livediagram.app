@@ -115,7 +115,7 @@ export default function NewDesignPage() {
 
   // Where a new design is stored: This Browser for a guest (docs/specs/006-design/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDesignLocation();
+  const { resolveSaveLocation } = useNewDesignLocation({ authLoaded, accountUserId });
 
   useEffect(() => {
     document.title = 'New Design | livedesign';
@@ -298,13 +298,14 @@ export default function NewDesignPage() {
     setOpenedId(designId);
   };
 
-  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): livedesign,
-  // whoever is creating, and the /new?folder= / ?team= context when there is one; without one the index files it at
+  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): This
+  // Browser for a guest, livedesign for a signed-in person or anyone with a /new?folder= / ?team= context
+  // (docs/specs/006-design/save-locations.md), and that context when there is one; without one the index files it at
   // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
-    const saveLocation = await resolveSaveLocation();
+    const saveLocation = await resolveSaveLocation(placed, resolveSelf);
     await commitNewDesign(kind, { saveLocation, ...placement, placementChosen: placed });
   };
 

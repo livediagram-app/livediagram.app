@@ -18,15 +18,14 @@ anything on the canvas. A design in This Browser still says what it is on the de
 
 ## The default depends on who is creating
 
-| Who                               | Default          |
-| --------------------------------- | ---------------- |
-| A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **livedesign**   |
-| Anyone on a guest-only deployment | **livedesign**   |
+| Who                | Default          |
+| ------------------ | ---------------- |
+| A guest            | **This Browser** |
+| A signed-in person | **livedesign**   |
 
 Why a guest starts local: [Auth + guest access → Guest designs start local](../014-identity/auth-and-guest-access.md#guest-designs-start-local).
 
-- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
+- One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/live/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
   `resolveSaveLocation` in `useNewDesignLocation` (`apps/live/app/new/useNewDesignLocation.ts`): a mode chosen
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).

@@ -4,12 +4,11 @@
 
 export type SaveLocationId = 'livedesign' | 'browser';
 
-// Where a new design goes when nobody picked (docs/specs/006-design/save-locations.md "The default"): livedesign, for
-// everyone. A guest has a liveworkspace guest identity (liveworkspace/docs/accounts.md "Guests"), so their designs are
-// index items like anyone's, listed in the Explorer, and signing in moves them to the account. This Browser
-// (Offline Mode) is only ever chosen on purpose.
-export function defaultSaveLocationFor(): SaveLocationId {
-  return 'livedesign';
+// Where a new design goes when nobody picked (docs/specs/006-design/save-locations.md "The default
+// depends on who is creating"): a guest starts This Browser, so a visitor trying things out never
+// leaves an orphan on the server; a signed-in person starts on livedesign.
+export function defaultSaveLocationFor(who: { signedIn: boolean }): SaveLocationId {
+  return who.signedIn ? 'livedesign' : 'browser';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,
