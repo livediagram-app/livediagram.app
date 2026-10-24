@@ -56,28 +56,21 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 }
 
 // The Pages and element tours (docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into a tab and their
-// overlays would take the presses of every spec there; they have their own unit tests. Marked seen (with the old
-// Draw and Forms tour flags) for every page of the context.
+// overlays would take the presses of every spec there; they have their own unit tests. Marked seen for every page of
+// the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livedesign:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
-      if (
-        prefs.drawTourSeen !== true ||
-        prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.pagesTourKinds) ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (!Array.isArray(prefs.pagesTourKinds) || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
-            drawTourSeen: true,
-            formTourSeen: true,
             pagesTourSeen: true,
-            pagesTourKinds: ['infographic', 'logo'],
+            pagesTourKinds: ['wireframe', 'logo', 'photo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',
@@ -153,41 +146,6 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-design-route.md "One-step wizard"): choosing one
-// creates the design there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new design's id; `url` carries a `/new?folder=` / `?team=` context.
-export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
-  await page.goto(url);
-  await page.getByText('New Design', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  return new URL(page.url()).pathname.split('/').pop()!;
-}
-
-// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-const startScreen = (page: Page, title: RegExp = /^Start /) =>
-  page.getByRole('region', { name: title });
-
-// Start a design from a named TEMPLATE in a named group of Start Diagramming: a Diagram design from the
-// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
-// canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateDesign(
-  page: Page,
-  group: string,
-  template: RegExp,
-): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
-  await untilHydrated(rail);
-  await rail.click();
-  await start.getByRole('button', { name: template }).first().click();
-  await start.waitFor({ state: 'detached' });
-}
-
 // Skip the Pages tour when it offers itself. It lands a BEAT AFTER the canvas does, and its card swallows pointer
 // events, so wait a short settle for it rather than checking once; a page whose tour is seen (pagesTourSeen) never
 // shows one, and this returns after the settle.
@@ -206,25 +164,6 @@ export async function dismissQuickTour(page: Page): Promise<void> {
 // links to (docs/specs/007-editor/new-design-route.md).
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
-}
-
-// A blank session tab straight away: /new?template=blank-session creates it with no wizard.
-export async function openBlankSession(page: Page): Promise<void> {
-  // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
-  // overlay would take these specs' presses; it has its own unit tests.
-  await page.addInitScript(() => {
-    const key = 'livedesign:user-preferences:v1';
-    try {
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.workshopTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
-    } catch {
-      // No storage: nothing to mark.
-    }
-  });
-  await page.goto('/new?template=blank-session');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }

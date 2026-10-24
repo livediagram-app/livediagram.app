@@ -28,10 +28,11 @@ async function openAs(
   await ctx.addInitScript(
     ({ o }) => {
       if (o) localStorage.setItem('livedesign:v2:name-confirmed', '1');
-      // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
+      // The Pages tour would offer itself over the board (fixtures markModeToursSeen, which this own context skips);
+      // its overlay would take the presses.
       localStorage.setItem(
         'livedesign:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
+        JSON.stringify({ pagesTourSeen: true, pagesTourKinds: ['wireframe', 'logo', 'photo'] }),
       );
     },
     { o: owner },
@@ -58,7 +59,6 @@ test('two peers see each other, edit live, and every edit is kept', async ({
       {
         id: tabId,
         name: 'Board',
-        opensIn: 'workshop',
         elements: [
           { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
         ],

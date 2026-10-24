@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import {
   test,
   expect,
@@ -13,25 +14,24 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-design wizard renders', async ({ page, pageErrors }) => {
+// /new asks nothing (docs/specs/007-editor/new-design-route.md): it makes the design, lands on the editor under the
+// design's own URL, and the empty tab shows its start (docs/specs/007-editor/start-diagramming.md) with template
+// cards in it, proving the client-rendered start mounted, not just the shell.
+const start = (page: Page) => page.getByRole('region', { name: /^Start Making Pages$/ });
+
+test('/new makes a design and opens on its start', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Design', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-design-route.md
-  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
+  await expect(page).toHaveURL(/\/design\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  await expect(start(page)).toBeVisible();
+  await expect(start(page).locator('[data-start-card]').first()).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
-// The editor header carries no apps menu over the new-design wizard: the product's links live in the Explorer
-// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-design wizard shows with no apps menu in the header', async ({
-  page,
-  pageErrors,
-}) => {
+// The editor header carries no apps menu: the product's links live in the Explorer panel's footer
+// (docs/specs/013-workspace/explorer-structure.md "Layout").
+test('a new design shows with no apps menu in the header', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  await expect(start(page)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
@@ -50,7 +50,7 @@ test('create a blank design, add a shape, and it survives a reload', async ({
   pageErrors,
 }) => {
   await startBlankDesign(page);
-  // The wizard created a real design and routed to it.
+  // /new created a real design and routed to it.
   await expect(page).toHaveURL(/\/design\/[0-9a-f-]{36}/);
   // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
   // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
