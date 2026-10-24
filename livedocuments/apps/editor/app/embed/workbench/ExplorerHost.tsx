@@ -26,7 +26,6 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { signInEnabled } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -165,7 +164,7 @@ export function ExplorerHost({
       manifest,
       onFirstRun,
       signedIn: !!isSignedIn,
-      signInHref: signInEnabled ? signInHref : null,
+      signInHref,
     }),
     [manifest, onFirstRun, isSignedIn, signInHref],
   );

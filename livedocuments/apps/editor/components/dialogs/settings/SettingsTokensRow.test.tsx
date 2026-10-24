@@ -14,7 +14,6 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
   }),
 }));
 vi.mock('@/lib/auth-config', () => ({
-  signInEnabled: true,
   manageTokensUrl: 'https://liveworkspace.app/account/tokens',
 }));
 vi.mock('@/components/chrome/auth-shared', () => ({

@@ -2,7 +2,7 @@
 
 // Header sign-in / sign-out pill. Shows:
 //
-//   - signed out → "Sign in" link to /live/sign-in/
+//   - signed out → "Sign in" link to /sign-in/
 //   - signed in  → account avatar (initial) + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
@@ -13,11 +13,6 @@
 // While the session is still loading (first paint, before the token
 // request answers) we render nothing so the header doesn't flicker
 // a "Sign in" link only to swap it for the user pill a tick later.
-//
-// When sign-in is disabled for the deployment
-// (docs/specs/002-project-scope/open-source-and-business-model.md self-host path), the component is a
-// no-op. Same module-load hook-swap pattern as `useAccountBootstrap`, chosen
-// from a compile-time constant.
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
@@ -30,7 +25,6 @@ import {
   useMenuButton,
   GlyphDisc,
 } from '@livedocuments/ui';
-import { sessionsEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { accountInitial } from '@/lib/account-avatar';
@@ -53,7 +47,7 @@ type AuthControlsProps = {
   onOpenAccount?: () => void;
 };
 
-function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
+export function AuthControls({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   // A menu button (docs/specs/004-interface-design/menus.md): the menu keyboard comes from the hooks.
   const {
@@ -208,12 +202,6 @@ function AccountMenu({
   );
 }
 
-function AuthControlsDisabled(_props: AuthControlsProps) {
-  // Sign-in is not part of this deployment.
-  // Render nothing so the header just shows the Share button.
-  return null;
-}
-
 // Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
 // other header icons (ShareIcon in EditorHeader, etc.) so the
 // Sign-in pill reads as a peer of those buttons. Exported because the
@@ -228,5 +216,3 @@ export function SignInIcon({ size = 13 }: { size?: number } = {}) {
     </Glyph>
   );
 }
-
-export const AuthControls = sessionsEnabled ? AuthControlsEnabled : AuthControlsDisabled;

@@ -866,8 +866,6 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   title "livedocuments CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
   `access_denied`: "Sign-in cancelled", "Nothing was connected. You can close this tab."
 - **`/oauth/device` page**, in `OauthShell` (CLI65):
-  - not `signInEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
-    there's nothing to connect to."
   - signed out: "Sign in to connect the livedocuments CLI", with Sign in (back to this URL) and Cancel.
   - entry: heading "Connect a terminal", label "Code shown in your terminal", an 8-letter field formatted
     `XXXX-XXXX`, prefilled from `?code=`; button "Continue"; line "Only enter a code shown by a terminal you are

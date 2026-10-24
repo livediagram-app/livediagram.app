@@ -30,11 +30,10 @@ Each app that needs configuration ships an example file documenting which variab
 
 ## Optional sign-in
 
-Sign-in is optional. It goes through a liveworkspace accounts Worker, and the app supports three modes depending on what you configure.
+Sign-in goes through a liveworkspace accounts Worker. The editor always offers it; whether it works depends on what you give the API.
 
-1. **Hybrid**, the production setup: the live build has `NEXT_PUBLIC_SIGN_IN_ENABLED=true`, and the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
-2. **Guest-only**: leave the auth variables unset. There is no account system, and no guest identity either. The sign-in pages say sign-in isn't enabled here and offer **Continue as guest**, which goes back to the editor.
-3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: nobody can finish signing in, and every visitor is left without an identity.
+1. **Hybrid**, the production setup: the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
+2. **Guest-only**: leave those unset. There is no account system, and no guest identity either: nobody can finish signing in, and every visitor is left without an identity.
 
 Guests are liveworkspace guest tokens, minted by the same accounts Worker as accounts are, so there is no separate guest secret to set, and without the accounts Worker there are no guests. A guest's documents become their account's when they sign in. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
 

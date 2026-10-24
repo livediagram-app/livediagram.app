@@ -19,7 +19,6 @@ import {
   type PickableMember,
 } from '@/components/dialogs/AssignActionAssigneePicker';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { signInEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
@@ -154,7 +153,7 @@ export function AssignActionDialog({
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
   useEffect(() => {
-    if (open && !signedIn && signInEnabled) track('UI', 'Opened', 'ActionSignInNudge');
+    if (open && !signedIn) track('UI', 'Opened', 'ActionSignInNudge');
   }, [open, signedIn]);
 
   const editing = existing !== null;

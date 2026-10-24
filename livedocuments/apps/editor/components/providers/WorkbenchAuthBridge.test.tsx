@@ -10,16 +10,7 @@ import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WorkbenchSession } from './workbench-session-context';
 
-const config = vi.hoisted(() => ({ signIn: true }));
-vi.mock('@/lib/auth-config', () => ({
-  get signInEnabled() {
-    return config.signIn;
-  },
-  get sessionsEnabled() {
-    return config.signIn;
-  },
-  e2eAuthEnabled: false,
-}));
+vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/embed/workbench/' }));
 const bridges = vi.hoisted(() => ({ mounted: 0 }));
 vi.mock('next/dynamic', () => ({
@@ -154,65 +145,57 @@ describe('WorkbenchAuthBridge', () => {
 });
 
 describe('the workbench page’s surroundings', () => {
-  for (const clerk of [true, false]) {
-    describe(clerk ? 'with sign-in configured' : 'without sign-in', () => {
-      beforeEach(() => {
-        config.signIn = clerk;
+  it('never read as a settled guest, however long they wait', async () => {
+    vi.useFakeTimers();
+    const { AuthProvider, boot, auth } = await load();
+    const seen: { loaded: boolean; signedIn: boolean | undefined; deferred: boolean }[] = [];
+    function Above() {
+      const r = boot.useAccountBootstrap();
+      seen.push({
+        loaded: r.authLoaded,
+        signedIn: r.isSignedIn,
+        deferred: auth.useDeferredAuth().authLoaded,
       });
+      return null;
+    }
 
-      it('never read as a settled guest, however long they wait', async () => {
-        vi.useFakeTimers();
-        const { AuthProvider, boot, auth } = await load();
-        const seen: { loaded: boolean; signedIn: boolean | undefined; deferred: boolean }[] = [];
-        function Above() {
-          const r = boot.useAccountBootstrap();
-          seen.push({
-            loaded: r.authLoaded,
-            signedIn: r.isSignedIn,
-            deferred: auth.useDeferredAuth().authLoaded,
-          });
-          return null;
-        }
-
-        render(
-          <AuthProvider>
-            <Above />
-          </AuthProvider>,
-        );
-        act(() => {
-          vi.advanceTimersByTime(10_000);
-        });
-
-        expect(seen.every((s) => !s.loaded && !s.signedIn && !s.deferred)).toBe(true);
-        expect(bridges.mounted).toBe(0);
-      });
-
-      it('let the editor beneath settle as the person, as the person', async () => {
-        const { AuthProvider, WorkbenchAuthBridge, boot, core } = await load();
-        let result: ReturnType<typeof boot.useAccountBootstrap> | null = null;
-        function Editor() {
-          result = boot.useAccountBootstrap();
-          return null;
-        }
-        const page = (children: ReactNode) => (
-          <AuthProvider>
-            <WorkbenchAuthBridge session={sessionOf()}>{children}</WorkbenchAuthBridge>
-          </AuthProvider>
-        );
-
-        render(page(<Editor />));
-        await act(async () => {});
-
-        expect(result).toEqual({
-          isSignedIn: true,
-          authLoaded: true,
-          accountUserId: 'user_1',
-          accountDisplayName: 'Webber',
-        });
-        expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${SECRET}` });
-        core.setTokenProvider(null);
-        core.setWorkbenchConfinement(null);
-      });
+    render(
+      <AuthProvider>
+        <Above />
+      </AuthProvider>,
+    );
+    act(() => {
+      vi.advanceTimersByTime(10_000);
     });
-  }
+
+    expect(seen.every((s) => !s.loaded && !s.signedIn && !s.deferred)).toBe(true);
+    expect(bridges.mounted).toBe(0);
+  });
+
+  it('let the editor beneath settle as the person, as the person', async () => {
+    const { AuthProvider, WorkbenchAuthBridge, boot, core } = await load();
+    let result: ReturnType<typeof boot.useAccountBootstrap> | null = null;
+    function Editor() {
+      result = boot.useAccountBootstrap();
+      return null;
+    }
+    const page = (children: ReactNode) => (
+      <AuthProvider>
+        <WorkbenchAuthBridge session={sessionOf()}>{children}</WorkbenchAuthBridge>
+      </AuthProvider>
+    );
+
+    render(page(<Editor />));
+    await act(async () => {});
+
+    expect(result).toEqual({
+      isSignedIn: true,
+      authLoaded: true,
+      accountUserId: 'user_1',
+      accountDisplayName: 'Webber',
+    });
+    expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${SECRET}` });
+    core.setTokenProvider(null);
+    core.setWorkbenchConfinement(null);
+  });
 });

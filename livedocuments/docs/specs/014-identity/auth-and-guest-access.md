@@ -6,24 +6,16 @@
 
 We don't put auth in front of the core experience. We add auth where it _enables_ something the user wants (sharing, syncing, collaborating, paying).
 
-## Three deployment modes
+## Two deployment modes
 
 | Mode                 | Configuration                                                                                                                                                      | Frontend                                                                                                                               | API worker                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Hybrid (production)  | `NEXT_PUBLIC_SIGN_IN_ENABLED=true` + the api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`                                      | The accounts bridge asks for the session; a guest fetches a guest token from liveworkspace. Guests and signed-in people coexist.       | Verifies the Bearer: an account's access token or a guest's token. |
-| Guest-only           | The flag unset (a deployment without sign-in, such as local development, per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) | No bridge. Auth routes show "not enabled" notice. The guest handoff comes straight back without a token, so a visitor has no identity. | No Bearer to verify: every caller is treated as a link visitor.    |
-| Guest-only (partial) | Frontend flag on, api unconfigured                                                                                                                                 | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles as a guest and cannot sign in.                            | As guest-only.                                                     |
+| Hybrid (production)  | The api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`                                      | The accounts bridge asks for the session; a guest fetches a guest token from liveworkspace. Guests and signed-in people coexist.       | Verifies the Bearer: an account's access token or a guest's token. |
+| Guest-only           | The api's accounts settings unset (a deployment without accounts, such as local development, per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) | The accounts bridge asks once; `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles as a guest and cannot sign in. The guest handoff comes straight back without a token, so a visitor has no identity. | No Bearer to verify: every caller is treated as a link visitor.    |
 
-The first two are the supported modes. The third is a misconfiguration — useful for debugging, not for prod. Without the accounts site there is no guest identity either, so a guest-only deployment keeps documents in This Browser and opens shared documents through their links; anything the index must record (a document on livedocuments, the Explorer's lists) needs liveworkspace.
+Hybrid is the supported production mode. Without the accounts site there is no guest identity either, so a guest-only deployment keeps documents in This Browser and opens shared documents through their links; anything the index must record (a document on livedocuments, the Explorer's lists) needs liveworkspace.
 
-The `signInEnabled` flag (`apps/editor/lib/auth-config.ts`) is the single source of truth on the frontend. Every sign-in-aware module reads it (or `sessionsEnabled`, which also counts the test-only e2e bridge) and picks one of two implementations at module load:
-
-- `AuthProvider` mounts no bridge, so the deferred auth context settles as a guest.
-- `useAccountBootstrap` returns a stable stub (`isSignedIn: false`, `authLoaded: true`, `accountUserId: null`).
-- `AuthControls` renders nothing.
-- `/sign-in/` and `/get-started/` render an `AuthDisabledNotice` with a "Continue as guest" CTA.
-
-Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-time constant — no per-render cost and sign-in-only code paths can be tree-shaken out of guest-only builds.
+**Sign-in is always on in the editor.** There is no build-time switch: every build mounts the accounts bridge (or, in a test build with `NEXT_PUBLIC_E2E_AUTH=1`, the test-only `E2EAuthBridge`; `apps/editor/lib/auth-config.ts`), shows the Sign in controls and offers `/sign-in/` and `/get-started/`. Until the bridge answers, the deferred auth context reads as "not settled".
 
 **At most one session request per page load.** The root layout's `AuthProvider` is deferred: the app tree consumes `DeferredAuthContext`, and a lazily-loaded `AccountsBridge` (`apps/editor/components/providers/AccountsBridge.tsx`, an async chunk) asks the api for the session with one `POST /api/auth/token` and publishes the result. A browser without the `ldoc_signed_in` hint ([below](#guest-documents-start-on-livedocuments)) has no session to find, so it settles as a guest at once and asks nothing: a guest's page load makes no auth request. It holds the access token in memory only, reuses it until a minute before it expires, and shares one refresh among concurrent asks (each refresh rotates the refresh token, so two at once would race). Signing in and out are full-page visits, so no state from before signing in survives into the signed-in page.
 

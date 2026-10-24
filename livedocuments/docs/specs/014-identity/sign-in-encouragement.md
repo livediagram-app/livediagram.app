@@ -24,9 +24,6 @@ hides it everywhere.
 
 Common gate (all must hold):
 
-- Sign-in is configured for the deployment (`signInEnabled`). A
-  self-hosted install without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
-  sign-in, so the banner never renders there.
 - The visitor is **not** signed in (no `accountUserId`; a guest owner id
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).

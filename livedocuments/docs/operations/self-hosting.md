@@ -45,7 +45,6 @@ The hosted version signs people in with their liveworkspace account, through the
 
 1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
 2. Set the values on the two apps:
-   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/editor/.env.production`.
    - **API (worker secrets)**:
 
      ```sh
@@ -61,7 +60,7 @@ The hosted version signs people in with their liveworkspace account, through the
 
 4. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
 
-Without the sign-in values set, no Bearer verifies, so the api worker answers every request as a link visitor's, and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a supported path: the canvas works identically, documents stay in This Browser, and shared documents open through their links.
+Without the sign-in values set, no Bearer verifies, so the api worker answers every request as a link visitor's; the editor still shows Sign in, and `/api/auth/*` answers that sign-in is not configured. Self-host without accounts is a supported path: the canvas works identically, documents stay in This Browser, and shared documents open through their links.
 
 See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 
