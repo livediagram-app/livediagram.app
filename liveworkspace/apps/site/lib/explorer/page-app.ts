@@ -12,7 +12,7 @@ import {
   APP_ITEMS,
   APP_NAMES,
   LOCAL_PORTS,
-  PLATFORM_SITE,
+  workspaceOriginFor,
   siteOfApp,
   type AppName,
 } from '@liveworkspace/sites';
@@ -50,10 +50,7 @@ export function pageApp(): AppName | null {
 
 /** liveworkspace.app's origin, from wherever the page is: staging's from a staging app. */
 export function workspaceOrigin(): string {
-  if (typeof window !== 'undefined' && /^staging\./i.test(window.location.host)) {
-    return 'https://staging.liveworkspace.app';
-  }
-  return PLATFORM_SITE.url;
+  return workspaceOriginFor(typeof window === 'undefined' ? '' : window.location.host);
 }
 
 /** A path on liveworkspace.app: as it is there, in full on an app's address. */

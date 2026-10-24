@@ -5,6 +5,7 @@
 ```
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
+│  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check

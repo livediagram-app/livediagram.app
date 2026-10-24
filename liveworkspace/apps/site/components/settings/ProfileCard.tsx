@@ -12,7 +12,7 @@ import {
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
 } from '@/lib/account-settings';
-import { initials } from '@/lib/initials';
+import { initials } from '@liveworkspace/account-menu/initials';
 import { useSession } from '@/lib/session';
 import { ErrorNote, INPUT } from './AccountShell';
 import { settingsErrorMessage, useSavedFlash } from './settings-ui';

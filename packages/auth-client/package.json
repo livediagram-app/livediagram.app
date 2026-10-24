@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./silent": "./src/silent.ts"
+    "./silent": "./src/silent.ts",
+    "./account-name": "./src/account-name.ts"
   },
   "scripts": {
     "lint": "oxlint",

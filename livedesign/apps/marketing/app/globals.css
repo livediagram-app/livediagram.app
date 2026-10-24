@@ -26,6 +26,8 @@
 @source '../../../packages/ui/src';
 /* The comparison pages' shared components (packages/comparisons), in this app's brand ramp. */
 @source '../../../../packages/comparisons/src';
+/* The header's account menu, shared with liveworkspace.app (@liveworkspace/account-menu). */
+@source '../../../../packages/account-menu/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 

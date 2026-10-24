@@ -45,6 +45,7 @@
     "@liveplanner/project": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
+    "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

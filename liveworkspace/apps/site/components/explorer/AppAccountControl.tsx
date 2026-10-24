@@ -6,7 +6,8 @@
 // which comes back here.
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { AccountMenu } from '@/components/AccountControl';
+import { AccountMenu } from '@liveworkspace/account-menu';
+import { ACCOUNT_MENU_KIT } from '@/components/account-menu-kit';
 import { appAccount, appSignInHref, appSignOut } from '@/lib/explorer/app-session';
 import { workspaceHref } from '@/lib/explorer/page-app';
 
@@ -31,6 +32,7 @@ export function AppAccountControl() {
     return (
       <AccountMenu
         name={state.name}
+        kit={ACCOUNT_MENU_KIT}
         pageHref={workspaceHref}
         onSignOut={async () => {
           const left = await appSignOut();

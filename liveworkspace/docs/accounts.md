@@ -310,6 +310,21 @@ a round trip to the edge, so it costs more. Later loads in the same tab add noth
 already signed in to the app never bounces. FedCM and the Storage Access API could make this a
 background request one day, but neither works in every browser, so the bounce stays.
 
+### An app's signed-in cookies
+
+Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps two readable cookies on its
+whole site, so its public pages can tell who is signed in without loading the session:
+
+- `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether.
+- `<prefix>account`: the account's name as a header shows it (given name, else full name, else email;
+  at most 64 characters, URI-encoded). It says who. Set beside the hint at every sign-in and token
+  refresh, cleared beside it at sign-out, a refused refresh and closing the account
+  (`@liveworkspace/auth-client/account-name`).
+
+Neither holds a secret or authenticates anything. The marketing header's account menu reads both, so a
+signed-in visitor sees their menu with no request, and a visitor makes none at all. Only a session from
+before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
+
 ## Signing in on the app's own address
 
 Someone signing in to livediagram, liveplanner, livedocuments or livedesign stays on that app's

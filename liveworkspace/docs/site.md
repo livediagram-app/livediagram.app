@@ -54,6 +54,16 @@ The site is static, so the control asks the accounts API (`GET /api/auth/get-ses
 origin, with the session cookie) once the page is up. Until it hears, it keeps its place empty,
 so the bar doesn't jump. The sign-in pages leave it out: they are the sign-in.
 
+The menu is one component, `AccountMenu` in `@liveworkspace/account-menu` (`packages/account-menu`), and
+every place that shows a signed-in person uses it: this header, the Explorer on an app's address
+(`components/explorer/AppAccountControl.tsx`), and each app's marketing header (its `SiteHeader`, through the
+package's `AppAccountMenu`). Each passes in its own UI package's menu hooks (`useMenuButton`, `useMenu`,
+`useClickOutside`), so the keyboard and focus behaviour is the one every app's menus have, and says where the
+account pages are and what Sign out does. On an app's own pages the pages are liveworkspace.app's, in full,
+and Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
+`<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
+([accounts.md](accounts.md#an-apps-signed-in-cookies)).
+
 ### The front door (`/`)
 
 The glue between the apps: what liveworkspace is, each app in its own colours, how a piece of work

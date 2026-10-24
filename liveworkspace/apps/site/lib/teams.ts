@@ -1,5 +1,5 @@
 import type { Member, TeamRole } from './account-api';
-import { initials } from './initials';
+import { initials } from '@liveworkspace/account-menu/initials';
 
 // The teams pages' plain logic (liveworkspace/docs/site.md "Your account"): where a team lives, who
 // is in it, and what the person looking at it may do. Kept out of the components so it is tested

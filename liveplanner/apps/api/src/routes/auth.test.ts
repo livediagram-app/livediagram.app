@@ -294,6 +294,56 @@ describe('the /api/auth surface', () => {
   });
 });
 
+describe('the account name cookie (lp_account)', () => {
+  // liveworkspace/docs/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
+  const named = (claims: Record<string, unknown>) =>
+    tokenResponse({ id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', ...claims }) });
+
+  it('names the account beside the hint at sign-in, readable on the whole site', async () => {
+    const { location, pkce } = await signInCookie();
+    fetchMock.mockResolvedValue(named({ name: 'Ada Lovelace', given_name: 'Ada' }));
+    const res = await call(
+      `/api/auth/callback?code=c&state=${location.searchParams.get('state')}`,
+      { headers: { Cookie: `lp_pkce=${pkce}` } },
+    );
+    expect(cookieValue(res, 'lp_account')).toBe('Ada');
+    const name = setCookies(res).find((c) => c.startsWith('lp_account='))!;
+    expect(name).toContain('Path=/;');
+    expect(name).not.toContain('HttpOnly');
+  });
+
+  it('names it afresh at every refresh, encoded, falling back to the full name and then the email', async () => {
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada Lovelace' }));
+    const full = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'lp_refresh=refresh-2' },
+    });
+    expect(cookieValue(full, 'lp_account')).toBe(encodeURIComponent('Ada Lovelace'));
+
+    fetchMock.mockResolvedValueOnce(named({}));
+    const email = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'lp_refresh=refresh-2' },
+    });
+    expect(cookieValue(email, 'lp_account')).toBe(encodeURIComponent('ada@example.com'));
+  });
+
+  it('clears it when the refresh is refused and at sign-out', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
+    const refused = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'lp_refresh=stale' },
+    });
+    expect(cookieValue(refused, 'lp_account')).toBe('');
+    warn.mockRestore();
+
+    const out = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(cookieValue(out, 'lp_account')).toBe('');
+    expect(setCookies(out).find((c) => c.startsWith('lp_account='))).toContain('Max-Age=0');
+  });
+});
+
 describe('safeReturnPath', () => {
   it('keeps a path on this site and replaces anything that would leave it', () => {
     expect(safeReturnPath('/project/abc?tab=1')).toBe('/project/abc?tab=1');

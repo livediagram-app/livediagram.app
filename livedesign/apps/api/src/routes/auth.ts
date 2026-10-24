@@ -41,6 +41,11 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
+import {
+  accountNameCookie,
+  accountNameCookieFor,
+  accountNameOf,
+} from '@liveworkspace/auth-client/account-name';
 import { clientRateKey } from '../client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
@@ -58,12 +63,17 @@ const PKCE_MAX_AGE_SECONDS = 600;
 const REFRESH_MAX_AGE_SECONDS = 30 * 24 * 3600;
 // Signing in without a click: the signed-out mark, the loop guard and the bounce's own PKCE cookie.
 const SILENT_COOKIES = silentCookiesForHint(SIGNED_IN_HINT_COOKIE);
+// The readable account name beside the hint (`<prefix>account`, liveworkspace/docs/accounts.md "An app's
+// signed-in cookies"): who is signed in, for the marketing header's account menu.
+const ACCOUNT_NAME_COOKIE = accountNameCookieFor(SIGNED_IN_HINT_COOKIE);
 const DEFAULT_RETURN = '/explorer/home';
 
 // What the page renders for the signed-in account (AuthControls, Settings, the editor's name).
 export type AuthUser = {
   id: string;
   email: string | null;
+  // The header's name first, as liveworkspace.app's (accountNameOf).
+  givenName: string | null;
   name: string | null;
 };
 
@@ -126,12 +136,21 @@ const clearCookie = (name: string) => cookie(name, '', 0, 'Lax');
 const hintCookie = (signedIn: boolean) =>
   `${SIGNED_IN_HINT_COOKIE}=${signedIn ? '1' : '0'}; Path=/; Secure; SameSite=Lax; Max-Age=${REFRESH_MAX_AGE_SECONDS}`;
 
-// The refresh token and the hint, set together.
-const sessionCookies = (refreshToken: string) => [
+// The account's readable name, kept as long as the hint; cleared with no account.
+const nameCookie = (user: AuthUser | null) =>
+  accountNameCookie(ACCOUNT_NAME_COOKIE, accountNameOf(user), REFRESH_MAX_AGE_SECONDS);
+
+// The refresh token, the hint and the name, set together.
+const sessionCookies = (refreshToken: string, user: AuthUser | null) => [
   cookie(REFRESH_COOKIE, refreshToken, REFRESH_MAX_AGE_SECONDS, 'Strict'),
   hintCookie(true),
+  nameCookie(user),
 ];
-export const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
+export const signedOutCookies = () => [
+  clearCookie(REFRESH_COOKIE),
+  hintCookie(false),
+  nameCookie(null),
+];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
 // signature: only this browser can present it, and `state` must match what came back.
@@ -165,6 +184,7 @@ function userOf(tokens: TokenSet): AuthUser | null {
   return {
     id: payload.sub,
     email: text(payload.email),
+    givenName: text(payload.given_name),
     name: text(payload.name),
   };
 }
@@ -233,7 +253,7 @@ async function callback(
     if (silentUser) waitUntil(reportSignIn(env, silentUser.id));
     return redirect(silent.returnTo, [
       ...silent.cookies,
-      ...sessionCookies(silent.tokens.refreshToken),
+      ...sessionCookies(silent.tokens.refreshToken, silentUser),
     ]);
   }
   const pkce = decodePkce(readCookie(request, PKCE_COOKIE));
@@ -272,7 +292,7 @@ async function callback(
   if (user) waitUntil(reportSignIn(env, user.id));
   return redirect(pkce.returnTo, [
     clearCookie(PKCE_COOKIE),
-    ...sessionCookies(tokens.refreshToken),
+    ...sessionCookies(tokens.refreshToken, user),
     // Signed in again: silent sign-in may run here again.
     signedOutCookie(SILENT_COOKIES, false),
   ]);
@@ -300,7 +320,9 @@ async function token(request: Request, config: Configured): Promise<Response> {
     return json({ signedIn: false }, { status: 401, headers: noStore(signedOutCookies()) });
   }
   const user = userOf(tokens);
-  const cookies = tokens.refreshToken ? sessionCookies(tokens.refreshToken) : [];
+  const cookies = tokens.refreshToken
+    ? sessionCookies(tokens.refreshToken, user)
+    : [nameCookie(user)];
   return json(
     { signedIn: true, accessToken: tokens.accessToken, expiresAt: tokens.expiresAt, user },
     { headers: noStore(cookies) },

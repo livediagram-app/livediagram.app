@@ -5,7 +5,11 @@ import { livedocumentsNextConfig } from '@livedocuments/next-config';
 // @livedocuments/next-config (docs/specs/016-platform/nextjs.md).
 const nextConfig: NextConfig = {
   ...livedocumentsNextConfig(),
-  transpilePackages: ['@livedocuments/ui', '@liveworkspace/comparisons'],
+  transpilePackages: [
+    '@livedocuments/ui',
+    '@liveworkspace/comparisons',
+    '@liveworkspace/account-menu',
+  ],
 };
 
 export default nextConfig;

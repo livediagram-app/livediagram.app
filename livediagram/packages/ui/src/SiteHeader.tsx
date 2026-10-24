@@ -5,6 +5,7 @@ import { BuildWithAiLink } from './BuildWithAiLink';
 import { ExplorerLink } from './ExplorerLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ShareRail } from './ShareRail';
+import { SiteAccount } from './SiteAccount';
 import { SITE_ID } from './site';
 import { SiteSwitcher } from './SiteSwitcher';
 import { StartBlankLink } from './StartBlankLink';
@@ -39,6 +40,9 @@ import { StartBlankLink } from './StartBlankLink';
 //
 // `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
 // 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
+//
+// `account` ends the bar with the signed-in person's account menu (SiteAccount; marketing pages only,
+// docs/specs/019-marketing/marketing-site.md "Header"). A visitor sees nothing there.
 export function SiteHeader({
   ctaSurface,
   center,
@@ -46,6 +50,7 @@ export function SiteHeader({
   buildWithAi,
   shareRail = true,
   wide = false,
+  account = false,
 }: {
   ctaSurface?: CtaSurface;
   center?: ReactNode;
@@ -53,6 +58,7 @@ export function SiteHeader({
   buildWithAi?: 'link' | 'current';
   shareRail?: boolean;
   wide?: boolean;
+  account?: boolean;
 }) {
   return (
     <>
@@ -91,6 +97,7 @@ export function SiteHeader({
             <ExplorerLink />
             {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
             {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
+            {account ? <SiteAccount /> : null}
           </div>
         </div>
       </header>

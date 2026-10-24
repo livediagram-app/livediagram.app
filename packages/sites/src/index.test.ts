@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { LOCAL_PORTS, PLATFORM_SITE, SITES, siteUrl } from './index';
+import { LOCAL_PORTS, PLATFORM_SITE, SITES, siteUrl, workspaceOriginFor } from './index';
+
+describe('workspaceOriginFor', () => {
+  it("is staging's site from a staging app, else the platform's", () => {
+    expect(workspaceOriginFor('staging.liveplanner.app')).toBe('https://staging.liveworkspace.app');
+    expect(workspaceOriginFor('www.livediagram.app')).toBe(PLATFORM_SITE.url);
+    expect(workspaceOriginFor('')).toBe(PLATFORM_SITE.url);
+  });
+});
 
 describe('sites', () => {
   it('lists liveworkspace first, then each app once, each on its own https origin', () => {
