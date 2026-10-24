@@ -127,7 +127,7 @@ const worker = {
   },
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
-  // became accounts. Once a day: purge items 30 days in the Trash, retry apps that missed a purge, and warn owners
+  // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and warn owners
   // of share links lapsing within the week (share-expiry.ts).
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
@@ -137,10 +137,10 @@ const worker = {
       console.log('[index] purges', JSON.stringify({ ...done, merges }));
       return;
     }
-    const { purged, confirmed } = await sweep(env);
+    const { emptied, purged, confirmed } = await sweep(env);
     const expiring = await sweepExpiringLinks(env);
     console.log(
-      `[index] sweep: purged ${purged} items, apps confirmed ${confirmed}, ${expiring} items with links expiring`,
+      `[index] sweep: ${emptied} empty items to the Trash, purged ${purged} items, apps confirmed ${confirmed}, ${expiring} items with links expiring`,
     );
   },
 };

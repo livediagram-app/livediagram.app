@@ -16,7 +16,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./tags.md - tags (removed from the Explorer)
 - ./favourites.md - when working on favourites (moved)
 - ./trash.md - when working on the Trash or a trashed document's refusals (moved)
-- ./empty-document-cleanup.md - when looking for the empty-document sweep (removed)
+- ./empty-document-cleanup.md - when working on Empty document clean-up: the index's daily sweep moves a document with no element or page on any tab, unchanged for 30 days, to the Trash (marked `empty`, a fresh 30 days there); guest, account and team documents, never Offline Mode
 - ./explorer-home.md - when working on Explorer Home and recording a document's opens (moved)
 - ./hide-from-recent.md - when looking for Hide from Recent / Show in Recent
 - ./explorer-filters.md - when looking for the Explorer's filter lens (removed; the shared Explorer's lens is `packages/explorer/src/lens/`)

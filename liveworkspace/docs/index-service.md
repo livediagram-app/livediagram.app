@@ -54,8 +54,9 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
   today; 409 `folder_exists` is that id taken. `GET /folders` is paged like every list.
 - Moving an item out of a team makes it the mover's own. Moving it into or out of a team drops its folder
   (the folder belonged to the old scope).
-- `DELETE /items/:id?reason=empty` trashes with `trashReason: 'empty'`, for an app clearing out an empty
-  item.
+- `DELETE /items/:id?reason=empty` trashes with `trashReason: 'empty'`. The index's own daily empty clean-up
+  (purge.ts `sweepEmpty`, one-explorer-contracts.md "The empty clean-up") moves every app's empty items, from
+  the summary's `hasContent`, so no app runs a sweep of its own.
 - A link editor may rename an item but not move, share, trash or purge it. A copy needs a person to own
   it; a copy through a link lands in the person's root, and the app is told the link's tab so a
   tab-scoped link copies only that tab.

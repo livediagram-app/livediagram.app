@@ -41,7 +41,9 @@ CREATE TABLE items (
   updated_at   INTEGER NOT NULL,
   -- In the Trash since; the daily sweep purges it 30 days on.
   trashed_at   INTEGER NULL,
-  trash_reason TEXT    NULL CHECK (trash_reason IS NULL OR trash_reason IN ('deleted', 'empty'))
+  trash_reason TEXT    NULL CHECK (trash_reason IS NULL OR trash_reason IN ('deleted', 'empty')),
+  -- The updated_at the empty clean-up last moved it to the Trash for: restored unchanged, it is not moved again.
+  empty_swept_for INTEGER NULL
 );
 -- All, Unsorted and a team's list: live items in a scope, newest change first.
 CREATE INDEX items_live ON items (scope, updated_at DESC, id DESC) WHERE trashed_at IS NULL;
@@ -57,6 +59,10 @@ CREATE INDEX items_unsorted ON items (scope, updated_at DESC, id DESC)
 CREATE INDEX items_folder ON items (folder_id, updated_at DESC, id DESC) WHERE folder_id IS NOT NULL;
 -- The daily sweep of items 30 days in the Trash.
 CREATE INDEX items_trashed_at ON items (trashed_at) WHERE trashed_at IS NOT NULL;
+-- The daily empty clean-up (purge.ts sweepEmpty): live items with nothing in them, oldest change first. The summary
+-- is what the item last pushed; '{}' is an item whose content was never written.
+CREATE INDEX items_empty ON items (updated_at)
+  WHERE trashed_at IS NULL AND (summary = '{}' OR json_extract(summary, '$.hasContent') = 0);
 -- A guest's items on merge, and the Inbox's "threads on my items".
 CREATE INDEX items_owner ON items (owner_id);
 

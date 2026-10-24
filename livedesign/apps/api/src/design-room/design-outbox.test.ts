@@ -4,7 +4,13 @@ import type { Element } from '@livedesign/design';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ENV, fakeAccounts } from '../test-accounts';
-import { DRAIN_TABS, drainOutbox, readContentSummary, DESIGN_OUTBOX } from './design-outbox';
+import {
+  DRAIN_TABS,
+  drainOutbox,
+  itemSummaryOf,
+  readContentSummary,
+  DESIGN_OUTBOX,
+} from './design-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -134,7 +140,11 @@ describe('the outbox', () => {
     expect(Object.keys(index.collab[0]!.push.actions[0]!)).toEqual(
       expect.arrayContaining(['description', 'assigneeName', 'assignerName']),
     );
-    expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
+    expect(index.summaries[0]!.summary).toMatchObject({
+      elements: 1,
+      empty: false,
+      hasContent: true,
+    });
   });
 
   // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/accounts.md "Onboarding
@@ -206,5 +216,17 @@ describe('readContentSummary', () => {
     const db = design();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(false);
+  });
+});
+
+// The index's daily empty clean-up reads `hasContent` (liveworkspace/apps/index/src/purge.ts sweepEmpty).
+describe('itemSummaryOf', () => {
+  it('tells the index whether any tab holds anything', () => {
+    const blank = { firstTabCount: null, tabCounts: {}, stats: null, hasContent: false };
+    expect(itemSummaryOf(blank)).toMatchObject({ empty: true, hasContent: false });
+    expect(itemSummaryOf({ ...blank, firstTabCount: 0, hasContent: true })).toMatchObject({
+      empty: true,
+      hasContent: true,
+    });
   });
 });

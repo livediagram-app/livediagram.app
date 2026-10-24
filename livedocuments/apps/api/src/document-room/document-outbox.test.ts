@@ -4,7 +4,13 @@ import type { Element } from '@livedocuments/document';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
-import { DRAIN_TABS, drainOutbox, readContentSummary, DOCUMENT_OUTBOX } from './document-outbox';
+import {
+  DRAIN_TABS,
+  drainOutbox,
+  itemSummaryOf,
+  readContentSummary,
+  DOCUMENT_OUTBOX,
+} from './document-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -130,7 +136,11 @@ describe('the outbox', () => {
     expect(index.collab).toHaveLength(1);
     expect(index.collab[0]!.tab).toBe('t1');
     expect(index.collab[0]!.push.actions.map((a) => a.actionId)).toEqual(['act-a']);
-    expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
+    expect(index.summaries[0]!.summary).toMatchObject({
+      elements: 1,
+      empty: false,
+      hasContent: true,
+    });
   });
 
   it('names who closed an action and who wrote the latest comment, and nobody among several savers', async () => {
@@ -258,5 +268,17 @@ describe('readContentSummary', () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(false);
+  });
+});
+
+// The index's daily empty clean-up reads `hasContent` (liveworkspace/apps/index/src/purge.ts sweepEmpty).
+describe('itemSummaryOf', () => {
+  it('tells the index whether any tab holds anything', () => {
+    const blank = { firstTabCount: null, tabCounts: {}, stats: null, hasContent: false };
+    expect(itemSummaryOf(blank)).toMatchObject({ empty: true, hasContent: false });
+    expect(itemSummaryOf({ ...blank, firstTabCount: 0, hasContent: true })).toMatchObject({
+      empty: true,
+      hasContent: true,
+    });
   });
 });

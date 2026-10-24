@@ -90,6 +90,9 @@ export type ItemOwner = (typeof ITEM_OWNERS)[number];
 
 // Items stay in the Trash this long before the daily sweep purges them.
 export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+// An item with nothing in it (its summary's `hasContent` is false, or it never pushed one) and unchanged this long
+// is moved to the Trash by the index's daily empty clean-up, with the reason `empty`.
+export const EMPTY_ITEM_STALE_MS = 30 * 24 * 60 * 60 * 1000;
 // Opens are recorded at most once a minute per person and item.
 export const OPEN_DEBOUNCE_MS = 60 * 1000;
 // Most Used counts the distinct UTC days a person opened an item over this window; older days are pruned.

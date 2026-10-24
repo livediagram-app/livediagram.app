@@ -21,7 +21,11 @@ export type ItemSummary = {
   comments?: number;
   bytes?: number;
   mode?: string;
+  // Nothing to draw: no tab, or an empty first tab (no thumbnail is asked for).
   empty?: boolean;
+  // Whether any tab holds anything (an element, a page, a form). False, the index's daily clean-up moves the item to
+  // the Trash once it has been unchanged for EMPTY_ITEM_STALE_MS.
+  hasContent?: boolean;
   // A media key, or null.
   thumbnail?: string | null;
   [k: string]: unknown;

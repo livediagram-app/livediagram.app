@@ -14,6 +14,6 @@ Follow the references below only as needed; never upfront.
 - ./explorer-details-view.md - retired: the Details view is the shared Explorer's
 - ./explorer-home.md - retired: Home's data is the index's
 - ./explorer-home-view.md - retired: Home is the shared Explorer's view
-- ./empty-document-cleanup.md - retired: the sweep is the canvas's daily upkeep
+- ./empty-document-cleanup.md - retired: the empty-document sweep is the index's
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers

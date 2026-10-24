@@ -28,6 +28,6 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./inbox.md - when working on what a canvas pushes for the Inbox (index)
 - ./explorer-filters.md - when working on the Explorer's filter lens: the shared lens, with livediagram's template families for the Template chip (index)
 - ./trash.md - when working on the Trash: deleting and its Undo, a trashed canvas's refusals, the purge, the API and the Drive mirror; This Browser deletes for good (index)
-- ./empty-document-cleanup.md - when working on Empty document clean-up: a canvas with no elements or articles in any tab, unsaved for 30 days, is sent to the Trash by its daily upkeep (marked `empty`); never This Browser's
+- ./empty-document-cleanup.md - when working on Empty document clean-up: the index's daily sweep sends a canvas with no elements or articles in any tab, unchanged for 30 days, to the Trash (marked `empty`); never This Browser's
 - ./shape-libraries.md - when working on Shape libraries: named, owner-scoped sets of reusable shapes (draw.io libraries imported, one library per file, never merged), the palette My shapes category, the shared Explorer's Shape Libraries and the previews route that draws its shapes, the `/api/shape-libraries` resource, limits and sign-up migration
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)

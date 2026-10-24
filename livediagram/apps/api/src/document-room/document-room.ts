@@ -12,7 +12,6 @@ import {
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
-  EMPTY_DOCUMENT_STALE_MS,
   GRANT_LAPSED_CLOSE,
   ROOM_GRANT_ASK_BEFORE_MS,
   WORKBENCH_ENDED_CLOSE,
@@ -67,7 +66,7 @@ import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
-import { indexFor, indexService } from '../index-service';
+import { indexService } from '../index-service';
 import { notifyActionAssigned, notifyDocumentJoin, notifyMentioned } from '../email/notifications';
 import type { ActionNotice, MentionNotice } from '../document-client';
 import {
@@ -93,7 +92,6 @@ import {
   type DocumentMeta,
   type DocumentOutline,
 } from './document-content';
-import { readContentSummary } from './document-outbox';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import {
   allShares,
@@ -185,12 +183,10 @@ const SHARE_LINK_CHANGED_CLOSE = 4003;
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
-// The document's own daily upkeep: old changesets go, and a canvas left empty and unsaved for
-// EMPTY_DOCUMENT_STALE_MS goes to the Trash (docs/specs/013-workspace/empty-document-cleanup.md).
+// The document's own daily upkeep: old changesets go. An empty canvas is moved to the Trash by the index's daily
+// empty clean-up, from the summary's `hasContent` (docs/specs/013-workspace/empty-document-cleanup.md).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
-// The save time of the canvas the empty clean-up last moved to the Trash: restored unchanged, it is not moved again.
-const EMPTY_SWEPT_KEY = 'empty-swept-for';
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -538,8 +534,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.state.storage.sql.exec('SELECT 1 FROM share_outbox LIMIT 1').toArray().length > 0;
   }
 
-  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28),
-  // and a canvas with nothing on any tab, unsaved for EMPTY_DOCUMENT_STALE_MS, goes to the Trash.
+  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
   private async maintain(now: number): Promise<void> {
     const env = this.roomEnv;
     const documentId = this.documentId;
@@ -549,39 +544,9 @@ export class DocumentRoom extends DurableObject<Env> {
     try {
       const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
       if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
-      await this.trashIfEmptyAndStale(env, documentId, now);
     } catch (error) {
       console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
     }
-  }
-
-  // The empty clean-up (docs/specs/013-workspace/empty-document-cleanup.md): a started canvas with no element or
-  // page on any tab, unsaved for EMPTY_DOCUMENT_STALE_MS, goes to the Trash with the reason `empty`, asked of the
-  // index as its owner. Restored unchanged, it is not moved again.
-  private async trashIfEmptyAndStale(
-    env: DocumentEnv,
-    documentId: string,
-    now: number,
-  ): Promise<void> {
-    const meta = await readDocumentMeta(env, documentId);
-    if (!meta) return;
-    const { summary, savedAt } = await readContentSummary(env, documentId);
-    if (summary.hasContent || savedAt > now - EMPTY_DOCUMENT_STALE_MS) return;
-    if ((await this.state.storage.get<number>(EMPTY_SWEPT_KEY)) === savedAt) return;
-    const client = indexFor(env, {
-      kind: 'delegate',
-      personId: meta.ownerId,
-      teams: meta.teamId ? [meta.teamId] : [],
-    });
-    if (!client) return;
-    try {
-      await client.deleteItem(documentId, { reason: 'empty' });
-      console.info('[trash] empty canvas moved', { documentId });
-    } catch (error) {
-      // Already in the Trash, gone, or no longer theirs: nothing to move.
-      console.info('[trash] empty canvas not moved', { documentId, error: String(error) });
-    }
-    await this.state.storage.put(EMPTY_SWEPT_KEY, savedAt);
   }
 
   // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a

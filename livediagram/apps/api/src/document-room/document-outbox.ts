@@ -162,6 +162,9 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     comments: summary.stats?.comments ?? 0,
     bytes: summary.stats?.bytes ?? 0,
     empty: isEmptyCount(summary.firstTabCount),
+    // Whether anything is on any tab: false, the index's daily empty clean-up moves the item to the Trash once it has
+    // sat unchanged for 30 days (docs/specs/013-workspace/empty-document-cleanup.md).
+    hasContent: summary.hasContent,
   };
 }
 

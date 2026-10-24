@@ -134,7 +134,7 @@ export async function readContentSummary(
   env: PlanEnv,
   planId: string,
 ): Promise<{ summary: ContentSummary; savedAt: number; ownerId: string | null }> {
-  const [tabs, stats, plan] = await env.PLAN_DB.batch([
+  const [tabs, stats, plan, records] = await env.PLAN_DB.batch([
     env.PLAN_DB.prepare(
       // A Form tab's form is not an element, and still content: only a tab with no elements is parsed for one.
       `SELECT dt.tab_id, t.element_count,
@@ -144,6 +144,11 @@ export async function readContentSummary(
     ).bind(planId),
     env.PLAN_DB.prepare(`SELECT ${projectStatsSql('?1')}`).bind(planId),
     env.PLAN_DB.prepare('SELECT saved_at, owner_id FROM plan WHERE id = ?').bind(planId),
+    // Cards and sheets are kept beside the tabs: either one keeps the plan from the empty clean-up.
+    env.PLAN_DB.prepare(
+      `SELECT EXISTS (SELECT 1 FROM items WHERE plan_id = ?1)
+           OR EXISTS (SELECT 1 FROM sheets WHERE plan_id = ?1) AS held`,
+    ).bind(planId),
   ]);
   const tabRows = (tabs?.results ?? []) as {
     tab_id: string;
@@ -151,7 +156,7 @@ export async function readContentSummary(
     has_form: number | null;
   }[];
   const tabCounts: Record<string, number> = {};
-  let hasContent = false;
+  let hasContent = (records?.results?.[0] as { held?: number } | undefined)?.held === 1;
   for (const t of tabRows) {
     tabCounts[t.tab_id] = t.element_count ?? -1;
     // An unknown count is content: the sweep fails safe.
@@ -180,6 +185,9 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     comments: summary.stats?.comments ?? 0,
     bytes: summary.stats?.bytes ?? 0,
     empty: isEmptyCount(summary.firstTabCount),
+    // Whether anything is on any tab: false, the index's daily empty clean-up moves the item to the Trash once it has
+    // sat unchanged for 30 days (docs/specs/013-workspace/empty-project-cleanup.md).
+    hasContent: summary.hasContent,
   };
 }
 

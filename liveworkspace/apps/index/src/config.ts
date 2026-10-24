@@ -23,6 +23,8 @@ export const JWKS_MAX_AGE_S = 300;
 // Whatever is left waits for the next day.
 export const SWEEP_ITEMS_MAX = 500;
 export const TOMBSTONES_PER_RUN = 200;
+// How many empty, stale items the daily empty clean-up moves to the Trash per run, oldest change first.
+export const EMPTY_SWEEP_MAX = 1000;
 // Right after a person's own purge, how many app calls are made at once (the rest wait for the run).
 export const PURGE_NOW_MAX = 25;
 export const APP_CALL_CONCURRENCY = 6;

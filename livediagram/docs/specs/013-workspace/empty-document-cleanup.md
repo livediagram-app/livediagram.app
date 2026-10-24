@@ -37,12 +37,14 @@ browser, cost the server nothing, and are never touched.
 
 ## The sweep
 
-Each canvas checks itself. Its Durable Object runs a daily upkeep alarm, and
-when the canvas is both empty and stale it asks the index, as the canvas's
-owner, to move it to the Trash with the reason `empty` (`DELETE /items/:id?reason=empty`).
-The check reads the canvas's own content and last save in the same object that
-takes every save, so a canvas saved a moment before is not moved. A canvas in
-a team goes to its team's Trash. Each move is logged.
+liveworkspace's index runs it, once for every app, in its daily run (the one that purges the Trash):
+`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`. Each document's Durable Object pushes its summary to the
+index after every save, and the summary carries `hasContent`, whether any tab holds anything (the rule above). The
+sweep moves every live document whose summary says `hasContent: false`, or that never pushed one (its content was
+never written), and that has not changed for 30 days, to the Trash with the reason `empty`. The check and the move
+are one statement, so a document saved a moment before is not moved. A team document goes to its team's Trash. The sweep
+moves at most 1,000 items a run, oldest change first, so a backlog drains over a few days, and it logs how many it
+moved. The app runs no sweep of its own.
 
 The move stamps the document's Trash time with **the moment of the sweep**,
 never its creation or last save. The Trash's purge counts from that time, so an
@@ -70,11 +72,10 @@ author: it records no one, so it adds nothing to erase on account deletion.
 
 ## Restore
 
-Restoring an automatically moved document works like any restore. The canvas
-remembers the save it was moved for, so it is never moved back for that same
-save: only after it is saved again and then left empty for 30 days does it go
-to the Trash again. A document a person deleted restores exactly
-as it was, its last-saved time untouched.
+Restoring an automatically moved document works like any restore. The index remembers the change it was moved for
+(`empty_swept_for`), so it is never moved back for that same change: only after it is saved again and then left
+empty for 30 days does it go to the Trash again. A document a person deleted restores exactly as it was, its
+last-saved time untouched.
 
 ## The API
 

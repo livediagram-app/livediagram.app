@@ -24,7 +24,7 @@ team library): it only sends the canvas to the Trash, so a question would guard 
 - A team canvas goes to the team's Trash, and its Undo restores it there.
 
 Every delete of a whole canvas goes to the Trash: the Explorer, the editor, the team library, the public API with a
-token, the MCP server, and the Drive mirror. So does a canvas left empty, by its daily upkeep
+token, the MCP server, and the Drive mirror. So does a canvas left empty, by the index's daily sweep
 ([Empty document clean-up](empty-document-cleanup.md)), with the reason `empty`. Tabs are not trashed; deleting a
 tab is unchanged.
 

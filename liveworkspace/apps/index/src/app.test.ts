@@ -8,7 +8,7 @@ import type {
 } from '@liveworkspace/index-client';
 import { describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import { sweep } from './purge';
+import { sweep, sweepEmpty } from './purge';
 import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
 import { drainPersonMerges } from './person-merges';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
@@ -318,7 +318,7 @@ describe('the daily purge', () => {
     trash.run(now - 2 * 24 * 60 * 60 * 1000, 'deleted', recent.id);
 
     h.appAnswer = () => new Response(null, { status: 502 });
-    expect(await sweep(h.db.env, now)).toEqual({ purged: 1, confirmed: 0 });
+    expect(await sweep(h.db.env, now)).toEqual({ emptied: 0, purged: 1, confirmed: 0 });
     expect(h.db.sql.prepare('SELECT id FROM items').all()).toEqual([{ id: recent.id }]);
     expect(h.db.sql.prepare('SELECT item_id, attempts FROM purge_tombstones').all()).toEqual([
       { item_id: old.id, attempts: 1 },
@@ -332,6 +332,108 @@ describe('the daily purge', () => {
       `DELETE https://liveplanner.app/api/internal/items/${old.id}`,
       `DELETE https://liveplanner.app/api/internal/items/${old.id}`,
     ]);
+  });
+});
+
+describe('the empty clean-up', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const stamp = (id: string, summary: unknown, updatedAt: number) =>
+    h.db.sql
+      .prepare('UPDATE items SET summary = ?, updated_at = ? WHERE id = ?')
+      .run(JSON.stringify(summary), updatedAt, id);
+  const rowOf = (id: string) =>
+    h.db.sql.prepare('SELECT trashed_at, trash_reason FROM items WHERE id = ?').get(id);
+
+  it('moves items empty and unchanged for 30 days to the Trash, of every app and team, and nothing else', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const now = Date.now();
+    const old = now - 31 * DAY;
+    const emptyPlan = await makeItem(ada.auth, { title: 'Empty plan' });
+    const neverWritten = await makeItem(ada.auth, { app: 'livediagram', title: 'Never opened' });
+    const teamEmpty = await makeItem(ada.auth, { app: 'livedesign', teamId: 'team1' });
+    const full = await makeItem(ada.auth, { app: 'livedocuments', title: 'Full' });
+    const recent = await makeItem(ada.auth, { title: 'Emptied yesterday' });
+    const unknown = await makeItem(ada.auth, { title: 'Pushed without the flag' });
+    const deleted = await makeItem(ada.auth, { title: 'Deleted' });
+    stamp(emptyPlan.id, { elements: 0, empty: true, hasContent: false }, old);
+    stamp(neverWritten.id, {}, old);
+    stamp(teamEmpty.id, { hasContent: false }, old);
+    stamp(full.id, { elements: 3, empty: true, hasContent: true }, old);
+    stamp(recent.id, { hasContent: false }, now - DAY);
+    stamp(unknown.id, { elements: 0 }, old);
+    stamp(deleted.id, { hasContent: false }, old);
+    h.db.sql
+      .prepare("UPDATE items SET trashed_at = ?, trash_reason = 'deleted' WHERE id = ?")
+      .run(now - 2 * DAY, deleted.id);
+
+    expect(await sweep(h.db.env, now)).toEqual({ emptied: 3, purged: 0, confirmed: 0 });
+    for (const item of [emptyPlan, neverWritten, teamEmpty]) {
+      expect(rowOf(item.id)).toEqual({ trashed_at: now, trash_reason: 'empty' });
+    }
+    for (const item of [full, recent, unknown]) {
+      expect(rowOf(item.id)).toEqual({ trashed_at: null, trash_reason: null });
+    }
+    expect(rowOf(deleted.id)).toEqual({ trashed_at: now - 2 * DAY, trash_reason: 'deleted' });
+    // No Timeline entry: nothing anyone did.
+    expect(
+      h.db.sql.prepare("SELECT COUNT(*) AS n FROM timeline_events WHERE type = 'trashed'").get(),
+    ).toEqual({ n: 0 });
+    // The team's item is in the team's Trash.
+    const trash = await body<{ items: Item[] }>(
+      await call('/trash?team=team1', { auth: ada.auth }),
+    );
+    expect(trash.items.map((i) => [i.id, i.trashReason])).toEqual([[teamEmpty.id, 'empty']]);
+  });
+
+  it('leaves an item restored unchanged alone, until it changes and sits empty again', async () => {
+    const ada = await person('user_a');
+    const now = Date.now();
+    const item = await makeItem(ada.auth);
+    stamp(item.id, { hasContent: false }, now - 31 * DAY);
+    expect(await sweepEmpty(h.db.env, now)).toBe(1);
+    expect(
+      (await call(`/items/${item.id}/restore`, { method: 'POST', auth: ada.auth })).status,
+    ).toBe(200);
+    expect(await sweepEmpty(h.db.env, now + DAY)).toBe(0);
+    expect(await sweepEmpty(h.db.env, now + 60 * DAY)).toBe(0);
+    // Saved again (still empty), then left for another 30 days.
+    await asApp(`/app/items/${item.id}/summary`, {
+      summary: { hasContent: false },
+      updatedAt: now + 2 * DAY,
+    });
+    expect(await sweepEmpty(h.db.env, now + 20 * DAY)).toBe(0);
+    expect(await sweepEmpty(h.db.env, now + 33 * DAY)).toBe(1);
+  });
+
+  it('moves at most its cap a run, oldest change first', async () => {
+    const ada = await person('user_a');
+    const now = Date.now();
+    const ids: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      const item = await makeItem(ada.auth);
+      stamp(item.id, { hasContent: false }, now - (40 - i) * DAY);
+      ids.push(item.id);
+    }
+    expect(await sweepEmpty(h.db.env, now, 2)).toBe(2);
+    expect(
+      h.db.sql
+        .prepare("SELECT id FROM items WHERE trash_reason = 'empty' ORDER BY updated_at")
+        .all()
+        .map((r) => r.id),
+    ).toEqual(ids.slice(0, 2));
+  });
+
+  it('reads the partial index, not every item', () => {
+    const plan = h.db.sql
+      .prepare(
+        `EXPLAIN QUERY PLAN SELECT id FROM items
+         WHERE trashed_at IS NULL AND (summary = '{}' OR json_extract(summary, '$.hasContent') = 0)
+           AND updated_at < ? AND (empty_swept_for IS NULL OR empty_swept_for <> updated_at)
+         ORDER BY updated_at LIMIT ?`,
+      )
+      .all(0, 10)
+      .map((r) => String(r.detail));
+    expect(plan.join('\n')).toContain('items_empty');
   });
 });
 

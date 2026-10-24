@@ -97,7 +97,8 @@ type ItemSummary = {
   comments?: number;
   bytes?: number;
   mode?: string;
-  empty?: boolean;
+  empty?: boolean; // nothing to draw: no tab, or an empty first tab
+  hasContent?: boolean; // anything on any tab; false (or never pushed) feeds the empty clean-up
   thumbnail?: string /* media key or null */;
   [k: string]: unknown;
 }; // ≤ 2 KB
@@ -146,6 +147,12 @@ filters combine with and. Anything else is 400 `invalid_query`.
 app key). Each purged item leaves a tombstone until its app confirms: the index tells the app at once for
 the first few, and a cron every 15 minutes works through the rest, up to 300 a run, trying a failed one
 again at most once an hour.
+
+**The empty clean-up.** The same daily run first moves to the Trash every live item with nothing in it (its
+summary's `hasContent` is false, or it never pushed a summary) that has not changed for 30 days, with
+`trashReason: 'empty'` and the run's moment as `trashedAt`, so it waits the full 30 days there. It covers every
+app, and a team's item goes to its team's Trash. The check and the move are one statement; an item restored
+unchanged is not moved again until it changes. At most 1,000 a run, oldest change first. No Timeline entry.
 
 ## Closing an account
 
@@ -311,7 +318,7 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `GET /app/forms/:code` — `{itemId, tabId}`: the item and tab a live form's code names, for the app that pushed
   it (404 otherwise), so the app's Worker routes a public form request to its item without a table of its own
   (`@liveworkspace/index-app` `createFormPlaces` caches the answer a minute). `GET
-  /app/items/:id/forms/:tabId/seen/:personId` — `{seen}`: how many of the form's responses that person has seen
+/app/items/:id/forms/:tabId/seen/:personId` — `{seen}`: how many of the form's responses that person has seen
   (0 when none), for the app's own unseen count.
 
 - `PUT /app/items/:id/events` — `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who

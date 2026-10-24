@@ -6,7 +6,13 @@ import { insertItems } from '../db/items';
 import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
-import { DRAIN_TABS, drainOutbox, readContentSummary, PLAN_OUTBOX } from './plan-outbox';
+import {
+  DRAIN_TABS,
+  drainOutbox,
+  itemSummaryOf,
+  readContentSummary,
+  PLAN_OUTBOX,
+} from './plan-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -136,7 +142,11 @@ describe('the outbox', () => {
     expect(Object.keys(index.collab[0]!.push.actions[0]!)).toEqual(
       expect.arrayContaining(['description', 'assigneeName', 'assignerName']),
     );
-    expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
+    expect(index.summaries[0]!.summary).toMatchObject({
+      elements: 1,
+      empty: false,
+      hasContent: true,
+    });
   });
 
   // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/accounts.md "Onboarding
@@ -316,5 +326,38 @@ describe('readContentSummary', () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(false);
+  });
+
+  it('counts a card as content, even with no board drawn', async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
+    const owner = { id: await itemPersonId('owner'), name: 'owner', color: '#000' };
+    await insertItems(db.env, 'P', [
+      {
+        id: 'c1',
+        type: 'task',
+        key: 1,
+        rank: 'i',
+        fields: { title: 'Card 1' },
+        rev: 1,
+        createdAt: T0,
+        updatedAt: T0,
+        createdBy: owner,
+        updatedBy: owner,
+      },
+    ]);
+    expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(true);
+  });
+});
+
+// The index's daily empty clean-up reads `hasContent` (liveworkspace/apps/index/src/purge.ts sweepEmpty).
+describe('itemSummaryOf', () => {
+  it('tells the index whether any tab holds anything', () => {
+    const blank = { firstTabCount: null, tabCounts: {}, stats: null, hasContent: false };
+    expect(itemSummaryOf(blank)).toMatchObject({ empty: true, hasContent: false });
+    expect(itemSummaryOf({ ...blank, firstTabCount: 0, hasContent: true })).toMatchObject({
+      empty: true,
+      hasContent: true,
+    });
   });
 });

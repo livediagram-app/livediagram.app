@@ -3,7 +3,8 @@
 
 // The column's JSON. `firstTabCount` is the first tab's element count (-1 while unknown, null with no tab);
 // `tabCounts` each tab's, for a tab-scoped reader; `stats` the Details view's numbers (tab-stats.ts); and
-// `hasContent` whether any tab holds an element, a form or a body that is not JSON (the sweep's test).
+// `hasContent` whether any tab holds an element, a form or a body that is not JSON, or the plan holds a card or a sheet
+// (the index's empty clean-up reads it).
 export type ContentSummary = {
   firstTabCount: number | null;
   tabCounts: Record<string, number>;
