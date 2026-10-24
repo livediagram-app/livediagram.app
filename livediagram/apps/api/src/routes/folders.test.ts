@@ -127,7 +127,7 @@ describe('POST /api/folders', () => {
       Response.json({ folder: folder('f9', { parentId: 'f0' }) }, { status: 201 });
     const original = globalThis.fetch;
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (init?.method === 'POST') sent = JSON.parse(String(init.body));
+      if (init?.method === 'POST') sent = JSON.parse(init.body as string);
       return original(input, init);
     });
     const res = await call('POST', '/api/folders', {
