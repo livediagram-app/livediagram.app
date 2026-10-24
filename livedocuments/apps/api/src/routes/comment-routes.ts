@@ -3,7 +3,7 @@
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
-import { logRefusal } from './refusal-log';
+import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
   COMMENT_TEXT_MAX,
   isCommentListStatus,

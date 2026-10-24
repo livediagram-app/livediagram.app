@@ -14,7 +14,7 @@ describe('bytesToBase64', () => {
   });
 
   it('accepts an ArrayBuffer as well as a Uint8Array', () => {
-    expect(bytesToBase64(text('foo').buffer)).toBe('Zm9v');
+    expect(bytesToBase64(text('foo').buffer as ArrayBuffer)).toBe('Zm9v');
   });
 
   it('keeps the standard alphabet', () => {

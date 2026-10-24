@@ -1,4 +1,4 @@
-// The fingerprint line of a refused request (the agent-presence blueprint "Observability"): the caller's fields, the
+// The fingerprint line of a refused request (each product's agent-presence blueprint "Observability"): the caller's fields, the
 // status, and the error code the body names; never its text.
 
 export async function logRefusal(

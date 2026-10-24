@@ -31,7 +31,7 @@ marker) and recolour / move / lock / layer / delete like any element.
 ## Fetching the preview — `GET /api/unfurl`
 
 The static client can't read cross-origin page HTML, so a Worker route
-(`apps/api/src/routes/unfurl.ts`) does it. When `applyElementLink` sets a URL
+(`apps/api/src/routes/unfurl.ts`, over the shared fetch in `../packages/api-kit/src/unfurl-fetch.ts`) does it. When `applyElementLink` sets a URL
 on a link card, the editor that set it calls `apiUnfurl(url)` **once** and
 commits the result into `meta`; peers receive it via the tab op. It fails
 soft (null → the card shows the bare URL).

@@ -480,14 +480,8 @@ export type CapabilitiesResponse = {
 // count on the same day. Pre-aggregated server-side so the dashboard
 // can render the sparkline + stacked-area without any client work.
 //
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
+// A link card's unfurl (GET /api/unfurl), every product's (@liveworkspace/api-kit/unfurl).
+export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
 export * from './access-levels';
 export * from './participant-colours';

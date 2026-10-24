@@ -17,7 +17,7 @@ import { json, noContent, notFound } from '../responses';
 import { deleteAgentPresence, putAgentPresence, RoomUnavailableError } from '../room-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { TabDTO } from '../types';
-import { logRefusal } from './refusal-log';
+import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
   deniedOnTab,
   gateEdit,

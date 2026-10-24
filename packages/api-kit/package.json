@@ -9,8 +9,12 @@
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",
     "./oauth": "./src/oauth.ts",
+    "./refusal-log": "./src/refusal-log.ts",
     "./request-auth": "./src/request-auth.ts",
-    "./request-body": "./src/request-body.ts"
+    "./request-body": "./src/request-body.ts",
+    "./responses": "./src/responses.ts",
+    "./unfurl": "./src/unfurl.ts",
+    "./unfurl-fetch": "./src/unfurl-fetch.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -23,8 +27,10 @@
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261007.1",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
