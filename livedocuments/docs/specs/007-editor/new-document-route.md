@@ -191,7 +191,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees Start Making Pages in the middle of the canvas ([Template start](start-diagramming.md));
-   a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
+   a Participant or Viewer sees the empty page ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
 
@@ -199,7 +199,7 @@ knowing about when adding another.
 2. NotFound surface renders as today, but its "Create new document"
    CTA now navigates to `/new`.
 
-## State changes in `/live`
+## State changes in the editor route
 
 Removed from the editor route at the split (history, see Motivation):
 
@@ -260,23 +260,9 @@ page), logging `[new] restored, back out <target>`.
 
 ### The empty-canvas hint
 
-The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
-active tab has no elements to someone who cannot edit it: an Editor gets the tab's start instead ([Template
-start](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant**, who adds nothing, reads the same line. It offers no action of its own, and
-**Help** on a desktop. It goes once the canvas has content, and a **Close** (×) in its top right corner closes it
-for good on that tab for this person in this browser (a per-browser list of the last 200 closed keys,
-`livedocuments:v2:empty-card-dismissed` in localStorage, shared with the start's own close). It takes presses only on
-itself: the canvas around it still pans. The card: a small picture in the brand's tints on a soft panel
-(`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), then its one line, in full. **On a phone** it is the same
-card, narrower (18rem). On a **short screen** (480px tall or less, a phone on its side) the card drops its picture,
-so it clears the toolbars above and below instead of sliding under the Palette strip.
-
-A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
-the card: thick multi-colour curved lines that slowly flow along their paths via
-animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
-`pointer-events-none` / `aria-hidden`, and stands down under
-`prefers-reduced-motion`.
+Removed with the Pages-only cut (October 2026): there is no empty-canvas card or backdrop any more. An Editor gets the
+tab's start ([Template start](start-diagramming.md)), and an empty page offers its layouts ([Pages
+mode](pages-mode.md) "An empty page offers its layouts"); a Viewer or Participant sees the empty page.
 
 ## Start Blank
 

@@ -296,8 +296,8 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 | Detection remembered; failed load retried             | `webp.test.ts`                      |
 | No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                   |
 
-All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; the browser codec is
-proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
+All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; no e2e spec drives the
+browser codec today.
 
 ## Assets and external resources
 

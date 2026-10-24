@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is `AiChatArt` (CSS keyframes, no JS tick).

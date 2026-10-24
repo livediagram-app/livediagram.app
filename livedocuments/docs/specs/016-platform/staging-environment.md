@@ -21,11 +21,11 @@ liveworkspace's staging index** before it runs against the ones holding people's
 | Previews     | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
-### "live" is an app, not an environment
+### "editor" is an app, not an environment
 
-Worth stating once, because the two readings collide constantly in this repo: **`live`
-is the name of the editor app** — `apps/editor`, the `livedocuments-editor` worker, the
-`LIVE` service binding, the `deploy-editor` job. It is a proper noun. The environments
+Worth stating once, because the two readings collide constantly in this repo: **`editor`
+is the name of an app** — `apps/editor`, the `livedocuments-editor` worker, the
+`EDITOR` service binding, the `deploy-editor` job (it was called `live` until the rename). It is a proper noun. The environments
 are **production** and **staging**, and nothing else.
 
 So `deploy-editor` deploys the editor, in whichever environment the run targets; there is

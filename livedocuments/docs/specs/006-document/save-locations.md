@@ -3,7 +3,7 @@
 A new document is stored in one of a small set of **save locations**: on the server (livedocuments) or in this browser
 only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
 
-**Nobody is asked.** The New Document wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+**Nobody is asked.** `/new` ([Dedicated route for new-document creation](../007-editor/new-document-route.md))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Document** and **Take Offline**.
 (The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser

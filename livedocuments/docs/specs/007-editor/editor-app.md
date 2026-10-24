@@ -351,7 +351,6 @@ the day it goes edge to edge.
 
 ## Out of scope (next iterations)
 
-- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-document inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
 - **Per-user grants** — a document is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)), but every member can edit every team document; there are no per-document per-user grants.
 
 (Four earlier bullets here have shipped. Auth UI landed per [Auth + guest access](../014-identity/auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [Transactional email (Resend)](../014-identity/transactional-email.md); and realtime is no longer whole-tab LWW: [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) merges concurrent edits to different elements. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped; the advisory selection lock above makes that case rare, and when it happens it stays last-writer-wins.)

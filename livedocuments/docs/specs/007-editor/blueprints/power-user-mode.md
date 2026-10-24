@@ -118,7 +118,6 @@ provider, so the Explorer page and `/new` are unaffected.
 - Panel help under the flag: `MovablePanelHeader` and the popover header in `MovablePanel` render no
   `HelpArticleLink`. Only a panel that already has a `⋯` menu gets a Help row (`ExplorerHeaderMenu`); no menu is created
   to hold one. The help centre stays linked from the Explorer panel's footer row (`ProductNavLinks`).
-- `EmptyCanvasBanner` does not read the flag: it holds actions, so it stays.
 
 ### Offer
 

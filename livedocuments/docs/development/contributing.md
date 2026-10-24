@@ -115,12 +115,6 @@ pnpm --filter @livedocuments/editor build:signed-in
 pnpm --filter @livedocuments/editor test:e2e:signed-in
 ```
 
-The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3317`):
-
-```sh
-pnpm --filter @livedocuments/editor test:e2e:armed
-```
-
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3302` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |

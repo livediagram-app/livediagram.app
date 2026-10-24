@@ -70,9 +70,8 @@ hides the start for good. The palette publishes the state in `lib/palette-popove
 its own root. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents`
 wrapper has no box to picture.
 
-A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
-route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer, and a Participant (who adds nothing), that
-the owner can build it out.
+A **Participant** or **Viewer** never sees a start: they see the empty page ([New document
+route](new-document-route.md) "The empty-canvas hint").
 
 A new tab opens on its start (`newTabOpening` in `apps/editor/lib/new-tab-seed.ts`).
 

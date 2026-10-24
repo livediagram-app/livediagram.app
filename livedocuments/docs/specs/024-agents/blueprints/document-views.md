@@ -376,7 +376,7 @@ is the full view's estimate and the step it took (a ladder state, or `lines-drop
 | `comments` | `commentsView`                            | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
 | `show`     | `showView` (`ref`), `showSelectedView`    | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)                 | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livedocuments/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
+| `lint`     | `@livedocuments/diagram-lint`             | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`        | CLI only, from its cache | Added, removed, changed and moved elements                                              |
 | `overview` | `overviewView(document, tabs, options)`   | api, CLI offline         | One line per tab                                                                        |
 

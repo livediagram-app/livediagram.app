@@ -26,8 +26,9 @@ two-column field grid on an iPad) the field ran past the panel's edge and pushed
 
 ## Typing and saving
 
-A date field (`DateInput` in `@livedocuments/ui`) saves a date only once it is whole, so typing one
-in a segment at a time never loses what is already there.
+A date field saves a date only once it is whole, so typing one in a segment at a time never loses
+what is already there. (livedocuments has no date field today: `DateInput` went with the Pages-only cut. A new one
+follows these rules.)
 
 - **A whole date saves at once.** Picking a day from the calendar, or typing the last digit of a
   four-digit year, saves it. A year below 1000 is still being typed (the browser reads the first digit

@@ -19,13 +19,13 @@ Offline Mode is **off by default for everyone**, guests included
 ([Save Locations → The default](save-locations.md#the-default)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
-  asks only for a mode and creates the document in the default location for who is creating
+- `/new` ([Dedicated route for new-document creation](../007-editor/new-document-route.md))
+  asks nothing and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **livedocuments**, whoever is creating.
   Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Document** puts one in This Browser on
   livedocuments.
-- The links that create without the wizard (`/new?template=`, `/new?blank=1`,
-  [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
+- The links that create a particular start (`/new?template=`, `/new?blank=1`,
+  [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank))
   take the same default.
 - The location only changes _where the document is stored_; the mode, templates and theme work identically.
 
@@ -393,8 +393,8 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Document wizard calls `offlineCreateDocument`
-  directly when the location is This Browser (picked on purpose), and
+  to dispatch on yet: `/new` (`app/new/page.tsx`) calls `offlineCreateDocument`
+  directly when the location is This Browser, and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -425,8 +425,8 @@ category), and — per the help-registry rule — **register it in
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
 
-- What Offline Mode is and how to create one (the New Document wizard's Save
-  location chooser, [Save Locations](save-locations.md)).
+- What Offline Mode is and how to make one (Take Offline, [Save
+  Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Document" (Offline → Cloud) and "Take Offline"
