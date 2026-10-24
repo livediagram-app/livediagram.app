@@ -14,9 +14,7 @@ import {
   GlyphDisc,
   HoverCard,
   LinkIcon,
-  MindOutlineIcon,
   NoteIcon,
-  TidyMapIcon,
   IDENTITY_FILL,
   identityVars,
 } from '@liveplanner/ui';
@@ -39,7 +37,6 @@ const ROUND_PIP_FROM_PX = 10;
 // Resting glyphs are a cue, not text; hovering the element raises them, the pointer's glyph to 1.
 // Spelled out in full so Tailwind sees each class.
 const TONE = 'opacity-50 group-hover/el:opacity-85';
-const COMMAND_HIDDEN = 'invisible group-hover/el:visible';
 // While the element is selected its handles, "+" buttons and toolbar crowd the same edges, so the
 // whole cluster shrinks and fades out of the way (micro, docs/specs/004-interface-design/motion.md)
 // and comes back on deselect. `inert` takes the hidden buttons out of the tab order too. Each
@@ -48,8 +45,6 @@ const SHOWN = 'pointer-events-auto transition';
 const SELECTED_HIDDEN = 'pointer-events-none scale-75 opacity-0 transition';
 
 const GLYPHS: Record<IndicatorKind, typeof NoteIcon> = {
-  outline: MindOutlineIcon,
-  tidy: TidyMapIcon,
   link: LinkIcon,
   note: NoteIcon,
   action: ActionIcon,
@@ -79,11 +74,6 @@ export function ElementIndicators({
   if (items.length === 0 || zoom < ADORNMENT_MIN_ZOOM) return null;
 
   const shape = element.type === 'shape' ? element.shape : undefined;
-  const footer = placed.form === 'footer' || placed.form === 'footer-compact';
-  // The footer reads status first and ends with the commands; the others lead with them.
-  const ordered = footer
-    ? [...items.filter((i) => !i.command), ...items.filter((i) => i.command)]
-    : items;
 
   let position: React.CSSProperties;
   let shapeClass: string;
@@ -107,9 +97,6 @@ export function ElementIndicators({
     shapeClass = 'gap-2.5 rounded text-[11px] font-medium leading-none';
     glyphPx = 12;
   }
-  // A cluster of commands alone (a mind root with nothing else to show) hides with them: its chip
-  // and backing would otherwise sit there empty until hover.
-  const onlyCommands = items.every((i) => i.command);
   const words =
     placed.form === 'footer'
       ? 'labelled'
@@ -123,12 +110,10 @@ export function ElementIndicators({
       onPointerDown={(e) => e.stopPropagation()}
       style={{ ...position, backgroundColor: fill }}
       inert={selected}
-      className={`absolute flex items-center ${shapeClass} ${selected ? SELECTED_HIDDEN : SHOWN}${
-        onlyCommands ? ` ${COMMAND_HIDDEN}` : ''
-      }`}
+      className={`absolute flex items-center ${shapeClass} ${selected ? SELECTED_HIDDEN : SHOWN}`}
     >
       {/* Glyph buttons only: the comment count inside one is already optically centred. */}
-      {ordered.map((item) => (
+      {items.map((item) => (
         <IndicatorButton key={item.kind} item={item} size={glyphPx} footer={words} />
       ))}
     </div>
@@ -146,7 +131,6 @@ function IndicatorButton({
 }) {
   const Glyph = GLYPHS[item.kind];
   const extra = item.dataAttr ? { [item.dataAttr]: '' } : {};
-  const hidden = item.command ? COMMAND_HIDDEN : '';
   const lead =
     footer && item.assignee ? (
       <GlyphDisc
@@ -171,7 +155,7 @@ function IndicatorButton({
       }}
       className={`flex items-center rounded transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-current ${
         footer ? 'h-5 gap-1' : 'h-5 min-w-5 justify-center gap-0.5 px-[3px]'
-      } ${TONE} ${hidden}`}
+      } ${TONE}`}
       {...extra}
     >
       {lead}
@@ -179,7 +163,7 @@ function IndicatorButton({
         <span className="text-[11px] font-semibold tabular-nums leading-none">
           <span className="text-optical-centre">{item.count}</span>
         </span>
-      ) : footer === 'labelled' && item.word && !item.command ? (
+      ) : footer === 'labelled' && item.word ? (
         <span>{item.word}</span>
       ) : null}
     </button>

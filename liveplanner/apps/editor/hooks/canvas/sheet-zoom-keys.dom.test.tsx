@@ -19,8 +19,6 @@ function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
     zenMode: false,
     canvasCovered: isCanvasCovered,
     readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
-    canGrowMindNode: () => false,
-    onEscapeMindNode: () => false,
     ...overrides,
   };
   // Every other callback in the bag is a harmless no-op.

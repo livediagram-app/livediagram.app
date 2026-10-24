@@ -14,7 +14,6 @@ import {
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';
-import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import { buildIndicatorItems, type IndicatorItem } from './indicator-items';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
@@ -29,7 +28,6 @@ type Handlers = Pick<
 export function elementIndicatorItems(
   element: BoxedElement,
   handlers: Handlers,
-  mindRoot?: { editOutline: () => void; tidy: () => void },
   // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
   // comment indicator.
   showComments = true,
@@ -51,8 +49,6 @@ export function elementIndicatorItems(
     shape !== 'action-card' && isOpenAction(element.action) ? element.action?.assignee : undefined;
   const assigneeName = assignee?.name?.trim() || 'a teammate';
   return buildIndicatorItems({
-    outline: mindRoot?.editOutline,
-    tidy: mindRoot?.tidy,
     link: link
       ? { onFollow: () => onFollowLink(link), destination: describeLink(link, tabSummaries) }
       : undefined,
@@ -91,12 +87,7 @@ export function useElementIndicators(
   // The element's drawn corner radius.
   cornerPx: number,
 ): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
-  const items = elementIndicatorItems(
-    element,
-    handlers,
-    useMindOutlineBadge(element.id),
-    useCommentBadges(),
-  );
+  const items = elementIndicatorItems(element, handlers, useCommentBadges());
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;

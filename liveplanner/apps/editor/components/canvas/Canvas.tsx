@@ -30,8 +30,6 @@ import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@/components/primitives/withStableEventProps';
-import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
-import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
@@ -240,19 +238,6 @@ function CanvasView(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
-  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
-  const { onGrowMindNode, onAbandonMindNode } = props;
-  const mindGrow = useMemo(
-    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
-    [onGrowMindNode, onAbandonMindNode],
-  );
-  // The Edit Outline badge on each map root (MindOutlineContext).
-  const mindOutlineBadges = useMindOutlineBadges(
-    elements,
-    props.canEditMindOutline,
-    props.onEditMindOutline,
-    props.onTidyMindMap,
-  );
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
@@ -355,25 +340,19 @@ function CanvasView(props: CanvasProps) {
               {/* The zoom reaches only the counter-scaled parts of each element
                 (docs/specs/008-canvas/canvas-performance.md). */}
               <CanvasZoomProvider zoom={viewportZoom}>
-                <MindGrowProvider value={mindGrow}>
-                  <MindOutlineProvider value={mindOutlineBadges}>
-                    <ElementIndicatorStyleProvider
-                      style={readElementIndicatorStyle(props.settings)}
-                    >
-                      <CanvasElementsLayer
-                        {...props}
-                        hasArrows={hasArrows}
-                        arrowLabels={arrowLabels}
-                        selectionInput={selectionInput}
-                        handleArrowSelect={handleArrowSelect}
-                        handleElementClick={handleElementClick}
-                        handleElementContextSelect={handleElementContextSelect}
-                        quickRingOpen={quickRingOpen}
-                        setQuickRingOpen={setQuickRingOpen}
-                      />
-                    </ElementIndicatorStyleProvider>
-                  </MindOutlineProvider>
-                </MindGrowProvider>
+                <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                  <CanvasElementsLayer
+                    {...props}
+                    hasArrows={hasArrows}
+                    arrowLabels={arrowLabels}
+                    selectionInput={selectionInput}
+                    handleArrowSelect={handleArrowSelect}
+                    handleElementClick={handleElementClick}
+                    handleElementContextSelect={handleElementContextSelect}
+                    quickRingOpen={quickRingOpen}
+                    setQuickRingOpen={setQuickRingOpen}
+                  />
+                </ElementIndicatorStyleProvider>
               </CanvasZoomProvider>
             </CanvasArrivalProvider>
           </div>

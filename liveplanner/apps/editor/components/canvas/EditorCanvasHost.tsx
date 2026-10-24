@@ -179,12 +179,6 @@ export function EditorCanvasHost() {
     setSelectedId,
     setPageHeading,
     appendWebRowTo,
-    growMindNode,
-    flowchartActions,
-    entityActions,
-    mindOutline,
-    tidyMindMap,
-    abandonMindNode,
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
@@ -633,13 +627,6 @@ export function EditorCanvasHost() {
           onAddTableColumn={appendTableColumnSelected}
           onSetPageHeading={setPageHeading}
           onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
-          onGrowMindNode={growMindNode}
-          flowchartActions={isReadOnly ? undefined : flowchartActions}
-          entityActions={isReadOnly ? undefined : entityActions}
-          canEditMindOutline={mindOutline.canEdit}
-          onEditMindOutline={mindOutline.open}
-          onTidyMindMap={tidyMindMap}
-          onAbandonMindNode={abandonMindNode}
           chartPalette={themeChartPalette(activeTheme)}
           onCancelEdit={cancelEdit}
           onBeginEndpointDrag={beginEndpointDrag}

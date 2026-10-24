@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
@@ -126,37 +126,6 @@ describe('MultiSelectionToolbar', () => {
   });
 });
 
-// Mind map (docs/specs/009-elements/mind-node.md): Add Child / Add Sibling ride the toolbar of a mind node.
-describe('SelectionPopover mind-node growth', () => {
-  it('offers Add Child and Add Sibling, each firing its own grower', () => {
-    setTouch(false);
-    const child = vi.fn();
-    const sibling = vi.fn();
-    render(
-      <SelectionPopover
-        bounds={BOUNDS}
-        canvasOffset={{ x: 0, y: 0 }}
-        zoom={1}
-        onAddMindChild={child}
-        onAddMindSibling={sibling}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Add Child' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add Sibling' }));
-    expect(child).toHaveBeenCalledOnce();
-    expect(sibling).toHaveBeenCalledOnce();
-  });
-
-  it('shows neither on an element that is not a mind node', () => {
-    setTouch(false);
-    renderSingle();
-    expect(screen.queryByRole('button', { name: 'Add Child' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add Sibling' })).toBeNull();
-  });
-});
-
-// docs/specs/004-interface-design/touch-targets.md: its 32px buttons sit 4px apart, so each reaches a
-// 44px-tall tap area on a touch screen, never a sideways one.
 describe('SelectionPopover tap areas', () => {
   it('gives every 32px button a positioned, vertical-only touch pad', () => {
     setTouch(true);
@@ -185,10 +154,9 @@ describe('MultiSelectionToolbar lock', () => {
   });
 });
 
-// A toolbar wider than a phone (a flowchart step's full set) scrolls sideways inside 95vw, and the
-// step's menus hang from the card, outside the strip's clip.
+// A toolbar wider than a phone scrolls sideways inside 95vw.
 describe('SelectionPopover overflow', () => {
-  function renderFlowchartStep() {
+  function renderToolbar() {
     setTouch(true);
     render(
       <MinimalChromeProvider value={false} powerUser={false}>
@@ -196,51 +164,20 @@ describe('SelectionPopover overflow', () => {
           bounds={BOUNDS}
           canvasOffset={{ x: 0, y: 0 }}
           zoom={1}
-          title="Selected Step"
+          title="Selected Note"
           onDelete={() => {}}
           onDuplicate={() => {}}
           onOpenContextMenu={() => {}}
-          flowchartStep={{
-            onAddStep: () => {},
-            onAddBranch: () => {},
-            stepType: 'process',
-            onSetStepType: () => {},
-            lanes: [{ id: 'l1', title: 'Sales' }],
-            laneId: 'l1',
-            onMoveToLane: () => {},
-          }}
         />
       </MinimalChromeProvider>,
     );
   }
 
   it('caps the buttons at 95vw in a strip that scrolls sideways', () => {
-    renderFlowchartStep();
+    renderToolbar();
     const strip = screen.getByTestId('selection-popover-strip');
     expect(screen.getByTestId('selection-popover').className).toContain('max-w-[95vw]');
     expect(strip.className).toContain('overflow-x-auto');
-    expect(strip.contains(screen.getByRole('button', { name: 'Step Type' }))).toBe(true);
     expect(strip.contains(screen.getByRole('button', { name: 'Delete' }))).toBe(true);
-  });
-
-  it('opens a step menu anchored to the card, so the strip does not clip it', () => {
-    renderFlowchartStep();
-    fireEvent.click(screen.getByRole('button', { name: 'Step Type' }));
-    const menu = screen.getByRole('listbox');
-    // Its containing block is the first positioned ancestor: neither the dropdown nor the strip may be one.
-    let host = menu.parentElement;
-    while (host && !/\b(relative|absolute)\b/.test(host.className)) host = host.parentElement;
-    expect(host).toBe(screen.getByTestId('selection-popover'));
-    expect(menu.className).not.toContain('left-0');
-  });
-
-  it('opens the menu under its trigger however far the strip is scrolled, and closes it on a scroll', () => {
-    renderFlowchartStep();
-    const strip = screen.getByTestId('selection-popover-strip');
-    strip.scrollLeft = 40;
-    fireEvent.click(screen.getByRole('button', { name: 'Step Type' }));
-    expect(screen.getByRole('listbox').style.marginLeft).toBe('-40px');
-    fireEvent.scroll(strip);
-    expect(screen.queryByRole('listbox')).toBeNull();
   });
 });

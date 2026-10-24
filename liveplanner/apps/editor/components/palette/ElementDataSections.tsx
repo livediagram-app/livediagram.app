@@ -33,14 +33,11 @@ import {
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
   type ChecklistItem,
-  type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@liveplanner/project';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MindMapMenuSections } from './MindMapMenuSections';
-import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -61,7 +58,6 @@ import {
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
-  EntityFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
   LegendDataEditor,
@@ -123,8 +119,6 @@ type ElementDataSectionsProps = {
   isLegend: boolean;
   // Sankey diagram (docs/specs/009-elements/sankey.md): its Sankey and Display sections.
   isSankey: boolean;
-  isMindNode: boolean;
-  isEntity: boolean;
   isPortal: boolean;
   isSessionButton: boolean;
   isPicker: boolean;
@@ -138,7 +132,6 @@ type ElementDataSectionsProps = {
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
 // without rows are one stable array each rather than a fresh one per render (which reset the draft).
 const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
-const NO_ENTITY_FIELDS: EntityField[] = [];
 const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
 const NO_LEGEND_ITEMS: LegendItem[] = [];
 
@@ -153,8 +146,6 @@ export function ElementDataSections({
   isChecklist,
   isLegend,
   isSankey,
-  isMindNode,
-  isEntity,
   isPortal,
   isSessionButton,
   isPicker,
@@ -189,13 +180,10 @@ export function ElementDataSections({
     isChecklist ||
     isLegend ||
     isSankey ||
-    isMindNode ||
-    isEntity ||
     isPortal ||
     isSessionButton ||
     isPicker ||
-    isDecision ||
-    !!props.flowchart;
+    isDecision;
   return (
     <>
       {/* A Plan board's own settings (docs/specs/026-plan/plan-board.md "The board set-up"): its own
@@ -398,19 +386,6 @@ export function ElementDataSections({
               onSetRows={props.onSetWebRows}
             />
           ) : null}
-          {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
-          {isEntity ? (
-            <MenuAccordionSection
-              title="Fields"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('entity')}
-            >
-              <EntityFieldsEditor
-                fields={shapeTarget?.entityFields ?? NO_ENTITY_FIELDS}
-                onChange={props.onSetEntityFields}
-              />
-            </MenuAccordionSection>
-          ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
           {isChecklist ? (
             <MenuAccordionSection
@@ -471,31 +446,6 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('sankey')}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout of Outline, Branching and Spacing.
-            Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
-          {isMindNode ? (
-            <MindMapMenuSections
-              flow={props.mindFlow}
-              spacing={props.mindSpacing}
-              onSetFlow={props.onSetMindFlow}
-              onSetSpacing={props.onSetMindSpacing}
-              onTidy={props.onTidyMindMap}
-              onEditOutline={props.onEditMindOutline}
-              onSelectBranch={props.onSelectMindBranch}
-              onSelectMap={props.onSelectMindMap}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('mind-map')}
-            />
-          ) : null}
-          {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
-            tidy), the step's Step Type and the chart's Direction. */}
-          {props.flowchart ? (
-            <FlowchartMenuSections
-              {...props.flowchart}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('flowchart')}
             />
           ) : null}
           {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a

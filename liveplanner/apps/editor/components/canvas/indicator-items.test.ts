@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   TOP_BUTTON_PX,
-  FOOTER_PAD_PX,
   FOOTER_ROW_PX,
   buildIndicatorItems,
   clusterSize,
@@ -13,8 +12,6 @@ import {
 
 const all = () =>
   buildIndicatorItems({
-    outline: vi.fn(),
-    tidy: vi.fn(),
     link: { onFollow: vi.fn(), destination: 'example.com' },
     note: vi.fn(),
     action: { onOpen: vi.fn(), assigneeName: 'Sam Reed', initials: 'SR', color: '#3e7be0' },
@@ -22,20 +19,8 @@ const all = () =>
   });
 
 describe('buildIndicatorItems', () => {
-  it('orders commands first, then link, note, action, comment', () => {
-    expect(all().map((i) => i.kind)).toEqual([
-      'outline',
-      'tidy',
-      'link',
-      'note',
-      'action',
-      'comment',
-    ]);
-    expect(
-      all()
-        .filter((i) => i.command)
-        .map((i) => i.kind),
-    ).toEqual(['outline', 'tidy']);
+  it('orders link, note, action, comment', () => {
+    expect(all().map((i) => i.kind)).toEqual(['link', 'note', 'action', 'comment']);
   });
 
   it('names each button and carries what the footer and hover cards show', () => {
@@ -77,16 +62,12 @@ describe('clusterSize', () => {
     expect(size.width).toBeGreaterThan(2 * TOP_BUTTON_PX + 4);
   });
 
-  it('makes the labelled footer wider than the compact one, commands as square buttons', () => {
+  it('makes the labelled footer wider than the compact one', () => {
     const items = all();
     const labelled = clusterSize(items, 'footer');
     const compact = clusterSize(items, 'footer-compact');
     expect(labelled.height).toBe(FOOTER_ROW_PX);
     expect(labelled.width).toBeGreaterThan(compact.width);
-    const commandsOnly = buildIndicatorItems({ outline: vi.fn(), tidy: vi.fn() });
-    expect(clusterSize(commandsOnly, 'footer').width).toBe(
-      2 * TOP_BUTTON_PX + 10 + 2 * FOOTER_PAD_PX,
-    );
   });
 });
 

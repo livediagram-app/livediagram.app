@@ -8,8 +8,6 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
-  parseMindOutline,
-  summariseMindOutline,
 } from '@liveplanner/project';
 
 import { track } from '@/lib/telemetry';
@@ -25,10 +23,6 @@ const LinkPickerDialog = dynamic(
 );
 const LineDataDialog = dynamic(
   () => import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
-  { ssr: false },
-);
-const MindOutlineDialog = dynamic(
-  () => import('@/components/dialogs/MindOutlineDialog').then((m) => m.MindOutlineDialog),
   { ssr: false },
 );
 const CodeEditDialog = dynamic(
@@ -76,13 +70,11 @@ export function EditorElementDialogs() {
     setSequenceOpenForId,
     sankey,
     sequence,
-    mindOutline,
     can,
   } = useEditorContext();
 
   // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
-  // or a role change, it would otherwise reopen by itself when that is undone. Edit Outline closes itself
-  // (useMindOutline), so it is not listed.
+  // or a role change, it would otherwise reopen by itself when that is undone.
   const editable = () => !isReadOnly;
   useCloseVanishedDialogs(
     activeTab.elements,
@@ -232,21 +224,6 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {/* Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"): the open root's map as text. */}
-      {mindOutline.openForId !== null && !isReadOnly ? (
-        <MindOutlineDialog
-          key={mindOutline.openForId}
-          initialText={mindOutline.text()}
-          summarise={(text) => {
-            const outline = parseMindOutline(text);
-            return outline
-              ? summariseMindOutline(activeTab.elements, mindOutline.openForId!, outline)
-              : null;
-          }}
-          onSave={mindOutline.save}
-          onClose={mindOutline.close}
-        />
-      ) : null}
       {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {

@@ -30,7 +30,6 @@ export const HELP_ARTICLES = {
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
   embedElements: 'tabs/using-tabs',
-  mindMapOutline: 'plan/visualisations',
   panelOpacity: 'user-interface/settings',
   isometricMode: 'tabs/export-tabs',
   // AI
@@ -218,10 +217,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
-  },
-  mindMapOutline: {
-    title: 'Learn about editing an outline',
-    description: 'Rewrite a mind map as an indented list and save it back in one go.',
   },
   minimap: {
     title: 'Learn about the Map',

@@ -42,9 +42,7 @@ export {
   ActionIcon,
   CommentIcon,
   LinkIcon,
-  MindOutlineIcon,
   NoteIcon,
-  TidyMapIcon,
 } from './badges';
 export {
   EDITOR_MODE_ICONS,

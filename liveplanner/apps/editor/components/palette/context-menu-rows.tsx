@@ -38,7 +38,6 @@ export {
   LinkedChartData,
   PieDataEditor,
 } from './context-menu-data-editors';
-export { EntityFieldsEditor } from './EntityFieldsEditor';
 export {
   ChartMenuGlyph,
   DataMenuGlyph,

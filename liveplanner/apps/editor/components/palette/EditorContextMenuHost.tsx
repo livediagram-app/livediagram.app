@@ -4,23 +4,7 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
-import {
-  DEFAULT_MIND_FLOW,
-  DEFAULT_MIND_SPACING,
-  isMindNode,
-  mindFlowOf,
-  mindRootOf,
-  mindSpacingOf,
-  resolveLayerId,
-  withMindBranches,
-  type ShapeElement,
-  flowchartDirectionOf,
-  flowchartStepTypeOf,
-  isFlowchartLane,
-  isFlowchartStep,
-  tagColoursOf,
-} from '@liveplanner/project';
-import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
+import { resolveLayerId, tagColoursOf } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -131,15 +115,8 @@ export function EditorContextMenuHost() {
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
     can,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    flowchartActions,
-    selectMarquee,
-    tidyMindMapSelected,
-    mindOutline,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setEntityFieldsSelected,
     setWebRowsSelected,
     setHeroCaptionSelected,
     setDecisionStatusSelected,
@@ -237,45 +214,6 @@ export function EditorContextMenuHost() {
           onSetOption: sankey.setSankeyOptionSelected,
         }
       : undefined;
-
-  // The Flowchart section (docs/specs/009-elements/flowchart.md): on a step or a chart's lane, for an
-  // Editor on an unlocked element; the step's type and its chart's direction resolved here.
-  const flowchartMenu: FlowchartMenuHandlers | undefined =
-    ctxSelectedEl &&
-    (isFlowchartStep(ctxSelectedEl) || isFlowchartLane(ctxSelectedEl)) &&
-    can.level === 'edit' &&
-    ctxSelectedEl.locked !== true
-      ? {
-          stepType: isFlowchartStep(ctxSelectedEl)
-            ? flowchartStepTypeOf(ctxSelectedEl.shape)
-            : undefined,
-          direction: flowchartDirectionOf(activeTab.elements, ctxSelectedEl.flowchartId!),
-          onSetStepType: flowchartActions.setStepTypeSelected,
-          onSetDirection: flowchartActions.setDirectionSelected,
-          onAddLane: flowchartActions.addLaneSelected,
-          onTidy: flowchartActions.tidySelected,
-        }
-      : undefined;
-
-  // The flow the selected node's MAP grows in (docs/specs/009-elements/mind-node.md). Resolved here
-  // because it lives on the tree's root, which the menu cannot walk to from
-  // the node in hand.
-  const menuMindNode = ctxSelectedEl && isMindNode(ctxSelectedEl) ? ctxSelectedEl : null;
-  const menuMindFlow = menuMindNode
-    ? mindFlowOf(activeTab.elements, menuMindNode)
-    : DEFAULT_MIND_FLOW;
-  // Its spacing, from the same root (docs/specs/009-elements/mind-node.md "Spacing").
-  const menuMindSpacing = menuMindNode
-    ? mindSpacingOf(activeTab.elements, menuMindNode)
-    : DEFAULT_MIND_SPACING;
-  // Select Branch / Select Whole Map: the node (or its root) with everything under it and the lines between, through
-  // the marquee commit, so a one-node branch is a single selection and a locked-by-other node is left out.
-  const selectMindBranchOf = (node: ShapeElement | null) => {
-    if (!node) return;
-    selectMarquee(new Set(withMindBranches(activeTab.elements, new Set([node.id]))));
-    track('Element', 'Selected', 'MindBranch');
-  };
-  const menuMindRoot = menuMindNode ? mindRootOf(activeTab.elements, menuMindNode) : null;
 
   // The selection's layer for the Layer section's move-to dropdown
   // (docs/specs/006-project/layers.md): the single resolved layer every member shares, or null
@@ -388,22 +326,8 @@ export function EditorContextMenuHost() {
           : undefined
       }
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
-      flowchart={flowchartMenu}
-      mindFlow={menuMindFlow}
-      onSetMindFlow={setMindFlowSelected}
-      onTidyMindMap={tidyMindMapSelected}
-      onEditMindOutline={
-        menuMindRoot && mindOutline.canEdit(menuMindRoot.id)
-          ? () => mindOutline.open(menuMindRoot.id)
-          : undefined
-      }
-      mindSpacing={menuMindSpacing}
-      onSetMindSpacing={setMindSpacingSelected}
-      onSelectMindBranch={() => selectMindBranchOf(menuMindNode)}
-      onSelectMindMap={() => selectMindBranchOf(menuMindRoot)}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetEntityFields={setEntityFieldsSelected}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
       onSetDecisionStatus={setDecisionStatusSelected}

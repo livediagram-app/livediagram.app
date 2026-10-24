@@ -33,7 +33,6 @@ import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-par
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -231,10 +230,10 @@ function BoxedElementViewImpl({
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : isEditing
-        ? 'cursor-text'
-        : isLocked || !movable
-          ? 'cursor-default'
-          : 'cursor-move';
+      ? 'cursor-text'
+      : isLocked || !movable
+        ? 'cursor-default'
+        : 'cursor-move';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -281,8 +280,6 @@ function BoxedElementViewImpl({
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
-  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
-  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
   const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
   // The element's indicators, placed before the label so the content can move out of their way.
@@ -315,7 +312,6 @@ function BoxedElementViewImpl({
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
     textHug.label,
-    mindFit.onLiveText,
   );
 
   return (
@@ -351,7 +347,7 @@ function BoxedElementViewImpl({
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? mindFit.height ?? element.height,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
         // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).

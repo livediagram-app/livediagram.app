@@ -289,24 +289,8 @@ export type CanvasProps = {
   // selected table from the bottom / right plus.
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
-  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
-  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
-  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
-  // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
-  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
-  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
-  // edited, and opening it.
-  canEditMindOutline?: (id: string) => boolean;
-  onEditMindOutline?: (id: string) => void;
-  // Tidy Map on the map `id` belongs to (the badge on a map's root).
-  onTidyMindMap?: (id: string) => void;
-  // Escape on the empty node a Tab made one time too many removes it.
-  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   onAppendWebRow?: (elementId: string) => void;
   // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used

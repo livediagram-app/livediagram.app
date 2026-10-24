@@ -94,30 +94,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
-      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
-      // Tab adds a child, Enter a sibling, both off the selected mind node.
-      // Placed before every other branch because Tab is otherwise the
-      // browser's focus key: left to bubble it would walk the chrome behind
-      // the canvas, which is never what someone mid-mind-map wants.
-      //
-      // Only ever fires with a single mind node selected and no editor open,
-      // so Tab keeps its normal meaning everywhere else in the app.
-      if (
-        (key === 'Tab' || key === 'Enter') &&
-        !inText &&
-        !mod &&
-        !e.shiftKey &&
-        (!live.isReadOnly || live.participant) &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
-        return;
-      }
-
       // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
@@ -135,20 +111,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       ) {
         e.preventDefault();
         live.onToggleZen();
-        return;
-      }
-
-      // --- Escape drops an empty, just-grown mind node ---
-      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
-      if (
-        key === 'Escape' &&
-        !inText &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.onEscapeMindNode(selectedId)
-      ) {
-        e.preventDefault();
         return;
       }
 

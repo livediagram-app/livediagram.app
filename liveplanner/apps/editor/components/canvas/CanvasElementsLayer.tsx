@@ -41,7 +41,6 @@ import {
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds } from '@liveplanner/project';
 
-
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
 type ElementsExtras = {
@@ -95,7 +94,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign,
     onAddTableRow,
     onAddTableColumn,
-    entityActions,
     onSetPageHeading,
     onAppendWebRow,
     chartPalette,
@@ -178,8 +176,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
     onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
-    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onFollowLink,
     onPressSessionButton,
@@ -520,8 +516,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAddTableRow,
                 onAddTableColumn,
                 onAppendWebRow,
-                onAddEntityField: h.onAddEntityField,
-                onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
             />

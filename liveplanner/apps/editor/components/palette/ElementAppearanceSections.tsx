@@ -25,7 +25,6 @@ import {
   isCodeBlockShape,
   isLegendShape,
   isSankeyShape,
-  isMindNode,
   isLineShape,
   isProgressShape,
   isRatingShape,
@@ -127,9 +126,7 @@ export function ElementAppearanceSections({
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
   const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
-  const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
-  const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
   // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, picker.md).
@@ -230,9 +227,7 @@ export function ElementAppearanceSections({
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
         isSankey={isSankey}
-        isMindNode={isMind}
         isChecklist={isChecklist}
-        isEntity={isEntity}
         isPortal={isPortal}
         isSessionButton={isSessionButton}
         isPicker={isPicker}

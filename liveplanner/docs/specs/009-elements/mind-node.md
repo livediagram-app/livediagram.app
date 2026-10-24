@@ -1,5 +1,7 @@
 # The mind node
 
+**Status in liveplanner: editing removed (2026-10-24).** No Plan tab holds mind maps ([Plan mode](../026-plan/plan-mode.md)), so growth (Tab / Enter, the ring's Add Child / Add Sibling, the toolbar), Edit Outline, Tidy Map, the Mind Map menu, Select Branch and the grow-to-fit label are gone, with their wiring in `useEditorState`. The element kind stays in `packages/project` for the file format; this spec describes livediagram's behaviour.
+
 ## What
 
 A **Mind node**: a labelled node that knows its parent, and grows a mind map

@@ -4,7 +4,6 @@ import { isUntitledProjectName } from '@liveplanner/templates';
 import {
   hasRichFormatting,
   isBoxed,
-  isMindNode,
   opensInlineLabelEditor,
   normalizeRuns,
   trimLabel,
@@ -15,8 +14,7 @@ import {
   type TextRun,
 } from '@liveplanner/project';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
-import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/text-hug-measure';
-import { fitMindLabel } from '@/lib/mind-label-fit';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { debugLog } from '@/lib/debug-log';
@@ -177,44 +175,36 @@ export function useSelectionEditing(opts: {
     const measure = measureDrawnText(activeTab.font, activeTab.finish);
     const target = activeTab.elements.find((el) => el.id === elementId);
     const removesEmpty = !!target && hugsText(target) && label.trim() === '';
-    // A mind node grows to fit its label, in the same commit (docs/specs/009-elements/mind-node.md
-    // "A node grows to fit its label").
-    const measureMind =
-      target && isMindNode(target) ? measureDrawnMindLabel(activeTab.font, activeTab.finish) : null;
-    const fitted = (els: Element[]) =>
-      measureMind ? fitMindLabel(els, elementId, measureMind) : els;
     commit((els) =>
-      fitted(
-        els.flatMap((el): Element[] => {
-          if (el.id !== elementId) return [el];
-          // Boxed elements always carry a label; arrows treat an empty
-          // string as "no label" and drop the field so the data model
-          // round-trips cleanly through API JSON.
-          if (isBoxed(el)) {
-            const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
-            const next = keepRich ? { ...base, label, richText } : { ...base, label };
-            if (!hugsText(next)) return [next];
-            // An edit that changed nothing leaves the box as it was, so an existing box keeps its
-            // size until it is edited.
-            const unchanged =
-              label !== '' &&
-              (el.label ?? '') === label &&
-              JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
-            if (unchanged) return [next];
-            const hugged = hugCommittedText(next, measure);
-            return hugged ? [hugged] : [];
+      els.flatMap((el): Element[] => {
+        if (el.id !== elementId) return [el];
+        // Boxed elements always carry a label; arrows treat an empty
+        // string as "no label" and drop the field so the data model
+        // round-trips cleanly through API JSON.
+        if (isBoxed(el)) {
+          const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
+          const next = keepRich ? { ...base, label, richText } : { ...base, label };
+          if (!hugsText(next)) return [next];
+          // An edit that changed nothing leaves the box as it was, so an existing box keeps its
+          // size until it is edited.
+          const unchanged =
+            label !== '' &&
+            (el.label ?? '') === label &&
+            JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
+          if (unchanged) return [next];
+          const hugged = hugCommittedText(next, measure);
+          return hugged ? [hugged] : [];
+        }
+        if (el.type === 'arrow') {
+          if (label.length === 0) {
+            const { label: _drop, ...rest } = el;
+            void _drop;
+            return [rest];
           }
-          if (el.type === 'arrow') {
-            if (label.length === 0) {
-              const { label: _drop, ...rest } = el;
-              void _drop;
-              return [rest];
-            }
-            return [{ ...el, label }];
-          }
-          return [el];
-        }),
-      ),
+          return [{ ...el, label }];
+        }
+        return [el];
+      }),
     );
     setEditingId(null);
     if (removesEmpty) {
