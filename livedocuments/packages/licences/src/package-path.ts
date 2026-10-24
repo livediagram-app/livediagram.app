@@ -1,3 +1,5 @@
+import { posix } from 'node:path';
+
 import { LicencesError } from './errors.ts';
 
 type PackageLocation = { name: string; root: string; storeVersion: string };
@@ -42,4 +44,12 @@ export function vendoredCandidates(root: string, file: string): string[] {
     dir = dir.slice(0, dir.lastIndexOf('/'));
   }
   return dirs;
+}
+
+// A bundler reports paths from the pnpm workspace root (the monorepo, which holds the one store at
+// node_modules/.pnpm); the collector reads them from this product's folder. `productDir` is the
+// product's folder relative to the workspace root ('' when the product is the workspace), so the
+// store and the shared @liveworkspace packages come out as `../node_modules/…` and `../packages/…`.
+export function workspaceToProductPath(path: string, productDir: string): string {
+  return productDir ? posix.relative(productDir, posix.normalize(path)) : posix.normalize(path);
 }

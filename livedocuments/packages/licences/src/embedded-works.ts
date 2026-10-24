@@ -15,9 +15,34 @@ export type EmbeddedWork = {
   texts: TextRef[];
 };
 
+const WEBP_WASM = /^webp_(enc|dec)(_simd)?\.[\w-]+\.wasm$/;
+
 const text = (file: string): TextRef[] => [{ label: 'LICENSE', file }];
 
 export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
+  // The editor's image encoder: libwebp inside @jsquash/webp, built from libwebp d2e245e (jSquash's
+  // codec Makefile).
+  {
+    id: 'libwebp',
+    name: 'libwebp',
+    version: 'd2e245e',
+    licence: 'BSD-3-Clause',
+    carrier: '@jsquash/webp (WebAssembly)',
+    homepage: 'https://github.com/webmproject/libwebp',
+    trigger: { assets: WEBP_WASM },
+    texts: [{ label: 'COPYING', package: '@jsquash/webp', path: 'codec/LICENSE.codec.md' }],
+  },
+  // The runtime Emscripten compiles into that module.
+  {
+    id: 'emscripten',
+    name: 'Emscripten runtime',
+    version: '3.x',
+    licence: 'MIT OR NCSA',
+    carrier: 'WebAssembly modules compiled with Emscripten',
+    homepage: 'https://github.com/emscripten-core/emscripten',
+    trigger: { assets: WEBP_WASM },
+    texts: text('emscripten-3.1.28-LICENSE.txt'),
+  },
   // The mcp worker's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
   {
     id: 'resvg',

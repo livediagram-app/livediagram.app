@@ -19,6 +19,21 @@ describe('decodeMetafile', () => {
     ]);
   });
 
+  it('reads inputs from the workspace root, so a product beside the store stays inside it', () => {
+    const meta = {
+      inputs: {
+        'src/index.ts': {},
+        '../../../node_modules/.pnpm/hono@4.13.8/node_modules/hono/dist/index.js': {},
+        '../../../packages/telemetry/src/index.ts': {},
+      },
+    };
+    expect(decodeMetafile(meta, 'livediagram/apps/api')).toEqual([
+      'livediagram/apps/api/src/index.ts',
+      'node_modules/.pnpm/hono@4.13.8/node_modules/hono/dist/index.js',
+      'packages/telemetry/src/index.ts',
+    ]);
+  });
+
   it('skips virtual modules that live in no file', () => {
     const meta = { inputs: { 'cloudflare:workers': {}, '<runtime>': {}, 'src/a.ts': {} } };
     expect(decodeMetafile(meta, 'apps/api')).toEqual(['apps/api/src/a.ts']);

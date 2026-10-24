@@ -5,6 +5,7 @@
 // Writes <out>/generated/licences.json and <out>/public/licences/texts/*.txt.
 import { spawnSync } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -15,7 +16,7 @@ import {
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { decodeAnalyzeData } from '../src/analyze-data.ts';
@@ -25,13 +26,23 @@ import { EMBEDDED_WORKS } from '../src/embedded-works.ts';
 import { LicencesError } from '../src/errors.ts';
 import { buildManifest, serialiseManifest } from '../src/manifest.ts';
 import { decodeMetafile } from '../src/metafile.ts';
+import { workspaceToProductPath } from '../src/package-path.ts';
 import { OVERRIDES } from '../src/overrides.ts';
 import { TEXT_SOURCES, TEXTS_DIR } from '../src/texts.ts';
 import { log, logFailure } from './log.ts';
 
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../../', import.meta.url)));
-// Next reports sources from the pnpm workspace root, the monorepo above this product.
-const WORKSPACE_ROOT = resolve(REPO_ROOT, '..');
+// Both bundlers report paths from the pnpm workspace root: the nearest folder up from this product
+// with a pnpm-workspace.yaml (the monorepo, whose node_modules/.pnpm is the one store).
+function findWorkspaceRoot(from: string): string {
+  for (let dir = from; ; dir = dirname(dir)) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) return dir;
+    if (dirname(dir) === dir) return from;
+  }
+}
+const WORKSPACE_ROOT = findWorkspaceRoot(REPO_ROOT);
+const PRODUCT_DIR = relative(WORKSPACE_ROOT, REPO_ROOT).split(sep).join('/');
+const toProductPath = (path: string) => workspaceToProductPath(path, PRODUCT_DIR);
 const NEXT_ANALYZE_DISTDIR = '.next-analyze';
 const OUTPUT_TAIL_CHARS = 4000;
 
@@ -103,7 +114,7 @@ function bundleNext(app: LicenceApp): AppBundle {
   const assets = new Set<string>();
   for (const file of files) {
     const decoded = decodeAnalyzeData(readFileSync(file));
-    decoded.sources.forEach((s) => sources.add(relative(REPO_ROOT, join(WORKSPACE_ROOT, s))));
+    decoded.sources.forEach((s) => sources.add(toProductPath(s)));
     decoded.assets.forEach((a) => assets.add(a));
   }
   return { app: app.id, sources: [...sources].sort(), assets: [...assets].sort() };
@@ -125,7 +136,9 @@ function bundleWorker(app: LicenceApp, workDir: string): AppBundle {
   const meta: unknown = JSON.parse(readFileSync(metafile, 'utf8'));
   return {
     app: app.id,
-    sources: decodeMetafile(meta, `apps/${app.id}`),
+    sources: decodeMetafile(meta, `${PRODUCT_DIR ? `${PRODUCT_DIR}/` : ''}apps/${app.id}`).map(
+      toProductPath,
+    ),
     assets: readdirSync(outDir).sort(),
   };
 }

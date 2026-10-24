@@ -14,6 +14,11 @@ export const TEXTS_DIR = fileURLToPath(new URL('../texts/', import.meta.url));
 // resources"). texts.test.ts keeps this list, the files and the tables in step.
 export const TEXT_SOURCES: readonly TextSource[] = [
   {
+    file: 'emscripten-3.1.28-LICENSE.txt',
+    sources: ['https://raw.githubusercontent.com/emscripten-core/emscripten/3.1.28/LICENSE'],
+    sha256: '51aea7641f81d560eb039bc97ce35e2517e2656fe8731eb49ce6a18498eb22fe',
+  },
+  {
     file: 'resvg-js-2.6.2-LICENSE.txt',
     sources: ['https://raw.githubusercontent.com/yisibl/resvg-js/v2.6.2/LICENSE'],
     sha256: '1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5',

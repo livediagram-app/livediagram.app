@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { locatePackage, vendoredCandidates } from './package-path.ts';
+import { locatePackage, vendoredCandidates, workspaceToProductPath } from './package-path.ts';
 
 describe('locatePackage', () => {
   it('finds a package, its root and the version pnpm stored it under', () => {
@@ -57,5 +57,37 @@ describe('vendoredCandidates', () => {
 
   it('lists nothing for a file at the root', () => {
     expect(vendoredCandidates('r/next', 'r/next/index.js')).toEqual([]);
+  });
+});
+
+describe('workspaceToProductPath', () => {
+  it('reads a monorepo path from the product folder: the store and shared packages sit beside it', () => {
+    const store =
+      'node_modules/.pnpm/@huggingface+transformers@3.8.1_@types+node@26.6.5/node_modules/@huggingface/transformers/dist/transformers.web.js';
+    expect(workspaceToProductPath(store, 'livediagram')).toBe(`../${store}`);
+    expect(workspaceToProductPath('packages/explorer/src/index.ts', 'livediagram')).toBe(
+      '../packages/explorer/src/index.ts',
+    );
+    expect(workspaceToProductPath('livediagram/apps/editor/app/page.tsx', 'livediagram')).toBe(
+      'apps/editor/app/page.tsx',
+    );
+  });
+
+  it('keeps the path when the product is the workspace', () => {
+    expect(workspaceToProductPath('apps/editor/./app/page.tsx', '')).toBe(
+      'apps/editor/app/page.tsx',
+    );
+  });
+
+  it('gives a path locatePackage reads, with the version pnpm stored', () => {
+    const path = workspaceToProductPath(
+      'node_modules/.pnpm/@huggingface+transformers@3.8.1_@types+node@26.6.5/node_modules/@huggingface/transformers/package.json',
+      'livediagram',
+    );
+    expect(locatePackage(path)).toEqual({
+      name: '@huggingface/transformers',
+      root: '../node_modules/.pnpm/@huggingface+transformers@3.8.1_@types+node@26.6.5/node_modules/@huggingface/transformers',
+      storeVersion: '3.8.1',
+    });
   });
 });

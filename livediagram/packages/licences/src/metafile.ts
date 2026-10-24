@@ -9,9 +9,10 @@ function fail(why: string): never {
 // A virtual module (`cloudflare:workers`, `<runtime>`) lives in no file.
 const VIRTUAL_INPUT = /^(<|[a-z][a-z-]*:)/i;
 
-// Decodes a wrangler (esbuild) metafile into the repo-relative paths of every
-// module bundled into the worker. `appDir` is the worker's repo-relative
-// directory, which esbuild's input keys are relative to.
+// Decodes a wrangler (esbuild) metafile into the root-relative paths of every
+// module bundled into the worker. `appDir` is the worker's directory relative to
+// that root (the pnpm workspace root in the build, so the shared store and
+// packages beside this product stay inside it), which esbuild's input keys are relative to.
 export function decodeMetafile(meta: unknown, appDir: string): string[] {
   if (typeof meta !== 'object' || meta === null) fail('not an object');
   const inputs = (meta as { inputs?: unknown }).inputs;
