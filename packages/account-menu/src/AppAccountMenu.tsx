@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { AccountMenu, type AccountMenuKit } from './AccountMenu';
+import { AccountMenu } from './AccountMenu';
 import { appSignInHref, appSignOut, appSignUpHref, pageHere, useAppAccount } from './app-account';
 import { AccountMenuPlaceholder, type DeferredMenuProps } from './placeholder';
 
@@ -14,11 +14,7 @@ const notHydrated = () => false;
 // app's address) and its Sign out the app's; signed out, the Guest menu, whose Sign in and Create account
 // are the app's own and come back to this page. `hint` is the app's readable `<prefix>signed_in` cookie, whose name
 // cookie sits beside it. `openOnMount` and `focusOnMount` carry on from the Guest stand-in it replaces.
-export function AppAccountMenu({
-  hint,
-  kit,
-  ...arrival
-}: { hint: string; kit: AccountMenuKit } & DeferredMenuProps) {
+export function AppAccountMenu({ hint, ...arrival }: { hint: string } & DeferredMenuProps) {
   const account = useAppAccount(hint);
   // The static HTML can't know who is here: it holds the avatar's place for everyone.
   const hydrated = useSyncExternalStore(noSubscription, hydratedNow, notHydrated);
@@ -27,7 +23,6 @@ export function AppAccountMenu({
     const here = pageHere();
     return (
       <AccountMenu
-        kit={kit}
         guest={{ signInHref: appSignInHref(here), signUpHref: appSignUpHref(here) }}
         {...arrival}
       />
@@ -38,7 +33,6 @@ export function AppAccountMenu({
       name={account.name}
       fullName={account.fullName}
       colour={account.colour}
-      kit={kit}
       onSignOut={() => appSignOut()}
       {...arrival}
     />

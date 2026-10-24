@@ -7,10 +7,9 @@ import {
   useRef,
   useState,
   type ComponentType,
-  type HTMLAttributes,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
+import { lucideChevronDown, lucideSettings } from '@liveworkspace/icons/lucide';
+import { lucideGlyph, useClickOutside, useMenu, useMenuButton } from '@liveworkspace/ui';
 import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
 import { avatarFill, initials } from './initials';
 
@@ -24,49 +23,13 @@ import { avatarFill, initials } from './initials';
 // (`onOpenSettings`), and elsewhere (an app's marketing page) it links to the same address's Explorer with the panel
 // open (`settingsHref`).
 //
-// Each caller passes its own UI package's menu hooks and icons (the kit), so the menu keeps the keyboard and focus
-// behaviour every app's menus share (WAI-ARIA Menu Button) and the house icons, without this package depending on
-// any one product.
+// The menu keeps the keyboard and focus behaviour every app's menus share (WAI-ARIA Menu Button, from
+// @liveworkspace/ui) and the house icons.
 
 type IconComponent = ComponentType<{ 'aria-hidden'?: boolean; className?: string }>;
 
-/** What a UI package's `useMenuButton` gives: the trigger's state and handlers. */
-export type AccountMenuButton<Focus = unknown> = {
-  open: boolean;
-  close: () => void;
-  toggle: () => void;
-  trigger: HTMLElement | null;
-  setTrigger: (el: HTMLElement | null) => void;
-  initialFocus: Focus;
-  onTriggerKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
-};
-
-/** The menu hooks and icons of the caller's UI package (`@livediagram/ui`, `@liveplanner/ui`, …). Declared once at
- *  module scope, so it is the same object on every render, and typed with its package's initial-focus type
- *  (`AccountMenuKit<MenuInitialFocus>`). Methods, so such a kit fits wherever `AccountMenuKit` is asked for. */
-export interface AccountMenuKit<Focus = unknown> {
-  useMenuButton(): AccountMenuButton<Focus>;
-  useMenu(options: {
-    open: boolean;
-    onClose: () => void;
-    trigger: HTMLElement | null;
-    initialFocus: Focus;
-  }): {
-    attach: (el: HTMLElement | null) => void;
-    surfaceProps: HTMLAttributes<HTMLElement>;
-  };
-  useClickOutside(
-    ref: RefObject<HTMLElement | null>,
-    onOutside: () => void,
-    enabled: boolean,
-  ): void;
-  icons: {
-    chevron: IconComponent;
-    // No longer drawn: API tokens are a category of the Settings panel. Still taken, so a kit that has one fits.
-    tokens?: IconComponent;
-    settings: IconComponent;
-  };
-}
+const ChevronIcon = lucideGlyph(lucideChevronDown, 16);
+const SettingsIcon = lucideGlyph(lucideSettings, 16);
 
 /** Where Settings goes on a surface with no Settings panel of its own: the same address's Explorer, which opens the
  *  panel on load (liveworkspace/docs/site.md "Settings", Addresses). Teams are made and run in the Explorer too
@@ -84,7 +47,6 @@ export type GuestAccount = {
 };
 
 type Common = {
-  kit: AccountMenuKit;
   // Opens the menu as it mounts: a press made on the Guest stand-in before this code arrived.
   openOnMount?: boolean;
   // Takes focus as it mounts: the stand-in it replaces had it.
@@ -114,14 +76,13 @@ type Guest = { guest: GuestAccount };
  *  and `explorerHref` adds the Explorer; `onSignOut` ends the session, resolving false when it was refused (the menu stays open). As a guest
  *  (`guest`): Sign in, Create account and, where given, Settings. */
 export function AccountMenu(props: Common & (SignedIn | Guest)) {
-  const { kit, openOnMount = false, focusOnMount = false } = props;
+  const { openOnMount = false, focusOnMount = false } = props;
   const [leaving, setLeaving] = useState(false);
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
-    kit.useMenuButton();
+    useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
-  const { attach, surfaceProps } = kit.useMenu({ open, onClose: close, trigger, initialFocus });
-  kit.useClickOutside(ref, close, open);
-  const { chevron: ChevronIcon } = kit.icons;
+  const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
+  useClickOutside(ref, close, open);
 
   // Arriving in place of the Guest stand-in: carry on where it left off, once.
   const triggerEl = useRef<HTMLButtonElement | null>(null);
@@ -194,7 +155,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
           </div>
           <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
           {!account ? (
-            guest && <GuestItems guest={guest} settingsIcon={kit.icons.settings} close={close} />
+            guest && <GuestItems guest={guest} settingsIcon={SettingsIcon} close={close} />
           ) : (
             <>
               {account.explorerHref ? (
@@ -207,7 +168,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
               ) : null}
               {account.onOpenSettings ? (
                 <SettingsItem
-                  icon={kit.icons.settings}
+                  icon={SettingsIcon}
                   hint="Profile, emails, API tokens"
                   onOpen={account.onOpenSettings}
                   onPrepare={account.onPrepareSettings}
@@ -218,7 +179,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                   href={account.settingsHref ?? SETTINGS_HREF}
                   label="Settings"
                   hint="Profile, emails, API tokens"
-                  icon={kit.icons.settings}
+                  icon={SettingsIcon}
                 />
               )}
               <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />

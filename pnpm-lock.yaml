@@ -4960,12 +4960,18 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../auth-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.3

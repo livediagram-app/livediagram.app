@@ -1,34 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { useCallback, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountMenu, type AccountMenuKit } from './AccountMenu';
+import { AccountMenu } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { avatarColour } from './initials';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
-
-// A stand-in for a UI package's menu hooks: open and close only. The real ones (useMenu, useMenuButton) have their
-// own suites in each UI package.
-const Icon = () => <svg data-testid="icon" />;
-const kit: AccountMenuKit = {
-  useMenuButton() {
-    const [open, setOpen] = useState(false);
-    const [trigger, setTrigger] = useState<HTMLElement | null>(null);
-    return {
-      open,
-      close: useCallback(() => setOpen(false), []),
-      toggle: useCallback(() => setOpen((o) => !o), []),
-      trigger,
-      setTrigger,
-      initialFocus: 'checked',
-      onTriggerKeyDown: () => {},
-    };
-  },
-  useMenu: () => ({ attach: () => {}, surfaceProps: { role: 'menu' } }),
-  useClickOutside: () => {},
-  icons: { chevron: Icon, tokens: Icon, settings: Icon },
-};
 
 const HINT = 'lp_signed_in';
 
@@ -85,7 +62,7 @@ describe('appAccountOf', () => {
 describe('AppAccountMenu', () => {
   it('shows a visitor the Guest menu, asking nothing, its links the app’s own back to this page', () => {
     window.history.replaceState(null, '', '/pricing?x=1');
-    render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} />);
     const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
     expect(trigger.textContent).toContain('Guest');
     expect(trigger.querySelector('[data-guest-avatar]')).not.toBeNull();
@@ -105,14 +82,14 @@ describe('AppAccountMenu', () => {
 
   it('holds the avatar’s place in the static HTML, signed in or not, so hydration matches', () => {
     const placeholder = renderToString(<AccountMenuPlaceholder />);
-    expect(renderToString(<AppAccountMenu hint={HINT} kit={kit} />)).toBe(placeholder);
+    expect(renderToString(<AppAccountMenu hint={HINT} />)).toBe(placeholder);
     setCookies('lp_signed_in=1', 'lp_account=Ada');
-    expect(renderToString(<AppAccountMenu hint={HINT} kit={kit} />)).toBe(placeholder);
+    expect(renderToString(<AppAccountMenu hint={HINT} />)).toBe(placeholder);
   });
 
   it("shows the signed-in person's menu from the cookies, with no request", () => {
     setCookies('lp_signed_in=1', 'lp_account=Ada%20Lovelace');
-    render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} />);
     const trigger = screen.getByRole('button', { name: 'Ada Lovelace, account menu' });
     expect(trigger.textContent).toContain('AL');
     expect(fetchMock).not.toHaveBeenCalled();
@@ -129,7 +106,7 @@ describe('AppAccountMenu', () => {
 
   it('paints the avatar in the colour cookie, and in the name-picked colour without one, with no request', () => {
     setCookies('lp_signed_in=1', 'lp_account=Ada', 'lp_account_colour=%23ef4444');
-    const { container, unmount } = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    const { container, unmount } = render(<AppAccountMenu hint={HINT} />);
     const avatar = () =>
       (container.querySelector('button > span[aria-hidden]') as HTMLElement).style.getPropertyValue(
         '--avatar',
@@ -138,7 +115,7 @@ describe('AppAccountMenu', () => {
     unmount();
     resetAppAccount();
     setCookies('lp_signed_in=1', 'lp_account=Ada');
-    const again = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    const again = render(<AppAccountMenu hint={HINT} />);
     expect(
       (
         again.container.querySelector('button > span[aria-hidden]') as HTMLElement
@@ -161,8 +138,8 @@ describe('AppAccountMenu', () => {
     );
     const { container } = render(
       <>
-        <AppAccountMenu hint={HINT} kit={kit} />
-        <AppAccountMenu hint={HINT} kit={kit} />
+        <AppAccountMenu hint={HINT} />
+        <AppAccountMenu hint={HINT} />
       </>,
     );
     // Holding the avatar's place meanwhile.
@@ -181,7 +158,7 @@ describe('AppAccountMenu', () => {
       document.cookie = 'lp_signed_in=0; path=/';
       return new Response('{"signedIn":false}', { status: 401 });
     });
-    render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} />);
     await act(async () => {});
     expect(screen.getByRole('button', { name: 'Guest, account menu' })).toBeTruthy();
   });
@@ -189,16 +166,16 @@ describe('AppAccountMenu', () => {
   it('turns to Guest, rather than hold a placeholder forever, when the token request fails', async () => {
     setCookies('lp_signed_in=1');
     fetchMock.mockRejectedValue(new TypeError('offline'));
-    render(<AppAccountMenu hint={HINT} kit={kit} />);
+    render(<AppAccountMenu hint={HINT} />);
     await act(async () => {});
     expect(screen.getByRole('button', { name: 'Guest, account menu' })).toBeTruthy();
   });
 
-  it('opens at once, and takes focus, when it arrives in place of the stand-in after a press', () => {
-    render(<AppAccountMenu hint={HINT} kit={kit} openOnMount />);
+  it('opens at once, focus on its first item as a press opens any menu, when it arrives in place of the stand-in', () => {
+    render(<AppAccountMenu hint={HINT} openOnMount />);
     const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    expect(document.activeElement).toBe(trigger);
+    expect(document.activeElement).toBe(screen.getAllByRole('menuitem')[0]);
   });
 });
 
@@ -210,7 +187,6 @@ describe('AccountMenu signed in', () => {
     const onPrepareSettings = vi.fn();
     render(
       <AccountMenu
-        kit={kit}
         {...signedIn}
         onOpenSettings={onOpenSettings}
         onPrepareSettings={onPrepareSettings}
@@ -229,7 +205,7 @@ describe('AccountMenu signed in', () => {
   });
 
   it('offers the Explorer only where it is given (liveworkspace.app), and never API tokens', () => {
-    const { unmount } = render(<AccountMenu kit={kit} {...signedIn} explorerHref="/explorer" />);
+    const { unmount } = render(<AccountMenu {...signedIn} explorerHref="/explorer" />);
     fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
@@ -239,7 +215,7 @@ describe('AccountMenu signed in', () => {
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/explorer');
     unmount();
-    render(<AccountMenu kit={kit} {...signedIn} settingsHref="/explorer?settings=all&x=1" />);
+    render(<AccountMenu {...signedIn} settingsHref="/explorer?settings=all&x=1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
     expect(screen.queryByText('Explorer')).toBeNull();
     expect(screen.getAllByRole('menuitem')[0]!.getAttribute('href')).toBe(
@@ -254,7 +230,6 @@ describe('AccountMenu as Guest', () => {
     const onPrepareSettings = vi.fn();
     render(
       <AccountMenu
-        kit={kit}
         guest={{
           signInHref: '/sign-in',
           signUpHref: '/sign-up',
@@ -274,9 +249,9 @@ describe('AccountMenu as Guest', () => {
   });
 
   it('draws no person’s colour or initials', () => {
-    render(<AccountMenu kit={kit} guest={{ signInHref: '/a', signUpHref: '/b' }} />);
+    render(<AccountMenu guest={{ signInHref: '/a', signUpHref: '/b' }} />);
     const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
-    expect(trigger.querySelector('[style]')).toBeNull();
+    expect(trigger.querySelector('span[style]')).toBeNull();
     expect(trigger.textContent).toBe('Guest');
   });
 });
@@ -285,7 +260,6 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
   function Menu({ openOnMount, focusOnMount }: DeferredMenuProps) {
     return (
       <AccountMenu
-        kit={kit}
         guest={{ signInHref: '/a', signUpHref: '/b' }}
         openOnMount={openOnMount}
         focusOnMount={focusOnMount}

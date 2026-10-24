@@ -35,7 +35,7 @@ export function GuestAvatar({ large = false }: { large?: boolean }) {
   );
 }
 
-/** The chevron as the house icon set draws it (lucide's chevron-down), for the stand-in, which has no kit. */
+/** The chevron as the house icon set draws it (lucide's chevron-down), drawn inline for the light stand-in, which loads no icon set. */
 export function ChevronGlyph({ className }: { className?: string }) {
   return (
     <svg

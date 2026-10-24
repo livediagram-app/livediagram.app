@@ -2,7 +2,6 @@
 
 import { lazy, Suspense, useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
-import { ACCOUNT_MENU_KIT } from '@/components/account-menu-kit';
 import { signInHref, signUpHref } from '@/lib/accounts';
 import { signOut, useSession } from '@/lib/session';
 
@@ -52,7 +51,6 @@ export function AccountControl({ settings = null }: { settings?: SettingsControl
           name={session.name}
           fullName={session.fullName}
           colour={session.colour}
-          kit={ACCOUNT_MENU_KIT}
           explorerHref="/explorer"
           onOpenSettings={panel.onOpen}
           onPrepareSettings={panel.onPrepare}
@@ -70,10 +68,7 @@ export function AccountControl({ settings = null }: { settings?: SettingsControl
   const checking = session.state === 'checking';
   return (
     <div aria-hidden={checking || undefined} className={checking ? 'invisible' : undefined}>
-      <AccountMenu
-        kit={ACCOUNT_MENU_KIT}
-        guest={{ signInHref: signInHref(here), signUpHref: signUpHref(here) }}
-      />
+      <AccountMenu guest={{ signInHref: signInHref(here), signUpHref: signUpHref(here) }} />
     </div>
   );
 }
