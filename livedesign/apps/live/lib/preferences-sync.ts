@@ -3,8 +3,8 @@
 // its `all` scope, the rest in livedesign's own. Five rules, each from a way settings used to be lost
 // or a cost they used to carry:
 //
-// - It fits. The growable lists give up their oldest entries first, so the set stays under
-//   PREFERENCES_BODY_MAX and a scope never reaches the accounts Worker's cap.
+// - It fits. An old blob's dead list goes first, so the set stays under PREFERENCES_BODY_MAX and a
+//   scope never reaches the accounts Worker's cap.
 // - Only what changed is sent, each key whole. A save is a patch: the keys whose value differs from
 //   what the server last held, each with its whole value (an object such as `presentation` is never
 //   sent in part, since the server replaces a value rather than merging into it), and null for a key
@@ -47,40 +47,19 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
   return JSON.stringify({ prefs }).length;
 }
 
-// How many entries, taken in order, free at least `excess` characters: each costs its serialised
-// size plus a comma. Off by at most one character (the last entry has no comma), which the next
-// measurement catches.
-function entriesFreeing(sizes: readonly number[], excess: number): number {
-  let saved = 0;
-  let n = 0;
-  while (n < sizes.length && saved < excess) saved += sizes[n++]! + 1;
-  return n;
-}
+// An old blob's list of designs hidden from Recent, from before Recent moved to liveworkspace's index
+// (docs/specs/013-workspace/hide-from-recent.md): nothing reads it, so it is what goes.
+const DEAD_HIDDEN_KEY = 'recentExcludedIds';
 
-// The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go (newest are kept at
-// the front, docs/specs/013-workspace/hide-from-recent.md). Every other key is a choice the person
-// made once and stays whole. Unchanged (the same object) when it already fits; when trimming the
-// list cannot make it fit, the save is refused and the device copy is kept (see above). Each pass drops as many entries as the excess needs and measures once, so trimming is
-// linear in the blob rather than one serialisation per dropped entry.
+// The blob, trimmed to fit the api's cap: an old blob's dead hidden-from-Recent list goes. Every other
+// key is a choice the person made once and stays whole. Unchanged (the same object) when it already
+// fits; when dropping that list cannot make it fit, the save is refused and the device copy is kept
+// (see above).
 export function fitPreferences(prefs: UserPreferences): UserPreferences {
-  let length = preferencesBodyLength(prefs);
-  if (length <= PREFERENCES_BODY_MAX) return prefs;
-  let next = prefs;
-  let dropped = 0;
-  while (length > PREFERENCES_BODY_MAX) {
-    const excess = length - PREFERENCES_BODY_MAX;
-    const hidden = next.recentExcludedIds ?? [];
-    if (hidden.length > 0) {
-      const oldestFirst = [...hidden].reverse().map((id) => JSON.stringify(id).length);
-      const n = entriesFreeing(oldestFirst, excess);
-      next = { ...next, recentExcludedIds: hidden.slice(0, hidden.length - n) };
-      dropped += n;
-    } else {
-      break;
-    }
-    length = preferencesBodyLength(next);
-  }
-  console.warn(`[preferences] trimmed to fit dropped=${dropped} length=${length}`);
+  if (preferencesBodyLength(prefs) <= PREFERENCES_BODY_MAX || !(DEAD_HIDDEN_KEY in prefs)) return prefs;
+  const { [DEAD_HIDDEN_KEY]: gone, ...next } = prefs as UserPreferences & Record<string, unknown>;
+  const dropped = Array.isArray(gone) ? gone.length : 1;
+  console.warn(`[preferences] trimmed to fit dropped=${dropped} length=${preferencesBodyLength(next)}`);
   return next;
 }
 

@@ -58,10 +58,10 @@ blocks on a network round-trip at boot.
   change without waiting for the network), then queue a save.
 - **Saving to the server** (`apps/live/lib/preferences-sync.ts`):
   - **It fits.** The set is trimmed to 4,096 characters of
-    `{"prefs":...}` before it is cached or sent: the oldest
-    hidden-from-Recent ids go first
-    ([Hide from Recent](../013-workspace/hide-from-recent.md)); every
-    other key stays whole. A full account measured 4,967 characters. A
+    `{"prefs":...}` before it is cached or sent: an old blob's
+    `recentExcludedIds`, which nothing reads since Recent moved to
+    liveworkspace's index ([Hide from Recent](../013-workspace/hide-from-recent.md)),
+    goes whole; every other key stays whole. A full account measured 4,967 characters. A
     trim logs `[preferences] trimmed to fit dropped=<n> length=<n>`.
   - **Only what changed is sent, each key whole.** A save is a patch: the
     keys whose value differs from what the server last held (the set

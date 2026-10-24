@@ -23,7 +23,6 @@ import {
 import {
   __forgetFetchedPreferences,
   fetchUserPreferences,
-  RECENT_EXCLUDED_LIMIT,
   rebaseUserPreferences,
   STORAGE_KEY,
   writeUserPreferences,
@@ -37,11 +36,11 @@ const mockedPut = vi.mocked(apiPutPreferences);
 
 const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
 
-// A full account: 60 hidden designs and the usual flags, past the api's cap, after which every
-// save was refused.
+// A full account from before Recent moved to the index: 60 hidden designs and the usual flags, past
+// the api's cap, after which every save was refused.
 function fullAccount(): UserPreferences {
   return {
-    recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
+    ...({ recentExcludedIds: Array.from({ length: 60 }, (_, i) => uuid(i)) } as UserPreferences),
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
     logoGuidesHidden: ['centre', 'keylines', 'safe', 'grid'],
     powerUserBaseline: {
@@ -81,24 +80,23 @@ describe('fitPreferences', () => {
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
-  it('keeps every other key whole when the hidden ids cannot make room', () => {
+  it('keeps every other key whole when dropping the old hidden ids cannot make room', () => {
     const full = fullAccount();
-    // Pad the rest so the hidden list alone cannot make room.
+    // Pad the rest so dropping the hidden list alone cannot make room.
     const prefs = { ...full, customSwatches: Array.from({ length: 400 }, () => '#abcdef') };
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
-    expect(fitted.recentExcludedIds).toEqual([]);
+    expect('recentExcludedIds' in fitted).toBe(false);
     expect(fitted.customSwatches).toHaveLength(400);
   });
 
-  it('fits a full account by dropping only its oldest hidden ids', () => {
+  it('fits a full account by dropping only its dead hidden-from-Recent list', () => {
     const prefs = fullAccount();
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
-    const kept = fitted.recentExcludedIds ?? [];
-    expect(kept.length).toBeGreaterThan(0);
-    expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
+    expect('recentExcludedIds' in fitted).toBe(false);
+    expect(fitted.logoGuidesHidden).toEqual(prefs.logoGuidesHidden);
   });
 
   it('stays fast on the largest blob it can be handed', () => {

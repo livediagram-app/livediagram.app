@@ -83,13 +83,8 @@ export type {
 // comments.ts; type-only import (erasable), and the whole module is re-exported
 // lower down via `export * from './comments'`.
 
-// Designary type aliases for ids that internal helpers thread
-// around. Not exported because no caller outside this package
-// imports them by name (they all just use plain `string`); keeping
-// them internal lets the public surface stay focused on the rich
-// element + tab types below without trailing along three trivial
-// `string` aliases.
-export type DesignId = string;
+// Plain `string` aliases for the ids the package's own helpers thread
+// around; callers outside it use plain `string`.
 export type TabId = string;
 export type ElementId = string;
 

@@ -159,15 +159,6 @@ export function deleteLayers(s: PhotoSession, ids: readonly string[]): void {
   s.commitStack(removeLayers(s.photo, ids), ids.length > 1 ? 'Delete Layers' : 'Delete Layer');
 }
 
-export function setLayerProps(
-  s: PhotoSession,
-  id: string,
-  patch: Partial<Record<string, unknown>>,
-  label: string,
-): void {
-  s.commitStack(setLayer(s.photo, id, patch), label);
-}
-
 /** The sibling directly under a layer. */
 export function layerBelow(photo: Photo, id: string): PhotoLayer | undefined {
   const layer = photo.layers.find((l) => l.id === id);

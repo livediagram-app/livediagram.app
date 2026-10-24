@@ -21,6 +21,7 @@ import {
 import { CompactEmptyState, lucideGlyph, Tooltip } from '@livedesign/ui';
 import {
   BLEND_MODE_GROUPS,
+  PHOTO_ADJUST_COMMIT_MS,
   listedLayers,
   moveLayer,
   setLayer,
@@ -63,9 +64,6 @@ const LOCK_NAMES: Record<keyof LayerLocks, string> = {
   all: 'Lock All',
 };
 
-// A setting dragged commits once it rests this long (photo-adjustments.md "The Adjust tab").
-export const SETTING_COMMIT_MS = 500;
-
 const ACTION_BUTTON =
   'flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 
@@ -92,7 +90,7 @@ export function useRestingCommit(photo: PhotoEditorView) {
       timer.current = null;
       if (pending.current) s.commitStack(s.photo, pending.current.label);
       pending.current = null;
-    }, SETTING_COMMIT_MS);
+    }, PHOTO_ADJUST_COMMIT_MS);
   };
 }
 

@@ -205,14 +205,6 @@ export type UserPreferences = {
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
   elementToursSeen?: boolean;
-  // Designs this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the design: your Recent
-  // is your view of your own work, and on a shared design one
-  // collaborator hiding it must not hide it from everyone else.
-  //
-  // Ids only, so the list stays small; the whole preferences set is kept
-  // under 4 KB (lib/preferences-sync), which `toggleRecentExcluded` below budgets for.
-  // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the design, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
@@ -222,7 +214,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  recentExcludedIds?: string[];
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores
   // the preset, recorded in `powerUserBaseline` while the mode is on.
@@ -245,21 +236,6 @@ export type UserPreferences = {
   // Missing === what this browser kept before they followed the account, else the defaults.
   presentation?: Record<string, unknown>;
 };
-
-// How many excluded ids we keep. A design id is a 36-char UUID, so 200
-// of them is ~7.4 KB of JSON on its own, well past the 4 KB the whole
-// preferences set is kept under (lib/preferences-sync). 60 is far more
-// than anyone will hide by hand and leaves plenty of room for the other flags.
-export const RECENT_EXCLUDED_LIMIT = 60;
-
-// Flip a design's Recent exclusion, returning the NEXT id list. Newest
-// exclusions are kept at the front so the cap drops the oldest choice
-// rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, designId: string): string[] {
-  const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(designId)) return current.filter((id) => id !== designId);
-  return [designId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
-}
 
 // Re-exported under this module's own name because everything here reads it
 // as "the preferences key". It's DEFINED in telemetry-client because the help

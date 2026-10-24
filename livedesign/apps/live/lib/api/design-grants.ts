@@ -20,6 +20,4 @@ export const designGrant = grants.grant;
 export const heldDesignGrant = grants.held;
 export const designGrantRefusal = grants.refusal;
 export const keepDesignGrantFresh = grants.keepFresh;
-export const designIdOfPath = grants.itemIdOfPath;
 export const withDesignGrant = grants.withGrant;
-export const resetDesignGrantsForTests = grants.resetForTests;
