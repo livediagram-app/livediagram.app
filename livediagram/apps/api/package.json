@@ -27,7 +27,9 @@
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },

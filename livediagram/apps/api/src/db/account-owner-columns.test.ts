@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { personStore } from '../person-client';
-import { workbenchStore } from '../workbench-store';
 import { deleteAccount, mergeGuest } from './account';
 
 // Every column that holds an owner id, and what account deletion does with it (docs/specs/015-api/api.md,
@@ -192,28 +191,6 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     expect(await personStore(env, ACCOUNT).driveConnection(T0)).toBeNull();
     expect(await personStore(env, OTHER).shapeLibraries()).toHaveLength(1);
     expect(await personStore(env, OTHER).driveConnection(T0)).not.toBeNull();
-  });
-
-  it("closes the person's workbench store and no one else's", async () => {
-    const { env } = arrange();
-    const ask = (personId: string) =>
-      workbenchStore(env, personId).openPairingRequest({
-        personId,
-        token: { id: `tok-${personId}`, name: null, readOnly: false, expiresAt: T0 * 2 },
-        origin: 'https://w.example',
-        scope: 'document',
-        name: null,
-        now: T0,
-      });
-    const mine = await ask(ACCOUNT);
-    const theirs = await ask(OTHER);
-
-    await deleteAccount(env, ACCOUNT);
-
-    const status = (personId: string, code: string) =>
-      workbenchStore(env, personId).pairingRequestStatus(code, `tok-${personId}`, T0);
-    expect(await status(ACCOUNT, mine.code)).toBeNull();
-    expect(await status(OTHER, theirs.code)).toMatchObject({ status: 'pending' });
   });
 });
 

@@ -33,9 +33,6 @@ export type Env = {
   // Each person's Durable Object (src/person-store/person-store.ts): what livediagram keeps for one person rather
   // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
   PERSON_STORE: DurableObjectNamespace<PersonStore>;
-  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
-  // requests, pairings, tickets and sessions, in its own SQLite.
-  WORKBENCH: DurableObjectNamespace;
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
   // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;
@@ -154,11 +151,6 @@ export type Env = {
   // 20/60s per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
-  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
-  WORKBENCH_TICKET_RATE_LIMITER?: {
-    limit: (input: { key: string }) => Promise<{ success: boolean }>;
-  };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent

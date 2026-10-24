@@ -10,7 +10,6 @@ import { forbidden, json, methodNotAllowed, noContent, notFound } from '../respo
 import type { RouteContext } from './context';
 import { revokePresentedToken } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
-import { workbenchStore } from '../workbench-store';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -52,10 +51,10 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
     };
     return json(body);
   }
-  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app.
+  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app. Its workbench pairings and
+  // sessions are liveworkspace's, which ends them with it (liveworkspace/docs/workbench.md "Ending access").
   const secret = bearerTokenOf(request.headers.get('Authorization'));
   if (secret) await revokePresentedToken(env, secret);
-  await workbenchStore(env, owner).endAccess({ tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
   return noContent();
 }

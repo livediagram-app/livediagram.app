@@ -30,7 +30,6 @@ import { upsertTab } from '../db/tabs';
 import { saveCommunityPost } from '../document-room/community-post';
 import { personStore } from '../person-client';
 import { sqliteD1, testDocument } from '../test-sqlite-d1';
-import { workbenchStore } from '../workbench-store';
 import { handleInternalItems } from './internal-items';
 
 const KEY = 'index-key';
@@ -221,32 +220,16 @@ describe('POST /api/internal/items/:id/notices', () => {
 });
 
 describe('POST /api/internal/people/:id/purge', () => {
-  it("closes the person's workbench and empties their store, and no one else's", async () => {
+  it("empties the person's store, and no one else's", async () => {
     const { env, call, library } = arrange();
     await library(USER, 'lib-1', 'Mine');
     await library(OTHER, 'lib-2', 'Theirs');
-    const token = { id: 'tok-1', name: null, readOnly: false, expiresAt: Date.now() + 60_000 };
-    const ask = (personId: string) =>
-      workbenchStore(env, personId).openPairingRequest({
-        personId,
-        token,
-        origin: 'https://w.example',
-        scope: 'document',
-        name: null,
-        now: Date.now(),
-      });
-    const mine = await ask(USER);
-    const theirs = await ask(OTHER);
 
     const res = await call(`${USER}/purge`, { items: [] });
 
     expect(res.status).toBe(200);
     expect(await personStore(env, USER).shapeLibraries()).toEqual([]);
     expect((await personStore(env, OTHER).shapeLibraries()).map((l) => l.id)).toEqual(['lib-2']);
-    const status = (personId: string, code: string) =>
-      workbenchStore(env, personId).pairingRequestStatus(code, 'tok-1', Date.now());
-    expect(await status(USER, mine.code)).toBeNull();
-    expect(await status(OTHER, theirs.code)).toMatchObject({ status: 'pending' });
   });
 
   it("takes the person's name off each canvas the index names", async () => {

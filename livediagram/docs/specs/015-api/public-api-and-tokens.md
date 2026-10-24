@@ -96,11 +96,9 @@ storing tokens itself, the account-level design below supersedes it.
   a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
-- **No copy.** livediagram keeps no table of tokens. What hangs off one (workbench pairings and sessions) is in
-  the person's workbench store, which notes the token's name, read-only flag and expiry when it pairs or mints.
-  While a session lives, the store asks liveworkspace every five minutes whether its tokens still work
-  (`POST /api/account/internal/tokens/live`, batches of 100), and daily for every paired token, and ends what was
-  paired through a revoked one. `GET /api/tokens/current` answers from the verify response.
+- **No copy.** livediagram keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
+  liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
+  it when it is revoked ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
@@ -127,8 +125,8 @@ storing tokens itself, the account-level design below supersedes it.
 
 livediagram stores no token and has no database to store one in. liveworkspace keeps each token (its hash, owner,
 name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
-"API tokens"). What hangs off a token here, a workbench pairing or session, is in the person's workbench store, which
-notes the token's id, name, read-only flag and expiry when it pairs or mints ([Workbench embeds](../013-workspace/workbench-embeds.md)).
+"API tokens"). What hangs off a token, a workbench pairing or session, is liveworkspace's too, which ends it with the token
+([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 **Lifetime — fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
@@ -312,8 +310,8 @@ token_limit_reached`.
 
 **Account deletion removes them.** Deleting an account erases ALL of that
 user's data, tokens included: the tokens are the liveworkspace account's, and closing the account there deletes
-them, so no credential outlives the account. livediagram keeps no copy; the person's workbench store, which hangs
-off their tokens, closes with the account too.
+them, so no credential outlives the account. livediagram keeps no copy; their workbench pairings and sessions, which hang
+off their tokens, are liveworkspace's and close with the account there.
 
 ### 3.6a A token's view of itself
 

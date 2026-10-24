@@ -7,13 +7,13 @@ import { disconnectDrive } from '../drive/disconnect';
 import { mediaClient, mediaOwner } from '../media';
 import { personStore } from '../person-client';
 import type { Env } from '../types';
-import { workbenchStore } from '../workbench-store';
 
 // Wipe what this app keeps for a person beside their canvases (docs/specs/015-api/api.md "Owner-keyed data"): their
 // images in liveworkspace's media service (src/media.ts), which deletes every image the account uploaded, in any app;
 // their Google Drive mirror (the grant revoked at Google; the Drive files are theirs and stay); their own store
-// (person-store.ts: shape libraries and what is left of the mirror); their workbench store (pairings, tickets and
-// sessions, whose rooms it closes); and the Community copies they took, which stop counting. Called from DELETE
+// (person-store.ts: shape libraries and what is left of the mirror); and the Community copies they took, which stop
+// counting. Their workbench (pairings, tickets and sessions) is liveworkspace's, which drops it when the account
+// closes (liveworkspace/docs/workbench.md "Ending access"). Called from DELETE
 // /api/account and when the index tells this app an account closed (routes/internal-items.ts `personClosed`),
 // wherever it was closed. Their name and colour, settings, address, sign-up, teams and API tokens are the
 // liveworkspace accounts Worker's, which deletes them when it closes the account (liveworkspace/docs/accounts.md
@@ -32,7 +32,6 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<{ images
   // The Drive grant is revoked at Google first, while the store still holds its sealed token.
   await disconnectDrive(env, ownerId);
   await personStore(env, ownerId).purge();
-  await workbenchStore(env, ownerId).close();
   await forgetCommunityCopier(env, ownerId);
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) they wrote on other people's canvases are
   // in those canvases' own stores (each canvas's Durable Object), out of reach of one statement; they age out with

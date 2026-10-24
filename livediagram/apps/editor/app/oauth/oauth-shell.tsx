@@ -1,7 +1,7 @@
 'use client';
 
 // The frame of the OAuth pages (the consent page and the device page, docs/specs/015-api/blueprints/cli.md
-// "The device grant") and the workbench pairing page: the Night Band frame (docs/specs/014-identity/
+// "The device grant"): the Night Band frame (docs/specs/014-identity/
 // auth-and-guest-access.md "The look: Night Band") with the connect pitch beside the card, and the help link to the
 // connect-an-AI-tool article.
 import { Glyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';

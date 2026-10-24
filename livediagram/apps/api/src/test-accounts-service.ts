@@ -1,6 +1,7 @@
 // A stand-in for the liveworkspace accounts Worker's app API (liveworkspace/docs/accounts.md "The API",
 // the routes an app's server calls with its client credentials) for tests, in this process: settings
-// in their two scopes, profiles, sightings, milestones, emails, activity and making a team, answered
+// in their two scopes, profiles, sightings, milestones, emails, activity, making a team and a sender's
+// notification allowance (liveworkspace/docs/workbench.md), answered
 // from in-memory records through a stubbed `fetch`, with the same semantics the real Worker has (a
 // settings patch per key, null deleting; an account's profile falling back to its account name). Not a
 // `.test.ts` file, so vitest doesn't collect it.
@@ -24,6 +25,8 @@ export type TestAccountsService = {
   milestones: Set<string>;
   activity: { userId: string; at?: number }[];
   teams: { id: string; name: string; organisation: string | null; admin: string }[];
+  // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
+  allowances: Map<string, number[]>;
   // Every call this api made, as `METHOD /route`.
   calls: string[];
   // When set, every call answers this status.
@@ -48,6 +51,7 @@ export function accountsServiceFor(env: Partial<Env>): TestAccountsService {
     milestones: new Set(),
     activity: [],
     teams: [],
+    allowances: new Map(),
     calls: [],
     failWith: null,
   };
@@ -157,6 +161,15 @@ function answer(service: TestAccountsService, route: string, body: Record<string
         if (email) emails[id] = email;
       }
       return json({ emails });
+    }
+    case '/allowance': {
+      const now = Date.now();
+      const key = `${String(body.personId)} ${String(body.kind)}`;
+      const windowMs = body.windowMs as number;
+      const used = (service.allowances.get(key) ?? []).filter((at) => at > now - windowMs);
+      const taken = Math.max(0, Math.min(body.count as number, (body.max as number) - used.length));
+      service.allowances.set(key, [...used, ...Array.from({ length: taken }, () => now)]);
+      return json({ taken });
     }
     case '/activity':
       service.activity.push({ userId: String(body.userId), at: body.at as number | undefined });

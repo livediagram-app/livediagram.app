@@ -116,17 +116,16 @@ class_name = "DocumentRoom"
 name = "PERSON_STORE"
 class_name = "PersonStore"
 
-# Each person's workbench (src/workbench-store.ts, docs/specs/013-workspace/blueprints/workbench-embeds.md "Data
-# and persistence"): one SQLite-backed instance per person, holding their pairing requests, pairings, tickets and
-# sessions. Its alarm checks the tokens behind live sessions and sweeps spent rows.
-[[durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
-
 # livediagram ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
+
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # No scheduled jobs: each canvas keeps itself (its Durable Object's alarm: the index outbox, the Community check,
 # the daily upkeep) and each person's stores keep theirs. Teams, tokens and the Trash are liveworkspace's.
@@ -184,15 +183,6 @@ name = "DRIVE_TOKEN_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
-
-# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
-# Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
 
 # The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md) talks to ANY
 # OpenAI-compatible chat-completions endpoint, and WHICH provider is inferred
@@ -391,12 +381,6 @@ type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
 # A different script is a different Durable Object namespace, so staging's
 # DOCUMENT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
@@ -408,12 +392,13 @@ class_name = "DocumentRoom"
 name = "PERSON_STORE"
 class_name = "PersonStore"
 
-[[env.staging.durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
 [[env.staging.migrations]]
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
+
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 
 # The four ACCOUNTS_* / API_RESOURCE values and

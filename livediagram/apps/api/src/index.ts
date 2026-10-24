@@ -18,7 +18,6 @@ import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
-import { WorkbenchStore } from './workbench-store-do';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
@@ -43,13 +42,13 @@ import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
-import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
+import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
 import type { Env } from './types';
 
-export { DocumentRoom, PersonStore, WorkbenchStore };
+export { DocumentRoom, PersonStore };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -93,6 +92,20 @@ async function routeApiRequest(
   // own key, never a person's identity, so answered before identity and the per-owner limits.
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
+
+  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/workbench.md): the router sends
+  // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
+  // forwarded the same way, as livediagram, before identity, since accounts checks the credential.
+  if (segments[1] === 'workbench') {
+    const forwarded = env.ACCOUNTS_URL
+      ? routeToWorkspace(request, {
+          app: 'livediagram',
+          origin: env.ACCOUNTS_URL,
+          routes: [WORKBENCH_ROUTE],
+        })
+      : null;
+    return forwarded ?? json({ error: 'accounts_unavailable' }, { status: 503 });
+  }
 
   // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
   // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent
@@ -147,9 +160,25 @@ async function routeApiRequest(
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
       // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
-      const resolved = isWorkbenchSessionFormat(bearer)
-        ? await resolveWorkbenchSession(env, bearer, Date.now())
-        : ({ ok: false, reason: 'malformed', sessionPrefix: '' } as const);
+      // When liveworkspace can't answer, the session is neither good nor bad: 503, as for a token.
+      let resolved:
+        | Awaited<ReturnType<typeof resolveWorkbenchSession>>
+        | {
+            ok: false;
+            reason: 'malformed';
+            sessionPrefix: string;
+          };
+      try {
+        resolved = isWorkbenchSessionFormat(bearer)
+          ? await resolveWorkbenchSession(env, bearer)
+          : { ok: false, reason: 'malformed', sessionPrefix: '' };
+      } catch (err) {
+        if (!(err instanceof AccountsUnavailable)) throw err;
+        return json(
+          { error: 'accounts_unavailable' },
+          { status: 503, headers: { 'Retry-After': '5' } },
+        );
+      }
       if (!resolved.ok) {
         console.warn('[workbench] bearer-refused', {
           reason: resolved.reason,
@@ -199,14 +228,7 @@ async function routeApiRequest(
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  // Opening and pairing a workbench write nothing a read-only token could misuse: its ticket is minted view-only, so
-  // a view token gives a read-only frame (docs/specs/013-workspace/workbench-embeds.md).
-  const isWorkbenchAsk =
-    request.method === 'POST' &&
-    segments.length === 3 &&
-    segments[1] === 'workbench' &&
-    (segments[2] === 'tickets' || segments[2] === 'pairing-requests');
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isWorkbenchAsk) {
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
@@ -350,8 +372,6 @@ async function routeApiRequest(
         return await handleParticipants(ctx);
       case 'drive':
         return await handleDrive(ctx);
-      case 'workbench':
-        return await handleWorkbench(ctx);
     }
   } catch (err) {
     // Log the real error server-side, but don't echo its message to the

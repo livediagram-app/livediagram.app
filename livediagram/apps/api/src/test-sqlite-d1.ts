@@ -1,17 +1,11 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
-import {
-  memoryWorkbenchNamespace,
-  nodeItemSql,
-  nodeTransaction,
-} from '@liveworkspace/index-app/testing';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { AccessLevel } from '@livediagram/api-schema';
-import { accountCredentials } from './auth/accounts';
 import { migrateDocumentSchema } from './document-room/document-schema';
 import type { GrantCaller, GrantOutcome, ItemGrant } from './index-service';
-import { closeWorkbenchSessions } from './room-access-client';
 import { testPersonStores } from './test-person-store';
 import type { Env, DocumentEnv } from './types';
 
@@ -108,13 +102,6 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testDocumentRooms(env, sql, next);
     },
   });
-  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
-  if (!base.WORKBENCH) {
-    env.WORKBENCH = memoryWorkbenchNamespace<'document'>({
-      credentials: () => accountCredentials(env),
-      closeRoom: (documentId, pairingId) => closeWorkbenchSessions(env, documentId, pairingId),
-    }) as unknown as DurableObjectNamespace;
-  }
   return { env, sql, flush: push };
 }
 

@@ -8,7 +8,8 @@
 // a notification problem can't break the request that triggered it.
 
 import type { TeamPerson } from '@liveworkspace/auth-client';
-import { createNotifier, workbenchAllowance } from '@liveworkspace/index-app';
+import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import { isAccountIdShape } from '@livediagram/api-schema';
 import { claimCommentNotify } from '../document-room/document-content';
 import { claimMilestone } from '../liveworkspace/emails';
@@ -66,7 +67,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
   itemsMadeBy: canvasesMadeBy,
   claimMilestone,
   claims: (env) => (env as DocumentEnv).DOCUMENT_DB,
-  allowance: (env) => workbenchAllowance(env.WORKBENCH),
+  allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
   settings: { join: 'notifyDocumentJoin' },

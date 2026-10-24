@@ -1,8 +1,9 @@
 // /api/internal/items/**: the liveworkspace index's doors into a canvas's content (docs/specs/015-api/api.md
 // "Internal"), answered by the shared kit (@liveworkspace/index-app handleInternalItems): the bearer check against
 // INDEX_KEY, the paths and their bodies. See it for the doors: a purge (one canvas, or up to a hundred for a closed
-// account), revoked links, notices for the emails, a copy into a new canvas, and a person closed, merged or
-// anonymised.
+// account), revoked links, notices for the emails, a copy into a new canvas, a person closed, merged or
+// anonymised, and a workbench pairing's sessions closed in a canvas's room (liveworkspace/docs/workbench.md
+// "Ending access").
 //
 // Each is a call to the canvas's Durable Object (document-client.ts) or the person's own stores. Where the canvas is
 // filed, its sharing and its Trash are the index's; a purge also tells the media service the canvas places nothing
@@ -17,6 +18,7 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
+import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
@@ -72,6 +74,8 @@ export function handleInternalItems(
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`).
       export: (id, query) => documentRoom(env, id).exportImage(query),
+      // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
+      workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },
   });
 }

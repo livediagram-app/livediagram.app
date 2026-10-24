@@ -9,7 +9,7 @@ import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
 
 import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@livediagram/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { WorkbenchReach } from '../workbench-store';
+import type { WorkbenchReach } from '../auth/workbench-session';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env, DocumentEnv, ShareRole } from '../types';
 import type { GrantCaller, ItemGrant } from '../index-service';

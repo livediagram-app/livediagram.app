@@ -30,7 +30,7 @@ export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 export const WORKBENCH_HANDLE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
 // A ticket is 16 random bytes, base64url without padding, then a dot and the id of the person's workbench store
-// (64 hex), so it reaches their store with no one signed in.
+// at liveworkspace (64 hex), so it reaches their store with no one signed in.
 export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
 
 // `lvw_` and 32 random bytes as base64url without padding, then a dot and the store's id, as a ticket.

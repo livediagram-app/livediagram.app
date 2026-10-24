@@ -17,15 +17,15 @@ vi.mock('./db', () => ({
   listDocumentsByOwner: async () => [],
 }));
 
-const { resolveWorkbenchSessionMock, handleWorkbenchMock } = vi.hoisted(() => ({
+const { resolveWorkbenchSessionMock, handleDocumentsMock } = vi.hoisted(() => ({
   resolveWorkbenchSessionMock: vi.fn(),
-  handleWorkbenchMock: vi.fn(async () => new Response(null, { status: 204 })),
+  handleDocumentsMock: vi.fn(async () => new Response(null, { status: 204 })),
 }));
 vi.mock('./auth/workbench-session', async (original) => ({
   ...(await original<typeof import('./auth/workbench-session')>()),
   resolveWorkbenchSession: resolveWorkbenchSessionMock,
 }));
-vi.mock('./routes/workbench', () => ({ handleWorkbench: handleWorkbenchMock }));
+vi.mock('./routes/documents', () => ({ handleDocuments: handleDocumentsMock }));
 
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
@@ -144,22 +144,38 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
-  it('lets a read-only token open and pair a workbench, whose frame it caps to view', async () => {
-    for (const path of ['/api/workbench/tickets', '/api/workbench/pairing-requests']) {
+  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): the api forwards them as livediagram, before
+  // any token check of its own, and accounts checks the credential.
+  it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
+    const seen: Request[] = [];
+    vi.stubGlobal('fetch', async (request: Request) => {
+      seen.push(request);
+      return new Response(null, { status: 201 });
+    });
+    try {
       const res = await worker.fetch(
-        new Request(`https://api.test${path}`, { method: 'POST', headers: RO }),
-        env(),
+        new Request('https://api.test/api/workbench/tickets?x=1', {
+          method: 'POST',
+          headers: { ...RO, Cookie: 'a=b' },
+          body: '{}',
+        }),
+        { ACCOUNTS_URL: 'https://accounts.test' } as unknown as Env,
       );
-      expect(res.status, path).not.toBe(403);
+      expect(res.status).toBe(201);
+      expect(resolveApiTokenMock).not.toHaveBeenCalled();
+      expect(seen[0]!.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
+      expect(seen[0]!.headers.get('X-Liveworkspace-Proxy')).toBe('livediagram');
+      expect(seen[0]!.headers.get('Authorization')).toBe(RO.Authorization);
+      expect(seen[0]!.headers.get('Cookie')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
     }
-    const session = await worker.fetch(
-      new Request('https://api.test/api/workbench/sessions/current', {
-        method: 'DELETE',
-        headers: RO,
-      }),
+    // Without accounts there is no workbench.
+    const off = await worker.fetch(
+      new Request('https://api.test/api/workbench/pairings', { headers: RO }),
       env(),
     );
-    expect(session.status).toBe(403);
+    expect(off.status).toBe(503);
   });
 
   it('lets a GET through (reads are allowed)', async () => {
@@ -262,7 +278,7 @@ describe('workbench sessions at the front door', () => {
   beforeEach(() => {
     resolveApiTokenMock.mockReset();
     resolveWorkbenchSessionMock.mockReset();
-    handleWorkbenchMock.mockClear();
+    handleDocumentsMock.mockClear();
     resolveWorkbenchSessionMock.mockResolvedValue({ ok: true, workbench: SESSION });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
@@ -319,13 +335,8 @@ describe('workbench sessions at the front door', () => {
   it('hands an allowed route the owner as a person: no account id, no token, writes keyed on the session', async () => {
     const limit = vi.fn(async () => ({ success: true }));
 
-    const res = await call(
-      'DELETE',
-      '/api/workbench/sessions/current',
-      {},
-      { WRITE_RATE_LIMITER: { limit } },
-    );
-    const ctx = (handleWorkbenchMock.mock.calls[0] as unknown as [RouteContext])[0];
+    const res = await call('PUT', '/api/documents/doc1', {}, { WRITE_RATE_LIMITER: { limit } });
+    const ctx = (handleDocumentsMock.mock.calls[0] as unknown as [RouteContext])[0];
 
     expect(res.status).toBe(204);
     expect(ctx.workbench).toEqual(SESSION);
@@ -340,13 +351,13 @@ describe('workbench sessions at the front door', () => {
     resolveApiTokenMock.mockResolvedValue({ ownerId: 'user_1', tokenId: 'tok1', readOnly: false });
 
     await worker.fetch(
-      new Request('https://api.test/api/workbench/tickets', {
-        method: 'POST',
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
         headers: { Authorization: `Bearer lwt_${'x'.repeat(43)}` },
       }),
       {} as unknown as Env,
     );
-    const ctx = (handleWorkbenchMock.mock.calls[0] as unknown as [RouteContext])[0];
+    const ctx = (handleDocumentsMock.mock.calls[0] as unknown as [RouteContext])[0];
 
     expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
     expect(ctx.workbench).toBeNull();

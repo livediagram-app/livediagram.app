@@ -16,7 +16,7 @@ import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
 import { networkTagFor } from '../vote-integrity';
-import { workbenchStore } from '../workbench-store';
+import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import type { Env } from '../types';
@@ -62,9 +62,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       grant.token,
       workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
     );
-    // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
-    if (workbench?.scope === 'workspace')
-      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
+    // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
+    // its access closes them all (WB55).
+    if (workbench?.scope === 'workspace') {
+      const noted = noteWorkbenchRoom(env, workbench, id);
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     const level = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = await adderKeyOf(id, level, person);

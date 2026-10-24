@@ -101,8 +101,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   D1-shaped surface a document's own Durable Object runs its handlers on), with foreign keys on. Use it wherever the
   behaviour lives in the schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It answers the
   `DOCUMENT_ROOM` RPCs from the same tables, stands in for the index (grants, share links, folders), and gives each
-  person an in-memory store (`PERSON_STORE`) and workbench store (`memoryWorkbenchNamespace`,
-  `@liveworkspace/index-app/testing`).
+  person an in-memory store (`PERSON_STORE`).
 - **A document's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
