@@ -37,7 +37,7 @@ export function TemplateGallery() {
     setOpenId(id);
     setOpened(true);
   };
-  // A shelf the visitor opens is brought into view when it is not (lib/shelf-scroll.ts): it opens
+  // A shelf the visitor opens is brought into view when it is not (@liveworkspace/marketing-site's lib/shelf-scroll.ts): it opens
   // above the cards, so from a card lower down it would open out of sight. Smooth, at once under
   // reduced motion.
   const shelfRef = useRef<HTMLDivElement>(null);
