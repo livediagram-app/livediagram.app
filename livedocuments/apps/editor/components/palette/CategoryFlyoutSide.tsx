@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { uiUnscaleStyle } from '@/lib/ui-scale';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
@@ -9,7 +9,7 @@ import { CardList, InfoFooter } from './category-flyout-items';
 import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
 
 // The category flyout's side panel (docs/specs/007-editor/toolbar-layout.md "The category bar"): what a tile
-// with presets (Card, Badge) or an opener holds, in a second popover beside the flyout, lined up with the tile that
+// with presets (Card, Badge) holds, in a second popover beside the flyout, lined up with the tile that
 // opened it, so the flyout stays open behind it as a submenu's parent does. It opens on the side of the tile's own
 // column (sidePlacement); on a phone it lies over the flyout. Its presets place and drag as any tile.
 
@@ -49,7 +49,6 @@ export function CategoryFlyoutSide({
   scale,
   actions,
   pendingDraw,
-  openBody,
   seeThrough = false,
   hoverHandlers,
 }: {
@@ -58,8 +57,6 @@ export function CategoryFlyoutSide({
   scale: number;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
-  // An opener's body: the category it stands for, at its group.
-  openBody: (categoryId: string, group: string | null) => ReactNode;
   // A tile is being dragged out: faded, and a drop on it lands on the canvas beneath (`data-drop-through`).
   seeThrough?: boolean;
   hoverHandlers: {
@@ -82,7 +79,6 @@ export function CategoryFlyoutSide({
     const over = box.bottom - (window.innerHeight - 8);
     setLift(over > 0 ? Math.min(over, side.top) : 0);
   }, [side.top]);
-  const a = def.action;
   const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
   return (
     <div
@@ -103,7 +99,7 @@ export function CategoryFlyoutSide({
       <FlyoutHeader
         icon={def.icon}
         title={tileDisplayName(def)}
-        tagline={variants ? (def.variantsHint ?? PRESETS_HINT) : `Browse ${def.label}.`}
+        tagline={def.variantsHint ?? PRESETS_HINT}
         count={variants?.length}
       />
       <div ref={bodyRef} onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}>
@@ -118,8 +114,6 @@ export function CategoryFlyoutSide({
               onHover={(t) => setHovered(t)}
             />
           </div>
-        ) : a.type === 'open' ? (
-          <div className="px-2 py-2.5">{openBody(a.category, a.group ?? null)}</div>
         ) : null}
       </div>
       {variants ? <InfoFooter def={hovered} /> : null}

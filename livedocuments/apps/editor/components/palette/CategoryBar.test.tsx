@@ -3,7 +3,6 @@
 // keyboard, a tile's side panel, and the guards that keep a flyout open mid-drag or mid-search.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
@@ -32,15 +31,13 @@ function show({ minimal = false }: { minimal?: boolean } = {}) {
   ) as unknown as PaletteAddHandlers;
   render(
     <MinimalChromeProvider value={minimal}>
-      <EditorModeProvider value={{ mode: 'pages', canEdit: true }}>
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          {...h}
-        />
-      </EditorModeProvider>
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        canvasEmpty={false}
+        pendingDraw={null}
+        {...h}
+      />
     </MinimalChromeProvider>,
   );
   return h;

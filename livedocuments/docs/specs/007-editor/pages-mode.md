@@ -11,7 +11,8 @@ The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.t
 `pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link) read through one
 function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
 and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
-reads as nothing. There is no mode switch and no mode step on `/new`.
+reads as nothing. There is no mode switch and no mode step on `/new`, and no surface reads the mode from a
+context: the editor resolves it once (`useEditorMode`) and hands it to the canvas and the tours that ask.
 
 ## The pages
 

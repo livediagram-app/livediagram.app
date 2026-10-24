@@ -81,8 +81,6 @@ type PaletteTileAction =
       variant?: string;
     }
   | { type: 'text' }
-  // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
-  | { type: 'open'; category: string; group?: string }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }

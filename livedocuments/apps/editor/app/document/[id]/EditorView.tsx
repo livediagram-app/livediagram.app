@@ -4,7 +4,6 @@ import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
-import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livedocuments/document';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
@@ -390,7 +389,6 @@ export function EditorView() {
             >
               <UiScaleProvider value={uiScales}>
                 <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
-                  <EditorModeProvider value={ctx.editorMode}>
                     {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                       tab of the document live beside it when one has been dragged to the right. */}
                     <SplitViewFrame header={header} footer={footer}>
@@ -548,7 +546,6 @@ export function EditorView() {
                         </div>
                       )}
                     </SplitViewFrame>
-                  </EditorModeProvider>
                 </DockNamesProvider>
               </UiScaleProvider>
             </MinimalChromeProvider>

@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-  type ReactNode,
   type RefObject,
 } from 'react';
 import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
@@ -18,7 +17,7 @@ import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';
 import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { StripOpenedBody, Divider } from './strip-rail-items';
+import { Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 // The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): Diagram's and Workshop's strip
@@ -314,13 +313,6 @@ export function CategoryBarFlyout({
       sideTimer.current = window.setTimeout(() => setSide(null), HOVER_CLOSE_MS);
     }
   };
-  // An opener's body: the category it stands for, at its group (an AWS opener opens Technology's AWS marks).
-  const openBody = (categoryId: string, group: string | null): ReactNode => (
-    <StripOpenedBody
-      opened={{ key: `${categoryId}/${group ?? ''}`, category: categoryId, group }}
-      content={categories.find((c) => c.id === categoryId)?.content ?? null}
-    />
-  );
   // The flyout and the side panel count as one surface for hover intent, drags and Escape.
   const surface = {
     onPointerEnter: (e: React.PointerEvent) => {
@@ -372,7 +364,6 @@ export function CategoryBarFlyout({
           scale={scale}
           actions={actions}
           pendingDraw={pendingDraw}
-          openBody={openBody}
           seeThrough={bar.dragActive}
           hoverHandlers={{
             ...surface,

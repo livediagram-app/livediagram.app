@@ -117,7 +117,7 @@ scrolling when long:
 
 ### A tile's side panel
 
-A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) or an opener opens a **side panel**: a
+A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) opens a **side panel**: a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
 to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
