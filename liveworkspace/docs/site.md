@@ -290,9 +290,10 @@ app's dialog) is gone, its parts now the panel's.
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
 - **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then each app
-  under its name and logo, in the apps' order. Each heading is an accordion: every group starts collapsed but the one
-  holding the current pane, a click folds it open or shut, picking a category opens its group, and a search opens
-  them all so no hit is hidden. Account holds what belongs to the person in every app, the `all`
+  under its name and logo, in the apps' order. Each heading is a single-open accordion, laid out as a category row (the
+  same padding, icon column and type size): only the group holding the current pane starts open, opening one folds
+  the other, each eases open and shut, picking a category opens its group, and a search opens them all so no hit is
+  hidden. Account holds what belongs to the person in every app, the `all`
   scope ([accounts.md](accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
   collaborators see, with a preview of their cursor and avatar, `ProfileCard.tsx`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it

@@ -129,21 +129,23 @@ describe('the All view’s groups', () => {
   const heading = (name: string) => screen.getByRole('button', { name, expanded: undefined });
   const expanded = (name: string) => heading(name).getAttribute('aria-expanded');
 
-  it('starts collapsed but the group holding the current pane, and folds open and shut', () => {
+  it('starts with only the current pane’s group open, and keeps one open at a time', () => {
     renderWithKit(ui('profile'));
     expect(expanded('Account')).toBe('true');
     expect(expanded('livediagram')).toBe('false');
     expect(expanded('liveplanner')).toBe('false');
     fireEvent.click(heading('livediagram'));
     expect(expanded('livediagram')).toBe('true');
-    fireEvent.click(heading('Account'));
     expect(expanded('Account')).toBe('false');
+    fireEvent.click(heading('livediagram'));
+    expect(expanded('livediagram')).toBe('false');
   });
 
   it('opens the group of a category picked from elsewhere, and every group while searching', () => {
     const view = renderWithKit(ui('profile'));
     view.rerender(ui('canvas'));
     expect(expanded('liveplanner')).toBe('true');
+    expect(expanded('Account')).toBe('false');
     view.rerender(ui('canvas', true));
     expect(expanded('livediagram')).toBe('true');
   });

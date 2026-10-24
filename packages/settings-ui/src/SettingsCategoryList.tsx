@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
-import { ChevronIcon, NavChevron } from './glyphs';
+import { NavChevron } from './glyphs';
 
 type ListCategory = SettingsCategory & { matchCount?: number };
 
@@ -56,26 +56,18 @@ export function SettingsCategoryList({
   groups?: readonly SettingsGroupHeading[];
 }) {
   const isRoot = variant === 'root';
-  // The All view's groups fold away: each starts collapsed but the one holding the current pane, picking a
-  // category opens its group, and a search opens them all, so neither the current row nor a hit is ever hidden.
-  const groupOf = (id: string | null) => categories.find((c) => c.id === id)?.group;
-  const [openGroups, setOpenGroups] = useState<ReadonlySet<string>>(() => {
-    const current = groupOf(selected);
-    return new Set(current ? [current] : []);
-  });
+  // The All view's groups are a single-open accordion: the one holding the current pane starts open, picking a
+  // category opens its group (folding the other), and a search opens them all, so neither the current row nor a hit
+  // is ever hidden.
+  const groupOf = (id: string | null) => categories.find((c) => c.id === id)?.group ?? null;
+  const [openGroup, setOpenGroup] = useState<string | null>(() => groupOf(selected));
   const [seenSelected, setSeenSelected] = useState(selected);
   if (seenSelected !== selected) {
     setSeenSelected(selected);
     const current = groupOf(selected);
-    if (current && !openGroups.has(current)) setOpenGroups(new Set([...openGroups, current]));
+    if (current) setOpenGroup(current);
   }
-  const toggleGroup = (id: string) =>
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggleGroup = (id: string) => setOpenGroup((prev) => (prev === id ? null : id));
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -189,41 +181,58 @@ export function SettingsCategoryList({
   return (
     <nav
       aria-label="Settings categories"
-      className={isRoot ? 'flex flex-col gap-5' : 'flex flex-col gap-3 p-2'}
+      className={isRoot ? 'flex flex-col gap-5' : 'flex flex-col gap-0.5 p-2'}
     >
       {groups.map((group) => {
         const listed = categories.filter((c) => c.group === group.id);
         if (listed.length === 0) return null;
         const headingId = `settings-group-${group.id}`;
         const bodyId = `${headingId}-body`;
-        const open = Boolean(searching) || openGroups.has(group.id);
+        const open = Boolean(searching) || openGroup === group.id;
         return (
           <div key={group.id} role="group" aria-labelledby={headingId} className="flex flex-col">
-            <p className={isRoot ? 'mb-1.5' : 'mb-1'}>
+            <p className={isRoot ? 'mb-1.5' : 'contents'}>
+              {/* The category row's own box, icon column and type size, so a heading sits in the rail's rhythm. */}
               <button
                 type="button"
                 id={headingId}
                 aria-expanded={open}
                 aria-controls={bodyId}
                 onClick={() => toggleGroup(group.id)}
-                className={`flex w-full cursor-pointer items-center gap-1.5 rounded-md py-1 text-left text-[11px] font-semibold tracking-wide text-slate-500 uppercase transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
-                  isRoot ? 'px-1' : 'px-2.5'
+                className={`flex w-full cursor-pointer items-center gap-3 text-left transition ${
+                  isRoot
+                    ? 'rounded-lg px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                    : 'rounded-lg px-2.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                {group.icon ? (
-                  <span aria-hidden className="inline-flex shrink-0 [&_svg]:size-3.5">
-                    {group.icon}
-                  </span>
-                ) : null}
-                <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{group.label}</span>
-                <ChevronIcon open={open} className="shrink-0" />
+                <span
+                  aria-hidden
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center [&_svg]:size-5"
+                >
+                  {group.icon}
+                </span>
+                <span className="text-optical-line min-w-0 flex-1 text-sm font-semibold text-slate-900 [overflow-wrap:anywhere] dark:text-white">
+                  {group.label}
+                </span>
+                <NavChevron
+                  className={`shrink-0 text-slate-400 transition-transform motion-reduce:transition-none ${open ? 'rotate-90' : ''}`}
+                />
               </button>
             </p>
+            {/* Eases open and shut on a grid-rows transition (AccordionSection's), with no measuring; a shut group's
+                rows are inert, so Tab skips them. */}
             <div
               id={bodyId}
-              className={!open ? 'hidden' : isRoot ? ROOT_CARD : 'flex flex-col gap-0.5'}
+              inert={!open}
+              className={`grid transition-[grid-template-rows] duration-short ease-out motion-reduce:transition-none ${
+                open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+              }`}
             >
-              {listed.map(renderCategory)}
+              <div className="min-h-0 overflow-hidden">
+                <div className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5'}>
+                  {listed.map(renderCategory)}
+                </div>
+              </div>
             </div>
           </div>
         );
