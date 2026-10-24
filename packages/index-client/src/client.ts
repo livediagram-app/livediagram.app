@@ -23,7 +23,6 @@ import type {
   CreateFolderInput,
   CreateItemInput,
   CreateShareLinkInput,
-  CreateTagInput,
   Folder,
   FolderPreview,
   GrantResponse,
@@ -39,7 +38,6 @@ import type {
   ShareLink,
   ShareResolution,
   SharedWithItem,
-  Tag,
   TimelinePage,
   TimelineQuery,
   AppTimelineEvent,
@@ -47,7 +45,6 @@ import type {
   UpdateFolderInput,
   UpdateItemInput,
   UpdateShareLinkInput,
-  UpdateTagInput,
 } from './types';
 
 export class IndexError extends Error {
@@ -209,18 +206,6 @@ export function createIndexClient({
     updateFolder: (id: string, input: UpdateFolderInput) =>
       call<{ folder: Folder }>(`/folders/${enc(id)}`, { method: 'PATCH', body: input }),
     deleteFolder: (id: string) => call<void>(`/folders/${enc(id)}`, { method: 'DELETE' }),
-
-    // Tags
-    listTags: () => call<{ tags: Tag[] }>('/tags'),
-    createTag: (input: CreateTagInput) =>
-      call<{ tag: Tag }>('/tags', { method: 'POST', body: input }),
-    updateTag: (id: string, input: UpdateTagInput) =>
-      call<{ tag: Tag }>(`/tags/${enc(id)}`, { method: 'PATCH', body: input }),
-    deleteTag: (id: string) => call<void>(`/tags/${enc(id)}`, { method: 'DELETE' }),
-    tagItem: (tagId: string, itemId: string) =>
-      call<void>(`/tags/${enc(tagId)}/items/${enc(itemId)}`, { method: 'PUT' }),
-    untagItem: (tagId: string, itemId: string) =>
-      call<void>(`/tags/${enc(tagId)}/items/${enc(itemId)}`, { method: 'DELETE' }),
 
     // Favourites
     listFavourites: (query: { limit?: number; cursor?: string } = {}) =>

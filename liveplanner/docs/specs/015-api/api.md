@@ -14,7 +14,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 
 - **Runtime:** Cloudflare Workers.
 - **Storage:** no database of its own. Each plan is its own Durable Object (`PLAN_ROOM`, its content and form links in its SQLite) and each person's workbench is theirs (`WORKBENCH`); where a plan is, who may reach it, the Inbox and each live form's code are liveworkspace's index. A person's settings, name and colour, sign-in sighting, email address and API tokens are the liveworkspace accounts Worker's ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), read through its internal API as `liveplanner.app`. See **Storage** below.
-- **Index:** where every plan is, who may open it, its sharing, folders, tags, favourites, Trash and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
+- **Index:** where every plan is, who may open it, its sharing, folders, favourites, Trash and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
 - **Plans:** one SQLite-backed Durable Object per plan (`PlanRoom`, binding `PLAN_ROOM`, `new_sqlite_classes`), named by the plan's id via `idFromName`. It holds the plan's content and is its realtime room (see **Storage** and **Realtime model**).
 
 ## Wire-format types

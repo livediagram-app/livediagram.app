@@ -47,7 +47,7 @@ describe('views and filters', () => {
     expect((await call('/items?folder=missing', { auth: ada.auth })).status).toBe(404);
   });
 
-  it('lists recent by last opened, favourites, a tag, and the Trash', async () => {
+  it('lists recent by last opened, favourites and the Trash', async () => {
     const ada = await person('user_a');
     const a = await makeItem(ada.auth, { title: 'A' });
     const b = await makeItem(ada.auth, { title: 'B' });
@@ -60,14 +60,6 @@ describe('views and filters', () => {
     expect(titles(await list(ada.auth, 'view=recent'))).toEqual(['A', 'B']);
     await call(`/favourites/${c.id}`, { method: 'PUT', auth: ada.auth });
     expect(titles(await list(ada.auth, 'view=favourites'))).toEqual(['C']);
-    await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { id: 't1', name: 'Red', colour: 'red' },
-    });
-    await call(`/tags/t1/items/${b.id}`, { method: 'PUT', auth: ada.auth });
-    expect(titles(await list(ada.auth, 'tag=t1'))).toEqual(['B']);
-    expect((await call('/items?tag=nope', { auth: ada.auth })).status).toBe(404);
     await call(`/items/${a.id}`, { method: 'DELETE', auth: ada.auth });
     expect(titles(await list(ada.auth, 'view=trash'))).toEqual(['A']);
     // Trashed items leave every other view.
@@ -252,24 +244,16 @@ describe('filters', () => {
 });
 
 describe('search', () => {
-  it('matches titles and folder names, never tag names', async () => {
+  it('matches titles and folder names', async () => {
     const ada = await person('user_a');
     const f = await body<{ folder: { id: string } }>(
       await call('/folders', { method: 'POST', auth: ada.auth, body: { name: 'Budgets' } }),
     );
     await makeItem(ada.auth, { title: 'Roadmap 2027' });
     await makeItem(ada.auth, { title: 'Plain', folderId: f.folder.id });
-    const tagged = await makeItem(ada.auth, { title: 'Tagged' });
     await makeItem(ada.auth, { title: 'Other' });
-    await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { id: 't1', name: 'Launch', colour: 'red' },
-    });
-    await call(`/tags/t1/items/${tagged.id}`, { method: 'PUT', auth: ada.auth });
     expect(titles(await list(ada.auth, 'q=roadmap'))).toEqual(['Roadmap 2027']);
     expect(titles(await list(ada.auth, 'q=budget'))).toEqual(['Plain']);
-    expect(titles(await list(ada.auth, 'q=LAUNCH'))).toEqual([]);
     expect(titles(await list(ada.auth, 'q=zzz'))).toEqual([]);
   });
 
@@ -331,7 +315,6 @@ describe('query plans', () => {
     ['recent', { view: 'recent', limit: 50 }, 'opens_recent'],
     ['favourites', { view: 'favourites', limit: 50 }, 'favourites_person_created'],
     ['shared', { view: 'shared', limit: 50 }, 'sqlite_autoindex_shared_with_1'],
-    ['a tag', { view: 'all', tag: 't1', limit: 50 }, 'sqlite_autoindex_item_tags_1'],
     ['search words', { view: 'all', words: ['road', 'map'], limit: 50 }, 'items_live'],
     ['the search view', { view: 'search', limit: 50 }, 'items_live'],
     [
@@ -413,24 +396,17 @@ describe('at 2,000 items', () => {
         1_000_000 + i,
       );
     }
-    // Every one of Ada's opened, a tenth starred and tagged.
-    db.prepare(
-      "INSERT INTO tags (id, owner_id, name, colour, created_at, updated_at) VALUES ('t1', 'user_a', 'Launch', 'red', 0, 0)",
-    ).run();
+    // Every one of Ada's opened, a tenth starred.
     const open = db.prepare(
       'INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, ?)',
     );
     const fav = db.prepare(
       'INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, ?)',
     );
-    const tag = db.prepare('INSERT INTO item_tags (tag_id, item_id, created_at) VALUES (?, ?, ?)');
     for (let i = 0; i < 2000; i++) {
       const id = `item-${String(i).padStart(6, '0')}`;
       open.run('user_a', id, 2_000_000 + i);
-      if (i % 10 === 0) {
-        fav.run('user_a', id, i);
-        tag.run('t1', id, i);
-      }
+      if (i % 10 === 0) fav.run('user_a', id, i);
     }
     db.exec('COMMIT');
 
@@ -478,10 +454,6 @@ describe('at 2,000 items', () => {
       const q = 'view=search&q=item%20roadmap&owner=me&space=mine,team:team1&since=1&limit=200';
       return (await list(ada.auth, q)).items.length;
     });
-    const tagged = await time(
-      'a tag',
-      async () => (await list(ada.auth, 'tag=t1&limit=200')).items.length,
-    );
     const favs = await time(
       'favourites',
       async () => (await list(ada.auth, 'view=favourites&limit=200')).items.length,
@@ -490,14 +462,13 @@ describe('at 2,000 items', () => {
     // Generous for a loaded CI machine; locally each is a few milliseconds.
     expect(firstPage).toBeLessThan(150);
     expect(walk).toBeLessThan(1500);
-    for (const ms of [recent, oneApp, search, searchView, deepest, tagged, favs])
+    for (const ms of [recent, oneApp, search, searchView, deepest, favs])
       expect(ms).toBeLessThan(250);
 
     const first = await list(ada.auth, 'limit=200');
     expect(first.items[0]).toMatchObject({ id: 'item-001999', favourite: false });
     expect(first.items.find((i) => i.id === 'item-001990')).toMatchObject({
       favourite: true,
-      tagIds: ['t1'],
       lastOpenedAt: 2_001_990,
     });
   });

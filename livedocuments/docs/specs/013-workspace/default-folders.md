@@ -5,7 +5,7 @@ belong to the person and to the app: two teammates may send the same new documen
 livedocuments' defaults never move another app's items.
 
 The index keeps them (`/placement-defaults`, [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
-"Folders, tags, favourites, defaults"), and the shared Explorer, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md),
+"Folders, favourites, defaults"), and the shared Explorer, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md),
 sets, shows and clears them.
 
 ## Entries

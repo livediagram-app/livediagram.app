@@ -9,6 +9,6 @@ canvas is registered there. API clients can list the caller's folders at `GET /a
 `POST /api/folders` ([API](../015-api/api.md)), both at the index as the caller.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
 defaults". The Explorer that shows it is the shared package,
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

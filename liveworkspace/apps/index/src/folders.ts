@@ -1,4 +1,4 @@
-// Folders (liveworkspace/docs/one-explorer-contracts.md "Folders, tags, favourites, defaults"): one tree
+// Folders (liveworkspace/docs/one-explorer-contracts.md "Folders, favourites, defaults"): one tree
 // per person and one per team, holding items from any app. A folder's parent is always in its own scope.
 // Deleting one moves its folders and items up a level.
 

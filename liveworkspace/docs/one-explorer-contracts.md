@@ -59,7 +59,7 @@ resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for a year. A newer one re
 
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's
-items, folders, tags, favourites, opens and placement defaults to the account in one batch, and clears the
+items, folders, favourites, opens and placement defaults to the account in one batch, and clears the
 cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {into}` (at once, and from its
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
@@ -87,7 +87,6 @@ type Item = {
   // For the person asking:
   access: Level; // what they may do
   favourite: boolean;
-  tagIds: string[];
   lastOpenedAt: number | null;
   hiddenFromRecent: boolean; // the person hid it from Recent
   sharedVia: string | null; // the share code, when they reach it only through a link
@@ -108,8 +107,8 @@ type ItemSummary = {
 | ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
 | `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                 |
 |                                |                     | `shared`, `trash`, `unsorted`, `search`: every live item the person can       |
-|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`,       |
-|                                |                     | `tag`, and the lens's (below). Sorted by `updatedAt`, or by                   |
+|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`        |
+|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                          |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |
 |                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last      |
 |                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first    |
@@ -161,9 +160,9 @@ When a liveworkspace account closes, accounts tells the index (`POST /internal/p
 holds for that person:
 
 - **Purged**, as a permanent delete is, with the content dropped by each app: every item they own in
-  every app, the Trash included, and with each one its tags, favourites, opens, share links, password,
+  every app, the Trash included, and with each one its favourites, opens, share links, password,
   Shared with me rows and comment and action rows.
-- **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent), use
+- **Deleted**: their folders, favourites, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, and the Timeline only they saw (their own
   space's events and their favourites) with when they last looked at it and what they removed from it.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
@@ -190,7 +189,7 @@ nothing. The record is kept, and the purge run again, for two hours, so anything
 token issued before the account closed goes too. A guest's things have no account to close; the same
 purge serves a guest id when one is asked for.
 
-## Folders, tags, favourites, defaults
+## Folders, favourites, defaults
 
 Folders are not per app: one tree per person, and one per team, holding items from any app.
 
@@ -199,8 +198,6 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 - `GET /folders/previews?ids=a,b,…&app=` — what folder cards show of their insides: for each of up to 60 folders
   the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
   that stops at 1000. One batch however many folders; folders out of reach are left out.
-- `GET/POST /tags`, `PATCH/DELETE /tags/:id`, `PUT/DELETE /tags/:id/items/:itemId` — personal; `{id, name,
-colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`.
 - `PUT/DELETE /recent-hidden/:itemId` — Hide from Recent and Show in Recent: the person's own; a hidden item
   leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
@@ -436,7 +433,7 @@ for the popover, and `cardId` for a card.
 
 ## What goes away in each app, as it moves
 
-Its tables for folders, tags, favourites, opens, Trash state, share links, shared-with, placement
+Its tables for folders, favourites, opens, Trash state, share links, shared-with, placement
 defaults, the collab index, its own Timeline (the index's replaces it), the teams mirror and guest ids,
 and the routes over them. Its
 content tables move into the item's Durable Object.

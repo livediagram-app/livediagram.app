@@ -147,15 +147,6 @@ export async function parseListSpec(
     if (!(await reachableFolder(env, person, folder))) return notFound('folder_not_found');
     spec.folder = folder;
   }
-  const tag = params.get('tag');
-  if (tag !== null) {
-    if (!isId(tag)) return badRequest('invalid_tag');
-    const mine = await env.INDEX_DB.prepare('SELECT 1 FROM tags WHERE id = ? AND owner_id = ?')
-      .bind(tag, person.id)
-      .first();
-    if (!mine) return notFound();
-    spec.tag = tag;
-  }
   const deep = params.get('deep');
   if (deep !== null) {
     if (deep !== '1' || !spec.folder) return badRequest('invalid_query');

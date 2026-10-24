@@ -35,7 +35,7 @@ describe('<Explorer>', () => {
   // Most cases read rows; the card default has its own case.
   beforeEach(() => localStorage.setItem('liveworkspace:explorer-view-mode', 'list'));
 
-  it('asks the index once per list, never once per row or folder, and never for tags', async () => {
+  it('asks the index once per list, never once per row or folder', async () => {
     const items = Array.from({ length: 2000 }, (_, i) => makeItem(i));
     const index = createFakeIndex({
       items,
@@ -55,7 +55,6 @@ describe('<Explorer>', () => {
     await waitFor(() => expect(rows().length).toBeGreaterThan(0));
     expect(index.count('listItems')).toBe(1);
     expect(index.count('listFolders')).toBe(1);
-    expect(index.count('listTags')).toBe(0);
     expect(index.count('inbox')).toBe(1);
     // Windowed: a screenful of rows, not the page of 200.
     expect(rows().length).toBeLessThan(60);

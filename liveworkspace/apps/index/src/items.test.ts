@@ -80,7 +80,6 @@ describe('making and reading an item', () => {
       source: 'person',
       access: 'edit',
       favourite: false,
-      tagIds: [],
       lastOpenedAt: null,
       sharedVia: null,
       summary: {},
@@ -255,12 +254,7 @@ describe('the Trash', () => {
   it('purges for good, asking the app to drop the content', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
-    await call(`/tags`, {
-      method: 'POST',
-      auth: ada.auth,
-      body: { id: 't1', name: 'x', colour: 'red' },
-    });
-    await call(`/tags/t1/items/${item.id}`, { method: 'PUT', auth: ada.auth });
+    await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     const res = await call(`/items/${item.id}?permanent=true`, {
       method: 'DELETE',
       auth: ada.auth,
@@ -268,7 +262,7 @@ describe('the Trash', () => {
     expect(res.status).toBe(204);
     await settle();
     expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM items').get()).toEqual({ n: 0 });
-    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM item_tags').get()).toEqual({ n: 0 });
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM favourites').get()).toEqual({ n: 0 });
     expect(h.appCalls).toHaveLength(1);
     expect(h.appCalls[0]).toMatchObject({
       method: 'DELETE',

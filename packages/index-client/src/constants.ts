@@ -73,8 +73,6 @@ export const COLLAB_CARDS_TAB = '~cards';
 
 export const TITLE_MAX = 500;
 export const FOLDER_NAME_MAX = 500;
-export const TAG_NAME_MAX = 32;
-export const TAG_LIMIT = 100;
 export const SHARE_PASSWORD_MAX = 256;
 // Live and lapsed links together, per item.
 export const SHARE_LINKS_PER_ITEM = 100;
@@ -195,23 +193,6 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 // A link made without a level grants this.
 export const DEFAULT_LINK_LEVEL: Level = 'edit';
 
-// A tag's colour: a standard colour's name, drawn per appearance, or a custom `#rrggbb`.
-export const TAG_COLOURS = [
-  'ink',
-  'grey',
-  'red',
-  'orange',
-  'yellow',
-  'green',
-  'teal',
-  'blue',
-  'violet',
-  'pink',
-] as const;
-export const isTagColour = (value: unknown): value is string =>
-  typeof value === 'string' &&
-  ((TAG_COLOURS as readonly string[]).includes(value) || /^#[0-9a-f]{6}$/i.test(value));
-
 export const ITEM_SOURCES = ['person', 'ai', 'import', 'template'] as const;
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
@@ -242,7 +223,6 @@ export const INDEX_ERRORS = [
   'invalid_team',
   'invalid_level',
   'invalid_tab',
-  'invalid_tag',
   'invalid_key',
   'invalid_summary',
   'invalid_collab',
@@ -255,8 +235,6 @@ export const INDEX_ERRORS = [
   'item_exists',
   'folder_not_found',
   'cycle',
-  'tag_name_taken',
-  'tag_limit',
   'password_required',
   'password_invalid',
   'never_expires',

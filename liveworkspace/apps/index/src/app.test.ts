@@ -230,23 +230,6 @@ describe('the guest merge', () => {
       auth: guest.auth,
       body: { folderId: folder.folder.id },
     });
-    // Same-named tags: the account's stays, and takes the guest's items.
-    await call('/tags', {
-      method: 'POST',
-      auth: guest.auth,
-      body: { id: 'tg', name: 'Work', colour: 'red' },
-    });
-    await call('/tags', {
-      method: 'POST',
-      auth: guest.auth,
-      body: { id: 'tg2', name: 'Solo', colour: 'red' },
-    });
-    await call('/tags', {
-      method: 'POST',
-      auth: user.auth,
-      body: { id: 'tu', name: 'work', colour: 'blue' },
-    });
-    await call(`/tags/tg/items/${item.id}`, { method: 'PUT', auth: guest.auth });
     await call(`/favourites/${item.id}`, { method: 'PUT', auth: guest.auth });
     await call(`/favourites/${item.id}`, { method: 'PUT', auth: user.auth });
     await call(`/items/${item.id}/open`, { method: 'POST', auth: guest.auth });
@@ -264,15 +247,10 @@ describe('the guest merge', () => {
     expect(await body(res)).toEqual({ items: 1 });
 
     const mine = await body<{ items: Item[] }>(await call('/items', { auth: user.auth }));
-    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId, i.tagIds, i.favourite])).toEqual([
-      ['Guest plan', 'user_u1', folder.folder.id, ['tu'], true],
+    expect(mine.items.map((i) => [i.title, i.ownerId, i.folderId, i.favourite])).toEqual([
+      ['Guest plan', 'user_u1', folder.folder.id, true],
     ]);
     expect(mine.items[0]!.lastOpenedAt).not.toBeNull();
-    const tags = h.db.sql.prepare('SELECT id, owner_id FROM tags ORDER BY id').all();
-    expect(tags).toEqual([
-      { id: 'tg2', owner_id: 'user_u1' },
-      { id: 'tu', owner_id: 'user_u1' },
-    ]);
     const shared = await body<{ shared: unknown[] }>(await call('/shared', { auth: user.auth }));
     expect(shared.shared).toHaveLength(1);
     const defaults = await body<{ defaults: unknown[] }>(

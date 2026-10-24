@@ -1,7 +1,7 @@
 // A guest becoming an account (liveworkspace/docs/one-explorer-contracts.md "Becoming an account"):
 // accounts calls this with its own key, and everything the guest had moves to the account in one batch. Each
 // app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
-// Where the account already has the same thing (a tag of the same name, a favourite, a default), the
+// Where the account already has the same thing (a favourite, a default), the
 // account's stays. Running it again finds nothing left to move.
 
 import { isMergeCaller } from './auth';
@@ -46,23 +46,6 @@ export async function handleMerge(
          WHERE owner_id = ?`,
       )
       .bind(user, personal, guest),
-    // A guest tag whose name the account already uses: its items take the account's tag.
-    db
-      .prepare(
-        `INSERT OR IGNORE INTO item_tags (tag_id, item_id, created_at)
-         SELECT u.id, it.item_id, it.created_at FROM tags g
-         JOIN tags u ON u.owner_id = ? AND u.name = g.name COLLATE NOCASE
-         JOIN item_tags it ON it.tag_id = g.id
-         WHERE g.owner_id = ?`,
-      )
-      .bind(user, guest),
-    db
-      .prepare(
-        `DELETE FROM tags WHERE owner_id = ? AND EXISTS (
-           SELECT 1 FROM tags u WHERE u.owner_id = ? AND u.name = tags.name COLLATE NOCASE)`,
-      )
-      .bind(guest, user),
-    db.prepare('UPDATE tags SET owner_id = ? WHERE owner_id = ?').bind(user, guest),
     db
       .prepare(
         `INSERT OR IGNORE INTO favourites (person_id, item_id, created_at)

@@ -19,7 +19,7 @@ it for the rest of the team, so a star is a row keyed by
 `(owner_id, design_id)` rather than a flag on the design.
 
 Stars are liveworkspace's index's, one `favourites` row per person and design
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
 defaults": `GET /favourites`, `PUT/DELETE /favourites/:itemId`), not a key in
 the preferences set, which is how [Hide a design from Recent](hide-from-recent.md) once stored hidden-from-Recent
 ids. That set is kept under **4 KB** — roughly 100 36-char UUIDs —

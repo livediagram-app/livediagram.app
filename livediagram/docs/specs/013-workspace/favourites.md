@@ -6,6 +6,6 @@ view (`/explorer/favourites`, personal and team stars together) read and write t
 a document in a team's library stars it for nobody else. livediagram keeps no stars of its own.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
 defaults". The Explorer that shows it is the shared package,
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

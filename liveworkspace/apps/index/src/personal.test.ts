@@ -1,5 +1,5 @@
-// Folders, tags, favourites and placement defaults over HTTP.
-import type { Folder, Item, Tag } from '@liveworkspace/index-client';
+// Folders, favourites and placement defaults over HTTP.
+import type { Folder, Item } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
@@ -134,113 +134,19 @@ describe('folders', () => {
 });
 
 describe('tags', () => {
-  it('makes, renames, recolours and deletes, one name per person', async () => {
+  it('are gone: no tag routes, no tagIds on items', async () => {
     const ada = await person('user_a');
-    const res = await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { name: '  Big   idea ', colour: '#AABBCC' },
-    });
-    expect(res.status).toBe(201);
-    const tag = (await body<{ tag: Tag }>(res)).tag;
-    expect(tag).toMatchObject({ name: 'Big idea', colour: '#aabbcc' });
-    const dup = await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { name: 'BIG IDEA', colour: 'red' },
-    });
-    expect(dup.status).toBe(409);
-    expect(await body(dup)).toEqual({ error: 'tag_name_taken' });
-    const bad = await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { name: 'x', colour: 'mauve' },
-    });
-    expect(await body(bad)).toEqual({ error: 'invalid_tag' });
-    const long = await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { name: 'x'.repeat(33), colour: 'red' },
-    });
-    expect(long.status).toBe(400);
-    // Another person may use the same name.
-    const bob = await person('user_b');
+    const item = await makeItem(ada.auth);
+    expect((await call('/tags', { auth: ada.auth })).status).toBe(404);
     expect(
-      (
-        await call('/tags', {
-          method: 'POST',
-          auth: bob.auth,
-          body: { name: 'Big idea', colour: 'red' },
-        })
-      ).status,
-    ).toBe(201);
-
-    const patched = await body<{ tag: Tag }>(
-      await call(`/tags/${tag.id}`, {
-        method: 'PATCH',
-        auth: ada.auth,
-        body: { colour: 'teal', name: 'Idea' },
-      }),
-    );
-    expect(patched.tag).toMatchObject({ name: 'Idea', colour: 'teal' });
-    expect(
-      (await call(`/tags/${tag.id}`, { method: 'PATCH', auth: bob.auth, body: {} })).status,
+      (await call('/tags', { method: 'POST', auth: ada.auth, body: { name: 'x', colour: 'red' } }))
+        .status,
     ).toBe(404);
-    const listed = await body<{ tags: Tag[] }>(await call('/tags', { auth: ada.auth }));
-    expect(listed.tags.map((t) => t.name)).toEqual(['Idea']);
-    expect((await call(`/tags/${tag.id}`, { method: 'DELETE', auth: ada.auth })).status).toBe(204);
-    expect((await body<{ tags: Tag[] }>(await call('/tags', { auth: ada.auth }))).tags).toEqual([]);
-  });
-
-  it('stops at the tag limit', async () => {
-    const ada = await person('user_a');
-    const insert = h.db.sql.prepare(
-      'INSERT INTO tags (id, owner_id, name, colour, created_at, updated_at) VALUES (?, ?, ?, ?, 0, 0)',
-    );
-    for (let i = 0; i < 100; i++) insert.run(`t${i}`, 'user_a', `tag ${i}`, 'red');
-    const res = await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { name: 'one more', colour: 'red' },
-    });
-    expect(await body(res)).toEqual({ error: 'tag_limit' });
-  });
-
-  it('puts tags on items and shows each person only their own', async () => {
-    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
-    const bob = await person('user_b', { teams: [{ id: 'team1' }] });
-    const item = await makeItem(ada.auth, { teamId: 'team1' });
-    await call('/tags', {
-      method: 'POST',
-      auth: ada.auth,
-      body: { id: 'ta', name: 'Ada', colour: 'red' },
-    });
-    await call('/tags', {
-      method: 'POST',
-      auth: bob.auth,
-      body: { id: 'tb', name: 'Bob', colour: 'blue' },
-    });
     expect(
-      (await call(`/tags/ta/items/${item.id}`, { method: 'PUT', auth: ada.auth })).status,
-    ).toBe(204);
-    expect(
-      (await call(`/tags/ta/items/${item.id}`, { method: 'PUT', auth: ada.auth })).status,
-    ).toBe(204);
-    await call(`/tags/tb/items/${item.id}`, { method: 'PUT', auth: bob.auth });
-    // Someone else's tag is missing to them.
-    expect(
-      (await call(`/tags/ta/items/${item.id}`, { method: 'PUT', auth: bob.auth })).status,
+      (await call(`/tags/t1/items/${item.id}`, { method: 'PUT', auth: ada.auth })).status,
     ).toBe(404);
-    expect((await call('/tags/ta/items/missing', { method: 'PUT', auth: ada.auth })).status).toBe(
-      404,
-    );
-    const forAda = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: ada.auth }));
-    expect(forAda.item.tagIds).toEqual(['ta']);
-    const forBob = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: bob.auth }));
-    expect(forBob.item.tagIds).toEqual(['tb']);
-    await call(`/tags/ta/items/${item.id}`, { method: 'DELETE', auth: ada.auth });
-    const after = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: ada.auth }));
-    expect(after.item.tagIds).toEqual([]);
+    const got = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: ada.auth }));
+    expect(got.item).not.toHaveProperty('tagIds');
   });
 });
 

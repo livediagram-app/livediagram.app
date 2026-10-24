@@ -147,7 +147,7 @@ A create's place is decided in this order; the first that answers wins:
 ## Storage and limits
 
 - Defaults are liveworkspace's index's (`placement_defaults`), one row per person and key, per app
-  ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+  ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
   defaults"), not in the 4 KB preferences blob ([User preferences](../007-editor/user-preferences.md)).
 - A person holds at most one default per key, so their rows are bounded by the length of the key list.
 

@@ -1,4 +1,4 @@
-// Item rows and their wire shape. Decorating a page for the person asking (favourite, tags, last opened,
+// Item rows and their wire shape. Decorating a page for the person asking (favourite, last opened,
 // link access) is one D1 batch of four statements whatever the page's size, never a query per item.
 
 import {
@@ -74,7 +74,6 @@ function parseSummary(text: string): ItemSummary {
 
 type Extras = {
   favourite: boolean;
-  tagIds: string[];
   lastOpenedAt: number | null;
   hiddenFromRecent: boolean;
   // Whether it has a live share link (the owner's or a team member's Shared badge).
@@ -99,7 +98,6 @@ export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
     summary: parseSummary(row.summary),
     access: access.level,
     favourite: extras.favourite,
-    tagIds: extras.tagIds,
     lastOpenedAt: extras.lastOpenedAt,
     hiddenFromRecent: extras.hiddenFromRecent,
     hasLinks: extras.hasLinks === true,
@@ -128,7 +126,6 @@ export async function decorate(
   }
   const none: Extras = {
     favourite: false,
-    tagIds: [],
     lastOpenedAt: null,
     hiddenFromRecent: false,
   };
@@ -147,18 +144,12 @@ export async function decorate(
   );
   const db = env.INDEX_DB;
   const now = Date.now();
-  const [favourites, tags, opens, links, shared] = (await db.batch([
+  const [favourites, opens, links, shared] = (await db.batch([
     db
       .prepare(
         'SELECT item_id FROM favourites WHERE person_id = ? AND item_id IN (SELECT value FROM json_each(?))',
       )
       .bind(person.id, ids),
-    db
-      .prepare(
-        `SELECT it.item_id, it.tag_id FROM item_tags it JOIN tags t ON t.id = it.tag_id
-         WHERE it.item_id IN (SELECT value FROM json_each(?)) AND t.owner_id = ? ORDER BY t.name`,
-      )
-      .bind(ids, person.id),
     db
       .prepare(
         'SELECT item_id, last_opened_at, hidden FROM opens WHERE person_id = ? AND item_id IN (SELECT value FROM json_each(?))',
@@ -181,12 +172,6 @@ export async function decorate(
   const withLinks = new Set(shared!.results.map((r) => r.item_id as string));
 
   const favourite = new Set(favourites!.results.map((r) => r.item_id as string));
-  const tagIds = new Map<string, string[]>();
-  for (const r of tags!.results) {
-    const list = tagIds.get(r.item_id as string) ?? [];
-    list.push(r.tag_id as string);
-    tagIds.set(r.item_id as string, list);
-  }
   // An item hidden before it was ever opened has last_opened_at 0: never opened.
   const opened = new Map<string, number>();
   const hidden = new Set<string>();
@@ -209,7 +194,6 @@ export async function decorate(
     return [
       toItem(row, a, {
         favourite: favourite.has(row.id),
-        tagIds: tagIds.get(row.id) ?? [],
         lastOpenedAt: opened.get(row.id) ?? null,
         hiddenFromRecent: hidden.has(row.id),
         hasLinks: withLinks.has(row.id),

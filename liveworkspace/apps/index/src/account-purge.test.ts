@@ -60,7 +60,7 @@ const count = (query: string, ...args: (string | number | null)[]) =>
   Number((h.db.sql.prepare(query).get(...args) as { n: number }).n);
 
 // Ada's whole world, beside Bea's: personal items and folders, a team that outlives her (T) and one that
-// closed with her (D), tags, favourites, opens, Shared with me, a placement default, and the Inbox.
+// closed with her (D), favourites, opens, Shared with me, a placement default, and the Inbox.
 function arrange() {
   addFolder('f-ada', ADA);
   addFolder('f-ada-team', ADA, 'T');
@@ -72,17 +72,6 @@ function arrange() {
   addItem('ada-gone', ADA, { team: 'D', folder: 'f-ada-gone' });
   addItem('bea-gone', BEA, { team: 'D', folder: 'f-ada-gone' });
   addItem('bea-1', BEA, { folder: 'f-bea' });
-  run(
-    `INSERT INTO tags (id, owner_id, name, colour, created_at, updated_at) VALUES ('tag-ada', ?, 'a', 'red', 1, 1)`,
-    ADA,
-  );
-  run(
-    `INSERT INTO tags (id, owner_id, name, colour, created_at, updated_at) VALUES ('tag-bea', ?, 'b', 'red', 1, 1)`,
-    BEA,
-  );
-  run(
-    `INSERT INTO item_tags (tag_id, item_id, created_at) VALUES ('tag-ada', 'bea-1', 1), ('tag-bea', 'bea-1', 1)`,
-  );
   for (const [person, item] of [
     [ADA, 'bea-1'],
     [BEA, 'bea-1'],
@@ -149,7 +138,6 @@ function mentionsOfAda(): number {
   return (
     count('SELECT COUNT(*) AS n FROM items WHERE owner_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM folders WHERE owner_id = ?', ADA) +
-    count('SELECT COUNT(*) AS n FROM tags WHERE owner_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM favourites WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM opens WHERE person_id = ?', ADA) +
     count('SELECT COUNT(*) AS n FROM shared_with WHERE person_id = ?', ADA) +
@@ -249,7 +237,6 @@ describe('POST /internal/purge-person', () => {
     expect(count('SELECT COUNT(*) AS n FROM favourites WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM opens WHERE person_id = ?', BEA)).toBe(1);
     expect(count('SELECT COUNT(*) AS n FROM placement_defaults WHERE person_id = ?', BEA)).toBe(1);
-    expect(rows('SELECT tag_id FROM item_tags').map((r) => r.tag_id)).toEqual(['tag-bea']);
     expect(count('SELECT COUNT(*) AS n FROM collab_thread_people WHERE person_id = ?', BEA)).toBe(
       1,
     );
@@ -378,14 +365,10 @@ describe('POST /internal/purge-person', () => {
     expect(count('SELECT COUNT(*) AS n FROM purge_tombstones')).toBe(0);
   });
 
-  // Worst case: 50,000 items, each favourited, opened and tagged, plus 5,000 threads and actions on
+  // Worst case: 50,000 items, each favourited and opened, plus 5,000 threads and actions on
   // someone else's items. Measured, and the call budget must hold.
   it('purges 50,000 items within the per-call D1 budget', async () => {
     const N = 50_000;
-    run(
-      `INSERT INTO tags (id, owner_id, name, colour, created_at, updated_at) VALUES ('tag-ada', ?, 'a', 'red', 1, 1)`,
-      ADA,
-    );
     addItem('bea-1', BEA);
     const insert = h.db.sql.prepare(
       `INSERT INTO items (id, app, kind, owner_id, team_id, scope, title, created_at, updated_at)
@@ -397,7 +380,6 @@ describe('POST /internal/purge-person', () => {
       insert.run(id, ADA, `p:${ADA}`);
       run('INSERT INTO favourites (person_id, item_id, created_at) VALUES (?, ?, 1)', ADA, id);
       run('INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, 1)', ADA, id);
-      run(`INSERT INTO item_tags (tag_id, item_id, created_at) VALUES ('tag-ada', ?, 1)`, id);
     }
     for (let i = 0; i < 5_000; i++) {
       run(

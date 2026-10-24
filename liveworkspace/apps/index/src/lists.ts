@@ -41,8 +41,6 @@ export type ListSpec = ListFilters & {
   deep?: boolean;
   // Only these scopes (the `team` filter), or every scope the person has.
   scopes?: string[];
-  // One of the person's own tags (checked by the route).
-  tag?: string;
   limit: number;
   cursor?: Cursor;
   // Recent's first page only: also this many Most Used items, from the same request (Home's Jump Back In).
@@ -257,10 +255,6 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
   if (spec.app) {
     where.push('i.app = ?');
     args.push(spec.app);
-  }
-  if (spec.tag) {
-    where.push('i.id IN (SELECT item_id FROM item_tags WHERE tag_id = ?)');
-    args.push(spec.tag);
   }
   const filters = filterClauses(person, spec);
   where.push(...filters.where);

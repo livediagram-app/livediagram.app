@@ -31,7 +31,7 @@ is renamed twice. Until each app moves, only what people see is renamed.
                  liveworkspace.app
    ┌─────────────────────────────────────────────┐
    │ accounts   people, guests, teams, tokens    │
-   │ index      items, folders, tags, favourites │
+   │ index      items, folders, favourites,      │
    │            sharing, opens, Trash,           │
    │            comments, actions, Inbox         │
    │ grants     short-lived "may open item X"    │
@@ -47,12 +47,12 @@ is renamed twice. Until each app moves, only what people see is renamed.
 
 ### 1. The index is the only record of where an item is and who can reach it
 
-liveworkspace keeps one row per item: id, app, title, owner, team, folder, tags, favourite, Trash
+liveworkspace keeps one row per item: id, app, title, owner, team, folder, favourite, Trash
 state, created, updated, last opened, a thumbnail key, and its share links and the people it is
 shared with. Folders are not per app: a folder can hold a Canvas, a Plan, a Document and a Design.
 
 The Durable Object never keeps its own copy of any of this. Renaming in the editor writes the
-index. Moving, tagging, sharing, trashing and restoring happen only in the index. That removes the
+index. Moving, sharing, trashing and restoring happen only in the index. That removes the
 "feed D1 from every object" problem the RFC reply called the bulk of the work: the only things an
 app pushes are its content-derived summary (see 5) and a thumbnail.
 
@@ -190,7 +190,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    code, in this folder.
 2. **Guests in accounts.** The guest identity and hand-off on liveworkspace.app, with the
    guest-to-account merge.
-3. **The index service** on liveworkspace.app: items, folders, tags, favourites, sharing, opens,
+3. **The index service** on liveworkspace.app: items, folders, favourites, sharing, opens,
    Trash, comments, actions, the Inbox query, and grants. Starts empty.
 4. **`@liveworkspace/explorer`**, built against the index service and tried on liveworkspace.app.
 5. **liveplanner first** (it holds no data): `PlanRoom` holds content, creation registers in the

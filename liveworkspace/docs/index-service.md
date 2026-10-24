@@ -2,7 +2,7 @@
 
 The index is the One Explorer's service: one Worker at **liveworkspace.app/api/index**, with its own D1
 database, holding where every Canvas, Plan, Document and Design is and who can reach it. It keeps
-everything about an item except its content: title, owner, team, folder, tags, favourites, Trash
+everything about an item except its content: title, owner, team, folder, favourites, Trash
 state, opens and use days, share links and passwords, Shared with me, placement defaults, what the Inbox
 needs about comments and actions, and the Timeline. The content stays in each item's Durable Object in its app.
 
@@ -19,7 +19,7 @@ apps/index/src/grants.ts      ES256 grants and the public keys at /jwks
 apps/index/src/lists.ts       the Explorer's lists, one indexed and keyset-paged query each
 apps/index/src/items.ts       items: make, read, rename, move, Trash, copy, open, grant
 apps/index/src/sharing.ts     share links, passwords, what a link opens, Shared with me
-apps/index/src/personal.ts    tags, favourites, placement defaults (folders.ts: folders)
+apps/index/src/personal.ts    favourites, Hide from Recent, placement defaults (folders.ts: folders)
 apps/index/src/app-routes.ts  what an item pushes: its summary, each tab's comments and actions, its edits
 apps/index/src/inbox.ts       the Inbox query
 apps/index/src/timeline.ts    the Timeline: recording events, and a person's feed
@@ -50,7 +50,7 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
 - The `team` list filter takes a team id or `personal`; without it, a list holds the person's own items
   and every joined team's. Lists sort by `updatedAt` (Recent by last opened, Shared with me by when it was
   last opened through its link).
-- `POST /folders` and `POST /tags` take an optional client-made `id`, as the apps' Explorers mint them
+- `POST /folders` takes an optional client-made `id`, as the apps' Explorers mint them
   today; 409 `folder_exists` is that id taken. `GET /folders` is paged like every list.
 - Moving an item out of a team makes it the mover's own. Moving it into or out of a team drops its folder
   (the folder belonged to the old scope).
@@ -92,7 +92,7 @@ old key stop checking, and editors fetch a fresh one (they renew every ten minut
 
 Every list is one query, keyset-paged (`limit` ≤ 200), driven by an index that starts with the person
 (their scopes, opens, favourites or shared rows) or one folder, never a scan of `items`; decorating a page
-for the person (favourite, tags, last opened, link access) is one D1 batch. `lists.test.ts` pins each
+for the person (favourite, last opened, link access) is one D1 batch. `lists.test.ts` pins each
 list's query plan and times 2,000 of a person's items among 20,000 others' (each page a few
 milliseconds). Opens are written at most once a minute per person and item, in memory and in SQL. Comment
 pushes go in through `json_each`, one statement per table. Most Used rides Recent's first page as one more

@@ -109,14 +109,11 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The person's star and tags are the index's, on the document's item, which the server delete below takes too; carry it onto
+  // The person's star is the index's, on the document's item, which the server delete below takes too; carry it onto
   // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
   // written: taken as "none" it would drop it.
   const { item } = await indexClient.getItem(liveDoc.id);
   const starred = item.favourite;
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), from the same
-  // item.
-  const tagIds = item.tagIds ?? [];
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
@@ -130,7 +127,6 @@ async function downloadAndRemoveCloudCopy(
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
-    ...(tagIds.length ? { tagIds } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

@@ -112,13 +112,10 @@ export async function syncOfflineDocument(
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id, imageIds };
     if (done.outcome === 'deleted') {
-      // The star and tags lived on the offline record (docs/specs/013-workspace/favourites.md, tags.md), which just
-      // went: they go onto the document's index item, which the upload made. A failed star, or a tag deleted
-      // meanwhile, leaves the document synced without it.
+      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
+      // the document's index item, which the upload made. A failed star leaves the document synced without it.
+      // (Tag ids an older record still carries are ignored: docs/specs/013-workspace/tags.md.)
       if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
-      await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId: string) => indexClient.tagItem(tagId, done.rec.id)),
-      );
       return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

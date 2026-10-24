@@ -79,7 +79,6 @@ describe('createIndexClient', () => {
     await client.updateItem('i/1', { title: 'New' });
     await client.deleteItem('i1', { permanent: true });
     await client.deleteItem('i1');
-    await client.tagItem('t1', 'i1');
     await client.setPlacementDefault('mode:plan', 'f1');
     await client.setSharePassword('i1', null);
     await client.extendShareLink('CODE');
@@ -90,7 +89,6 @@ describe('createIndexClient', () => {
       'PATCH http://localhost:8793/api/index/items/i%2F1',
       'DELETE http://localhost:8793/api/index/items/i1?permanent=true',
       'DELETE http://localhost:8793/api/index/items/i1',
-      'PUT http://localhost:8793/api/index/tags/t1/items/i1',
       'PUT http://localhost:8793/api/index/placement-defaults/mode%3Aplan',
       'PUT http://localhost:8793/api/index/items/i1/share-password',
       'POST http://localhost:8793/api/index/share/CODE/extend',
@@ -99,8 +97,8 @@ describe('createIndexClient', () => {
     ]);
     expect(seen[0]!.body).toEqual({ app: 'livedesign', title: 'Logo' });
     expect(seen[0]!.headers.get('Content-Type')).toBe('application/json');
-    expect(seen[5]!.body).toEqual({ folderId: 'f1' });
-    expect(seen[6]!.body).toEqual({ password: null });
+    expect(seen[4]!.body).toEqual({ folderId: 'f1' });
+    expect(seen[5]!.body).toEqual({ password: null });
     expect(seen[2]!.headers.get('Content-Type')).toBeNull();
   });
 
@@ -133,7 +131,7 @@ describe('createIndexClient', () => {
   it('answers a non-JSON failure as unknown', async () => {
     const { doFetch } = fakeFetch(() => new Response('bad gateway', { status: 502 }));
     const client = createIndexClient({ getToken: () => 't', fetch: doFetch });
-    await expect(client.listTags()).rejects.toMatchObject({ status: 502, code: 'unknown' });
+    await expect(client.listFolders()).rejects.toMatchObject({ status: 502, code: 'unknown' });
   });
 });
 

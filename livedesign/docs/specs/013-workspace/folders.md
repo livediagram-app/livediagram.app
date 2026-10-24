@@ -2,7 +2,7 @@
 
 > **Where folders live.** Folders, and which folder each design is in, are liveworkspace's index's: one tree per
 > person and one per team, shared by every app, managed through the index's folder routes
-> ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+> ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
 > defaults") from the shared Explorer. livedesign's api lists them and makes one for API clients (`GET` / `POST /api/folders`)
 > and files a new design where its create asks. The index's contract is the source of truth for the storage, routes and refusals below.
 

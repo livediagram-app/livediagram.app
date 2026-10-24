@@ -33,7 +33,6 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
     summary: {},
     access: 'edit',
     favourite: false,
-    tagIds: [],
     lastOpenedAt: null,
     sharedVia: null,
     ...over,

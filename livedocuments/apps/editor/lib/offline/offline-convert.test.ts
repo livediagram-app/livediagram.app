@@ -20,15 +20,12 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
 }));
 
-// The person's star and tags on a document are the index's (liveworkspace/docs/one-explorer-contracts.md).
+// The person's star on a document is the index's (liveworkspace/docs/one-explorer-contracts.md).
 vi.mock('@/lib/index-client', () => ({
   indexClient: {
     getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
     favourite: vi.fn(async () => {
       calls.push('favourite');
-    }),
-    tagItem: vi.fn(async () => {
-      calls.push('tagItem');
     }),
   },
 }));
@@ -135,19 +132,17 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(indexClient.favourite).toHaveBeenCalledWith('d1');
   });
 
-  it('puts the tags back on the server copy once the local copy is gone', async () => {
+  // Tags were removed (docs/specs/013-workspace/tags.md): a record written while they existed still syncs, its tag
+  // ids ignored.
+  it('syncs an older record that still carries tag ids, ignoring them', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
       tabs: [],
       tagIds: ['a', 'b'],
     } as never);
-    vi.mocked(indexClient.tagItem).mockRejectedValueOnce(new Error('tag gone'));
     await saveOfflineToCloud('d1', 'owner');
-    // One refused (a tag deleted meanwhile) leaves the sync done all the same.
-    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'tagItem']);
-    expect(indexClient.tagItem).toHaveBeenCalledWith('a', 'd1');
-    expect(indexClient.tagItem).toHaveBeenCalledWith('b', 'd1');
+    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
   });
 
   it('carries the deck, folder and created date, not just the tabs', async () => {

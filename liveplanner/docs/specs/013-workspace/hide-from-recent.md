@@ -15,7 +15,7 @@ search, Favourites, direct links, sharing, teams.
 Recent is your view of your own work, so the choice belongs to the reader, not the item. On a shared or team plan,
 one collaborator tidying their Recent leaves everyone else's alone. The index keeps it on the person's own `opens`
 row (`hidden`), beside when they last opened the item
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
 defaults"):
 
 - `PUT /recent-hidden/:itemId` hides it, `DELETE /recent-hidden/:itemId` shows it again. Hiding an item never

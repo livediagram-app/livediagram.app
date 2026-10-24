@@ -55,7 +55,6 @@ export type Item = {
   // For the person asking:
   access: Level;
   favourite: boolean;
-  tagIds: string[];
   lastOpenedAt: number | null;
   // Hidden from the person's Recent (and Jump Back In) by Hide from Recent. Always sent by the index.
   hiddenFromRecent?: boolean;
@@ -75,14 +74,6 @@ export type Folder = {
   ownerId: string;
   createdAt: number;
   updatedAt: number;
-};
-
-export type Tag = {
-  id: string;
-  name: string;
-  // A standard colour's name or `#rrggbb`.
-  colour: string;
-  createdAt: number;
 };
 
 export type ShareLink = {
@@ -314,7 +305,6 @@ export type ItemListQuery = ItemFilters & {
   deep?: boolean;
   // A team id, or `personal` for only my own items. Unset: mine and every team I have joined.
   team?: string;
-  tag?: string;
   limit?: number;
   cursor?: string;
   // Recent's first page only: also up to this many (MOST_USED_MAX) Most Used items, as `mostUsed`.
@@ -354,9 +344,6 @@ export type CreateFolderInput = {
   teamId?: string | null;
 };
 export type UpdateFolderInput = { name?: string; parentId?: string | null };
-
-export type CreateTagInput = { id?: string; name: string; colour: string };
-export type UpdateTagInput = { name?: string; colour?: string };
 
 export type CreateShareLinkInput = {
   level?: Level;

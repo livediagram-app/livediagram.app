@@ -66,25 +66,6 @@ CREATE INDEX items_empty ON items (updated_at)
 -- A guest's items on merge, and the Inbox's "threads on my items".
 CREATE INDEX items_owner ON items (owner_id);
 
--- Personal tags: a person's own labels, on any item they can reach.
-CREATE TABLE tags (
-  id         TEXT    PRIMARY KEY,
-  owner_id   TEXT    NOT NULL,
-  name       TEXT    NOT NULL,
-  colour     TEXT    NOT NULL,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX tags_owner_name ON tags (owner_id, name COLLATE NOCASE);
-
-CREATE TABLE item_tags (
-  tag_id     TEXT    NOT NULL REFERENCES tags (id) ON DELETE CASCADE,
-  item_id    TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (tag_id, item_id)
-);
-CREATE INDEX item_tags_item ON item_tags (item_id);
-
 CREATE TABLE favourites (
   person_id  TEXT    NOT NULL,
   item_id    TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,

@@ -16,12 +16,7 @@ import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleMerge } from './merge';
 import { drainPersonMerges } from './person-merges';
-import {
-  handleFavourites,
-  handlePlacementDefaults,
-  handleRecentHidden,
-  handleTags,
-} from './personal';
+import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
 import { sweep } from './purge';
 import { sweepExpiringLinks } from './share-expiry';
 import { handleAccountTimeline, handleTimeline } from './timeline';
@@ -44,7 +39,6 @@ const LISTS = new Set(['items', 'trash', 'shared', 'inbox', 'timeline']);
 // The routes that need a person: anything listing or changing a person's own things.
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
   folders: handleFolders,
-  tags: handleTags,
   favourites: handleFavourites,
   'recent-hidden': handleRecentHidden,
   'placement-defaults': handlePlacementDefaults,

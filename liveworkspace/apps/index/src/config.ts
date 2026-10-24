@@ -9,7 +9,7 @@ export const API_PATH = INDEX_API_PATH;
 // The largest body any route takes: one tab's comment threads and actions are the biggest.
 export const MAX_BODY_BYTES = 512 * 1024;
 
-// Opaque ids from callers (folders, tags, tabs, elements): bounded.
+// Opaque ids from callers (folders, tabs, elements): bounded.
 export const ID_MAX = 128;
 // An app-defined creation intent, and a placement default's key.
 export const INTENT_MAX = 100;

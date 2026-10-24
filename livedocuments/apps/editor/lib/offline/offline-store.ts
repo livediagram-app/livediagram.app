@@ -52,10 +52,6 @@ export type OfflineDocumentRecord = {
   // which an offline document has none of, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), by
-  // tag id, for the same reason as the star: the index item that held them goes while the document is offline.
-  // Optional so records written before the field existed stay valid.
-  tagIds?: string[];
   // When the document was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
