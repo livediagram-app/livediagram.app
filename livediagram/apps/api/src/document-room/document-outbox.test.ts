@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { recordItemEditor } from '@liveworkspace/index-app';
 import type { Element } from '@livediagram/document';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { accountsServiceFor } from '../test-accounts-service';
-import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './document-outbox';
+import { DRAIN_TABS, drainOutbox, readContentSummary, DOCUMENT_OUTBOX } from './document-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -88,11 +89,11 @@ describe('the outbox', () => {
     const db = document();
     await drainOutbox(db.env, 'P', fakeIndex().client);
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
-    recordEditor(exec, 'P', 'user_a', T0 + 1);
-    recordEditor(exec, 'P', 'user_b', T0 + 2);
-    recordEditor(exec, 'P', 'user_a', T0 + 3);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 1);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_b', T0 + 2);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 3);
     // A person whose id starts like another's keeps their own key.
-    recordEditor(exec, 'P', 'user_ab', T0 + 4);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_ab', T0 + 4);
     expect(keys(db)).toEqual([
       `edit:user_b@${T0 + 2}`,
       `edit:user_a@${T0 + 3}`,
@@ -143,14 +144,14 @@ describe('the outbox', () => {
       },
     });
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [done] }, 0);
-    recordEditor(exec, 'P', 'user_a', T0 + 5);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 5);
     const one = fakeIndex();
     await drainOutbox(db.env, 'P', one.client);
     expect(one.collab[0]!.push.actions[0]).toMatchObject({ status: 'done', doneById: 'user_a' });
 
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board 2', elements: [done] }, 0);
-    recordEditor(exec, 'P', 'user_a', T0 + 6);
-    recordEditor(exec, 'P', 'user_b', T0 + 7);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 6);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_b', T0 + 7);
     const two = fakeIndex();
     await drainOutbox(db.env, 'P', two.client);
     expect(two.collab[0]!.push.actions[0]).toMatchObject({ doneById: null });

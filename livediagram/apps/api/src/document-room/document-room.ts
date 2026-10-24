@@ -3,10 +3,11 @@ import {
   earliestRoomGrantDue,
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
+  type ItemHeadSync,
   nextFlushAt,
+  recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
-  type ItemHeadSync,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -93,7 +94,7 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { readContentSummary } from './document-outbox';
-import { drainOutbox, recordEditor } from './document-outbox';
+import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import {
   allShares,
   drainShares,
@@ -624,10 +625,16 @@ export class DocumentRoom extends DurableObject<Env> {
       community,
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (document-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
     if (response.ok && identity.owner && this.writes > writesBefore) {
       const sql = this.state.storage.sql;
-      recordEditor((q, ...b) => sql.exec(q, ...b), documentId, identity.owner, Date.now());
+      recordItemEditor(
+        (q, ...b) => sql.exec(q, ...b),
+        DOCUMENT_OUTBOX,
+        documentId,
+        identity.owner,
+        Date.now(),
+      );
       this.noteWrite();
     }
     // A post published or removed by this request starts or stops its checks.
@@ -808,7 +815,9 @@ export class DocumentRoom extends DurableObject<Env> {
   async notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
-    this.state.waitUntil(notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}));
+    this.state.waitUntil(
+      notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}),
+    );
     return true;
   }
 

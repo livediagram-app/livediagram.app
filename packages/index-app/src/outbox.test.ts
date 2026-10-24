@@ -13,6 +13,7 @@ import {
   outboxPending,
   queueOutbox,
   recordEditor,
+  recordItemEditor,
   type SqlExec,
 } from './outbox';
 import { nodeSql } from './test-sqlite';
@@ -62,6 +63,23 @@ describe('the outbox', () => {
       { kind: 'tab', key: 't1' },
       { kind: 'edit', key: 'user_a@2' },
       { kind: 'edit', key: 'user_ab@3' },
+    ]);
+  });
+
+  it("keeps one edit per person per item in an app's own outbox table", () => {
+    const sql = sqlite();
+    sql.exec('CREATE TABLE outbox (id INTEGER PRIMARY KEY, plan_id TEXT, kind TEXT, key TEXT)');
+    const exec = (q: string, ...b: (string | number)[]) => sql.exec(q, ...b);
+    const outbox = { table: 'outbox', itemColumn: 'plan_id' };
+    recordItemEditor(exec, outbox, 'P', 'user_a', 1);
+    recordItemEditor(exec, outbox, 'Q', 'user_a', 2);
+    recordItemEditor(exec, outbox, 'P', 'user_a', 3);
+    recordItemEditor(exec, outbox, 'P', 'user_ab', 4);
+    const rows = sql.exec('SELECT plan_id, key FROM outbox ORDER BY id').toArray();
+    expect(rows).toEqual([
+      { plan_id: 'Q', key: 'user_a@2' },
+      { plan_id: 'P', key: 'user_a@3' },
+      { plan_id: 'P', key: 'user_ab@4' },
     ]);
   });
 

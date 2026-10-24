@@ -21,8 +21,6 @@ import {
   capCollabPush,
   drainIndexOutbox,
   editedOf,
-  editKeyOf,
-  editKeyRange,
   type OutboxRow,
 } from '@liveworkspace/index-app';
 import {
@@ -187,31 +185,11 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
 
 // ---------- Who edited -----------------------------------------------------------------------------------------
 
-/**
- * A person's write to the plan, for the Timeline and their Most Used: replaces their key with one at `at`
- * (@liveworkspace/index-app's edit keys, one per person). The room calls it after a request that wrote
- * (plan-room.ts route()), so the edit is the person's who asked, never a guess from the content. Two plain
- * statements on the room's storage, outside the save's transaction.
- */
-export function recordEditor(
-  exec: (query: string, ...bindings: (string | number)[]) => unknown,
-  planId: string,
-  personId: string,
-  at: number,
-): void {
-  const [from, to] = editKeyRange(personId);
-  exec(
-    `DELETE FROM outbox WHERE plan_id = ? AND kind = 'edit' AND key >= ? AND key < ?`,
-    planId,
-    from,
-    to,
-  );
-  exec(
-    `INSERT INTO outbox (plan_id, kind, key) VALUES (?, 'edit', ?)`,
-    planId,
-    editKeyOf(personId, at),
-  );
-}
+// Where a person's write to the plan is recorded, for the Timeline and their Most Used: the room calls
+// @liveworkspace/index-app's recordItemEditor with this after a request that wrote (plan-room.ts route()), so the
+// edit is the person's who asked, never a guess from the content. Two plain statements on the room's storage, outside
+// the save's transaction.
+export const PLAN_OUTBOX = { table: 'outbox', itemColumn: 'plan_id' } as const;
 
 // ---------- The drain ----------------------------------------------------------------------------------------
 

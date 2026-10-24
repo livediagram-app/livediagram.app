@@ -6,6 +6,7 @@ import {
   nextFlushAt,
   openRoomTicket,
   type ItemHeadSync,
+  recordItemEditor,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -74,7 +75,7 @@ import {
 } from './document-content';
 import { notifyDocumentJoin } from '../email/notifications';
 import { anonymiseDocument } from './document-anonymise';
-import { drainOutbox, recordEditor } from './document-outbox';
+import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import { answerDocumentRequest, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -467,10 +468,16 @@ export class DocumentRoom extends DurableObject<Env> {
       this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (document-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
     if (response.ok && identity.owner && this.writes > writesBefore) {
       const sql = this.state.storage.sql;
-      recordEditor((q, ...b) => sql.exec(q, ...b), documentId, identity.owner, Date.now());
+      recordItemEditor(
+        (q, ...b) => sql.exec(q, ...b),
+        DOCUMENT_OUTBOX,
+        documentId,
+        identity.owner,
+        Date.now(),
+      );
       this.noteWrite();
     }
     return response;

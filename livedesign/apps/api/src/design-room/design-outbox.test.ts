@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { recordItemEditor } from '@liveworkspace/index-app';
 import type { Element } from '@livedesign/design';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ENV, fakeAccounts } from '../test-accounts';
-import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './design-outbox';
+import { DRAIN_TABS, drainOutbox, readContentSummary, DESIGN_OUTBOX } from './design-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -54,8 +55,8 @@ function design(): SqliteD1 {
 
 const rows = (db: SqliteD1, query: string) => db.sql.prepare(query).all();
 const keys = (db: SqliteD1) =>
-  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE design_id = 'P' ORDER BY id").map((r) =>
-    String(r.k),
+  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE design_id = 'P' ORDER BY id").map(
+    (r) => String(r.k),
   );
 
 // The index as the drain sees it: every push recorded, a failure on demand.
@@ -88,11 +89,11 @@ describe('the outbox', () => {
     const db = design();
     await drainOutbox(db.env, 'P', fakeIndex().client);
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
-    recordEditor(exec, 'P', 'user_a', T0 + 1);
-    recordEditor(exec, 'P', 'user_b', T0 + 2);
-    recordEditor(exec, 'P', 'user_a', T0 + 3);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'P', 'user_a', T0 + 1);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'P', 'user_b', T0 + 2);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'P', 'user_a', T0 + 3);
     // A person whose id starts like another's keeps their own key.
-    recordEditor(exec, 'P', 'user_ab', T0 + 4);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'P', 'user_ab', T0 + 4);
     expect(keys(db)).toEqual([
       `edit:user_b@${T0 + 2}`,
       `edit:user_a@${T0 + 3}`,

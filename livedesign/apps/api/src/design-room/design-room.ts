@@ -5,6 +5,7 @@ import {
   ItemDb,
   nextFlushAt,
   type ItemHeadSync,
+  recordItemEditor,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { levelAtLeast } from '@liveworkspace/index-client';
@@ -81,7 +82,7 @@ import {
 } from './design-content';
 import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
-import { drainOutbox, recordEditor } from './design-outbox';
+import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { answerDesignRequest, type RouteIdentity } from './design-route';
 
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -477,10 +478,16 @@ export class DesignRoom extends DurableObject<Env> {
       this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (design-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
     if (response.ok && identity.owner && this.writes > writesBefore) {
       const sql = this.state.storage.sql;
-      recordEditor((q, ...b) => sql.exec(q, ...b), designId, identity.owner, Date.now());
+      recordItemEditor(
+        (q, ...b) => sql.exec(q, ...b),
+        DESIGN_OUTBOX,
+        designId,
+        identity.owner,
+        Date.now(),
+      );
       this.noteWrite();
     }
     return response;

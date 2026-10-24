@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { recordItemEditor } from '@liveworkspace/index-app';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor, type TestMediaService } from '../test-media-service';
 import { exportDocumentCopy, importDocumentCopy } from '../document-room/document-content';
-import { drainOutbox, recordEditor } from '../document-room/document-outbox';
+import { DOCUMENT_OUTBOX, drainOutbox } from '../document-room/document-outbox';
 import { mediaOwner } from '../media';
 import { documentPlacesImage } from './image-refs';
 import { upsertTab } from './tabs';
@@ -77,7 +78,7 @@ describe('servableImageIds', () => {
     liveDoc(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_bob', ['bobs']);
     expect(await documentMayServeImage(db.env, 'D', 'bobs')).toBe(false);
-    recordEditor(exec, 'D', 'user_bob', 1);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'D', 'user_bob', 1);
     expect(await documentMayServeImage(db.env, 'D', 'bobs')).toBe(true);
   });
 
@@ -150,7 +151,7 @@ describe('placement grants', () => {
   it("grants an editor's placed images as the canvas pushes them, and keeps serving them after", async () => {
     liveDoc(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_bob', ['bobs']);
-    recordEditor(exec, 'D', 'user_bob', 1);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'D', 'user_bob', 1);
     await upsertTab(db.env, 'D', tabWith('t1', 'bobs'), 0);
     await drainOutbox(db.env, 'D', null);
     expect(grants()).toEqual(['bobs']);

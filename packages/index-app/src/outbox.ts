@@ -213,6 +213,30 @@ export function recordEditor(
   sql.exec(`INSERT INTO ${table} (kind, key) VALUES ('edit', ?)`, editKeyOf(personId, at));
 }
 
+// The same for an app that keeps its own outbox table, keyed by the item (`plan_id`, `document_id`, `design_id`):
+// replaces the person's edit key on that item with one at `at`.
+export function recordItemEditor(
+  exec: (query: string, ...bindings: (string | number)[]) => unknown,
+  outbox: { table: string; itemColumn: string },
+  itemId: string,
+  personId: string,
+  at: number,
+): void {
+  const { table, itemColumn } = outbox;
+  const [from, to] = editKeyRange(personId);
+  exec(
+    `DELETE FROM ${table} WHERE ${itemColumn} = ? AND kind = 'edit' AND key >= ? AND key < ?`,
+    itemId,
+    from,
+    to,
+  );
+  exec(
+    `INSERT INTO ${table} (${itemColumn}, kind, key) VALUES (?, 'edit', ?)`,
+    itemId,
+    editKeyOf(personId, at),
+  );
+}
+
 export function outboxPending(sql: SqlExec): boolean {
   return sql.exec('SELECT 1 FROM index_outbox LIMIT 1').toArray().length > 0;
 }

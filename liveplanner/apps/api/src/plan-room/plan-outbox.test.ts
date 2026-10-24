@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
+import { recordItemEditor } from '@liveworkspace/index-app';
 import type { Element } from '@liveplanner/project';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { insertItems } from '../db/items';
 import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
-import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './plan-outbox';
+import { DRAIN_TABS, drainOutbox, readContentSummary, PLAN_OUTBOX } from './plan-outbox';
 import {
   IndexError,
   type AppTimelineEvent,
@@ -90,11 +91,11 @@ describe('the outbox', () => {
     const db = plan();
     await drainOutbox(db.env, 'P', fakeIndex().client);
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
-    recordEditor(exec, 'P', 'user_a', T0 + 1);
-    recordEditor(exec, 'P', 'user_b', T0 + 2);
-    recordEditor(exec, 'P', 'user_a', T0 + 3);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_a', T0 + 1);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_b', T0 + 2);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_a', T0 + 3);
     // A person whose id starts like another's keeps their own key.
-    recordEditor(exec, 'P', 'user_ab', T0 + 4);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_ab', T0 + 4);
     expect(keys(db)).toEqual([
       `edit:user_b@${T0 + 2}`,
       `edit:user_a@${T0 + 3}`,
@@ -234,7 +235,7 @@ describe('the cards push', () => {
     await drainOutbox(db.env, 'P', fakeIndex().client);
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
     // user_b edited the plan once: known from then on.
-    recordEditor(exec, 'P', 'user_b', T0);
+    recordItemEditor(exec, PLAN_OUTBOX, 'P', 'user_b', T0);
     await drainOutbox(db.env, 'P', fakeIndex().client);
     await insertItems(db.env, 'P', [
       await card('c1', 1, { status: 'new', assignee: await person('user_b') }),
@@ -278,7 +279,7 @@ describe('the cards push', () => {
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
     const people = Array.from({ length: 500 }, (_, i) => `user_${i}`);
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
-    people.forEach((p, i) => recordEditor(exec, 'P', p, T0 + i));
+    people.forEach((p, i) => recordItemEditor(exec, PLAN_OUTBOX, 'P', p, T0 + i));
     await drainOutbox(db.env, 'P', fakeIndex().client);
     const cards = await Promise.all(
       Array.from({ length: 1_000 }, async (_, i) =>

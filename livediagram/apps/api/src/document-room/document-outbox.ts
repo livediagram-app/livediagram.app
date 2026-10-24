@@ -21,8 +21,6 @@ import {
 import {
   capCollabPush,
   drainIndexOutbox,
-  editKeyOf,
-  editKeyRange,
   editedOf,
   type OutboxRow,
 } from '@liveworkspace/index-app';
@@ -169,31 +167,11 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
 
 // ---------- Who edited -----------------------------------------------------------------------------------------
 
-/**
- * A person's write to the document, for the Timeline and their Most Used: replaces their key with one at `at`
- * (@liveworkspace/index-app's edit keys, one per person). The room calls it after a request that wrote
- * (document-room.ts route()), so the edit is the person's who asked, never a guess from the content. Two plain
- * statements on the room's storage, outside the save's transaction.
- */
-export function recordEditor(
-  exec: (query: string, ...bindings: (string | number)[]) => unknown,
-  documentId: string,
-  personId: string,
-  at: number,
-): void {
-  const [from, to] = editKeyRange(personId);
-  exec(
-    `DELETE FROM outbox WHERE document_id = ? AND kind = 'edit' AND key >= ? AND key < ?`,
-    documentId,
-    from,
-    to,
-  );
-  exec(
-    `INSERT INTO outbox (document_id, kind, key) VALUES (?, 'edit', ?)`,
-    documentId,
-    editKeyOf(personId, at),
-  );
-}
+// Where a person's write to the document is recorded, for the Timeline and their Most Used: the room calls
+// @liveworkspace/index-app's recordItemEditor with this after a request that wrote (document-room.ts route()), so the
+// edit is the person's who asked, never a guess from the content. Two plain statements on the room's storage, outside
+// the save's transaction.
+export const DOCUMENT_OUTBOX = { table: 'outbox', itemColumn: 'document_id' } as const;
 
 // ---------- Images -------------------------------------------------------------------------------------------
 

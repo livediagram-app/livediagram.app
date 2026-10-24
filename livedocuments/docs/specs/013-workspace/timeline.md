@@ -13,7 +13,7 @@ The index records what it changes itself, in the same batch as the change: a doc
 `restored`, `shared` (a share link made, with its level), `unshared` and `favourited` (on its person's Timeline only).
 
 livedocuments reports `edited`. The document's room records the editor of every save made through an HTTP route that
-carries an identity (`document-room.ts`, `recordEditor` in `document-outbox.ts`): one outbox row per person, replaced on each
+carries an identity (`document-room.ts`, `recordItemEditor` from `@liveworkspace/index-app`): one outbox row per person, replaced on each
 save, so a burst of saves is one row. The outbox drains them with the document's other index reports, up to
 `APP_EVENTS_MAX` a batch, as `PUT /app/items/:id/events`. The index keeps one `edited` event per person, document and
 UTC day, moving its time forward, and records a use day for that person, so editing a document counts toward Most Used.
