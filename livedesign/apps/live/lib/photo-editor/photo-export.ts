@@ -9,9 +9,7 @@ import {
   isShown,
   psdFromPhoto,
   writePsd,
-  type Photo,
   type PhotoLayer,
-  type PixelsLookup,
   type Raster,
 } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
