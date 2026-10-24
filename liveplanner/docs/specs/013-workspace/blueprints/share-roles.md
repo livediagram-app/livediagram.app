@@ -192,7 +192,7 @@ Invariants:
 
 - **I1** Every level gate compares through `levelAtLeast`; no gate reads `role === 'edit'` by itself.
 - **I2** Every reader parses through `parseStoredLevel`: an unknown level reads as `view`.
-- **I3** A Participant's content change reaches D1 and peers only through `applyParticipantOp`.
+- **I3** A Participant's content change reaches the plan's store and peers only through `applyParticipantOp`.
 - **I4** `addedBy` is written only by `applyParticipantOp`, from the room's verified adder key; an Editor's save
   keeps whatever the stored element carries.
 - **I6** The server enforces every level; `can` only decides what renders.
@@ -287,20 +287,16 @@ they only look, with no comments or votes. "edit": they can change anything.`
 
 ## Data and persistence
 
-| Field                                    | Class      | Notes                                                               |
-| ---------------------------------------- | ---------- | ------------------------------------------------------------------- |
-| `share_links.role`, `shared_with.role`   | credential | Legacy `CHECK (role IN ('edit', 'view'))`: `view` for a Participant |
-| `share_links.level`, `shared_with.level` | credential | `NULL` or a level; set only for `participate` (SR11)                |
-| `ws_tickets.role`                        | ephemeral  | The effective level; no CHECK                                       |
-| `ws_tickets.adder_key`                   | ephemeral  | `TEXT NULL`; 60 s like the ticket                                   |
-| Element `addedBy`                        | content    | Optional, ≤ `ADDER_KEY_LENGTH` chars; on `sticky` and `text` only   |
-| Room attachment `adderKey`               | ephemeral  | Per socket, survives hibernation                                    |
+| Field                             | Class      | Notes                                                             |
+| --------------------------------- | ---------- | ----------------------------------------------------------------- |
+| Share link and direct share level | credential | The index's, not this app's; `view`, `participate` or `edit`      |
+| Room ticket level                 | ephemeral  | The effective level, in the index's grant the ticket carries      |
+| Adder key                         | ephemeral  | Worked out per person at the ticket (`adderKeyFor`); not stored   |
+| Element `addedBy`                 | content    | Optional, ≤ `ADDER_KEY_LENGTH` chars; on `sticky` and `text` only |
+| Room attachment `adderKey`        | ephemeral  | Per socket, survives hibernation                                  |
 
-The baseline migration gives `share_links` and `shared_with` a `level` column
-(`CHECK (level IS NULL OR level IN ('view', 'participate', 'edit'))`) and `ws_tickets` an `adder_key TEXT NULL`.
-Readers take `parseStoredLevel(level ?? role)` (`storedLevelOf`); writers
-keep `role` two-valued (`legacyRoleColumn`) and set `level` only for `participate` (`levelColumn`); the Shared lists
-join on `COALESCE(level, role)`. Copies,
+Share links and direct shares, with their level, live in liveworkspace's index; this app has no D1 and stores
+neither. Readers take `parseStoredLevel` on the level a grant or session carries. Copies,
 exports, templates and duplicates keep `addedBy` as data (it identifies nobody outside its project); a Make a copy
 lands in a new project, where no adder key matches it.
 
@@ -343,16 +339,16 @@ lands in a new project, where no adder key matches it.
   into an owner id and differs per project; a Participant cannot claim another's element by writing `addedBy`
   (the rule keeps the stored value).
 - A Participant's dots and answers carry a client-chosen key, as an Editor's do today ([Later](../share-roles.md#later)).
-- Rate: room frames ride `OP_RATE_CAP`; each applied op is one D1 read and one compare-and-swap.
+- Rate: room frames ride `OP_RATE_CAP`; each applied op is one read and one compare-and-swap.
 
 ## Performance and limits
 
 - `isParticipationOp` and the op class check are constant-time on `op.kind` and `delta.kind`.
-- A Participant op costs one D1 read and one compare-and-swap write of the tab row (≤ `MAX_TAB_BYTES`), serialised
+- A Participant op costs one read and one compare-and-swap write of the tab row (≤ `MAX_TAB_BYTES`), serialised
   per project on the tab write queue. Measured CPU for one op (parse, rule, stringify): 0.23 ms on a 200-element
   board (23 KB), 2.2 ms at 2,000 elements (242 KB), 4.5 ms at 5,000 (611 KB). The editor's commit guard
   (`participantTabChange`) costs 0.10 ms, 1.5 ms and 1.6 ms on the same tabs, once per commit.
-- The autosave's 600 ms debounce batches a person's typing into one op per element. What is not bounded is D1 round
+- The autosave's 600 ms debounce batches a person's typing into one op per element. What is not bounded is store round
   trips: one per op, so a multi-element move by one Participant is several writes, and a room of people all writing
   at once queues behind one another. Recorded as a risk; the mitigation, if it bites, is to batch a socket's ops per
   tab into one write.

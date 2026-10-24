@@ -8,20 +8,20 @@ writes are the engine's ([sheets-engine](sheets-engine.md#writes-storets)); this
 
 | Spec term    | Identifier                                                              |
 | ------------ | ----------------------------------------------------------------------- |
-| sheet store  | D1 tables `sheets` + `sheet_cells`; editor `sheet-store-client.ts`      |
+| sheet store  | plan tables `sheets` + `sheet_cells`; editor `sheet-store-client.ts`    |
 | sheet        | `Sheet` (engine), wire `SheetDto` (`packages/api-schema/src/sheets.ts`) |
 | cell write   | `SheetWrite` `{ kind: 'cells' }`                                        |
 | layout write | `SheetWrite` `{ kind: 'layout' }`                                       |
 | sheet rev    | `sheets.rev`, `SheetDto.rev`                                            |
 | room op      | `SheetsRoomOp` kind `sheets`; presence `sheet-presence`                 |
 
-## Data and persistence: D1
+## Data and persistence: the plan's store
 
 The plan's schema, `apps/api/src/plan-room/plan-schema.ts`:
 
 ```sql
 CREATE TABLE sheets (
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL REFERENCES plan(id) ON DELETE CASCADE,
   id TEXT NOT NULL,
   tab_id TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -34,22 +34,22 @@ CREATE TABLE sheets (
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
   updated_by TEXT NOT NULL,            -- JSON SheetPerson
   delete_when_unreferenced INTEGER,    -- 1: deleted with its element; gone once unreferenced
-  PRIMARY KEY (project_id, id)
+  PRIMARY KEY (plan_id, id)
 );
-CREATE INDEX sheets_tab ON sheets(project_id, tab_id);
+CREATE INDEX sheets_tab ON sheets(plan_id, tab_id);
 CREATE TABLE sheet_cells (
-  project_id TEXT NOT NULL,
+  plan_id TEXT NOT NULL,
   sheet_id TEXT NOT NULL,
   row_id TEXT NOT NULL,
   col_id TEXT NOT NULL,
   input TEXT,                          -- JSON CellInput, NULL when the cell holds only a format
   format TEXT,                         -- JSON CellFormat, NULL when none
-  PRIMARY KEY (project_id, sheet_id, row_id, col_id),
-  FOREIGN KEY (project_id, sheet_id) REFERENCES sheets(project_id, id) ON DELETE CASCADE
+  PRIMARY KEY (plan_id, sheet_id, row_id, col_id),
+  FOREIGN KEY (plan_id, sheet_id) REFERENCES sheets(plan_id, id) ON DELETE CASCADE
 );
 ```
 
-The same migration, for Deleting a sheet:
+The same schema, for Deleting a sheet:
 
 ```sql
 CREATE TABLE sheet_refs (
@@ -63,7 +63,7 @@ CREATE TRIGGER sheet_refs_removed AFTER DELETE ON sheet_refs ...  -- settle step
 CREATE TRIGGER sheet_refs_added AFTER INSERT ON sheet_refs ...    -- settle step 3, for NEW.sheet_id
 ```
 
-The triggers find the sheet's project through `project_tabs` for the row's tab, and stamp
+The triggers find the sheet's project through `plan_tabs` for the row's tab, and stamp
 `CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)` (milliseconds, SQLite's clock).
 
 - Field classification: `title`, `input`, `format` are user content (never logged); `updated_by` is display
@@ -75,33 +75,33 @@ The triggers find the sheet's project through `project_tabs` for the row's tab, 
   `deleteSheetStatement`, `copySheetsStatements(env, sourceId, newId, onlyTabIds?)`, `sheetCounts(env, docId)`;
   re-exported from `db/index.ts`. Row ↔ `Sheet` in the same file (`sheetFromRows`).
 - **Cell writes by `json_each`**: the changed cells go as one JSON parameter per statement, so a 5,000-cell
-  write is a handful of statements whatever D1's 100-parameter cap. From the engine's landed write the api builds
+  write is a handful of statements whatever SQLite's 100-parameter cap in a Durable Object. From the engine's landed write the api builds
   `sets` (cells whose input is set; `{ r, c, i }`), `fmts` (format patches, `{ r, c, fp }` with `null` keys
   clearing, or `fp: null` to clear all) and `clears` (inputs cleared; `{ r, c }`):
 
   ```sql
   -- inputs set
-  INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input)
+  INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input)
   SELECT ?1, ?2, j.value->>'r', j.value->>'c', j.value->>'i' FROM json_each(?3) j WHERE true
-  ON CONFLICT (project_id, sheet_id, row_id, col_id) DO UPDATE SET input = excluded.input;
+  ON CONFLICT (plan_id, sheet_id, row_id, col_id) DO UPDATE SET input = excluded.input;
   -- format patches (RFC 7396 json_patch: a null key clears it)
-  INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, format)
+  INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, format)
   SELECT ?1, ?2, j.value->>'r', j.value->>'c', json_patch('{}', j.value->>'fp') FROM json_each(?3) j WHERE true
-  ON CONFLICT (project_id, sheet_id, row_id, col_id) DO UPDATE SET
+  ON CONFLICT (plan_id, sheet_id, row_id, col_id) DO UPDATE SET
     format = CASE WHEN excluded.format IS NULL THEN NULL
                   ELSE json_patch(coalesce(sheet_cells.format, '{}'), excluded.format) END;
   -- inputs cleared
-  UPDATE sheet_cells SET input = NULL WHERE project_id = ?1 AND sheet_id = ?2
+  UPDATE sheet_cells SET input = NULL WHERE plan_id = ?1 AND sheet_id = ?2
     AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3));
   -- cells left with nothing
-  DELETE FROM sheet_cells WHERE project_id = ?1 AND sheet_id = ?2 AND input IS NULL
+  DELETE FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2 AND input IS NULL
     AND (format IS NULL OR format = '{}') AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3));
   ```
 
   Rows or columns deleted remove their cells with `DELETE ... AND row_id IN (SELECT value FROM json_each(?3))`.
 
-- Every write is one D1 `batch`: `UPDATE sheets SET rev = rev + 1, write_nonce = ?, updated_at = ?, updated_by = ?
-[, layout = ?] [, title = ?] WHERE project_id = ? AND id = ? AND rev = ? RETURNING rev`, then the cell statements,
+- Every write is one `batch` in the plan's store: `UPDATE sheets SET rev = rev + 1, write_nonce = ?, updated_at = ?, updated_by = ?
+[, layout = ?] [, title = ?] WHERE plan_id = ? AND id = ? AND rev = ? RETURNING rev`, then the cell statements,
   then the
   recount `UPDATE sheets SET cell_count = (SELECT COUNT(*) ...), cell_bytes = (SELECT COALESCE(SUM(length(input)) +
 SUM(length(format)), 0) ...)`. Each later statement runs only `WHERE EXISTS (... write_nonce = ?)`, this write's
@@ -245,23 +245,23 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
 
 - **Reference index** (`apps/api/src/db/sheet-refs.ts`):
   - `sheetRefIds(elements)`: every `plan-sheet` shape's `planSheet.sheetId` and `planSheet.copyOf`, deduplicated.
-  - `REFERENCED` (SQL fragment): `EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
-WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id)`. A sheet id is unique only in its
+  - `REFERENCED` (SQL fragment): `EXISTS (SELECT 1 FROM sheet_refs r JOIN plan_tabs dt ON dt.tab_id = r.tab_id
+WHERE r.sheet_id = sheets.id AND dt.plan_id = sheets.plan_id)`. A sheet id is unique only in its
     project (a copied project keeps them), so a reference counts only through a tab of the sheet's project.
   - `sheetRefReplaceStatements(env, tabId, ids)`: `DELETE FROM sheet_refs WHERE tab_id = ?1 AND sheet_id NOT IN
 (json_each(?2))`, then `INSERT OR IGNORE ... SELECT ?1, value FROM json_each(?2)` when `ids` is non-empty.
   - `sheetSettleStatements(env, projectId, now)`, in order:
-    1. `DELETE FROM sheets WHERE project_id = ?1 AND delete_when_unreferenced = 1 AND NOT REFERENCED`;
-    2. `UPDATE sheets SET unreferenced_since = ?2 WHERE project_id = ?1 AND unreferenced_since IS NULL AND NOT
+    1. `DELETE FROM sheets WHERE plan_id = ?1 AND delete_when_unreferenced = 1 AND NOT REFERENCED`;
+    2. `UPDATE sheets SET unreferenced_since = ?2 WHERE plan_id = ?1 AND unreferenced_since IS NULL AND NOT
 REFERENCED`;
-    3. `UPDATE sheets SET unreferenced_since = NULL WHERE project_id = ?1 AND unreferenced_since IS NOT NULL AND
+    3. `UPDATE sheets SET unreferenced_since = NULL WHERE plan_id = ?1 AND unreferenced_since IS NOT NULL AND
 REFERENCED`.
        Each is bounded by the project's sheets (`PROJECT_SHEETS_MAX`, the `sheets` primary key prefix), and is one
        index probe that matches nothing for a project without sheets.
   - `sheetRefCopyStatement(env, fromTabId, toTabId)`: `INSERT INTO sheet_refs SELECT ?2, sheet_id FROM sheet_refs
 WHERE tab_id = ?1` (a copied project's tabs, without a parse).
 - **Where it runs**: `tabWriteStatements` (every editor save and every changeset) appends
-  `sheetRefReplaceStatements` after the tabs and `project_tabs` upserts (the FK and the triggers read them). The
+  `sheetRefReplaceStatements` after the tabs and `plan_tabs` upserts (the FK and the triggers read them). The
   settling runs in the triggers, per reference added or removed, so a write whose references are unchanged settles
   nothing. `seedTabs`
   appends `sheetRefReplaceStatements` per tab (its sheets are seeded after). The project copy appends
@@ -270,15 +270,15 @@ WHERE tab_id = ?1` (a copied project's tabs, without a parse).
   adds nothing. A create stores `unreferenced_since = CASE WHEN REFERENCED THEN NULL ELSE now END`, so a sheet whose
   element never reaches the api expires too.
 - **Delete when unreferenced**: `DELETE /sheets/:sheetId?whenUnreferenced=true` runs one batch: `UPDATE sheets SET
-delete_when_unreferenced = 1 WHERE project_id = ? AND id = ?`, then `DELETE FROM sheets WHERE project_id = ? AND
+delete_when_unreferenced = 1 WHERE plan_id = ? AND id = ?`, then `DELETE FROM sheets WHERE plan_id = ? AND
 id = ? AND NOT REFERENCED RETURNING id`. A row returned relays `{ deleted: true }`; otherwise the tab write that
   removes the last reference deletes it (settle step 1) without a relay: nothing in the project shows it. 204
   either way; `404 sheet_not_found` when there is no such sheet.
 - **Restore**: `SheetCreate.restore?: true` (the editor's undo). When the id is stored on the same tab, the create
   sets `delete_when_unreferenced = NULL` and answers 200 with the stored sheet; otherwise it creates as usual. A
   restore takes up to `SHEET_CELLS_MAX` cells in one request (as a seed does).
-- **Expiry** (`apps/api/src/sheet-sweep.ts` `runSheetExpiry`, from the daily `scheduled` handler): repeatedly reads
-  `SELECT project_id, id, cell_count FROM sheets WHERE unreferenced_since < ?cutoff ORDER BY unreferenced_since
+- **Expiry** (`apps/api/src/sheet-sweep.ts` `runSheetExpiry`, from each plan's daily upkeep in its alarm): repeatedly reads
+  `SELECT plan_id, id, cell_count FROM sheets WHERE unreferenced_since < ?cutoff ORDER BY unreferenced_since
 LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells by cascade), taking sheets in
   order while the batch holds at most `SHEET_EXPIRY_BATCH_CELLS` cells (always at least one), and stops when none are
   left or the cells deleted reach `SHEET_EXPIRY_CELLS_MAX`; the rest waits a day. Cost follows what expired, not
@@ -356,9 +356,9 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 | Restored title now taken on the tab                            | `uniqueSheetTitle` (the next free title) before the restore is sent                                                                           |
 | Delete before any Sheet has drawn                              | No dialog; the sheet waits as a Cut's                                                                                                         |
 | A sheet whose element never reached the api                    | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                                                                             |
-| Agent change past a sheet or project cap                      | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
+| Agent change past a sheet or project cap                       | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
 | Agent change whose later part the api refuses                  | The landed parts kept and reported as a `partly` line, then the refusal                                                                       |
-| add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the project's cells again                                                                  |
+| add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the project's cells again                                                                   |
 | Design on a sheet with cells                                   | `sheet_not_empty`, naming clear and add_sheet                                                                                                 |
 | Charts' changeset refused after the writes                     | The writes stand; the answer carries their lines and the refusal                                                                              |
 | New charts with no Sheet framing the sheet on its tab          | Not placed; the answer says so                                                                                                                |
@@ -367,7 +367,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 | Insert after a row someone deleted                             | The engine resolves to the stored neighbour or the end                                                                                        |
 | Room op before the GET answer                                  | Held until the load ends, then merged by rev                                                                                                  |
 | Offline record without `sheets`                                | Empty store                                                                                                                                   |
-| Paste of a sheet into another project over the cap            | Refused with the spec toast; nothing is pasted                                                                                                |
+| Paste of a sheet into another project over the cap             | Refused with the spec toast; nothing is pasted                                                                                                |
 | A create with a taken title (agent)                            | `409 sheet_title_taken`; the editor picks the next free title itself                                                                          |
 
 ## Security and trust
@@ -384,7 +384,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 
 - GET of a full sheet: 50,000 cells × typical 40 bytes ≈ 2 MB JSON (worst 4 MB by the bytes cap), one per sheet on
   the tab, only when a tab with a sheet opens. The tab's sheets come in one request.
-- A write is one D1 batch of at most 6 statements, independent of its cell count.
+- A write is one batch of at most 6 statements, independent of its cell count.
 - Every statement that names cells by key matches them as `(row_id, col_id)` pairs (`cellsNamedBy`), so the primary
   key seeks each named cell; matched on the joined `row_id || ':' || col_id`, each read every cell of the sheet
   (up to `SHEET_CELLS_MAX`). `apps/api/src/db/sheets-plans.test.ts` pins the plan.
@@ -393,7 +393,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 - Deleting a sheet adds one statement to every tab write (two when the tab has a Sheet): measured on the test
   harness's SQLite, 0.055 ms a write with no sheets and 0.066 ms at `PROJECT_SHEETS_MAX`, flat in the number of
   sheets; the settling triggers run only for references added or removed. It rides the write's existing batch (no
-  extra D1 round trip). The daily expiry reads only expired rows by the partial index.
+  extra round trip). The daily expiry reads only expired rows by the partial index.
 
 ## Observability
 
@@ -404,20 +404,20 @@ inputs, formats or titles.
 
 ## Testing
 
-| Rule                                                            | Test                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Routes: create, list, gates, tab scope, rejections, caps        | `apps/api/src/routes/sheet-routes.test.ts` ("creating and listing sheets", "access")                                                                                                                                                          |
-| Write batch: upsert, patch per key, clear, rows, rename         | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
-| Rev race retries then busy; huge write relayed as refetch       | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
-| Delete; copy a sheet; copy a project; seeds                    | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                                                                                     |
+| Rule                                                            | Test                                                                                                                                                                                                                                            |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Routes: create, list, gates, tab scope, rejections, caps        | `apps/api/src/routes/sheet-routes.test.ts` ("creating and listing sheets", "access")                                                                                                                                                            |
+| Write batch: upsert, patch per key, clear, rows, rename         | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                           |
+| Rev race retries then busy; huge write relayed as refetch       | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                           |
+| Delete; copy a sheet; copy a project; seeds                     | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                                                                                       |
 | Template starts: build, materialise, create, changeset, editor  | `packages/sheets/src/template-starts.test.ts`, `packages/templates/src/template-sheets.test.ts`, `apps/api/src/routes/sheet-routes.test.ts`, `apps/api/src/changesets/submit.test.ts`, `apps/editor/components/sheets/useSheetModel.test.tsx`   |
-| Reference index: sheetId and copyOf, marks, clears, settles     | `apps/api/src/db/sheet-refs.test.ts`                                                                                                                                                                                                          |
-| Delete when unreferenced, now or on the last reference; restore | `apps/api/src/routes/sheet-routes.test.ts` ("deleting with the element")                                                                                                                                                                      |
-| Expiry deletes past 30 days, bounded by cells                   | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                                                                            |
+| Reference index: sheetId and copyOf, marks, clears, settles     | `apps/api/src/db/sheet-refs.test.ts`                                                                                                                                                                                                            |
+| Delete when unreferenced, now or on the last reference; restore | `apps/api/src/routes/sheet-routes.test.ts` ("deleting with the element")                                                                                                                                                                        |
+| Expiry deletes past 30 days, bounded by cells                   | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                                                                              |
 | Which sheets a delete takes (duplicates, copies, other tabs)    | `apps/editor/lib/sheet-references.test.ts`                                                                                                                                                                                                      |
 | Confirm, cancel, Cut skips, release, undo restores              | `apps/editor/hooks/sheets/useSheetDeleteGuard.test.tsx`, `hooks/canvas/useElementSelectionActions.test.ts`, `components/sheets/sheet-store-client.test.ts`, `components/sheets/useSheetModel.test.tsx`, `hooks/sheets/useSheetsBridge.test.tsx` |
 | Offline restore keeps a stored sheet; delete query              | `apps/editor/lib/offline/offline-sheets.test.ts`, `lib/api/sheets.test.ts`                                                                                                                                                                      |
-| Room op scoped to the tab                                       | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                             |
+| Room op scoped to the tab                                       | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                               |
 | Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
 | Transient write failures resent with backoff, refusals dropped  | `apps/editor/components/sheets/sheet-store-client.test.ts`, `components/sheets/sheet-write-retry.test.ts`                                                                                                                                       |
 | Undo of a deletion merges into the sheet as it is               | `packages/sheets/src/store-inverse-delete.test.ts`, `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                  |
@@ -425,7 +425,7 @@ inputs, formats or titles.
 | Model: attach, load, placed and copied sheets, cards            | `apps/editor/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
 | Bridge: room ops, attach, undo journal                          | `apps/editor/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |
 | Api client, offline store, clipboard seeds                      | `apps/editor/lib/api/sheets.test.ts`, `lib/offline/offline-sheets.test.ts`, `lib/clipboard-payload.sheets.test.ts`                                                                                                                              |
-| Agent verbs, MCP tools and output schemas                       | `packages/agent-verbs/src/sheets/sheet-engine.test.ts`, `packages/agent-verbs/src/verbs/sheet.test.ts`, `apps/mcp/src/sheet-tools.test.ts`, `output-schema.test.ts`, `tools.test.ts`                                                          |
+| Agent verbs, MCP tools and output schemas                       | `packages/agent-verbs/src/sheets/sheet-engine.test.ts`, `packages/agent-verbs/src/verbs/sheet.test.ts`, `apps/mcp/src/sheet-tools.test.ts`, `output-schema.test.ts`, `tools.test.ts`                                                            |
 
 ## Constants and configuration
 
@@ -436,7 +436,7 @@ inputs, formats or titles.
 | `SHEET_RELAY_BYTES_MAX`     | 262144 | Default (D5); well under a WebSocket frame's 1 MB         |
 | `SHEET_UNFRAMED_DAYS`       | 30     | Spec                                                      |
 | `SHEET_EXPIRY_BATCH`        | 25     | Default (D6); expired sheets read per query               |
-| `SHEET_EXPIRY_BATCH_CELLS`  | 100000 | Default (D6); cells one D1 batch deletes, 2 full sheets   |
+| `SHEET_EXPIRY_BATCH_CELLS`  | 100000 | Default (D6); cells one batch deletes, 2 full sheets      |
 | `SHEET_EXPIRY_CELLS_MAX`    | 500000 | Default (D6); cells one daily run deletes, 10 full sheets |
 | `SHEET_IDS_PER_GET_MAX`     | 50     | Default (D7)                                              |
 | `AGENT_READ_CELLS_MAX`      | 5000   | Default (D8); a read an agent can hold                    |

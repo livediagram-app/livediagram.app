@@ -62,7 +62,7 @@ many people in one go (`notificationRecipients`), a team's people
 (`readTeamPeople`), and the milestone claim, all in `@liveworkspace/auth-client`
 (`notify.ts`), which every app shares, with the windows and caps. The once-only
 state of the join, assignment and mention emails is the plan's own
-(`notify_claims` in its SQLite, pruned to a day); liveplanner's D1 holds none.
+(`notify_claims` in its SQLite, pruned to a day); liveplanner has no D1.
 
 The opt-out categories liveplanner reads (`notifyComments`, `notifyFormResponses`,
 `notifyProjectJoin`, `notifyMilestones`, `notifyActionAssigned`, `notifyMentions`)
@@ -95,7 +95,7 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-None in liveplanner's D1. An owner's address is looked up when an email is sent
+None beyond the plan's own `notify_claims`. An owner's address is looked up when an email is sent
 (`accountEmails` from `@liveworkspace/auth-client`, up to 100 ids in one call,
 verified addresses only, accounts only). A guest is never emailed. Each plan
 keeps its own `notify_claims` rows (key, sender, time) for the join, assignment

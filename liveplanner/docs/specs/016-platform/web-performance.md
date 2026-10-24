@@ -158,5 +158,4 @@ seen on the project).
 - A check that needs only a project's owner and team reads that row, not the full project.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its project in one query and fetches the room's ledger alongside its other
-  reads ([API](../015-api/api.md) "Tab save"); the timeline's event and its scopes are one batch; the
-  guest-to-account migration moves its rows in one batch.
+  reads ([API](../015-api/api.md) "Tab save").

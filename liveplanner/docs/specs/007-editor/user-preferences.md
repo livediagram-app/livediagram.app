@@ -542,7 +542,7 @@ and the dialog stays as the one complete, browsable index of them.
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **Projects** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md) entry, with Change and Clear; those are not a
-  preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
+  preference, they are the index's (`/placement-defaults`, [Default folders](../013-workspace/default-folders.md))), and an **Explorer** section with **Show Home Banner**
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and

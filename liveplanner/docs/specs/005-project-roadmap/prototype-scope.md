@@ -18,7 +18,7 @@ Eight apps, all built for Cloudflare Workers (with Static Assets for the five Ne
 - **live**: the planner: the Explorer and the project editor, at clean routes (no `/live` prefix).
 - **telemetry**: the public anonymous-events dashboard at `/telemetry` ([Telemetry](../017-telemetry/telemetry.md)).
 - **help**: the help centre at `/help`, statically exported with MDX articles.
-- **api**: the Worker holding the REST endpoints and a Durable Object realtime room per project; D1 is the durable store.
+- **api**: the Worker holding the REST endpoints and a SQLite-backed Durable Object per project that holds its content and runs its realtime room; it has no D1.
 - **mcp**: the Worker at its own host, `mcp.liveplanner.app`, that gives AI tools the project, board, card, sheet and
   form tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: the Worker that stitches marketing, live, telemetry, help and api under one hostname.
@@ -30,11 +30,11 @@ The planner is real:
   every tab is in Plan. `/new` creates a project and lands on **Start Planning**, which makes the tab a Board, Sheet,
   Dashboard or Form tab, or starts it from a Plan template.
 - **Boards** ([Plan board](../026-plan/plan-board.md), [Items](../026-plan/items.md)): a board draws a project's
-  **items** (kept in their own D1 table with an open field bag, or inside an offline project) as columns of cards:
+  **items** (kept in their own table in the project's store with an open field bag, or inside an offline project) as columns of cards:
   drag between columns and rows, WIP limits, card types with custom fields ([Item types](../026-plan/item-types.md)),
   an item panel, voting and hide-writing for retros, presence on cards, board widgets and plan views (Gantt, calendar,
   workload, status, priority; [Plan views](../026-plan/plan-views.md)).
-- **Sheets** ([Sheet](../029-sheets/sheet.md)): cells in their own D1 store, formulas that read other sheets and the
+- **Sheets** ([Sheet](../029-sheets/sheet.md)): cells in their own tables in the project's store, formulas that read other sheets and the
   project's cards, number formats, borders, merges, freeze, sort, filter, validation, conditional formats, copy and
   paste with Google Sheets and Excel, CSV in and out, live for everyone with one undo timeline.
 - **Dashboards** ([Plan tabs](../026-plan/plan-tabs.md)): rows of slots holding live versions of the project's boards

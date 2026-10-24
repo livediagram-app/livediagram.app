@@ -43,8 +43,8 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Data and persistence
 
-- `projects.item_types TEXT NULL` and `projects.item_types_rev INTEGER NOT NULL DEFAULT 0`, in the baseline
-  migration.
+- `plan.item_types TEXT NULL` and `plan.item_types_rev INTEGER NOT NULL DEFAULT 0`, on the plan's own row
+  (`plan-schema.ts`).
 - `db/projects.ts`: `ProjectDTO.itemTypes` read through `readItemTypeCatalogue`, `ProjectDTO.itemTypesRev`
   (0 when absent); written by the create's INSERT (copy, sync, Drive; the revision starts at 0) and by
   `setProjectItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
@@ -56,8 +56,8 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Interfaces and contracts
 
-| Method | Path                             | Gate                 | Body               | Answer              |
-| ------ | -------------------------------- | -------------------- | ------------------ | ------------------- |
+| Method | Path                            | Gate                | Body               | Answer              |
+| ------ | ------------------------------- | ------------------- | ------------------ | ------------------- |
 | PUT    | `/api/projects/{id}/item-types` | edit, whole project | `ItemTypesRequest` | `ItemTypesResponse` |
 
 - `ItemTypesRequest = { itemTypes, expectedRev? }`; `ItemTypesResponse = { itemTypes, itemTypesRev }`.
@@ -213,27 +213,27 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Testing
 
-| Rule                                                      | Test                                                      |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`               |
-| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                       |
+| Rule                                                      | Test                                                        |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`                 |
+| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                         |
 | Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`          |
-| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                 |
-| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                 |
-| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`        |
+| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                   |
+| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                   |
+| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`          |
 | Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`               |
-| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`       |
-| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                         |
+| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`         |
+| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                           |
 | Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts` |
 | Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`     |
-| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`               |
-| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                 |
-| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`             |
+| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`                 |
+| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                   |
+| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`               |
 | Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`     |
 | Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`  |
 | Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`         |
 | Palette card refused in a left-out column                 | `apps/editor/hooks/plan/plan-card-drop.test.ts`             |
-| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)       |
+| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)         |
 
 ## Constants and configuration
 

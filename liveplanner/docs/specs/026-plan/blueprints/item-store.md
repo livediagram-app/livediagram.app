@@ -10,7 +10,7 @@ store, the room op, and the editor's item slice.
 | item       | `Item` (`packages/items/src/item.ts`)                        |
 | item type  | `ItemTypeDef`, catalogue `ITEM_TYPES`, id `ItemTypeId`       |
 | field      | a key of `Item.fields` (`ItemFields`); kinds `ItemFieldKind` |
-| item store | D1 table `items`; editor slice `usePlanItems`                |
+| item store | plan table `items`; editor slice `usePlanItems`              |
 | item key   | `Item.key` (number), drawn `#${key}`                         |
 | rank       | `Item.rank` (string), made by `rankBetween`                  |
 | status     | `fields.status` (string)                                     |
@@ -197,13 +197,13 @@ typeLabel? })` keeps live cards of any type id (no catalogue filter), narrowed t
   `cardMatches(item, query, typeLabel?)` also matches the type's name. `CardFinderPanel` holds the pressed types in
   component state and counts from the type-narrowed list.
 
-## Data and persistence: D1
+## Data and persistence: the plan's store
 
 The plan's schema, `apps/api/src/plan-room/plan-schema.ts`:
 
 ```sql
 CREATE TABLE items (
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL REFERENCES plan(id) ON DELETE CASCADE,
   id TEXT NOT NULL,
   type TEXT NOT NULL,
   item_key INTEGER NOT NULL,
@@ -212,18 +212,19 @@ CREATE TABLE items (
   rev INTEGER NOT NULL,
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
   created_by TEXT NOT NULL, updated_by TEXT NOT NULL,   -- JSON ItemPerson
-  PRIMARY KEY (project_id, id)
+  PRIMARY KEY (plan_id, id)
 );
-CREATE UNIQUE INDEX items_project_key ON items(project_id, item_key);
-ALTER TABLE projects ADD COLUMN items_rev INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE projects ADD COLUMN items_next_key INTEGER NOT NULL DEFAULT 1;
+CREATE UNIQUE INDEX items_plan_key ON items(plan_id, item_key);
+-- on the plan's own row:
+--   plan.items_rev INTEGER NOT NULL DEFAULT 0
+--   plan.items_next_key INTEGER NOT NULL DEFAULT 1
 ```
 
 - Field classification: `fields` is user content (never logged); `created_by`/`updated_by` display identity;
   the rest structural.
 - Cascade removes items on hard delete (`projectRemovalStatements` needs no new statement).
 - `copyProject` copies items verbatim to the new project id and copies `items_rev`/`items_next_key`.
-- Writes: one D1 `batch` per write: `UPDATE projects SET items_rev = items_rev + 1 [, items_next_key = ...]
+- Writes: one `batch` per write in the plan's store: `UPDATE plan SET items_rev = items_rev + 1 [, items_next_key = ...]
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
   `INSERT` (create). A lost `rev` race retries up to `ITEM_WRITE_RETRIES` from a fresh read, then `409 item_busy`.
 - `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `readItem`, `readItems`, `insertItems`,
@@ -260,7 +261,7 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   must exist (`404 item_not_found`, and in a tab-scoped grant be in scope), each patch is validated as a single
   one is, and every resulting item is checked (`status_excluded` unless `undo`, the field bounds) before anything
   is written, so one refusal refuses the whole request, naming the item (`{ error, field?, id }`). The updates go
-  in one D1 batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
+  in one batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
   is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
   `[items] patched` with the count. Every attempt checks all its items before writing its batch; a retry that then
   fails (an item refused as read again, or `item_busy` after the retries) answers its refusal with the items that
@@ -428,9 +429,9 @@ replays the write with the keys the first write was given. Votes push nothing.
 ## Performance and limits
 
 - Worst case 2,000 items × 16 KB = 32 MB is refused by the GET's practical size: `ITEMS_MAX` × typical 0.5 KB
-  = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; D1's 1 MB row limit is never reached.
+  = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; SQLite's 2 MB row limit in a Durable Object is never reached.
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
-- Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one D1 batch, never a
+- Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one batch, never a
   request per card; a type with 2,000 cards is 10 requests.
 - A bulk create or a seed of n cards is one store read and one insert batch per `ITEM_BULK_MAX` cards, and ranks
   them in O(n log n): measured 2,000 creates at 5.3 ms CPU against 73 ms with a sort per create

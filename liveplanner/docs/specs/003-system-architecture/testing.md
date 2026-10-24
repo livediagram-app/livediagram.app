@@ -107,7 +107,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
   `plan-room/plan-room-store.test.ts` runs the real worker against one real
-  `PlanRoom` per plan, each on its own database.
+  `PlanRoom` per plan, each on its own in-memory SQLite.
 
 ## Scripts
 
@@ -146,12 +146,12 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                            | Why                                                                                                  |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                    | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`   | Resolve and revoke the credentials that act as an account                                            |
-| `packages/index-app/src/room-ticket.ts` (repo root), `src/routes/plan-grant.ts` | The index's grant as the room ticket, and settling a request's grant before it reaches the plan      |
-| `src/routes/share.ts`                            | The only unauthenticated read path into a project                                                    |
+| Files                                                                           | Why                                                                                             |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                   | Decides WHO a request is — access-token and guest-token checks, api tokens, the read/edit gates |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                  | Resolve and revoke the credentials that act as an account                                       |
+| `packages/index-app/src/room-ticket.ts` (repo root), `src/routes/plan-grant.ts` | The index's grant as the room ticket, and settling a request's grant before it reaches the plan |
+| `src/routes/share.ts`                                                           | The only unauthenticated read path into a project                                               |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting work another project still shows: an outcome no amount of production monitoring
@@ -270,14 +270,13 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (account access tokens, guest signatures, project access, tokens),
-    every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `PlanRoom` Durable Object's rules, ledger
-    and multiplayer paths, every route family (projects, tabs, share, images,
-    thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events), the Timeline's writers and its catalogue
-    against its spec, the image reference index, email lifecycle, the OpenAPI
-    manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
+  - `apps/api`: auth guards (account and guest access tokens, project access, API tokens),
+    every defensive row mapper, the plan's store modules against real SQLite
+    (cascades, schema steps), the `PlanRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (projects, tabs, items, sheets,
+    forms, share, thumbnails, folders, teams, trash, changesets, workbench,
+    OAuth, unfurl, events), email lifecycle, the OpenAPI
+    manifest ↔ dispatch drift guards, response helpers.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
@@ -301,7 +300,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native
     `title` rules, directives).
-  - `packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+  - `../packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
     TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
@@ -374,9 +373,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 - **Ahead:**
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state, and D1 as either a recorder or in-memory SQLite (see
+    Object state, and each plan's SQLite as in-memory `node:sqlite` (see
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
-    let the D1 binding + Durable Object run in a real `workerd` runtime, but
+    let the Durable Objects run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
 
 Browser end-to-end tests are not part of this gate; they are specified in

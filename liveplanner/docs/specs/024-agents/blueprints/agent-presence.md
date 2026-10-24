@@ -331,7 +331,7 @@ none, and the room pins it on the session attachment as `personTag`.
 
 | Field                                 | Class     | Notes                                                      |
 | ------------------------------------- | --------- | ---------------------------------------------------------- |
-| `ws_tickets.person_tag`               | transient | TEXT NULL; lives as long as the ticket (60 s)              |
+| Room upgrade person tag               | transient | Worked out at the upgrade (`personTagFor`); not stored     |
 | Session attachment `personTag`        | transient | Per socket, survives hibernation, gone with the socket     |
 | DO storage `agent-presence:<t>:<tab>` | ephemeral | `AgentPresenceRecord`, at most 120 s without a refresh     |
 | `Comment.tokenId`                     | audit     | Inside `tabs.data`; written once; deleted with its comment |
@@ -339,9 +339,8 @@ none, and the room pins it on the session attachment as `personTag`.
 `AgentPresenceRecord = { id, projectId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- The column is nullable and lives in the baseline migration.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
-  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches D1.
+  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches the plan's SQLite.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
   a project copy carries it (redacted for every viewer but its author). Account deletion removes the account's
   tokens; a comment's token id then names nothing.
@@ -369,7 +368,7 @@ setAt, expiresAt }`.
 - **E17** A reply that pushes the tab over `MAX_TAB_BYTES`: 413, nothing written, nothing relayed.
 - **E18** A lost compare-and-swap twice: 409 `tab_busy`, nothing written.
 - **E19** A relay that fails: the write stands; `[room-mutation] el-delta did not reach the room` warns (PR26); editors get
-  it from D1 on their next read, and the ledger merge does not apply because the room never saw it.
+  it from the plan's store on their next read, and the ledger merge does not apply because the room never saw it.
 - **E20** A list over a project with no threads: 200 `{ threads: [] }` after one query.
 - **E21** A tab body that fails to parse during the list: skipped, logged `[comment] list skipped tab`.
 
@@ -393,7 +392,7 @@ setAt, expiresAt }`.
 
 ## Performance and limits
 
-- `PUT .../presence`: at most five D1 reads (project meta, grant, tab, participant, a team membership) and one
+- `PUT .../presence`: at most five reads (project meta, grant, tab, participant, a team membership) and one
   room call; the room does one storage write, one `setAlarm` and one roster broadcast.
 - A roster broadcast is O(S x (S + A)) for S sockets and A entries: the person-tag index is built once per frame,
   then each recipient's projection is linear. With A at most 32 and an entry under 3 KiB (20 ids of at most
@@ -502,7 +501,7 @@ Room and route tests run on the in-memory storage and SQLite fakes with a fixed 
 | `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
 | `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
 
-No new environment variable or binding. Its one column, the ticket's, is in the baseline migration.
+No new environment variable, binding or column.
 
 ## Assets and external resources
 

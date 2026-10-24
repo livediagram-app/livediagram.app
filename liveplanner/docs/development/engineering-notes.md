@@ -55,7 +55,7 @@ Drop an entry once an upstream release makes it redundant.
 
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.liveplanner.app](https://staging.liveplanner.app), a complete copy of the
-platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
+platform with its own data ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
 presses anything. Within a few minutes your change is running on a reachable host, its Durable Objects
 running any new schema step against real remote storage.
 
@@ -78,7 +78,7 @@ Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go 
 TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
 - **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
-- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveplanner/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
+- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveworkspace/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
@@ -126,7 +126,7 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3202` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`      | `3102`                  | The port `e2e-stack.mjs` serves the built editor app on                 |
+| `E2E_EDITOR_PORT`    | `3102`                  | The port `e2e-stack.mjs` serves the built editor app on               |
 | `E2E_API_PORT`       | `8887`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 
@@ -148,7 +148,7 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes, no server-required image loader. Any server logic goes in the api worker.
 - **Server logic lives in Cloudflare Workers**, not in Next.js. Frontends call those workers.
-- **Database access goes through the api worker**, never from the browser.
+- **Stored plans are reached through the api worker**, never from the browser.
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
 - **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveplannerNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and `packages/next-config/apps-use-shared.test.js` lists the app.

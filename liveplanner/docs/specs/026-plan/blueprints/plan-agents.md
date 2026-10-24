@@ -9,7 +9,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | the plan         | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                     |
 | board (outline)  | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns }`                                                        |
-| column name      | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                    |
+| column name      | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                     |
 | naming           | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                        |
 | card type change | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                      |
 | board request    | `BoardRequest`, `placeBoard` (`packages/items/src/board-place.ts`)                                                                   |
@@ -110,7 +110,7 @@ types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItems
 
 - `change_items`: 2 reads per call (items, plan; parallel) + 1 write per change (≤ 50).
 - Plan route: only tabs whose body holds `"plan-board"` are read (`tabBodiesWithBoards`, an `instr` filter in
-  D1, as `tabIdsWithComments`), `PLAN_TAB_BATCH` (20) at a time, reduced to board set-ups; the response holds no
+  the plan's SQLite, as `tabIdsWithComments`), `PLAN_TAB_BATCH` (20) at a time, reduced to board set-ups; the response holds no
   elements. `planOutline` over 50 tabs of 2,000 elements and 200 boards: 11.7 ms cold, 1.5 ms warm (measured
   2026-10-08), guarded at 250 ms by `plan-outline.test.ts`.
 - Measured locally end to end: `list_items` and `change_items` (one change) about 170 ms a call including

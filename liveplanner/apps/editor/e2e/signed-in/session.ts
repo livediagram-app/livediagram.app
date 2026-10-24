@@ -47,7 +47,7 @@ export async function installSession(page: Page, user: StubUser | null): Promise
 }
 
 /**
- * A fresh account id. The stack's D1 outlives a test, and an account's synced preferences with it,
+ * A fresh account id. The stack's local storage outlives a test, and an account's synced preferences with it,
  * so a test that flips a setting takes an account nobody else uses.
  */
 export function freshUserId(name: string): string {

@@ -14,7 +14,7 @@ being fixed in.
 Six shared causes. Most element bugs are one of these showing through.
 
 1. **A press ships the whole element, late.** An element change only leaves
-   the browser through the autosave (600 ms debounce, then the D1 PUT, then
+   the browser through the autosave (600 ms debounce, then the tab PUT, then
    the broadcast), as an `el` `update` op that replaces the whole element on
    every receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one card inside that window
    overwrite each other.
@@ -33,7 +33,7 @@ Six shared causes. Most element bugs are one of these showing through.
    600 ms of a local press cancelled the press's save and broadcast
    outright; a remote op that changed nothing left the flag set and
    swallowed the next local change instead.
-5. **D1 is last writer wins.** Every client PUTs whole tabs, and the api
+5. **The store is last writer wins.** Every client PUTs whole tabs, and the api
    replaces the stored blob, so a reload or late joiner sees whichever save
    landed last. (Multi-writer fields merge since phase 3; element content is
    written again by the saver that may have landed last, see
@@ -114,11 +114,11 @@ Still open until phase 4: a view-role comment goes through its REST
 endpoint, not a delta (the room drops view-role mutations), so editors still
 don't see it live.
 
-## Phase 3 (shipped): D1 stops overwriting multi-writer fields
+## Phase 3 (shipped): the store stops overwriting multi-writer fields
 
 Phase 2 made the room converge, but every client still PUT whole tabs and
-the api replaced the stored blob, so D1 held whichever save landed last. A
-save snapshotted before somebody's answer arrived erased it from D1, and a
+the api replaced the stored blob, so the store held whichever save landed last. A
+save snapshotted before somebody's answer arrived erased it from the store, and a
 reload showed fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` and `vote` op it
@@ -162,11 +162,11 @@ an agent's changesets merge into a save by their own rule, not through this ledg
 
 **Comments joined the ledger in phase 5**, once the room stamped their
 authors; at first they were left out, because the api credits every comment
-new to D1 to the saver and a merged comment would have been credited wrongly.
+new to the store to the saver and a merged comment would have been credited wrongly.
 
-Residual, stated plainly: the merge and the D1 write are two steps, so two
+Residual, stated plainly: the merge and the write are two steps, so two
 saves whose merge and write interleave can still land the older merge
-last. The window is the length of one D1 write, not the 600 ms debounce,
+last. The window is the length of one write, not the 600 ms debounce,
 and the next save from anybody repairs it.
 
 ## Phase 4 (shipped): the rest
@@ -182,7 +182,7 @@ and the next save from anybody repairs it.
   `comment-remove` delta an editor's comment sends, through an internal
   `POST /mutation` on the Durable Object, which sequences, logs and records it
   like a peer's op. Editors see it at once and their next save keeps it; it
-  used to reach D1 only, and the next editor save erased it. The relayed
+  used to reach the store only, and the next editor save erased it. The relayed
   comment carries no `authorId` (the author's owner id, which a tab GET
   redacts for everyone else); the author's own browser keeps it when it swaps
   its local comment id for the server's.
@@ -197,7 +197,7 @@ and the next save from anybody repairs it.
 ## Phase 5 (shipped): the loose ends
 
 - **Comment author ids stay off the wire.** A comment's `authorId` is its
-  author's owner id, a guest's credential. D1 keeps it (delete-own needs it)
+  author's owner id, a guest's credential. The store keeps it (delete-own needs it)
   and a tab GET redacts it for everyone but the author, but every element op,
   whole-tab op and comment delta carried it to every socket in the room. One
   definition, `opForTheWire`, strips it from any op, and it runs at the two
@@ -210,8 +210,8 @@ and the next save from anybody repairs it.
   (the identity already on that person's cursor) (`stampCommentAuthor`). The ledger records adds, removes and the latest
   resolve, and a save merges the ones the saver hadn't seen, in the order the
   room took them. Crediting was wrong before this in a way that predates the
-  branch: the api stamps every comment NEW to D1 with the saver's identity, so
-  a save that reached D1 before the author's own credited the author's
+  branch: the api stamps every comment NEW to the store with the saver's identity, so
+  a save that reached the store before the author's own credited the author's
   comment to the saver. `rewriteCommentAuthors` now credits such a comment
   with the name the room saw it posted under, leaves its author id empty, and
   lets the author's own save (the only copy carrying their id) claim it. A
@@ -233,7 +233,7 @@ widgets, voting) in one element field, `planBoard`, and its column cogs and its 
 WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
 up one board at once, say one renaming To do while the other renames Review, each sent a
 whole-element `update`, each receiver took the other's copy, and the two screens ended up holding
-different boards (each with only the other's rename), while D1 kept whichever save landed last. A
+different boards (each with only the other's rename), while the store kept whichever save landed last. A
 whole-element update is not last-writer-wins in room order on the sender's own screen, because the
 room never sends a sender its own op back: it is last-writer-wins on every OTHER screen.
 
@@ -256,11 +256,11 @@ The set-up now moves the way the other multi-writer fields do:
   element ops still follow the PUT. The other deltas meet this by going out at the press, 600 ms
   before any save. Sent after the PUT, as the board delta first was, two people saving at once
   could each write before either delta reached the room: the later write merged nothing and erased
-  the earlier rename from D1, while both screens, converged by the deltas, never saved again.
+  the earlier rename from the store, while both screens, converged by the deltas, never saved again.
   The confirmation is the `cursor` frame the room already sends the sender of each ordered op,
   carrying back the `ref` the client put on the op. A room that does not confirm within
   `ROOM_SEQUENCE_ACK_TIMEOUT_MS` (a socket down or a slow room) does not hold the save back; it is
-  logged, and the save goes through as before. Peers therefore see a board change before D1 holds
+  logged, and the save goes through as before. Peers therefore see a board change before the store holds
   it; a save that then fails sends the same delta again with its retry, and applying it twice
   lands on the same board.
 - **A column move keeps a concurrent add.** The order names the columns the sender had; a column
@@ -271,7 +271,7 @@ The set-up now moves the way the other multi-writer fields do:
   with no deltas, so its copy of the set-up is taken.
 - **The ledger records it.** For each board, the latest value of every top-level field and every
   column field, each column added or removed, and the latest order, each with the seq that set it.
-  A save merges in only the entries the saver had not seen (phase 3), so D1 keeps both renames.
+  A save merges in only the entries the saver had not seen (phase 3), so the store keeps both renames.
 
 Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
 do) in the same moment still each see the other's value, exactly as a same-element collision on
@@ -287,8 +287,8 @@ failed; different tabs never wait on each other.
 
 ### A save that wrote over a peer's change writes again
 
-D1 still keeps each tab as the last PUT wrote it, and a PUT carries the saver's whole tab. When two people edit one
-tab at once, a save snapshotted before a peer's change reached the saver can land after the peer's own save, and D1
+The store still keeps each tab as the last PUT wrote it, and a PUT carries the saver's whole tab. When two people edit one
+tab at once, a save snapshotted before a peer's change reached the saver can land after the peer's own save, and the store
 then holds the saver's older copy of the peer's elements. Every screen showed the peer's change (the room converged),
 but a reload lost it, for good when nobody edited that tab again: in a two-person drag test it happened in five
 runs out of nine.

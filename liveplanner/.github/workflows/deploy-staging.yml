@@ -7,10 +7,9 @@ name: Deploy Staging
 #
 #   1. A red `main` must not reach staging. If staging can hold code that
 #      doesn't compile, its state stops telling you anything.
-#   2. The api job applies D1 migrations against a real remote database. That
-#      deserves a green test suite in front of it, and it is the whole reason
-#      this environment exists: the migration is rehearsed here one deploy
-#      before it runs against the database holding real diagrams.
+#   2. A new plan schema step first runs here, in real remote Durable Objects,
+#      one deploy before it runs in the ones holding real plans. That deserves
+#      a green test suite in front of it.
 #
 # The trade-off of `workflow_run` is that it checks out the default branch by
 # default rather than the commit CI actually verified, so the exact SHA is

@@ -7,7 +7,7 @@ actually changed.
 
 Driven by the observation that today, every keystroke broadcasts a
 `tabs` op AND PUTs the whole project — including unchanged tabs — to
-D1. Cost grows linearly with the project's tab count.
+storage. Cost grows linearly with the project's tab count.
 
 ## Goals
 

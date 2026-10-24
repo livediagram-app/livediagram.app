@@ -9,7 +9,7 @@ Both tools store their state as optional **`Tab` fields** — `tab.timer` and
 `tab.vote` (`packages/project/src/index.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
-600 ms debounce) `PUT`s the tab to D1 → the `{kind:'tab'}` RoomOp broadcasts it
+600 ms debounce) `PUT`s the tab to the plan's store → the `{kind:'tab'}` RoomOp broadcasts it
 to peers (`useRoomConnection` merges it). So **late-joiners and reloads see
 current state for free**, and persistence is automatic.
 

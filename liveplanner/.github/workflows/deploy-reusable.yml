@@ -251,7 +251,7 @@ jobs:
   deploy-editor:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
-    # (docs/specs/016-platform/deployment.md, "Renaming migrations").
+    # (docs/specs/016-platform/deployment.md, "Deploy order").
     needs: [build, deploy-api]
     runs-on: ubuntu-latest
     timeout-minutes: 10

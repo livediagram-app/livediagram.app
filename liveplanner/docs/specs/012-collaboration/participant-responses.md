@@ -94,7 +94,7 @@ else reads 3/4.
 ## Rules it inherits, and the one it breaks
 
 - **It syncs, it persists, it exports.** An ordinary element field, so it rides
-  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in D1, and reaches late joiners.
+  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in the plan's store, and reaches late joiners.
 - **Edit-role only.** The room drops view-role mutations ([API app](../015-api/api.md)), so casting
   is gated with no extra code, exactly like a dot-vote.
 - **Casting does NOT push undo history.** It writes through the non-history

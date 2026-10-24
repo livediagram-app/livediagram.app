@@ -50,7 +50,7 @@ export).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
 4. Render it to SVG and return `Content-Type: image/svg+xml` with a short
    `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
-   update without hammering D1.
+   update without hammering the plan's object.
 
 The router already forwards `/api/*` to the api worker, so no router change.
 

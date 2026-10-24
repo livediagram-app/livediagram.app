@@ -120,9 +120,10 @@ storing tokens itself, the account-level design below supersedes it.
   randomness, so there's no low-entropy value to time-attack (unlike a
   password) and the lookup leaks nothing useful.
 
-### 3.2 Storage (D1)
+### 3.2 Storage (liveworkspace accounts)
 
-A new owner-scoped table, migration with the worker that owns the binding:
+liveplanner stores no tokens and has no D1. The table is the liveworkspace accounts service's
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)); as first designed, its shape was:
 
 ```
 api_tokens(
@@ -156,15 +157,10 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lwt_…` → hash → look up a non-revoked,
-   non-expired row → the request's owner id is the row's `owner_id`; stamp
-   `last_used_at`. The column means "the last request this token made, to
-   within a minute": a request writes it only when the stored value is older
-   than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
-   checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
-   api requests each) costs one write a minute rather than one per request.
-   Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
-   bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
+2. Else `Authorization: Bearer lwt_…` → checked with liveworkspace (`resolveApiToken` in
+   `apps/api/src/db/api-tokens.ts`, cached a minute per isolate) → the request's owner id is the token's account.
+   (A token and a JWT can't both be the bearer.) An `lwt_`
+   bearer liveworkspace does not accept (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
 error="invalid_token"`, on every route: it never falls through to the guest
    path or to no owner, so a script holding a dead token is told so.
@@ -208,7 +204,7 @@ personal `GET /projects` excludes team projects by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
 (create, invite, role change, join/accept/leave, invite links, team deletion)
-plus token management (`/api/tokens`), account deletion, and guest migration
+plus account deletion
 require a verified signed-in **session** (`accountUserId`), never a token. Boundary
 rationale: a leaked token already exposes the owner's content (that's §3.4's
 deal, revocable + 6-month-capped), but it must not be able to escalate — mint
@@ -298,31 +294,17 @@ category.
 "Sign in to create API tokens." and a **Sign In** link (see the Settings
 sign-in rule in [User preferences](../007-editor/user-preferences.md)).
 
-Behind it, a new `GET/POST/DELETE /api/tokens` surface, **gated exactly like
-the team routes** ([Teams](../013-workspace/teams.md)): it requires a verified account
-identity and rejects a guest caller outright (`401`/`403`,
-mirroring `routes/teams.ts`) — so the manager is inert for guests, the
-same way the rest of the signed-in surface is. A token can only ever be minted
-by, and act as, a signed-in account. Creation returns the secret **once**
-(shown in the manager to copy, never retrievable again); the row then shows only
-the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage-d1))
-so rotation isn't a surprise.
+Minting, listing and revoking are liveworkspace's (the head of §3): this api has no `/api/tokens` routes beyond
+`/api/tokens/current` ([§3.6a](#36a-a-tokens-view-of-itself)). A token can only ever be minted by, and act as, a
+signed-in account, and the fixed 6-month expiry ([§3.2](#32-storage-liveworkspace-accounts)) is stated where tokens
+are made, so rotation isn't a surprise.
 
-**Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
-already has 10 live (non-revoked, non-expired) tokens — enough for any real
-integration set, low enough to keep the list + table tidy. Revoking or letting
-one expire frees a slot. The count is part of the INSERT itself (one
-`INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
-`apps/api/src/db/api-tokens.ts`), so concurrent mints, from the Explorer and
-the OAuth exchange alike, can never take an account past 10; a refused mint
-logs `[api-tokens] mint refused: owner at the token cap` and answers `409
-token_limit_reached`.
+**Per-account cap.** liveworkspace caps an account's live tokens (the head of §3) and refuses a mint past it,
+the OAuth exchange's included.
 
-**Account deletion removes them.** Deleting an account erases ALL of that
-user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
-must delete the owner's `api_tokens` rows in the same cascade as their projects
-/ folders / themes, so no credential outlives the account.
+**Account deletion removes them.** Tokens are the account's on liveworkspace and close with it, so no credential
+outlives the account; `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts)) ends
+the person's workbench pairings here.
 
 ### 3.6a A token's view of itself
 
@@ -349,10 +331,10 @@ open and no way to mint one:
   from `NEXT_PUBLIC_SIGN_IN_ENABLED === 'true'`). This is the **same
   flag** that already hides the teams / sign-in sections of the sidebar, so when
   auth is off the category simply isn't in the list.
-- **Backend** — the `/api/tokens` routes require a verified account identity, and
+- **Backend** — a token is checked with the liveworkspace accounts Worker, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
-  ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so the
-  routes reject every caller. Belt and suspenders: even if the UI were somehow
+  ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so no token
+  is accepted. Belt and suspenders: even if the UI were somehow
   reached, token creation / use is impossible without auth configured.
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
@@ -384,7 +366,7 @@ hardening landed first:
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Project
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and project name length](../006-project/name-length.md)).
-- **Already solid** (pre-existing): D1 is fully parameterized; session JWT
+- **Already solid** (pre-existing): every SQL statement is parameterised; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
 

@@ -8,13 +8,13 @@ which fixes what that tab is, and every tab is worked on in Plan, the one
 
 ## Domain language
 
-| Term            | Means                                                                                                   |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| **project**     | The top-level container: its name, owner, location, share links and tabs.                               |
-| **tab**         | One page of a project, with its own canvas, layers and elements.                                       |
-| **tab kind**    | What a tab is (`TabKind`, `packages/project/src/tab-kind.ts`): Board, Sheet, Dashboard, Form, or general. |
+| Term            | Means                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| **project**     | The top-level container: its name, owner, location, share links and tabs.                                  |
+| **tab**         | One page of a project, with its own canvas, layers and elements.                                           |
+| **tab kind**    | What a tab is (`TabKind`, `packages/project/src/tab-kind.ts`): Board, Sheet, Dashboard, Form, or general.  |
 | **general tab** | A tab Start Planning has not yet made one of the four; stored as the kind `'diagram'`, livediagram's name. |
-| **editor mode** | How a tab is worked on: always Plan ([Editor mode](../007-editor/editor-modes.md)).                     |
+| **editor mode** | How a tab is worked on: always Plan ([Editor mode](../007-editor/editor-modes.md)).                        |
 
 - The kind id `'diagram'` is a stored value, never a term: prose says general tab. A tab with no `kind`, or a kind
   this build no longer has (a stored `'event-storming'` or `'whiteboard'`), reads as a general tab.
@@ -47,10 +47,9 @@ The container was called a diagram until the domain language settled on project.
 that named it moved in one change:
 
 - **Code:** identifiers, files and packages (`@liveplanner/project`, `apps/editor/app/project/[id]`).
-- **Database:** the tables are `projects` and `project_tabs`, every foreign key is
-  `project_id`, and the stored values that name the container (timeline source, scope and event
-  types, titles and snapshot keys, the `notifyProjectJoin` preference, telemetry types) use
-  project. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+- **Stored data:** there is no D1. Each plan's own SQLite names the container `plan` (the `plan`
+  row, `plan_tabs`, `plan_id`), and the stored values that name it (titles and snapshot keys, the
+  `notifyProjectJoin` preference, telemetry types) use project. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
 - **Realtime and storage:** the Durable Object class is `PlanRoom` (binding `PLAN_ROOM`), a SQLite-backed class declared
   new in its first migration (liveplanner was never deployed, so it carries no rename history); it holds each plan's
   content ([API](../015-api/api.md#storage)); the room ops are `project-meta` and `project-trashed`.

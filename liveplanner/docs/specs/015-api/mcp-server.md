@@ -146,7 +146,7 @@ This implements the OAuth flow Manager Toolkit uses:
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV — minting stays in D1 via the existing token table.
+needs no KV — minting is the liveworkspace accounts Worker's (`POST /api/oauth/exchange` asks it).
 
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai

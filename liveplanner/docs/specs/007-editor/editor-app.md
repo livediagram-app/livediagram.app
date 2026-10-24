@@ -25,7 +25,7 @@ A guest can open `/new`, create a project, and use the whole planner without an 
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [API](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary — the editor never reads or writes project state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [Per-tab storage](../006-project/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [API](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary — the editor never reads or writes project state to `localStorage`. The plan's Durable Object holds the durable snapshot; per-tab content is split into its own rows (see [Per-tab storage](../006-project/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `liveplanner:v2:self-id`, plus a `liveplanner:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 

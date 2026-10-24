@@ -74,7 +74,7 @@ project renders lazily.
   through the authenticated client and wraps the bytes in a blob URL. `?v=<savedAt>` busts
   the browser cache when the project changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
-- One D1 read gates it: `getProjectThumbMeta` returns the owner, team,
+- One read of the plan's own row gates it: `getProjectThumbMeta` returns the owner, team,
   name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
   snapshot costs that query, the access gate and the R2 read. The full
   project (participant and tab summaries) is never loaded for a preview.
@@ -119,15 +119,15 @@ project renders lazily.
   after an autosave it says `empty` from the first tab when that tab is
   loaded, and keeps what the list said when it is not. A Form tab stored
   before its form counted keeps a count of 0 until its next write (any
-  builder edit), which stamps it afresh; no migration reads the bodies.
-- **The count is filled lazily, never by a bulk backfill.** The migration
+  builder edit), which stamps it afresh; nothing reads the bodies to fill it.
+- **The count is filled lazily, never by a bulk backfill.** The schema
   only adds the column. A tab stored before it starts unknown and gets its
   count from its next write, or from the thumbnail route: having parsed the
   body to render it, the route stamps a still-unknown count (in the
   request's `waitUntil`, best effort, never overwriting a known count). An
   old empty project is therefore asked for at most once. A deploy without
   the R2 binding renders no snapshot, so there its counts fill from writes only.
-- **Why no trigger and no backfill** (measured with SQLite, D1's engine,
+- **Why no trigger and no backfill** (measured with SQLite,
   sync off to isolate the work itself):
 
   | Tab body | Save, no count | Save, bound count | Save, trigger re-parse |
@@ -139,10 +139,8 @@ project renders lazily.
   A trigger re-parses the body and rewrites the row a second time, about
   ten times the cost of a 2 MB autosave, on the hot path (one save about
   every 600 ms per active editor). A one-statement backfill parses at about
-  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a full 10 GB D1
-  database needs over 20 s even before D1's replicated writes, against
-  D1's 30 s query limit and its guidance that a statement touching
-  hundreds of MB exceeds execution limits. Adding the column alone takes
+  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a backfill would wake every plan's object to parse its
+  whole content for a count the next write fills anyway. Adding the column alone takes
   under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
   shows the still, dashed sketch, captioned "Nothing drawn yet" where there
   is room. The no-snapshot 404 (past the access gate)

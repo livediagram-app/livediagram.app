@@ -53,7 +53,7 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 The route inventory is taken from the worker itself, by probing it:
 
 - **Vocabulary.** For each resource segment in `index.ts`'s dispatch switch, the literals its route modules compare a path position against (`segments[k] === '<literal>'`), read from the source, plus a placeholder standing in for any path parameter.
-- **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (D1, R2, Durable Objects) and outbound `fetch` replaced by a trap that records the touch and throws.
+- **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (the plan's store, R2, Durable Objects) and outbound `fetch` replaced by a trap that records the touch and throws.
 - **Outcomes.** A clean 404 / 405 without a touch is _not routed_. Any other answer without a touch is _routed_: that exact method and path are served. A touch means the path is served, but not which methods, because most handlers load and authorise the resource before branching on the verb.
 
 What the test then proves:

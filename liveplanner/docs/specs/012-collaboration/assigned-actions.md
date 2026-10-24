@@ -405,7 +405,7 @@ enum-ish tokens, not user content.
 
 - ~~A cross-project "my actions" inbox~~ — shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
-  a D1 projection (`collab_actions`) written beside every tab save,
+  a projection in liveworkspace's index, pushed from each plan's outbox after a tab save,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an ordinary element (an
   Action panel is the place for a list), and multiple assignees.

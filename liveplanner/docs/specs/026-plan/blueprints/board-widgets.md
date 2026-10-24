@@ -64,7 +64,7 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 ## Interfaces and contracts
 
 - Stored shape: `widgets` is an array of kind strings. `readBoardWidgets` drops unknown kinds and repeats; a
-  non-array is absent. No new D1 column: it rides in the element's `planBoard`.
+  non-array is absent. No new column: it rides in the element's `planBoard`.
 
 ## Errors and edge cases
 
@@ -103,10 +103,10 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 
 ## Testing
 
-| Rule                                              | Test                                                       |
-| ------------------------------------------------- | ---------------------------------------------------------- |
-| Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                   |
-| Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                 |
+| Rule                                              | Test                                                         |
+| ------------------------------------------------- | ------------------------------------------------------------ |
+| Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                     |
+| Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                   |
 | Slot math, the + picker offering only the missing | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
 
 ## Constants and configuration
