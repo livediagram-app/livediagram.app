@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -99,7 +99,11 @@ describe('the themed scrollbar', () => {
         }
       }
     };
-    for (const root of ['apps', 'packages']) walk(join(repo, root));
+    // The shared packages, liveworkspace's own apps, and every product's apps and packages.
+    const roots = readdirSync(repo).flatMap((top) =>
+      top === 'packages' ? [top] : [join(top, 'apps'), join(top, 'packages')],
+    );
+    for (const root of roots) if (existsSync(join(repo, root))) walk(join(repo, root));
     expect(offenders).toEqual([]);
   });
 });

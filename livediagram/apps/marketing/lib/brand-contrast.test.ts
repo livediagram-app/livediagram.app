@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 // in light and in dark (docs/specs/019-marketing/marketing-site.md "Tone & brand"). sky-500 and sky-600
 // read at 2.8:1 and 4.1:1 against white, so the CTA panels and small brand text use brand-700.
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8');
-const THEME = read('../../../packages/tailwind-config/theme.css');
+// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
+const THEMES = [read('../../../../packages/tailwind-config/theme.css')];
 
 // The palette as declared: the light tokens from the theme block, the dark overrides from `.dark`.
 function palette(block: string): Record<string, string> {
@@ -17,15 +18,19 @@ function palette(block: string): Record<string, string> {
     ]),
   );
 }
-const darkStart = THEME.indexOf('.dark {');
+const lightOf = (css: string) => palette(css.slice(0, css.indexOf('.dark {')));
+const darkOf = (css: string) => {
+  const at = css.indexOf('.dark {');
+  return palette(css.slice(at, css.indexOf('}', at)));
+};
 const LIGHT: Record<string, string> = {
-  ...palette(THEME.slice(0, darkStart)),
+  ...Object.assign({}, ...THEMES.map(lightOf)),
   white: '#ffffff',
   'slate-50': '#f8fafc',
 };
 const DARK: Record<string, string> = {
   ...LIGHT,
-  ...palette(THEME.slice(darkStart, THEME.indexOf('}', darkStart))),
+  ...Object.assign({}, ...THEMES.map(darkOf)),
 };
 
 function luminance(hex: string): number {

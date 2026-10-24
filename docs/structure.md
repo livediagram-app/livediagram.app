@@ -25,6 +25,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
+│  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share

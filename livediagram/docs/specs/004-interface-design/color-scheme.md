@@ -91,7 +91,7 @@ Reserved for status — never used decoratively.
 
 ## Dark palette (Steel)
 
-Dark mode is its own palette, not the light one with the lights off. It lives in `packages/tailwind-config/theme.css`
+Dark mode is its own palette, not the light one with the lights off. It lives in `../packages/tailwind-config/theme.css`
 under `.dark` and **retargets tokens only**: every `slate-*` / `brand-*` utility keeps its name, and light mode keeps
 every colour it has. The canvas half of the palette (backdrop, grid, element ink, arrows, selection) belongs to the
 Default colour scheme's dark half, specified in [Canvas and palette](../008-canvas/canvas-and-palette.md).
@@ -227,11 +227,11 @@ Explorer panel and every other page keep Steel.
 
 ## Tailwind integration
 
-The palette is exposed as a Tailwind v4 theme in `packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
+The palette is exposed as a Tailwind v4 theme in `../packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
 
 ```css
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 ```
 
 The package's `theme.css` declares the brand ramp as CSS variables inside a `@theme` block, which Tailwind v4 turns into the `brand-50`…`brand-950` utility classes automatically:

@@ -7,8 +7,8 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 
 | Path                                                                   | Role                                                                                                                            |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                                   | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                       |
-| `packages/tailwind-config/src/optical-utilities.test.ts`               | The utilities' contracts                                                                                                        |
+| `../packages/tailwind-config/theme.css`                                | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                       |
+| `../packages/tailwind-config/src/optical-utilities.test.ts`            | The utilities' contracts                                                                                                        |
 | `packages/ui/src/optical/GlyphDisc.tsx`                                | Glyph disc                                                                                                                      |
 | `packages/ui/src/optical/Chip.tsx`                                     | Chip                                                                                                                            |
 | `packages/ui/src/optical/IconSlot.tsx`                                 | Icon slot                                                                                                                       |

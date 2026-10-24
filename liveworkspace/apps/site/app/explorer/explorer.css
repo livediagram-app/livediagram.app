@@ -1,6 +1,6 @@
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities) source(none);
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 @import '@liveworkspace/explorer/explorer.css';
 
 /* The Explorer's own stylesheet, loaded only on /explorer (app/explorer/layout.tsx), so the rest of the site

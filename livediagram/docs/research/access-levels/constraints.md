@@ -428,6 +428,6 @@ What should MCP share_document create when an agent names no level?
 - Code and specs read on `main` at `fc2d2d650`; draft spec, blueprint and agent specs read on the
   `docs/agent-cli` worktree.
 - Contrast ratios computed with the WCAG relative-luminance formula from the hex values in
-  [theme.css](../../../packages/tailwind-config/theme.css) and Tailwind's default palette.
+  [theme.css](../../../../packages/tailwind-config/theme.css) and Tailwind's default palette.
 - This note is not yet listed in [docs/research/README.md](../README.md); indexing it is left to the
   session that owns that index.

@@ -164,7 +164,7 @@ on `window` (`announceToastFloorChange()`): the sign-in banner on mount and unmo
 
 ## Motion
 
-`packages/tailwind-config/theme.css`:
+`../packages/tailwind-config/theme.css`:
 
 - `--animate-toast-in: toast-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1)`, keyframe from
   `opacity: 0; transform: translateY(8px) scale(0.98)`.

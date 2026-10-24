@@ -42,13 +42,13 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:^",
-    "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/tailwind-config": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*"
   }

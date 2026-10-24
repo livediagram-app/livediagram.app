@@ -291,7 +291,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     template builders themselves (`packages/templates`, which has no suite of
     its own) are covered from their callers: `apps/live`'s template and
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
-  - `packages/tailwind-config`: the theme's budgets, motion and optical
+  - `../packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
   - `packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native

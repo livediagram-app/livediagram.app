@@ -28,9 +28,9 @@ packages/
   project-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   telemetry-client/ this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/       build-time generator of the /licences page from what each app bundles
-  tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
+  tailwind-config/ this product's brand ramps (violet) over @liveworkspace/tailwind-config's theme
   (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, and the oxlint, prettier, vitest, next configs)
+  telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, tailwind-config, and the oxlint, prettier, vitest, next configs)
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)
 marketing/      off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -80,7 +80,7 @@ Each app pulls these in via `workspace:*`:
 - **`@liveplanner/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords. The pure href, grouping and search helpers over it are the monorepo's `@liveworkspace/help-registry`, which every product binds to its own catalogue. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/editor/lib/help-search.ts`), so adding an article once makes it findable in both.
 - **`@liveplanner/licences`** generates the third-party licences page ([Third-party licences](../specs/002-project-scope/third-party-licences.md)). The marketing build runs it after every other app has built: it reads what each Next app ships to the browser from `next experimental-analyze` and what each worker bundles from a `wrangler --dry-run` metafile, collects each package's licence and notice files (with reviewed overrides for packages that ship none, and a reviewed table for what sits inside WASM and fonts), and writes a manifest plus deduplicated plain-text files that `apps/marketing/app/licences` renders. A package with no licence text, an unrecognised licence, a disallowed one or an unreviewed binary fails the build with a named error.
 - **`@liveworkspace/source-ast`** parses the repo's own TypeScript for the static guards that read code ([Source scanners](../specs/003-system-architecture/source-scanners.md)): `parseSourceFiles(paths)` opens the files as one in-memory project in TypeScript 7's native compiler (`typescript/unstable/sync`) and returns their syntax trees.
-- **`@liveworkspace/oxlint-config`** / **`prettier-config`** / **`vitest-config`** / **`next-config`** (the monorepo's `packages/`, shared with every product) and this product's own **`tailwind-config`** own the lint / format / test / Next.js / theme configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@liveplanner/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
+- **`@liveworkspace/oxlint-config`** / **`prettier-config`** / **`vitest-config`** / **`next-config`** / **`tailwind-config`** (the monorepo's `packages/`, shared with every product) own the lint / format / test / Next.js / theme configs so every workspace stays consistent. The shared theme also owns the motion tokens (`duration-micro` / `-short` / `-long`); their numbers and the static motion-budget guard every app runs in its tests are `@liveworkspace/style-guards` ([Motion](../specs/004-interface-design/motion.md)). This product's own **`tailwind-config`** is only its palette: the shared theme, then its brand ramps in violet.
 
 ## Tech stack
 

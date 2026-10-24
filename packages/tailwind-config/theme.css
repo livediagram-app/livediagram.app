@@ -35,6 +35,10 @@
   }
 }
 
+/* The brand ramp, light. The platform's default is livediagram's sky, which liveworkspace.app's pages and livediagram
+ * use as is. Every other product's @<product>/tailwind-config imports this file and re-declares the brand ramps of
+ * this block, `.dark`, `[data-app-chrome]`, `.dark [data-app-chrome]` and the Midnight palette after it, in its own
+ * accent; theme-budget.test.ts keeps each product's blocks complete and equal where they must be. */
 @theme {
   --color-brand-50: #f0f9ff;
   --color-brand-100: #e0f2fe;
@@ -49,23 +53,20 @@
   --color-brand-950: #082f49;
 
   /* Illustrated empty-state motion (the shared `EmptyState` in
-   * @livediagram/ui): a gently floating icon badge over a softly
+   * each product's ui package): a gently floating icon badge over a softly
    * expanding ring. Ambient + looping; paused under reduced-motion
    * below. Lives in the shared theme so every app that renders an
    * EmptyState (live Explorer, telemetry dashboard) animates alike. */
   --animate-empty-float: empty-float 3.6s ease-in-out infinite;
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 
-  /* The shared Dialog shell's entrances (@livediagram/ui, used by the editor and the Community): the dim
+  /* The shared Dialog shell's entrances (each product's ui package, used by its editor): the dim
    * behind fades in (fade-in, micro) while a centred panel settles into place, fading up from 97% scale and
    * 6px low (dialog-in); a phone sheet rises its full height from the bottom edge, so it reads as arriving
    * from off-screen. Dialogs are the long motion token (motion.md). fly-up-in is the bolder 16px lift the
    * banners, search and template picker keep. */
   --animate-dialog-in: dialog-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
-  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
-   * bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
-  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* A toast arriving and leaving (docs/specs/004-interface-design/toasts.md "Motion"): it rises 8px and fades in
    * from 98% over short, and leaves over micro, fading and dropping 4px. `forwards` holds the last frame until the
@@ -123,16 +124,6 @@
   }
   to {
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes speech-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
   }
 }
 
@@ -357,63 +348,6 @@
   }
 }
 
-/* Timeline motion (docs/specs/013-workspace/timeline.md §2.6).
- *
- * Lives in the shared theme beside the empty-state keyframes rather than
- * in one app's globals, for the same reason those do: the components
- * that use them ship from @livediagram/ui, so any app that renders a
- * Timeline gets the motion by importing this file — no per-app paste.
- *
- * The cascade relies on CSS animations firing on MOUNT only. An element
- * that merely re-renders keeps its end state and doesn't replay, so
- * nothing needs to track "have I animated this already": React mounts a
- * fresh node exactly when a bubble is genuinely new (first load, a stack
- * expanding, an event arriving) and reuses it otherwise. */
-
-/* Individual bubbles. Starts pulled to the RIGHT with a small tilt and
- * scale-down, then springs into place — reading as cards fanned out from
- * the collapsed stack, whose faux-card layers sit off to the right. */
-@keyframes tl-fan-out {
-  0% {
-    opacity: 0;
-    transform: translate3d(20px, -2px, 0) rotate(3deg) scale(0.96);
-  }
-  55% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0) scale(1);
-  }
-}
-
-.tl-fan-out {
-  animation: tl-fan-out var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
-  transform-origin: right center;
-}
-
-/* The same motion originating from BELOW, used on the collapsed stack so
- * closing one reads as folding back down rather than as another card
- * being dealt. */
-@keyframes tl-fan-out-up {
-  0% {
-    opacity: 0;
-    transform: translate3d(20px, 12px, 0) rotate(-3deg) scale(0.96);
-  }
-  55% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0) scale(1);
-  }
-}
-
-.tl-fan-out-up {
-  animation: tl-fan-out-up var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
-  transform-origin: right center;
-}
-
 /* Explorer list / card arrival (docs/specs/013-workspace/timeline.md §2.6 borrows the idea).
  *
  * The Timeline's fan-out comes from the RIGHT because that's where a
@@ -427,7 +361,7 @@
  * folders and documents in one view cascade in document order for free,
  * instead of each list restarting its own count.
  *
- * Like the Timeline's, this relies on CSS animations firing on mount:
+ * Like the Timeline's fan-out, this relies on CSS animations firing on mount:
  * a row that re-renders (rename, star, menu open) keeps its end state,
  * and React only mounts a fresh node when a row is genuinely new. */
 @keyframes lvd-row-in {
@@ -484,9 +418,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* A dialog only fades in: no rise, no scale. So does a speech bubble (no pop) and a tour's step card (no rise). */
+  /* A dialog only fades in: no rise, no scale. So does a tour's step card (no rise). */
   .animate-dialog-in,
-  .animate-speech-pop,
   .animate-tour-card-in {
     animation-name: fade-in;
   }
@@ -505,15 +438,6 @@
   /* `opacity: 1` matters — fill-mode `both` would otherwise strand
    * every row at its 0% state. */
   .lvd-cascade > * {
-    animation: none;
-    opacity: 1;
-  }
-
-  /* The cascade is decoration; the feed reads identically without it.
-   * `opacity: 1` matters — tl-fan-out uses fill-mode `both`, so simply
-   * cancelling the animation would strand the bubble at its 0% opacity. */
-  .tl-fan-out,
-  .tl-fan-out-up {
     animation: none;
     opacity: 1;
   }

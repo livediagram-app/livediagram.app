@@ -4,8 +4,8 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 
 ## Files
 
-| File                                          | Holds                                                                                                                   |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| File                                            | Holds                                                                                                                   |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/hooks/ui/useToast.tsx`             | `ToastProvider`, `useToast`, the `ToastApi` (`info`, `success`, `warning`, `error`, `offer`, `action`, `dismissAction`) |
 | `apps/editor/components/toast/toast-queue.ts`   | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
 | `apps/editor/components/toast/ToastStack.tsx`   | The always-mounted `Notifications` region, its placement and the floor                                                  |
@@ -165,7 +165,7 @@ move and unmount, the new-version prompt when it shows or hides.
 
 ## Motion
 
-`packages/tailwind-config/theme.css`:
+`../packages/tailwind-config/theme.css`:
 
 - `--animate-toast-in: toast-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1)`, keyframe from
   `opacity: 0; transform: translateY(8px) scale(0.98)`.
@@ -176,8 +176,8 @@ move and unmount, the new-version prompt when it shows or hides.
 
 ## Testing
 
-| Rule                                                      | Test                                                |
-| --------------------------------------------------------- | --------------------------------------------------- |
+| Rule                                                      | Test                                                  |
+| --------------------------------------------------------- | ----------------------------------------------------- |
 | Dedupe, limit, upsert in place, retire oldest timed out   | `apps/editor/components/toast/toast-queue.test.ts`    |
 | Floor: column, overlap, off-column chrome, phone          | `apps/editor/components/toast/toast-floor.test.ts`    |
 | Timeouts per tone, pause and resume with the remainder    | `apps/editor/components/toast/useToastTimer.test.tsx` |

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
@@ -75,10 +75,10 @@
 
 @layer base {
   /* The pointer cursor on every enabled button now lives in the shared theme
-   * (@livediagram/tailwind-config), so every app gets it. */
+   * (@liveworkspace/tailwind-config), so every app gets it. */
 
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
-   * (@livediagram/tailwind-config) so every app gets the same branded ring;
+   * (@liveworkspace/tailwind-config) so every app gets the same branded ring;
    * see there for the rationale. */
 
   /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
@@ -170,6 +170,9 @@
   /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
      Looping; reduced motion stops it. */
   --animate-avatar-zz: avatar-zz 3s ease-out infinite;
+  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
+     bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
+  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -210,7 +213,7 @@
   --animate-row-close: row-close var(--transition-duration-long) cubic-bezier(0.4, 0, 0.2, 1)
     forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
-     shared tailwind theme (@livediagram/tailwind-config) so every app's
+     shared tailwind theme (@liveworkspace/tailwind-config) so every app's
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 
@@ -283,6 +286,17 @@
   100% {
     transform: translateY(-4px);
     opacity: 0;
+  }
+}
+
+/* No opacity `to`, like fade-in: the bubble lands on its own resting opacity. */
+@keyframes speech-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
   }
 }
 
@@ -551,6 +565,11 @@
 /* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
    rather than freezing a frame. */
 @media (prefers-reduced-motion: reduce) {
+  /* A speech bubble only fades in: no pop. */
+  .animate-speech-pop {
+    animation-name: fade-in;
+  }
+
   [class*='animate-nudge-'],
   .animate-avatar-sip,
   .animate-avatar-steam,

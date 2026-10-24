@@ -7,7 +7,7 @@ Scope, by file:
 
 | File                                                                    | Role                                                                               |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                                    | The motion tokens, the shared `fade-in`, the cascade tokens, the shared keyframes  |
+| `../packages/tailwind-config/theme.css`                                 | The motion tokens, the shared `fade-in`, the cascade tokens, the shared keyframes  |
 | `../packages/style-guards/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
 | `../packages/style-guards/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
@@ -127,12 +127,16 @@ board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/c
 chrome markers and never the canvas world: the board appears at once (spec, "Editor
 arrival").
 
-### Shared theme (`packages/tailwind-config/theme.css`)
+### Shared theme (`../packages/tailwind-config/theme.css`)
 
 | Rule                    | Before                    | After                        |
 | ----------------------- | ------------------------- | ---------------------------- |
 | `.lvd-cascade > *`      | 320ms, 35ms step to 700ms | `micro`, 10ms step to 100ms  |
 | `empty-float` / `-ring` | loops                     | unchanged: ambient indicator |
+
+The Timeline's `.tl-fan-out(-up)` (`micro`) lives with the one surface that still draws it, liveworkspace.app's
+telemetry dashboard (`liveworkspace/apps/site/app/telemetry/timeline-motion.css` in the monorepo); the Explorer
+keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explorer`'s `explorer.css`).
 
 ### Component classes
 
@@ -332,12 +336,12 @@ logging, because motion isn't a decision point.
 
 | Rule                                         | Test                                                                                            |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                                   |
-| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                                   |
+| Tokens match their constants                 | `../packages/tailwind-config/src/motion.test.ts`                                                |
+| `cascadeDelayMs` caps and clamps             | `../packages/tailwind-config/src/motion.test.ts`                                                |
 | Bounds for literals, `var`, `min`, `calc`    | `../packages/style-guards/src/motion-budget.test.ts`                                            |
 | Stylesheet: ceiling, hover, ambient, delay   | `../packages/style-guards/src/motion-budget.test.ts`                                            |
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                            |
-| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                             |
+| The shared theme is within budget            | `../packages/tailwind-config/src/theme-budget.test.ts`                                          |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, ui and template-previews                      |
 | Exit holds equal their tokens                | `TabPresenceStack.test.tsx`                                                                     |
 | Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                        |

@@ -8,23 +8,23 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                       | Role                                                                                                                                        |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/appearance/appearance-storage.ts`         | Storage key, media query, `APPEARANCE_BOOT_SCRIPT`; a plain module                                                                          |
-| `packages/ui/src/appearance/appearance-store.ts`           | Setting, resolution, OS watch, write, the `.dark` class; no React                                                                           |
-| `packages/ui/src/appearance/appearance-cycle.ts`           | The cycle, the labels, the control's accessible name                                                                                        |
-| `packages/ui/src/appearance/useAppearance.ts`              | The subscription (`useSyncExternalStore`) and the cycle; optional `onSet`                                                                   |
-| `packages/ui/src/appearance/AppearanceIcon.tsx`            | Sun / moon / monitor glyph for the current setting                                                                                          |
-| `packages/ui/src/appearance/SiteAppearanceToggle.tsx`      | The public sites' control, on the ShareRail's Appearance rail at `xl`+ (`2xl`+ on wide surfaces: help), never in `SiteHeader`; no telemetry |
-| `packages/ui/src/site.ts`                                  | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                                                      |
-| `apps/*/app/layout.tsx` (live, marketing, help, telemetry) | Inline the boot script; declare the lock meta; dark body                                                                                    |
-| `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                                                                                 |
-| `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                                                                                       |
-| `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                                                                                 |
-| `packages/design/src/colors.ts`                          | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                  |
-| `packages/design/src/canvas-colors.ts`                   | The Default scheme's light and dark canvas colours                                                                                          |
-| `packages/tailwind-config/theme.css`                       | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                         |
-| `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                |
+| File                                                       | Role                                                                                                                                               |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/appearance/appearance-storage.ts`         | Storage key, media query, `APPEARANCE_BOOT_SCRIPT`; a plain module                                                                                 |
+| `packages/ui/src/appearance/appearance-store.ts`           | Setting, resolution, OS watch, write, the `.dark` class; no React                                                                                  |
+| `packages/ui/src/appearance/appearance-cycle.ts`           | The cycle, the labels, the control's accessible name                                                                                               |
+| `packages/ui/src/appearance/useAppearance.ts`              | The subscription (`useSyncExternalStore`) and the cycle; optional `onSet`                                                                          |
+| `packages/ui/src/appearance/AppearanceIcon.tsx`            | Sun / moon / monitor glyph for the current setting                                                                                                 |
+| `packages/ui/src/appearance/SiteAppearanceToggle.tsx`      | The public sites' control, on the ShareRail's Appearance rail at `xl`+ (`2xl`+ on wide surfaces: help), never in `SiteHeader`; no telemetry        |
+| `packages/ui/src/site.ts`                                  | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                                                             |
+| `apps/*/app/layout.tsx` (live, marketing, help, telemetry) | Inline the boot script; declare the lock meta; dark body                                                                                           |
+| `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                                                                                        |
+| `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                                                                                              |
+| `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                                                                                        |
+| `packages/design/src/colors.ts`                            | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                         |
+| `packages/design/src/canvas-colors.ts`                     | The Default scheme's light and dark canvas colours                                                                                                 |
+| `../packages/tailwind-config/theme.css`                    | The `dark:` class variant, the slate tokens and the default brand ramp, `color-scheme` (this product's ramp: `packages/tailwind-config/theme.css`) |
+| `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                       |
 
 ## Domain and naming
 
@@ -113,7 +113,7 @@ read back unchanged, and anything older reads as the default.
 | ----------------------------------------- | ----------------------------------------------------------------------- |
 | `localStorage` throws (private mode)      | Boot script: `try/catch`, page stays light. Store: guarded read / write |
 | No `matchMedia`                           | `system` resolves light; the boot script checks `typeof matchMedia`     |
-| Server render                             | `applyAppearance` is a no-op without `design`                         |
+| Server render                             | `applyAppearance` is a no-op without `design`                           |
 | Unknown stored value                      | Reads as `system` (I1)                                                  |
 | Route that never mounts the hook (`/new`) | The boot script alone paints it                                         |
 | Dark Reader installed                     | Lock meta; the extension leaves the page untouched (I5)                 |
@@ -179,7 +179,7 @@ layout inlines the real string rather than a client-reference stub.
 | No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                           |
 | Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art" |
 | Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"   |
-| Appearance never writes to the design (I3)        | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
+| Appearance never writes to the design (I3)          | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
 | Setting survives reload before first paint          | `e2e/appearance.spec.ts`, "remembers the setting across a reload"      |
 | Lock meta declared (I5)                             | `dark-reader-lock.test.ts`                                             |
 | Lock meta reaches the served head (I5)              | `e2e/appearance.spec.ts`, "tells Dark Reader to stand down"            |

@@ -10,7 +10,7 @@ Derived from [Iconography](../iconography.md).
 | Stroke in units    | `strokeUnits(px, sizePx, units)` (exporters, tech tiles)                                                               | `packages/icons/src/weight.ts`                       |
 | Ink geometry       | `primsBounds`, `inkInsets`                                                                                             | `packages/icons/src/ink.ts`                          |
 | Glyph child reader | `childPrims(children)`                                                                                                 | `packages/ui/src/icons/glyph-ink.ts`                 |
-| Non-scaling rule   | `.lvd-glyph *`                                                                                                         | `packages/tailwind-config/theme.css`                 |
+| Non-scaling rule   | `.lvd-glyph *`                                                                                                         | `../packages/tailwind-config/theme.css`              |
 | Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                              | `packages/icons/src/weight.ts`                       |
 | Icon primitive     | `Glyph`                                                                                                                | `packages/ui/src/icons/Glyph.tsx`                    |
 | Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                         | `packages/document/src/icon-weight.ts`               |
