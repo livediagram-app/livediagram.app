@@ -95,6 +95,22 @@ describe('resolveItemGrant', () => {
     ).toBeNull();
   });
 
+  it('never keeps a grant on an item in the Trash, so a restore is seen at once', async () => {
+    answer = () =>
+      Response.json({
+        grant: grantOf({ trashed: true }),
+        level: 'edit',
+        tabId: null,
+        expiresAt: (NOW_S + 600) * 1000,
+        trashed: true,
+      });
+    const caller = { kind: 'bearer', token: 't' } as const;
+    const first = await resolveItemGrant(service, ENV, req(), caller, 'I');
+    expect(first).toMatchObject({ item: 'I', trashed: true });
+    await resolveItemGrant(service, ENV, req(), caller, 'I');
+    expect(calls).toHaveLength(2);
+  });
+
   it('keeps the grant cache bounded', async () => {
     const caller = { kind: 'bearer', token: 't' } as const;
     for (let i = 0; i <= GRANT_CACHE_MAX; i++)
