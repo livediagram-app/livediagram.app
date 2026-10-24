@@ -355,7 +355,9 @@ by link are not on it.
   only. An empty item its app tidies away is not news. An item created with `synced: true` (kept offline in
   one browser, put back under its own id) records `synced` instead of `created`; `DELETE
 /items/:id?permanent=true&reason=offline` (taken offline into one browser) records `taken_offline` on its
-  person's Timeline, keeping the item's name after it has gone.
+  person's Timeline, keeping the item's name after it has gone. Only its owner's goes for good: a joined
+  teammate taking a team item offline sends the team's copy to the team Trash (`trashed`) instead, since from
+  the team's side it is a deletion.
 - From each collab push, in the batch that replaces the tab's rows, the index compares the tab with what it
   held: a thread with more comments is `commented` (`text`, `count`, `reply`, `on`), one turned resolved
   `comment_resolved`, an action or open card with a new assignee `action_assigned` (`action`, `assigneeId`,

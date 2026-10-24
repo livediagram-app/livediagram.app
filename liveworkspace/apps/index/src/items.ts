@@ -495,27 +495,31 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   const loaded = await loadItem(env, id, caller, 'edit', { manage: true });
   if (loaded instanceof Response) return loaded;
   const { row } = loaded;
-  if (url.searchParams.get('permanent') === 'true') {
-    // Taken offline into one browser: the item goes, and its person's Timeline says where (an event about no
-    // item, keeping its name and app).
-    if (url.searchParams.get('reason') === 'offline') {
-      const actor = caller.person?.id ?? row.owner_id;
-      const now = Date.now();
-      await env.INDEX_DB.batch(
-        bulkEventStatements(env.INDEX_DB, [
-          {
-            id: `off:${row.id}:${now}`,
-            app: row.app,
-            itemId: null,
-            type: 'taken_offline',
-            actorId: actor,
-            title: row.title,
-            at: now,
-            scopes: [`p:${actor}`],
-          },
-        ]),
-      );
-    }
+  const offline = url.searchParams.get('reason') === 'offline';
+  // Taken offline into one browser, its person's Timeline says where (an event about no item, keeping its name
+  // and app).
+  const takenOffline = (now: number) => {
+    const actor = caller.person?.id ?? row.owner_id;
+    return bulkEventStatements(env.INDEX_DB, [
+      {
+        id: `off:${row.id}:${now}`,
+        app: row.app,
+        itemId: null,
+        type: 'taken_offline',
+        actorId: actor,
+        title: row.title,
+        at: now,
+        scopes: [`p:${actor}`],
+      },
+    ]);
+  };
+  // A joined teammate taking a team item offline (livediagram/docs/specs/006-document/offline-mode.md "Take
+  // Offline"): their copy is in their browser, and from the team's side it is a deletion, so the team's copy goes
+  // to the team Trash rather than for good. Only its owner's Take Offline is a move.
+  const teammate =
+    offline && row.team_id !== null && caller.person !== null && caller.person.id !== row.owner_id;
+  if (url.searchParams.get('permanent') === 'true' && !teammate) {
+    if (offline) await env.INDEX_DB.batch(takenOffline(Date.now()));
     await purgeRows(env, [{ id: row.id, app: row.app }]);
     ctx.waitUntil(drainTombstones(env, { ids: [row.id] }));
     console.log('[index] purged', { app: row.app });
@@ -525,6 +529,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   const db = env.INDEX_DB;
   const now = Date.now();
   const statements = [
+    ...(teammate ? takenOffline(now) : []),
     db
       .prepare(
         'UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ? AND trashed_at IS NULL',

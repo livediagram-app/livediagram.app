@@ -279,6 +279,36 @@ describe('the Trash', () => {
     expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM purge_tombstones').get()).toEqual({ n: 0 });
   });
 
+  it('sends a team item a joined teammate takes offline to the team Trash; its owner’s goes for good', async () => {
+    const ada = await person('user_owner', { teams: [{ id: 'team_off' }] });
+    const cy = await person('user_mate', { teams: [{ id: 'team_off' }] });
+    const shared = await makeItem(ada.auth, { title: 'Team plan', teamId: 'team_off' });
+    const res = await call(`/items/${shared.id}?permanent=true&reason=offline`, {
+      method: 'DELETE',
+      auth: cy.auth,
+    });
+    expect(res.status).toBe(204);
+    await settle();
+    const kept = await body<ItemBody>(await call(`/items/${shared.id}`, { auth: ada.auth }));
+    expect(kept.item).toMatchObject({ trashReason: 'deleted' });
+    expect(kept.item.trashedAt).not.toBeNull();
+    expect(h.appCalls).toHaveLength(0);
+    const trash = await body<{ items: Item[] }>(
+      await call('/trash?team=team_off', { auth: ada.auth }),
+    );
+    expect(trash.items.map((i) => i.id)).toEqual([shared.id]);
+
+    const own = await makeItem(ada.auth, { title: 'Mine', teamId: 'team_off' });
+    await call(`/items/${own.id}?permanent=true&reason=offline`, {
+      method: 'DELETE',
+      auth: ada.auth,
+    });
+    await settle();
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM items WHERE id = ?').get(own.id)).toEqual({
+      n: 0,
+    });
+  });
+
   it('keeps a tombstone when the app cannot be reached', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
