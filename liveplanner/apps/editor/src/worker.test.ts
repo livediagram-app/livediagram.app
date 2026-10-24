@@ -62,7 +62,7 @@ describe('editor worker security headers', () => {
   });
 
   // Workbench embeds (docs/specs/013-workspace/blueprints/workbench-embeds.md): the workbench page is
-  // framed by its workbench; the pairing page never is (E34), nor is any other route.
+  // framed by its workbench; no other route is (E34).
   it('leaves the workbench page frameable, with or without a trailing slash', async () => {
     const { env: e } = env();
     for (const path of ['/embed/workbench', '/embed/workbench/?d=doc-1']) {
@@ -90,9 +90,9 @@ describe('editor worker security headers', () => {
     ]);
   });
 
-  it('denies framing on the pairing page and the editor', async () => {
+  it('denies framing on the device page and the editor', async () => {
     const { env: e } = env();
-    for (const path of ['/workbench/pair?code=x', '/project/doc-1', '/embedded']) {
+    for (const path of ['/oauth/device', '/project/doc-1', '/embedded']) {
       const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }

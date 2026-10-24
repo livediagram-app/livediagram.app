@@ -28,9 +28,6 @@ export type Env = {
   // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
-  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
-  // requests, pairings, tickets and sessions, in its own SQLite.
-  WORKBENCH: DurableObjectNamespace;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
   // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
@@ -113,11 +110,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://liveplanner.app".
   APP_BASE_URL?: string;
-  // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
-  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a deployment without it) allows every mint.
-  WORKBENCH_TICKET_RATE_LIMITER?: {
-    limit: (input: { key: string }) => Promise<{ success: boolean }>;
-  };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent

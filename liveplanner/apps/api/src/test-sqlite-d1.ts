@@ -1,24 +1,18 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migratePlanSchema } from './plan-room/plan-schema';
-import {
-  memoryWorkbenchNamespace,
-  nodeItemSql,
-  nodeTransaction,
-} from '@liveworkspace/index-app/testing';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import type { GrantCaller, GrantOutcome, PlanGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, PlanEnv } from './types';
-import { accountCredentials } from './auth/accounts';
-import { closeWorkbenchSessions } from './room-access-client';
 
 // The plans' storage for tests (docs/specs/015-api/api.md "Storage"): each plan's own SQLite is its Durable
 // Object's in production; here every plan's tables sit in one in-memory node:sqlite database behind `env.PLAN_DB`,
 // so a test arranges and asserts on them through one handle, and a handler runs as it does inside a plan's object.
 // Foreign keys are on, as in a Durable Object. `env.PLAN_ROOM` answers the plan RPCs (plan-client.ts) from those
-// same tables, and hands `fetch` (the room's relays) to the PLAN_ROOM the test passed, if any. `env.WORKBENCH` is
-// each person's workbench store, in memory. `flush` drains what the plans owe the index (plan-outbox.ts) now.
+// same tables, and hands `fetch` (the room's relays) to the PLAN_ROOM the test passed, if any. `flush` drains what
+// the plans owe the index (plan-outbox.ts) now.
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
@@ -101,13 +95,6 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testPlanRooms(env, sql, next);
     },
   });
-  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
-  if (!base.WORKBENCH) {
-    env.WORKBENCH = memoryWorkbenchNamespace<'project'>({
-      credentials: () => accountCredentials(env),
-      closeRoom: (planId, pairingId) => closeWorkbenchSessions(env, planId, pairingId),
-    }) as unknown as DurableObjectNamespace;
-  }
   return { env, sql, flush: push };
 }
 

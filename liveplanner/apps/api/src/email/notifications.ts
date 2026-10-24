@@ -7,7 +7,7 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { createNotifier, workbenchAllowance } from '@liveworkspace/index-app';
+import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { isAccountId, type TeamPerson } from '@liveworkspace/auth-client';
 import { MENTIONS_MAX, type Comment } from '@liveplanner/project';
 import { claimFormEmail } from '../db';
@@ -19,6 +19,7 @@ import {
   teamPeople,
   type NotifySetting,
 } from '../person/notify';
+import { accountCredentials } from '../auth/accounts';
 import { getParticipant } from '../person/profiles';
 import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../plan-room/plan-content';
@@ -121,7 +122,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
   itemsMadeBy: plansMadeBy,
   claimMilestone: claimOwnerMilestone,
   claims: (env) => (env as PlanEnv).PLAN_DB,
-  allowance: (env) => workbenchAllowance(env.WORKBENCH),
+  allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
   settings: { join: 'notifyProjectJoin' },

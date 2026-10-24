@@ -100,8 +100,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   in-memory SQLite (`node:sqlite`) with the plans' schema (`plan-room/plan-schema.ts`)
   and foreign keys on, as in a plan's Durable Object, behind `env.PLAN_DB`. Use it
   wherever the behaviour lives in the schema: cascades, primary-key collisions,
-  `INSERT OR IGNORE` outcomes. It answers the `PLAN_ROOM` RPCs from the same tables,
-  keeps each person's workbench store in memory as `env.WORKBENCH`, and `flush` drains
+  `INSERT OR IGNORE` outcomes. It answers the `PLAN_ROOM` RPCs from the same tables, and `flush` drains
   what the plans owe the index.
 - **A plan's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and

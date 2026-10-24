@@ -9,7 +9,7 @@ import { objectOrEmpty, type WorkbenchRole } from '@liveplanner/api-schema';
 
 import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@liveplanner/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { WorkbenchReach } from '../workbench-store';
+import type { WorkbenchReach } from '../auth/workbench-session';
 import type { GrantCaller, PlanGrant } from '../index-service';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
 import type { ProjectDTO, Env, PlanEnv, ShareRole } from '../types';

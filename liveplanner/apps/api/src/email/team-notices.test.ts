@@ -398,7 +398,6 @@ describe('a mention', () => {
       RESEND_API_KEY: 're',
       APP_BASE_URL: 'https://app.test',
     });
-    Reflect.set(other.env, 'WORKBENCH', db.env.WORKBENCH);
     const comment = (id: string, from: number) =>
       ({
         id,
@@ -445,7 +444,10 @@ describe('a mention', () => {
     });
     const took = performance.now() - started;
     expect(sent()).toHaveLength(60);
+    // The sender's email allowance is liveworkspace's (liveworkspace/docs/workbench.md): one call however many are
+    // mentioned.
     expect(fake.calls.map((c) => c.path).sort()).toEqual([
+      '/allowance',
       '/emails',
       '/settings/notify',
       '/teams/members',

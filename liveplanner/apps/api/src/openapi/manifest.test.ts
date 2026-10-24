@@ -21,6 +21,10 @@ function dispatchedSegments(): Set<string> {
   const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
+  // Forwarded to liveworkspace unchanged ahead of the switch (liveworkspace/docs/workbench.md), and still part of
+  // this api's published surface.
+  if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
+    segments.add('workbench');
   return segments;
 }
 

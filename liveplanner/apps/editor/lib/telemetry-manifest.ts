@@ -180,8 +180,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
-  // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
-  'Token·Linked',
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed plan's card, and the plan restored from it.

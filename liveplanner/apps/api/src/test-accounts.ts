@@ -1,5 +1,6 @@
 // Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/accounts.md
-// "The API"): settings, profiles, sightings, milestones, emails, teams' people, the teams it makes and activity,
+// "The API"): settings, profiles, sightings, milestones, emails, teams' people, the teams it makes, activity and
+// a sender's notification allowance (liveworkspace/docs/workbench.md),
 // kept in memory with the same rules (a write is a patch per key, null deletes; a milestone claims once, and only
 // after a sighting). Stubs the global fetch; batches posted to the telemetry service are kept too, and the
 // index's count of a person's plans (`planCounts`, at INDEX_ON's origin) is answered as well. Pair with
@@ -37,6 +38,8 @@ export type FakeAccounts = {
   madeTeams: { id: string; name: string; organisation: string | null; admin: string }[];
   // How many plans each person has made, as the index counts them.
   planCounts: Map<string, number>;
+  // Each sender's allowance uses, by `<personId> <kind>`: when each was taken.
+  allowances: Map<string, number[]>;
   // Every internal call, as `<path> <json body>`.
   calls: { path: string; body: Record<string, unknown> }[];
   telemetry: TelemetryBatch['events'];
@@ -66,6 +69,7 @@ export function stubAccounts(): FakeAccounts {
     teams: new Map(),
     madeTeams: [],
     planCounts: new Map(),
+    allowances: new Map(),
     calls: [],
     telemetry: [],
     failWith: null,
@@ -198,6 +202,17 @@ export function stubAccounts(): FakeAccounts {
             ids.flatMap((id) => (fake.emails.has(id) ? [[id, fake.emails.get(id)]] : [])),
           ),
         });
+      }
+      case '/allowance': {
+        const key = `${String(body.personId)} ${String(body.kind)}`;
+        const windowMs = body.windowMs as number;
+        const used = (fake.allowances.get(key) ?? []).filter((at) => at > now - windowMs);
+        const taken = Math.max(
+          0,
+          Math.min(body.count as number, (body.max as number) - used.length),
+        );
+        fake.allowances.set(key, [...used, ...Array.from({ length: taken }, () => now)]);
+        return answer({ taken });
       }
       case '/activity':
         fake.activity.push(body as { userId: string; at?: number });

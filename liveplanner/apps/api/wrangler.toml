@@ -71,17 +71,16 @@ simple = { limit = 120, period = 60 }
 name = "PLAN_ROOM"
 class_name = "PlanRoom"
 
-# Each person's workbench (src/workbench-store.ts, docs/specs/013-workspace/blueprints/workbench-embeds.md "Data
-# and persistence"): one SQLite-backed instance per person, holding their pairing requests, pairings, tickets and
-# sessions. Its alarm checks the tokens behind live sessions and sweeps spent rows.
-[[durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
-
 # liveplanner has never been deployed, so the classes start SQLite-backed with no rename history.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["PlanRoom", "WorkbenchStore"]
+
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -114,14 +113,6 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few projects, never a stream.
-# Separate namespace. Absent binding → allow (a deployment without it).
-[[unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
 
 # Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits"),
 # keyed form:<network> and form-read:<network> (an IPv4 /24 or IPv6 /56, client-ip.ts clientNetwork). Respondents are anonymous,
@@ -272,11 +263,6 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "FORM_RATE_LIMITER"
@@ -291,13 +277,13 @@ simple = { limit = 60, period = 60 }
 name = "PLAN_ROOM"
 class_name = "PlanRoom"
 
-[[env.staging.durable_objects.bindings]]
-name = "WORKBENCH"
-class_name = "WorkbenchStore"
-
 [[env.staging.migrations]]
 tag = "v1"
 new_sqlite_classes = ["PlanRoom", "WorkbenchStore"]
+
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
 # TELEMETRY_KEY come from the

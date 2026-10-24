@@ -65,7 +65,7 @@ export async function getProjectMeta(
 // What liveworkspace keeps of a plan's pictures (liveworkspace/docs/previews.md), for when the index purges it
 // (routes/internal-items.ts): its previews go too. Its form links and reports are in its own Durable Object (wiped
 // with it), and the index's form row and code cascade with the item. Workbench tickets and sessions scoped to it are
-// in their owners' workbench stores: a ticket lapses in a minute, and a session's every request is gated on the
+// liveworkspace's: a ticket lapses in a minute, and a session's every request is gated on the
 // plan's grant, which a purged plan never gets again. Best effort: a preview the purge misses is unreachable (every
 // read asks the index).
 export async function purgePlanPreviews(env: Env, id: string): Promise<void> {
