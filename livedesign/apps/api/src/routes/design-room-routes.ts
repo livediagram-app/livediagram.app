@@ -1,7 +1,7 @@
 // /api/designs/<id>/room-ticket + /ws: joining a design's realtime room (docs/specs/015-api/api.md "Realtime
 // model"). The index's grant is the whole admission (liveworkspace/docs/one-explorer-contracts.md "Grants"): the
-// upgrade carries it as `?t=` (room-ticket.ts), the worker checks it offline and stamps what it says on the
-// headers only it can set, and the room asks for a fresh one before it lapses (design-room.ts).
+// upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps
+// what it says on the headers only it can set, and the room asks for a fresh one before it lapses (design-room.ts).
 
 import {
   capWorkbenchRole,
@@ -12,7 +12,7 @@ import { adderKeyFor } from '../adder-key';
 import { workbenchStore } from '../workbench-store';
 import { linkCodeOf, indexService } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, sealRoomTicket } from '@liveworkspace/index-app';
+import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDesignGrant } from './design-grant';
 import { personTagFor } from '../person-tag';
@@ -50,9 +50,8 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    const role: AccessLevel = workbench
-      ? capWorkbenchRole(claims.level, workbench.cap)
-      : claims.level;
+    // The grant's level, held to a workbench session's sealed cap.
+    const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
