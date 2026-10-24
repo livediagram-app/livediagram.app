@@ -229,6 +229,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -826,6 +829,10 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livedesign/packages/help-registry:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -1561,6 +1568,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -2065,6 +2075,10 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livediagram/packages/help-registry:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -2713,6 +2727,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -3202,6 +3219,10 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livedocuments/packages/help-registry:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -3776,6 +3797,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -4212,6 +4236,10 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   liveplanner/packages/help-registry:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../../../packages/help-registry
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -5153,6 +5181,24 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/help-registry:
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

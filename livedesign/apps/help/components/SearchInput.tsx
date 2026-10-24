@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { SearchIcon, useClickOutside } from '@livedesign/ui';
-import { articleHref } from '@livedesign/help-registry/hrefs';
+import { articleHref } from '@liveworkspace/help-registry/hrefs';
 import type { Article } from '@/lib/articles';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 

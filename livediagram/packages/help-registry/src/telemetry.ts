@@ -1,22 +1,11 @@
-// The telemetry identifier of a help article (docs/specs/017-telemetry/telemetry.md `Help`, docs/specs/018-help/contextual-help-links.md).
-//
-// Help telemetry reports WHICH article was read, voted on, or opened from the
-// editor, as the event's `type`. That has to be a bounded token
-// (TELEMETRY_TYPE_PATTERN: no `/`), so it can't be the article's nested path,
-// and it used to be the path's last segment. Two pairs of articles share a last
-// segment (Tips and Tricks has its own Format Painter and Palette write-ups
-// beside the feature articles), so each pair reported one merged number.
-//
-// The identifier is the article's `slug`, except for the articles listed in
-// TELEMETRY_ID_OVERRIDES, which get a distinct token. The feature article keeps
-// the plain slug, so every row stored before the split still names the
-// article it mostly meant, and the Tips and Tricks copy starts a new series.
-// A test in apps/help fails if two articles ever resolve to the same id, so a
-// new collision has to be resolved here, explicitly, rather than silently
-// merging (an automatic rule would instead RENAME an existing article's
-// series the day a colliding article was added).
+// This product's help telemetry ids (docs/specs/017-telemetry/telemetry.md `Help`,
+// docs/specs/018-help/contextual-help-links.md): the article's slug, except for the articles below,
+// whose slug another article already uses. How an id is worked out is @liveworkspace/help-registry's
+// (createHelpTelemetryIds); a test in apps/help fails if two articles ever resolve to the same id.
 
-import type { Article } from './index';
+import { createHelpTelemetryIds } from '@liveworkspace/help-registry/telemetry';
+
+export { articlePath } from '@liveworkspace/help-registry/telemetry';
 
 /**
  * Explicit tokens for articles whose slug another article already uses,
@@ -28,29 +17,5 @@ export const TELEMETRY_ID_OVERRIDES: Readonly<Record<string, string>> = {
   'tips-and-tricks/command-palette': 'tips-command-palette',
 };
 
-/** An article's full path under /help, e.g. `selection-modes/format-painter`. */
-export function articlePath(article: Pick<Article, 'categorySlug' | 'slug'>): string {
-  return `${article.categorySlug}/${article.slug}`;
-}
-
-/** The telemetry `type` for one registry article. */
-export function articleTelemetryId(article: Pick<Article, 'categorySlug' | 'slug'>): string {
-  return TELEMETRY_ID_OVERRIDES[articlePath(article)] ?? article.slug;
-}
-
-/**
- * The telemetry `type` for a help path (`/palette/format-painter/`, with or
- * without slashes at either end). A registry article resolves to its
- * {@link articleTelemetryId}; anything else (a category landing page such as
- * `palette`) falls back to its last segment. The editor's help-link test
- * checks every path it links still resolves to a distinct id.
- *
- * Worked out from the path alone, never by finding the article: an article's
- * path ends in its slug, so its override or last segment IS its id (a test in
- * apps/help holds that for every article). Every help page sends this id, and
- * a registry lookup put the whole catalogue in each page's JavaScript.
- */
-export function helpPathTelemetryId(path: string): string {
-  const clean = path.split('/').filter(Boolean).join('/');
-  return TELEMETRY_ID_OVERRIDES[clean] ?? clean.slice(clean.lastIndexOf('/') + 1);
-}
+export const { articleTelemetryId, helpPathTelemetryId } =
+  createHelpTelemetryIds(TELEMETRY_ID_OVERRIDES);

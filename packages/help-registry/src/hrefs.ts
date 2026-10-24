@@ -1,7 +1,7 @@
-// Canonical help-centre paths, apart from the catalogue in ./index.ts: a page that only builds
-// links imports this and skips the ~300 articles' data. Re-exported from the package root.
+// Canonical help-centre paths, apart from any catalogue: a page that only builds
+// links imports this and skips a product's articles. Re-exported from the package root and each product's registry.
 
-import type { Article } from './index';
+import type { Article } from './types';
 
 /**
  * Canonical in-app path to an article page. Trailing slash to match the help

@@ -208,7 +208,7 @@ packages/
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # help-centre article/category registry + keywords (help app + editor search)
+  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
@@ -221,7 +221,7 @@ packages/
   fake-google/  # in-memory Google Drive + OAuth, for tests only
   tailwind-config/# shared Tailwind theme (brand palette)
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, help-registry, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)
