@@ -34,7 +34,7 @@ import {
   type ArrowheadSize,
   type ShapeKind,
 } from './index';
-import { tableKeys } from '@liveworkspace/document-core/table-keys';
+import { tableKeys } from '@liveworkspace/model-core/table-keys';
 
 const channels = (hex: string): [number, number, number] => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;

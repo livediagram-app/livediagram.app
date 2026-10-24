@@ -15,10 +15,10 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { fontIdsUsed, resolveFontStack } from '@liveworkspace/document-core/fonts';
+import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
-import { hasRichFormatting } from '@liveworkspace/document-core/rich-text';
-import { iconCaptionBand } from '@liveworkspace/document-core/icon-size';
+import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
+import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
@@ -26,9 +26,9 @@ import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { chipColours, chipLookOf, isChipShape } from './chip';
 import type { BoxedElement, TextRun } from './index';
-import { runFontPx } from '@liveworkspace/document-core/label-font';
+import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
-import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/document-core/canvas-colors';
+import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
 import { labelBodyInset } from './label-body';
 
 export const EXPORT_PADDING = 32;

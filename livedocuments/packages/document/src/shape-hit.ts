@@ -15,9 +15,9 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   cornerRadiusPx,
-} from '@liveworkspace/document-core/border-style';
+} from '@liveworkspace/model-core/border-style';
 import { defaultFillColor } from './colors';
-import { rotatePoint, type Point } from '@liveworkspace/document-core/geometry-primitives';
+import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import {
   BROWSER_CHROME,
@@ -32,7 +32,7 @@ import {
   PATH_ARC_SEGMENTS,
   PATH_CURVE_SEGMENTS,
   svgPathSubpaths,
-} from '@liveworkspace/document-core/svg-path-outline';
+} from '@liveworkspace/model-core/svg-path-outline';
 import { insidePolygon, segmentDistance } from './segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };

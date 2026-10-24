@@ -6,7 +6,7 @@
 // EmptyRows invitation instead.
 
 import type { RollCallEntry } from './collab-shapes';
-import { initialsOf } from '@liveworkspace/document-core/names';
+import { initialsOf } from '@liveworkspace/model-core/names';
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
   collabCard,

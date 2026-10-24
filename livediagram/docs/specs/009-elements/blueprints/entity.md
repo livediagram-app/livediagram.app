@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/document/src/geometry.ts`                                      | `endpointPosition` / `fieldEndPosition`: a field end's point            |
 | `packages/document/src/arrow-rebind.ts`, `arrow-rebind-swap.ts`          | A field end keeps its field on a move                                   |
 | `packages/document/src/svg-render-entity.ts`                             | `svgEntityRows`: the export body                                        |
-| `../packages/document-core/src/label-font.ts`                            | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |
+| `../packages/model-core/src/label-font.ts`                               | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |
 | `packages/document/src/graph-authoring.ts`                               | `entityNode`: a graph node with fields is an entity                     |
 | `packages/document/src/mermaid-er.ts`                                    | Attribute markers become the field's key                                |
 | `packages/document/src/element-normalise.ts`                             | `normaliseEntity`: an authored box fits its rows                        |

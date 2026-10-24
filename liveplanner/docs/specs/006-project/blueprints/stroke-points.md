@@ -23,14 +23,14 @@ spec.
 
 ## Modules
 
-| File                                                   | Responsibility                                                                                                                                           |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/document-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `../packages/document-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
-| `../packages/document-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `packages/project/src/freehand-points.ts`              | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `packages/project/scripts/expand-stroke-points.ts`     | The debug script: a tab or project JSON file with every block expanded                                                                                   |
-| `scripts/ts-source-hooks.mjs`                          | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| File                                                | Responsibility                                                                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
+| `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
+| `packages/project/src/freehand-points.ts`           | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `packages/project/scripts/expand-stroke-points.ts`  | The debug script: a tab or project JSON file with every block expanded                                                                                   |
+| `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
 
 ## Interfaces and contracts
 
@@ -259,15 +259,15 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 | Spec rule                                                                     | Test                                                                               |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                                    | `../packages/document-core/src/stroke-points.test.ts`                              |
+| Byte layout, version, flags, little-endian                                    | `../packages/model-core/src/stroke-points.test.ts`                                 |
 | Round trip and precision bound (tiny, huge, degenerate, single, empty)        | `stroke-points.test.ts`                                                            |
 | Pressure present and absent, pressure precision                               | `stroke-points.test.ts`                                                            |
 | Re-encoding a decoded block is stable                                         | `stroke-points.test.ts`                                                            |
 | Every named rejection                                                         | `stroke-points.test.ts`                                                            |
 | Encoder throws on non-finite, length mismatch, too many                       | `stroke-points.test.ts`                                                            |
-| Memoised decode: same arrays, bounded, LRU, oversize                          | `../packages/document-core/src/stroke-points-cache.test.ts`                        |
+| Memoised decode: same arrays, bounded, LRU, oversize                          | `../packages/model-core/src/stroke-points-cache.test.ts`                           |
 | Corrupt block draws nothing and logs once                                     | `stroke-points-cache.test.ts`                                                      |
-| Debug decoder and expansion                                                   | `../packages/document-core/src/stroke-points-debug.test.ts`                        |
+| Debug decoder and expansion                                                   | `../packages/model-core/src/stroke-points-debug.test.ts`                           |
 | Validation accepts packed, rejects former shape and corrupt                   | `packages/project/src/validate.test.ts`                                            |
 | Pen outline unchanged                                                         | `packages/project/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                                   | `packages/project/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |

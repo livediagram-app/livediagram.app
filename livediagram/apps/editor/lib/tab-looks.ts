@@ -58,7 +58,7 @@ export type TabLook = {
   /** A built-in theme id (packages/document/src/themes-data.ts). */
   theme: string;
   finish: Finish;
-  /** A font id (../packages/document-core/src/fonts.ts), or undefined for no tab font. */
+  /** A font id (../packages/model-core/src/fonts.ts), or undefined for no tab font. */
   font: string | undefined;
   pattern: BackgroundPattern;
   /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */

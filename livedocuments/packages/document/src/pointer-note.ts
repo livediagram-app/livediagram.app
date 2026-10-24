@@ -5,7 +5,7 @@
 // A LEAF module: types only from './index', the attachment helpers it shares with the badge.
 
 import { ATTACH_SNAP_PX, attachPointXY, canHost, type AttachPoint } from './attachment';
-import type { Point, Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 
 /** The furthest a tip may sit from its note, either axis. */

@@ -23,7 +23,7 @@ import {
   rectsIntersect as overlaps,
   unionRects,
   type Rect,
-} from '@liveworkspace/document-core/geometry-primitives';
+} from '@liveworkspace/model-core/geometry-primitives';
 import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
 
 export { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y };

@@ -4,7 +4,7 @@
 // edge extraction, component split, and arrow re-anchoring. Internal module,
 // not re-exported from the package index.
 
-import { clamp } from '@liveworkspace/document-core/geometry-primitives';
+import { clamp } from '@liveworkspace/model-core/geometry-primitives';
 import type { Anchor, ArrowElement, BoxedElement, ElementId } from './index';
 
 export const LAYER_GAP = 90; // gap between consecutive ranks (main axis)

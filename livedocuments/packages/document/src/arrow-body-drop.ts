@@ -2,7 +2,7 @@ import { isBoxed, type Anchor, type Element, type ElementId } from './index';
 import { bestAnchorTowards } from './anchor-choice';
 import { isChipShape } from './chip';
 import { isContainerKind } from './containment';
-import type { Point } from '@liveworkspace/document-core/geometry-primitives';
+import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import { pointInsideOutline } from './shape-outline';
 
 // An arrow end over a shape's body, away from its anchors (docs/specs/008-canvas/canvas-and-palette.md "Dropped on

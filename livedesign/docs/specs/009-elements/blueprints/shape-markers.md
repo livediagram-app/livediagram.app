@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                         | Role                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `../packages/document-core/src/shape-marker.ts`              | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
+| `../packages/model-core/src/shape-marker.ts`                 | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
 | `packages/design/src/element-types.ts`                       | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
 | `packages/design/src/data-shapes.ts`                         | `isSelfDrawingShape`: the menu gate                                        |
 | `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |

@@ -10,7 +10,7 @@ import {
   legendFontPx,
   readTextSize,
   runFontPx,
-} from '@liveworkspace/document-core/label-font';
+} from '@liveworkspace/model-core/label-font';
 import { svgPieChart } from './svg-render-charts';
 import { svgLegendShape } from './svg-render-shapes';
 import { createShape } from './factories';

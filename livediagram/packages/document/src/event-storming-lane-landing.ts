@@ -22,7 +22,7 @@ import {
 } from './event-storming-lanes';
 import { isEventStormingNote } from './event-storming';
 import type { Element, ElementId } from './index';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 type LaneBox = Rect;
 

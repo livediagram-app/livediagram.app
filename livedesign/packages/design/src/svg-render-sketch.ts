@@ -13,7 +13,7 @@ import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { markedGroup, replaceBlocks } from '@liveworkspace/document-core/svg-markup-blocks';
+import { markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
 
 function svgSketchDrawing(
   at: { x: number; y: number },

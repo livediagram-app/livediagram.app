@@ -1,9 +1,9 @@
-import { svgTags } from '@liveworkspace/document-core/svg-test-tags';
+import { svgTags } from '@liveworkspace/model-core/svg-test-tags';
 import { describe, expect, it } from 'vitest';
 import { boxedNeedsSvgRaster, renderElementsToSvg, svgBoxed } from './svg-render';
 import { createShape } from './factories';
 import { SHAPE_KINDS } from './validate';
-import { LABEL_FONT_PX, NOTE_FONT_PX } from '@liveworkspace/document-core/label-font';
+import { LABEL_FONT_PX, NOTE_FONT_PX } from '@liveworkspace/model-core/label-font';
 import { fontSizeFor } from './svg-render-primitives';
 import type { ShapeKind, Tab } from './index';
 

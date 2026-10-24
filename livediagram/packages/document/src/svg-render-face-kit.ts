@@ -262,8 +262,8 @@ export function wrapLines(body: string, width: number, size: number, max: number
 export type CollabAccent = { accent: string; on: string; ink: string };
 
 // mixHex lives in color-wash.ts, a leaf, so leaf modules can ramp colours at load; re-exported here for its callers.
-export { mixHex } from '@liveworkspace/document-core/color-wash';
-import { mixHex } from '@liveworkspace/document-core/color-wash';
+export { mixHex } from '@liveworkspace/model-core/color-wash';
+import { mixHex } from '@liveworkspace/model-core/color-wash';
 
 export function collabAccent(stroke: string, fill: string, textColor: string): CollabAccent {
   const on = inkOn(stroke);

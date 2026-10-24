@@ -9,7 +9,7 @@
 import { COLLAB_DONE_COLOR as DONE } from './colors';
 import type { Comment } from './comments';
 import { elementActions, isClosedAction } from './element-action';
-import { initialsOf } from '@liveworkspace/document-core/names';
+import { initialsOf } from '@liveworkspace/model-core/names';
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
   checkMark,

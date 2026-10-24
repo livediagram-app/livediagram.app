@@ -6,11 +6,11 @@
 // previews, so they draw the same frame. Pure strings in canvas coordinates; no DOM.
 import { r2, xmlEscape } from './svg-render-primitives';
 import { isLightColor, shade } from './colors';
-import { mixHex } from '@liveworkspace/document-core/color-wash';
+import { mixHex } from '@liveworkspace/model-core/color-wash';
 import type { Finish } from './finish';
 import { MARKER_INK_OPACITY, markerStrokes } from './marker';
 import { outlineOfPath, sketchStrokes } from './sketch';
-import { fnv1aString } from '@liveworkspace/document-core/string-hash';
+import { fnv1aString } from '@liveworkspace/model-core/string-hash';
 import {
   ANDROID,
   ANDROID_TABLET,

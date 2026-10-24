@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { faceFinishOf, finishFaceCornerPx, finishFaceShadows } from './finish';
-import { faceAttrs, isPillRect } from '@liveworkspace/document-core/face-finish';
+import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';

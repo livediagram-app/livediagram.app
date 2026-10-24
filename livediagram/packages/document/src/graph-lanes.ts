@@ -4,7 +4,7 @@
 // longest path from a start (edges back to an earlier column are left to the loop routing), so a hand-off between
 // lanes drops or climbs in the gap between two columns, as the swimlane template's do.
 
-import { BOLD_EM } from '@liveworkspace/document-core/text-advance';
+import { BOLD_EM } from '@liveworkspace/model-core/text-advance';
 import {
   edgeToArrow,
   glyphWidth,
@@ -12,7 +12,7 @@ import {
   type DiagramGraph,
   type GraphLook,
 } from './graph-authoring';
-import { LABEL_FONT_PX } from '@liveworkspace/document-core/label-font';
+import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
 import { BRANCH_CLEAR } from './graph-branches';
 import { labelWidth } from './graph-look-labels';

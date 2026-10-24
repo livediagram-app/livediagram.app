@@ -9,8 +9,8 @@ Scope, by file:
 | File                                                                                                   | Role                                                                                     |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | `packages/document/src/arrow-label-layout.ts`                                                          | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
-| `../packages/document-core/src/arrow-label-wrap.ts`                                                    | Word metrics, greedy wrap on cached widths, balanced wrap                                |
-| `../packages/document-core/src/arrow-label.ts`                                                         | `arrowLabelFontSize`: the caption size presets                                           |
+| `../packages/model-core/src/arrow-label-wrap.ts`                                                       | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `../packages/model-core/src/arrow-label.ts`                                                            | `arrowLabelFontSize`: the caption size presets                                           |
 | `packages/document/src/svg-render.ts`                                                                  | `contentBounds` counts routes and label plates; one pass per render                      |
 | `packages/document/src/svg-render-arrows.ts`                                                           | Export: multi-line caption, plate, knockout mask from the same layout                    |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |

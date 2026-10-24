@@ -25,7 +25,7 @@ import type { Layer } from './layers';
 
 // Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
-// this type are re-exported lower down via `export * from '@liveworkspace/document-core/rich-text'`.
+// this type are re-exported lower down via `export * from '@liveworkspace/model-core/rich-text'`.
 // Only the BoxedElement union members are imported for local use; the full set
 // (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
 import type { ArrowElement } from './arrow-types';
@@ -72,7 +72,7 @@ export type {
 // Border preset types used by the boxed-element + arrow field definitions
 // below. The px / dasharray maps + defaults that go with them live in
 // border-style.ts; type-only import (erasable), and the whole module is
-// re-exported lower down via `export * from '@liveworkspace/document-core/border-style'`.
+// re-exported lower down via `export * from '@liveworkspace/model-core/border-style'`.
 
 // Comment-thread type used by the boxed-element `commentThread` fields below.
 // The Comment shape + createComment / activeCommentCount helpers live in
@@ -87,13 +87,13 @@ export type {
 // `string` aliases.
 export type ProjectId = string;
 // The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
-// background patterns) is shared by every product: @liveworkspace/document-core/basics.
+// background patterns) is shared by every product: @liveworkspace/model-core/basics.
 import type {
   TabId,
   ElementId,
   TextSize,
   BackgroundPattern,
-} from '@liveworkspace/document-core/basics';
+} from '@liveworkspace/model-core/basics';
 export {
   PADDING_PX,
   ARROW_FLOWS,
@@ -114,14 +114,14 @@ export {
   type BackgroundPattern,
   type AnimatedBackgroundPattern,
   type SeasonalBackgroundPattern,
-} from '@liveworkspace/document-core/basics';
+} from '@liveworkspace/model-core/basics';
 
 export {
   DARK_CANVAS_BACKGROUND_COLOR,
   DARK_CANVAS_PATTERN_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
 // project; `project` navigates to a different project entirely (with
@@ -276,7 +276,7 @@ export * from './concept';
 export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
-export * from '@liveworkspace/document-core/title-caption';
+export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './ink-legibility';
@@ -332,7 +332,7 @@ export function elementSupportsText(element: Element): boolean {
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';
-export * from '@liveworkspace/document-core/arrow-avoidance';
+export * from '@liveworkspace/model-core/arrow-avoidance';
 export * from './nearest-towards';
 export * from './flowchart';
 export * from './flowchart-layout';
@@ -346,17 +346,17 @@ export * from './mind-grow';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-dash';
-export * from '@liveworkspace/document-core/arrow-label';
+export * from '@liveworkspace/model-core/arrow-label';
 export * from './arrow-label-layout';
-export * from '@liveworkspace/document-core/arrow-label-wrap';
+export * from '@liveworkspace/model-core/arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
-export * from '@liveworkspace/document-core/label-font';
-export * from '@liveworkspace/document-core/table-cell-font';
+export * from '@liveworkspace/model-core/label-font';
+export * from '@liveworkspace/model-core/table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
-export * from '@liveworkspace/document-core/border-style';
+export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
 export * from './finish';
@@ -366,13 +366,13 @@ export * from './sketch-backdrop';
 export * from './marker';
 export * from './marker-element';
 // A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
-export * from '@liveworkspace/document-core/face-finish';
+export * from '@liveworkspace/model-core/face-finish';
 export * from './marker-face';
 export * from './hand-drawn';
 export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
-export * from '@liveworkspace/document-core/shape-marker';
+export * from '@liveworkspace/model-core/shape-marker';
 // The Behaviour elements' stored configuration (docs/specs/012-collaboration/session-button.md).
 export * from './behaviour-config';
 export * from './behaviour-skin';
@@ -388,15 +388,15 @@ export * from './project-envelope';
 export * from './export-tab-text';
 export * from './export-tab-plan';
 export * from './plan-board-layout';
-export * from '@liveworkspace/document-core/comment-mentions';
+export * from '@liveworkspace/model-core/comment-mentions';
 // The shared plain-object guard for untrusted JSON.
-export * from '@liveworkspace/document-core/is-record';
+export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
-export * from '@liveworkspace/document-core/string-hash';
+export * from '@liveworkspace/model-core/string-hash';
 // The shared seeded PRNG for deterministic randomness.
-export * from '@liveworkspace/document-core/seeded-random';
+export * from '@liveworkspace/model-core/seeded-random';
 // The shared count-with-noun wording.
-export * from '@liveworkspace/document-core/plural';
+export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
@@ -407,7 +407,7 @@ export * from './sankey-text';
 export * from './entity-geometry';
 export * from './entity-fields';
 export * from './entity-look';
-export * from '@liveworkspace/document-core/code-themes';
+export * from '@liveworkspace/model-core/code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
 export * from './chart-types';
@@ -421,7 +421,7 @@ export * from './responses';
 export * from './collab-shapes';
 export * from './shape-geometry';
 export * from './actor-figure';
-export * from '@liveworkspace/document-core/color-wash';
+export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
@@ -433,13 +433,13 @@ export * from './colors';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
-export * from '@liveworkspace/document-core/icon-size';
-export * from '@liveworkspace/document-core/icon-weight';
+export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
-export * from '@liveworkspace/document-core/rich-text';
-export * from '@liveworkspace/document-core/person-card';
+export * from '@liveworkspace/model-core/rich-text';
+export * from '@liveworkspace/model-core/person-card';
 
 export * from './factories';
 export * from './whiteboard';
@@ -447,10 +447,10 @@ export * from './segment-geometry';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
-export * from '@liveworkspace/document-core/stroke-points';
-export * from '@liveworkspace/document-core/stroke-points-cache';
+export * from '@liveworkspace/model-core/stroke-points';
+export * from '@liveworkspace/model-core/stroke-points-cache';
 export * from './freehand-points';
-export * from '@liveworkspace/document-core/stroke-points-debug';
+export * from '@liveworkspace/model-core/stroke-points-debug';
 export * from './pen-colours';
 export * from './standard-colours';
 export * from './custom-colours';
@@ -529,7 +529,7 @@ export * from './element-display-label';
 export * from './anchors';
 export * from './anchor-layouts';
 export * from './shape-outline';
-export * from '@liveworkspace/document-core/svg-path-outline';
+export * from '@liveworkspace/model-core/svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
@@ -545,7 +545,7 @@ export * from './arrow-orthogonal';
 export * from './arrow-behind';
 export * from './element-grid';
 // Tab + project name length cap (docs/specs/006-project/name-length.md).
-export * from '@liveworkspace/document-core/names';
+export * from '@liveworkspace/model-core/names';
 export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
@@ -567,7 +567,7 @@ export * from './layer-operations';
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
 export * from './participant-content';
-export * from '@liveworkspace/document-core/adder';
+export * from '@liveworkspace/model-core/adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
@@ -594,19 +594,19 @@ export * from './session';
 // apps/editor because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
-export * from '@liveworkspace/document-core/fonts';
+export * from '@liveworkspace/model-core/fonts';
 
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/project-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
 export * from './containment';
-export * from '@liveworkspace/document-core/style-keys';
+export * from '@liveworkspace/model-core/style-keys';
 export * from './plan-palette';
 export * from './plan-presets';
 export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
-export * from '@liveworkspace/document-core/tab-names';
+export * from '@liveworkspace/model-core/tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';

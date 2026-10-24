@@ -2,11 +2,11 @@
 // tab reads as, and the pens' weights. Pure data and pure functions; the editor owns the
 // device-local pens. Stock colours are stored by name and every renderer resolves them by
 // name (./stock-colours, docs/specs/008-canvas/canvas-and-palette.md "Colours").
-import { BORDER_STROKE_PX, type BorderStroke } from '@liveworkspace/document-core/border-style';
+import { BORDER_STROKE_PX, type BorderStroke } from '@liveworkspace/model-core/border-style';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import { PEN_INK } from './pen-colours';
 import type { Appearance } from './themes';
 import type { BackgroundPattern } from './index';

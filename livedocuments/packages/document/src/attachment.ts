@@ -5,7 +5,7 @@
 
 import { badgeSize, isChip, nextStepNumber, stepFontPx } from './chip';
 import { isPointerNote, pointerTipOf } from './pointer-note';
-import type { Point, Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ElementId, ShapeElement } from './index';
 
 export type AttachPoint =

@@ -9,7 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from './index';
-import type { BorderRadius } from '@liveworkspace/document-core/border-style';
+import type { BorderRadius } from '@liveworkspace/model-core/border-style';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { CONTROL_SKIN } from './behaviour-config';

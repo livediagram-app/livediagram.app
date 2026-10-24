@@ -24,7 +24,7 @@ import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
-import { MENTIONS_MAX } from '@liveworkspace/document-core/comment-mentions';
+import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 
 // Bounds on a comment arriving in a delta. Generous: the editor's own limits
 // are tighter, this only stops a hand-crafted frame from bloating a peer.

@@ -20,7 +20,7 @@ import {
   rectsIntersect,
   unionRects,
   type Rect,
-} from '@liveworkspace/document-core/geometry-primitives';
+} from '@liveworkspace/model-core/geometry-primitives';
 import {
   COMPONENT_GAP,
   components,

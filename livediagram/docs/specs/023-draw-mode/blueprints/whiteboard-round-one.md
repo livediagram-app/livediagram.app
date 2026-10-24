@@ -34,7 +34,7 @@ Scope, by file:
 | `apps/editor/lib/stock-colour-projector.ts`                         | `createStockColourProjector`: stock colours by name over a list, cached   |
 | `apps/editor/lib/whiteboard-erase.ts`                               | `strokesTouched`, `shapesTouched`, `partialEraseStep`: one eraser step    |
 | `packages/document/src/shape-hit.ts`                                | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
-| `../packages/document-core/src/svg-path-outline.ts`                 | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
+| `../packages/model-core/src/svg-path-outline.ts`                    | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
 | `apps/editor/components/canvas/ShapeHitOutline.tsx`                 | `outlineHit`, the invisible outline that picks an unselected shape        |
 | `apps/editor/lib/whiteboard-edit-target.ts`                         | `shapeToEditAt`, `routeBoardDoubleClick`: a double-click inside a shape   |
 | `apps/editor/lib/draw-mode.ts`                                      | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent`  |

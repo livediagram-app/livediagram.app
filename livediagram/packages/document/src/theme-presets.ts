@@ -1,4 +1,4 @@
-import type { BorderStroke, BorderStyle } from '@liveworkspace/document-core/border-style';
+import type { BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import { canvasSurface, DARK_INK, isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
 import { labelOn as readableLabelOn, reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';

@@ -128,7 +128,7 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's
-error) takes its article from the name: `withArticle` / `indefiniteArticle` in `../packages/document-core/src/indefinite-article.ts`
+error) takes its article from the name: `withArticle` / `indefiniteArticle` in `../packages/model-core/src/indefinite-article.ts`
 (exported by `@livedocuments/document`). A vowel sound takes "an" ("Add an infographic page", "Create an Article"),
 and a vowel said "you" keeps "a" ("a User Persona"). A fixed "a" before an interpolated name is how "Create a Org
 Chart" once reached livediagram's marketing site.

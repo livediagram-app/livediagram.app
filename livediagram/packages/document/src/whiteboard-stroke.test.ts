@@ -4,7 +4,7 @@ import { freehandPressures } from './freehand-points';
 import {
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
-} from '@liveworkspace/document-core/stroke-points';
+} from '@liveworkspace/model-core/stroke-points';
 import type { FreehandElement } from './index';
 import {
   eraseStrokePart,

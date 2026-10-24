@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import {
   PEN_BOARDS,
   PEN_COLOUR_NAMES,

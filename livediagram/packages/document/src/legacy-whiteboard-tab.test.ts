@@ -9,7 +9,7 @@ import type {
   TextElement,
 } from './index';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // A stored whiteboard tab (docs/specs/007-editor/editor-modes.md "Existing whiteboards") reads as
 // a general tab that opens in Draw, looking exactly as it did ("One look").

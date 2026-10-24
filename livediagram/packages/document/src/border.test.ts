@@ -29,7 +29,7 @@ import {
   type ShapeKind,
 } from './index';
 import { SHAPE_KINDS } from './validate';
-import { tableKeys } from '@liveworkspace/document-core/table-keys';
+import { tableKeys } from '@liveworkspace/model-core/table-keys';
 
 const shape = (kind: string) => ({ type: 'shape', shape: kind }) as unknown as Element;
 const ofType = (type: string) => ({ type }) as unknown as Element;

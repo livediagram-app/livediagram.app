@@ -7,8 +7,8 @@ import {
   ICON_SIZE_PX,
   iconBandBounds,
   techIconMarkBounds,
-} from '@liveworkspace/document-core/icon-size';
-import { iconWeightPx } from '@liveworkspace/document-core/icon-weight';
+} from '@liveworkspace/model-core/icon-size';
+import { iconWeightPx } from '@liveworkspace/model-core/icon-weight';
 import type { BoxedElement } from './index';
 import type { ExportIconArt } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';

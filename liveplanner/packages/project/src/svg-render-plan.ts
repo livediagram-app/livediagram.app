@@ -20,7 +20,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 import { text as faceText, wrapLines } from './svg-render-face-kit';
 import { PLAN_BOARD_PAD, planBoardLayout } from './plan-board-layout';
 import { planCardFace, type CardFaceContext } from './svg-render-plan-card';
-import { plural } from '@liveworkspace/document-core/plural';
+import { plural } from '@liveworkspace/model-core/plural';
 
 type Shape = BoxedElement & { type: 'shape' };
 

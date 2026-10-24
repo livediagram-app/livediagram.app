@@ -10,7 +10,7 @@ import {
   endpointPosition,
   type ElementIndex,
 } from './geometry';
-import { pointDistance, type Point } from '@liveworkspace/document-core/geometry-primitives';
+import { pointDistance, type Point } from '@liveworkspace/model-core/geometry-primitives';
 
 // THE AUTO-REBIND (docs/specs/008-canvas/arrow-anchors.md "Auto-rebind").
 //

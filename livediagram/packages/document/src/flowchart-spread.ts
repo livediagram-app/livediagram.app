@@ -10,7 +10,7 @@
 import { SIBLING_GAP, type Pt } from './auto-layout-shared';
 import type { FlowchartDirection } from './flowchart';
 import type { ArrowElement, ElementId, ShapeElement } from './index';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 /** Between a Decision's corner and its side step's centre, across the flow (blueprint D175). */
 export const FLOWCHART_CORNER_CLEARANCE = 32;

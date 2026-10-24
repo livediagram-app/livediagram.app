@@ -8,7 +8,7 @@
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import { DEFAULT_SCHEME_ID } from './themes';
 import type { Tab } from './index';
 

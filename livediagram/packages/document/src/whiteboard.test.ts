@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import { contrastRatio } from './colors';
 import {
   WHITEBOARD_BACKGROUNDS,

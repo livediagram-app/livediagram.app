@@ -2,7 +2,7 @@
 // placed from the same boundaryLayout the canvas face uses. The border is the ordinary box svgBoxed draws.
 
 import { BOUNDARY_TINT, boundaryLayout, boundaryStyleOf } from './boundary';
-import { colorWash } from '@liveworkspace/document-core/color-wash';
+import { colorWash } from '@liveworkspace/model-core/color-wash';
 import { labelOn } from './readable-colour';
 import type { BoxedElement } from './index';
 import { borderOf } from './svg-render-border';

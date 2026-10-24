@@ -5,7 +5,7 @@
 // middle and swept along it past the members' own drops. These two passes run on the expanded geometry.
 
 import { SIBLING_GAP } from './auto-layout-shared';
-import { LABEL_FONT_PX } from '@liveworkspace/document-core/label-font';
+import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
 import { legalise, rankOffsets } from './auto-layout-placement';
 import { NOTCH_MAX } from './graph-notches';
 import type { LayoutDirection } from './auto-layout';

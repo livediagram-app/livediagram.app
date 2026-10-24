@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STROKE_FIT_START_TOLERANCE_PX, fitStrokeToLimit } from './stroke-fit';
-import { MAX_FREEHAND_POINTS } from '@liveworkspace/document-core/stroke-points';
+import { MAX_FREEHAND_POINTS } from '@liveworkspace/model-core/stroke-points';
 
 // docs/specs/006-document/stroke-points.md "Limits": a stroke longer than a stroke can store is
 // simplified to fit, never refused.

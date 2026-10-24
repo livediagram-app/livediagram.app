@@ -12,10 +12,10 @@ import {
   type StrokeOptions,
   type StrokePoint,
 } from 'perfect-freehand';
-import type { Point } from '@liveworkspace/document-core/geometry-primitives';
+import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { FreehandElement } from './element-types';
-import { decodeStrokePoints } from '@liveworkspace/document-core/stroke-points-cache';
-import type { NormalisedPoint, StrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cache';
+import type { NormalisedPoint, StrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // Excalidraw's freedraw recipe: how much pressure thins the line, and how much
 // the outline is smoothed.

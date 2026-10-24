@@ -7,7 +7,7 @@
 
 import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
-import type { CommentMention } from '@liveworkspace/document-core/comment-mentions';
+import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 

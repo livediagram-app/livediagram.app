@@ -30,7 +30,7 @@ import {
 import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
-import { initialsOf } from '@liveworkspace/document-core/names';
+import { initialsOf } from '@liveworkspace/model-core/names';
 
 const PRIORITY_LABEL: Readonly<Record<string, string>> = {
   urgent: 'Urgent',

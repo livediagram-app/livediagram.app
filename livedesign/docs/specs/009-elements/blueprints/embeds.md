@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                     | Role                                                                             |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `../packages/document-core/src/youtube.ts`               | `youtubeVideoId`, the URL builders, `createEmbedTargetFor`, provider tables      |
+| `../packages/model-core/src/youtube.ts`                  | `youtubeVideoId`, the URL builders, `createEmbedTargetFor`, provider tables      |
 | `packages/design/src/youtube.ts`                         | `embedTargetFor`: the shared rules bound to the host Figma is told, `livedesign` |
 | `packages/design/src/element-types.ts`                   | `VideoElement`                                                                   |
 | `packages/design/src/factories.ts`                       | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                 |
@@ -383,7 +383,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 | Rule                                                                                              | Test                                                                | File                                                      |
 | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `../packages/document-core/src/youtube.test.ts`           |
+| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `../packages/model-core/src/youtube.test.ts`              |
 | Host case-insensitive, id case-sensitive                                                          | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                         |
 | `?v=` only on a YouTube host; lookalikes refused                                                  | two `returns null` cases                                            | `youtube.test.ts`                                         |
 | Id is exactly 11 URL-safe chars                                                                   | wrong length or alphabet                                            | `youtube.test.ts`                                         |

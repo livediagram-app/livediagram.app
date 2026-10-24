@@ -5,7 +5,7 @@
 
 import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
 import { ES_NOTE_GAP } from './event-storming-lanes';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 // Which side of a note, along the board's own left-to-right time axis.
 export type EsSide = 'before' | 'after';

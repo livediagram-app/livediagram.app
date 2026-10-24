@@ -5,7 +5,7 @@
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@liveplanner/items';
-import type { TextRun } from '@liveworkspace/document-core/rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
@@ -13,9 +13,9 @@ import type {
   BorderStroke,
   BorderStyle,
   BorderRadius,
-} from '@liveworkspace/document-core/border-style';
+} from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ShapeMarker } from '@liveworkspace/document-core/shape-marker';
+import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -24,7 +24,7 @@ import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from '@liveworkspace/document-core/code-themes';
+import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { MindFlow, MindSpacing } from './mind-flow';
 import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
@@ -40,8 +40,8 @@ import type {
 } from './sankey-model';
 import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SessionButtonConfig } from './behaviour-config';
-import type { IconSize } from '@liveworkspace/document-core/icon-size';
-import type { IconWeight } from '@liveworkspace/document-core/icon-weight';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { HeroCaption, StatItem } from './web-components';

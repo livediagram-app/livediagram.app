@@ -10,7 +10,7 @@ import {
   boundsOfPoints,
   rotatePoint,
   type Rect,
-} from '@liveworkspace/document-core/geometry-primitives';
+} from '@liveworkspace/model-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 import { isPointerNote } from './pointer-note';
 

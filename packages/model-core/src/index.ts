@@ -1,5 +1,5 @@
 // Everything the four products' model packages share, and nothing typed on a product's element union.
-// Each module is also its own subpath (`@liveworkspace/document-core/<module>`), which the product packages import.
+// Each module is also its own subpath (`@liveworkspace/model-core/<module>`), which the product packages import.
 export * from './adder';
 export * from './arrow-avoidance';
 export * from './arrow-label';

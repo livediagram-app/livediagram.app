@@ -18,7 +18,7 @@
 
 import type { Anchor, Element } from './index';
 import { anchorFraction } from './anchors';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 type LegacyGroupEnd = { kind: 'pinned-group'; groupId: string; anchor: Anchor };
 

@@ -18,7 +18,7 @@ import {
   withPages,
   type Page,
 } from './page';
-import { FIT_PAGE_MAX_SIDE, FIT_PAGE_MIN_SIDE } from '@liveworkspace/document-core/page-fit';
+import { FIT_PAGE_MAX_SIDE, FIT_PAGE_MIN_SIDE } from '@liveworkspace/model-core/page-fit';
 import type { Element } from './index';
 
 // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages").

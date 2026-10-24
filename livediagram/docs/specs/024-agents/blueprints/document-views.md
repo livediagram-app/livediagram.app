@@ -14,7 +14,7 @@ Scope, by file:
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/element-refs.ts`                                    | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`               |
 | `packages/document/src/containment.ts`                                     | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`       |
-| `../packages/document-core/src/style-keys.ts`                              | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                                |
+| `../packages/model-core/src/style-keys.ts`                                 | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                                |
 | `packages/document/src/mermaid-serialise.ts`                               | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                                 |
 | `packages/document/src/index.ts`                                           | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                                   |
 | `packages/api-schema/src/document-views.ts`                                | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                             |

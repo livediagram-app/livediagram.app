@@ -5,7 +5,7 @@ import { migrateStoredElements } from './stored-elements';
 import { settleStacks } from './stack';
 import { settleTabFields } from './tab-fields';
 import type { Element, Tab } from './index';
-import { isRecord } from '@liveworkspace/document-core/is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,

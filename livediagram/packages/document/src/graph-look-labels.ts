@@ -3,7 +3,7 @@
 
 import { arrowRoutePoints } from './arrow-label-layout';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
-import { rectsIntersect, type Rect } from '@liveworkspace/document-core/geometry-primitives';
+import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Pt } from './graph-look';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 

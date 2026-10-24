@@ -5,7 +5,7 @@
 // scale by the same factors. Pure: start snapshot + total delta in, patch out.
 
 import type { ArrowElement } from './index';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 type Pt = { x: number; y: number };
 export type FrameHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 'e' | 's' | 'w';

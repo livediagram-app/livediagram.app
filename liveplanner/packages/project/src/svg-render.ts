@@ -23,7 +23,7 @@ import {
   svgFreehandShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
-import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from '@liveworkspace/document-core/border-style';
+import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from '@liveworkspace/model-core/border-style';
 import {
   finishCornerFallbackPx,
   faceFinishOf,
@@ -128,8 +128,8 @@ import {
 } from './svg-render-describe';
 // Typefaces (docs/specs/004-interface-design/fonts.md): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
-import { googleFontsHref } from '@liveworkspace/document-core/fonts';
-import { boundsOfPoints, type Point } from '@liveworkspace/document-core/geometry-primitives';
+import { googleFontsHref } from '@liveworkspace/model-core/fonts';
+import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';

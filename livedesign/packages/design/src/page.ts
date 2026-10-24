@@ -11,7 +11,7 @@ import {
   parseRowAt,
   type PageSides,
   type RowAt,
-} from '@liveworkspace/document-core/page-fit';
+} from '@liveworkspace/model-core/page-fit';
 import {
   parseColourFill,
   parsePagePattern,

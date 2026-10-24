@@ -8,10 +8,7 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
-import {
-  MAX_FREEHAND_POINTS,
-  encodeStrokePoints,
-} from '@liveworkspace/document-core/stroke-points';
+import { MAX_FREEHAND_POINTS, encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };
 

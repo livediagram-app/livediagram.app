@@ -4,7 +4,7 @@
 // editor's ShapeSvgOverlay draws from, mapped into the element box
 // (svg-shape-fit.ts) with the same fit the canvas uses, so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
-import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/document-core/border-style';
+import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -13,9 +13,9 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
-import { codeTheme } from '@liveworkspace/document-core/code-themes';
+import { codeTheme } from '@liveworkspace/model-core/code-themes';
 import { chartRamp } from './chart-palettes';
-import { legendFontPx } from '@liveworkspace/document-core/label-font';
+import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   BROWSER_CHROME,
   browserChromeLayout,

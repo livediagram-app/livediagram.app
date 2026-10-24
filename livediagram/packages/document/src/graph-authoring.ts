@@ -13,8 +13,8 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
-import { BOLD_EM } from '@liveworkspace/document-core/text-advance';
-import { personCardText } from '@liveworkspace/document-core/person-card';
+import { BOLD_EM } from '@liveworkspace/model-core/text-advance';
+import { personCardText } from '@liveworkspace/model-core/person-card';
 import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';

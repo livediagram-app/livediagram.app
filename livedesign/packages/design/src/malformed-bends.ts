@@ -6,7 +6,7 @@
 // (docs/specs/008-canvas/arrow-bending.md "Stored bends").
 
 import type { Element } from './index';
-import { isRecord } from '@liveworkspace/document-core/is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 /** The most bend points an arrow holds: as many as a path's nodes (validate.ts MAX_PATH_NODES). */
 export const MAX_CURVE_POINTS = 5_000;
 

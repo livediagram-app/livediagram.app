@@ -6,7 +6,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 ## The eleven fonts
 
 A wide spread of voices so a page can read as crisp, friendly, formal,
-hand-drawn, or bold. Defined once in `../packages/document-core/src/fonts.ts` (id + label
+hand-drawn, or bold. Defined once in `../packages/model-core/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):
 
@@ -173,7 +173,7 @@ sans, which quietly rewrote every canvas).
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising
   mid-swap would bake the fallback into the file.
 
-Implementation: `../packages/document-core/src/fonts.ts` (catalogue + resolver),
+Implementation: `../packages/model-core/src/fonts.ts` (catalogue + resolver),
 `components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`

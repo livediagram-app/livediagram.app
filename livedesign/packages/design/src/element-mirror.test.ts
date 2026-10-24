@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { FreehandElement, PathElement, ShapeElement, TextElement } from './element-types';
 import { layOutPages, newLogoPage } from './page';
 import { mirrorElement, twinFor } from './element-mirror';
-import { decodeStrokePoints } from '@liveworkspace/document-core/stroke-points-cache';
-import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cache';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // docs/specs/007-editor/logo-pages.md "Mirror".
 describe('mirrorElement', () => {

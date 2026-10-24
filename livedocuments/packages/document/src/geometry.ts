@@ -10,11 +10,7 @@ import {
 } from './index';
 import { anchorLayoutPoint } from './anchor-layouts';
 import { anchorFraction, anchorLiesOn, offeredAnchors } from './anchors';
-import {
-  rotatePoint,
-  type Point,
-  type Rect,
-} from '@liveworkspace/document-core/geometry-primitives';
+import { rotatePoint, type Point, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline';
 
 // --- Geometry helpers ------------------------------------------------------
@@ -22,7 +18,7 @@ import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline
 // The dependency-free primitives (Point, Rect, clamp, rect tests, unions)
 // live in a leaf module so modules that must not import the barrel at
 // runtime (shadow.ts, web-components.ts) can still share them.
-export * from '@liveworkspace/document-core/geometry-primitives';
+export * from '@liveworkspace/model-core/geometry-primitives';
 
 // Works on any boxed element since they share x/y/width/height. When the
 // element carries a `rotation`, the anchor is rotated about the

@@ -9,7 +9,7 @@ import { buildElementGrid, queryElementGrid } from './element-grid';
 import { createShape } from './shape-factory';
 import { createArrow } from './factories';
 import type { ArrowElement, Element, PathElement, ShapeElement } from './index';
-import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const M = ROUTE_BEHIND_MARGIN;
 

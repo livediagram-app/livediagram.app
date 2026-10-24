@@ -11,7 +11,7 @@ import { isBehaviourShape } from './behaviour-shapes';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, ShapeElement, Tab } from './index';
-import { TEXT_PX_MAX } from '@liveworkspace/document-core/label-font';
+import { TEXT_PX_MAX } from '@liveworkspace/model-core/label-font';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
 import { isMindNode } from './mind-map';
 import { isValidElement } from './validate';

@@ -4,9 +4,9 @@
 //
 // A LEAF module (types only from './index').
 
-import { colorWash } from '@liveworkspace/document-core/color-wash';
+import { colorWash } from '@liveworkspace/model-core/color-wash';
 import { labelOn } from './readable-colour';
-import { labelFontPx } from '@liveworkspace/document-core/label-font';
+import { labelFontPx } from '@liveworkspace/model-core/label-font';
 import { isLightColor } from './colors';
 import type { Element, ShapeElement, TextSize } from './index';
 

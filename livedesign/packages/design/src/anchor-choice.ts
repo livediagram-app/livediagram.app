@@ -1,7 +1,7 @@
 import type { Anchor, BoxedElement } from './index';
 import { sideOffered, type Side } from './anchors';
 import { centreOf } from './geometry';
-import { rotatePoint, type Point } from '@liveworkspace/document-core/geometry-primitives';
+import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import { connectorBox } from './shape-outline';
 
 // Which side of an element a connector leaves through

@@ -34,7 +34,7 @@ import {
   type ParticipantResponse,
 } from './responses';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, alignedIdeaCardIds, isIdeaCardId } from './collab-shapes';
-import { MENTIONS_MAX } from '@liveworkspace/document-core/comment-mentions';
+import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 
 // Bound on the round id, which is otherwise opaque.
 export const COLLAB_ROUND_MAX = 64;

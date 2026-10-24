@@ -10,7 +10,7 @@ import {
   DEFAULT_BOX_RADIUS_PX,
   MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
-} from '@liveworkspace/document-core/border-style';
+} from '@liveworkspace/model-core/border-style';
 import { MARKER_LINE_PX, finishCornerFallbackPx, finishHatches } from './finish';
 import type { BoxedElement } from './index';
 import {

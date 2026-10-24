@@ -2,7 +2,7 @@
 // readable `{ nx, ny, p }` points (docs/specs/006-document/stroke-points.md), for debugging.
 //   pnpm --filter @livediagram/document stroke-points <file.json>   (or - for stdin)
 import { readFileSync } from 'node:fs';
-import { expandPackedPoints } from '@liveworkspace/document-core/stroke-points-debug';
+import { expandPackedPoints } from '@liveworkspace/model-core/stroke-points-debug';
 
 const file = process.argv[2];
 if (!file) {

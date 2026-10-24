@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ELEMENT_FIELD_NAMES } from './element-fields';
-import { STYLE_KEYS, styleKeysFor } from '@liveworkspace/document-core/style-keys';
+import { STYLE_KEYS, styleKeysFor } from '@liveworkspace/model-core/style-keys';
 
 describe('STYLE_KEYS', () => {
   it('names each key once', () => {

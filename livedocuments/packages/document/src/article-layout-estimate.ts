@@ -16,7 +16,7 @@ import {
   resolveArticleStyle,
 } from './article-style';
 import { isLightColor } from './colors';
-import { resolveFontStack } from '@liveworkspace/document-core/fonts';
+import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
 import type { LaidOutPage } from './page';
 

@@ -4,8 +4,8 @@
 // unflipped. Every one turns the other way (its rotation negated). Pure: the caller gives the twin its own id.
 import type { PathNode, PathPoint } from './element-types';
 import type { BoxedElement } from './index';
-import { decodeStrokePoints } from '@liveworkspace/document-core/stroke-points-cache';
-import { encodeStrokePoints } from '@liveworkspace/document-core/stroke-points';
+import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cache';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { logoPageAt } from './logo-page';
 import type { LaidOutPage } from './page';
 

@@ -8,9 +8,9 @@
 // so corners cross like a pen's) and curves (sampled points, each nudged, drawn as a smooth spline). Two passes
 // from two streams give the doubled line that reads as drawn by hand.
 import type { ShapePart } from './shape-geometry';
-import { seededRandom } from '@liveworkspace/document-core/seeded-random';
-import { fnv1aString } from '@liveworkspace/document-core/string-hash';
-import { arcPoints } from '@liveworkspace/document-core/svg-path-outline';
+import { seededRandom } from '@liveworkspace/model-core/seeded-random';
+import { fnv1aString } from '@liveworkspace/model-core/string-hash';
+import { arcPoints } from '@liveworkspace/model-core/svg-path-outline';
 
 export type Pt = { x: number; y: number };
 

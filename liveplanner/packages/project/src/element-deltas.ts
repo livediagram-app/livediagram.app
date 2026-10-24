@@ -43,7 +43,7 @@ import {
   setResponse,
   type ParticipantResponse,
 } from './responses';
-import { MENTIONS_MAX } from '@liveworkspace/document-core/comment-mentions';
+import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import { applyPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
 
 // Bound on the round id, which is otherwise opaque.

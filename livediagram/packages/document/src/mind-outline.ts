@@ -24,7 +24,7 @@ import {
   restyleMindNode,
   sameMindMarks,
 } from './mind-outline-marks';
-import type { TextRun } from '@liveworkspace/document-core/rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 
 /** What a save will do, for the dialog's count and its removal question. */
 export type MindOutlineSummary = {

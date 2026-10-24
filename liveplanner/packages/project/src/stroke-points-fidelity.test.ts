@@ -8,7 +8,7 @@ import { svgFreehandShape } from './svg-render-shapes';
 import {
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
-} from '@liveworkspace/document-core/stroke-points';
+} from '@liveworkspace/model-core/stroke-points';
 import type { FreehandElement } from './index';
 
 // Export fidelity (docs/specs/006-project/stroke-points.md "Precision guarantee";

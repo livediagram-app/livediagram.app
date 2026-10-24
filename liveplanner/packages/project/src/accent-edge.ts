@@ -4,7 +4,7 @@
 //
 // A LEAF module (types only from './index'), so the renderers can import it without walking the barrel.
 
-import { clamp, type Rect } from '@liveworkspace/document-core/geometry-primitives';
+import { clamp, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 

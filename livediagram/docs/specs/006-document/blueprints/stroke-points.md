@@ -21,17 +21,17 @@ spec.
 
 ## Modules
 
-| File                                                   | Responsibility                                                                                                                                           |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/document-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `packages/document/src/stroke-fit.ts`                  | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
-| `../packages/document-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
-| `../packages/document-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `packages/document/src/freehand-points.ts`             | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `packages/document/src/legacy-stroke-points.ts`        | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
-| `packages/document/scripts/expand-stroke-points.ts`    | The debug script: a tab or document JSON file with every block expanded                                                                                  |
-| `scripts/ts-source-hooks.mjs`                          | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
-| `scripts/stroke-points-bench.ts`                       | The bench behind `pnpm bench:stroke-points`                                                                                                              |
+| File                                                | Responsibility                                                                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `packages/document/src/stroke-fit.ts`               | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
+| `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
+| `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
+| `packages/document/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `packages/document/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
+| `packages/document/scripts/expand-stroke-points.ts` | The debug script: a tab or document JSON file with every block expanded                                                                                  |
+| `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| `scripts/stroke-points-bench.ts`                    | The bench behind `pnpm bench:stroke-points`                                                                                                              |
 
 ## Interfaces and contracts
 
@@ -304,16 +304,16 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 | Spec rule                                                                                                                       | Test                                                                                           |
 | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                                                                                      | `../packages/document-core/src/stroke-points.test.ts`                                          |
+| Byte layout, version, flags, little-endian                                                                                      | `../packages/model-core/src/stroke-points.test.ts`                                             |
 | Round trip and precision bound (tiny, huge, degenerate, single, empty)                                                          | `stroke-points.test.ts`                                                                        |
 | Pressure present and absent, pressure precision                                                                                 | `stroke-points.test.ts`                                                                        |
 | Re-encoding a decoded block is stable                                                                                           | `stroke-points.test.ts`                                                                        |
 | Every named rejection                                                                                                           | `stroke-points.test.ts`                                                                        |
 | Encoder throws on non-finite, length mismatch, too many                                                                         | `stroke-points.test.ts`                                                                        |
 | A stroke past the cap is fitted, never refused; pressures follow; worst-case budget                                             | `packages/document/src/stroke-fit.test.ts`, `apps/editor/hooks/canvas/commit-freehand.test.ts` |
-| Memoised decode: same arrays, bounded, LRU, oversize                                                                            | `../packages/document-core/src/stroke-points-cache.test.ts`                                    |
+| Memoised decode: same arrays, bounded, LRU, oversize                                                                            | `../packages/model-core/src/stroke-points-cache.test.ts`                                       |
 | Corrupt block draws nothing and logs once                                                                                       | `stroke-points-cache.test.ts`                                                                  |
-| Debug decoder and expansion                                                                                                     | `../packages/document-core/src/stroke-points-debug.test.ts`                                    |
+| Debug decoder and expansion                                                                                                     | `../packages/model-core/src/stroke-points-debug.test.ts`                                       |
 | Migration: shape, extent widening, pressures, idempotent                                                                        | `packages/document/src/legacy-stroke-points.test.ts`                                           |
 | Validation accepts packed, rejects former shape and corrupt                                                                     | `packages/document/src/validate.test.ts`                                                       |
 | Eraser split behaviour unchanged                                                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                              |

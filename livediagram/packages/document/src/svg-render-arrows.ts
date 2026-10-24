@@ -19,20 +19,20 @@ import {
   arrowStyleOf,
   type ArrowheadShape,
 } from './arrow-style';
-import { BORDER_DASH_ARRAY } from '@liveworkspace/document-core/border-style';
+import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
 import { ER_GLYPHS } from './er-heads';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
 import { elementGridFor, queryElementGrid } from './element-grid';
 import { svgWrappedLabel } from './svg-render-labels';
 import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
-import type { Rect } from '@liveworkspace/document-core/geometry-primitives';
-import { resolveFontStack } from '@liveworkspace/document-core/fonts';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, finishArrowWidthPx, resolveFinish, type Finish } from './finish';
 import { finishArrowEnds } from './mind-connector-route';
 import { handDrawnArrow } from './hand-drawn';

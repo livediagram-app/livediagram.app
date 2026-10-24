@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ES_NOTE_FONT } from './event-storming';
-import { FONTS, googleFontsHref, resolveFontStack } from '@liveworkspace/document-core/fonts';
+import { FONTS, googleFontsHref, resolveFontStack } from '@liveworkspace/model-core/fonts';
 
 // The generic CSS families a stack is allowed to terminate in. docs/specs/004-interface-design/fonts.md:
 // fonts are a progressive enhancement, so every stack must end in one of

@@ -5,7 +5,7 @@ import { getBuiltInTheme } from './themes';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import type { Element, Tab } from './index';
 
 const box = {

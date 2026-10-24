@@ -2,7 +2,7 @@
 // element"): pure functions over anchors in canvas px. A segment is the cubic Bézier between two
 // consecutive nodes through their facing handles; with neither handle it is a straight line.
 import type { PathHandleMode } from './element-types';
-import type { Point, Rect } from '@liveworkspace/document-core/geometry-primitives';
+import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 /** A node in canvas px (unrotated): its position, its handle mode and its optional handles. */
 export type PathAnchor = {

@@ -6,7 +6,7 @@ import {
   DARK_CANVAS_PATTERN_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-} from '@liveworkspace/document-core/canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 import type { ThemeDefinition } from './themes';
 
 // The Default colour scheme, light half: the plain, un-themed canvas. `id`

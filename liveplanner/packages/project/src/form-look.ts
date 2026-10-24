@@ -3,9 +3,9 @@
 // can follow the respondent's system.
 import { contrastRatio } from './colors';
 import { resolveFinish, type Finish } from './finish';
-import { resolveFontStack } from '@liveworkspace/document-core/fonts';
+import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { themeAccent } from './colour-background';
-import { DEFAULT_PATTERN_COLOR } from '@liveworkspace/document-core/canvas-colors';
+import { DEFAULT_PATTERN_COLOR } from '@liveworkspace/model-core/canvas-colors';
 import { isBackgroundPattern, type BackgroundPattern, type Tab } from './index';
 import { themeHalf, viewBackdropInTheme } from './theme-halves';
 import { DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
