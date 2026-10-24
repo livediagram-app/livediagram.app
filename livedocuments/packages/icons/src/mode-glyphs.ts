@@ -1,11 +1,7 @@
 // The selection-mode glyphs, as data: the ONE drawing of each mode (select, pan, laser, spotlight, ...) that the
 // editor's palette (through <Prims>) and the marketing hero render; `units` is the glyph's viewBox.
 
-import {
-  lucideFootprints,
-  lucidePaintRoller,
-  lucideSquareDashedMousePointer,
-} from './lucide.generated';
+import { lucideSquareDashedMousePointer } from './lucide.generated';
 import type { StyledPrim } from './types';
 
 export type ModeGlyph = { units: 16 | 24; prims: readonly StyledPrim[] };
@@ -48,8 +44,6 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
       { t: 'path', d: 'M12.5 8h2' },
     ],
   },
-  avatar: { units: 24, prims: lucideFootprints },
-  format: { units: 24, prims: lucidePaintRoller },
   // A cube: the top rhombus and the two front faces.
   isometric: {
     units: 16,

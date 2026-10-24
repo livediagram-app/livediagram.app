@@ -3,7 +3,7 @@
 // per page load rebuilds it, so the Explorer on this address lists what is kept only here.
 import { afterEach, describe, expect, it } from 'vitest';
 import { readThisBrowser } from '@liveworkspace/explorer/this-browser';
-import { __setOfflineBackend, offlineCreateDocument, offlineDeleteDocument, offlineSetFavourite, isOfflineId } from './offline-store';
+import { __setOfflineBackend, offlineCreateDocument, offlineDeleteDocument, offlineUpdateRecord, isOfflineId } from './offline-store';
 import { memBackend, testRecord } from './offline-test-utils';
 
 afterEach(() => {
@@ -18,7 +18,7 @@ describe("This Browser's list", () => {
     expect(readThisBrowser('livedocuments')).toEqual([
       expect.objectContaining({ id: 'a', title: 'Alpha', lastOpenedAt: 1_000, trashedAt: null }),
     ]);
-    await offlineSetFavourite('a', true);
+    await offlineUpdateRecord('a', (rec) => (rec ? { ...rec, favourite: true } : undefined));
     expect(readThisBrowser('livedocuments')[0]!.favourite).toBe(true);
     await offlineDeleteDocument('a');
     expect(readThisBrowser('livedocuments')).toEqual([]);

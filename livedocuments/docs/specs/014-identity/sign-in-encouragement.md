@@ -123,9 +123,10 @@ Anonymous events only ([Telemetry + public transparency dashboard](../017-teleme
 category/action needed):
 
 Every banner event names the **surface** it happened on, Explorer or
-editor, since the same banner mounts on both and the two audiences differ
-(someone browsing their library vs someone five minutes into drawing). The
-host passes `surface` to `SignInBanner`; the type carries it as a suffix:
+editor, since the two audiences differ (someone browsing their library vs
+someone five minutes into drawing). livedocuments' `SignInBanner` mounts only
+in the editor and sends the `Editor` types; the `Explorer` ones are the shared
+Explorer's own banner's (liveworkspace):
 
 - `UI` / `Opened` / `SignInReasonsExplorer` | `SignInReasonsEditor`: Learn
   more opened the modal.

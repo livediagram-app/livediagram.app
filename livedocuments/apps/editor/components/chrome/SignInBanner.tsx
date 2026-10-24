@@ -1,12 +1,11 @@
 'use client';
 
-// Explorer sign-in encouragement banner (docs/specs/014-identity/sign-in-encouragement.md). A floating,
+// The editor's sign-in encouragement banner (docs/specs/014-identity/sign-in-encouragement.md). A floating,
 // gradient bottom-of-screen card shown to guest visitors, with a
 // primary Sign in CTA, a Learn more button that opens the reasons
 // modal, and a dismiss control. Visibility (sign-in enabled, not signed
-// in, not dismissed) + the bottom-padding reservation are decided by
-// the host (ExplorerShell); this component just renders the card and
-// owns the modal-open state. The host passes `onDismiss` so the
+// in, not dismissed, the delay) is decided by the host (EditorView);
+// this component just renders the card and owns the modal-open state. The host passes `onDismiss` so the
 // dismissal is persisted (useDismissibleBanner) in one place.
 
 import dynamic from 'next/dynamic';
@@ -19,10 +18,9 @@ import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
-// Lazy-load the reasons modal: the banner shows on every guest
-// Explorer load, but the modal only matters once Learn more is
+// Lazy-load the reasons modal: it only matters once Learn more is
 // clicked, so its content (and icon set) stays out of the eager
-// Explorer chunk. Same pattern as AuthControls' DeleteAccountDialog.
+// editor chunk. Same pattern as AuthControls' DeleteAccountDialog.
 const SignInReasonsModal = dynamic(
   () => import('@/components/dialogs/SignInReasonsModal').then((m) => m.SignInReasonsModal),
   { ssr: false },
@@ -33,34 +31,25 @@ const SignInReasonsModal = dynamic(
 // hides it in both.
 export const SIGNIN_BANNER_DISMISS_KEY = 'livedocuments:signin-banner-dismissed:v1';
 
-// Positioning of the fixed wrapper, swapped per host. The Explorer lifts
-// it above its 48px bottom bar (pb-16, like the editor's tab bar) and below
-// the mobile-nav overlay (z-[var(--z-chrome)]); the editor lifts it above
-// the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]).
-const EXPLORER_PLACEMENT = 'bottom-0 z-[var(--z-chrome)] pb-16';
 // The card's widest (`max-w-3xl`): the column that has to clear the chrome beneath it.
 const BANNER_MAX_WIDTH_PX = 768;
 
 export function SignInBanner({
-  surface,
   onDismiss,
-  placementClassName = EXPLORER_PLACEMENT,
+  placementClassName,
   standOnChrome = false,
 }: {
-  // Which host mounted it, carried on every telemetry type (docs/specs/014-identity/sign-in-encouragement.md) so the
-  // dashboard can tell an Explorer prompt from an editor one.
-  surface: 'Explorer' | 'Editor';
   onDismiss: () => void;
-  placementClassName?: string;
+  // Where the fixed wrapper sits: the editor puts it over the canvas chrome (z-[var(--z-overlay)]).
+  placementClassName: string;
   // The editor's banner stands 8px above its bottom chrome (the tab bar, the Undo / Timer / Vote cluster, the
   // whiteboard dock) instead of a fixed lift, so it never covers a control somebody is running a session with.
   standOnChrome?: boolean;
 }) {
   const chromeFloor = useChromeFloor(standOnChrome, 0, BOTTOM_CHROME_SELECTOR, BANNER_MAX_WIDTH_PX);
   const [reasonsOpen, setReasonsOpen] = useState(false);
-  const editor = surface === 'Editor';
-  const trackSignIn = () =>
-    track('UI', 'Selected', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
+  // Every type names the editor surface (docs/specs/014-identity/sign-in-encouragement.md "Telemetry").
+  const trackSignIn = () => track('UI', 'Selected', 'SignInBannerEditor');
   const { signInHref } = useAuthHrefs();
   // The toasts stand on the card (docs/specs/004-interface-design/toasts.md "Placement"): it is
   // `data-toast-floor`, and says when it comes and goes so a toast already up moves with it.
@@ -104,7 +93,7 @@ export function SignInBanner({
             <button
               type="button"
               onClick={() => {
-                track('UI', 'Opened', editor ? 'SignInReasonsEditor' : 'SignInReasonsExplorer');
+                track('UI', 'Opened', 'SignInReasonsEditor');
                 setReasonsOpen(true);
               }}
               className="rounded-lg border border-white/40 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/15"
@@ -122,7 +111,7 @@ export function SignInBanner({
             <button
               type="button"
               onClick={() => {
-                track('UI', 'Closed', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
+                track('UI', 'Closed', 'SignInBannerEditor');
                 onDismiss();
               }}
               aria-label="Dismiss"
@@ -135,7 +124,7 @@ export function SignInBanner({
       </div>
 
       {/* Only mount once opened so the dynamic chunk fetches on the
-          first Learn more click, not on every Explorer load. */}
+          first Learn more click, not on every editor load. */}
       {reasonsOpen ? (
         <SignInReasonsModal open onClose={() => setReasonsOpen(false)} onSignIn={trackSignIn} />
       ) : null}

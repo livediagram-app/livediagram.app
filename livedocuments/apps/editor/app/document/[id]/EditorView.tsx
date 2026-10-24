@@ -516,7 +516,6 @@ export function EditorView() {
           (z-[var(--z-overlay)]). */}
                           {showSignInBanner ? (
                             <SignInBanner
-                              surface="Editor"
                               onDismiss={dismissSignIn}
                               placementClassName="z-[var(--z-overlay)]"
                               standOnChrome
