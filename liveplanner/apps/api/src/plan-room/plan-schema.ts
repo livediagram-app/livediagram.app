@@ -186,9 +186,6 @@ BEGIN
                       WHERE r.sheet_id = sheets.id AND dt.plan_id = sheets.plan_id);
 END;
 
--- A tab shared with other plans (docs/specs/006-project/tab-project-many-to-many.md): tab_shares lists the OTHER
--- plans holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
-${tabSharesSchema()}
 -- What the plan owes the index (plan-outbox.ts): a key per thing whose derived rows changed, filled by the
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox), and a Form tab's name and heading on its link
@@ -342,7 +339,14 @@ BEGIN
 END;
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4];
+// A tab shared with other plans (docs/specs/006-project/tab-project-many-to-many.md): tab_shares lists the OTHER
+// plans holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts). Its own step:
+// it was first written into V1, which plans made before then had already run, so they had neither table and every
+// write and preview of theirs failed ("no such table: share_outbox"). Every statement is IF NOT EXISTS, so a plan
+// made in between, which has them, runs it harmlessly.
+const V5 = tabSharesSchema();
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 
