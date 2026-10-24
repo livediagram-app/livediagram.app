@@ -73,7 +73,8 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
             email address and role. If you invite someone, we store the address you typed and email
-            them the invitation; it waits on liveworkspace.app until they accept or decline it. The
+            them the invitation, with up to three reminders while nobody has answered it, each with
+            a link to decline it; it waits on liveworkspace.app until they accept or decline it. The
             token an app gets when you sign in also lists the teams you are in, which is how we
             decide who may open a team&rsquo;s work. The apps keep no copy of your teams.
           </li>
@@ -116,9 +117,10 @@ const SECTIONS: LegalSection[] = [
           <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
           app, so the Explorer in each app can show all of it: each document&rsquo;s title, app,
           owner, team, folder, favourite and Trash state, its share links, when you last opened it,
-          and a small summary for its card (such as how many elements it has). For the Inbox it also
-          keeps, for each comment thread and action, who is in it, whether it is resolved or done,
-          and the start of the latest comment (up to 500 characters).
+          and a small summary for its card (such as how many elements it has). For the Timeline it
+          keeps what happened to each document (created, renamed, shared, commented on) and who did
+          it, and for the Inbox it keeps, for each comment thread and action, who is in it, whether
+          it is resolved or done, and the start of the latest comment (up to 500 characters).
         </li>
         <li>
           <strong>Images you upload</strong> are kept in Cloudflare object storage. Before a JPEG is
@@ -245,11 +247,12 @@ const SECTIONS: LegalSection[] = [
           Your browser sends them straight to liveworkspace&rsquo;s telemetry service at
           liveworkspace.app, without cookies, which keeps them in its own database, apart from your
           documents and account, for 60 days. To count sign-ups and sign-ins once each, an
-          app&rsquo;s server also remembers which sessions it has already counted, for 90 days. The
-          data is never sold or shared: the only place it goes beyond our own use is the public{' '}
-          <a href="/telemetry">telemetry dashboard</a>, which shows exactly the totals we see. You
-          can turn off the events your browser sends: signed in, one setting turns them off in every
-          app and on liveworkspace.app; as a guest, in each app&rsquo;s Settings, and on
+          app&rsquo;s server also remembers which sessions it has already counted, for 90 days, and
+          that an account has been seen before (deleted with the account). Only the totals are
+          published. The data is never sold or shared: the only place it goes beyond our own use is
+          the public <a href="/telemetry">telemetry dashboard</a>, which shows exactly the totals we
+          see. You can turn off the events your browser sends: signed in, one setting turns them off
+          in every app and on liveworkspace.app; as a guest, in each app&rsquo;s Settings, and on
           liveworkspace.app your browser&rsquo;s Global Privacy Control or Do Not Track does. A few
           totals are counted by our servers and can&rsquo;t be turned off: sign-ups and sign-ins,
           first visits to a share link, multiplayer sessions, emails sent and server errors.
@@ -291,15 +294,17 @@ const SECTIONS: LegalSection[] = [
             <strong>Sign-in codes</strong>, from liveworkspace.app, when you ask for one.
           </li>
           <li>
-            <strong>Account and service emails</strong>: team invitations from liveworkspace.app, a
-            confirmation when you delete your account, and a note if one of your forms is suspended
-            after reports.
+            <strong>Account and service emails</strong>: team invitations from liveworkspace.app
+            (with up to three reminders while unanswered), a confirmation when you delete your
+            account, a one-time reminder a week before an API token expires, and a note if one of
+            your forms is suspended after reports.
           </li>
           <li>
             <strong>Notifications about your work</strong>: when someone first opens a document you
-            shared, comments on one you own, fills in one of your forms, assigns you an action or
-            mentions you. A mention quotes the comment (up to about 280 characters); an assigned
-            action includes its name and the start of its description.
+            shared, comments on one you own, fills in one of your forms, answers a team invitation
+            you sent, assigns you an action or mentions you. A mention quotes the comment (up to
+            about 280 characters); an assigned action includes its name and the start of its
+            description.
           </li>
           <li>
             <strong>A short onboarding series</strong>: a welcome, a few tips in your first two
@@ -386,8 +391,9 @@ const SECTIONS: LegalSection[] = [
     title: 'Self-hosting',
     body: (
       <p>
-        livediagram, livedocuments and livedesign are open source. If you run your own copy of one,
-        you are responsible for your own deployment, and this policy does not apply to it.
+        livediagram, liveplanner, livedocuments and livedesign are MIT-licensed. If you run your own
+        copy of one, you are responsible for your own deployment, and this policy does not apply to
+        it.
       </p>
     ),
   },
@@ -499,14 +505,15 @@ const SECTIONS: LegalSection[] = [
   },
   {
     app: 'liveplanner.app',
-    id: 'liveplanner-everything-above',
-    title: 'Nothing beyond the above',
+    id: 'liveplanner-live-sessions',
+    title: 'Live sessions',
     body: (
       <p>
         liveplanner signs you in with your liveworkspace account, and its boards, sheets, dashboards
         and forms are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
-        its own.
+        <a href="#what-the-apps-store">What the apps store</a>. Comments, answers, ideas and votes
+        that pass through a live collaboration session are also kept in that session&rsquo;s own
+        storage on Cloudflare, and that copy is removed with the plan.
       </p>
     ),
   },

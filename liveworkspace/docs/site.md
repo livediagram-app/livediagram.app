@@ -132,8 +132,9 @@ ambient motion (the current along the lines, drifting cursors, the cards settlin
 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
-feature only one app has (livediagram's Google Drive mirror) says which; Offline Mode is every app's. Both share `components/LegalPage.tsx`, and their date and contact
-form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
+feature only some apps have (livediagram's Google Drive mirror, liveplanner's live sessions) says which;
+Offline Mode is every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
+`components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
 ### Comparison (`/compare`)
 

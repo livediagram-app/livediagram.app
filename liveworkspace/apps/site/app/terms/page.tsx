@@ -247,9 +247,9 @@ const SECTIONS: LegalSection[] = [
     title: 'The software',
     body: (
       <p>
-        liveplanner is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
+        liveplanner&rsquo;s source code is MIT-licensed: you are free to read it, fork it and run
+        your own copy. These terms cover only the hosted liveplanner.app, not a copy you host
+        yourself, which is yours to run.
       </p>
     ),
   },
@@ -259,9 +259,9 @@ const SECTIONS: LegalSection[] = [
     title: 'The software',
     body: (
       <p>
-        livedocuments is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
+        livedocuments&rsquo; source code is MIT-licensed: you are free to read it, fork it and run
+        your own copy. These terms cover only the hosted livedocuments.app, not a copy you host
+        yourself, which is yours to run.
       </p>
     ),
   },
@@ -271,9 +271,9 @@ const SECTIONS: LegalSection[] = [
     title: 'The software',
     body: (
       <p>
-        livedesign is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
+        livedesign&rsquo;s source code is MIT-licensed: you are free to read it, fork it and run
+        your own copy. These terms cover only the hosted livedesign.app, not a copy you host
+        yourself, which is yours to run.
       </p>
     ),
   },
