@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { Env } from '../types';
 import { reportOwnerActivity } from './activity';
-import { claimMilestone, getOwnerEmail, getOwnerEmails } from './emails';
+import { claimMilestone, getOwnerEmails } from './emails';
 
 const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 
@@ -53,14 +53,14 @@ describe('getOwnerEmails / claimMilestone', () => {
       user_a: 'a@example.test',
     });
     expect(accounts.calls).toEqual(['POST /emails']);
-    expect(await getOwnerEmail(env, 'user_b')).toBeNull();
+    expect(await getOwnerEmails(env, ['user_b'])).toEqual({});
     expect(await getOwnerEmails(env, [GUEST])).toEqual({});
     expect(await getOwnerEmails({} as Env, ['user_a'])).toEqual({});
   });
 
   it('writes to nobody when liveworkspace is out of reach', async () => {
     accounts.failWith = 503;
-    expect(await getOwnerEmail(env, 'user_a')).toBeNull();
+    expect(await getOwnerEmails(env, ['user_a'])).toEqual({});
   });
 
   it('claims a milestone once, and never on doubt', async () => {

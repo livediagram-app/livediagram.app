@@ -28,7 +28,7 @@ import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/ind
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
 import { documentImageIds } from '../db/image-refs';
-import { documentStatsSql } from '../db/tab-stats';
+import { documentStatsSql, readDocumentStats } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { indexAppClient } from '../index-service';
 import { mediaClient } from '../media';
@@ -150,7 +150,8 @@ export async function readContentSummary(
     summary: {
       firstTabCount: first ? first.element_count : null,
       tabCounts,
-      stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
+      // Read through readDocumentStats: an unreadable column or a retired mode is null, never a throw.
+      stats: readDocumentStats(rawStats),
       hasContent,
       communityListed: (community?.results?.length ?? 0) > 0,
     },

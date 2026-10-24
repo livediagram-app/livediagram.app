@@ -31,7 +31,7 @@ import {
 import { readDocumentMeta } from '../document-room/document-content';
 import { indexFor } from '../index-service';
 import { conflict, json, noContent, notFound, signInRequired } from '../responses';
-import { grantCallerOf, grantOn, type DocumentRouteContext } from './context';
+import { grantCallerOf, ownsDocument, type DocumentRouteContext } from './context';
 
 function ownPost(post: CommunityAppPost): CommunityOwnPost {
   const { own: _own, ...rest } = post;
@@ -72,8 +72,7 @@ export async function handleCommunityOwnerRoutes(
 
   // The canvas's owner alone, holding its grant (the index's word that it is theirs to manage).
   const doc = await readDocumentMeta(env, id);
-  const caller = ctx.resolveOwner();
-  if (!doc || !caller || caller !== doc.ownerId || !grantOn(ctx, id)) return notFound();
+  if (!doc || !(await ownsDocument(ctx, { id, ownerId: doc.ownerId }))) return notFound();
   const client = indexFor(env, grantCallerOf(ctx));
   if (!client) return json({ error: 'index_unavailable' }, { status: 503 });
   // A post made by a previous owner (the canvas left a team library for another member's) is not this owner's:

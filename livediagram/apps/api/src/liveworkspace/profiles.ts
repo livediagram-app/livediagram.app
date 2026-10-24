@@ -32,11 +32,6 @@ function remember(id: string, participant: ParticipantDTO | null, now: number): 
   remembered.set(id, { participant, until: now + PROFILE_CACHE_MS });
 }
 
-// Drops one remembered profile, after a change made some other way (a guest merged into an account).
-export function forgetParticipant(id: string): void {
-  remembered.delete(id);
-}
-
 // Test seam: forget every remembered profile.
 export function __resetProfileCache(): void {
   remembered.clear();

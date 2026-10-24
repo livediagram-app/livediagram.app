@@ -171,21 +171,3 @@ export function tallyPoll(poll: LivePoll, answers: Map<string, string | null>): 
   return { rows, textAnswers, answered, skipped };
 }
 
-// Plain-text results for the host's clipboard copy (docs/specs/012-collaboration/live-poll.md). This is the
-// only way a poll outlives itself, so it carries the question and the
-// counts — but no participant identity, matching the on-screen panel.
-export function formatPollResults(poll: LivePoll, answers: Map<string, string | null>): string {
-  const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
-  const lines = [poll.question, ''];
-  if (poll.style === 'text') {
-    if (textAnswers.length === 0) lines.push('(no answers)');
-    for (const text of textAnswers) lines.push(`- ${text}`);
-  } else {
-    for (const row of rows) {
-      lines.push(`${row.token}: ${row.count} (${Math.round(row.share * 100)}%)`);
-    }
-  }
-  lines.push('');
-  lines.push(`${answered} answered, ${skipped} skipped`);
-  return lines.join('\n');
-}

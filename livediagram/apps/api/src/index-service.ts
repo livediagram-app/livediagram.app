@@ -9,12 +9,7 @@ import {
   type GrantCaller,
   type GrantOutcome,
 } from '@liveworkspace/index-app';
-import type {
-  GrantClaims,
-  IndexAppClient,
-  IndexClient,
-  ShareAccess,
-} from '@liveworkspace/index-client';
+import type { IndexAppClient, IndexClient, ShareAccess } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export { indexApiUrl, linkCodeOf };
@@ -26,13 +21,6 @@ export const indexService = createIndexService(INDEX_APP);
 
 export const setGrantVerifierForTests = indexService.setGrantVerifierForTests;
 export const clearGrantCacheForTests = indexService.clearGrantCacheForTests;
-
-// The claims of a grant for this document, or null for a missing, forged, expired or misaddressed one.
-export const verifyDocumentGrant = (
-  env: Pick<Env, 'INDEX_ORIGIN'>,
-  token: string | null | undefined,
-  documentId: string,
-): Promise<GrantClaims | null> => indexService.verifyGrant(env, token, documentId);
 
 export const requestGrant = (
   env: Env,

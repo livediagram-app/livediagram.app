@@ -4,7 +4,6 @@ import { accountsServiceFor, type TestAccountsService } from '../test-accounts-s
 import type { Env } from '../types';
 import {
   __resetProfileCache,
-  forgetParticipant,
   getParticipant,
   getParticipants,
   PROFILE_CACHE_MS,
@@ -67,9 +66,6 @@ describe('getParticipants (liveworkspace profiles)', () => {
     vi.advanceTimersByTime(PROFILE_CACHE_MS + 1);
     await getParticipant(env, 'user_a');
     expect(accounts.calls).toHaveLength(2);
-    forgetParticipant('user_a');
-    await getParticipant(env, 'user_a');
-    expect(accounts.calls).toHaveLength(3);
   });
 
   it('asks nothing for ids liveworkspace cannot hold, or without sign-in configured', async () => {

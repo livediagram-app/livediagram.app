@@ -112,7 +112,7 @@ every address in one call. Guests have no address and never receive email.
   Its `alt` is empty, since the wordmark beside it names the product when
   images are blocked. The path is permanent: every email already sent points
   at it.
-- `apps/api/src/liveworkspace/emails.ts` — `getOwnerEmails` / `getOwnerEmail`
+- `apps/api/src/liveworkspace/emails.ts` — `getOwnerEmails`
   (the verified addresses, never throwing) and `claimMilestone`.
 - `apps/api/src/email/notifications.ts` — the notification sends, each reading
   the address, then the recipient's switch, then sending.

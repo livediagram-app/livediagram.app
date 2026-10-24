@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
-import { indexFor, requestGrant, verifyDocumentGrant } from './index-service';
+import { indexFor, indexService, requestGrant } from './index-service';
 import { indexServiceFor } from './test-index';
 import type { Env } from './types';
 
@@ -18,7 +18,7 @@ describe('index service', () => {
     const outcome = await requestGrant(env, { kind: 'bearer', token }, 'doc-1', null);
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    const claims = await verifyDocumentGrant(env, outcome.grant.grant, 'doc-1');
+    const claims = await indexService.verifyGrant(env, outcome.grant.grant, 'doc-1');
     expect(claims).toMatchObject({ sub: 'user_ann', level: 'edit', item: 'doc-1' });
   });
 

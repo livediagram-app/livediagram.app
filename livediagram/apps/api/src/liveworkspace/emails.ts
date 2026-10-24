@@ -29,10 +29,6 @@ export async function getOwnerEmails(
   }
 }
 
-export async function getOwnerEmail(env: Env, ownerId: string): Promise<string | null> {
-  return (await getOwnerEmails(env, [ownerId]))[ownerId] ?? null;
-}
-
 // Claims a one-time milestone email before it is sent: true for the first claim only, so a burst of
 // saves at the milestone sends one. False on any failure, so a doubt never sends twice.
 export async function claimMilestone(

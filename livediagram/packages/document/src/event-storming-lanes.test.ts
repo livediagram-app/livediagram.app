@@ -15,7 +15,6 @@ import {
   laneCandidates,
   type LaneCandidate,
   snapToLane,
-  visibleLaneIndices,
   laneSnapThreshold,
   nearestLaneTop,
   isOnLane,
@@ -404,29 +403,6 @@ describe('the lane stack', () => {
     expect(laneTop(0, ES_LANES)).toBe(0);
     expect(laneCentre(0, ES_LANES)).toBe(100);
     expect(laneCentre(-1, ES_LANES)).toBe(100 - ES_LANE_PITCH);
-  });
-});
-
-describe('visibleLaneIndices', () => {
-  it('covers the viewport inclusively at both edges', () => {
-    // Lane 0 spans 0..200, lane 1 spans 240..440.
-    expect(visibleLaneIndices({ top: 0, bottom: 440 }, T)).toEqual([0, 1]);
-    // Touching lane 1's top edge exactly still counts it in.
-    expect(visibleLaneIndices({ top: 0, bottom: 240 }, T)).toEqual([0, 1]);
-  });
-
-  it('spans negative lanes', () => {
-    expect(visibleLaneIndices({ top: -ES_LANE_PITCH, bottom: 10 }, T)).toEqual([-1, 0]);
-  });
-
-  it('returns a lane even when the viewport sits entirely in a gap', () => {
-    expect(visibleLaneIndices({ top: 205, bottom: 235 }, T)).toEqual([]);
-  });
-
-  it('follows the origin', () => {
-    expect(visibleLaneIndices({ top: OFFSET.originY, bottom: OFFSET.originY + 1 }, OFFSET)).toEqual(
-      [0],
-    );
   });
 });
 

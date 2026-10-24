@@ -340,17 +340,6 @@ export async function offlineSaveDocumentMeta(
   await writeLive(id, (rec) => applyMeta(rec, patch, now));
 }
 
-// Personal-folder placement for an offline document (docs/specs/013-workspace/folders.md). Folders are
-// server-side rows, but an offline record carries a folderId so its row can
-// sit in the Explorer's personal tree like any other.
-export async function offlineSetDocumentFolder(
-  id: string,
-  folderId: string | null,
-  now: number,
-): Promise<void> {
-  await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
-}
-
 // Star / un-star an offline document (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
 // alone on purpose: a star is a per-user bookmark, not an edit to the
 // document, and bumping it would reorder Recent on a click that changed

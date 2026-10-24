@@ -18,7 +18,6 @@ import {
   offlineLoadTab,
   offlineSaveDocumentMeta,
   offlineSaveTab,
-  offlineSetDocumentFolder,
   OFFLINE_OWNER_ID,
   recordToDocument,
   removeTab,
@@ -141,19 +140,16 @@ describe('offline store ops (in-memory backend)', () => {
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
   });
 
-  it('setDocumentFolder updates the personal-tree placement', async () => {
+  it('records no creation intent in the browser', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
-    await offlineSetDocumentFolder('d1', 'f1', 200);
-    expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
     // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
     expect((await offlineListDocuments())[0]).toMatchObject({
+      folderId: null,
       opensIn: null,
       tabKind: null,
       templateFamily: null,
     });
-    await offlineSetDocumentFolder('d1', null, 300);
-    expect((await offlineListDocuments())[0]?.folderId).toBeNull();
   });
 
   it('saveDocumentMeta renames without touching tabs', async () => {
