@@ -4,8 +4,9 @@
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
 import type { MediaClient } from '@liveworkspace/media';
+import { reportImagesUploaded } from '@liveworkspace/index-app';
 import { documentRoom } from '../document-client';
-import { indexFor } from '../index-service';
+import { indexAppClient, indexFor } from '../index-service';
 import {
   imageSummary,
   MEDIA_APP,
@@ -90,6 +91,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
     rememberMediaOwner(image.id, named);
+    // The Timeline's image_uploaded (liveworkspace/docs/one-explorer-contracts.md "Timeline"): only a genuinely
+    // NEW upload, so pasting the same screenshot twice is one event, and the day's uploads coalesce into one
+    // counted entry at the index.
+    if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));
     return json({ image: imageSummary(image), deduped });
   }
 

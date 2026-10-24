@@ -133,6 +133,52 @@ describe('the outbox', () => {
     expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
   });
 
+  it('names who closed an action and who wrote the latest comment, and nobody among several savers', async () => {
+    const db = document();
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    const done = box('a', {
+      action: {
+        ...(actionOn('a') as { action: Record<string, unknown> }).action,
+        status: 'done',
+        updatedAt: T0 + 5,
+      },
+      commentThread: {
+        resolved: true,
+        comments: [
+          {
+            id: 'c1',
+            text: 'Done?',
+            authorId: 'user_b',
+            authorName: 'Bea',
+            authorColor: '#000',
+            createdAt: T0,
+          },
+        ],
+      },
+    });
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [done] }, 0);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 5);
+    const one = fakeIndex();
+    await drainOutbox(db.env, 'P', one.client);
+    expect(one.collab[0]!.push.actions[0]).toMatchObject({
+      status: 'done',
+      doneById: 'user_a',
+      assignerName: 'Owner',
+    });
+    expect(one.collab[0]!.push.threads[0]).toMatchObject({
+      latestAuthorId: 'user_b',
+      resolvedById: 'user_a',
+    });
+
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board 2', elements: [done] }, 0);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 6);
+    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_b', T0 + 7);
+    const two = fakeIndex();
+    await drainOutbox(db.env, 'P', two.client);
+    expect(two.collab[0]!.push.actions[0]).toMatchObject({ doneById: null });
+    expect(two.collab[0]!.push.threads[0]).toMatchObject({ resolvedById: null });
+  });
+
   it("reports the owner's newest save to liveworkspace's onboarding emails with the summary", async () => {
     const db = sqliteD1(ACCOUNTS_ON);
     const accounts = stubAccounts();

@@ -18,7 +18,12 @@ import {
   type CollabThreadRow,
   type Element,
 } from '@livedocuments/document';
-import { capCollabPush, drainIndexOutbox, type OutboxRow } from '@liveworkspace/index-app';
+import {
+  capCollabPush,
+  drainIndexOutbox,
+  editedOf,
+  type OutboxRow,
+} from '@liveworkspace/index-app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
@@ -39,10 +44,13 @@ type TabRow = {
 // ---------- The collab push -----------------------------------------------------------------------------------
 
 // A tab's comment threads and actions as the index takes them. Capped as the index caps one push: a tab past it
-// keeps its newest.
+// keeps its newest. `by` is whoever alone saved the document since the last push, when there was one person: the
+// index names them on a thread it sees turn resolved and an action it sees turn done (Timeline); with several,
+// nobody is named rather than the wrong person.
 export function collabPushOf(
   threads: readonly CollabThreadRow[],
   actions: readonly CollabActionRow[],
+  by: string | null = null,
 ): CollabPush {
   return capCollabPush({
     threads: threads.map((t) => ({
@@ -54,6 +62,9 @@ export function collabPushOf(
       mentionedIds: t.mentionedIds,
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
+      latestAuthorColor: t.latestAuthorColor ?? '',
+      latestAuthorId: t.latestAuthorId,
+      resolvedById: t.resolved ? by : null,
       firstAt: t.firstAt,
       latestAt: t.latestAt,
     })),
@@ -62,10 +73,14 @@ export function collabPushOf(
       actionId: a.actionId,
       elementLabel: a.elementLabel,
       name: a.name,
+      description: a.description,
       status: a.status,
       assigneeId: a.assigneeUserId ?? a.assigneeMemberId ?? null,
+      assigneeName: a.assigneeName,
       assignerId: a.assignerId,
+      assignerName: a.assignerName,
       teamId: a.teamId,
+      doneById: a.status === 'done' ? by : null,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
     })),
@@ -223,6 +238,11 @@ export async function drainOutbox(
       .all<OutboxRow>()
   ).results;
   const imageRows = rows.filter((r) => r.kind === 'images').map((r) => r.id);
+  // Who saved since the last drain: one person is who resolved or closed what this push shows turned so.
+  const editors = new Set(
+    rows.filter((r) => r.kind === 'edit').map((r) => editedOf(r.key)?.actorId ?? null),
+  );
+  const soleEditor = editors.size === 1 ? ([...editors][0] ?? null) : null;
   const indexRows = rows.filter((r) => r.kind !== 'images');
   const failures: unknown[] = [];
   const done: number[] = [];
@@ -239,7 +259,7 @@ export async function drainOutbox(
           .bind(documentId, tabId)
           .first<TabRow>();
         const found = collabIndexRowsFromElements(tab ? parseElements(tab.data) : []);
-        return collabPushOf(found.threads, found.actions);
+        return collabPushOf(found.threads, found.actions, soleEditor);
       },
       summary: async () => {
         const { summary, savedAt, ownerId } = await readContentSummary(env, documentId);
