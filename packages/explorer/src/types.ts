@@ -56,7 +56,8 @@ export type HomeTelemetry = (action: 'Selected' | 'Opened' | 'Loaded', type: str
 
 /** What the Explorer reports about keeping things in order, as `Category·Action`, the names the apps' own Explorers
  *  always sent:
- *  - `Folder·Created` (null, or `Team` in a team's library), `Folder·Moved` (re-parented), `Folder·Deleted`;
+ *  - `Folder·Created` (null, or `Team` in a team's library), `Folder·Renamed`, `Folder·Moved` (re-parented),
+ *    `Folder·Deleted`;
  *  - `Folder·Changed` / `Folder·Cleared`: a default folder set or cleared, `Kind` for the app's own entry and
  *    `Template` for a template family's;
  *  - `Trash·Restored`, `Trash·Deleted` (for good), `Trash·Cleared` (emptied): `Personal` or `Team`, whose Trash;
@@ -65,6 +66,7 @@ export type HomeTelemetry = (action: 'Selected' | 'Opened' | 'Loaded', type: str
  *  for the page's app. */
 export type OrganiseEvent =
   | 'Folder·Created'
+  | 'Folder·Renamed'
   | 'Folder·Moved'
   | 'Folder·Deleted'
   | 'Folder·Changed'

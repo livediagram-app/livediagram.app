@@ -82,9 +82,10 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   // item's own noun, as the revoked pass.
   'Project·Shared': SHARE_TYPES,
   'Document·Shared': SHARE_TYPES,
-  // Folders made (in a team's library: Team), re-parented and deleted; a default folder set or cleared, for the
-  // app's own kind or a template family.
+  // Folders made (in a team's library: Team), renamed, re-parented and deleted; a default folder set or cleared, for
+  // the app's own kind or a template family.
   'Folder·Created': [null, 'Team'],
+  'Folder·Renamed': [null],
   'Folder·Moved': [null],
   'Folder·Deleted': [null],
   'Folder·Changed': ['Kind', 'Template'],

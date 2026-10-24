@@ -18,7 +18,11 @@ import {
   isServerEmittedEvent as isLiveplannerServerEvent,
   isValidTelemetryEvent as isLiveplannerEvent,
 } from '@liveplanner/api-schema';
-import { catalogueEvents, type AppCatalogue } from '@liveworkspace/settings/catalogue';
+import {
+  catalogueEvents,
+  sharedCatalogueEvents,
+  type AppCatalogue,
+} from '@liveworkspace/settings/catalogue';
 import { CATALOGUE as LIVEDESIGN_SETTINGS } from '@liveworkspace/settings/catalogues/livedesign';
 import { CATALOGUE as LIVEDIAGRAM_SETTINGS } from '@liveworkspace/settings/catalogues/livediagram';
 import { CATALOGUE as LIVEDOCUMENTS_SETTINGS } from '@liveworkspace/settings/catalogues/livedocuments';
@@ -37,7 +41,8 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
-// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps.
+// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps, and a shared switch flipped on
+// its settings page opened for no app (isSiteSettingsEvent).
 function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
   if (typeof value !== 'object' || value === null) return false;
   const e = value as Record<string, unknown>;
@@ -45,7 +50,10 @@ function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
   if (e.type !== undefined && e.type !== null) {
     if (typeof e.type !== 'string' || !TELEMETRY_TYPE_PATTERN.test(e.type)) return false;
   }
-  return isExplorerTelemetryEvent(e as TelemetryWireEvent);
+  return (
+    isExplorerTelemetryEvent(e as TelemetryWireEvent) ||
+    isSiteSettingsEvent('liveworkspace.app', e as TelemetryWireEvent)
+  );
 }
 
 export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
@@ -74,7 +82,15 @@ export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
 const keyOf = (e: { category: string; action: string; type?: string | null }) =>
   `${e.category}·${e.action}·${e.type ?? ''}`;
 const settingsSet = (catalogue: AppCatalogue) => new Set(catalogueEvents(catalogue).map(keyOf));
+const CATALOGUES = [
+  LIVEDIAGRAM_SETTINGS,
+  LIVEPLANNER_SETTINGS,
+  LIVEDOCUMENTS_SETTINGS,
+  LIVEDESIGN_SETTINGS,
+];
 const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
+  // A shared switch flipped on the settings page opened for no app: once, in liveworkspace.app's own name.
+  'liveworkspace.app': new Set(CATALOGUES.flatMap(sharedCatalogueEvents).map(keyOf)),
   'livediagram.app': settingsSet(LIVEDIAGRAM_SETTINGS),
   'liveplanner.app': settingsSet(LIVEPLANNER_SETTINGS),
   'livedocuments.app': settingsSet(LIVEDOCUMENTS_SETTINGS),

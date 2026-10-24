@@ -88,7 +88,7 @@ describe('ingest', () => {
     ]);
   });
 
-  it('takes an app’s settings events from liveworkspace.app, and only that app’s', async () => {
+  it('takes an app’s settings events from liveworkspace.app, and only that app’s, and the shared ones in its own name', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     const comments = { category: 'UI', action: 'Toggled', type: 'NotifyCommentsOff' };
     const join = { category: 'UI', action: 'Toggled', type: 'NotifyProjectJoinOff' };
@@ -99,7 +99,7 @@ describe('ingest', () => {
       ),
       env,
     );
-    // livediagram has no Project Joined switch, and liveworkspace.app's own name takes no settings.
+    // livediagram has no Project Joined switch.
     await handleIngest(
       post(
         { app: 'livediagram.app', events: [join, comments] },
@@ -107,14 +107,20 @@ describe('ingest', () => {
       ),
       env,
     );
+    // The settings page opened for no app counts a switch every app shares once, in liveworkspace.app's name, and
+    // only such a switch.
     await handleIngest(
-      post({ app: 'liveworkspace.app', events: [comments] }, fromPage('https://liveworkspace.app')),
+      post(
+        { app: 'liveworkspace.app', events: [comments, join] },
+        fromPage('https://liveworkspace.app'),
+      ),
       env,
     );
     expect(env.rows.map((r) => [r.app, r.type])).toEqual([
       ['liveplanner.app', 'NotifyCommentsOff'],
       ['liveplanner.app', 'NotifyProjectJoinOff'],
       ['livediagram.app', 'NotifyCommentsOff'],
+      ['liveworkspace.app', 'NotifyCommentsOff'],
     ]);
   });
 

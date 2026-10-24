@@ -36,7 +36,7 @@ export function useFolderStore(
   client: IndexClient,
   onError: (text: string) => void,
   onTreeChanged: () => void,
-  // Folder·Created / Moved / Deleted, once the index took the change.
+  // Folder·Created / Renamed / Moved / Deleted, once the index took the change.
   onOrganise?: OrganiseTelemetry,
 ): FolderStore {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -160,14 +160,17 @@ export function useFolderStore(
   );
 
   const rename = useCallback<FolderStore['rename']>(
-    (id, name) =>
-      patchOne(
+    async (id, name) => {
+      const ok = await patchOne(
         id,
         { name },
         () => client.updateFolder(id, { name }),
         'Couldn’t rename that folder. Try again.',
-      ),
-    [client, patchOne],
+      );
+      if (ok) onOrganise?.('Folder·Renamed', null);
+      return ok;
+    },
+    [client, patchOne, onOrganise],
   );
 
   const move = useCallback<FolderStore['move']>(

@@ -58,6 +58,19 @@ describe('useFolderStore', () => {
     expect(result.current.byId.get('a')!.name).toBe('A');
   });
 
+  it('reports a rename once the index took it, and not a refused one', async () => {
+    const index = createFakeIndex({ folders: [folder('a')] });
+    const onOrganise = vi.fn();
+    const { result } = renderHook(() => useFolderStore(index.client, vi.fn(), vi.fn(), onOrganise));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.rename('a', 'Plans'));
+    expect(onOrganise).toHaveBeenCalledWith('Folder·Renamed', null);
+    onOrganise.mockClear();
+    index.fail.set('updateFolder', new IndexError(403, 'forbidden'));
+    await act(() => result.current.rename('a', 'Other'));
+    expect(onOrganise).not.toHaveBeenCalled();
+  });
+
   it('deletes a folder, lifting its children, and reloads the lists once done', async () => {
     const index = createFakeIndex({ folders: [folder('a'), folder('b', 'a')] });
     const changed = vi.fn();

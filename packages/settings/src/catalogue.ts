@@ -484,6 +484,19 @@ export function sharedToggleEvent(
   };
 }
 
+/** The events its shared switches report (the `all` scope every app shares): what liveworkspace.app may send in its
+ *  own name for a switch flipped on its settings page opened for no app. */
+export function sharedCatalogueEvents(catalogue: AppCatalogue): SettingTelemetryEvent[] {
+  return catalogue.shared.flatMap((shared) =>
+    shared.event.on && shared.event.off
+      ? [
+          { category: shared.event.category, action: 'Toggled', type: shared.event.on },
+          { category: shared.event.category, action: 'Toggled', type: shared.event.off },
+        ]
+      : [],
+  );
+}
+
 /** Every event a change made through this catalogue can report: the closed list liveworkspace.app may send in the
  *  app's name. */
 export function catalogueEvents(catalogue: AppCatalogue): SettingTelemetryEvent[] {

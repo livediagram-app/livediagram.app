@@ -97,7 +97,7 @@ each app's own Explorer used to send now come from there: the Timeline, Home and
 filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed and its Try Again
 (`Home·Loaded·Retry`), the Share dialog (links copied and revoked, and each link made by level,
 lifetime and tab, extended, rescoped or given a password: `<Noun>·Shared`), folders made,
-re-parented and deleted, default folders set and cleared (`Folder·Changed` / `Cleared`, `Kind` or
+renamed (`Folder·Renamed`), re-parented and deleted, default folders set and cleared (`Folder·Changed` / `Cleared`, `Kind` or
 `Template`), the Trash (`Trash·Restored` / `Deleted` / `Cleared`, `Personal` or `Team`), items moved
 into, within and out of a team (`Team·Added` / `Moved` / `Removed` with the item's noun) and a
 guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
@@ -107,7 +107,8 @@ Workbench) reports the same events through its own hosts, so each is counted onc
 Settings changed on liveworkspace.app count for their app too. In an app's dialog on the settings
 page, a change reports the event the app's own Settings sends for that row; on the settings page, a
 switch every app shares counts for the app the page was opened for (`?app=`), and opened on its own
-the page counts for no app. The events come from the app's settings catalogue
+it counts once, for `liveworkspace.app`, with the event the first app with that switch reports
+(`sharedCatalogueEvents`). The events come from the app's settings catalogue
 (`packages/settings/src/catalogues`, `catalogueEvents`), and a change made in the app's own Settings is
 the app's to report, so each change is counted once.
 
@@ -120,7 +121,7 @@ the app's to report, so each change is counted once.
   that app's settings events. The site's emitter (`apps/site/lib/explorer/telemetry.ts`) drops any
   other Explorer event before it is kept, and the ingest takes a batch from liveworkspace.app's origin
   (`PLATFORM_TELEMETRY_ORIGINS`) only for these events, in an app's name (and in that app's
-  vocabulary) or, for the Explorer's, in its own. No app's page or Worker key can speak for
+  vocabulary) or, for the Explorer's and a shared switch's, in its own. No app's page or Worker key can speak for
   `liveworkspace.app`.
 - **Batching.** The same engine as the apps': one request per app every 10 seconds, sooner once 25
   events wait, and a beacon on page hide. Never one request per event.

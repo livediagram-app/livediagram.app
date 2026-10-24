@@ -145,6 +145,8 @@ export const trackOrganise: OrganiseTelemetry = (event, type, itemApp) => {
   switch (event) {
     case 'Folder·Created':
       return track('Folder', 'Created', type, app);
+    case 'Folder·Renamed':
+      return track('Folder', 'Renamed', type, app);
     case 'Folder·Moved':
       return track('Folder', 'Moved', type, app);
     case 'Folder·Deleted':

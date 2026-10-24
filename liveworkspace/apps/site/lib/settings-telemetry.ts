@@ -7,15 +7,17 @@
 //
 // - In an app's dialog: the row's own event, in that app's name.
 // - On the settings page, a switch every app shares (the `all` scope): in the name of the app the page was opened
-//   for (`?app=`), with that app's event for the switch. Opened on its own, the page speaks for no app, and the
-//   change isn't counted.
+//   for (`?app=`), with that app's event for the switch. Opened on its own, the page speaks for every app, so the
+//   change counts once, in liveworkspace.app's name, with the event the first app that has the switch reports.
 import {
   settingChangeEvent,
   sharedToggleEvent,
   type CatalogueBinding,
   type StoredValue,
 } from '@liveworkspace/settings/catalogue';
-import { appFromParam, loadCatalogue, type AppId } from './app-settings';
+import { PLATFORM_TELEMETRY_APP } from '@liveworkspace/telemetry';
+import { APP_SITES } from '@liveworkspace/sites';
+import { appFromParam, isAppId, loadCatalogue, type AppId } from './app-settings';
 import { trackSetting } from './explorer/telemetry';
 
 export function reportAppSetting(app: AppId, binding: CatalogueBinding, stored: StoredValue): void {
@@ -33,8 +35,17 @@ export function settingsPageApp(): AppId | null {
  *  loaded on the first one, then kept), so a caller can turn telemetry off only after its own opt-out is sent. */
 export async function reportSharedSetting(key: string, next: boolean): Promise<void> {
   const app = settingsPageApp();
-  if (!app) return;
-  const catalogue = await loadCatalogue(app).catch(() => null);
-  const event = catalogue && sharedToggleEvent(catalogue, key, next);
-  if (event) trackSetting(app, event);
+  if (app) {
+    const catalogue = await loadCatalogue(app).catch(() => null);
+    const event = catalogue && sharedToggleEvent(catalogue, key, next);
+    if (event) trackSetting(app, event);
+    return;
+  }
+  // For every app: once, in liveworkspace.app's name. Catalogues load one at a time until one has the switch.
+  for (const site of APP_SITES) {
+    if (!isAppId(site.id)) continue;
+    const catalogue = await loadCatalogue(site.id).catch(() => null);
+    const event = catalogue && sharedToggleEvent(catalogue, key, next);
+    if (event) return trackSetting(PLATFORM_TELEMETRY_APP, event);
+  }
 }
