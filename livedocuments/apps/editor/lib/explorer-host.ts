@@ -5,7 +5,6 @@
 // (liveworkspace/docs/one-explorer.md). The Explorer page and the editor's panel both use these.
 
 import { useEffect, useState } from 'react';
-import type { App } from '@liveworkspace/index-client';
 import type {
   ExplorerView,
   HelpHref,
@@ -16,26 +15,17 @@ import type {
 } from '@liveworkspace/explorer';
 import { placeHash } from '@liveworkspace/explorer';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
-import { APP_SITES } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
 import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from './api/core';
 
-// Where each app opens its own items. livedocuments's open here; another app's open on its own site.
-const ITEM_PATHS: Record<App, string> = {
-  livediagram: '/document/',
-  livedocuments: '/document/',
-  liveplanner: '/project/',
-  livedesign: '/design/',
-};
-
-const siteOf = (app: App) => APP_SITES.find((site) => site.id === `${app}.app`)?.url ?? '';
-
+// livedocuments' own documents open here; another app's item opens on its own site (`@liveworkspace/sites` APP_ITEMS).
 export const itemHref: ItemHref = (item, at) => {
-  const origin = item.app === 'livedocuments' ? '' : siteOf(item.app);
+  const origin = item.app === 'livedocuments' ? '' : siteOfApp(item.app).url;
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
   // The editor's deep link (lib/collab-deep-link.ts), built by the Explorer.
   const pin = placeHash(at);
-  return `${origin}${ITEM_PATHS[item.app]}${encodeURIComponent(item.id)}${query}${pin}`;
+  return `${origin}${APP_ITEMS[item.app].itemPath}${encodeURIComponent(item.id)}${query}${pin}`;
 };
 
 // A link opens the document on this site as `/document/shared?s=<code>`: the code names the document, and that address is the
