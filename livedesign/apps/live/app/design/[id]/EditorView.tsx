@@ -1,7 +1,6 @@
 'use client';
 
 import { usePublishDesignVisibility } from '@/hooks/editor/design-visibility-store';
-import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -407,7 +406,6 @@ export function EditorView() {
             <CanvasFinishProvider finish={activeTab.finish}>
               {/* The wobble Sketch palette tiles are drawn through (palette-tile-finish.ts). */}
               <SketchFilterDefs />
-              <CanvasFocusProvider value={ctx.focusBounds}>
                 <MinimalChromeProvider
                   value={minimalChrome}
                   powerUser={isPowerUserMode(userPreferences)}
@@ -580,7 +578,6 @@ export function EditorView() {
                     </DockNamesProvider>
                   </UiScaleProvider>
                 </MinimalChromeProvider>
-              </CanvasFocusProvider>
             </CanvasFinishProvider>
           </CanvasPatternContext.Provider>
         </CanvasSurfaceProvider>

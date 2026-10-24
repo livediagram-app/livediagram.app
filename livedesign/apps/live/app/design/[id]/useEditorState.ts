@@ -473,7 +473,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // apps/live/hooks/collab/useEditorComments.ts.
   const {
     commentThreadOpenId,
-    commentThreadOpenCell,
     openComments,
     closeComments,
     addComment,
@@ -1067,7 +1066,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
-    focusOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
@@ -2581,14 +2579,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useWorkbenchEnd(workbench, designTrashed.trashed);
 
-  // Focus zooms in no further than this on a small element.
-  const FOCUS_ZOOM_MAX = 1.5;
-  // Focus: a board's or a Sheet's header glides the view to fit it.
-  const focusBounds = useCallback(
-    (b: { x: number; y: number; w: number; h: number }) => focusOn(b, FOCUS_ZOOM_MAX),
-    [focusOn],
-  );
-
   return {
     surface,
     tourSquare,
@@ -2601,8 +2591,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
-    // A header's Focus: glide the view to fit an element (hooks/canvas/useCanvasFocus.tsx).
-    focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     pagesMode: photoEditor.view,
@@ -2760,7 +2748,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeNote,
     commentRows,
     commentThreadOpenId,
-    commentThreadOpenCell,
     commitDraw,
     commitFreehand,
     commitPolygon,
