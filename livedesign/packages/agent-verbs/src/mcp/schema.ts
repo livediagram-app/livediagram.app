@@ -465,9 +465,7 @@ export const createDesignShape = {
 };
 
 export const addTabShape = {
-  designId: z
-    .string()
-    .describe('The design to add a tab to (from find_designs / read_design).'),
+  designId: z.string().describe('The design to add a tab to (from find_designs / read_design).'),
   name: nameField('Name of the new tab.'),
   elements: elementArray.optional(),
   template: templateField,

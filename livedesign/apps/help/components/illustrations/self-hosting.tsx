@@ -1,9 +1,8 @@
 // Self-Hosting-category illustrations (docs/specs/018-help/help-app.md): the stack at a glance, the
-// deploy flow, and how optional configuration (sign-in) degrades to a
-// pure-guest fallback. Composed only from the shared primitives so the house
+// deploy flow, and where optional configuration comes from. Composed only from the shared primitives so the house
 // style holds.
 
-import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label } from './primitives';
 
 /** The whole stack at a glance: the static apps and the router sitting in
  *  front of the api Worker, which owns D1 and the Durable Object room. */

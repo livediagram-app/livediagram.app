@@ -1,11 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  pagesOf,
-  layOutPages,
-  newWireframePage,
-  type Element,
-  type Tab,
-} from '@livedesign/design';
+import { pagesOf, layOutPages, newWireframePage, type Element, type Tab } from '@livedesign/design';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

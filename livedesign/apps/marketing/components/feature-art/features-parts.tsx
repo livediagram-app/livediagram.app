@@ -8,7 +8,7 @@
 // colour constants), and none of these are wanted elsewhere.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Cursor, EMERALD, SKY, VIOLET } from './shared';
+import { Cursor, SKY } from './shared';
 
 // Panel chrome in an SVG scene: the white of the editor's panels, slate-900 in dark.
 export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';

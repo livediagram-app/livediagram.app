@@ -32,8 +32,7 @@ export type RecentSource = Parameters<typeof pickRecentDesigns>[0][number] & {
 // session must not write it back before the page leaves.
 let forgotten = false;
 // The latest list and its fetcher, for a thumbnail pass asked for while one ran.
-let latest: { designs: readonly RecentSource[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
-  null;
+let latest: { designs: readonly RecentSource[]; fetchSnapshotSvg: FetchSnapshotSvg } | null = null;
 // One thumbnail sync at a time; a list that lands mid-sync asks for one more pass after it.
 let syncing = false;
 let syncAgain = false;

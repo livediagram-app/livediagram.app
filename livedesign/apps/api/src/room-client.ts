@@ -57,12 +57,7 @@ function mutationInit(op: unknown): RequestInit {
 // Send one op to every socket in a design's room. Best-effort: the D1 write before it is the
 // authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
 // not reach the room` rather than failing the request.
-async function broadcastOp(
-  env: Env,
-  designId: string,
-  op: unknown,
-  label: string,
-): Promise<void> {
+async function broadcastOp(env: Env, designId: string, op: unknown, label: string): Promise<void> {
   try {
     await roomStubFor(env, designId).fetch('https://room/broadcast', mutationInit(op));
   } catch (err) {

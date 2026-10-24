@@ -261,12 +261,9 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'preferences'),
   shape('GET', 'participants/:owner'),
   shape('GET', 'share/**'),
-  ...[
-    'designs',
-    'folders',
-    'trash',
-    'images',
-  ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
+  ...['designs', 'folders', 'trash', 'images'].map((resource) =>
+    shape(ALL_METHODS, `${resource}/**`),
+  ),
   shape('GET', 'teams'),
   shape('GET', 'teams/:p/library'),
   shape('DELETE', 'workbench/sessions/current'),
