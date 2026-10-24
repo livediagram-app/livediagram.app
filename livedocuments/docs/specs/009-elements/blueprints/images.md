@@ -49,7 +49,7 @@ Out of this blueprint, cited where they touch images: the reference index
 (`apps/editor/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
 import pipeline (`apps/editor/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
-(`apps/editor/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
+(`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).

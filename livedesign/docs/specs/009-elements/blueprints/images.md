@@ -47,7 +47,7 @@ Out of this blueprint, cited where they touch images: the reference index and th
 (`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-design/offline-mode.md)), the
 import pipeline (`apps/live/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
-(`apps/live/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
+(`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 the media service itself ([liveworkspace/docs/media.md](../../../../../liveworkspace/docs/media.md): the gallery, dedupe, caps, sniff, JPEG strip and its own sweep), account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).

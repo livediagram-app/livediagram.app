@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, posix, resolve } from 'node:path';
+import { dirname, posix, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -48,13 +48,15 @@ const WORKSPACE_ROOTS = [
   'packages/sticky-vision/',
   'packages/sticky-model/',
   'packages/',
+  // The liveworkspace monorepo this repo sits in: a shared package (`packages/index-app/...`) or a sibling app.
+  '../',
 ];
 
 // Placeholders and globs the specs use on purpose: an elided route segment, a
 // two-files-in-one shorthand.
 //
 // `00NN_` used to sit here too, for a migration filename not yet minted. It
-// outlived its reason: a spec's migration shipped under its real name
+// outlived its reason: one spec's migration shipped as its numbered file
 // and the spec kept quoting the placeholder for the whole of that time,
 // because the exemption is exactly what stops this test noticing. A
 // placeholder is only honest before the file exists, so it does not get a
@@ -103,21 +105,30 @@ function trackedTextFiles(): string[] {
 // What git tracks, files and the directories holding them. The disk is not the
 // answer: a local build leaves outputs there that a fresh CI checkout lacks, so
 // a check against it passes or fails by whatever was last built.
-//
-// livedocuments sits in the liveworkspace monorepo, and a few specs name what moved
-// out to it (the telemetry dashboard's livedocuments catalogue,
-// liveworkspace/docs/telemetry.md): those are quoted from here, `../liveworkspace/…`,
-// and checked against what the monorepo tracks.
+// The monorepo's own files count too, named from here (`../packages/...`): specs quote the shared packages and the
+// sibling apps.
 function trackedPaths(): Set<string> {
   const paths = new Set<string>();
-  const add = (cwd: string, prefix: string) => {
-    for (const f of execFileSync('git', ['ls-files'], { cwd, encoding: 'utf8' }).split('\n')) {
-      const parts = `${prefix}${f}`.split('/');
-      for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
-    }
+  const add = (f: string) => {
+    const parts = f.split('/');
+    for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
   };
-  add(ROOT, '');
-  add(resolve(ROOT, '../liveworkspace'), '../liveworkspace/');
+  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n'))
+    add(f);
+  const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  const up = relative(ROOT, top).split(sep).join('/');
+  if (up !== '' && up.split('/').every((part) => part === '..')) {
+    for (const f of execFileSync('git', ['ls-files'], {
+      cwd: top,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    }).split('\n')) {
+      if (f) add(`${up}/${f}`);
+    }
+  }
   return paths;
 }
 
