@@ -31,6 +31,7 @@
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.13",
     "@types/node": "^26.6.4",

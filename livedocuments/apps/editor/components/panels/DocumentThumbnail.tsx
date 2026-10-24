@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { MOTION_MS } from '@livedocuments/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import {
   loadThumbnail,
   peekThumbnail,

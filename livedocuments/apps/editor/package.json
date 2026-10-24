@@ -38,6 +38,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
     "gifenc": "1.0.3",
     "next": "^16.4.1",
     "prosemirror-commands": "^1.7.2",
@@ -53,7 +54,7 @@
   "devDependencies": {
     "@livedocuments/next-config": "workspace:*",
     "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/source-ast": "workspace:*",
+    "@liveworkspace/source-ast": "workspace:*",
     "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",

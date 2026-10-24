@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMotionBudget, formatViolations } from '@liveplanner/tailwind-config/motion-budget';
+import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards/motion-budget';
 
 // The marketing site's chrome (navigation, cards, buttons) keeps the motion budget
 // (docs/specs/004-interface-design/motion.md). Its illustrations and its page

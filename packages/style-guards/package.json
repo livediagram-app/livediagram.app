@@ -1,30 +1,30 @@
 {
-  "name": "@livediagram/source-ast",
+  "name": "@liveworkspace/style-guards",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "sideEffects": false,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    "./motion": "./src/motion.ts",
+    "./motion-budget": "./src/motion-budget.ts",
+    "./optical-guard": "./src/optical-guard.ts",
+    "./touch-target-guard": "./src/touch-target-guard.ts"
   },
   "scripts": {
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "typescript": "^7.0.2"
+    "@liveworkspace/source-ast": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
 }

@@ -11,7 +11,7 @@ import {
   restorePlanElement,
   useMaximisedPlanId,
 } from '@/hooks/plan/maximised-plan';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import {
   CanvasCover,

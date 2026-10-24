@@ -17,7 +17,7 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `packages/ui/src/Button.tsx`                                           | `ButtonContent`; `optical-edges` in the button base                                                                                                 |
 | `apps/editor/components/chrome/header-action.tsx`                        | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                                           |
 | `packages/icons/src/svg-cap-band.ts`                                   | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                                          |
-| `packages/tailwind-config/src/optical-guard.ts`                        | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                                                |
+| `../packages/style-guards/src/optical-guard.ts`                        | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                                                |
 | `apps/{live,help,marketing,telemetry,community}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                                                           |
 | `packages/ui/optical-guard.test.ts`                                    | The guard over `packages/ui/src`                                                                                                                    |
 | `apps/editor/e2e/optical.ts`                                             | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                                                  |
@@ -246,7 +246,7 @@ and a feature page. Help, telemetry and the Community are same-origin under the 
 
 `checkOpticalAlignment({ root }): OpticalViolation[]` parses every `.tsx` under `root` (not tests, not
 `e2e/`, not the primitives' own `optical/` folder) with TypeScript 7's native compiler
-(`parseSourceFiles` from `@livediagram/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
+(`parseSourceFiles` from `@liveworkspace/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
 and flags a JSX element that:
 
 - has a class string (static chunks of a literal or template) with `rounded-full` and a centring token,

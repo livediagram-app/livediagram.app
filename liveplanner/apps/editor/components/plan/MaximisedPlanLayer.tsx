@@ -27,7 +27,7 @@ import {
   useMaximisedPlanClosing,
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { isAnimatedPattern } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';

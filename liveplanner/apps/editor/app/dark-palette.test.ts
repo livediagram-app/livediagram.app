@@ -13,7 +13,7 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@liveplanner/source-ast';
+import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from '@liveplanner/project';
 

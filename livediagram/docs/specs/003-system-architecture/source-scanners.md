@@ -6,10 +6,10 @@ Status: shipped
 
 Some guards read the repo's own TypeScript rather than run it: the light and dark palette tests
 (`apps/editor/app/*-palette.test.ts`), the telemetry emitter scan (liveworkspace/apps/site/app/telemetry/livediagram/emitter-scan.ts)
-and the optical guard (`packages/tailwind-config/src/optical-guard.ts`). They parse source files into
+and the optical guard (`../packages/style-guards/src/optical-guard.ts`). They parse source files into
 TypeScript syntax trees and walk them.
 
-They parse with `parseSourceFiles(paths)` from `@livediagram/source-ast` (`packages/source-ast`), and
+They parse with `parseSourceFiles(paths)` from `@liveworkspace/source-ast` (`../packages/source-ast`), and
 walk the trees with `typescript/unstable/ast`: its `is*` guards, `SyntaxKind`, and each node's
 `forEachChild`, `parent`, `getStart` and `getText`.
 

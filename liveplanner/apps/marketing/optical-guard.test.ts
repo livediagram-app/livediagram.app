@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkOpticalAlignment,
   formatViolations,
-} from '@liveplanner/tailwind-config/optical-guard';
+} from '@liveworkspace/style-guards/optical-guard';
 
 // A glyph in a circle or pill centres its cap band, not its line box
 // (docs/specs/004-interface-design/optical-alignment.md): text goes through text-optical-centre or a primitive.

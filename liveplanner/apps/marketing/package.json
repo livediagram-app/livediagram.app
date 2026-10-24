@@ -26,13 +26,14 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@liveplanner/project": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/licences": "workspace:*",
     "@liveplanner/next-config": "workspace:*",
     "@liveplanner/oxlint-config": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.4",

@@ -8,8 +8,8 @@ Scope, by file:
 | File                                                                    | Role                                                                               |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `packages/tailwind-config/theme.css`                                    | The motion tokens, the shared `fade-in`, the cascade tokens, the shared keyframes  |
-| `packages/tailwind-config/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
-| `packages/tailwind-config/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
+| `../packages/style-guards/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
+| `../packages/style-guards/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
 | `apps/live/app/globals.css`                                             | Editor chrome motion only                                                          |
 | `apps/live/app/canvas-motion.css`                                       | Editor canvas motion, moved out of `globals.css` unchanged                         |
@@ -338,11 +338,11 @@ logging, because motion isn't a decision point.
 
 | Rule                                         | Test                                                                                        |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                               |
-| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                               |
-| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
+| Tokens match their constants                 | `../packages/style-guards/src/motion.test.ts`                                               |
+| `cascadeDelayMs` caps and clamps             | `../packages/style-guards/src/motion.test.ts`                                               |
+| Bounds for literals, `var`, `min`, `calc`    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
+| Stylesheet: ceiling, hover, ambient, delay   | `../packages/style-guards/src/motion-budget.test.ts`                                        |
+| Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, ui and template-previews                  |
 | Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |

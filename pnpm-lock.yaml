@@ -263,6 +263,9 @@ importers:
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -344,6 +347,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -363,15 +369,15 @@ importers:
       '@livedesign/oxlint-config':
         specifier: workspace:*
         version: link:../../packages/oxlint-config
-      '@livedesign/source-ast':
-        specifier: workspace:*
-        version: link:../../packages/source-ast
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -469,6 +475,9 @@ importers:
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1014,36 +1023,11 @@ importers:
 
   livedesign/packages/prettier-config: {}
 
-  livedesign/packages/source-ast:
-    dependencies:
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-    devDependencies:
-      '@livedesign/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livedesign/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livedesign/packages/tailwind-config:
     dependencies:
-      '@livedesign/source-ast':
+      '@liveworkspace/style-guards':
         specifier: workspace:*
-        version: link:../source-ast
+        version: link:../../../packages/style-guards
     devDependencies:
       '@livedesign/oxlint-config':
         specifier: workspace:*
@@ -1110,6 +1094,9 @@ importers:
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -1177,6 +1164,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
@@ -1443,6 +1433,9 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1530,6 +1523,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tensorflow/tfjs-backend-wasm':
         specifier: 4.22.0
         version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
@@ -1561,15 +1557,15 @@ importers:
       '@livediagram/oxlint-config':
         specifier: workspace:*
         version: link:../../packages/oxlint-config
-      '@livediagram/source-ast':
-        specifier: workspace:*
-        version: link:../../packages/source-ast
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -1664,6 +1660,9 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1746,6 +1745,9 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -2249,31 +2251,6 @@ importers:
 
   livediagram/packages/prettier-config: {}
 
-  livediagram/packages/source-ast:
-    dependencies:
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-    devDependencies:
-      '@livediagram/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livediagram/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livediagram/packages/sticky-model:
     dependencies:
       '@livediagram/sticky-vision':
@@ -2332,9 +2309,9 @@ importers:
 
   livediagram/packages/tailwind-config:
     dependencies:
-      '@livediagram/source-ast':
+      '@liveworkspace/style-guards':
         specifier: workspace:*
-        version: link:../source-ast
+        version: link:../../../packages/style-guards
     devDependencies:
       '@livediagram/oxlint-config':
         specifier: workspace:*
@@ -2404,6 +2381,9 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -2477,6 +2457,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
@@ -2736,6 +2719,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       gifenc:
         specifier: 1.0.3
         version: 1.0.3
@@ -2776,15 +2762,15 @@ importers:
       '@livedocuments/oxlint-config':
         specifier: workspace:*
         version: link:../../packages/oxlint-config
-      '@livedocuments/source-ast':
-        specifier: workspace:*
-        version: link:../../packages/source-ast
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -2876,6 +2862,9 @@ importers:
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -2958,6 +2947,9 @@ importers:
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -3467,36 +3459,11 @@ importers:
 
   livedocuments/packages/prettier-config: {}
 
-  livedocuments/packages/source-ast:
-    dependencies:
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-    devDependencies:
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livedocuments/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livedocuments/packages/tailwind-config:
     dependencies:
-      '@livedocuments/source-ast':
+      '@liveworkspace/style-guards':
         specifier: workspace:*
-        version: link:../source-ast
+        version: link:../../../packages/style-guards
     devDependencies:
       '@livedocuments/oxlint-config':
         specifier: workspace:*
@@ -3563,6 +3530,9 @@ importers:
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -3630,6 +3600,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
@@ -3901,6 +3874,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -3917,15 +3893,15 @@ importers:
       '@liveplanner/oxlint-config':
         specifier: workspace:*
         version: link:../../packages/oxlint-config
-      '@liveplanner/source-ast':
-        specifier: workspace:*
-        version: link:../../packages/source-ast
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@liveplanner/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -4020,6 +3996,9 @@ importers:
       '@liveplanner/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -4102,6 +4081,9 @@ importers:
       '@liveplanner/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -4714,36 +4696,11 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  liveplanner/packages/source-ast:
-    dependencies:
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-    devDependencies:
-      '@liveplanner/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@liveplanner/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   liveplanner/packages/tailwind-config:
     dependencies:
-      '@liveplanner/source-ast':
+      '@liveworkspace/style-guards':
         specifier: workspace:*
-        version: link:../source-ast
+        version: link:../../../packages/style-guards
     devDependencies:
       '@liveplanner/oxlint-config':
         specifier: workspace:*
@@ -4822,6 +4779,9 @@ importers:
       '@liveplanner/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -4901,6 +4861,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
@@ -5141,6 +5104,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -5178,9 +5144,6 @@ importers:
       '@livediagram/oxlint-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/oxlint-config
-      '@livediagram/source-ast':
-        specifier: workspace:*
-        version: link:../../../livediagram/packages/source-ast
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/tailwind-config
@@ -5208,6 +5171,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/templates
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../../../packages/source-ast
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -5492,6 +5458,56 @@ importers:
 
   packages/sites:
     devDependencies:
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/source-ast:
+    dependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+    devDependencies:
+      '@livediagram/oxlint-config':
+        specifier: workspace:*
+        version: link:../../livediagram/packages/oxlint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../../livediagram/packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/style-guards:
+    dependencies:
+      '@liveworkspace/source-ast':
+        specifier: workspace:*
+        version: link:../source-ast
+    devDependencies:
+      '@livediagram/oxlint-config':
+        specifier: workspace:*
+        version: link:../../livediagram/packages/oxlint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../../livediagram/packages/vitest-config
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5

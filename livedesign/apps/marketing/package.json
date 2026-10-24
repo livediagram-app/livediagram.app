@@ -32,6 +32,7 @@
     "@livedesign/oxlint-config": "workspace:*",
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.4",

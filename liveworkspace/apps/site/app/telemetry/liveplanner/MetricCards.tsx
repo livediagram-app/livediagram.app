@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
+import { cascadeDelayMs } from '@liveworkspace/style-guards/motion';
 import { useAppearance } from '@livediagram/ui';
 import { Glyph } from '@liveplanner/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';

@@ -14,7 +14,7 @@
 // to fetch.
 
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
+import { cascadeDelayMs } from '@liveworkspace/style-guards/motion';
 import { TimelineGroup } from './TimelineGroup';
 import { TimelineCard } from './TimelineCard';
 import { StackedCard } from './StackedCard';

@@ -295,7 +295,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native
     `title` rules, directives).
-  - `packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+  - `../packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
     TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,

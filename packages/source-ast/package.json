@@ -1,8 +1,7 @@
 {
-  "name": "@liveplanner/source-ast",
+  "name": "@liveworkspace/source-ast",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -21,8 +20,8 @@
     "typescript": "^7.0.2"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
+    "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

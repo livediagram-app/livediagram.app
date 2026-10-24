@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { MOTION_CASCADE_CAP_MS, cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
+import { MOTION_CASCADE_CAP_MS, cascadeDelayMs } from '@liveworkspace/style-guards/motion';
 import { ExpandedStack } from './ExpandedStack';
 import type { TimelineStack } from './stacking';
 import type { TimelineEvent } from './types';

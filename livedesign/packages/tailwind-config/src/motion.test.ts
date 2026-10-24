@@ -7,7 +7,7 @@ import {
   MOTION_HOVER_CEILING_MS,
   MOTION_MS,
   cascadeDelayMs,
-} from './motion';
+} from '@liveworkspace/style-guards/motion';
 
 const theme = readFileSync(new URL('../theme.css', import.meta.url), 'utf8');
 

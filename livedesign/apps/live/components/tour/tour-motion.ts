@@ -1,6 +1,6 @@
 // How a running tour moves between steps (docs/specs/007-editor/pages-tour.md "Look and motion"), shared by TourStage,
 // TourSpotlight and TourPopover.
-import { MOTION_MS } from '@livedesign/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 
 // The dim around a step's target: one shade wherever the tour dims.
 export const TOUR_DIM = 'rgba(15, 23, 42, 0.36)';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { participantBadges } from '@/lib/collaborator-roster';

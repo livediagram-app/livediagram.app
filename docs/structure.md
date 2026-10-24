@@ -12,7 +12,10 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
+│  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
+│  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
+│  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  └─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
 ├─ liveworkspace/              the platform's own apps
@@ -23,7 +26,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
-│  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router
+│  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
 ├─ liveplanner/                imported with full history (main at d5c8bed2); Plan
 │  ├─ apps/                    the same set minus community
@@ -32,7 +35,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @livedocuments/*
 └─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-   ├─ apps/                    live, api, mcp, cli, marketing, help, telemetry, router
+   ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router
    └─ packages/                @livedesign/*, with photo-engine of its own
 ```
 
@@ -116,8 +119,8 @@ hard-coding them.
 
 Each step is its own PR, and both products build and pass their tests after every one.
 
-1. **Move the identical packages** (`api-client`, `telemetry-client`, `render-png`, `source-ast`
-   and the config packages) to `packages/` as `@liveworkspace/*`, then repoint imports in both
+1. **Move the identical packages** (`api-client`, `telemetry-client` and the config packages;
+   `render-png`, `source-ast` and the style guards have moved) to `packages/` as `@liveworkspace/*`, then repoint imports in both
    products. This is mechanical and checked by typecheck.
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product

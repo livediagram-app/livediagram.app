@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMotionBudget, formatViolations } from '@livedesign/tailwind-config/motion-budget';
+import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards/motion-budget';
 
 // The editor's chrome motion budget (docs/specs/004-interface-design/motion.md): every
 // chrome transition settles within 250ms, hovers within 150ms, cascades as a
