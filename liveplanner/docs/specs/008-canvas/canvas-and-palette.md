@@ -1304,7 +1304,7 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
 - **Clear content** — wipes every element from the tab in one undoable commit. Disabled when the tab is already empty or when the tab is locked.
 - **Lock / Unlock** — toggles `tab.locked`. While locked, every element on the tab is read-only (matches per-element lock semantics), the palette's Add buttons stop firing, theme / canvas changes are blocked, **the tab itself can't be deleted** (the Delete row is disabled — unlock first), and the tab pill shows the padlock icon (see above).
-- **Add to Plan** — a modal of the person's other plans. Picking one copies the tab into that plan under fresh ids (the source tab stays put, and the two are independent from then on; see [Tabs and plans](../006-project/tab-project-many-to-many.md)).
+- **Add to Plan** — a modal of the person's other plans. Picking one shares the tab into that plan via `POST /api/projects/:id/tabs/:tabId/link` (the source tab stays put; both plans then hold the same tab, kept in step, so edits reach both; see [Tab ↔ project many-to-many](../006-project/tab-project-many-to-many.md)).
 - **Delete** — removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.

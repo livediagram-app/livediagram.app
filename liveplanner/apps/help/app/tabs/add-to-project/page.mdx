@@ -5,18 +5,18 @@ import { AddToProjectMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another Plan',
   description:
-    'Copy a Dashboard or Form tab into another plan you own from the tab menu. The copy is its own tab: edits in one plan stay in that plan.',
+    'Add a Dashboard or Form tab to another plan you own from the tab menu. Both plans share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-project/',
 });
 
 <ArticleLayout
   title="Add a Tab to Another Plan"
-  description="Reuse a Dashboard or Form tab elsewhere: copy it into another of your plans, then change each one as you like."
+  description="Reuse a Dashboard or Form tab elsewhere: add it to another of your plans, and edits made in either place appear in both."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one plan belongs in another too: a dashboard layout two teams both use, or an intake form two plans share. **Add to Plan** copies the active tab into another plan you own, without leaving the editor.
+Sometimes a tab you built in one plan belongs in another too: a dashboard layout two teams both use, or an intake form two plans share. **Add to Plan** adds the active tab to another plan you own, without leaving the editor.
 
 ## Adding a tab to another plan
 
@@ -33,12 +33,19 @@ The option is greyed out on a **Board** or **Sheet** tab, which work with this p
   <AddToProjectMenu />
 </Figure>
 
-## A copy, not a shared tab
+## One tab, shared between plans
 
-Add to Plan puts a copy of the tab in the other plan, as it is at that moment. From then on the two tabs are separate: change, rename or delete either one and the other stays as it was. In the other plan the copy sits outside any [tab folder](/help/tabs/tab-folders/).
+Add to Plan doesn't make a copy: it is the same tab in both places. Change its layout, restyle it, or rename it from either plan and the change lands in the other as well, a few seconds after you stop editing. If the other plan is already open in another window, reload it to see the latest edits. If the tab is edited in both plans at once, the later edit is the one both keep. A tab can be in up to 20 plans at once.
 
 A Dashboard slot that shows another of this plan's tabs reads as deleted in the other plan, since that tab isn't there; clear the slot or fill it again.
 
-<Tip>Want a second copy in the same plan instead? Use **Duplicate** in the same menu.</Tip>
+Two things stay per-plan, so each plan can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
+
+Removing the tab from one plan doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last plan containing it. Deleting a whole plan works the same way: while it waits in the Trash its shared tabs stay in step, and once it is deleted for good they stay, with their contents, in every other plan they are in. Taking a plan offline tells you first how many of its tabs are shared: they stay in the other plans, and the copies in this browser stop sharing edits with them.
+
+<Tip>
+  Prefer an independent copy you can tailor per plan? Use **Duplicate** in the same menu first, then
+  add the duplicate to the other plan.
+</Tip>
 
 </ArticleLayout>

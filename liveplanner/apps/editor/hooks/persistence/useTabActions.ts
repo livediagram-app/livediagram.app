@@ -27,7 +27,7 @@ import {
   type Element,
   type Tab,
 } from '@liveplanner/project';
-import { apiCopyTabTo } from '@/lib/api-client';
+import { apiLinkTab } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -45,6 +45,8 @@ type TabActionsDeps = {
   // The owner's project list — read for the destination name when
   // linking a tab into another project.
   projectList: { id: string; name: string }[];
+  // The open plan: the one a tab added elsewhere is shared from.
+  projectId: string | null;
   // The local participant id (owner of the link request).
   ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
@@ -88,6 +90,7 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     projectList,
     ownerId,
+    projectId,
     createTab,
     commit,
     commitTabs,
@@ -189,25 +192,16 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Copy the active tab into another of the user's plans. Each plan holds its own content (its Durable Object,
-  // docs/specs/015-api/api.md "Storage"), so this is a copy under fresh ids, not a tab shared by both: edits on
-  // either side stay on that side.
+  // Share the active tab into another of the user's plans (docs/specs/006-project/tab-project-many-to-many.md).
+  // Goes through POST /api/projects/<target>/tabs/<tabId>/link with this plan as `from`: the target then holds
+  // the same tab, and an edit to it in either plan reaches the other.
   const linkActiveTabTo = async (targetProjectId: string) => {
     const source = tabs.find((t) => t.id === activeId);
-    if (!source) return;
+    if (!source || !projectId) return;
     const target =
       toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that plan';
-    // A still-loading source is an empty placeholder: copying it would save an empty tab there.
-    if (!isTabLoaded(source.id)) {
-      toast.error('That tab is still loading. Try again in a moment.');
-      return;
-    }
     try {
-      await apiCopyTabTo(
-        ownerId,
-        targetProjectId,
-        remintTabElements({ ...source, elements: source.elements.map((el) => ({ ...el })) }),
-      );
+      await apiLinkTab(ownerId, targetProjectId, source.id, projectId);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

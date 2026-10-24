@@ -5,7 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./project.md - when naming things: a project holds tabs; Board, Sheet, Dashboard and Form are tab kinds; every tab is in Plan
 - ./project-structure.md - when working on Project structure: Projects contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own rows so autosave scope shrinks
-- ./tab-project-many-to-many.md - when working on Tabs and plans: each tab belongs to one plan; Add to Plan copies a tab
+- ./tab-project-many-to-many.md - when working on Tab ↔ project many-to-many: Add to Plan shares a tab between plans, kept in step
 - ./tab-folders.md - when working on Tab folders: Group a project's tabs into one-level named folders that fan out from one chip
 - ./project-snapshots.md - when working on Project SVG snapshots: One R2-cached SVG per project, rendered on-read-if-stale: Explorer row thumbnails (owner-authed) + the live image share embed ([Live image share link](../013-workspace/live-image-share.md), share-code-scoped). Gated on the optional R2 binding
 - ./layers.md - when working on Layers: Photoshop-style per-tab layers: Tab.layers bands + element layerId, active layer receives new elements, visibility/lock/reorder, band-scoped z-order, a Layers panel (a popover over its bottom-right cluster button), hidden layers excluded from exports behind an export-dialog toggle

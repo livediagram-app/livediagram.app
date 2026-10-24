@@ -29,6 +29,7 @@ import {
 } from './context';
 import { answerTabView, parseViewQuery } from './project-views-route';
 import { pauseFormsFeeding } from '../forms/form-tab';
+import { handleTabLink } from './tab-link-route';
 
 // Tab-content sub-resource routes for /api/projects/<id>/...,
 // split out of projects.ts. Returns a Response when it handles the path, or
@@ -174,9 +175,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   const plan = await handlePlanRoute(ctx);
   if (plan) return plan;
 
-  // /api/projects/<id>/tabs/<tabId>/link — owner only.
-  // A tab belongs to exactly one plan (its Durable Object holds it), so there is no linking an existing tab into
-  // another project any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
+  // /api/projects/<id>/tabs/<tabId>/link — share a tab from another of the caller's plans into this one.
+  const linked = await handleTabLink(ctx);
+  if (linked) return linked;
 
   return null;
 }

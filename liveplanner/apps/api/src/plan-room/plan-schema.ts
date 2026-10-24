@@ -10,6 +10,8 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
+import { tabSharesSchema } from '@liveworkspace/index-app';
+
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
 // follow-up for tabs over 2 MB; until then the cap refuses them, as it did on D1.
@@ -184,6 +186,9 @@ BEGIN
                       WHERE r.sheet_id = sheets.id AND dt.plan_id = sheets.plan_id);
 END;
 
+-- A tab shared with other plans (docs/specs/006-project/tab-project-many-to-many.md): tab_shares lists the OTHER
+-- plans holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
+${tabSharesSchema()}
 -- What the plan owes the index (plan-outbox.ts): a key per thing whose derived rows changed, filled by the
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox), and a Form tab's name and heading on its link

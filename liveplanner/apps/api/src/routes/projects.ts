@@ -529,8 +529,8 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
     }
   }
 
-  // /api/projects/<id>/shared-tabs — what a delete leaves behind in other
-  // projects (docs/specs/006-project/tab-project-many-to-many.md).
+  // /api/projects/<id>/shared-tabs — what taking the plan offline leaves behind in other
+  // plans (docs/specs/006-project/tab-project-many-to-many.md).
   {
     const sharedTabsResp = await handleProjectSharedTabs(ctx);
     if (sharedTabsResp) return sharedTabsResp;

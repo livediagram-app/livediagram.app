@@ -17,7 +17,6 @@ storage. Cost grows linearly with the project's tab count.
 
 ## Non-goals (V1)
 
-- Sharing a tab across plans. Each tab belongs to one plan ([Tabs and plans](tab-project-many-to-many.md)); Add to Plan copies it.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
 
@@ -38,7 +37,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Its order and folder in the plan live on its `plan_tabs` row ([Tabs and plans](tab-project-many-to-many.md)). Both are in the plan's own Durable Object, so a tab belongs to that plan alone: deleting the tab drops both rows, and purging the plan empties its object.
+A `tabs` row is the tab's body and nothing else. Its order and folder in the plan live on its `plan_tabs` row ([Tab ↔ project many-to-many](tab-project-many-to-many.md)). Both are in the plan's own Durable Object: deleting the tab drops both rows, and purging the plan empties its object. A tab shared with other plans is a copy in each, under the same id and kept in step; removing it here, or purging this plan, leaves the other plans' copies whole.
 
 The table is created by the plan's schema, `apps/api/src/plan-room/plan-schema.ts`.
 

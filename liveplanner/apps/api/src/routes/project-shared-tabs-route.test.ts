@@ -36,6 +36,11 @@ function tabIn(sql: DatabaseSync, tabId: string, ...projectIds: string[]) {
   );
 }
 
+// The other plans a tab of A's is shared with, as A's room lists them (plan-room/tab-shares.ts).
+function sharedWith(sql: DatabaseSync, tabId: string, ...projectIds: string[]) {
+  for (const d of projectIds) row(sql, 'tab_shares', { tab_id: tabId, item_id: d });
+}
+
 function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}) {
   return handleProjects(
     makeTestRouteContext('GET', '/api/projects/A/shared-tabs', { env: db.env, ...opts }),
@@ -43,8 +48,21 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 }
 
 describe('GET /api/projects/:id/shared-tabs', () => {
-  // Each plan holds its own tabs (docs/specs/015-api/api.md "Storage"): nothing is ever shared, so the answer is
-  // always none.
+  it('counts the tabs also in other plans, and those plans', async () => {
+    const db = sqliteD1();
+    for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
+    tabIn(db.sql, 'glossary', 'A');
+    sharedWith(db.sql, 'glossary', 'B');
+    tabIn(db.sql, 'timeline', 'A');
+    sharedWith(db.sql, 'timeline', 'B', 'C');
+    tabIn(db.sql, 'solo', 'A');
+
+    const res = await get(db, { owner: 'owner' });
+
+    expect(res?.status).toBe(200);
+    expect(await res.json()).toEqual({ sharedTabs: { tabs: 2, projects: 2 } });
+  });
+
   it('answers zero for a project that shares nothing', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');

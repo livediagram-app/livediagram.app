@@ -1,6 +1,7 @@
 // tabs — one row per tab in the plan's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the plan by
 // `plan_tabs`. Runs only inside the plan's Durable Object, on `env.PLAN_DB` (plan-room/plan-db.ts).
 
+import { shareLeaveStatements } from '@liveworkspace/index-app';
 import { capElementActions, drawnCount, type Tab } from '@liveplanner/project';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -18,7 +19,11 @@ import type { PlanEnv, TabDTO } from '../types';
 import { storedTabStatsOf, tabStatsStatement, type StoredTabStats } from './tab-stats';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 
-export async function getTab(env: PlanEnv, projectId: string, tabId: string): Promise<TabDTO | null> {
+export async function getTab(
+  env: PlanEnv,
+  projectId: string,
+  tabId: string,
+): Promise<TabDTO | null> {
   // Resolve via the plan_tabs link table so a
   // linked tab surfaces from every project that contains it. The link
   // also carries the per-project order_index, so the returned summary's
@@ -152,8 +157,14 @@ export async function firstTabElementCount(env: PlanEnv, projectId: string): Pro
 
 // The lazy backfill of tabs.element_count: a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
-export async function stampTabElementCount(env: PlanEnv, tabId: string, count: number): Promise<void> {
-  await env.PLAN_DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
+export async function stampTabElementCount(
+  env: PlanEnv,
+  tabId: string,
+  count: number,
+): Promise<void> {
+  await env.PLAN_DB.prepare(
+    'UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL',
+  )
     .bind(count, tabId)
     .run();
 }
@@ -337,7 +348,10 @@ export async function seedTabs(
     ];
   });
   stmts.push(
-    env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(savedAt ?? now, projectId),
+    env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(
+      savedAt ?? now,
+      projectId,
+    ),
   );
   // The collaboration index of every seeded tab follows from the outbox (plan-room/plan-outbox.ts): a JSON
   // import or a copy from a share link can carry actions and threads in on create.
@@ -364,6 +378,9 @@ export async function deleteTabRow(
       `DELETE FROM plan_tabs WHERE plan_id = ? AND tab_id = ?
         RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data`,
     ).bind(projectId, tabId),
+    // A shared tab (plan-room/tab-shares.ts): every other holder hears that this plan left, and nothing else it
+    // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
+    ...shareLeaveStatements(env.PLAN_DB, tabId),
     env.PLAN_DB.prepare(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM plan_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),
@@ -462,11 +479,7 @@ export async function swapTabData(
 
 // Does the plan hold this tab? A workbench ticket naming a tab the plan lacks is refused
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
-export async function planHasTab(
-  env: PlanEnv,
-  projectId: string,
-  tabId: string,
-): Promise<boolean> {
+export async function planHasTab(env: PlanEnv, projectId: string, tabId: string): Promise<boolean> {
   const row = await env.PLAN_DB.prepare(
     'SELECT 1 AS present FROM plan_tabs WHERE plan_id = ? AND tab_id = ?',
   )

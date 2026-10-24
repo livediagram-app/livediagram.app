@@ -18,8 +18,9 @@ sheet. A Form tab's form is stored on its tab beside the elements, not as elemen
 ([Forms](../030-forms/forms.md)), so a tab holding a form keeps its plan, even a form with no questions yet. Cards
 and sheets are kept beside the tabs, so a plan holding either is never empty. A plan with no tabs at all is empty
 too. Nothing else counts as content: a name, extra blank tabs, a tab's settings (background, grid), a share link,
-a star or a folder never keep a plan. A tab belongs to one plan
-([Tabs and plans](../006-project/tab-project-many-to-many.md)), so only that plan's own tabs count.
+a star or a folder never keep a plan. A tab shared with another plan
+([Tab ↔ project many-to-many](../006-project/tab-project-many-to-many.md)) is a copy in every plan that holds it, so it
+counts in each: if it has elements or a form, none of those plans is empty.
 
 A plan is **stale** when it was created at least 30 days ago and has not
 been saved for 30 days. Saving an empty plan (renaming a tab, changing a

@@ -9,12 +9,12 @@ This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace
 ## Scope
 
 - **One level.** A folder contains tabs; folders never contain folders.
-- **Beside the order, not in the body.** Tab order lives on the plan's `plan_tabs` row for the tab, not on the `tabs` body row ([Tabs and plans](tab-project-many-to-many.md)). Folder membership lives in the same place, so a content save never touches it. Folder membership is **never** part of the tab body (`tabs.data`).
+- **Beside the order, not in the body.** Tab order lives on the plan's `plan_tabs` row for the tab, not on the `tabs` body row ([Tab ↔ project many-to-many](tab-project-many-to-many.md)). Folder membership lives in the same place, so a content save never touches it, and a tab shared into two plans can sit in a folder in one and loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
 - **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the plan carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
 
 ## Data model
 
-The plan's `plan_tabs` table ([Tabs and plans](tab-project-many-to-many.md), `apps/api/src/plan-room/plan-schema.ts`) carries one nullable column:
+The plan's `plan_tabs` table ([Tab ↔ project many-to-many](tab-project-many-to-many.md), `apps/api/src/plan-room/plan-schema.ts`) carries one nullable column:
 
 ```sql
 folder TEXT,  -- NULL = loose (no folder)
@@ -91,10 +91,11 @@ Two further rules, both learned from the untyped version:
 - **One-tab folder** → valid; renders as a chip.
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
 - **Name uniqueness within a plan** → same name is the same folder (members merge into one run on normalize).
-- **Add to Plan** → the copy lands loose in the other plan; its folder there is the person's to choose.
+- **Shared tab, foldered in A, loose in B** → naturally correct: folder is on each plan's `plan_tabs` row, never in the body that is kept in step.
+- **Add to Plan** → the tab lands loose in the other plan; its folder there is the person's to choose.
 
 ## Cross-references
 
 - [Per-tab storage](per-tab-storage.md) — per-tab storage; folder is link metadata, not body content.
-- [Tabs and plans](tab-project-many-to-many.md) — the `plan_tabs` table the folder column sits on.
+- [Tab ↔ project many-to-many](tab-project-many-to-many.md) — the `plan_tabs` table the folder column sits on.
 - [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) — telemetry enums reused here.

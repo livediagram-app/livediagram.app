@@ -1,70 +1,122 @@
-# Tabs and plans
+# Tab ↔ project many-to-many
 
-Each tab belongs to exactly one plan. A plan's content is its own Durable Object ([API](../015-api/api.md) "Storage"),
-so a tab lives in that plan's database and nowhere else. Two plans never hold the same tab, and an edit in one plan
-never shows in another.
+## Status
 
-(This file's name is from when a tab could be linked into several projects at once through a `project_tabs` table
-in one shared database. That went when each plan moved into its own Durable Object.)
+Shipped. One tab can sit in several of a person's plans at once: **Add to Plan** puts the active tab into
+another plan, and an edit to it in either reaches the other. Each plan's content lives in its own
+SQLite-backed Durable Object ([API app, Storage](../015-api/api.md#storage)), so every plan holding a shared tab
+keeps its own copy of it under the same tab id, and the plans keep their copies in step. The mechanism is
+shared with livediagram, livedocuments and livedesign (`@liveworkspace/index-app` `tab-shares.ts` and `tab-link.ts`);
+`apps/api/src/plan-room/tab-shares.ts` is liveplanner's part of it: how a tab taken in is stored, what a body
+keeps beside it, and the sheet references it makes.
 
-## Storage
+## Data model
 
-In the plan's SQLite (`apps/api/src/plan-room/plan-schema.ts`):
+In each plan's own SQLite (`apps/api/src/plan-room/plan-schema.ts`):
 
-- `tabs` holds each tab's body: `id, name, data, updated_at, element_count, rev` ([Per-tab storage](per-tab-storage.md)).
-- `plan_tabs` holds where each tab sits in the plan: `plan_id, tab_id, order_index, added_at, folder`. Order and
-  folder ([Tab folders](tab-folders.md)) live here, never in `tabs.data`. Every row names the same plan, since the
-  database holds one; the column stays so the content code reads the same as it did over a shared database.
+```sql
+CREATE TABLE plan_tabs (
+  plan_id  TEXT    NOT NULL,
+  tab_id      TEXT    NOT NULL,
+  order_index INTEGER NOT NULL,
+  added_at    INTEGER NOT NULL,
+  folder      TEXT,
+  PRIMARY KEY (plan_id, tab_id),
+  FOREIGN KEY (plan_id) REFERENCES plan (id) ON DELETE CASCADE,
+  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+);
 
-Reading a plan's tabs joins the two in `order_index` order.
+-- The OTHER plans holding each shared tab (@liveworkspace/index-app tabSharesSchema, so `item_id`).
+CREATE TABLE tab_shares (
+  tab_id  TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, item_id)
+) WITHOUT ROWID;
 
-## Tab lifecycle
+-- What this plan owes the other holders: a tab's body, a join, a leave.
+CREATE TABLE share_outbox (
+  id INTEGER PRIMARY KEY, kind TEXT NOT NULL, tab_id TEXT NOT NULL,
+  to_item TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
+  UNIQUE (kind, tab_id, to_item, member)
+);
+```
 
-- **Create a tab**: the editor's first save of a new tab id (`PUT /api/projects/:id/tabs/:tabId`) writes one `tabs`
-  row and one `plan_tabs` row.
-- **Delete a tab**: `DELETE /api/projects/:id/tabs/:tabId` removes the `plan_tabs` row and the `tabs` row with it
-  (`deleteTabRow`, `apps/api/src/db/tabs.ts`), and the plan's sheets settle in the same batch. A tab-scoped share
-  link can't delete its own tab, and a token can't delete a plan's last tab.
-- **Delete a plan**: it moves to the index's Trash and no tab is touched. It is purged 30 days later, or at once on
-  Delete permanently, Empty Trash or `?permanent=true`: the index drops its rows and asks liveplanner to drop the
-  content (`DELETE /api/internal/items/:id`), which empties the plan's Durable Object. Take Offline
-  ([Offline Mode](offline-mode.md)) and closing an account take the same purge.
+`plan_tabs` holds the tab's place in its plan: `order_index`, and the per-plan `folder`
+([Tab folders](tab-folders.md)). Both stay per plan, so each plan can order and file a shared tab its own
+way. `tabs` holds the body ([Per-tab storage](per-tab-storage.md)).
+
+## Keeping the copies in step
+
+- **A write** to a shared tab (a save, a rename, an agent's changeset) fills `share_outbox` with a
+  `body` key per other holder, from a trigger on `tabs`, so no write path can forget it. The room's alarm sends
+  them a few seconds after the plan goes quiet (`FLUSH_IDLE_MS`), each a `receiveShares` call to the holder's
+  Durable Object carrying the tab's current name and body, its write time, and the holders the sender knows. It is
+  not held to the outbox push's once a minute: it is a call between plans, not a push to the index.
+- **The later write wins.** A holder takes a body only when it is later than its own copy, by write time, then (two
+  holders writing in the same millisecond) by content, so every holder settles on the same one. A copy taken in
+  updates the tab's stats, sheet references and the plan's outbox push as a local write does.
+- **No echo.** A holder taking a copy sends it on only to holders the sender did not list; that is also how a
+  holder that joined a moment ago hears of a write made by one that has not yet heard of it.
+- **What the tab holds, and what the plan holds.** A body is the tab: a Dashboard's layout, a Form's questions.
+  A board's cards and a Sheet's cells are rows of the plan ([Plan](../026-plan/), [Sheets](../029-sheets/)), so
+  Add to Plan is not offered on a Board or Sheet tab. A Form's link and its responses are the plan's too
+  ([Forms](../030-forms/forms.md)): the Form in another plan takes responses once that plan publishes it. A Dashboard
+  slot showing another of this plan's tabs reads as deleted in a plan without that tab. The sheet references a body
+  makes are recorded in each holder as a local write's are.
+- **Joining.** `POST /api/projects/:target/tabs/:tabId/link` with `{ from }` runs in the target's object. It reads
+  the tab and its holders from `from` (`sharedTabCopy`), stores the copy at the end of the target's tab order, dated
+  as the copy, then has `from` record the join (`shareJoined`): `from` lists the target, sends the other holders a
+  `join`, and sends the target the tab again if it changed meanwhile.
+- **Leaving.** Removing the tab from one plan (`deleteTabRow`) sends the other holders a `leave` and drops
+  nothing of theirs. Purging a plan (the [Trash](../013-workspace/trash.md) purge, Take Offline, account
+  deletion) sends each holder of each of its shared tabs a `leave` first. A holder that misses one answers `gone`
+  the next time it is sent the tab, and is dropped then; so is any holder that no longer holds it.
+- **Trash.** Trashing a plan changes none of this: its shared tabs stay in step until it is purged.
+- **Failures.** A send that fails stays in `share_outbox` and is retried a minute later.
+
+Cross-plan realtime is not part of this: a plan open in another window shows another holder's write on
+reload, as it always did.
+
+### Shared-tab notice
+
+`GET /api/projects/:id/shared-tabs` answers `{ sharedTabs: { tabs, projects } }`: how many of the plan's tabs
+are also in other plans, and how many plans, read from its `tab_shares`
+(`sharedTabsSummary`, `apps/api/src/plan-room/tab-shares.ts`). The Take Offline confirmation
+(`fetchSharedTabsNotice`, `apps/editor/lib/shared-tabs-notice.ts`, waiting at most 1.5 s for it) adds a sentence
+saying those tabs stay in the other plans. Delete asks nothing: it moves the plan to the Trash, where its
+shared tabs stay in step, and Undo brings it back. It answers exactly the callers who may delete the plan, in the DELETE's order: 400 with no
+caller, 404 when missing, 403 otherwise.
 
 ## Add to Plan
 
-The tab menu's **Add to Plan** row opens a centred modal (`AddTabToProjectDialog`, `TabOrganiseDialogs.tsx`): a
-filterable tile grid of the person's other plans, each tile showing that plan's cached snapshot
-([Project SVG snapshots](project-snapshots.md), the same `ProjectThumbnail` the Explorer uses) over its name, so
-they pick by recognising the canvas.
+The tab menu's **Add to Plan** row opens `AddTabToProjectDialog`, a filterable tile grid of the caller's other
+plans with their snapshot previews ([Project snapshots](project-snapshots.md)). Picking one calls
+`apiLinkTab` (`apps/editor/lib/api/tabs.ts`), the link route above with this plan as `from`. The route answers
+`{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
+(`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
+each (the request's for the target, one fetched for `from`) that no share link gave and no tab scope narrows, and not
+from a workbench session; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a plan
+they cannot edit: 403 otherwise, 404 for a tab or `from` that is not there, 400 with no `from` or `from` the target
+itself, 409 (`too_many_holders`) when the tab is already in 20 plans (`MAX_TAB_HOLDERS`). The row is offered for the plans `addToProjectTargets` lists
+(`apps/editor/lib/add-to-project-targets.ts`).
 
-Picking a plan **copies** the active tab into it (`linkActiveTabTo` in `hooks/persistence/useTabActions.ts`):
+### Cost
 
-- The copy gets a fresh tab id and fresh element ids (`remintTabElements`), and is saved into the destination with
-  the ordinary tab save (`apiCopyTabTo`, `apps/editor/lib/api/tabs.ts`).
-- From then on the two tabs are independent: an edit on either side stays on that side.
-- A tab that is still loading is not copied (it would land empty); the editor says to try again in a moment.
-- The toast reads "<tab> added to <plan>", or "Could not add <tab> to <plan>." when the save fails.
+A save of a shared tab costs what any save does (the trigger's `tab_shares` check is a primary-key read). A tab is
+held by at most 20 plans, so one write fans out to at most 19 calls. Sending a 1 MB tab to 19 holders measured
+about 98 ms of CPU in the tests, every receiver included (`plan-room-store.test.ts`, budget 2 s). Opening a
+plan costs nothing more for its shared tabs: each holder reads its own copy. Each join tells every earlier
+holder, so a tab shared into _n_ plans has sent about n²/2 small `join` messages over its life (171 at the cap);
+a drain sends at most 50 messages, and a body goes once per drain however many holders it is for.
 
-The row lists no plans, and so is disabled, in an offline plan, in a workbench and on a plan the person doesn't own
-(an Editor on someone else's link) (`addToProjectTargets`, `apps/editor/lib/add-to-project-targets.ts`). Offline
-plans are never destinations.
+## Copies
 
-## Copying a whole plan
-
-`POST /api/projects/:id/copy` asks the index to copy the item, and the index asks liveplanner to copy the content
-into the new plan's Durable Object (`plan-content.ts`). Each tab gets a fresh id, and any tab or element link, and
-any Tab Window's tab, in a copied body is pointed at its copy (`remapTabLinks`, `@liveplanner/project`). Order and
-folder are copied with it.
-
-## Shared-tab notice
-
-`GET /api/projects/:id/shared-tabs` still answers, for anyone who may edit the plan (400 with no caller, 403
-without an edit grant), and always says `{ sharedTabs: { tabs: 0, projects: 0 } }`, since no tab is in another
-plan. The Take Offline confirmation still asks it (`fetchSharedTabsNotice`, `apps/editor/lib/shared-tabs-notice.ts`,
-waiting at most 1500 ms) and, with nothing shared, adds no sentence.
+`POST /api/projects/:id/copy` copies the tab bodies into fresh tab rows of the new plan, shared with nothing, in one transaction in
+the new plan's object (`importPlanCopy`, `apps/api/src/plan-room/plan-content.ts`), and re-points
+any tab or element link, and any Tab Window's tab, from the source tab id to its copy's (`remapTabLinks`,
+`@liveplanner/project`).
 
 ## Cross-references
 
-- [API app](../015-api/api.md): the routes and the plan's storage.
-- [Per-tab storage](per-tab-storage.md): the tab body row.
-- [Tab folders](tab-folders.md): folders on the tab bar, kept on `plan_tabs`.
+- [API app](../015-api/api.md): the Storage section and the endpoint table.
+- [Per-tab storage](per-tab-storage.md): why a tab body is a row of its own.

@@ -9,6 +9,8 @@ import {
   recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
+  owesShares,
+  ShareSchedule,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -64,6 +66,8 @@ import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { renderPlanImage, type ThumbnailSubject } from '../thumbnail';
+import { planShares, type ShareAnswer, type ShareMessage, type SharedTabCopy } from './tab-shares';
+import { planRoom } from '../plan-client';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import {
   exportPlanCopy,
@@ -219,6 +223,11 @@ export class PlanRoom extends DurableObject<Env> {
   private planRowReady = false;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
   private flushAt: number | null = null;
+  // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
+  // minute, since it is a call to another plan rather than a push.
+  private readonly shares = new ShareSchedule(
+    () => this.schemaReady && owesShares(this.state.storage.sql),
+  );
   private lastFlushAt = 0;
   private draining = false;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
@@ -338,6 +347,7 @@ export class PlanRoom extends DurableObject<Env> {
     const row = sql.exec('SELECT id FROM plan LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.planId === null) this.planId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
+    this.shares.restore();
   }
 
   // Every call names its plan; an object answers for one plan only.
@@ -375,6 +385,8 @@ export class PlanRoom extends DurableObject<Env> {
       void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
       this.armAlarm();
     }
+    // A shared tab's holders get their copy on idle (tab-shares.ts).
+    if (this.shares.noteWrite()) this.armAlarm();
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
@@ -383,7 +395,35 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // Push what the outbox holds to the index now. A failure keeps it and retries later.
+  // Push what the outbox holds now, and send what the shared tabs' holders are owed. A failure keeps it and retries
+  // later.
   async drain(): Promise<void> {
+    await this.drainIndex();
+    await this.drainShares();
+  }
+
+  // Send the other holders of its shared tabs what they are owed (tab-shares.ts). A failure keeps it for later.
+  private async drainShares(): Promise<void> {
+    const env = this.roomEnv;
+    const planId = this.planId;
+    if (!env || !planId || !this.schemaReady) {
+      this.shares.clear();
+      return;
+    }
+    this.draining = true;
+    try {
+      const done = await this.shares.send(() =>
+        planShares.drain(env, planId, (to, messages) =>
+          planRoom(env, to).receiveShares(planId, messages),
+        ),
+      );
+      if (done && done.sent > 0) console.debug('[tab-shares] sent', { planId, sent: done.sent });
+    } finally {
+      this.draining = false;
+    }
+  }
+
+  private async drainIndex(): Promise<void> {
     const env = this.roomEnv;
     const planId = this.planId;
     this.flushAt = null;
@@ -571,6 +611,52 @@ export class PlanRoom extends DurableObject<Env> {
     } catch (err) {
       console.warn('[room] owner and team not taken from the grant', { error: String(err) });
     }
+  }
+
+  // ---------- RPC: a tab shared with other plans (tab-shares.ts) --------------------------------------------
+
+  // A plan joining this tab's holders: the tab as held here and who holds it.
+  async sharedTabCopy(planId: string, tabId: string): Promise<SharedTabCopy | null> {
+    this.bindPlan(planId);
+    return planShares.copyOf(this.requireEnv(), planId, tabId);
+  }
+
+  // `member` now holds the tab too.
+  async shareJoined(
+    planId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean> {
+    this.bindPlan(planId);
+    return planShares.recordJoin(this.requireEnv(), planId, tabId, member, seenUpdatedAt);
+  }
+
+  // What another holder of a shared tab sent. A plan with nothing stored holds no tab, and makes no schema to say
+  // so.
+  async receiveShares(
+    planId: string,
+    from: string,
+    messages: ShareMessage[],
+  ): Promise<ShareAnswer[]> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return messages.map(() => 'gone');
+    this.bindPlan(planId);
+    return planShares.receive(this.requireEnv(), planId, from, messages);
+  }
+
+  // A plan going for good tells the other holders of its shared tabs it left, so their copies stop counting it.
+  // Best effort: a holder that misses this hears `gone` the next time it sends here, and drops it then.
+  private async leaveShares(): Promise<void> {
+    const env = this.roomEnv;
+    const planId = this.planId;
+    const sql = this.state.storage.sql;
+    if (!env || !planId || !sql || !hasPlanSchema((q) => sql.exec(q))) return;
+    this.ensureSchema();
+    await planShares.leaveAll(env, planId, (to, messages) =>
+      planRoom(env, to).receiveShares(planId, messages),
+    );
   }
 
   private requireEnv(): PlanEnv {
@@ -842,12 +928,14 @@ export class PlanRoom extends DurableObject<Env> {
     if (planId !== undefined) this.bindPlan(planId);
     this.closeSockets(() => [PROJECT_TRASHED_CLOSE, 'project-purged']);
     this.opLog = [];
+    await this.leaveShares();
     await this.ledger.settled();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
     this.schemaReady = false;
     this.planRowReady = false;
     this.flushAt = null;
+    this.shares.clear();
     this.maintenanceAt = null;
     console.info('[room] purged');
   }
@@ -1088,6 +1176,7 @@ export class PlanRoom extends DurableObject<Env> {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
+      this.shares.at,
       this.maintenanceAt,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
@@ -1102,7 +1191,10 @@ export class PlanRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     this.checkGrants(now);
-    if (this.flushAt !== null && this.flushAt <= now) await this.drain();
+    if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
+    // A shared tab written while the push was in flight (its write armed nothing then).
+    this.shares.noteWrite();
+    if (this.shares.due(now)) await this.drainShares();
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }
