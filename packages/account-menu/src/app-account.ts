@@ -8,14 +8,18 @@
 
 import { useSyncExternalStore } from 'react';
 import {
+  accountColourCookieFor,
   accountFullNameCookieFor,
   accountNameCookieFor,
+  readAccountColour,
   readAccountName,
 } from '@liveworkspace/auth-client/account-name';
 import { workspaceOriginFor } from '@liveworkspace/sites';
 
-/** Signed out (or not known to be signed in), the name still on its way, or the person. */
-export type AppAccount = 'out' | 'pending' | { name: string; fullName: string | null };
+/** Signed out (or not known to be signed in), the name still on its way, or the person (`colour`: their presence
+ *  colour, null for Automatic or a session from before the colour cookie). */
+export type AppAccount =
+  'out' | 'pending' | { name: string; fullName: string | null; colour: string | null };
 
 function hintOf(cookies: string, hint: string): boolean {
   for (const part of cookies.split(';')) {
@@ -31,7 +35,11 @@ export function appAccountOf(cookies: string, hint: string, asked = false): AppA
   const nameCookie = accountNameCookieFor(hint);
   const name = readAccountName(cookies, nameCookie);
   if (name)
-    return { name, fullName: readAccountName(cookies, accountFullNameCookieFor(nameCookie)) };
+    return {
+      name,
+      fullName: readAccountName(cookies, accountFullNameCookieFor(nameCookie)),
+      colour: readAccountColour(cookies, accountColourCookieFor(nameCookie)),
+    };
   return asked ? 'out' : 'pending';
 }
 

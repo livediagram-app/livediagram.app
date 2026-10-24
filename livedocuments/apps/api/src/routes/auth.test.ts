@@ -309,6 +309,29 @@ describe('the account name cookie (ldoc_account)', () => {
     expect(cookieValue(email, 'ldoc_account')).toBe(encodeURIComponent('ada@example.com'));
   });
 
+  it("keeps the profile's presence colour beside it, and clears it with none or at sign-out", async () => {
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada', presence_color: '#0ea5e9' }));
+    const coloured = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(coloured, 'ldoc_account_colour')).toBe(encodeURIComponent('#0ea5e9'));
+    const body: { user: { color: unknown } } = await coloured.json();
+    expect(body.user.color).toBe('#0ea5e9');
+
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada' }));
+    const automatic = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(automatic, 'ldoc_account_colour')).toBe('');
+
+    const out = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(setCookies(out).find((c) => c.startsWith('ldoc_account_colour='))).toContain(
+      'Max-Age=0',
+    );
+  });
+
   it('clears it when the refresh is refused and at sign-out', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));

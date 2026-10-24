@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACCOUNT_COLOUR_MAX_LENGTH,
+  accountColourCookieFor,
+  accountColourOf,
   accountFullNameOf,
+  isSafeColourValue,
+  readAccountColour,
   accountNameCookies,
   ACCOUNT_NAME_MAX_LENGTH,
   accountNameCookie,
@@ -90,5 +95,54 @@ describe('accountNameCookies', () => {
     expect(full).toMatch(/^ld_account_full=Wendy%20Tran;.*Max-Age=60/);
     const cleared = accountNameCookies('ld_account', null, 60);
     expect(cleared.every((c) => c.endsWith('Max-Age=0'))).toBe(true);
+  });
+});
+
+describe('the colour cookie', () => {
+  it("sits beside the name cookie, and is set from the profile's colour with the name", () => {
+    expect(accountColourCookieFor('ld_account')).toBe('ld_account_colour');
+    const [, , colour] = accountNameCookies('ld_account', { name: 'Ada', color: '#0ea5e9' }, 60);
+    expect(colour).toBe('ld_account_colour=%230ea5e9; Path=/; Secure; SameSite=Lax; Max-Age=60');
+  });
+
+  it('is cleared with no colour (Automatic), no account, or a colour that is not safe to paint', () => {
+    for (const user of [
+      { name: 'Ada' },
+      { name: 'Ada', color: null },
+      null,
+      { name: 'Ada', color: 'url(https://evil.example/x)' },
+      { name: 'Ada', color: 'red;background:blue' },
+      { name: 'Ada', color: `#${'0'.repeat(ACCOUNT_COLOUR_MAX_LENGTH)}` },
+    ]) {
+      expect(accountNameCookies('ld_account', user, 60)[2]).toMatch(
+        /^ld_account_colour=; .*Max-Age=0$/,
+      );
+    }
+  });
+
+  it('reads back a safe colour, and nothing for an unsafe or broken one', () => {
+    const [, , written] = accountNameCookies(
+      'lp_account',
+      { name: 'Ada', color: 'oklch(70% 0.1 200)' },
+      60,
+    );
+    const set = written!.split(';')[0];
+    expect(readAccountColour(`lp_signed_in=1; ${set}`, 'lp_account_colour')).toBe(
+      'oklch(70% 0.1 200)',
+    );
+    expect(readAccountColour('lp_account_colour=red%3Bx', 'lp_account_colour')).toBeNull();
+    expect(readAccountColour('lp_account_colour=url(x)', 'lp_account_colour')).toBeNull();
+    expect(readAccountColour('lp_account_colour=re%0Ad', 'lp_account_colour')).toBeNull();
+    expect(readAccountColour('', 'lp_account_colour')).toBeNull();
+  });
+
+  it('trims a colour, and passes every colour syntax but nothing that could load or break out', () => {
+    expect(accountColourOf({ color: '  #ef4444 ' })).toBe('#ef4444');
+    for (const ok of ['#fff', 'rebeccapurple', 'rgb(1 2 3)', 'color-mix(in oklab, red, blue)']) {
+      expect(isSafeColourValue(ok)).toBe(true);
+    }
+    for (const bad of ['', 'a"b', 'image-set(x)', 'paint(x)', 42, null]) {
+      expect(isSafeColourValue(bad)).toBe(false);
+    }
   });
 });

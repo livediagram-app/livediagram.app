@@ -321,7 +321,7 @@ background request one day, but neither works in every browser, so the bounce st
 
 ### An app's signed-in cookies
 
-Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps three readable cookies on its
+Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps four readable cookies on its
 whole site, so its public pages can tell who is signed in without loading the session:
 
 - `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether.
@@ -333,6 +333,15 @@ whole site, so its public pages can tell who is signed in without loading the se
   (the same limits), so the avatar can show the first letters of the first and last names. Set and
   cleared with the name cookie; absent, the avatar reads the name cookie instead. A cookie of its own,
   not a second field in the name cookie, so a page built before it existed never shows a joined value.
+- `<prefix>account_colour`: the account's presence colour, when its [profile](#profiles) has one
+  (URI-encoded), so the avatar is painted in it. It comes from the ID token's `presence_color` claim,
+  which the accounts Worker adds beside the name claims (one primary-key read of the profile per token
+  it issues), so the app's API learns it from the token answer it already gets. Set and cleared with the
+  name cookie, and dropped when it fails the safe-colour check (`isSafeColourValue`); the page checks it
+  again when it reads it, since it is painted into CSS. Absent (Automatic, or a session from before it
+  existed), the avatar falls back to the colour picked from the name. A colour changed in Settings ›
+  Profile reaches an app's cookies at its next token refresh (the next page load of the app, or within
+  the access token's lifetime on an open one), never with a request of its own.
 
 None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
 signed-in visitor sees their menu with no request, and a visitor makes none at all. Only a session from
@@ -536,6 +545,12 @@ for every app. An app keeps no participants table of its own.
 - The colours offered are one palette, `PRESENCE_COLOURS` in `@liveworkspace/settings`
   (`packages/settings`): ten named colours, each with the deeper shade dark mode paints it in under
   white text. Every app and liveworkspace.app's Settings offer the same swatches from it.
+- The account menu's avatar, in every header, is painted in the account's own colour
+  ([site.md](site.md#the-header)). It rides where the user already does, so it costs no request: the
+  ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies)),
+  and `user.color` in the answer to `GET /api/auth/get-session` for liveworkspace.app (one
+  primary-key read of the profile per call; the Worker adds it to that endpoint's answer only, not to
+  every session lookup).
 
 An app reads up to 100 ids at once (a presence list, a page of comments): one query, each id found by
 primary key in the profiles and the accounts, so an account that never set anything still answers with

@@ -21,6 +21,8 @@ type NamedUser = {
   givenName?: string | null;
   name?: string | null;
   email?: string | null;
+  // The profile's presence colour (the ID token's `presence_color`), null for Automatic.
+  color?: string | null;
 };
 
 const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
@@ -46,7 +48,40 @@ export function accountFullNameOf(user: NamedUser | null | undefined): string | 
   return Array.from(full).slice(0, ACCOUNT_NAME_MAX_LENGTH).join('');
 }
 
-/** Both readable cookies' `Set-Cookie` values, the name and the full name, set or cleared together. */
+/** The colour cookie beside the name cookie (`ld_account` → `ld_account_colour`), for the avatar's fill. */
+export function accountColourCookieFor(nameCookie: string): string {
+  return `${nameCookie}_colour`;
+}
+
+/** The longest colour kept, as a profile keeps it (liveworkspace/apps/accounts/src/profiles.ts PROFILE_COLOR_MAX). */
+export const ACCOUNT_COLOUR_MAX_LENGTH = 64;
+
+// What no colour contains: a way out of a CSS value (a quote, a semicolon, a brace, an escape), or a function that
+// loads something (the accounts Worker's and the apps' check, profiles.ts "What no colour contains"). Every colour CSS
+// has (hex, a name, rgb(), hsl(), oklch(), color-mix(), var()) passes.
+const NOT_A_COLOUR = /[\\;{}<>"'`]|url|image|src\s*\(|element\s*\(|cross-fade|paint\s*\(/i;
+// oxlint-disable-next-line no-control-regex
+const CONTROL = /[\u0000-\u001f\u007f]/;
+
+/** Whether a colour is safe to paint into CSS: a non-empty string of at most 64 characters that can neither load
+ *  anything nor break out of the value. */
+export function isSafeColourValue(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= ACCOUNT_COLOUR_MAX_LENGTH &&
+    !NOT_A_COLOUR.test(value) &&
+    !CONTROL.test(value)
+  );
+}
+
+/** The account's presence colour, trimmed, when it has one that is safe to paint; null otherwise (Automatic). */
+export function accountColourOf(user: NamedUser | null | undefined): string | null {
+  const colour = text(user?.color);
+  return isSafeColourValue(colour) ? colour : null;
+}
+
+/** The readable cookies' `Set-Cookie` values, the name, the full name and the colour, set or cleared together. */
 export function accountNameCookies(
   cookie: string,
   user: NamedUser | null | undefined,
@@ -55,6 +90,7 @@ export function accountNameCookies(
   return [
     accountNameCookie(cookie, accountNameOf(user), maxAge),
     accountNameCookie(accountFullNameCookieFor(cookie), accountFullNameOf(user), maxAge),
+    accountNameCookie(accountColourCookieFor(cookie), accountColourOf(user), maxAge),
   ];
 }
 
@@ -79,4 +115,10 @@ export function readAccountName(cookies: string, cookie: string): string | null 
     }
   }
   return null;
+}
+
+/** The colour in a `document.cookie` string, or null when there is none or it isn't safe to paint. */
+export function readAccountColour(cookies: string, cookie: string): string | null {
+  const colour = readAccountName(cookies, cookie);
+  return isSafeColourValue(colour) ? colour : null;
 }

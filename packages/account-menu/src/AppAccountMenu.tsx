@@ -15,6 +15,7 @@ export function AppAccountMenu({ hint, kit }: { hint: string; kit: AccountMenuKi
     <AccountMenu
       name={account.name}
       fullName={account.fullName}
+      colour={account.colour}
       kit={kit}
       pageHref={workspacePageHref}
       onSignOut={() => appSignOut()}

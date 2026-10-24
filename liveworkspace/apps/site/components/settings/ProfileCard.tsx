@@ -13,7 +13,7 @@ import {
   PROFILE_NAME_MAX,
 } from '@/lib/account-settings';
 import { initials } from '@liveworkspace/account-menu/initials';
-import { useSession } from '@/lib/session';
+import { setSessionColour, useSession } from '@/lib/session';
 import { ErrorNote, INPUT } from './AccountShell';
 import { settingsErrorMessage, useSavedFlash } from './settings-ui';
 
@@ -127,12 +127,15 @@ export function ProfileCard({ initial }: { initial: Profile | null }) {
     const previous = color;
     const mine = ++colourTurn.current;
     setColor(next);
+    // The header's avatar takes it at once too, and is put back with the card when the write fails.
+    setSessionColour(next);
     setError(null);
     const result = await accountApi('/profile', 'PATCH', { color: next });
     if (mine !== colourTurn.current) return;
     if (result.ok) flashColourSaved();
     else {
       setColor(previous);
+      setSessionColour(previous);
       setError(result.error);
     }
   }

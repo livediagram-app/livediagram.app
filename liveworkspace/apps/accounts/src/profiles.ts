@@ -118,6 +118,40 @@ export async function readProfiles(db: D1Database, ids: string[]): Promise<Profi
   return results.map(toProfile);
 }
 
+// One owner's presence colour, or null for none (Automatic): one primary-key read, for the account
+// menu's avatar (the ID token's `presence_color` claim, and `/get-session`'s `user.color`).
+export async function readProfileColour(db: D1Database, owner: string): Promise<string | null> {
+  const row = await db
+    .prepare('SELECT color FROM profile WHERE owner_id = ?')
+    .bind(owner)
+    .first<{ color: string | null }>();
+  return row?.color ?? null;
+}
+
+// `/get-session`'s answer with the account's presence colour on its user (`user.color`), so
+// liveworkspace.app's header paints its avatar in it without a request of its own. Any other answer
+// (signed out, an error) is passed on as it was.
+export async function withSessionColour(response: Response, db: D1Database): Promise<Response> {
+  if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+    return response;
+  }
+  const body = (await response
+    .clone()
+    .json()
+    .catch(() => null)) as { user?: { id?: unknown } } | null;
+  const user = body?.user;
+  if (!user || typeof user.id !== 'string') return response;
+  const id = user.id;
+  const color = await readProfileColour(db, id).catch(() => null);
+  const headers = new Headers(response.headers);
+  headers.delete('content-length');
+  return new Response(JSON.stringify({ ...body, user: { ...user, color } }), {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 // Sets the fields the patch names and leaves the rest, in one upsert, then answers the profile as it
 // now is (one batch, one round trip). An account id with no account behind it is refused, so a
 // closed account can't be written back.

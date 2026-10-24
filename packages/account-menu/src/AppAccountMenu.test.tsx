@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AccountMenuKit } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
+import { avatarColour } from './initials';
 
 // A stand-in for a UI package's menu hooks: open and close only. The real ones (useMenu, useMenuButton) have their
 // own suites in each UI package.
@@ -54,12 +55,24 @@ describe('appAccountOf', () => {
     expect(appAccountOf('lp_signed_in=1; lp_account=Zo%C3%AB', HINT)).toEqual({
       name: 'Zoë',
       fullName: null,
+      colour: null,
     });
     expect(
       appAccountOf('lp_signed_in=1; lp_account=Ada; lp_account_full=Ada%20Lovelace', HINT),
-    ).toEqual({ name: 'Ada', fullName: 'Ada Lovelace' });
+    ).toEqual({ name: 'Ada', fullName: 'Ada Lovelace', colour: null });
     expect(appAccountOf('lp_signed_in=1', HINT)).toBe('pending');
     expect(appAccountOf('lp_signed_in=1', HINT, true)).toBe('out');
+  });
+
+  it('reads the colour beside the name, and only one that is safe to paint', () => {
+    expect(
+      appAccountOf('lp_signed_in=1; lp_account=Ada; lp_account_colour=%230ea5e9', HINT),
+    ).toEqual({ name: 'Ada', fullName: null, colour: '#0ea5e9' });
+    for (const bad of ['url(x)', 'red%3Bcolor%3Ablue', '%22x%22', `%23${'0'.repeat(80)}`]) {
+      expect(
+        appAccountOf(`lp_signed_in=1; lp_account=Ada; lp_account_colour=${bad}`, HINT),
+      ).toEqual({ name: 'Ada', fullName: null, colour: null });
+    }
   });
 
   it("never reads another app's cookies", () => {
@@ -97,6 +110,26 @@ describe('AppAccountMenu', () => {
     // The account pages are liveworkspace.app's, in full.
     expect(items[0]!.getAttribute('href')).toMatch(/\/account\/tokens$/);
     expect(items[0]!.getAttribute('href')).toMatch(/^https?:\/\//);
+  });
+
+  it('paints the avatar in the colour cookie, and in the name-picked colour without one, with no request', () => {
+    setCookies('lp_signed_in=1', 'lp_account=Ada', 'lp_account_colour=%23ef4444');
+    const { container, unmount } = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    const avatar = () =>
+      (container.querySelector('button > span[aria-hidden]') as HTMLElement).style.getPropertyValue(
+        '--avatar',
+      );
+    expect(avatar()).toBe('#b91c1c'); // Red's deep shade
+    unmount();
+    resetAppAccount();
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    const again = render(<AppAccountMenu hint={HINT} kit={kit} />);
+    expect(
+      (
+        again.container.querySelector('button > span[aria-hidden]') as HTMLElement
+      ).style.getPropertyValue('--avatar'),
+    ).toBe(avatarColour('Ada').deep);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('asks the token once for a session from before the name cookie, then shows the name it set', async () => {

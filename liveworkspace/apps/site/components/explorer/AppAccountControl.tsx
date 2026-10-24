@@ -15,7 +15,7 @@ const noChange = () => () => {};
 
 export function AppAccountControl() {
   const [state, setState] = useState<
-    { name: string; fullName: string | null } | 'out' | 'checking'
+    { name: string; fullName: string | null; colour: string | null } | 'out' | 'checking'
   >('checking');
   const here = useSyncExternalStore(
     noChange,
@@ -25,7 +25,11 @@ export function AppAccountControl() {
   useEffect(() => {
     let live = true;
     void appAccount().then(
-      (found) => live && setState(found ? { name: found.name, fullName: found.fullName } : 'out'),
+      (found) =>
+        live &&
+        setState(
+          found ? { name: found.name, fullName: found.fullName, colour: found.colour } : 'out',
+        ),
     );
     return () => {
       live = false;
@@ -37,6 +41,7 @@ export function AppAccountControl() {
       <AccountMenu
         name={state.name}
         fullName={state.fullName}
+        colour={state.colour}
         kit={ACCOUNT_MENU_KIT}
         pageHref={workspaceHref}
         onSignOut={async () => {

@@ -44,8 +44,13 @@ shareable as it is, and the device's own setting applies through System.
   (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
   is followed, so the link can't send anyone elsewhere.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures: always two letters: the first
-  letters of the first and last names (the full name, where the account has one), else a single name's first two, on a disc in the deep shade of a presence colour picked from the name, so
-  the same person has the same colour in every app) and its first
+  letters of the first and last names (the full name, where the account has one), else a single name's first two, on a disc of the account's presence colour, set in Settings › Profile:
+  a palette colour in its deep shade, a custom one as it is when white reads on it at AA and otherwise
+  mixed with black until it does (`color-mix(in oklab, <colour> 55%, black)`, which always does). With
+  none (Automatic), the deep shade of a presence colour picked from the name, so the same person has the
+  same colour in every app. The colour comes with the session (`user.color` from `/get-session`; an
+  app's `<prefix>account_colour` cookie, [accounts.md](accounts.md#an-apps-signed-in-cookies)), and a
+  new pick in Settings › Profile repaints this header at once) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
   (`components/AccountControl.tsx`): the name again over "Your account", **API tokens** and **Settings** (the
   [Your account](#your-account-account) pages), and **Sign out**, which ends

@@ -71,6 +71,8 @@ export type AuthUser = {
   givenName: string | null;
   familyName: string | null;
   name: string | null;
+  // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
+  color: string | null;
 };
 
 type Configured = {
@@ -183,6 +185,7 @@ function userOf(tokens: TokenSet): AuthUser | null {
     givenName: text(payload.given_name),
     familyName: text(payload.family_name),
     name: text(payload.name),
+    color: text(payload.presence_color),
   };
 }
 

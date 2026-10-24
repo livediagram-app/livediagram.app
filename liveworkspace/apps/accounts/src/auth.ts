@@ -8,6 +8,7 @@ import { ACCOUNTS_ON_APP_PATH } from '@liveworkspace/sites/workspace-proxy';
 import { APP_SITES, appOrigins, type AppEnvironment, type AppSiteId } from '@liveworkspace/sites';
 import { queueWelcome, startLifecycle } from './lifecycle.ts';
 import { RESOURCES } from './resources.ts';
+import { readProfileColour } from './profiles.ts';
 import { teamsClaim } from './teams.ts';
 
 function build(env: Env, googleRedirectURI?: string) {
@@ -40,6 +41,7 @@ function build(env: Env, googleRedirectURI?: string) {
         },
         sendCode: (email, code) => sendCodeEmail(env, email, code),
         teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
+        colourFor: (userId) => readProfileColour(env.AUTH_DB, userId),
         guestMerge: guestMergeConfig(env),
         // The welcome goes once the sign-up's response has (index.ts takeWelcomes), speaking for the app
         // the sign-up came through: its OAuth client's, or liveworkspace.app's for the site's own.

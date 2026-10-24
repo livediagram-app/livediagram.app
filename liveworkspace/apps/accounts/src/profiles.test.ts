@@ -4,7 +4,9 @@ import {
   checkProfilePatch,
   deleteProfile,
   mergeGuestProfile,
+  readProfileColour,
   readProfiles,
+  withSessionColour,
   writeProfile,
 } from './profiles.ts';
 import { addUser, testD1 } from './test-d1.ts';
@@ -90,6 +92,40 @@ describe('profiles', () => {
     await write('user_ada', { name: 'Ada' });
     await deleteProfile(db, 'user_ada');
     expect((await readProfiles(db, ['user_ada']))[0]).toMatchObject({ name: 'Ada Lovelace' });
+  });
+});
+
+describe("the account menu's colour", () => {
+  it('reads one owner’s colour, null for none', async () => {
+    expect(await readProfileColour(db, 'user_ada')).toBeNull();
+    await write('user_ada', { color: '#f97316' });
+    expect(await readProfileColour(db, 'user_ada')).toBe('#f97316');
+    expect(await readProfileColour(db, 'user_nobody')).toBeNull();
+  });
+
+  it("adds it to /get-session's user, and passes any other answer on as it was", async () => {
+    await write('user_ada', { color: '#f97316' });
+    const session = Response.json(
+      { session: { id: 's' }, user: { id: 'user_ada', name: 'Ada Lovelace' } },
+      { headers: { 'set-cookie': 'a=1' } },
+    );
+    const answered = await withSessionColour(session, db);
+    expect(await answered.json()).toEqual({
+      session: { id: 's' },
+      user: { id: 'user_ada', name: 'Ada Lovelace', color: '#f97316' },
+    });
+    expect(answered.headers.get('set-cookie')).toBe('a=1');
+
+    const none = await withSessionColour(
+      Response.json({ session: {}, user: { id: 'user_bo' } }),
+      db,
+    );
+    expect(((await none.json()) as { user: { color: unknown } }).user.color).toBeNull();
+
+    const signedOut = Response.json(null);
+    expect(await withSessionColour(signedOut, db)).toBe(signedOut);
+    const refused = new Response('no', { status: 401 });
+    expect(await withSessionColour(refused, db)).toBe(refused);
   });
 });
 

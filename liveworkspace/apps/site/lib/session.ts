@@ -1,14 +1,18 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { accountColourOf } from '@liveworkspace/auth-client/account-name';
 import { call, displayName, fullNameOf } from './accounts';
 import { pageApp } from './explorer/page-app';
 
 // Who is signed in to liveworkspace.app, asked of the accounts API once per page however many parts
 // of the page want to know (the header's account control, the home page's hero). The site is
 // static, so this is the one way a page learns it.
+// `colour`: the profile's presence colour (the accounts Worker adds it to `/get-session`'s user), null for Automatic.
 export type Session =
-  { state: 'checking' } | { state: 'out' } | { state: 'in'; name: string; fullName: string | null };
+  | { state: 'checking' }
+  | { state: 'out' }
+  | { state: 'in'; name: string; fullName: string | null; colour: string | null };
 
 let current: Session = { state: 'checking' };
 let asked = false;
@@ -33,6 +37,7 @@ function ask() {
             state: 'in',
             name: displayName(user as Record<string, unknown>),
             fullName: fullNameOf(user as Record<string, unknown>),
+            colour: accountColourOf(user),
           }
         : { state: 'out' },
     );
@@ -53,6 +58,14 @@ export function useSession(): Session {
     () => current,
     () => CHECKING,
   );
+}
+
+// A colour just picked in Settings › Profile, so the header's avatar repaints at once rather than at the next
+// page's `/get-session`. Nothing changes while no one is known to be signed in.
+export function setSessionColour(colour: string | null) {
+  if (current.state !== 'in') return;
+  const next = accountColourOf({ color: colour });
+  if (next !== current.colour) set({ ...current, colour: next });
 }
 
 // Ends the liveworkspace session here. Resolves false when the API refused, leaving it as it was.

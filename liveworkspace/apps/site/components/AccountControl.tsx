@@ -26,6 +26,7 @@ export function AccountControl() {
       <AccountMenu
         name={session.name}
         fullName={session.fullName}
+        colour={session.colour}
         kit={ACCOUNT_MENU_KIT}
         onSignOut={signOut}
       />

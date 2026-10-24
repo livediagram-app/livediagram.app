@@ -9,7 +9,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { avatarColour, initials } from './initials';
+import { avatarFill, initials } from './initials';
 
 // The signed-in person's account menu (liveworkspace/docs/site.md "The header"): their avatar (initials; accounts
 // keep no pictures) and name, opening a menu of their API tokens, Settings and Sign out. One component for
@@ -75,6 +75,7 @@ export const ACCOUNT_PAGES = [
 export function AccountMenu({
   name,
   fullName,
+  colour,
   kit,
   onSignOut,
   pageHref = (path) => path,
@@ -82,6 +83,8 @@ export function AccountMenu({
   name: string;
   // The full name, where the account has one beyond `name` (a given name): the avatar's initials come from it.
   fullName?: string | null;
+  // The profile's presence colour, null for Automatic (the avatar's colour is then picked from the name).
+  colour?: string | null;
   kit: AccountMenuKit;
   onSignOut: () => Promise<boolean>;
   pageHref?: (path: string) => string;
@@ -118,7 +121,7 @@ export function AccountMenu({
           open ? 'bg-slate-100 dark:bg-slate-800' : ''
         }`}
       >
-        <Avatar name={fullName || name} />
+        <Avatar name={fullName || name} colour={colour} />
         <span className="truncate max-sm:hidden">{name}</span>
         <ChevronIcon
           aria-hidden
@@ -133,7 +136,7 @@ export function AccountMenu({
           className="absolute top-full right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800"
         >
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">
-            <Avatar name={fullName || name} large />
+            <Avatar name={fullName || name} colour={colour} large />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                 {name}
@@ -196,14 +199,21 @@ function SignOutIcon() {
   );
 }
 
-// The signed-in person's initials in a disc of their colour, as the apps draw people: the colour's deeper 700
-// step, since white text on the 500 step falls below AA.
-function Avatar({ name, large = false }: { name: string; large?: boolean }) {
-  const colour = avatarColour(name);
+// The signed-in person's initials in a disc of their colour, as the apps draw people: their presence colour (or the
+// one picked from the name) in a shade white reads on at AA (initials.ts avatarFill).
+function Avatar({
+  name,
+  colour,
+  large = false,
+}: {
+  name: string;
+  colour?: string | null;
+  large?: boolean;
+}) {
   return (
     <span
       aria-hidden
-      style={{ '--avatar': colour.deep } as CSSProperties}
+      style={{ '--avatar': avatarFill(name, colour) } as CSSProperties}
       className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--avatar)] font-semibold text-white ring-1 ring-black/5 ring-inset dark:ring-white/10 ${
         large ? 'size-10 text-sm' : 'size-7 text-[11px]'
       }`}

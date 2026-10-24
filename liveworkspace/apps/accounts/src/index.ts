@@ -19,7 +19,10 @@ import {
   mergeGuestOnAuthorize,
 } from './guests.ts';
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
+import { withSessionColour } from './profiles.ts';
 import { overCodeLimit } from './rate-limit.ts';
+
+const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
@@ -114,6 +117,10 @@ export default {
           : null;
       const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
       let response = await auth.handler(request);
+      // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
+      if (request.method === 'GET' && route === GET_SESSION_PATH) {
+        response = await withSessionColour(response, env.AUTH_DB);
+      }
       // Someone not signed in here yet signs in on the app's own address (handoff.ts).
       if (request.method === 'GET' && route === AUTHORIZE_PATH) {
         response = await signInOnAppAddress(request, response, {

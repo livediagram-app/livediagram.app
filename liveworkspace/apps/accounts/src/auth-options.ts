@@ -35,6 +35,9 @@ export interface AuthConfig {
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
   teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
+  // The account's presence colour (profiles.ts), for the ID token's `presence_color` claim. Left out
+  // where there is no database to ask, as when generating the schema.
+  colourFor?: (userId: string) => Promise<string | null>;
   // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
   // generating the schema.
   guestMerge?: Omit<MergeConfig, 'secret'>;
@@ -181,7 +184,17 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
             : {},
         // The provider sends profile and email claims only from /userinfo. The apps read who
         // signed in from the ID token they already have, so the claims go in it as well.
-        customIdTokenClaims: ({ user, scopes }) => idTokenClaims(user, scopes),
+        // The profile's presence colour rides beside the names (one primary-key read per token), so
+        // each app's header paints the avatar in it (liveworkspace/docs/accounts.md "An app's
+        // signed-in cookies"). A failed read leaves it out rather than failing the token.
+        customIdTokenClaims: async ({ user, scopes }) =>
+          idTokenClaims(
+            user,
+            scopes,
+            scopes.includes('profile') && config.colourFor
+              ? await config.colourFor(user.id).catch(() => null)
+              : null,
+          ),
       }),
     ],
   } satisfies BetterAuthOptions;
@@ -228,13 +241,19 @@ export function withNames<T extends NamedUser>(user: T): T {
 
 type ClaimUser = NamedUser & { email: string; emailVerified: boolean };
 
-export function idTokenClaims(user: ClaimUser, scopes: string[]): Record<string, unknown> {
+// `colour`: the profile's presence colour (profiles.ts), a claim of the profile scope beside the names.
+export function idTokenClaims(
+  user: ClaimUser,
+  scopes: string[],
+  colour: string | null = null,
+): Record<string, unknown> {
   const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
   return {
     ...(scopes.includes('profile') && {
       name: text(user.name),
       given_name: text(user.givenName),
       family_name: text(user.familyName),
+      ...(colour && { presence_color: colour }),
     }),
     ...(scopes.includes('email') && { email: user.email, email_verified: user.emailVerified }),
   };

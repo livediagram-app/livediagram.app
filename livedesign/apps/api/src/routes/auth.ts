@@ -71,6 +71,8 @@ export type AuthUser = {
   // The header's name first, as liveworkspace.app's (accountNameOf).
   givenName: string | null;
   name: string | null;
+  // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
+  color: string | null;
 };
 
 type Configured = {
@@ -182,6 +184,7 @@ function userOf(tokens: TokenSet): AuthUser | null {
     email: text(payload.email),
     givenName: text(payload.given_name),
     name: text(payload.name),
+    color: text(payload.presence_color),
   };
 }
 
