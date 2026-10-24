@@ -6,9 +6,9 @@ Shipped. One tab can sit in several of a person's designs at once: **Add to Desi
 another design, and an edit to it in either reaches the other. Each design's content lives in its own
 SQLite-backed Durable Object ([API app, Storage](../015-api/api.md#storage)), so every design holding a shared tab
 keeps its own copy of it under the same tab id, and the designs keep their copies in step. The mechanism is
-shared with livediagram, liveplanner and livedesigns (`@liveworkspace/index-app` `tab-shares.ts` and `tab-link.ts`);
+shared with livediagram, liveplanner and livedocuments (`@liveworkspace/index-app` `tab-shares.ts` and `tab-link.ts`);
 `apps/api/src/design-room/tab-shares.ts` is livedesign's part of it: how a tab taken in is stored, what a body
-keeps beside it, and the images it carries.
+keeps beside it, and the images and photo blobs it carries.
 
 ## Data model
 
@@ -26,18 +26,18 @@ CREATE TABLE design_tabs (
   FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
 
--- The OTHER designs holding each shared tab.
+-- The OTHER designs holding each shared tab (@liveworkspace/index-app tabSharesSchema, so `item_id`).
 CREATE TABLE tab_shares (
-  tab_id      TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  design_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, design_id)
+  tab_id  TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, item_id)
 ) WITHOUT ROWID;
 
 -- What this design owes the other holders: a tab's body, a join, a leave.
 CREATE TABLE share_outbox (
   id INTEGER PRIMARY KEY, kind TEXT NOT NULL, tab_id TEXT NOT NULL,
-  to_design TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
-  UNIQUE (kind, tab_id, to_design, member)
+  to_item TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
+  UNIQUE (kind, tab_id, to_item, member)
 );
 ```
 
@@ -81,7 +81,7 @@ reload, as it always did.
 `GET /api/designs/:id/shared-tabs` answers `{ sharedTabs: { tabs, designs } }`: how many of the design's tabs
 are also in other designs, and how many designs, read from its `tab_shares`
 (`sharedTabsSummary`, `apps/api/src/design-room/tab-shares.ts`). The Take Offline confirmation
-(`fetchSharedTabsNotice`, `apps/editor/lib/shared-tabs-notice.ts`, waiting at most 1.5 s for it) adds a sentence
+(`fetchSharedTabsNotice`, `apps/live/lib/shared-tabs-notice.ts`, waiting at most 1.5 s for it) adds a sentence
 saying those tabs stay in the other designs. Delete asks nothing: it moves the design to the Trash, where its
 shared tabs stay in step, and Undo brings it back. It answers exactly the callers who may delete the design, in the DELETE's order: 400 with no
 caller, 404 when missing, 403 otherwise.
@@ -90,14 +90,14 @@ caller, 404 when missing, 403 otherwise.
 
 The tab menu's **Add to Design** row opens `AddTabToDesignDialog`, a filterable tile grid of the caller's other
 designs with their snapshot previews ([Design SVG snapshots](design-snapshots.md)). Picking one calls
-`apiLinkTab` (`apps/editor/lib/api/tabs.ts`), the link route above with this design as `from`. The route answers
+`apiLinkTab` (`apps/live/lib/api/tabs.ts`), the link route above with this design as `from`. The route answers
 `{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
 (`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
 each (the request's for the target, one fetched for `from`) that no share link gave and no tab scope narrows, and not
 from a workbench session; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a design
 they cannot edit: 403 otherwise, 404 for a tab or `from` that is not there, 400 with no `from` or `from` the target
 itself, 409 (`too_many_holders`) when the tab is already in 20 designs (`MAX_TAB_HOLDERS`). The row is offered for the designs `addToDesignTargets` lists
-(`apps/editor/lib/add-to-design-targets.ts`).
+(`apps/live/lib/add-to-design-targets.ts`).
 
 ### Cost
 

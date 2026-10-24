@@ -28,18 +28,18 @@ CREATE TABLE document_tabs (
   FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
 
--- The OTHER documents holding each shared tab.
+-- The OTHER documents holding each shared tab (@liveworkspace/index-app tabSharesSchema, so `item_id`).
 CREATE TABLE tab_shares (
-  tab_id      TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, document_id)
+  tab_id  TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, item_id)
 ) WITHOUT ROWID;
 
 -- What this document owes the other holders: a tab's body, a join, a leave.
 CREATE TABLE share_outbox (
   id INTEGER PRIMARY KEY, kind TEXT NOT NULL, tab_id TEXT NOT NULL,
-  to_document TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
-  UNIQUE (kind, tab_id, to_document, member)
+  to_item TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
+  UNIQUE (kind, tab_id, to_item, member)
 );
 ```
 
