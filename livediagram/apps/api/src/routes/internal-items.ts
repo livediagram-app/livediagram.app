@@ -55,10 +55,11 @@ export function handleInternalItems(
         // its source could serve, so it serves them too (docs/specs/009-elements/images.md "Placement grants").
         await documentRoom(env, to).importCopy(source.copy);
         // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
-        // "Likes"), once per copier. The api's own copy door counted it first with the copier's network
-        // (routes/document-index-routes.ts); this counts a copy made anywhere else.
+        // "Likes"), once per copier and at most a few from one network: the copier's address as the index saw it
+        // (an Explorer's copy). The api's own copy door counted it first (routes/document-index-routes.ts), so this
+        // adds nothing then. An index that names no address counts the copier as their own network.
         if (source.community && copier.by)
-          waitUntil(countCommunityCopy(env, from, copier.by, `copier:${copier.by}`));
+          waitUntil(countCommunityCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`));
         return { tabs: source.copy.tabs.length, items: 0 };
       },
       // A closed account, wherever it was closed: what livediagram keeps for them beside their canvases.

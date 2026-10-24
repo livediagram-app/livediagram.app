@@ -153,6 +153,23 @@ describe('POST /api/internal/items/:from/copy-to/:to', () => {
     expect(copied('B')).toEqual([]);
   });
 
+  it("counts an Explorer's copy through the post by the copier's network, as the index names it", async () => {
+    const { env, send, settle } = await source();
+    await saveCommunityPost(
+      env,
+      { shareCode: 'POST1', authorId: USER, postId: 'p1', title: 'Plan', anonymous: false },
+      Date.now(),
+    );
+    const res = await send('POST', 'items/A/copy-to/B', {
+      by: OTHER,
+      code: 'POST1',
+      ip: '198.51.100.7',
+    });
+    expect(res.status).toBe(201);
+    await settle();
+    expect(countCommunityCopy).toHaveBeenCalledWith(env, 'A', OTHER, '198.51.100.7');
+  });
+
   it('counts nothing for a copy through the post from an index that does not say who copies', async () => {
     const { env, send, settle } = await source();
     await saveCommunityPost(

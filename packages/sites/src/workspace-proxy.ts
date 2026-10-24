@@ -296,3 +296,29 @@ async function forwardToWorkspace(
     headers: out,
   });
 }
+
+// ---------- The index, on the app's address -------------------------------------------------------------------------
+
+/** Where liveworkspace's index lives when the router names no other (`INDEX_ORIGIN`). */
+export const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
+
+/**
+ * `/api/index/*` on an app's address: the same request (method, body, Authorization, the share headers) at the
+ * index's origin, minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
+ * The visitor's address goes along (WORKSPACE_CLIENT_IP_HEADER, never one the caller sent), so what the index counts
+ * per network (a Community post's copies) counts the visitor's, not the router's.
+ */
+export function forwardToIndex(
+  request: Request,
+  url: URL,
+  origin: string,
+  doFetch: typeof fetch = fetch,
+): Promise<Response> {
+  const target = new URL(`${url.pathname}${url.search}`, origin);
+  const forwarded = new Request(target.toString(), request);
+  forwarded.headers.delete('Cookie');
+  const client = request.headers.get('CF-Connecting-IP');
+  if (client) forwarded.headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
+  else forwarded.headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  return doFetch(forwarded);
+}

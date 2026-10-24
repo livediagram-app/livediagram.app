@@ -6,7 +6,11 @@
 import { applyCachePolicy } from './cache-policy';
 import { LIVE_ROUTE_SEGMENTS } from '@livedesign/api-schema';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
-import { routeToWorkspace } from '@liveworkspace/sites/workspace-proxy';
+import {
+  routeToWorkspace,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
+} from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -38,7 +42,6 @@ export interface Env {
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
 const INDEX_PATH = '/api/index';
-const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
 
@@ -148,15 +151,6 @@ function forward(
       'run `wrangler dev --env local` locally, or check wrangler.toml.',
     { status: 503 },
   );
-}
-
-// The index is another site: the same request (method, body, Authorization, the share headers) at its origin,
-// minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
-export function forwardToIndex(request: Request, url: URL, origin: string): Promise<Response> {
-  const target = new URL(`${url.pathname}${url.search}`, origin);
-  const forwarded = new Request(target.toString(), request);
-  forwarded.headers.delete('Cookie');
-  return fetch(forwarded);
 }
 
 // Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (docs/specs/016-platform/staging-environment.md).

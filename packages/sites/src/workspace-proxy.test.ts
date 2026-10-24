@@ -16,6 +16,8 @@ import {
   SIGN_IN_PAGE_ROUTES,
   SITE_ASSETS_ROUTE,
   WORKSPACE_CLIENT_IP_HEADER,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
 } from './workspace-proxy';
 import { APP_NAMES } from './index';
 
@@ -318,5 +320,36 @@ describe("signing in on the app's own address", () => {
     expect(
       locationOnApp('https://accounts.google.com/o/oauth2', PRODUCTION_WORKSPACE_ORIGIN, routes),
     ).toBe('https://accounts.google.com/o/oauth2');
+  });
+});
+
+describe('forwardToIndex', () => {
+  it("sends the request to the index without the site's cookies, naming the visitor's address", async () => {
+    const seen: Request[] = [];
+    const doFetch = (async (input: RequestInfo | URL) => {
+      seen.push(input as Request);
+      return new Response('ok');
+    }) as typeof fetch;
+    const request = new Request('https://livediagram.app/api/index/items?app=livediagram', {
+      method: 'POST',
+      body: '{}',
+      headers: {
+        Authorization: 'Bearer t',
+        Cookie: 'session=1',
+        'CF-Connecting-IP': '198.51.100.7',
+      },
+    });
+    await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, doFetch);
+    expect(seen[0]!.url).toBe('https://liveworkspace.app/api/index/items?app=livediagram');
+    expect(seen[0]!.method).toBe('POST');
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
+    expect(seen[0]!.headers.has('Cookie')).toBe(false);
+    expect(seen[0]!.headers.get(WORKSPACE_CLIENT_IP_HEADER)).toBe('198.51.100.7');
+    // A caller's own claim to an address never goes along.
+    const spoofed = new Request('https://livediagram.app/api/index/items', {
+      headers: { [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.1' },
+    });
+    await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', doFetch);
+    expect(seen[1]!.headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(false);
   });
 });

@@ -6,8 +6,9 @@
 //   POST   /api/internal/items/purge          {ids}          the same for up to BULK_PURGE_MAX items (a closed account)
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
-//   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?}  copy an item's content (or one tab) into a new
-//                                                            item, for `by` (who copies) through link `code` (if any)
+//   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?}  copy an item's content (or one tab)
+//                                                            into a new item, for `by` (who copies) through link `code`
+//                                                            (if any), from address `ip` (if known)
 //   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items
 //   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
@@ -31,8 +32,12 @@ export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit
 const MAX_ID = 200;
 const MAX_CODES = 500;
 
-// Who copies an item, and the link they came in by.
-export type Copier = { by: string | null; code: string | null };
+// Who copies an item, the link they came in by, and the address they copied from (the visitor's, as the index saw
+// it; null when it did not know), for anything the app counts per network.
+export type Copier = { by: string | null; code: string | null; ip: string | null };
+
+// An address as the index forwards it: IPv4 or IPv6 text, nothing longer.
+const IP_TEXT = /^[0-9A-Fa-f:.]{2,45}$/;
 
 export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'conflict';
 
@@ -198,6 +203,7 @@ export async function handleInternalItems(
     const copier: Copier = {
       by: validId(body['by']) ? body['by'] : null,
       code: validId(body['code']) ? body['code'] : null,
+      ip: typeof body['ip'] === 'string' && IP_TEXT.test(body['ip']) ? body['ip'] : null,
     };
     let outcome: CopyOutcome;
     try {

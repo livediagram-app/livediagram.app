@@ -117,12 +117,12 @@ describe('handleInternalItems', () => {
     );
     expect(ok.status).toBe(201);
     expect(await ok.json()).toEqual({ ok: true, tabs: 1, items: 0 });
-    // An index that does not say who copies leaves both null.
-    expect(seen).toEqual({ by: null, code: null });
+    // An index that does not say who copies leaves them null.
+    expect(seen).toEqual({ by: null, code: null, ip: null });
     await send(
       'POST',
       '/api/internal/items/A/copy-to/B',
-      { by: 'user_b', code: 'abc123', tabId: null },
+      { by: 'user_b', code: 'abc123', tabId: null, ip: '2001:db8::1' },
       {
         copy: async (_f, _t, _tab, copier) => {
           seen = copier;
@@ -130,7 +130,20 @@ describe('handleInternalItems', () => {
         },
       },
     );
-    expect(seen).toEqual({ by: 'user_b', code: 'abc123' });
+    expect(seen).toEqual({ by: 'user_b', code: 'abc123', ip: '2001:db8::1' });
+    // Anything but an address is no address.
+    await send(
+      'POST',
+      '/api/internal/items/A/copy-to/B',
+      { by: 'user_b', ip: '<script>' },
+      {
+        copy: async (_f, _t, _tab, copier) => {
+          seen = copier;
+          return { tabs: 1, items: 0 };
+        },
+      },
+    );
+    expect(seen).toEqual({ by: 'user_b', code: null, ip: null });
     expect(
       (await send('POST', '/api/internal/items/A/copy-to/B', {}, { copy: async () => 'not_found' }))
         .status,

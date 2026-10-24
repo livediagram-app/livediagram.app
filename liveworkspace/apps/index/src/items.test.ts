@@ -333,8 +333,29 @@ describe('copies', () => {
     expect(h.appCalls[0]).toMatchObject({
       method: 'POST',
       url: `https://liveplanner.app/api/internal/items/${item.id}/copy-to/${copy.id}`,
-      body: { tabId: null, by: 'user_a', code: null },
+      body: { tabId: null, by: 'user_a', code: null, ip: null },
     });
+  });
+
+  it("names the copier's address to the app: their router's word for it, else the connection's", async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth, { title: 'Roadmap' });
+    await call(`/items/${item.id}/copy`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: {},
+      headers: { 'X-Liveworkspace-Client-IP': '198.51.100.7', 'CF-Connecting-IP': '2a06:98c0::1' },
+    });
+    await call(`/items/${item.id}/copy`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: {},
+      headers: { 'CF-Connecting-IP': '203.0.113.9' },
+    });
+    expect(h.appCalls.map((c) => (c.body as { ip: string | null }).ip)).toEqual([
+      '198.51.100.7',
+      '203.0.113.9',
+    ]);
   });
 
   it('removes the row and answers 502 when the app fails', async () => {

@@ -50,6 +50,12 @@ import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { bulkEventStatements, eventStatements, moveScopeStatements } from './timeline';
 import { recordVisitorCopy, recordVisitorOpen } from './visitors';
+import { WORKSPACE_CLIENT_IP_HEADER } from '@liveworkspace/sites/workspace-proxy';
+
+// The address a browser's request came from: the visitor's as their app's router names it (forwardToIndex), or the
+// connection's own when they reached the index directly.
+const clientIpOf = (request: Request): string | null =>
+  request.headers.get(WORKSPACE_CLIENT_IP_HEADER) ?? request.headers.get('CF-Connecting-IP');
 
 const DEFAULT_TITLE = 'Untitled';
 // Emptying the Trash purges at most this many per call; the Explorer calls again while some remain.
@@ -600,13 +606,14 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
   };
   await insertItem(env, row, { copiedFrom: from.title });
   // A link scoped to one tab copies only that tab. The app hears who copies and the link they came in by, so the
-  // copy carries only what they may read.
+  // copy carries only what they may read, and the address they copy from, for what it counts per network (a
+  // Community post's copies).
   const copied = await callApp(
     env,
     from.app,
     'POST',
     `/items/${encodeURIComponent(from.id)}/copy-to/${encodeURIComponent(row.id)}`,
-    { tabId: access.tabId, by: person.id, code: access.code },
+    { tabId: access.tabId, by: person.id, code: access.code, ip: clientIpOf(request) },
   );
   if (!copied.ok) {
     await env.INDEX_DB.prepare('DELETE FROM items WHERE id = ?').bind(row.id).run();

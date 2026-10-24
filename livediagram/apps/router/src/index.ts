@@ -6,7 +6,11 @@
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
-import { routeToWorkspace } from '@liveworkspace/sites/workspace-proxy';
+import {
+  routeToWorkspace,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
+} from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -37,16 +41,7 @@ export interface Env {
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
 const INDEX_PATH = '/api/index';
-const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
 
-// The index is another site: the same request (method, body, Authorization, the share headers) at its origin,
-// minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
-export function forwardToIndex(request: Request, url: URL, origin: string): Promise<Response> {
-  const target = new URL(`${url.pathname}${url.search}`, origin);
-  const forwarded = new Request(target.toString(), request);
-  forwarded.headers.delete('Cookie');
-  return fetch(forwarded);
-}
 const TELEMETRY_PATH = '/telemetry';
 
 // The public telemetry dashboard is liveworkspace's now, shared by every app

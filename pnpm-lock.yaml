@@ -5299,6 +5299,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       jose:
         specifier: ^6.2.12
         version: 6.2.13
