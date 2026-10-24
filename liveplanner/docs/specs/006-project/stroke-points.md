@@ -116,10 +116,8 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 - At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
   133,336 base64 characters.
-- The codec fits a stroke with more samples than that (`fitStrokeToLimit`) rather than losing
-  it: it is simplified just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
-  under the cap, else evenly thinned), its pressures following the samples it keeps. A stroke
-  that fits is stored exactly as written.
+- A stroke that fits is stored exactly as written; a writer keeps its strokes under the cap. (A fitter that
+  simplified a longer stroke to fit, `fitStrokeToLimit`, was never called by a writer and was removed 2026-10-24.)
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 

@@ -4876,9 +4876,6 @@ importers:
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../project
-      '@liveplanner/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
       '@liveplanner/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client

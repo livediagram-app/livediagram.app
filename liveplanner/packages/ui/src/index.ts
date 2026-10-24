@@ -45,7 +45,6 @@ export { Select, type SelectProps, type SelectVariant, type SelectSize } from '.
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { HoverCard, type HoverCardProps } from './HoverCard';
-export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
 export { BoardBuildAnimation } from './BoardBuildAnimation';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
@@ -121,7 +120,3 @@ export {
 export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';
-// The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
-// icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
-export * from './palette-icons/palette-tab-icons';
-export * from './palette-icons/palette-group-icons';

@@ -16,8 +16,7 @@
     "./resolve": "./src/resolve.ts",
     "./sticker-catalog": "./src/sticker-catalog.ts",
     "./centring": "./src/centring.ts",
-    "./lucide": "./src/lucide.generated.ts",
-    "./search": "./src/search.ts"
+    "./lucide": "./src/lucide.generated.ts"
   },
   "scripts": {
     "lint": "oxlint",

@@ -64,8 +64,8 @@ What differs from a frame is presentation only:
     is not a discrete event and its re-render may not have flushed by the time
     the release arrives.
 
-    The drag **snaps**, to the ordinary alignment grid AND to **other lanes'
-    seams** (`lane-seam-snapping.ts`). The second is the one that matters: a
+    The drag **snaps** to the ordinary alignment grid. (Snapping to **other lanes'
+    seams**, `lane-seam-snapping.ts`, was never wired in and was removed 2026-10-24.) It would matter: a
     stack of swimlanes with headings a few pixels apart is the thing that
     makes a canvas look untidy, and it is nearly impossible to fix by eye
     because the seams are too far apart vertically to sit in one glance. Only

@@ -613,7 +613,6 @@ export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
 export * from './stroke-points';
-export * from './stroke-fit';
 export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
@@ -767,7 +766,6 @@ export * from './session';
 // mcp worker as well as the browser.
 export * from './fonts';
 
-export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/project-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';

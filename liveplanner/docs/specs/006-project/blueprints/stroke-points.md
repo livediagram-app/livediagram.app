@@ -24,7 +24,6 @@ spec.
 | File                                                | Responsibility                                                                                                                                           |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/project/src/stroke-points.ts`            | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `packages/project/src/stroke-fit.ts`               | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
 | `packages/project/src/stroke-points-cache.ts`      | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
 | `packages/project/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
 | `packages/project/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
@@ -130,13 +129,6 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
   throws `RangeError('stroke-pressures-length')`; more than `MAX_FREEHAND_POINTS` throws
   `RangeError('stroke-too-many-points')`. A throw is a programming error in a writer; every
   writer's tests cover its inputs.
-- **Fitting a stroke** (`stroke-fit.ts`): `fitStrokeToLimit(points, pressures?, max =
-MAX_FREEHAND_POINTS)` returns copies unchanged when `points.length <= max`; otherwise it runs
-  `simplifyPolylineSurvival` once (the RDP of `simplifyPolyline` at every tolerance: per point,
-  the squared tolerance it survives below, so `survival[i] > t²` is `simplifyPolylineMask(points,
-t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PASSES` times by
-  counting survivors, and keeps the first result that fits; failing that, `max` evenly spaced samples. First and last points always
-  stay; pressures follow the kept indices.
 - **Base64:** the module's own table codec (the project package cannot depend on
   `@liveplanner/api-schema`, which depends on it): standard alphabet, `=` padding, canonical only
   (a non-zero pad remainder is `not-base64`), no whitespace.
@@ -283,7 +275,6 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Re-encoding a decoded block is stable                                               | `stroke-points.test.ts`                                                             |
 | Every named rejection                                                               | `stroke-points.test.ts`                                                             |
 | Encoder throws on non-finite, length mismatch, too many                             | `stroke-points.test.ts`                                                             |
-| A stroke past the cap is fitted, never refused; pressures follow; worst-case budget | `packages/project/src/stroke-fit.test.ts`                                          |
 | Memoised decode: same arrays, bounded, LRU, oversize                                | `packages/project/src/stroke-points-cache.test.ts`                                 |
 | Corrupt block draws nothing and logs once                                           | `stroke-points-cache.test.ts`                                                       |
 | Debug decoder and expansion                                                         | `packages/project/src/stroke-points-debug.test.ts`                                 |

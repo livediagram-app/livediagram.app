@@ -30,7 +30,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
 | Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
-| Preview       | `useRowPreview`, `data-hint="preview"`                     | A picture of what the control opens, after 600 ms                  |
+| Preview       | `data-hint="preview"` (`useRowPreview` removed 2026-10-24)  | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
 | Open trigger  | `HintOpenTrigger` (`'pointer' \| 'focus' \| 'touch'`)      | What opened the hint                                               |

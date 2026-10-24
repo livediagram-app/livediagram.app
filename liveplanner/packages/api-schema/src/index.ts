@@ -553,7 +553,6 @@ export * from './project-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './project-paths';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
