@@ -2,9 +2,7 @@ import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveworkspace/ic
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';
-import { CONTRIBUTORS } from '@liveworkspace/ui';
-import { Glyph } from './icons/Glyph';
-import { lucideGlyph } from './icons/lucide-glyph';
+import { CONTRIBUTORS, Glyph, lucideGlyph } from '@liveworkspace/ui';
 import { REPO_URL } from './site';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.

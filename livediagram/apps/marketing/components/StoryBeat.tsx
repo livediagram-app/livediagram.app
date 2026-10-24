@@ -1,10 +1,10 @@
 import { CheckIcon, ChevronRightIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@livediagram/ui';
 import { CATEGORY_ICONS } from '@/components/category-icons';
-import { CtaLink } from '@/components/CtaLink';
+import { CtaLink } from '@liveworkspace/marketing-site/components/CtaLink';
 import { FeatureScene } from '@/components/FeatureScene';
-import { featureHref } from '@/lib/feature-anchor';
+import { featureHref } from '@liveworkspace/marketing-site/lib/feature-anchor';
 import { sectionHighlights, type LandingSection } from '@/lib/landing-content';
-import { EYEBROW } from '@/components/eyebrow';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
 // One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Story beats"):
 // one core feature of the app. Its glyph in a disc and its plain name above the headline, its pitch, a few

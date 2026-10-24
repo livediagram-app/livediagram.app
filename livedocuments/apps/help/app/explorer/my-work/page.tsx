@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // The space was "My Work", became "My Documents", and is "My Work" again (docs/specs/013-workspace/team-shared-documents.md); its article moved
 // to personal-space along the way.

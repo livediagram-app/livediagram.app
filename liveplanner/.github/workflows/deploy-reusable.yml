@@ -102,7 +102,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           # Full history, without file contents: the help sitemap dates each article by its last
-          # commit (apps/help/lib/article-dates.ts). Commits and trees only, about 8 MB and 2 s;
+          # commit (packages/help-site/src/lib/article-dates.ts). Commits and trees only, about 8 MB and 2 s;
           # a shallow clone would date every article to this one commit, so the sitemap omits
           # dates when it finds one.
           fetch-depth: 0

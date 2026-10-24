@@ -21,7 +21,6 @@ import {
   lucideStarHalf,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
-import { topCategorySlug } from '@livedocuments/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
 
@@ -1284,14 +1283,3 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
 };
-
-/** The glyph for a feature card: the feature's own icon, else its top-level
- *  category's, else the canvas frame. One resolver so the card, the category
- *  index, and the MDX `<Feature>` tile can't disagree about the order. */
-export function featureIcon(slug: string, categorySlug?: string): ReactNode {
-  return (
-    FEATURE_ICONS[slug] ??
-    FEATURE_CATEGORY_ICONS[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_ICONS['the-canvas']
-  );
-}

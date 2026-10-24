@@ -238,6 +238,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/help-site':
+        specifier: workspace:*
+        version: link:../../../packages/help-site
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -471,6 +474,9 @@ importers:
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1337,6 +1343,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1558,6 +1567,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/help-site':
+        specifier: workspace:*
+        version: link:../../../packages/help-site
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -1658,6 +1670,9 @@ importers:
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2692,6 +2707,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/help-site':
+        specifier: workspace:*
+        version: link:../../../packages/help-site
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -2792,6 +2810,9 @@ importers:
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -3743,6 +3764,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/help-site':
+        specifier: workspace:*
+        version: link:../../../packages/help-site
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -3840,6 +3864,9 @@ importers:
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -5213,6 +5240,73 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/help-site:
+    dependencies:
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/telemetry-client':
+        specifier: workspace:*
+        version: link:../telemetry-client
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@next/mdx':
+        specifier: ^16.4.1
+        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/mdx':
+        specifier: ^2.0.13
+        version: 2.0.14
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/icons:
     dependencies:
       svg-path-bbox:
@@ -5305,6 +5399,58 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/marketing-site:
+    dependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/licences':
+        specifier: workspace:*
+        version: link:../licences
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5650,6 +5796,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../trusted-types

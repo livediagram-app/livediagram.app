@@ -42,9 +42,3 @@ export const CATEGORY_ART: Record<string, ComponentType> = {
   troubleshooting: TroubleshootingArt,
   'user-interface': UserInterfaceArt,
 };
-
-/** The category's scene, or nothing for a slug without one. */
-export function CategoryArt({ slug }: { slug: string }) {
-  const Scene = CATEGORY_ART[slug];
-  return Scene ? <Scene /> : null;
-}

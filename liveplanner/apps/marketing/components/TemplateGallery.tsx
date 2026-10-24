@@ -5,9 +5,13 @@ import { CategoryTiles } from '@/components/CategoryTiles';
 import { TemplateCard } from '@/components/TemplateCard';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { galleryShelves, type ShelfId } from '@/lib/template-gallery';
-import { shelfScrollTarget } from '@/lib/shelf-scroll';
-import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import { shelfScrollTarget } from '@liveworkspace/marketing-site/lib/shelf-scroll';
+import {
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md), anchored #templates for the hero's search: every template the
 // editor ships, laid out as the editor's template step lays them out
@@ -33,7 +37,7 @@ export function TemplateGallery() {
     setOpenId(id);
     setOpened(true);
   };
-  // A shelf the visitor opens is brought into view when it is not (lib/shelf-scroll.ts): it opens
+  // A shelf the visitor opens is brought into view when it is not (@liveworkspace/marketing-site's lib/shelf-scroll.ts): it opens
   // above the cards, so from a card lower down it would open out of sight. Smooth, at once under
   // reduced motion.
   const shelfRef = useRef<HTMLDivElement>(null);

@@ -15,10 +15,11 @@ const MAX = 160;
 const APP_DIR = fileURLToPath(new URL('../app', import.meta.url));
 const files = readdirSync(APP_DIR, { recursive: true }).map((p) => String(p).replaceAll('\\', '/'));
 
-// The title and description literals of a page's helpMetadata({ ... }) call.
+// The title and description literals of a page's helpMetadata({ ... }) call, or of a support category's
+// COPY, the copy its supportCategoryMetadata reads.
 function metaOf(file: string) {
   const block = readFileSync(`${APP_DIR}/${file}`, 'utf8').match(
-    /helpMetadata\(\{[\s\S]*?\}\)/,
+    /(?:helpMetadata\(|const COPY = )\{[\s\S]*?\}/,
   )?.[0];
   const literal = (key: string) =>
     block?.match(new RegExp(`${key}:\\s*(['"])((?:(?!\\1).)*)\\1`))?.[2] ?? null;

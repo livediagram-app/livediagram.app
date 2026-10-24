@@ -1,4 +1,4 @@
-import { Glyph } from '../icons/Glyph';
+import { Glyph } from '@liveworkspace/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
 // palette and the marketing site's mock of it draw the same ones; lifted out of
 // the palette's category definitions so the palette file reads as wiring

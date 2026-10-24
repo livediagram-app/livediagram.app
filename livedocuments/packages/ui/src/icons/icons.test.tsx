@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import type { ComponentType } from 'react';
 import { describe, expect, it } from 'vitest';
 import * as icons from './index';
-import type { IconProps } from './Glyph';
+import type { IconProps } from '@liveworkspace/ui';
 
 // Every exported icon component (everything ending in `Icon`), so a new one
 // is covered the moment it is exported.
@@ -48,18 +48,5 @@ describe('shared chrome icons', () => {
   it('honours an on-screen weight override', () => {
     const svg = render(<icons.TrashIcon size={16} weight={2} />).container.querySelector('svg')!;
     expect(onScreenPx(svg)).toBeCloseTo(2, 5);
-  });
-});
-
-describe('Glyph weight', () => {
-  // The stroke is non-scaling, so the grid a glyph is drawn on never changes its on-screen weight.
-  it('draws the same on-screen stroke whatever the viewBox', () => {
-    const at = (units: number) =>
-      render(<icons.Glyph size={16} units={units} />)
-        .container.querySelector('svg')!
-        .getAttribute('stroke-width');
-    expect(at(16)).toBe(String(ICON_STROKE_PX));
-    expect(at(24)).toBe(at(16));
-    expect(at(20)).toBe(at(16));
   });
 });

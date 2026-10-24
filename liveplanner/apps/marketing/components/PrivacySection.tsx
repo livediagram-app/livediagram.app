@@ -3,8 +3,13 @@
 // set apart from the story beats. Each card leads with an animated illustration in the
 // FeatureArt vocabulary (Frame + SVG + fa-* keyframes), drawn for both appearances.
 
-import { BAND_CARD, BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import {
+  BAND_CARD,
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import {
   DataIsYoursArt,
   EncryptedArt,

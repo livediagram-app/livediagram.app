@@ -1,5 +1,5 @@
 import { SiteHeader } from '@livedesign/ui';
-import { SearchInput } from '@/components/SearchInput';
+import { SearchInput } from '@liveworkspace/help-site/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's). Brand links back to the
 // marketing home, the search box sits in the centre slot so it's reachable
@@ -12,12 +12,5 @@ import { SearchInput } from '@/components/SearchInput';
 // `wide` gives the bar help's own max-w-7xl / md:px-8 column, so the logo
 // lines up with the breadcrumb and article below.
 export function Header() {
-  return (
-    <SiteHeader
-      ctaSurface="Help"
-      center={<SearchInput />}
-      shareRail={false}
-      wide
-    />
-  );
+  return <SiteHeader ctaSurface="Help" center={<SearchInput />} shareRail={false} wide />;
 }

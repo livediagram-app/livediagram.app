@@ -1,6 +1,3 @@
-import type { CSSProperties } from 'react';
-import { topCategorySlug } from '@liveplanner/help-registry';
-
 /** Feature slug → accent colour (hex). The home + features grid and the
  *  MDX <Feature> cards tint each feature with a distinct hue so the index
  *  reads as a colourful catalogue, the same way the Manager Toolkit help
@@ -104,27 +101,3 @@ export const FEATURE_CATEGORY_HEX: Record<string, string> = {
   tools: '#475569',
   'search-panel': '#0891b2',
 };
-
-/** Default colour used when no slug match is found. */
-export const FEATURE_FALLBACK_HEX = '#64748b';
-
-/** The accent for a feature card: the feature's own hue, else its top-level
- *  category's, else the neutral fallback. Mirrors `featureIcon` so a card's
- *  colour and glyph always resolve at the same level of specificity — a
- *  bespoke glyph with a category hue (or the reverse) looked like a mistake. */
-export function featureColour(slug: string, categorySlug?: string): string {
-  return (
-    FEATURE_ENTITY_HEX[slug] ??
-    FEATURE_CATEGORY_HEX[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_FALLBACK_HEX
-  );
-}
-
-/** A feature card's icon tile: the hue at 12% behind a glyph in the hue. In dark mode the glyph
- *  lifts toward white, so the muted hues (slate, indigo) still read on a dark card. */
-export const FEATURE_TILE_CLASS =
-  'text-(--feature) dark:text-[color-mix(in_oklab,var(--feature)_70%,white)]';
-
-export function featureTileStyle(colour: string): CSSProperties {
-  return { backgroundColor: `${colour}1f`, '--feature': colour } as CSSProperties;
-}

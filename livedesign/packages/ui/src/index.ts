@@ -25,7 +25,6 @@ export { SnapCarousel } from './SnapCarousel';
 export { DesignBuildAnimation } from './DesignBuildAnimation';
 export { PageNotFound } from './PageNotFound';
 export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
-export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
@@ -51,14 +50,7 @@ export {
   PUBLIC_VIEWPORT,
   DARK_READER_LOCK,
 } from './site';
-export {
-  pageMetadata,
-  breadcrumbJsonLd,
-  BRAND_OG_IMAGE,
-  BRAND_TWITTER_IMAGE,
-  type PageMetadataInput,
-  type BreadcrumbCrumb,
-} from './seo';
+export { pageMetadata, BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE, type PageMetadataInput } from './seo';
 export * from './appearance';
 export { indefiniteArticle, withArticle } from '@livedesign/design';
 export { DialogCloseButton } from './dialog/DialogCloseButton';

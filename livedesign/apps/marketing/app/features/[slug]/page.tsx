@@ -7,7 +7,7 @@ import { FeatureCategoryHero } from '@/components/FeatureCategoryHero';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { OtherCategories } from '@/components/OtherCategories';
-import { FeatureGrid, Section } from '@/components/Section';
+import { FeatureGrid, Section } from '@liveworkspace/marketing-site/components/Section';
 import { SectionTemplates } from '@/components/SectionTemplates';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import {

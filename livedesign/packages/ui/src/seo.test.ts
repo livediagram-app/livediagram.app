@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breadcrumbJsonLd, pageMetadata } from './seo';
+import { pageMetadata } from './seo';
 
 // pageMetadata is the single factory every marketing subpage
 // (FAQ, /alternatives, /alternatives/<slug>, /features/<id>, /status)
@@ -171,30 +171,5 @@ describe('pageMetadata siteName', () => {
     expect(md.title).toBe('Themes');
     expect(md.openGraph).toMatchObject({ siteName: 'livedesign Help', title: 'Themes' });
     expect(md.twitter).toMatchObject({ card: 'summary_large_image', title: 'Themes' });
-  });
-});
-
-describe('breadcrumbJsonLd', () => {
-  it('numbers the crumbs from 1 and omits `item` for an unlinked crumb', () => {
-    expect(
-      breadcrumbJsonLd([
-        { name: 'Help', url: 'https://livedesign.app/help/' },
-        { name: 'Canvas', url: 'https://livedesign.app/help/canvas/' },
-        { name: 'Themes' },
-      ]),
-    ).toEqual({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Help', item: 'https://livedesign.app/help/' },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Canvas',
-          item: 'https://livedesign.app/help/canvas/',
-        },
-        { '@type': 'ListItem', position: 3, name: 'Themes' },
-      ],
-    });
   });
 });

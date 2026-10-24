@@ -140,7 +140,10 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
       );
       // Its own build's scripts, under the prefix next.config.ts serves them from (basePath or assetPrefix).
       const config = read(`apps/${app}/next.config.ts`);
-      const prefix = /(?:basePath|assetPrefix): '([^']+)'/.exec(config)?.[1] ?? '';
+      // A help app takes its basePath from @liveworkspace/help-site's withHelpSite.
+      const prefix =
+        /(?:basePath|assetPrefix): '([^']+)'/.exec(config)?.[1] ??
+        (/\bwithHelpSite\(/.test(config) ? '/help' : '');
       // On one line, or split where the editor also names other script origins.
       expect(layout).toMatch(
         new RegExp(`const TRUSTED_TYPES_BOOT = trustedTypesBootScript\\(\\s*'${prefix}'[,)]`),

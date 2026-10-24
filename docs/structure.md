@@ -11,6 +11,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
+│  ├─ help-site                every help centre's pages, components, styles, SEO and catalogue checks; each product binds its own
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
@@ -18,6 +19,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
+│  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts; each product hands in its server and OAuth config
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
@@ -98,6 +100,8 @@ liveworkspace/
 │  ├─ api-client, telemetry-client, render-png, source-ast, icons
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
 │  ├─ templates, template-previews
+│  ├─ help-site                    the help centre's pages, components and checks around each product's articles
+│  ├─ marketing-site               the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ ui                           design system: buttons, menus, dialogs, tokens
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start
@@ -168,6 +172,12 @@ Each step is its own PR, and both products build and pass their tests after ever
    - `licences` is one engine, one contract for the /licences page and one pool of committed texts.
      Each product's `@<product>/licences` keeps its tables (apps, overrides, embedded works) and a
      generate script that hands them to `generateLicences`.
+   - `help-site` is one copy of the help centre around each product's articles: the layouts, pages and
+     components, the MDX styles, the SEO helpers (metadata, social cards, JSON-LD, sitemap), the styles
+     and the catalogue checks. Each help app binds it with `createHelpSite` on the server and a small
+     client provider. It keeps its articles and illustrations, catalogue, card art, header and footer,
+     home layout and page copy. The help pages' tints now follow each product's brand (livedocuments and
+     livedesign had kept livediagram's sky).
    - `diagram-lint` and `document-views` are not done yet.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.

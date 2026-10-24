@@ -5,8 +5,7 @@ import { ctaHref, type CtaSurface } from '@livedocuments/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
 import { lucideLayoutGrid } from '@liveworkspace/icons/lucide';
-import { ButtonContent, buttonClassName } from '@liveworkspace/ui';
-import { lucideGlyph } from './icons/lucide-glyph';
+import { ButtonContent, buttonClassName, lucideGlyph } from '@liveworkspace/ui';
 
 const TemplatesIcon = lucideGlyph(lucideLayoutGrid, 14);
 

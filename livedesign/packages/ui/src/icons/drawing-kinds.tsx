@@ -1,7 +1,7 @@
 import type { EditorMode } from '@livedesign/design';
 import type { ComponentType } from 'react';
 
-import { Glyph, type IconProps } from './Glyph';
+import { Glyph, type IconProps } from '@liveworkspace/ui';
 
 // The kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"): a marker for
 // freehand drawing.

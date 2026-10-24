@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     '@livedesign/ui',
     '@liveworkspace/ui',
     '@liveworkspace/comparisons',
+    '@liveworkspace/marketing-site',
     '@liveworkspace/account-menu',
   ],
 };

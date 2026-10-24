@@ -3,19 +3,19 @@
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
 @import '@liveplanner/ui/hero-band.css';
-@import './hero-fan.css';
+@import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import './hero-animations.css';
 @import './hero-mode-animations.css';
 @import './hero-scenes/plan.css';
-@import './promises.css';
+@import '@liveworkspace/marketing-site/css/promises.css';
 @import './feature-art/core.css';
 @import './feature-art/content.css';
 @import './feature-art/canvas.css';
 @import './feature-art/modes.css';
 @import './feature-art/features.css';
-@import './page-motion.css';
+@import '@liveworkspace/marketing-site/css/page-motion.css';
 @import './privacy-art.css';
-@import './licences.css';
+@import '@liveworkspace/marketing-site/css/licences.css';
 
 /* Scan the shared UI package so utility classes used inside its
  * components (e.g. `text-brand-700` in <Brand>'s wordmark) are
@@ -28,6 +28,8 @@
 @source '../../../../packages/brand/src';
 /* The comparison pages' shared components (packages/comparisons), in this app's brand ramp. */
 @source '../../../../packages/comparisons/src';
+/* The marketing pages every product shares (@liveworkspace/marketing-site), in this app's brand ramp. */
+@source '../../../../packages/marketing-site/src';
 /* The header's account menu, shared with liveworkspace.app (@liveworkspace/account-menu). */
 @source '../../../../packages/account-menu/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */

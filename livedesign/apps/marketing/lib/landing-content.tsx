@@ -38,7 +38,7 @@ import {
   WireframePagesArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
-import type { FeatureProps } from '@/components/Section';
+import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
 /**
  * A feature category: one kind of page livedesign makes, or the way people make them together, each

@@ -1,26 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Self-Hosting',
-  description: 'livedocuments is open source and MIT-licensed. Run your own instance on Cloudflare.',
-  path: '/help/self-hosting/',
-});
+  description:
+    'livedocuments is open source and MIT-licensed. Run your own instance on Cloudflare.',
+  lede: 'The whole product is open source. Here is how to run your own.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'self-hosting', COPY);
 
 export default function SelfHostingPage() {
-  const articles = getArticlesByCategory('self-hosting');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/self-hosting/', articles: articles }}
-      title="Self-Hosting"
-      lede="The whole product is open source. Here is how to run your own."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="self-hosting" copy={COPY} />;
 }

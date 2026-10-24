@@ -3,13 +3,13 @@
 Derived from [Scrollbars](../scrollbars.md). Defaults applied where the spec is silent are ledgered
 in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-| File                                                                | Role                                                         |
-| ------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `../packages/tailwind-config/theme.css`                             | The default rule and the `.scrollbar-slim` variant           |
-| `../packages/tailwind-config/src/scrollbars.test.ts`                | Guards the rule, its colours and their contrast              |
-| `apps/live/components/primitives/MovablePanel.tsx`                  | Loses its inline scrollbar dialect for `.scrollbar-slim`     |
-| `apps/help/app/globals.css`, `apps/help/components/SearchInput.tsx` | Lose `.scrollbar-thin` for `.scrollbar-slim`                 |
-| `apps/live/e2e/scrollbars.spec.ts`                                  | No scrolling surface in the editor is left on the OS default |
+| File                                                                                | Role                                                         |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `../packages/tailwind-config/theme.css`                                             | The default rule and the `.scrollbar-slim` variant           |
+| `../packages/tailwind-config/src/scrollbars.test.ts`                                | Guards the rule, its colours and their contrast              |
+| `apps/live/components/primitives/MovablePanel.tsx`                                  | Loses its inline scrollbar dialect for `.scrollbar-slim`     |
+| `apps/help/app/globals.css`, `../packages/help-site/src/components/SearchInput.tsx` | Lose `.scrollbar-thin` for `.scrollbar-slim`                 |
+| `apps/live/e2e/scrollbars.spec.ts`                                                  | No scrolling surface in the editor is left on the OS default |
 
 ## Domain and naming
 

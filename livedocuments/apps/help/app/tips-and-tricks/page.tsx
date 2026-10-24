@@ -1,26 +1,17 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Tips and Tricks',
   description: 'Shortcuts and lesser-known features that make editing in livedocuments faster.',
-  path: '/help/tips-and-tricks/',
-});
+  lede: 'Work faster with these shortcuts and hidden features.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'tips-and-tricks', COPY);
 
 export default function TipsAndTricksPage() {
-  const articles = getArticlesByCategory('tips-and-tricks');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/tips-and-tricks/', articles: articles }}
-      title="Tips and Tricks"
-      lede="Work faster with these shortcuts and hidden features."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="tips-and-tricks" copy={COPY} />;
 }

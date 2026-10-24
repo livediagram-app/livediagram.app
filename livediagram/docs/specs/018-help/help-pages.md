@@ -16,7 +16,7 @@ path that fits who they are (new, stuck, managing data, building on the API), an
 
 Every page wears the marketing site's language, so moving between `/` and `/help` reads as one product:
 
-- **The canvas wash.** A page's header band (`components/HelpHero.tsx`) is the marketing hero's band: its colours
+- **The canvas wash.** A page's header band (`../packages/help-site/src/components/HelpHero.tsx`) is the marketing hero's band: its colours
   and the canvas's dot grid fading out at its foot come from one stylesheet, `packages/ui/hero-band.css`, which
   both apps import. It replaces the flat tinted band the article and category headers had.
 - **Display headings.** Page titles are bold, tight-tracked and dark ink (`slate-900`, `slate-50` in dark); the
@@ -110,7 +110,7 @@ across title and keywords ([Help app](help-app.md), "Out of scope").
 ## In-article figures
 
 The figures inside articles keep the illustration kit and its house style ([Help app](help-app.md),
-"In-article illustrations"); their frame (`components/Figure.tsx`) matches the cards, rounded with a soft
+"In-article illustrations"); their frame (`../packages/help-site/src/components/Figure.tsx`) matches the cards, rounded with a soft
 shadow. No figure's text may run outside its scene. A browser sweep of every article found the shared palette
 strip (`Strip` in `components/illustrations/toolbar-layout.tsx`) running past its 420-wide scenes in eleven
 figures, cutting off Media and Search, so the strip is spaced to fit beside the menu card.

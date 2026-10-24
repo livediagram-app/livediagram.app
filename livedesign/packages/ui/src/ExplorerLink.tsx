@@ -2,9 +2,8 @@
 
 import { lucideFolder } from '@liveworkspace/icons/lucide';
 
-import { buttonClassName } from '@liveworkspace/ui';
+import { buttonClassName, lucideGlyph } from '@liveworkspace/ui';
 import { EXPLORER_HOME_HREF, useSignedInHint } from './HeaderPrimaryCta';
-import { lucideGlyph } from './icons/lucide-glyph';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 

@@ -39,7 +39,7 @@ import {
   TemplatesArt,
   TimelineFeedArt,
 } from '@/components/FeatureArt';
-import type { FeatureProps } from '@/components/Section';
+import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
 /**
  * A feature category: one of the app's core features, each a story beat on the

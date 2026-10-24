@@ -1,7 +1,6 @@
 import { lucideSparkles } from '@liveworkspace/icons/lucide';
 
-import { buttonClassName } from '@liveworkspace/ui';
-import { lucideGlyph } from './icons/lucide-glyph';
+import { buttonClassName, lucideGlyph } from '@liveworkspace/ui';
 
 const SparklesIcon = lucideGlyph(lucideSparkles, 14);
 

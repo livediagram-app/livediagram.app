@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BAND_LABEL } from '@/components/band-classes';
+import { BAND_LABEL } from '@liveworkspace/marketing-site/lib/band-classes';
 import { SnapCarousel } from '@livedesign/ui';
 
 // One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): the shared

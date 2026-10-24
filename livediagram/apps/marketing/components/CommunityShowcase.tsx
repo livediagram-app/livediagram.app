@@ -21,8 +21,8 @@ import {
   CommunityPostTileSkeleton,
   useNearViewport,
 } from '@livediagram/ui';
-import { BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import { BAND_LEAD, BAND_TITLE } from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): six documents people are proud of, the most liked over the

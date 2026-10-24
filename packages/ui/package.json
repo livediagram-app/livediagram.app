@@ -10,7 +10,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./relative-time": "./src/relative-time.ts",
-    "./build-animation-kit": "./src/build-animation-kit.tsx"
+    "./build-animation-kit": "./src/build-animation-kit.tsx",
+    "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -23,6 +24,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*"
   },
   "devDependencies": {

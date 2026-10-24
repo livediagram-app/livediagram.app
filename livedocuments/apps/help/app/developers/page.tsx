@@ -1,27 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Developers',
   description:
     'Call the livedocuments REST API from scripts or the command line: authentication, worked examples, the CLI, errors and limits, and the OpenAPI reference.',
-  path: '/help/developers/',
-});
+  lede: 'Drive livedocuments from your own scripts and integrations. The same REST API the editor uses, callable with an API token, or from a terminal with the livedocuments CLI.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'developers', COPY);
 
 export default function DevelopersPage() {
-  const articles = getArticlesByCategory('developers');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/developers/', articles: articles }}
-      title="Developers"
-      lede="Drive livedocuments from your own scripts and integrations. The same REST API the editor uses, callable with an API token, or from a terminal with the livedocuments CLI."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="developers" copy={COPY} />;
 }

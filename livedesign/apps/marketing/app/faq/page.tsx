@@ -6,7 +6,8 @@ import { FaqBrowser } from '@/components/faq/FaqBrowser';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { TryItCard } from '@/components/TryItCard';
-import { FAQ_CATEGORIES, faqAnswerText } from '@/lib/faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · livedesign';
 const FAQ_DESCRIPTION =

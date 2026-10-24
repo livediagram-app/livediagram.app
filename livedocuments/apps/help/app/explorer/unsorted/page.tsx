@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // Unsorted is gone (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets): documents
 // with no folder sit at the root of My Work, and the article went with it. This stub keeps

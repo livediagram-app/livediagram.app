@@ -1,7 +1,6 @@
 import { lucideCircleX, lucideFolder, lucideUsers } from '@liveworkspace/icons/lucide';
 
-import { Glyph, type IconProps } from './Glyph';
-import { lucideGlyph } from './lucide-glyph';
+import { Glyph, type IconProps, lucideGlyph } from '@liveworkspace/ui';
 
 // Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-designs.md), the
 // Tabs label, the sign-in sparkle and the error-state crossed circle. The
