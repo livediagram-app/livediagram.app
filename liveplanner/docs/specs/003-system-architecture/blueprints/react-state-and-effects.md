@@ -64,7 +64,7 @@ and `apps/editor/components/plan/AddCardPopover.tsx` (catches React events bubbl
 
 ### The React Compiler's reach
 
-`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@liveplanner/next-config` when an app
+`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@liveworkspace/next-config` when an app
 passes `reactCompiler: true`, which only `apps/editor/next.config.ts` does
 ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)).
 
@@ -139,7 +139,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 | Constant                 | Value                                       | Provenance                       | Safe range        |
 | ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
-| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveplanner/next-config` `env` | A four-digit year |
+| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveworkspace/next-config` `env` | A four-digit year |
 
 ## Defaults ledger
 

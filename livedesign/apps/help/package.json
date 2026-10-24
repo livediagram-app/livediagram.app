@@ -26,7 +26,7 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@livedesign/next-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/templates": "workspace:*",

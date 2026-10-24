@@ -16,7 +16,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 
 ## One configuration
 
-`@livedocuments/next-config` holds every setting the apps share; an app's `next.config.ts` adds only what is its own.
+`@liveworkspace/next-config` holds every setting the apps share; an app's `next.config.ts` adds only what is its own.
 
 | Setting                      | Value                                                                                                     | Why                                                                                                   |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |

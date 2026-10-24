@@ -1,10 +1,10 @@
 import type { NextConfig } from 'next';
-import { livedesignNextConfig } from '@livedesign/next-config';
+import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 
 // The shared settings (static export, dev's own cache directory, the React Compiler) live in
-// @livedesign/next-config (docs/specs/016-platform/nextjs.md).
+// @liveworkspace/next-config (docs/specs/016-platform/nextjs.md).
 const nextConfig: NextConfig = {
-  ...livedesignNextConfig(),
+  ...liveworkspaceNextConfig(),
   transpilePackages: [
     '@livedesign/ui',
     '@liveworkspace/comparisons',

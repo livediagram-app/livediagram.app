@@ -21,7 +21,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livediagram/next-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

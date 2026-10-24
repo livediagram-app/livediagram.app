@@ -50,7 +50,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@liveplanner/next-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

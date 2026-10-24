@@ -1,13 +1,13 @@
 import type { NextConfig } from 'next';
 import createMDX from '@next/mdx';
-import { livedocumentsNextConfig } from '@livedocuments/next-config';
+import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 
 // Static export fronted by Cloudflare Static Assets, served under `/help` by the router worker (which strips the
 // prefix before forwarding, exactly like `/telemetry`). See docs/specs/018-help/help-app.md +
 // docs/specs/016-platform/router-app.md. MDX powers the article bodies; the article index + navigation pages are
-// plain TS/TSX. The shared settings live in @livedocuments/next-config (docs/specs/016-platform/nextjs.md).
+// plain TS/TSX. The shared settings live in @liveworkspace/next-config (docs/specs/016-platform/nextjs.md).
 const nextConfig: NextConfig = {
-  ...livedocumentsNextConfig(),
+  ...liveworkspaceNextConfig(),
   basePath: '/help',
   // Every route exports as `<route>/index.html` so trailing-slash links
   // (used across the help centre) resolve cleanly on Cloudflare static

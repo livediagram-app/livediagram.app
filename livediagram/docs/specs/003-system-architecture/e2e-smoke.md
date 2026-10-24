@@ -84,7 +84,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
 - **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the five Next
+  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest

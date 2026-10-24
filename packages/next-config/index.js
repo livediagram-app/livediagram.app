@@ -1,6 +1,7 @@
 /**
- * Shared Next.js settings for every Next app in the monorepo (live, help, telemetry, marketing).
- * See docs/specs/003-system-architecture/e2e-smoke.md "Cost controls".
+ * Shared Next.js settings for every Next app in the monorepo: each product's editor, help and marketing apps
+ * (and livediagram's community app), and liveworkspace's site.
+ * See a product's docs/specs/003-system-architecture/e2e-smoke.md "Cost controls".
  */
 
 /** The environment variable that lets a build skip Next's own type check. */
@@ -41,7 +42,7 @@ export function isTurbopack(env = process.env) {
  * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date }} [options]
  * @returns {import('next').NextConfig}
  */
-export function livedesignNextConfig({
+export function liveworkspaceNextConfig({
   env = process.env,
   exportInDev = true,
   reactCompiler = false,

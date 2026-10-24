@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # These builds exist to be tested, and CI's required Checks job already type-checks every app, so
-# `next build` skips its own type check here (@livedocuments/next-config). Deploys keep it.
+# `next build` skips its own type check here (@liveworkspace/next-config). Deploys keep it.
 env:
   BUILD_SKIP_TYPECHECK: '1'
 

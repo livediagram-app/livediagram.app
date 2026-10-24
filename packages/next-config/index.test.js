@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   SKIP_TYPECHECK_ENV,
   isTurbopack,
-  liveplannerNextConfig,
+  liveworkspaceNextConfig,
   typescriptConfig,
 } from './index.js';
 
@@ -37,35 +37,35 @@ describe('isTurbopack', () => {
   });
 });
 
-describe('liveplannerNextConfig', () => {
+describe('liveworkspaceNextConfig', () => {
   afterEach(() => vi.restoreAllMocks());
   const quiet = () => vi.spyOn(console, 'log').mockImplementation(() => {});
   const now = new Date('2027-03-01T12:00:00Z');
 
   it('exports statically by default, in dev too', () => {
     quiet();
-    expect(liveplannerNextConfig({ env: {}, now }).output).toBe('export');
+    expect(liveworkspaceNextConfig({ env: {}, now }).output).toBe('export');
   });
 
   it('leaves the editor dev server dynamic and exports its production build', () => {
     quiet();
-    expect(liveplannerNextConfig({ env: {}, exportInDev: false, now }).output).toBeUndefined();
+    expect(liveworkspaceNextConfig({ env: {}, exportInDev: false, now }).output).toBeUndefined();
     expect(
-      liveplannerNextConfig({ env: { NODE_ENV: 'production' }, exportInDev: false, now }).output,
+      liveworkspaceNextConfig({ env: { NODE_ENV: 'production' }, exportInDev: false, now }).output,
     ).toBe('export');
   });
 
   it('builds into NEXT_DISTDIR, else .next', () => {
     quiet();
-    expect(liveplannerNextConfig({ env: {}, now }).distDir).toBe('.next');
-    expect(liveplannerNextConfig({ env: { NEXT_DISTDIR: '.next-dev' }, now }).distDir).toBe(
+    expect(liveworkspaceNextConfig({ env: {}, now }).distDir).toBe('.next');
+    expect(liveworkspaceNextConfig({ env: { NEXT_DISTDIR: '.next-dev' }, now }).distDir).toBe(
       '.next-dev',
     );
   });
 
   it('shares unoptimised images, the type check switch and the build year', () => {
     quiet();
-    const config = liveplannerNextConfig({ env: { [SKIP_TYPECHECK_ENV]: '1' }, now });
+    const config = liveworkspaceNextConfig({ env: { [SKIP_TYPECHECK_ENV]: '1' }, now });
     expect(config.images).toEqual({ unoptimized: true });
     expect(config.typescript).toEqual({ ignoreBuildErrors: true });
     expect(config.env).toEqual({ NEXT_PUBLIC_BUILD_YEAR: '2027' });
@@ -73,14 +73,14 @@ describe('liveplannerNextConfig', () => {
 
   it('writes no AGENTS.md and points agents at the latest release', () => {
     quiet();
-    const config = liveplannerNextConfig({ env: {}, now });
+    const config = liveworkspaceNextConfig({ env: {}, now });
     expect(config.agentRules).toBe(false);
     expect(config.experimental?.agentUpgrade).toBe('latest');
   });
 
   it('runs the Rust React Compiler for an app that asks for it, under Turbopack', () => {
     quiet();
-    const config = liveplannerNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
+    const config = liveworkspaceNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
     expect(config.reactCompiler).toBe(true);
     expect(config.experimental).toEqual({
       agentUpgrade: 'latest',
@@ -93,7 +93,7 @@ describe('liveplannerNextConfig', () => {
   // the editor runs it.
   it('leaves the compiler off by default, keeping the Turbopack flags', () => {
     quiet();
-    const config = liveplannerNextConfig({ env: { TURBOPACK: '1' }, now });
+    const config = liveworkspaceNextConfig({ env: { TURBOPACK: '1' }, now });
     expect(config.reactCompiler).toBeUndefined();
     expect(config.experimental).toEqual({
       agentUpgrade: 'latest',
@@ -103,16 +103,16 @@ describe('liveplannerNextConfig', () => {
 
   it('leaves the compiler and every Turbopack flag off under webpack', () => {
     quiet();
-    const config = liveplannerNextConfig({ env: {}, reactCompiler: true, now });
+    const config = liveworkspaceNextConfig({ env: {}, reactCompiler: true, now });
     expect(config.reactCompiler).toBeUndefined();
     expect(config.experimental).toEqual({ agentUpgrade: 'latest' });
   });
 
   it('logs what the build runs with', () => {
     const log = quiet();
-    liveplannerNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
+    liveworkspaceNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
     expect(log).toHaveBeenCalledWith('[next-config] turbopack=true export=true compiler=true');
-    liveplannerNextConfig({ env: { TURBOPACK: '1' }, now });
+    liveworkspaceNextConfig({ env: { TURBOPACK: '1' }, now });
     expect(log).toHaveBeenCalledWith('[next-config] turbopack=true export=true compiler=false');
   });
 });

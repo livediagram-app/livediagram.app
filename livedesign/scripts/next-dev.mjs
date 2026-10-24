@@ -24,7 +24,7 @@
 //
 // The cures: free the port (1), and point dev at its own `.next-dev/` cache
 // dir (3) so a concurrent build's `.next/` can never race it. The shared
-// config (@livedesign/next-config) reads `NEXT_DISTDIR` and falls back to
+// config (@liveworkspace/next-config) reads `NEXT_DISTDIR` and falls back to
 // `.next/` when unset, so build / CI keep the default. (2) was the webpack-era
 // dev cache; Turbopack's file-system cache reconciles a route restructure
 // itself, so the cache is kept between starts and `turbopackGc` keeps it lean

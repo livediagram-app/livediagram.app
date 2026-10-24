@@ -28,7 +28,7 @@
     "@livedocuments/document": "workspace:*",
     "@livedocuments/help-registry": "workspace:*",
     "@livedocuments/licences": "workspace:*",
-    "@livedocuments/next-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@livedocuments/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",

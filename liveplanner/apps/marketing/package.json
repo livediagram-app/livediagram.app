@@ -28,7 +28,7 @@
   "devDependencies": {
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/licences": "workspace:*",
-    "@liveplanner/next-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",

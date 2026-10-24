@@ -251,15 +251,15 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
     devDependencies:
-      '@livedesign/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -372,12 +372,12 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedesign/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -469,12 +469,12 @@ importers:
       '@livedesign/licences':
         specifier: workspace:*
         version: link:../../packages/licences
-      '@livedesign/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -903,19 +903,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livedesign/packages/next-config:
-    dependencies:
-      next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -1393,12 +1380,12 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livediagram/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -1529,12 +1516,12 @@ importers:
       '@livediagram/fake-google':
         specifier: workspace:*
         version: link:../../packages/fake-google
-      '@livediagram/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -1623,15 +1610,15 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
     devDependencies:
-      '@livediagram/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -1711,12 +1698,12 @@ importers:
       '@livediagram/licences':
         specifier: workspace:*
         version: link:../../packages/licences
-      '@livediagram/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -2185,19 +2172,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livediagram/packages/next-config:
-    dependencies:
-      next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -2706,12 +2680,12 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedocuments/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -2797,15 +2771,15 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
     devDependencies:
-      '@livedocuments/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -2885,12 +2859,12 @@ importers:
       '@livedocuments/licences':
         specifier: workspace:*
         version: link:../../packages/licences
-      '@livedocuments/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -3348,19 +3322,6 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livedocuments/packages/next-config:
-    dependencies:
-      next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livedocuments/packages/page-background:
     devDependencies:
       '@liveworkspace/oxlint-config':
@@ -3806,12 +3767,12 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@liveplanner/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -3903,12 +3864,12 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
     devDependencies:
-      '@liveplanner/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -3985,15 +3946,15 @@ importers:
       '@liveplanner/licences':
         specifier: workspace:*
         version: link:../../packages/licences
-      '@liveplanner/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../../packages/project
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -4418,19 +4379,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  liveplanner/packages/next-config:
-    dependencies:
-      next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-    devDependencies:
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -5035,9 +4983,6 @@ importers:
       '@livediagram/agent-verbs':
         specifier: workspace:*
         version: link:../../../livediagram/packages/agent-verbs
-      '@livediagram/next-config':
-        specifier: workspace:*
-        version: link:../../../livediagram/packages/next-config
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/tailwind-config
@@ -5062,6 +5007,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/templates
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -5349,6 +5297,19 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/next-config:
+    dependencies:
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+    devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))

@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next';
-import { livediagramNextConfig } from '@livediagram/next-config';
+import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 
 // liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/site.md).
 // Every page is here: the home page, the telemetry dashboard, the sign-in pages and the account
@@ -7,8 +7,7 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 // /api/auth/* and /api/account/* (and the two .well-known documents), the index on /api/index/* (the
 // Explorer's lists), media on /api/previews/* (every item's picture), telemetry on /api/telemetry/*, the
 // Community on /api/community/* (whose pages each app hosts itself; liveworkspace.app has none).
-// The shared settings are livediagram's,
-// whose UI package the site's switcher and the dashboard come from.
+// The shared settings are every Next app's (@liveworkspace/next-config).
 
 // In development the dev server stands in for those routes, so the whole site works from one
 // origin, http://localhost:3000, as it does in production. Not exported in dev, since a static
@@ -26,7 +25,7 @@ const MEDIA_DEV = process.env.MEDIA_DEV_ORIGIN ?? 'http://localhost:8792';
 const ASSET_PREFIX = '/_liveworkspace';
 
 const nextConfig: NextConfig = {
-  ...livediagramNextConfig({ exportInDev: false }),
+  ...liveworkspaceNextConfig({ exportInDev: false }),
   assetPrefix: ASSET_PREFIX,
   transpilePackages: [
     '@livediagram/ui',
