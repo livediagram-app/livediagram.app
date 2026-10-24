@@ -5,7 +5,7 @@
 // call site, where a renamed key would drift silently.
 
 import type { LiveDoc, DesignSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
-import type { TeamRecentDesign } from './recent-diagrams';
+import type { TeamRecentDesign } from './recent-designs';
 
 // GET / PUT /api/designs/:id, POST /api/designs (+ copy).
 export type DesignResponse = { design: LiveDoc };

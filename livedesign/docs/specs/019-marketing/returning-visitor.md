@@ -6,15 +6,15 @@ Status: shipped
 
 The landing page's hero ends in a fan of template cards dealt along its foot ([Marketing site](marketing-site.md),
 "Hero"): that is for someone new, picking a way in. Somebody who already works here mostly wants to get back to
-their work. So a visitor whose recent-diagrams snapshot (below) holds **at least three designs**
+their work. So a visitor whose recent-designs snapshot (below) holds **at least three designs**
 (`RECENT_FAN_MIN`) sees **their own designs** on that fan instead: their **four most recent** (fewer if they have
 fewer), most recent first, then a card to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for
 everything else. With fewer than three they see the template fan, exactly as someone new does.
 
-A **returning visitor** is a browser whose recent-diagrams snapshot (below) holds at least one design.
+A **returning visitor** is a browser whose recent-designs snapshot (below) holds at least one design.
 Everyone else, including a returning person in a fresh browser, sees the templates.
 
-## The recent-diagrams snapshot
+## The recent-designs snapshot
 
 The marketing site is static and fast; it loads no sign-in code and does not call the api. So it never asks
 the server who you are. Instead **the editor leaves a note** in the browser for the landing page to read,
@@ -22,7 +22,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 
 - **What:** up to six designs, newest save first: id, name, last saved time, the mode it opens in (always Pages; older notes may name another), and
   the team whose library holds it (null for your own). Stored in `localStorage` under
-  `livedesign:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
+  `livedesign:recent-designs:v1` as `{ v: 1, designs: [{ id, name, savedAt, mode, teamName }] }`. A
   note written before `teamName` reads as your own designs.
 - **Which:** your designs and your teams', merged by save: the personal library the editor lists for
   you (`GET /api/designs` plus this browser's Offline Mode designs) and, from the same request

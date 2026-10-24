@@ -13,7 +13,7 @@ import {
   shuffleFan,
 } from '@/lib/hero-starts';
 import { HeroFanMine } from './HeroFanMine';
-import { useRecentDiagrams } from './useRecentDiagrams';
+import { useRecentDesigns } from './useRecentDesigns';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
@@ -65,9 +65,9 @@ export function HeroFan() {
   const swaps = useRef(0);
   // The kinds on show, kept beside the state so a swap reads them without an updater.
   const shown = useRef<TemplateKind[]>(slots);
-  // A returning visitor with enough recent diagrams sees theirs here instead (HeroFanMine), and nothing
+  // A returning visitor with enough recent designs sees theirs here instead (HeroFanMine), and nothing
   // is dealt.
-  const recent = useRecentDiagrams();
+  const recent = useRecentDesigns();
   const mine = recent && recent.length >= RECENT_FAN_MIN ? recent.slice(0, 4) : null;
   const returning = mine !== null;
 
@@ -132,7 +132,7 @@ export function HeroFan() {
       }}
       className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-x-clip px-4 pt-3 [clip-path:inset(-24rem_0_0_0)] sm:mt-28 sm:h-56 sm:gap-5"
     >
-      {mine ? <HeroFanMine diagrams={mine} /> : null}
+      {mine ? <HeroFanMine designs={mine} /> : null}
       {mine
         ? null
         : slots.map((kind, i) => {

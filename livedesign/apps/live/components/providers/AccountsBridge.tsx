@@ -13,7 +13,7 @@
 
 import { useEffect } from 'react';
 import { API_BASE } from '@/lib/api/base';
-import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
+import { forgetRecentDesigns } from '@/lib/recent-designs-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
@@ -68,7 +68,7 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
 
 async function endSession(): Promise<void> {
   current = null;
-  await forgetRecentDiagrams();
+  await forgetRecentDesigns();
   await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
     () => {},
   );
@@ -109,7 +109,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       createdAt: null,
     },
     getToken,
-    // The landing page sign-out returns to must not show the account's recent diagrams
+    // The landing page sign-out returns to must not show the account's recent designs
     // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       await endSession();

@@ -32,7 +32,7 @@ describe('isRepairClearable', () => {
   it('clears livedesign settings and caches', () => {
     for (const k of [
       'livedesign:user-preferences:v2',
-      'livedesign:recent-diagrams:v1',
+      'livedesign:recent-designs:v1',
       'livedesign:share-password:abc',
       'livedesign:v2:ui-mode',
       'livedesign:stale-chunk-reloads',

@@ -1,21 +1,21 @@
 'use client';
 
-import type { RecentDiagram } from '@livedesign/api-schema';
+import type { RecentDesign } from '@livedesign/api-schema';
 import { EDITOR_MODE_ICONS } from '@livedesign/ui';
-import { useRecentThumb } from './useRecentDiagrams';
+import { useRecentThumb } from './useRecentDesigns';
 
 // A recent design's preview (docs/specs/019-marketing/returning-visitor.md): its snapshot from this
 // browser's cache (the editor leaves one on each save) on the design's own background colour, as the
 // Explorer's cards draw it; with none, the Pages glyph on a quiet tint. The caller sizes it. Shared by
 // the hero's recent row and its fan.
 export function RecentPreview({
-  diagram,
+  design,
   className = '',
 }: {
-  diagram: RecentDiagram;
+  design: RecentDesign;
   className?: string;
 }) {
-  const thumb = useRecentThumb(diagram.id, diagram.savedAt);
+  const thumb = useRecentThumb(design.id, design.savedAt);
   const Icon = EDITOR_MODE_ICONS.pages;
   return (
     <span

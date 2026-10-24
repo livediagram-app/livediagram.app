@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 
 // The editor's half of the returning visitor (docs/specs/019-marketing/returning-visitor.md, "The
-// recent-diagrams snapshot"): the note it leaves, the thumbnails it caches beside it, and forgetting
+// recent-designs snapshot"): the note it leaves, the thumbnails it caches beside it, and forgetting
 // both on sign-out.
 
 import {
-  RECENT_DIAGRAMS_KEY,
+  RECENT_DESIGNS_KEY,
   RECENT_THUMBS_CACHE,
-  parseRecentDiagrams,
+  parseRecentDesigns,
   recentThumbPath,
   type DesignSummary,
 } from '@livedesign/api-schema';
@@ -46,7 +46,7 @@ const doc = (id: string, savedAt: number, extra: Partial<DesignSummary> = {}): D
 const thumbUrl = (id: string, savedAt: number) =>
   new URL(recentThumbPath(id, savedAt), location.origin).href;
 
-const note = () => parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY));
+const note = () => parseRecentDesigns(localStorage.getItem(RECENT_DESIGNS_KEY));
 
 let caches: ReturnType<typeof fakeCaches>;
 
@@ -54,7 +54,7 @@ let caches: ReturnType<typeof fakeCaches>;
 // fresh copy.
 async function load() {
   vi.resetModules();
-  return import('./recent-diagrams-snapshot');
+  return import('./recent-designs-snapshot');
 }
 
 // The thumbnail sync runs on idle (a timer here): wait until the cache settles to what is expected.
@@ -72,36 +72,36 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('rememberRecentDiagrams', () => {
+describe('rememberRecentDesigns', () => {
   it('notes the six newest saves, leaving out empty designs and those hidden from Recent', async () => {
-    const { rememberRecentDiagrams } = await load();
+    const { rememberRecentDesigns } = await load();
     const docs = [
       ...Array.from({ length: 8 }, (_, i) => ({ ...doc(`d${i}`, i), hiddenFromRecent: i === 7 })),
       doc('blank', 99, { empty: true }),
     ];
 
-    rememberRecentDiagrams(docs, async () => '<svg/>');
+    rememberRecentDesigns(docs, async () => '<svg/>');
 
     expect(note().map((d) => d.id)).toEqual(['d6', 'd5', 'd4', 'd3', 'd2', 'd1']);
   });
 
   it('removes the note when nothing is left to show', async () => {
-    const { rememberRecentDiagrams } = await load();
-    rememberRecentDiagrams([doc('a', 1)], async () => null);
+    const { rememberRecentDesigns } = await load();
+    rememberRecentDesigns([doc('a', 1)], async () => null);
     expect(note()).toHaveLength(1);
 
-    rememberRecentDiagrams([doc('a', 1, { empty: true })], async () => null);
+    rememberRecentDesigns([doc('a', 1, { empty: true })], async () => null);
 
-    expect(localStorage.getItem(RECENT_DIAGRAMS_KEY)).toBeNull();
+    expect(localStorage.getItem(RECENT_DESIGNS_KEY)).toBeNull();
   });
 
   it('caches each snapshot, remembers one the server has none for, and prunes the rest', async () => {
-    const { rememberRecentDiagrams } = await load();
+    const { rememberRecentDesigns } = await load();
     const fetchSvg = vi.fn(async (id: string) => (id === 'none' ? null : `<svg id="${id}"/>`));
     const thumbs = await caches.api.open(RECENT_THUMBS_CACHE);
     await thumbs.put(thumbUrl('gone', 1), new Response('<svg/>'));
 
-    rememberRecentDiagrams([doc('a', 2), doc('none', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 2), doc('none', 1)], fetchSvg);
 
     await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(2));
     expect(await (await thumbs.match(thumbUrl('a', 2)))?.text()).toBe('<svg id="a"/>');
@@ -110,28 +110,28 @@ describe('rememberRecentDiagrams', () => {
   });
 
   it('asks again next time for a snapshot whose request failed, and not for one already cached', async () => {
-    const { rememberRecentDiagrams } = await load();
+    const { rememberRecentDesigns } = await load();
     let online = false;
     const fetchSvg = vi.fn(async () => {
       if (!online) throw new Error('offline');
       return '<svg/>';
     });
 
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await settled(() => expect(fetchSvg).toHaveBeenCalledTimes(1));
     expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size ?? 0).toBe(0);
 
     online = true;
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(1));
 
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await new Promise((r) => setTimeout(r, 20));
     expect(fetchSvg).toHaveBeenCalledTimes(2);
   });
 
   it('runs one sync at a time, then one more pass for a list that landed meanwhile', async () => {
-    const { rememberRecentDiagrams } = await load();
+    const { rememberRecentDesigns } = await load();
     let release: () => void = () => {};
     const gate = new Promise<void>((r) => (release = r));
     const fetchSvg = vi.fn(async (id: string) => {
@@ -139,9 +139,9 @@ describe('rememberRecentDiagrams', () => {
       return `<svg id="${id}"/>`;
     });
 
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await settled(() => expect(fetchSvg).toHaveBeenCalledWith('a', 1));
-    rememberRecentDiagrams([doc('b', 2), doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('b', 2), doc('a', 1)], fetchSvg);
     await new Promise((r) => setTimeout(r, 20));
     expect(fetchSvg).not.toHaveBeenCalledWith('b', 2);
 
@@ -154,10 +154,10 @@ describe('rememberRecentDiagrams', () => {
   it('writes only the note where the browser has no Cache Storage', async () => {
     vi.stubGlobal('caches', undefined);
     Reflect.deleteProperty(window, 'caches');
-    const { rememberRecentDiagrams } = await load();
+    const { rememberRecentDesigns } = await load();
     const fetchSvg = vi.fn(async () => '<svg/>');
 
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await new Promise((r) => setTimeout(r, 20));
 
     expect(note()).toHaveLength(1);
@@ -165,32 +165,32 @@ describe('rememberRecentDiagrams', () => {
   });
 });
 
-describe('forgetRecentDiagrams', () => {
+describe('forgetRecentDesigns', () => {
   it('clears the note and the thumbnails, and nothing in flight writes them back', async () => {
-    const { forgetRecentDiagrams, rememberRecentDiagrams } = await load();
-    rememberRecentDiagrams([doc('a', 1)], async () => '<svg/>');
+    const { forgetRecentDesigns, rememberRecentDesigns } = await load();
+    rememberRecentDesigns([doc('a', 1)], async () => '<svg/>');
     await settled(() => expect(caches.stores.get(RECENT_THUMBS_CACHE)?.size).toBe(1));
 
-    await forgetRecentDiagrams();
-    rememberRecentDiagrams([doc('b', 2)], async () => '<svg/>');
+    await forgetRecentDesigns();
+    rememberRecentDesigns([doc('b', 2)], async () => '<svg/>');
     await new Promise((r) => setTimeout(r, 20));
 
-    expect(localStorage.getItem(RECENT_DIAGRAMS_KEY)).toBeNull();
+    expect(localStorage.getItem(RECENT_DESIGNS_KEY)).toBeNull();
     expect(caches.stores.has(RECENT_THUMBS_CACHE)).toBe(false);
   });
 
   it('stops a sync that is under way', async () => {
-    const { forgetRecentDiagrams, rememberRecentDiagrams } = await load();
+    const { forgetRecentDesigns, rememberRecentDesigns } = await load();
     let release: () => void = () => {};
     const gate = new Promise<void>((r) => (release = r));
     const fetchSvg = vi.fn(async () => {
       await gate;
       return '<svg/>';
     });
-    rememberRecentDiagrams([doc('a', 1)], fetchSvg);
+    rememberRecentDesigns([doc('a', 1)], fetchSvg);
     await settled(() => expect(fetchSvg).toHaveBeenCalled());
 
-    await forgetRecentDiagrams();
+    await forgetRecentDesigns();
     release();
     await new Promise((r) => setTimeout(r, 20));
 

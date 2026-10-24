@@ -1,12 +1,12 @@
 'use client';
 
 import { lucideLayoutGrid } from '@livedesign/icons/lucide';
-import type { RecentDiagram } from '@livedesign/api-schema';
+import type { RecentDesign } from '@livedesign/api-schema';
 import { ChevronRightIcon, EXPLORER_HOME_HREF, lucideGlyph, relativeSince } from '@livedesign/ui';
 import { useState, type CSSProperties } from 'react';
 import { RecentPreview } from './RecentPreview';
 
-// The hero fan for a returning visitor with RECENT_FAN_MIN or more recent diagrams
+// The hero fan for a returning visitor with RECENT_FAN_MIN or more recent designs
 // (docs/specs/019-marketing/returning-visitor.md): their designs, most recent first, each its preview
 // on the fan's card, then a card to Explorer Home for everything else. They stay put (no dealing): a
 // returning visitor came for these. On a phone the three most recent, without Explorer Home: the band has
@@ -49,10 +49,10 @@ const HEAD =
 const CARD =
   'hero-fan-in flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-rose-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent';
 
-export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }) {
+export function HeroFanMine({ designs }: { designs: readonly RecentDesign[] }) {
   // Read once per mount: "2 hours ago" need not tick while the page is open.
   const [now] = useState(() => Date.now());
-  const count = diagrams.length + 1;
+  const count = designs.length + 1;
   const poses = POSES[count] ?? POSES[5]!;
   const slot = (i: number, phone: string | null) =>
     `${SLOT} ${poses[i]} ${phone ?? 'max-sm:hidden'}`;
@@ -60,13 +60,13 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
   const dealt = (i: number) => ({ animationDelay: `${i * 70}ms` }) as CSSProperties;
   return (
     <>
-      {diagrams.map((d, i) => (
+      {designs.map((d, i) => (
         <div key={d.id} className={slot(i, i < PHONE_RECENT ? PHONE[i]! : null)}>
           <a href={`/design/${encodeURIComponent(d.id)}`} className={CARD} style={dealt(i)}>
             <span className="truncate text-xs font-semibold sm:text-sm">
               {d.name || 'Untitled design'}
             </span>
-            <RecentPreview diagram={d} className="h-20 rounded-lg sm:h-32 sm:rounded-xl" />
+            <RecentPreview design={d} className="h-20 rounded-lg sm:h-32 sm:rounded-xl" />
             {/* How long since it was saved, at the card's foot, right-aligned: off the band at rest, and
                 in view once the card is lifted. */}
             <span className="mt-auto text-right text-[11px] text-slate-500 sm:text-xs">
@@ -75,8 +75,8 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
           </a>
         </div>
       ))}
-      <div className={slot(diagrams.length, null)}>
-        <a href={EXPLORER_HOME_HREF} className={CARD} style={dealt(diagrams.length)}>
+      <div className={slot(designs.length, null)}>
+        <a href={EXPLORER_HOME_HREF} className={CARD} style={dealt(designs.length)}>
           <span className={HEAD}>
             <span className="min-w-0 truncate text-xs font-semibold sm:text-sm">Explorer Home</span>
             <span className="flex shrink-0 items-center justify-end gap-1 text-[11px] font-semibold text-brand-700 sm:text-xs">

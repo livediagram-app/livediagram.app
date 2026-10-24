@@ -10,7 +10,7 @@ import type { Item } from '@liveworkspace/index-client';
 import type { DesignListItem } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { apiFetchDesignThumbnailSvg } from '@/lib/api-client';
-import { rememberRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
+import { rememberRecentDesigns } from '@/lib/recent-designs-snapshot';
 
 // One page: the pickers show the most recent few, and search filters what is here.
 export const DESIGN_LIST_LIMIT = 100;
@@ -34,7 +34,7 @@ export function designListItem(item: Item): DesignListItem {
 export async function fetchDesignList(ownerId: string): Promise<DesignListItem[]> {
   const page = await indexClient.listItems({ app: 'livedesign', limit: DESIGN_LIST_LIMIT });
   const live = page.items.filter((item) => item.trashedAt === null);
-  rememberRecentDiagrams(
+  rememberRecentDesigns(
     live.map((item) => ({
       id: item.id,
       name: item.title,

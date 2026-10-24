@@ -1,38 +1,38 @@
 'use client';
 
 import {
-  RECENT_DIAGRAMS_KEY,
+  RECENT_DESIGNS_KEY,
   RECENT_THUMBS_CACHE,
-  parseRecentDiagrams,
+  parseRecentDesigns,
   recentThumbPath,
   scalableSnapshotSvg,
   svgBackgroundColor,
-  type RecentDiagram,
+  type RecentDesign,
 } from '@livedesign/api-schema';
 import { useEffect, useState } from 'react';
 
 // The landing page's half of the returning visitor (docs/specs/019-marketing/returning-visitor.md): the
-// note the editor leaves in this browser, and each noted diagram's snapshot from Cache Storage. Read
+// note the editor leaves in this browser, and each noted design's snapshot from Cache Storage. Read
 // after hydration only (the static HTML is the overview for everyone), and never from the network.
 
-// The visitor's recent diagrams: null until read (and for a new visitor, or anywhere storage is
+// The visitor's recent designs: null until read (and for a new visitor, or anywhere storage is
 // blocked). A returning visitor is one with at least one.
-export function useRecentDiagrams(): RecentDiagram[] | null {
-  const [diagrams, setDiagrams] = useState<RecentDiagram[] | null>(null);
+export function useRecentDesigns(): RecentDesign[] | null {
+  const [designs, setDesigns] = useState<RecentDesign[] | null>(null);
   useEffect(() => {
     let raw: string | null = null;
     try {
-      raw = window.localStorage.getItem(RECENT_DIAGRAMS_KEY);
+      raw = window.localStorage.getItem(RECENT_DESIGNS_KEY);
     } catch {
       // Storage blocked (a private window, site data off): a new visitor, then.
     }
-    const read = parseRecentDiagrams(raw);
+    const read = parseRecentDesigns(raw);
     // Reading browser storage is the one thing this effect is for; it cannot happen in render, since
     // the static HTML has to match for everyone.
     // oxlint-disable-next-line react/set-state-in-effect
-    if (read.length > 0) setDiagrams(read);
+    if (read.length > 0) setDesigns(read);
   }, []);
-  return diagrams;
+  return designs;
 }
 
 type RecentThumb =
@@ -40,7 +40,7 @@ type RecentThumb =
   | { status: 'none' }
   | { status: 'ready'; url: string; backgroundColor: string | null };
 
-// One diagram's snapshot, as a blob URL for an <img> (an SVG image runs no script), with its background
+// One design's snapshot, as a blob URL for an <img> (an SVG image runs no script), with its background
 // colour for the letterbox; 'none' when the cache has nothing usable for this save.
 export function useRecentThumb(id: string, savedAt: number): RecentThumb {
   const [thumb, setThumb] = useState<RecentThumb>({ status: 'loading' });

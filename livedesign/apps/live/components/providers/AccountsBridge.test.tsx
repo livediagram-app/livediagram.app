@@ -10,7 +10,7 @@ import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DeferredAuthState } from './deferred-auth';
 
-vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(async () => {}) }));
+vi.mock('@/lib/recent-designs-snapshot', () => ({ forgetRecentDesigns: vi.fn(async () => {}) }));
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livedesign/api-schema';
+import { RECENT_DESIGNS_KEY, RECENT_FAN_MIN } from '@livedesign/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livedesign/design';
 import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
@@ -166,20 +166,20 @@ describe('the hero', () => {
     const note = (n: number) =>
       JSON.stringify({
         v: 1,
-        diagrams: Array.from({ length: n }, (_, i) => ({
+        designs: Array.from({ length: n }, (_, i) => ({
           id: `d${i + 1}`,
           name: `Design ${i + 1}`,
           savedAt: Date.now() - (i + 1) * 3600e3,
           mode: 'pages',
         })),
       });
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(RECENT_FAN_MIN - 1));
+    localStorage.setItem(RECENT_DESIGNS_KEY, note(RECENT_FAN_MIN - 1));
     const few = render(<Hero />);
     expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
     expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();
     few.unmount();
 
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(6));
+    localStorage.setItem(RECENT_DESIGNS_KEY, note(6));
     render(<Hero />);
     expect(fanTitles()).toEqual([]);
     const docs = screen
