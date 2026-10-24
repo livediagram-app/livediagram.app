@@ -144,7 +144,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   signed-in account's, or this browser's guest's ([accounts.md](accounts.md)). Signing out here asks again.
 - **Which app.** The app the person came from: `?from=`, then the referrer, then the last app used here
   (kept in this browser). The page wears that app's colours (its brand ramp, light and dark) and opens filtered
-  to its items, with **All Apps** one click away. Each side of that switch wears its logo: the app's prism in its
+  to its items, with **All Apps** one click away. The switch reads the app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its
   accent, and liveworkspace's own for All Apps (the apps' Explorer panels do the same). Someone who came straight here sees every app's items in
   liveworkspace's own colours.
 - **The header.** The liveworkspace logo (with the site switcher), a hairline, then the app's logo, which leads

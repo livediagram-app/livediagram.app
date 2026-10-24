@@ -80,7 +80,7 @@ import { TeamsProvider, useTeams } from '../teams/context';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
 import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { Dialog, DialogCloseButton, DialogHeader } from '../ui/Dialog';
-import { folderCountLabel, type AppFilter } from '../words';
+import { folderCountLabel, siteOf, type AppFilter } from '../words';
 
 export { folderCountLabel } from '../words';
 import type {
@@ -930,7 +930,7 @@ function MyWorkHeaderMenu({ onOpenRoot }: { onOpenRoot: () => void }) {
 
 // This app's items, or every app's: the Explorer page's own filter, as two quiet words.
 function FilterToggle() {
-  const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
+  const { app, filter, setFilter, renderAppLogo } = useExplorer();
   const option = (value: AppFilter, label: string) => {
     const logo = renderAppLogo?.(value === 'app' ? app : 'all');
     return (
@@ -959,7 +959,7 @@ function FilterToggle() {
       aria-label="Show"
       className="flex shrink-0 items-center rounded-md bg-slate-100 p-0.5 dark:bg-slate-800"
     >
-      {option('app', kind.many)}
+      {option('app', siteOf(app).name)}
       {option('all', 'All')}
     </div>
   );

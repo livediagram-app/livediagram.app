@@ -92,7 +92,7 @@ test('a guest makes, renames, opens, stars, files, deletes and restores a design
 test('the Explorer offers every app’s items, designs first', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
   const show = page.getByRole('group', { name: 'Show' });
-  await expect(show.getByRole('button', { name: 'Designs' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(show.getByRole('button', { name: 'livedesign' })).toHaveAttribute('aria-pressed', 'true');
   await show.getByRole('button', { name: 'All' }).click();
   await expect(show.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
   expectNoPageErrors(pageErrors);

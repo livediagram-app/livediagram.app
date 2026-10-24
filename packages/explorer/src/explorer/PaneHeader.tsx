@@ -210,7 +210,7 @@ const segment = (active: boolean) =>
       : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
   }`;
 
-/** This app's items, or every app's. */
+/** This app's items, or every app's: the app's own name ("livediagram") beside All. */
 export function FilterToggle() {
   const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
   const { allLabel } = useHostExtras();
@@ -234,7 +234,7 @@ export function FilterToggle() {
         className={segment(filter === 'app')}
       >
         {logo('app')}
-        {kind.many}
+        {siteOf(app).name}
       </button>
       <button
         type="button"

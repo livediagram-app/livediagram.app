@@ -92,7 +92,7 @@ test('a guest makes, renames, opens, stars, files, deletes and restores a plan',
 test('the Explorer offers every app’s items, plans first', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
   const show = page.getByRole('group', { name: 'Show' });
-  await expect(show.getByRole('button', { name: 'Plans' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(show.getByRole('button', { name: 'liveplanner' })).toHaveAttribute('aria-pressed', 'true');
   await show.getByRole('button', { name: 'All' }).click();
   await expect(show.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
   expectNoPageErrors(pageErrors);
