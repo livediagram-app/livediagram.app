@@ -1,6 +1,10 @@
 # Quick style panel
 
-Status: **implemented**.
+Status: **removed from liveplanner** (October 2026). Plan never showed the panel, so its code went: the panel,
+its rows, More colours, placement and the custom swatches. What this spec still governs, and the code still does,
+is **style memory** ("Style memory" below: `lib/style-memory.ts`, `useStyleMemory`), which every style edit
+records and every new element reads, and the quick-swatch bindings the context menu writes. The rest is kept as
+the record of what livediagram ships; the `quickSwatchOverrides` preference is no longer read or written.
 
 While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,

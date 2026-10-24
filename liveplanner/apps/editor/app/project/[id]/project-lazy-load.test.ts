@@ -19,7 +19,6 @@ describe('the project page’s first load', () => {
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/project/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
-    ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],

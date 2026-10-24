@@ -24,7 +24,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 import type { PlanTourTrack } from './plan-tour';
-import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import { apiGetPreferences } from './api-client';
 import {
@@ -188,11 +187,10 @@ export type UserPreferences = {
   // picked with + in the project, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
-  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
-  // swatches"): per theme, which of a row's six slots you replaced with a
-  // colour of your own. Read and written through lib/swatch-overrides, which
-  // validates it and keeps it inside its share of the 4 KB budget.
-  quickSwatchOverrides?: SwatchOverrideStore;
+  // DEAD: the quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
+  // swatches") went with the panel. Nothing reads or writes this any more; it stays in the type because it is
+  // already stored for existing users.
+  quickSwatchOverrides?: unknown;
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores
   // the preset, recorded in `powerUserBaseline` while the mode is on.

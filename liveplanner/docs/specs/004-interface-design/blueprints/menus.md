@@ -27,7 +27,6 @@ Scope, by file:
 | `apps/editor/components/primitives/EllipsisTriggerButton.tsx`              | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
 | `apps/editor/components/palette/ContextMenu.tsx`                           | Control menu at a point (element, selection, cell)                                                           |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                          | Tab and Canvas control menu                                                                                  |
-| `apps/editor/components/panels/LayerRowMenu.tsx`                           | Layer control menu                                                                                           |
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                    | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                               | Hover-open command menu with a button of its own                                                             |
 | `apps/editor/components/chrome/AuthControls.tsx`                           | Account command menu                                                                                         |
@@ -143,7 +142,6 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `MenuFlyoutSection`                                              | The parent tree's kind                               | Its row is the trigger            |
 | `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
 | `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
-| `LayerRowMenu`                                                   | Control, "<layer> layer menu"                        | None                              |
 | Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
 | `ElementEllipsisMenu`                                            | `kind` prop                                          | Its ⋯                             |
 | `ZoomMenu`                                                       | Command, `initialFocus` `none` on hover              | The percentage button             |

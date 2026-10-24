@@ -73,7 +73,7 @@ synchronously on its first render, before any scaled surface paints.
 Each scaled surface reads its part's scale with `useUiScale(part)`, spreads
 `uiScaleStyle(scale)` into its ROOT's `style`, and converts every JS-computed
 screen-px length it writes on that root or a descendant with `toSurfacePx`.
-`panels`: `MovablePanel`, `QuickStylePanel`, `useDockPopovers`.
+`panels`: `MovablePanel`, `useDockPopovers`.
 `toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`.
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
 
@@ -93,8 +93,6 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
     `toSurfacePx(16)` (the `sm:` desktop insets; a phone is never scaled).
     A panel at rest in a docked corner stack is `relative` with no insets and
     needs nothing.
-- **`QuickStylePanel`**: `spot.left` / `spot.top` / `spot.width` (screen px)
-  → `toSurfacePx`.
 - **`ToolbarPalette`**: zoom on the root, which is `inset-x-0` and still spans
   the canvas when zoomed, so the card stays centred; `top` is restated as
   `toSurfacePx(12)`. The More popover sits inside the zoomed root but does not
@@ -127,8 +125,6 @@ What makes room for a scaled surface:
   `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.
   The tile limit's first-paint fallback reads `viewportWidth / scale`.
-- `useQuickStylePlacement` needs nothing: releasing the slider is a captured
-  `pointerup`, which re-measures it.
 
 ## Interfaces and contracts
 

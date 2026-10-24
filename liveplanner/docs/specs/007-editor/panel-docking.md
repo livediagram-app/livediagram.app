@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's corner panels (Minimap and the tool panels) each
+The editor's corner panels (Minimap) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -25,8 +25,8 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** Minimap and the tool panels (Format), every corner panel
-  built on the shared `MovablePanel`.
+- **Participating panels:** Minimap, the one corner panel built on the shared `MovablePanel` (the Format
+  tool's panel went with the tool).
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -54,12 +54,10 @@ When the user has never arranged panels, the corners match today's defaults:
 | `top-left`     | _(empty; the menu button)_                                |
 | `top-right`    | _(empty; the palette strip's end)_                        |
 | `bottom-left`  | Minimap                                                   |
-| `bottom-right` | tool panels, above the bottom cluster (zoom controls pin) |
+| `bottom-right` | _(empty; the bottom cluster, zoom controls pin)_          |
 
-The tool panels (Format) open bottom-right, stacked
-upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
-act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
-the user has docked or placed keeps its spot; only the home moves.
+A panel docked bottom-right stacks upwards from just above the bottom cluster. A panel the user has docked or
+placed keeps its spot.
 A panel in a bottom corner grows upward only as far as the canvas's top edge, and stops below the palette strip
 where it overlaps it across; past that its body scrolls. On a short window (a laptop zoomed to
 200%, 720×450) its header otherwise slid under the strip, out of reach.
@@ -103,7 +101,7 @@ publishing only the constant would have left that split in place.
 
 ## Collapse to banner
 
-A collapsible corner panel (the Map, the tool panels) has a **collapse button** in its
+A collapsible corner panel (the Map) has a **collapse button** in its
 header. It hides the body and leaves the title row in place as a banner, so the way back is always
 in view. Its glyph flips between a dash (collapse) and a plus (expand). A panel starts expanded on
 a desktop and collapsed on a phone, and stays as set until pressed again. A panel that is not

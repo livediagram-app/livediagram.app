@@ -1,6 +1,10 @@
 # Quick style panel: blueprint
 
-Derived from [Quick style panel](../quick-style-panel.md). The spec decides; this file only adds
+Derived from [Quick style panel](../quick-style-panel.md). **liveplanner keeps only style memory
+(`lib/style-memory.ts`, `hooks/canvas/useStyleMemory.ts`) and `styleNewElement`; the files below for the panel itself
+(`QuickStylePanel`, `QuickMoreColours`, `quick-style-rows`, `quick-style-metrics`, `useQuickStyle`,
+`useQuickStylePlacement`, `lib/quick-style*.ts`, `SwatchOverridePopover`, `useSwatchOverrides`,
+`lib/swatch-overrides.ts`) were removed in October 2026.** The spec decides; this file only adds
 engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
