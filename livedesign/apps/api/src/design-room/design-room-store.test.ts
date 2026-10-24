@@ -346,6 +346,23 @@ describe("the design's owner and team, from the index's grant", () => {
     expect(editsQueued(design)).toBe(0);
   });
 
+  it("takes them from a session's renewed grant too", async () => {
+    const w = world();
+    await createDesign(w, 'A');
+    const design = w.designs.get('A')!;
+    let attachment: unknown = null;
+    const ws = {
+      send: () => {},
+      close: () => {},
+      serializeAttachment: (value: unknown) => void (attachment = value),
+      deserializeAttachment: () => attachment,
+    } as unknown as WebSocket;
+    design.room.acceptSession(ws, 'edit', null, null, null, null, null, 'A', Date.now() + 60_000);
+    await design.room.renewGrant(ws, grantNaming('user_merged', 'team_1'));
+    expect(head(design)).toEqual({ owner_id: 'user_merged', team_id: 'team_1' });
+    expect((attachment as { grantExp: number }).grantExp).toBe(9e9 * 1000);
+  });
+
   it('leaves the copy alone for a grant that names no owner, or says the same', async () => {
     const w = world();
     await createDesign(w, 'A');
