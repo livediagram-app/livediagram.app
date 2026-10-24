@@ -148,8 +148,13 @@ export async function handleCommunityOwnerRoutes(
   // One post per canvas: a post already kept here (a previous owner's) gives way to this one.
   const previous = await readCommunityPost(env);
   // The community link is made at the index first (its code is the post's), and removed again when the service
-  // refuses the post, so a refusal leaves nothing behind.
-  const { link } = await client.createShareLink(id, { level: 'view', expiry: 'never' });
+  // refuses the post, so a refusal leaves nothing behind. A public link: should the canvas later take a share password,
+  // it closes (404) rather than ask visitors for one.
+  const { link } = await client.createShareLink(id, {
+    level: 'view',
+    expiry: 'never',
+    public: true,
+  });
   const shareCode = link.code;
   const res = await publishServicePost(env, id, {
     owner: ctx.accountUserId,

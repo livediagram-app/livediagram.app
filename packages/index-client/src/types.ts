@@ -92,6 +92,9 @@ export type ShareLink = {
   // When it stops working; null for never. A past one is listed but opens nothing.
   expiresAt: number | null;
   createdAt: number;
+  // A public link (a Community post's): it never asks for the item's share password; while one is set it opens
+  // nothing (404), as if the post were closed. Absent from an older index: false.
+  public?: boolean;
 };
 
 // An item shared with me through a link I opened.
@@ -355,6 +358,8 @@ export type CreateShareLinkInput = {
   level?: Level;
   tabId?: string | null;
   expiry?: ShareLinkExpiry;
+  // A public link (ShareLink.public): closed, not asking, while the item has a share password.
+  public?: boolean;
 };
 export type UpdateShareLinkInput = { level?: Level; tabId?: string | null };
 

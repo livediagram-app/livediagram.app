@@ -203,6 +203,40 @@ describe('share links', () => {
 });
 
 describe('share passwords', () => {
+  it('closes a public link behind a password rather than asking for it, and opens it again when cleared', async () => {
+    const ada = await person('user_a');
+    const eve = await person('user_e');
+    const item = await makeItem(ada.auth);
+    const open = await share(ada.auth, item.id, { level: 'view', public: true });
+    expect(open.public).toBe(true);
+    const ordinary = await share(ada.auth, item.id, { level: 'view' });
+    expect(ordinary.public).toBe(false);
+    await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: 'hunter2' },
+    });
+    // No prompt through the public link, even with the right password: it is closed.
+    for (const headers of [{}, { 'X-Share-Password': 'hunter2' }] as Record<string, string>[]) {
+      const res = await call(`/share/${open.code}`, { headers });
+      expect(res.status).toBe(404);
+    }
+    const grant = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      auth: eve.auth,
+      headers: { 'X-Share-Code': open.code },
+    });
+    expect(grant.status).toBe(404);
+    // An ordinary link still asks.
+    expect((await call(`/share/${ordinary.code}`)).status).toBe(401);
+    await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: null },
+    });
+    expect((await call(`/share/${open.code}`)).status).toBe(200);
+  });
+
   it('stores only a hash, and gates link visitors', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);

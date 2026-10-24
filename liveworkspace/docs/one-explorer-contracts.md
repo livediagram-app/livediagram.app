@@ -208,9 +208,11 @@ colour}`; 409 `tag_name_taken`, `tag_limit`.
 
 - `GET/POST/DELETE /items/:id/share`, `PATCH/DELETE /share/:code`, `POST /share/:code/extend`,
   `PUT /items/:id/share-password` — the share links of today, now on the index. `ShareLink = {code, itemId,
-level, tabId, expiry, expiresAt, createdAt}`. Managing them needs the owner or a joined team member.
+level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the owner or a joined team member.
+  `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
+  item's share password, and while one is set it opens nothing (404), as if closed.
 - `GET /share/:code` — public: `{item, level, tabId}`; records the item under Shared for a person who
-  opens it; 401 `password_required`, 403 `password_invalid`.
+  opens it; 401 `password_required`, 403 `password_invalid` (a public link: 404).
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 
 Who gets what, the rule the grant applies: the owner, and every joined member of the item's team, edit

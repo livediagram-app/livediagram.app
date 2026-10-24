@@ -179,7 +179,10 @@ CREATE TABLE share_links (
   tab_id     TEXT    NULL,
   expiry     TEXT    NOT NULL DEFAULT 'never' CHECK (expiry IN ('never', 'week', 'month', 'sixMonths')),
   expires_at INTEGER NULL,
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  -- A public link (a Community post's): it never asks for the item's share password, and while one is set it
+  -- opens nothing, as if closed.
+  public     INTEGER NOT NULL DEFAULT 0 CHECK (public IN (0, 1))
 );
 CREATE INDEX share_links_item ON share_links (item_id, created_at);
 -- The daily Share Link Expiring pass (src/share-expiry.ts): links lapsing within the week, by expiry.

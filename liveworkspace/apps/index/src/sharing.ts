@@ -53,6 +53,7 @@ type LinkRow = {
   expiry: ShareLinkExpiry;
   expires_at: number | null;
   created_at: number;
+  public: number;
 };
 
 const toLink = (row: LinkRow): ShareLink => ({
@@ -63,9 +64,10 @@ const toLink = (row: LinkRow): ShareLink => ({
   expiry: row.expiry,
   expiresAt: row.expires_at,
   createdAt: row.created_at,
+  public: row.public === 1,
 });
 
-const LINK_COLUMNS = 'code, item_id, level, tab_id, expiry, expires_at, created_at';
+const LINK_COLUMNS = 'code, item_id, level, tab_id, expiry, expires_at, created_at, public';
 
 // undefined: absent; null: every tab; a string: that tab. INVALID for anything else.
 const INVALID = Symbol('invalid');
@@ -171,12 +173,13 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
       expiry,
       expires_at: expiry === 'never' ? null : now + SHARE_LINK_EXPIRY_MS[expiry],
       created_at: now,
+      public: body.public === true ? 1 : 0,
     };
     // The cap is checked inside the insert; the event only when it made one.
     const [res] = await db.batch([
       db
         .prepare(
-          `INSERT INTO share_links (${LINK_COLUMNS}) SELECT ?, ?, ?, ?, ?, ?, ?
+          `INSERT INTO share_links (${LINK_COLUMNS}) SELECT ?, ?, ?, ?, ?, ?, ?, ?
          WHERE (SELECT COUNT(*) FROM share_links WHERE item_id = ?) < ?`,
         )
         .bind(
@@ -187,6 +190,7 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
           link.expiry,
           link.expires_at,
           now,
+          link.public,
           id,
           SHARE_LINKS_PER_ITEM,
         ),
@@ -311,7 +315,7 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
 async function resolveShare(ctx: RouteContext, code: string): Promise<Response> {
   const { env, caller } = ctx;
   const link = await env.INDEX_DB.prepare(
-    `SELECT sl.code, sl.item_id, sl.level, sl.tab_id, sp.hash FROM share_links sl
+    `SELECT sl.code, sl.item_id, sl.level, sl.tab_id, sl.public, sp.hash FROM share_links sl
      LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
      WHERE sl.code = ? AND ${LIVE_LINK('sl')}`,
   )
@@ -322,6 +326,7 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
       level: Level;
       tab_id: string | null;
       hash: string | null;
+      public: number;
     }>();
   if (!link) return notFound();
   const row = await getItemRow(env, link.item_id);

@@ -250,7 +250,9 @@ A name the caller sends still wins, and copies through any other share link keep
 A share password ([Share password](../013-workspace/share-password.md)) and a post exclude each other: a document with a
 password cannot be published (the band disables Share to Community: "Remove the share password to share it to the
 Community."), and a listed post locks Password Protection in the same dialog ("Remove it from the Community to set a
-password."; the shared dialog's `passwordLockedReason`). A password already set can still be removed.
+password."; the shared dialog's `passwordLockedReason`). A password already set can still be removed. The post's
+link is a public link at the index: should its document take a password anyway (a hidden post, or through the
+API), the link closes and answers 404, never a password prompt, and the next check closes the listing.
 
 ## Document lifecycle
 

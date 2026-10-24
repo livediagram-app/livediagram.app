@@ -22,7 +22,12 @@ import type { DocumentEnv, Env } from '../types';
 const { thumbnail, index } = vi.hoisted(() => ({
   thumbnail: { svg: '<svg/>' },
   // Where each canvas stands at the index: in the Trash, behind a share password.
-  index: { trashed: new Set<string>(), password: new Set<string>() },
+  index: {
+    trashed: new Set<string>(),
+    password: new Set<string>(),
+    // Codes made as public links (a post's).
+    public: new Set<string>(),
+  },
 }));
 vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
@@ -130,6 +135,7 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
           'INSERT INTO test_share_links (code, document_id, role, tab_id, created_at, expires_at) VALUES (?, ?, ?, NULL, 1, NULL)',
         )
         .run(code, id, input.level ?? 'view');
+      if (input.public) index.public.add(code);
       return { link: { code, itemId: id, level: input.level ?? 'view', tabId: null } as never };
     },
     revokeShareLink: async (code) => {
@@ -141,6 +147,9 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
         .get(code) as { document_id: string; role: string; tab_id: string | null } | undefined;
       if (!link) throw new IndexError(404, 'not_found');
       if (index.trashed.has(link.document_id)) throw new IndexError(404, 'not_found');
+      // A public link never asks for a password: behind one it is closed.
+      if (index.password.has(link.document_id) && index.public.has(code))
+        throw new IndexError(404, 'not_found');
       if (index.password.has(link.document_id) && !password)
         throw new IndexError(401, 'password_required');
       return {
@@ -263,6 +272,7 @@ beforeEach(() => {
   env = db.env;
   index.trashed.clear();
   index.password.clear();
+  index.public.clear();
   service = communityServiceFor(env);
   thumbnail.svg = '<svg/>';
   accounts = accountsServiceFor(env);
@@ -699,9 +709,25 @@ describe('what a community link reveals', () => {
     expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
   });
 
-  // The index resolves a link before this api can tell it is a Community post's, and answers a canvas behind a
-  // share password with its password prompt (401); the index no longer refuses a password while a post is public.
-  it.todo('answers a closed link behind a share password with 404 alone, not a password prompt');
+  // The post's link is a public link at the index: a canvas that later took a share password closes it (404), so a
+  // Community visitor never meets a password prompt.
+  it('answers a closed link behind a share password with 404 alone, not a password prompt', async () => {
+    const post = await publish();
+    index.password.add('d1');
+    const res = await share(`/api/share/${post.shareCode}`);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'not_found' });
+    // An ordinary link to the same canvas still asks for the password.
+    const own = (await (
+      await indexDoors(env, { kind: 'delegate', personId: AUTHOR, teams: [] })!.createShareLink(
+        'd1',
+        {
+          level: 'view',
+        },
+      )
+    ).link) as { code: string };
+    expect((await share(`/api/share/${own.code}`)).status).toBe(401);
+  });
 
   it('counts no comment threads in the overview a Community visitor reads', async () => {
     const post = await publish();

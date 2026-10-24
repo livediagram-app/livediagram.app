@@ -11,7 +11,13 @@ import { fail, notFound, unauthorized } from './http';
 import { verifySharePassword } from './password-hash';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
 
-type LinkRow = { code: string; level: Level; tab_id: string | null; hash: string | null };
+type LinkRow = {
+  code: string;
+  level: Level;
+  tab_id: string | null;
+  hash: string | null;
+  public: number;
+};
 
 // The live link a caller holds for an item: the code they sent, or else the one they opened it through
 // before (Shared with me). With the item's password hash, when it has one.
@@ -19,7 +25,7 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
   const now = Date.now();
   if (caller.share) {
     return env.INDEX_DB.prepare(
-      `SELECT sl.code, sl.level, sl.tab_id, sp.hash FROM share_links sl
+      `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash FROM share_links sl
        LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
        WHERE sl.code = ? AND sl.item_id = ? AND ${LIVE_LINK('sl')}`,
     )
@@ -28,7 +34,7 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
   }
   if (!caller.person) return null;
   return env.INDEX_DB.prepare(
-    `SELECT sl.code, sl.level, sl.tab_id, sp.hash FROM shared_with sw
+    `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash FROM shared_with sw
      JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
      LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
      WHERE sw.person_id = ? AND sw.item_id = ? AND ${LIVE_LINK('sl')}`,
@@ -37,11 +43,13 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
     .first<LinkRow>();
 }
 
-// A link's access, after its password. A refusal is the response to send.
+// A link's access, after its password. A refusal is the response to send. A public link (a Community post's) never
+// asks for one: behind a password it is closed, and answers as missing.
 export async function linkAccess(
   link: LinkRow,
   password: string | null,
 ): Promise<Access | Response> {
+  if (link.hash && link.public) return notFound();
   if (link.hash) {
     if (!password) return fail(401, 'password_required');
     if (!(await verifySharePassword(link.hash, password))) return fail(403, 'password_invalid');
