@@ -1,5 +1,5 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
-import { lucideCheck } from '@livediagram/icons/lucide';
+import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { Metadata } from 'next';
 import { type CSSProperties, Fragment } from 'react';

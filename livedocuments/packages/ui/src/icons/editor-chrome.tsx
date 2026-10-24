@@ -1,4 +1,4 @@
-import { lucideLayers, lucideSlidersHorizontal } from '@livedocuments/icons/lucide';
+import { lucideLayers, lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';

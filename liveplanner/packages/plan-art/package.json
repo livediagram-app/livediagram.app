@@ -19,11 +19,11 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/ui": "workspace:*"
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

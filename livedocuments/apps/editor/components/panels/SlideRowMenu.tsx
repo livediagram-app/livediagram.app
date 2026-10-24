@@ -17,7 +17,7 @@ import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/ex
 import { useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { lucideGlyph, PlusIcon } from '@livedocuments/ui';
-import { lucideGroup, lucideMinus } from '@livedocuments/icons/lucide';
+import { lucideGroup, lucideMinus } from '@liveworkspace/icons/lucide';
 
 import { slideName, type Slide } from '@livedocuments/document';
 

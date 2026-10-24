@@ -9,7 +9,7 @@
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
 import { Button, CircleXIcon, lucideGlyph } from '@livedesign/ui';
-import { lucideFolder } from '@livedesign/icons/lucide';
+import { lucideFolder } from '@liveworkspace/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 
@@ -45,11 +45,7 @@ export function NotFound({
         <h1
           className={`${accessEnded ? 'mt-4' : 'mt-1'} text-xl font-semibold text-slate-900 dark:text-slate-100`}
         >
-          {page
-            ? 'Page not found'
-            : accessEnded
-              ? 'No Longer Shared With You'
-              : 'Design not found'}
+          {page ? 'Page not found' : accessEnded ? 'No Longer Shared With You' : 'Design not found'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {page

@@ -34,7 +34,7 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
 | `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row beside GitHub                                          |
 | `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
-| `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
+| `../packages/icons/lucide-manifest.json`                                  | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
 
 ## Domain and naming

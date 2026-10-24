@@ -11,7 +11,7 @@ import {
   lucideLockOpen,
   lucideTrash2,
   lucideSearch,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livedesign/ui';
 import { DropCaret } from '@/components/primitives/DropCaret';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';

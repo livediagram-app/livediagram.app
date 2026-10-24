@@ -1,4 +1,4 @@
-import { lucideCircleCheck, lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideCircleCheck, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 
 const CheckIcon = lucideGlyph(lucideCircleCheck, 14);

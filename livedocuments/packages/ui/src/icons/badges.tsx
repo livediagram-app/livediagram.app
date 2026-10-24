@@ -3,7 +3,7 @@ import {
   lucideLink,
   lucideMessageSquare,
   lucideStickyNote,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 import { lucideGlyph } from './lucide-glyph';
 

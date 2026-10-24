@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/icons": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

@@ -50,15 +50,15 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)Inter-(Regular\.ttf|Bold\.otf)$/ },
     texts: text('inter-3.19-LICENSE.txt'),
   },
-  // Icon geometry vendored into our own source (packages/icons).
+  // Icon geometry vendored into the monorepo's own source (packages/icons, shared by every product).
   {
     id: 'lucide',
     name: 'Lucide',
     version: '1.52.0',
     licence: 'ISC AND MIT',
-    carrier: 'liveplanner source (icons)',
+    carrier: 'liveworkspace source (icons)',
     homepage: 'https://lucide.dev',
-    trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
+    trigger: { sources: ['../packages/icons/src/lucide.generated.ts'] },
     texts: text('lucide-1.52.0-LICENSE.txt'),
   },
   {
@@ -66,13 +66,13 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Feather',
     version: '4.29.2',
     licence: 'MIT',
-    carrier: 'liveplanner source (icons)',
+    carrier: 'liveworkspace source (icons)',
     homepage: 'https://feathericons.com',
     trigger: {
       sources: [
-        'packages/icons/src/icon-catalog-1.ts',
-        'packages/icons/src/icon-catalog-2.ts',
-        'packages/icons/src/icon-catalog-3.ts',
+        '../packages/icons/src/icon-catalog-1.ts',
+        '../packages/icons/src/icon-catalog-2.ts',
+        '../packages/icons/src/icon-catalog-3.ts',
       ],
     },
     texts: text('feather-4.29.2-LICENSE.txt'),

@@ -16,11 +16,11 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
     "@liveplanner/template-previews": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/comparisons": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
@@ -28,12 +28,12 @@
   "devDependencies": {
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/licences": "workspace:*",
-    "@liveworkspace/next-config": "workspace:*",
-    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
-    "@liveworkspace/vitest-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.4",

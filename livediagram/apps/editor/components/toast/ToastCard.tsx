@@ -10,7 +10,7 @@ import {
   lucideCircleCheck,
   lucideInfo,
   lucideTriangleAlert,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CloseIcon, lucideGlyph } from '@livediagram/ui';
 import type { ToastTone } from './toast-queue';
 

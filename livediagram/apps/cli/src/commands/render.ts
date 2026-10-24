@@ -4,7 +4,7 @@
 import { graphOfSource, tabOf, tabPath, type VerbContext } from '@livediagram/agent-verbs';
 import { lintGraph } from '@livediagram/diagram-lint';
 import { renderElementsToSvg } from '@livediagram/document';
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';

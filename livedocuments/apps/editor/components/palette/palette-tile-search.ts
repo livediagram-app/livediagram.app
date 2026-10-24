@@ -2,7 +2,7 @@
 // which element tiles a query finds among the ones the current editor mode's palette offers. Pure,
 // so the ranking is tested without a strip.
 import { componentShapeKind, type Element } from '@livedocuments/document';
-import { paletteRank } from '@livedocuments/icons';
+import { paletteRank } from '@liveworkspace/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { paletteCategoriesFor } from './palette-layouts';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';

@@ -10,6 +10,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
+│  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes

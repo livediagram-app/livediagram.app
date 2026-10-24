@@ -8,7 +8,7 @@
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
 // long design lists. Single-click commits — both are one-shot pickers.
 
-import { lucideFolderX } from '@livedesign/icons/lucide';
+import { lucideFolderX } from '@liveworkspace/icons/lucide';
 import { useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
@@ -25,7 +25,7 @@ import {
   useEscape,
 } from '@livedesign/ui';
 import { DesignIcon } from '@/components/primitives/explorer-icons';
-import { matches } from '@livedesign/icons';
+import { matches } from '@liveworkspace/icons';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
 function OrganiseDialogFrame({

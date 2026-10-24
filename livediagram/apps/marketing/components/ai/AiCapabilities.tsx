@@ -5,7 +5,7 @@ import {
   lucideUndo2,
   lucideWorkflow,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 
 // What it can do (docs/specs/019-marketing/build-with-ai.md "The page" 5): the MCP's tools in plain words. Every

@@ -8,7 +8,7 @@
 // Presentation + the link field only; every command is dispatched by the
 // editor, which owns the runs and the selection.
 
-import { lucideList, lucideListOrdered } from '@liveplanner/icons/lucide';
+import { lucideList, lucideListOrdered } from '@liveworkspace/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@liveplanner/project';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';

@@ -16,7 +16,7 @@ import {
   SheetHandle,
   useSheetDrag,
 } from '@livedesign/ui';
-import { lucideSearch, lucideX } from '@livedesign/icons/lucide';
+import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { StartPalette } from './start-palette';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

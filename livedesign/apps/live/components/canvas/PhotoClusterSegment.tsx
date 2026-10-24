@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideImage } from '@livedesign/icons/lucide';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { ClusterPopoverSegment } from './ClusterPopoverButton';
 

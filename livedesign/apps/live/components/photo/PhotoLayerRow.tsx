@@ -38,7 +38,7 @@ import {
   lucideTrash2,
   lucideType,
   lucideWandSparkles,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { BLEND_MODE_NAMES, type PhotoLayer } from '@livedesign/photo-engine';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';

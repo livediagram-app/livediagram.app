@@ -63,7 +63,7 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 import { tileCaption } from './tile-caption';
 

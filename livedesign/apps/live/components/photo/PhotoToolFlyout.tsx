@@ -27,7 +27,7 @@ import { PhotoToolOptionsBody } from './PhotoToolOptionsBody';
 import { TransformOptionsBody } from './PhotoTransformOptions';
 import { useToolAnchor } from './useToolAnchor';
 import { lucideGlyph } from '@livedesign/ui';
-import { lucideScaling } from '@livedesign/icons/lucide';
+import { lucideScaling } from '@liveworkspace/icons/lucide';
 
 const TransformIcon = lucideGlyph(lucideScaling, 18);
 

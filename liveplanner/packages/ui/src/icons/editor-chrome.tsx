@@ -2,7 +2,7 @@ import {
   lucideBrushCleaning,
   lucideLayers,
   lucideSlidersHorizontal,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';

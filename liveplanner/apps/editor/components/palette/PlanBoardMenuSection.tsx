@@ -21,7 +21,7 @@ import {
   lucideColumns3,
   lucideLayoutGrid,
   lucideRows2,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';

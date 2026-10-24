@@ -3,7 +3,7 @@
 // and the ones only another mode's (or the event-storming notation) does. Pure, so the split and
 // the ranking are tested without a strip.
 import { componentShapeKind, type EditorMode, type Element } from '@livediagram/document';
-import { paletteRank } from '@livediagram/icons';
+import { paletteRank } from '@liveworkspace/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { PALETTE_LAYOUTS, SEARCH_ONLY_TILE_IDS, paletteCategoriesFor } from './palette-layouts';
 import { tileById, tileDisplayName, type PaletteTileDef } from './palette-tile-defs';

@@ -11,7 +11,7 @@ import type { ItemMenuHost, ThisBrowserItem } from '@liveworkspace/explorer';
 import { thisBrowserConvertHref } from '@liveworkspace/explorer/this-browser';
 import type { Item } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideDownload } from '@livediagram/icons/lucide';
+import { lucideDownload } from '@liveworkspace/icons/lucide';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
 
 const TakeOfflineIcon = lucideGlyph(lucideDownload, 16);

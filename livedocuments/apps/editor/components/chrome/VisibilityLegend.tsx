@@ -8,7 +8,7 @@
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
 import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livedocuments/ui';
-import { lucideLink, lucideLock, lucideUsers } from '@livedocuments/icons/lucide';
+import { lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { SHARE_STATE_META, type ShareState } from './share-states';
 

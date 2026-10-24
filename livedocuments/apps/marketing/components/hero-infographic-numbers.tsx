@@ -1,5 +1,5 @@
-import type { StyledPrim } from '@livedocuments/icons';
-import { lucideHeart, lucideLayers, lucideStar, lucideUsers } from '@livedocuments/icons/lucide';
+import type { StyledPrim } from '@liveworkspace/icons';
+import { lucideHeart, lucideLayers, lucideStar, lucideUsers } from '@liveworkspace/icons/lucide';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 import {

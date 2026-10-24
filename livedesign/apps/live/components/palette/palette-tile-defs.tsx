@@ -19,7 +19,7 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livedesign/ui';
 import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';

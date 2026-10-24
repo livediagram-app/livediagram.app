@@ -1,4 +1,4 @@
-import type { StickerDef } from '@livedesign/icons';
+import type { StickerDef } from '@liveworkspace/icons';
 import { STICKER_CATEGORIES, STICKER_DND_MIME, stickersInCategory } from '@/lib/stickers';
 import { StickerArt } from '@/components/canvas/StickerView';
 import {

@@ -6,7 +6,7 @@ import {
   lucideGlobe,
   lucideKey,
   lucideLock,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { CSSProperties, ReactNode } from 'react';
 import { type ListedApp, listedApps } from '@/lib/apps';
 import { AppMark } from './AppLogo';

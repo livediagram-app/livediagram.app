@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveplanner/icons/lucide';
+import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 import { Brand } from './Brand';

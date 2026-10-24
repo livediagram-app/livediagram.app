@@ -95,9 +95,6 @@ importers:
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedesign/page-lint':
         specifier: workspace:*
         version: link:../../packages/page-lint
@@ -110,6 +107,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -220,9 +220,6 @@ importers:
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedesign/icons':
-        specifier: workspace:^
-        version: link:../../packages/icons
       '@livedesign/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -232,6 +229,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -323,9 +323,6 @@ importers:
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../../packages/photo-engine
@@ -347,6 +344,9 @@ importers:
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -444,9 +444,6 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedesign/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews
@@ -459,6 +456,9 @@ importers:
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -541,9 +541,6 @@ importers:
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedesign/page-lint':
         specifier: workspace:*
         version: link:../../packages/page-lint
@@ -553,6 +550,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -716,12 +716,12 @@ importers:
 
   livedesign/packages/design:
     dependencies:
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../photo-engine
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../../../packages/page-background
@@ -796,15 +796,15 @@ importers:
       '@livedesign/design':
         specifier: workspace:*
         version: link:../design
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../photo-engine
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
     devDependencies:
       '@livedesign/design-views':
         specifier: workspace:*
@@ -843,37 +843,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-
-  livedesign/packages/icons:
-    dependencies:
-      svg-path-bbox:
-        specifier: 2.1.0
-        version: 2.1.0
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      lucide-static:
-        specifier: 1.52.0
-        version: 1.52.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livedesign/packages/licences:
     devDependencies:
@@ -1070,9 +1039,6 @@ importers:
       '@livedesign/design':
         specifier: workspace:*
         version: link:../design
-      '@livedesign/icons':
-        specifier: workspace:^
-        version: link:../icons
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
@@ -1082,6 +1048,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../../../packages/account-menu
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1182,15 +1151,15 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -1270,12 +1239,12 @@ importers:
       '@livediagram/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -1319,15 +1288,15 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1404,9 +1373,6 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livediagram/sticky-model':
         specifier: workspace:*
         version: link:../../packages/sticky-model
@@ -1431,6 +1397,9 @@ importers:
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -1540,9 +1509,6 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livediagram/icons':
-        specifier: workspace:^
-        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -1552,6 +1518,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -1631,9 +1600,6 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livediagram/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews
@@ -1646,6 +1612,9 @@ importers:
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1728,15 +1697,15 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../../packages/document
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -1937,9 +1906,9 @@ importers:
 
   livediagram/packages/document:
     dependencies:
-      '@livediagram/icons':
+      '@liveworkspace/icons':
         specifier: workspace:*
-        version: link:../icons
+        version: link:../../../packages/icons
       perfect-freehand:
         specifier: ^1.2.3
         version: 1.2.3
@@ -2005,12 +1974,12 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
     devDependencies:
       '@livediagram/document-views':
         specifier: workspace:*
@@ -2070,37 +2039,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-
-  livediagram/packages/icons:
-    dependencies:
-      svg-path-bbox:
-        specifier: 2.1.0
-        version: 2.1.0
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      lucide-static:
-        specifier: 1.52.0
-        version: 1.52.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livediagram/packages/licences:
     devDependencies:
@@ -2292,15 +2230,15 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../help-registry
-      '@livediagram/icons':
-        specifier: workspace:^
-        version: link:../icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../../../packages/account-menu
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -2407,15 +2345,15 @@ importers:
       '@livedocuments/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -2538,9 +2476,6 @@ importers:
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedocuments/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -2559,6 +2494,9 @@ importers:
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -2674,9 +2612,6 @@ importers:
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livedocuments/icons':
-        specifier: workspace:^
-        version: link:../../packages/icons
       '@livedocuments/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -2686,6 +2621,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -2765,9 +2703,6 @@ importers:
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedocuments/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews
@@ -2780,6 +2715,9 @@ importers:
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2865,15 +2803,15 @@ importers:
       '@livedocuments/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -3071,9 +3009,9 @@ importers:
 
   livedocuments/packages/document:
     dependencies:
-      '@livedocuments/icons':
+      '@liveworkspace/icons':
         specifier: workspace:*
-        version: link:../icons
+        version: link:../../../packages/icons
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../../../packages/page-background
@@ -3145,12 +3083,12 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
     devDependencies:
       '@livedocuments/document-views':
         specifier: workspace:*
@@ -3189,37 +3127,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-
-  livedocuments/packages/icons:
-    dependencies:
-      svg-path-bbox:
-        specifier: 2.1.0
-        version: 2.1.0
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      lucide-static:
-        specifier: 1.52.0
-        version: 1.52.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livedocuments/packages/licences:
     devDependencies:
@@ -3352,15 +3259,15 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
-      '@livedocuments/icons':
-        specifier: workspace:^
-        version: link:../icons
       '@livedocuments/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../../../packages/account-menu
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -3455,9 +3362,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../../packages/forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../../packages/items
@@ -3479,6 +3383,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -3592,9 +3499,6 @@ importers:
       '@liveplanner/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../../packages/items
@@ -3628,6 +3532,9 @@ importers:
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -3722,9 +3629,6 @@ importers:
       '@liveplanner/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@liveplanner/icons':
-        specifier: workspace:^
-        version: link:../../packages/icons
       '@liveplanner/sheets':
         specifier: workspace:*
         version: link:../../packages/sheets
@@ -3737,6 +3641,9 @@ importers:
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../../../packages/help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -3813,9 +3720,6 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveplanner/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews
@@ -3828,6 +3732,9 @@ importers:
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -3910,9 +3817,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../../packages/forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../../packages/items
@@ -3931,6 +3835,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
@@ -4188,37 +4095,6 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  liveplanner/packages/icons:
-    dependencies:
-      svg-path-bbox:
-        specifier: 2.1.0
-        version: 2.1.0
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      lucide-static:
-        specifier: 1.52.0
-        version: 1.52.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   liveplanner/packages/items:
     devDependencies:
       '@liveworkspace/oxlint-config':
@@ -4269,9 +4145,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../items
@@ -4281,6 +4154,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -4306,12 +4182,12 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../items
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../../../packages/page-background
@@ -4435,9 +4311,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../project
@@ -4447,6 +4320,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -4524,9 +4400,6 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@liveplanner/icons':
-        specifier: workspace:^
-        version: link:../icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../items
@@ -4539,6 +4412,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../../../packages/account-menu
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../../../packages/icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -4736,27 +4612,18 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../../livedesign/packages/api-schema
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../../livedesign/packages/icons
       '@livedesign/ui':
         specifier: workspace:^
         version: link:../../../livedesign/packages/ui
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../../livediagram/packages/api-schema
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../../../livediagram/packages/icons
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../../livediagram/packages/ui
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/api-schema
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../../livedocuments/packages/icons
       '@livedocuments/ui':
         specifier: workspace:^
         version: link:../../../livedocuments/packages/ui
@@ -4766,9 +4633,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../../liveplanner/packages/icons
       '@liveplanner/items':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/items
@@ -4784,6 +4648,9 @@ importers:
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
@@ -5105,6 +4972,37 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/icons:
+    dependencies:
+      svg-path-bbox:
+        specifier: 2.1.0
+        version: 2.1.0
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      lucide-static:
+        specifier: 1.52.0
+        version: 1.52.0
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)

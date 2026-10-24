@@ -1,5 +1,5 @@
 import { lucideGlyph, SiteSwitcher } from '@livediagram/ui';
-import { lucideChartLine, lucideLayoutGrid } from '@livediagram/icons/lucide';
+import { lucideChartLine, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { AccountControl } from './AccountControl';
 import { SiteRail } from './SiteRail';

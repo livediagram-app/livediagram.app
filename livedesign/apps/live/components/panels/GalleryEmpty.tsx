@@ -2,7 +2,7 @@
 // line saying how one gets there. Shared by the Image picker's Gallery tab and a page background's Choose From My
 // Images; the Gallery pane draws the page-sized EmptyState instead.
 import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
-import { lucideImage } from '@livedesign/icons/lucide';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 
 const ImageIcon = lucideGlyph(lucideImage, 18);
 

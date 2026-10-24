@@ -5,7 +5,7 @@
 // while the element is maximised (it already fills the view), outside an editor's canvas, or in a Dashboard's slot
 // (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), where the page covers the canvas it would move.
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideScanEye } from '@liveplanner/icons/lucide';
+import { lucideScanEye } from '@liveworkspace/icons/lucide';
 import { useCanvasFocus } from '@/hooks/canvas/useCanvasFocus';
 import { useContext } from 'react';
 import { track } from '@/lib/telemetry';

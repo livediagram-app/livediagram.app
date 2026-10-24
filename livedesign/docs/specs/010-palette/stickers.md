@@ -87,7 +87,7 @@ it exists not to be.
 
 ## The artwork is built once
 
-`stickerArt(def)` in `@livedesign/icons` returns `{ viewBox, markup }` and is
+`stickerArt(def)` in `@liveworkspace/icons` returns `{ viewBox, markup }` and is
 the ONLY place a sticker is drawn. The editor canvas, the palette tile, the
 SVG / PNG / PDF export, the api worker's share thumbnail and the MCP render all
 call it. A sticker that looked one way in the editor and another in the export

@@ -28,7 +28,7 @@ import {
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ToolsBreadcrumb } from '@/components/palette/palette-tools-nav';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideArrowUpDown } from '@liveplanner/icons/lucide';
+import { lucideArrowUpDown } from '@liveworkspace/icons/lucide';
 import { PICK_CARD, SlotCategoryCard, type SlotCategory } from './slot-fill-categories';
 import { tileById, tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { tileCaption } from '@/components/palette/tile-caption';

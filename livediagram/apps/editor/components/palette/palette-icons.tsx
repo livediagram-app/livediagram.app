@@ -23,11 +23,11 @@ import {
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -543,7 +543,7 @@ export function SessionPollIcon() {
 }
 
 // A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @livediagram/icons), the ONE drawing the palette, the Mode button face and
+// @liveworkspace/icons), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;

@@ -14,7 +14,7 @@ import {
   type FormQuestion,
 } from '@liveplanner/forms';
 import { ArrowDownIcon, ArrowUpIcon, DuplicateIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideGripVertical } from '@liveplanner/icons/lucide';
+import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { Tooltip } from '@liveplanner/ui';
 import {
   deleteQuestion,

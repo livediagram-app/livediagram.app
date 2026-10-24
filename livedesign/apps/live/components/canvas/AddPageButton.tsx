@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { PAGE_GAP, type LaidOutPage, type Page, type WireframeDeviceId } from '@livedesign/design';
-import { lucideLayoutGrid } from '@livedesign/icons/lucide';
+import { lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, PlusIcon, Tooltip } from '@livedesign/ui';
 import { addAnotherLabel } from '@/lib/add-page-labels';
 import { AddScreenPopover } from './AddScreenPopover';

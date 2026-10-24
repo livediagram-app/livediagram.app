@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { stickerArt } from '@livedesign/icons';
+import { stickerArt } from '@liveworkspace/icons';
 import {
   STICKER_CATEGORIES,
   getSticker,

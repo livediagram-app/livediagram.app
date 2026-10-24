@@ -4,7 +4,7 @@
 // Content only: never a document's contents, only the user's own account facts
 // plus a team name the inviter already chose.
 
-import { xmlEscape } from '@livedocuments/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 

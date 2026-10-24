@@ -1,4 +1,4 @@
-import { lucideWorkflow } from '@liveplanner/icons/lucide';
+import { lucideWorkflow } from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@liveplanner/project';
 import type { ComponentType } from 'react';
 

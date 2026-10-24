@@ -24,7 +24,7 @@ function and a test here; nothing here adds design.
 | submit            | `submitPages`, `pagesRoomOps`                                                                                                                                                                 | `apps/api/src/changesets/pages.ts`                                                        |
 | relay             | `relayPages`                                                                                                                                                                                  | `apps/api/src/room-client.ts`                                                             |
 | grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`; `shouldGrowForAbsentWriter`                                                                                                    | `apps/editor/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
-| icon check        | `isIconId`, `iconsLike`                                                                                                                                                                       | `packages/icons/src/search.ts`                                                            |
+| icon check        | `isIconId`, `iconsLike`                                                                                                                                                                       | `../packages/icons/src/search.ts`                                                         |
 | route             | `handleTabPages`                                                                                                                                                                              | `apps/api/src/routes/tab-pages-route.ts`                                                  |
 | verbs             | `changePages`, `writeArticle`, `readArticle`, `pagesTabOf`                                                                                                                                    | `packages/agent-verbs/src/pages/pages-calls.ts`                                           |
 | MCP tools         | `change_pages`, `write_article` (`mcpChangePages`, `mcpWriteArticle`)                                                                                                                         | `packages/agent-verbs/src/mcp/pages-schema.ts`, `apps/mcp/src/pages-tools.ts`             |
@@ -295,7 +295,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | The `pages` view and header                     | `packages/document-views/src/pages.test.ts`, `render-view.test.ts`                      |
 | Tools, parity, output schema                    | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts`      |
 | Which tab (verbs), CLI verbs                    | `packages/agent-verbs/src/verbs/pages.test.ts`                                          |
-| Icon ids                                        | `packages/edit-operations/src/fields.test.ts`, `packages/icons/src/search.test.ts`      |
+| Icon ids                                        | `packages/edit-operations/src/fields.test.ts`, `../packages/icons/src/search.test.ts`   |
 | Performance                                     | `page-changes.test.ts` "worst case", `article-markdown-io.test.ts` "worst case"         |
 
 Not unit tested: the route's stale retry and `tab_busy` (they follow the changeset submit's own, tested there).

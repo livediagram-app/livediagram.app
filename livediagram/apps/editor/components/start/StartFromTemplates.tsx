@@ -26,7 +26,7 @@ import {
   lucideUsers,
   lucideVote,
   lucideWorkflow,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';

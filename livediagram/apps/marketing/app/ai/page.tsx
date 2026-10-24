@@ -1,4 +1,4 @@
-import { lucideArrowRight } from '@livediagram/icons/lucide';
+import { lucideArrowRight } from '@liveworkspace/icons/lucide';
 import { buttonClassName, ButtonContent, lucideGlyph, pageMetadata } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 

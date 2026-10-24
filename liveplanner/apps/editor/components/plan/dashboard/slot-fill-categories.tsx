@@ -12,7 +12,7 @@ import {
   lucideSquareKanban,
   lucideStickyNote,
   lucideTable,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { MetricPreview, VisualisationPreview } from './slot-previews';

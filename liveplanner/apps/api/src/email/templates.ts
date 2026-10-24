@@ -5,7 +5,7 @@
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
 // Content only: never a project's contents, only names the recipient already knows.
 
-import { xmlEscape } from '@liveplanner/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 

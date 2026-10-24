@@ -9,7 +9,7 @@
 // Tooltip naming the limit. A tab with no kind yet (a blank first page) has no footer.
 import { useCallback, useRef, useState } from 'react';
 import { MAX_PAGES } from '@livedesign/design';
-import { lucideLayoutGrid, lucidePlus } from '@livedesign/icons/lucide';
+import { lucideLayoutGrid, lucidePlus } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { addAnotherLabel } from '@/lib/add-page-labels';

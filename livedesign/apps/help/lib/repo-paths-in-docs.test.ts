@@ -40,7 +40,7 @@ const WORKSPACE_ROOTS = [
   'apps/router/',
   'packages/design/',
   'packages/api-schema/',
-  'packages/icons/',
+  '../packages/icons/',
   'packages/ui/',
   'packages/templates/',
   'packages/help-registry/',

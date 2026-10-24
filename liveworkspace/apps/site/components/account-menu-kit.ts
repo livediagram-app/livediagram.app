@@ -6,11 +6,7 @@ import {
   useMenuButton,
   type MenuInitialFocus,
 } from '@livediagram/ui';
-import {
-  lucideChevronDown,
-  lucideKey,
-  lucideSettings,
-} from '@livediagram/icons/lucide';
+import { lucideChevronDown, lucideKey, lucideSettings } from '@liveworkspace/icons/lucide';
 
 // The site's menu hooks and icons for the shared account menu (@liveworkspace/account-menu): the ones the rest of
 // the site's menus use, from livediagram's UI package.

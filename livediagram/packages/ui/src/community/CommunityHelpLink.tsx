@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideCircleHelp } from '@livediagram/icons/lucide';
+import { lucideCircleHelp } from '@liveworkspace/icons/lucide';
 import { COMMUNITY_HELP, type CommunityHelpArticle } from '@livediagram/help-registry/community';
 import { siteTrack } from '@livediagram/telemetry-client';
 import { buttonClassName, ButtonContent } from '../Button';

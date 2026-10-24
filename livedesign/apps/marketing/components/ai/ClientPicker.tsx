@@ -7,7 +7,7 @@ import {
   lucideLink,
   lucideMessagesSquare,
   lucideSquareCode,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 

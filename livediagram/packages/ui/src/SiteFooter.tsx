@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livediagram/icons/lucide';
+import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveworkspace/icons/lucide';
 
 import { Brand } from './Brand';
 import { CommunityFooterLink } from './community/CommunityFooterLink';

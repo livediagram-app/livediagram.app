@@ -6,7 +6,7 @@ import {
   lucideDownload,
   lucideUsers,
   lucideUserX,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { BrandMark, ChevronRightIcon, lucideGlyph, type IconProps } from '@liveplanner/ui';
 import {
   useEffect,

@@ -20,7 +20,7 @@ import {
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { topCategorySlug } from '@livedesign/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livedesign/ui';
 import type { ReactNode } from 'react';

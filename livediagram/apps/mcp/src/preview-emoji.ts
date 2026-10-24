@@ -9,7 +9,7 @@ import {
   stickerEmojiGlyph,
   twemojiFileName,
   type EmojiArt,
-} from '@livediagram/icons/resolve';
+} from '@liveworkspace/icons/resolve';
 import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@livediagram/document';
 import { cached, type Fetcher } from './preview-fonts';
 

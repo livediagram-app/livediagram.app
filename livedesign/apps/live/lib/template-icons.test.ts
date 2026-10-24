@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveIconExportArt, resolveStickerArt } from '@livedesign/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { buildTemplateTabs, TEMPLATES } from '@livedesign/templates';
 
 // Every icon and sticker a template places must exist in the catalogues: an unknown id renders the

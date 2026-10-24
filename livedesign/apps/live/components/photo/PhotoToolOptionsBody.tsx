@@ -12,7 +12,7 @@ import {
   lucideAlignEndVertical,
   lucideAlignStartHorizontal,
   lucideAlignStartVertical,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { Gradient } from '@livedesign/photo-engine';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';

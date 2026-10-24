@@ -1,4 +1,4 @@
-import type { IconPrim } from '@livedesign/icons';
+import type { IconPrim } from '@liveworkspace/icons';
 import {
   lucideArrowDown,
   lucideArrowUp,
@@ -17,7 +17,7 @@ import {
   lucideScan,
   lucideTrash2,
   lucideX,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';

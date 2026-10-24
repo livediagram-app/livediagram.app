@@ -10,7 +10,7 @@ import {
   withArticle,
   type Element,
 } from '@livediagram/document';
-import { iconsLike, isIconId } from '@livediagram/icons/search';
+import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.
 const NEAREST_FIELDS_MAX = 4;

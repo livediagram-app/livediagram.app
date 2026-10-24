@@ -10,7 +10,7 @@ import {
   lucideTimer,
   lucideUsers,
   lucideVote,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { topCategorySlug } from '@liveplanner/help-registry';
 import { Prims, Glyph as UiGlyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';

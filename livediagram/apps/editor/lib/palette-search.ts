@@ -18,7 +18,7 @@ import {
   getLoadedStickerCatalog,
   getLoadedTechIconCatalog,
 } from '@/lib/icon-registry';
-import { isLegacyEmojiIconId } from '@livediagram/icons';
+import { isLegacyEmojiIconId } from '@liveworkspace/icons';
 
 // The shape-placing tiles, in palette order. Derived from the shared
 // catalogue (palette-tile-defs) rather than restated, which is what keeps search from

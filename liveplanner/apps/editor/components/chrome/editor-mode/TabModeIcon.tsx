@@ -4,7 +4,7 @@ import {
   lucideGrid3x3,
   lucideLayoutGrid,
   lucideSquareKanban,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { isPlanTabKind, type PlanTabKind, type Tab } from '@liveplanner/project';
 import type { CSSProperties } from 'react';
 

@@ -3,7 +3,7 @@
 // The photo tools' colours (docs/specs/031-photo/photo-pages.md "The photo tools"), after the groups: the foreground swatch
 // over and left of the background's, a swap (X) and a reset (D, black over white). A press on a
 // swatch opens the shared colour picker for it. The person's own, kept in this browser.
-import { lucideArrowLeftRight, lucideRotateCcw } from '@livedesign/icons/lucide';
+import { lucideArrowLeftRight, lucideRotateCcw } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';

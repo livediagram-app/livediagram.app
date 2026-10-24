@@ -12,7 +12,7 @@ import {
   lucideCircleDot,
   lucideGroup,
   lucideLayers,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { CardTypeOptions, InfoNote, SwimlaneOptions } from '@/components/palette/plan-menu-parts';
 import { OptionRows } from '../OptionRows';

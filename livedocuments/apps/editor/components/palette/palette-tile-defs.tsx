@@ -16,7 +16,7 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livedocuments/ui';
 import { tileCaption } from './tile-caption';
 

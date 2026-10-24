@@ -37,7 +37,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 
 - `@livedocuments/document` is already the isomorphic core: types, `isValidTab`, `autoLayoutElements`, `graphToElements` (`graph-authoring.ts`, whose header already says "the public API can adopt it"), `parseMermaid`, `mermaid-serialise.ts` (elements to Mermaid), `renderElementsToSvg`, `element-ops.ts` (`diffToElementOps`, `applyElementOp`), `element-deltas.ts`, `comments.ts`, `element-display-label.ts`, `element-kind-label.ts`. Nothing in it touches the DOM. It is the right home for the moved MCP logic.
 - `@livedocuments/api-schema` holds the wire DTOs, `DOCUMENT_FORMAT` (2) and its header `X-Livedocuments-Format`, `BUILD_ID_HEADER`, telemetry enums, `embedTabImages`, `bearerTokenOf`, `isLoopbackHostname`. The CLI consumes it unchanged.
-- `@livedocuments/templates` and `@livedocuments/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
+- `@livedocuments/templates` and `@liveworkspace/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
 - **One piece lived in the wrong app:** `tabToMarkdownText` (the Markdown outline) was in the editor app. It is the seed of the outline view; it now lives in `packages/document/src/export-tab-text.ts`, and the outline view itself in `document-views`.
 - **Packaging fact that shapes distribution:** every internal package is `private` and exports raw TypeScript (`"main": "./src/index.ts"`). Nothing can be published as is; the CLI must be **bundled** (esbuild / tsdown) so internal packages are inlined. Source size: `document` 2.8 MB, `templates` 800 KB, `icons` 280 KB of TS, tree-shaken in the bundle.
 

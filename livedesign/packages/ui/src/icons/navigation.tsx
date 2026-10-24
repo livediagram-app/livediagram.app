@@ -7,7 +7,7 @@ import {
   lucideMenu,
   lucideMinimize2,
   lucideSearch,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 import { lucideGlyph } from './lucide-glyph';
 

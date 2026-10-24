@@ -7,7 +7,7 @@
 // place under a header (its picture, name, Reset, and All Adjustments back to the tiles); a change shows at once
 // and commits once it rests.
 import { useState } from 'react';
-import { lucideChevronLeft, lucideRotateCcw } from '@livedesign/icons/lucide';
+import { lucideChevronLeft, lucideRotateCcw } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedesign/ui';
 import {
   ADJUSTMENTS,

@@ -7,7 +7,7 @@
 // chevrons, menu, search, the canvas cluster and the toolbelt) come from @livedesign/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
-import { lucideShare2 } from '@livedesign/icons/lucide';
+import { lucideShare2 } from '@liveworkspace/icons/lucide';
 import { Glyph, GlyphDisc, Prims } from '@livedesign/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:

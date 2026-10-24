@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, type Element } from '@livedocuments/document';
 import { templateCanvasOverrides, type TemplateKind } from '@livedocuments/templates';
-import { primsBounds } from '@livedocuments/icons';
-import { ICON_CATALOG_1 } from '@livedocuments/icons/icon-catalog-1';
-import { ICON_CATALOG_2 } from '@livedocuments/icons/icon-catalog-2';
+import { primsBounds } from '@liveworkspace/icons';
+import { ICON_CATALOG_1 } from '@liveworkspace/icons/icon-catalog-1';
+import { ICON_CATALOG_2 } from '@liveworkspace/icons/icon-catalog-2';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 
 // `buildTemplate` is the dispatch that turns a TemplateKind into the

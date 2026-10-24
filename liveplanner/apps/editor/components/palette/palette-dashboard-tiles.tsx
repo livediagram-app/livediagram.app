@@ -12,7 +12,7 @@ import {
   lucideClipboardList,
   lucideHash,
   lucideLink,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import {
   FORM_METRICS,

@@ -17,7 +17,7 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideThermometer,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';

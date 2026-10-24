@@ -6,7 +6,7 @@
 // published form takes none, and an Editor's Problems with this Form, which opens Share Form where they are listed.
 import type { ReactNode } from 'react';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideTriangleAlert } from '@liveplanner/icons/lucide';
+import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';

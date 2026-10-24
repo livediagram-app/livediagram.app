@@ -4,7 +4,7 @@
 // page in focus drawn live from its pixels (PhotoSurface), every other photo page its preview, and a
 // photo with no preview yet the checkerboard with a picture glyph. Under the elements, as the sheets
 // are.
-import { lucideImage } from '@livedesign/icons/lucide';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import type { LaidOutPage } from '@livedesign/design';
 import { PREVIEW_CHECKER } from '@/components/dialogs/ImageExportPanel';

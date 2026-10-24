@@ -1,4 +1,4 @@
-import type { IconPrim } from '@livedesign/icons';
+import type { IconPrim } from '@liveworkspace/icons';
 import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 
 import { Prims } from './Prims';

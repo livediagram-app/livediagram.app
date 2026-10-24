@@ -14,7 +14,7 @@ import {
   type FlowchartStepType,
 } from '@livediagram/document';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucideRoute, lucideShapes, lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

@@ -1,5 +1,5 @@
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideCheck } from '@livediagram/icons/lucide';
+import { lucideCheck } from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { type AppArt, listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';

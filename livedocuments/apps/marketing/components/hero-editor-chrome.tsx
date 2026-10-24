@@ -1,10 +1,10 @@
 // Pieces of the hero's editor-window mock drawn from the editor's own glyphs
-// (@livedocuments/ui, @livedocuments/icons), so they cannot drift from the editor they depict
+// (@livedocuments/ui, @liveworkspace/icons), so they cannot drift from the editor they depict
 // (docs/specs/019-marketing/marketing-site.md): the canvas cluster, the tab bar's toolbelt, the
 // Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md).
 // Everything is at the mock's scale, about five eighths of the editor's.
 
-import { MODE_GLYPHS } from '@livedocuments/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
 import {
   AppearanceIcon,
   ChevronDownIcon,

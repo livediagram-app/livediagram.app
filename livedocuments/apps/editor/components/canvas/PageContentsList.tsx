@@ -11,7 +11,7 @@ import {
   lucideLockOpen,
   lucideTrash2,
   lucideSearch,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';

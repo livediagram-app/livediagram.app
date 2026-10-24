@@ -48,7 +48,7 @@ import {
   lucideHash,
   lucidePalette,
   lucideRoute,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { MENU_CELL_INPUT } from '@/components/palette/menu-editor-classes';
 import type { SankeySetters } from '@/hooks/canvas/useSankeySetters';
 import {

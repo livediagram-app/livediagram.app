@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideCheck, lucideCopy } from '@livedesign/icons/lucide';
+import { lucideCheck, lucideCopy } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, useCopiedFlash } from '@livedesign/ui';
 
 const CopyIcon = lucideGlyph(lucideCopy, 14);

@@ -17,7 +17,7 @@ import {
   lucideListChecks,
   lucideLink,
   lucideType,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';

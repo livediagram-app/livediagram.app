@@ -6,7 +6,12 @@
 import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedesign/ui';
-import { lucideLightbulb, lucidePenTool, lucideShapes, lucideStar } from '@livedesign/icons/lucide';
+import {
+  lucideLightbulb,
+  lucidePenTool,
+  lucideShapes,
+  lucideStar,
+} from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livedesign/design';
 import type { TemplateKind } from '@livedesign/templates';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';

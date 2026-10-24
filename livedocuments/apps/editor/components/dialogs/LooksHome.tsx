@@ -14,7 +14,7 @@ import {
   type TextSizePreset,
 } from '@livedocuments/document';
 import { Glyph, lucideGlyph } from '@livedocuments/ui';
-import { lucideChevronRight } from '@livedocuments/icons/lucide';
+import { lucideChevronRight } from '@liveworkspace/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { patternLabel as labelOfPattern } from '@/components/palette/palette-patterns';

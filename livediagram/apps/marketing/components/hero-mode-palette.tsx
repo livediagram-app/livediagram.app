@@ -7,7 +7,7 @@
 // (hero-editor-chrome.tsx).
 
 import type { EditorMode } from '@livediagram/document';
-import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
 import {
   AskGroupIcon,
   BehaviourTabIcon,

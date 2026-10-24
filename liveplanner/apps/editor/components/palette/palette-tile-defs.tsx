@@ -7,7 +7,7 @@ import {
   StopwatchIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
-import { lucideStickyNote, lucideType } from '@liveplanner/icons/lucide';
+import { lucideStickyNote, lucideType } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@liveplanner/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
 

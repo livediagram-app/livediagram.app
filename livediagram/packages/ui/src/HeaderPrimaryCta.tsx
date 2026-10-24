@@ -4,7 +4,7 @@ import { explorerHomeHref } from '@liveworkspace/sites/workspace-proxy';
 import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
-import { lucideLayoutGrid } from '@livediagram/icons/lucide';
+import { lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import { ButtonContent, buttonClassName } from './Button';
 import { lucideGlyph } from './icons/lucide-glyph';
 

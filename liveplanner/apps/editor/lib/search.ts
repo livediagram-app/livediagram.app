@@ -11,7 +11,7 @@
 // + the dynamic-import wrapping.
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
-import { matches, paletteRank } from '@liveplanner/icons';
+import { matches, paletteRank } from '@liveworkspace/icons';
 import type { ShapeKind, Tab } from '@liveplanner/project';
 import {
   boardResults,

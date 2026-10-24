@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideListOrdered } from '@livedocuments/icons/lucide';
+import { lucideListOrdered } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import { ClusterPopoverSegment } from './ClusterPopoverButton';
 

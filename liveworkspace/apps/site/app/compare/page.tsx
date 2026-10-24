@@ -1,4 +1,4 @@
-import { lucideArrowRight } from '@livediagram/icons/lucide';
+import { lucideArrowRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import type { Metadata } from 'next';
 import type { CSSProperties } from 'react';

@@ -6,7 +6,7 @@
 // "Add Another Slide"), always of the tab's kind ("One kind a tab"). At the page limit it is
 // disabled, a Tooltip naming the limit.
 import { MAX_PAGES } from '@livedocuments/document';
-import { lucidePlus } from '@livedocuments/icons/lucide';
+import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedocuments/ui';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { addAnotherLabel } from '@/lib/add-page-labels';

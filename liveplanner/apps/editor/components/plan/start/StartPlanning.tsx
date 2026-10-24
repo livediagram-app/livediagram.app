@@ -15,7 +15,7 @@ import {
   lucideLightbulb,
   lucideSquareKanban,
   lucideStar,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
 import type { PlanTemplateKind } from '@liveplanner/templates';
 import type { Tab } from '@liveplanner/project';

@@ -19,18 +19,18 @@
 // redistributing vendors' proprietary SVGs (docs/specs/002-project-scope/third-party-licences.md). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
-// (colour + SVG markup) lives in @liveplanner/icons/tech-icon-catalog and
+// (colour + SVG markup) lives in @liveworkspace/icons/tech-icon-catalog and
 // loads as an async chunk through lib/icon-registry.ts, keeping ~25 kB out
 // of the editor's first-load JS. Nothing here may import the data module
 // statically.
 
-// The catalogue types live in @liveplanner/icons (shared with the Workers'
+// The catalogue types live in @liveworkspace/icons (shared with the Workers'
 // headless renders); re-exported so existing import sites keep resolving.
-export type { TechIconDef, TechProvider } from '@liveplanner/icons';
+export type { TechIconDef, TechProvider } from '@liveworkspace/icons';
 
-// The tech-icon id set + `isTechIconId` live in @liveplanner/icons
+// The tech-icon id set + `isTechIconId` live in @liveworkspace/icons
 // (tech-icon-ids.ts) so the project package's connector geometry can use
 // them too (a tech icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md);
 // re-exported so existing import sites keep resolving. Still a lightweight
 // first-load module — only the colour/glyph data waits on the async chunk.
-export { isTechIconId, TECH_ICON_IDS } from '@liveplanner/icons';
+export { isTechIconId, TECH_ICON_IDS } from '@liveworkspace/icons';

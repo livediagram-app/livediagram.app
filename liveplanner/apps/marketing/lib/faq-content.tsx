@@ -9,7 +9,7 @@ import {
   lucideTable,
   lucideUsers,
   lucideZap,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CONTACT_FORM_URL, lucideGlyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 

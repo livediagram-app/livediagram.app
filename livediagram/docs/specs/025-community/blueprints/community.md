@@ -520,4 +520,4 @@ See [DEFAULTS.md](DEFAULTS.md), rows C1 to C17.
 
 - App icon: `apps/community/app/icon.svg`, hand-authored in this repo (MIT).
 - Glyphs: `apps/community/components/shared/icons.tsx` draws Lucide-derived primitives (`lucide*`) from the shared
-  `@livediagram/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.
+  `@liveworkspace/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.

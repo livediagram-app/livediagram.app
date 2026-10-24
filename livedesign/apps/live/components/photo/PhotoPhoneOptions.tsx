@@ -5,7 +5,7 @@
 // its sections, its presets), and while a crop or Free Transform is under way a small bar over the tools row holds
 // Cancel and Crop or Commit.
 import { Button } from '@livedesign/ui';
-import { lucideScaling } from '@livedesign/icons/lucide';
+import { lucideScaling } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { FlyoutHeader } from '@/components/palette/CategoryFlyout';
 import { BottomSheet } from '@/components/primitives/BottomSheet';

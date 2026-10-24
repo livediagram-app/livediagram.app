@@ -39,9 +39,9 @@
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
-    "@livedocuments/icons": "workspace:^",
     "@livedocuments/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

@@ -25,7 +25,7 @@ import {
 import { plural } from '@liveplanner/project';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal, Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideBetweenVerticalEnd } from '@liveplanner/icons/lucide';
+import { lucideBetweenVerticalEnd } from '@liveworkspace/icons/lucide';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
 const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);

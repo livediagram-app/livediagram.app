@@ -1,7 +1,7 @@
-import type { StyledPrim } from '@livedocuments/icons';
+import type { StyledPrim } from '@liveworkspace/icons';
 
 // Catalogue / vendored-Lucide primitives as SVG children. Paint (stroke, fill, weight) rides on
-// the parent <svg> or <g>, exactly like the markup builders in @livedocuments/icons; a StyledPrim's
+// the parent <svg> or <g>, exactly like the markup builders in @liveworkspace/icons; a StyledPrim's
 // own paint (a filled dot, a heavier stroke: the selection-mode glyphs) goes on the element.
 export function Prims({ prims }: { prims: readonly StyledPrim[] }) {
   return prims.map((p, i) => {

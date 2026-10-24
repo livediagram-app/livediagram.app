@@ -8,7 +8,7 @@ import {
   lucideFileInput,
   lucideFolder,
   lucideScale,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 

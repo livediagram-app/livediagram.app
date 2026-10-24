@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@liveplanner/forms": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
