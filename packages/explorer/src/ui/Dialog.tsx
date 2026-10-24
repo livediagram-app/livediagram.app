@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Portal } from './Portal';
+import { Portal } from '@liveworkspace/ui';
 import { CloseIcon } from './icons';
 import { useLatest } from './useLatest';
 

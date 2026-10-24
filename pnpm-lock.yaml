@@ -5257,6 +5257,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.3

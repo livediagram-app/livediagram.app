@@ -1,25 +1,18 @@
 'use client';
 
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { ReactNode } from 'react';
 
-// SSR-safe wrapper around react-dom's createPortal targeted at
-// document.body. Every dialog / popover / context menu / toast in
-// the editor was open-coding the same pair of lines:
-//
-//   if (typeof document === 'undefined') return null;
-//   return createPortal(<div>...</div>, document.body);
-//
-// 12 sites today, with a couple silently missing the SSR guard and
-// relying on the parent's `if (!open) return null` to keep them from
-// ever rendering server-side. Centralising means there's one
-// canonical "render this subtree at the top of the DOM" primitive
-// and new portal-using components don't have to relearn the guard.
-//
-// Intentionally NOT a `target` prop: every existing caller mounts on
-// document.body and adding configurability before there's a second
-// target invites bikeshedding.
+const subscribeNever = () => () => {};
+const bodyOf = () => document.body;
+const noHost = () => null;
+
+// Renders into document.body: every dialog, popover, menu and toast mounts there. A portal opened in the browser
+// is there in its first render, so its owner's layout effect can measure it (a menu places itself against its
+// anchor that way); one rendered on the server, or hydrated, has no host until the browser's own render, so the
+// server's markup and the hydrating render agree. No `typeof document` in render
+// (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
 export function Portal({ children }: { children: ReactNode }) {
-  if (typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+  const host = useSyncExternalStore<HTMLElement | null>(subscribeNever, bodyOf, noHost);
+  return host ? createPortal(children, host) : null;
 }

@@ -15,7 +15,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react';
-import { Portal } from './Portal';
+import { Portal } from '@liveworkspace/ui';
 import { useLatest } from './useLatest';
 
 const ITEM = '[role="menuitem"]:not([aria-disabled="true"])';

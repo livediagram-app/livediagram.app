@@ -23,7 +23,8 @@
   "dependencies": {
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.3.0",

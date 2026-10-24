@@ -6,7 +6,7 @@
 // popover, so a phone's header holds one button rather than a crowd of glyphs.
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Portal } from '../ui/Portal';
+import { Portal } from '@liveworkspace/ui';
 import { SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
 import { Chevron, FilterIcon, MODE_LABELS, ModeIcon, TIMELINE_MODES } from './icons';
 import {

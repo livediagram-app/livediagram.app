@@ -28,7 +28,7 @@ import {
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { CheckIcon, ChevronDownIcon, SearchIcon, SparkleIcon } from '../ui/icons';
-import { Portal } from '../ui/Portal';
+import { Portal } from '@liveworkspace/ui';
 import { withLens } from '../views';
 import type { Words } from '../words';
 import { useExplorer } from './context';

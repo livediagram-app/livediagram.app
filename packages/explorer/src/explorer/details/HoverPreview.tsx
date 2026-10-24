@@ -5,7 +5,7 @@
 // it is decoration, hidden from assistive technology.
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Portal } from '../../ui/Portal';
+import { Portal } from '@liveworkspace/ui';
 
 export const HOVER_PREVIEW_MS = 600;
 const WIDTH = 224;
