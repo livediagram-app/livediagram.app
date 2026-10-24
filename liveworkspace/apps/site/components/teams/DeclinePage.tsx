@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { accountApi, errorMessage } from '@/lib/account-api';
 import { joinTokenFrom, INVITES_PATH } from '@/lib/teams';
-import { BUTTON } from '../settings/AccountShell';
+import { BUTTON } from '../settings/account-ui';
 import { JoinShell, Notice } from './JoinPage';
 
 const noChange = () => () => {};

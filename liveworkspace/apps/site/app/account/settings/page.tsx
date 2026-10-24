@@ -1,22 +1,11 @@
 import type { Metadata } from 'next';
-import { AccountShell } from '@/components/settings/AccountShell';
-import { SettingsLanding } from '@/components/settings/SettingsLanding';
+import { AccountRedirect } from '@/components/settings/AccountRedirect';
 
-export const metadata: Metadata = {
-  title: 'Settings · liveworkspace',
-  robots: { index: false },
-  alternates: { canonical: '/account/settings' },
-};
+export const metadata: Metadata = { title: 'Settings · liveworkspace', robots: { index: false } };
 
-// The Settings panel, opened over the account page (liveworkspace/docs/site.md "Settings"): the same panel every
-// app's Settings and the Explorer open.
+// /account/settings is no longer a page: it opens the Settings panel, in the Explorer, on the section the address
+// names (every email ever sent links here; liveworkspace/docs/site.md "Your
+// account").
 export default function Page() {
-  return (
-    <AccountShell
-      path="/account/settings"
-      intro="Your profile, the emails we send you, your privacy and accessibility choices, and every app’s own settings. Each is saved as you change it."
-    >
-      <SettingsLanding />
-    </AccountShell>
-  );
+  return <AccountRedirect />;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { BrandMark, Dialog, lucideGlyph, useMediaQuery } from '@livediagram/ui';
 import { lucideExternalLink } from '@livediagram/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
@@ -27,6 +27,9 @@ import { ProfileCard, type Profile } from './ProfileCard';
 import { settingsErrorMessage } from './settings-ui';
 
 const OutIcon = lucideGlyph(lucideExternalLink, 14);
+
+// The API Tokens category's own code: fetched when it is first shown, not with the panel.
+const TokensPanel = lazy(() => import('./TokensPanel').then((m) => ({ default: m.TokensPanel })));
 
 // The apps' phone layout: narrower than `sm`, or a touch screen under 500px tall (each editor's
 // PHONE_MEDIA_QUERY).
@@ -76,15 +79,15 @@ export default function SiteSettingsDialog({
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
   const link = app ? appSettingsLinks().find((l) => l.id === app) : undefined;
   // On an app's own address the page has the app's token, not this site's session: the profile and the API tokens
-  // are set on liveworkspace.app, so they link there.
+  // are set on liveworkspace.app, so they link to the panel there, on the same category.
   const account = useMemo<AccountHost>(
     () =>
       pageApp()
         ? {
-            profileHref: workspaceHref('/account/settings#profile'),
-            tokensHref: workspaceHref('/account/tokens'),
+            profileHref: workspaceHref('/explorer?settings=profile'),
+            tokensHref: workspaceHref('/explorer?settings=tokens'),
           }
-        : { renderProfile: () => <ProfileRow />, tokensHref: '/account/tokens' },
+        : { renderProfile: () => <ProfileRow />, renderTokens: () => <TokensRow /> },
     [],
   );
   // A guest's: the browser copy the app's editor keeps, made once per opening.
@@ -183,6 +186,25 @@ export default function SiteSettingsDialog({
         />
       </SettingsUiKitProvider>
     </Dialog>
+  );
+}
+
+// The API tokens (making one, its secret shown once, revoking one), drawn in the panel on liveworkspace.app: their code
+// is its own chunk, fetched when the category is first shown, and they read GET /api/account/tokens then.
+function TokensRow() {
+  return (
+    <div data-settings-cell="tokens" className="px-4 py-4">
+      <Suspense
+        fallback={
+          <div
+            aria-busy
+            className="h-40 animate-pulse rounded-xl bg-slate-100 motion-reduce:animate-none dark:bg-slate-800/70"
+          />
+        }
+      >
+        <TokensPanel />
+      </Suspense>
+    </div>
   );
 }
 

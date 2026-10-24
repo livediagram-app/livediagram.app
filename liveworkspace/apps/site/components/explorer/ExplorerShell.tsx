@@ -5,14 +5,14 @@
 // layout, so a list already loaded stays loaded from view to view.
 //
 // It asks the index as the person: the signed-in account, or this browser's guest (lib/explorer/token.ts). It wears
-// the colours and logo of the app the person came from (`?from=`, the referrer, or the last app used here), opens
-// filtered to that app's items with All Apps one click away, and sends every item, New and template back to its own
-// app (lib/explorer/host.ts).
+// the colours and logo of the app the person came from (`?from=` or the referrer), opens filtered to that app's items
+// with All Apps one click away (from no app, on All Apps), and sends every item, New and template back to its own
+// app (lib/explorer/host.ts). The Settings panel opens over it in place (`?settings=`, the bar, the account menu).
 //
 // The same page is also served under each app's own address (`liveplanner.app/explorer/…`, through the app's router;
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
-// only in this browser (This Browser), keeps its links on the app's address and sends liveworkspace's own pages
-// (account, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
+// only in this browser (This Browser), keeps its links on the app's address and sends only what needs
+// liveworkspace.app's session (the profile, API tokens) there. Where the app supplies them (the sites registry), it also offers the
 // app's Take Offline and Sync (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and there alike,
 // over liveworkspace's account API (createTeamsHost with accountFetch).
 //
@@ -78,7 +78,8 @@ import {
   rememberApp,
   RETIRED_TARGETS,
   retiredTarget,
-  settingsTarget,
+  SETTINGS_PARAM,
+  settingsOpening,
   shareUrl,
   type Arrival,
 } from '@/lib/explorer/host';
@@ -120,13 +121,14 @@ import { ExplorerHeader } from './ExplorerHeader';
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
 const ExplorerSearch = lazy(loadSearch);
-// The Settings panel (the one /account/settings opens): fetched when Settings is pointed at or pressed.
+// The Settings panel: fetched when Settings is pointed at or pressed (or `?settings=` opens it).
 const loadSettings = () => import('@/components/settings/SiteSettingsDialog');
 const SiteSettingsDialog = lazy(loadSettings);
 // The toasts and a guest's sign-in banner stand on the bottom bar.
 const FLOOR = { '--explorer-floor': EXPLORER_FLOOR } as CSSProperties;
 
-// The kind New makes, and "this app", for a person who came from no app: the first app on the index.
+// The kind New makes, and "this app", for a person who came from no app and has used none here: the first app on the
+// index.
 const FALLBACK_APP: AppName = 'liveplanner';
 // The filter's logos: the app's prism in its accent, and liveworkspace's own (the Wordmark's) for All Apps.
 const renderAppLogo: RenderAppLogo = (app) => (
@@ -156,6 +158,13 @@ const teamsHost = createTeamsHost({
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
 
+// Where the Settings panel opens: the app it is for (by its site id), the side of the switch, and the category.
+type PanelOpening = { app: AppId | null; scope: 'app' | 'all' | null; categoryId: string | null };
+const appIdOf = (app: AppName) => siteOfApp(app).id as AppId;
+// The API tokens, a category of the Settings panel (the timeline's token cards lead there). The tokens are
+// liveworkspace.app's session's, so from an app's address they are the panel there.
+const TOKENS_SETTINGS = `/explorer?${SETTINGS_PARAM}=tokens`;
+
 // The Explorer's own addresses move inside the page; anything else (an item in its app, which on an app's address is
 // this same origin) is a full page load, never this site's client router, which has no such page.
 const isExplorerHref = (href: string) => {
@@ -184,6 +193,8 @@ type Landing =
   | {
       leave: null;
       arrived: Arrival;
+      // The last app this browser came from: what New makes in no app (it never filters the lists).
+      lastApp: AppName | null;
       notice: string | null;
       trashed: Trashed | null;
       strip: boolean;
@@ -197,23 +208,24 @@ function readLanding(): Landing {
   const search = window.location.search;
   // On an app's address the page is that app's, whatever the address says.
   const host = pageApp();
-  const found: Arrival = host
-    ? { app: host, via: 'host' }
-    : arrival(search, document.referrer, readLastApp());
+  const found: Arrival = host ? { app: host, via: 'host' } : arrival(search, document.referrer);
+  const lastApp = readLastApp();
   // A retired address gives way to its successor. This Browser is a view of its own on the app's address.
   const retired = retiredView(window.location.pathname);
   if (retired === 'offline' && !host)
-    return { leave: offlineHref(found.app ?? FALLBACK_APP) ?? '/explorer' };
+    return { leave: offlineHref(found.app ?? lastApp ?? FALLBACK_APP) ?? '/explorer' };
   if (retired && retired !== 'offline')
     return { leave: onWorkspace(retiredTarget(retired, search)) };
-  // The apps' Settings deep link (every notification email's unsubscribe link carries one).
-  const settings = settingsTarget(search, found.app);
-  if (settings) return { leave: onWorkspace(settings) };
   const params = new URLSearchParams(search);
+  // `?settings=teams`: teams are run in the Explorer, the Invites beside them. Every other `?settings=` opens the
+  // Settings panel in place, once the page knows who is here (below).
+  if (settingsOpening(params.get(SETTINGS_PARAM), found.app) === 'teams')
+    return { leave: '/explorer/invites' };
   const trashedId = params.get(TRASHED_PARAM);
   return {
     leave: null,
     arrived: found,
+    lastApp,
     notice: arrivalNotice(search, found.app),
     trashed: trashedId ? { id: trashedId, title: params.get(TITLE_PARAM) } : null,
     strip: params.has(ENDED_PARAM) || trashedId !== null,
@@ -298,7 +310,8 @@ export function ExplorerShell() {
     };
   }, [ready, session.state, identity]);
 
-  const app: AppName = arrived.app ?? FALLBACK_APP;
+  // In no app (liveworkspace.app reached from no app), every app's work shows; New makes the last app's kind.
+  const app: AppName = arrived.app ?? stay?.lastApp ?? FALLBACK_APP;
   const [filter, setFilter] = useState<AppFilter | null>(null);
   const shownFilter: AppFilter = filter ?? (arrived.app ? 'app' : 'all');
   // Every event counts for the app the page shows, or liveworkspace.app for All Apps. Set as the page renders, so
@@ -448,36 +461,73 @@ export function ExplorerShell() {
     [router],
   );
 
-  // The account's settings, for a person signed in: the Settings panel in place over the Explorer, opened for the app
-  // the person came from (its settings, All one click away), or on All from no app. The link is the bar's way there
-  // before the panel's code has loaded.
-  const settingsHref = signedIn
-    ? workspaceHref(arrived.app ? `/account/settings?app=${arrived.app}` : '/account/settings')
-    : null;
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const settingsApp: AppId | null = arrived.app ? (siteOfApp(arrived.app).id as AppId) : null;
+  // The account's settings, for a person signed in: the Settings panel in place over the Explorer (the bottom bar, the
+  // account menu, `?settings=`), opened for the app the person came from (its settings, All one click away), or on
+  // All from no app. Never a page of its own, and never another address.
+  const [settingsAt, setSettingsAt] = useState<PanelOpening | null>(null);
+  const settingsApp: AppId | null = arrived.app ? appIdOf(arrived.app) : null;
   // A guest's settings, on an app's address only: the app's, as its editor keeps them in this browser (this origin's
   // storage). liveworkspace.app can't read them, and keeps no device settings of its own beyond Appearance, which is
   // on the bar already, so a guest there gets no Settings.
-  const guestSettingsApp: AppId | null =
-    host && identity?.kind === 'guest' ? (siteOfApp(host).id as AppId) : null;
+  const guestSettingsApp: AppId | null = host && identity?.kind === 'guest' ? appIdOf(host) : null;
   const hasSettings = signedIn || guestSettingsApp !== null;
-  const openSettings = useCallback(() => setSettingsOpen(true), []);
+  const openSettings = useCallback(
+    () => setSettingsAt({ app: settingsApp, scope: null, categoryId: null }),
+    [settingsApp],
+  );
   const prepareSettings = useCallback(() => {
     void loadSettings();
     preloadSettingsPanel();
     if (settingsApp) void loadCatalogue(settingsApp);
   }, [settingsApp]);
-  const guestSettingsControl = useMemo(
-    () => (guestSettingsApp ? { onOpen: openSettings, onPrepare: prepareSettings } : null),
-    [guestSettingsApp, openSettings, prepareSettings],
+  const settingsControl = useMemo(
+    () => (hasSettings ? { onOpen: openSettings, onPrepare: prepareSettings } : null),
+    [hasSettings, openSettings, prepareSettings],
   );
   const header = useCallback(
     ({ search }: { search: ReactNode }) => (
-      <ExplorerHeader app={arrived.app} search={search} guestSettings={guestSettingsControl} />
+      <ExplorerHeader app={arrived.app} search={search} settings={settingsControl} />
     ),
-    [arrived.app, guestSettingsControl],
+    [arrived.app, settingsControl],
   );
+
+  // `?settings=<section>` (an email's link, the old /account/settings, a Search result, an editor's account menu): the
+  // panel opens in place on that section once the page knows who is here, on arrival or on a move inside the
+  // Explorer, and the address drops it as the panel closes. An Account section needs an account: a guest signs in and
+  // comes back to the same address; on an app's address a guest's app side is the guest's own panel.
+  const settingsParam = searchParams.get(SETTINGS_PARAM);
+  const asked = useMemo(
+    () => (ready && identity ? settingsOpening(settingsParam, arrived.app) : null),
+    [ready, identity, settingsParam, arrived.app],
+  );
+  // What the address opens for whoever is here: null where they would have to sign in first.
+  const askedFor = useMemo<PanelOpening | null>(() => {
+    if (asked === null || asked === 'teams' || !identity) return null;
+    if (identity.kind === 'account')
+      return {
+        app: asked.app ? appIdOf(asked.app) : null,
+        scope: asked.scope,
+        categoryId: asked.categoryId,
+      };
+    return host && asked.scope === 'app'
+      ? { app: appIdOf(host), scope: 'app', categoryId: null }
+      : null;
+  }, [asked, identity, host]);
+  useEffect(() => {
+    if (asked === 'teams') router.replace('/explorer/invites');
+    else if (asked && !askedFor) {
+      const here = window.location.pathname + window.location.search;
+      window.location.assign(host ? appSignInHref(here) : signInHref(here));
+    }
+  }, [asked, askedFor, host, router]);
+  const shownSettings = settingsAt ?? askedFor;
+  const closeSettings = useCallback(() => {
+    setSettingsAt(null);
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has(SETTINGS_PARAM)) return;
+    url.searchParams.delete(SETTINGS_PARAM);
+    window.history.replaceState(window.history.state, '', url);
+  }, []);
 
   // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.
   useEffect(() => {
@@ -512,7 +562,7 @@ export function ExplorerShell() {
           shareUrl={shareUrl}
           share={share}
           teamsHost={teamsHost}
-          tokensUrl={host ? workspaceHref('/account/tokens') : '/account/tokens'}
+          tokensUrl={host ? workspaceHref(TOKENS_SETTINGS) : TOKENS_SETTINGS}
           filter={shownFilter}
           onFilterChange={setFilter}
           header={header}
@@ -547,7 +597,7 @@ export function ExplorerShell() {
         />
       ) : (
         <>
-          <ExplorerHeader app={arrived.app} search={null} guestSettings={guestSettingsControl} />
+          <ExplorerHeader app={arrived.app} search={null} settings={settingsControl} />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-16 sm:px-6" aria-busy={!failed}>
             {failed ? (
               <p className="text-center text-sm text-slate-600 dark:text-slate-400">
@@ -561,21 +611,27 @@ export function ExplorerShell() {
         appName={arrived.app ? siteOfApp(arrived.app).name : null}
         onOpenSearch={openSearch}
         onPrepareSearch={prepareSearch}
-        settingsHref={settingsHref}
+        settingsHref={null}
         onOpenSettings={hasSettings ? openSettings : undefined}
         onPrepareSettings={hasSettings ? prepareSettings : undefined}
         settingsKept={signedIn ? 'account' : 'browser'}
       />
-      {settingsOpen && signedIn ? (
+      {shownSettings && signedIn ? (
         <Suspense fallback={null}>
-          <SiteSettingsDialog app={settingsApp} onClose={() => setSettingsOpen(false)} />
+          <SiteSettingsDialog
+            key={`${shownSettings.app}:${shownSettings.scope}:${shownSettings.categoryId}`}
+            app={shownSettings.app}
+            initialScope={shownSettings.scope}
+            initialCategoryId={shownSettings.categoryId}
+            onClose={closeSettings}
+          />
         </Suspense>
-      ) : settingsOpen && guestSettingsApp && identity ? (
+      ) : shownSettings && guestSettingsApp && identity ? (
         <Suspense fallback={null}>
           <SiteSettingsDialog
             app={guestSettingsApp}
             guest={{ ownerId: identity.sub, signInHref: explorerSignInHref }}
-            onClose={() => setSettingsOpen(false)}
+            onClose={closeSettings}
           />
         </Suspense>
       ) : null}

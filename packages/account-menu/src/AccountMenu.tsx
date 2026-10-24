@@ -15,10 +15,14 @@ import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
 import { avatarFill, initials } from './initials';
 
 // The account control (liveworkspace/docs/site.md "The header"). Signed in: the person's avatar (initials; accounts
-// keep no pictures) and name, opening a menu of their API tokens, Settings and Sign out. Signed out: the same
-// trigger as **Guest**, on a neutral avatar, opening Sign in (the primary), Create account and, where a guest has
-// settings (the Explorer on an app's address), Settings. One component for liveworkspace.app's header, the Explorer
-// on any address and every app's marketing header.
+// keep no pictures) and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
+// out. Signed out: the same trigger as **Guest**, on a neutral avatar, opening Sign in (the primary), Create account
+// and, where a guest has settings (the Explorer on an app's address), Settings. One component for liveworkspace.app's
+// header, the Explorer on any address and every app's marketing header.
+//
+// Settings never leaves the address the person is on: where the surface has the Settings panel it opens it in place
+// (`onOpenSettings`), and elsewhere (an app's marketing page) it links to the same address's Explorer with the panel
+// open (`settingsHref`).
 //
 // Each caller passes its own UI package's menu hooks and icons (the kit), so the menu keeps the keyboard and focus
 // behaviour every app's menus share (WAI-ARIA Menu Button) and the house icons, without this package depending on
@@ -58,22 +62,16 @@ export interface AccountMenuKit<Focus = unknown> {
   ): void;
   icons: {
     chevron: IconComponent;
-    tokens: IconComponent;
+    // No longer drawn: API tokens are a category of the Settings panel. Still taken, so a kit that has one fits.
+    tokens?: IconComponent;
     settings: IconComponent;
   };
 }
 
-/** The account pages the menu leads to, as paths on liveworkspace.app. Teams are made and run in the Explorer
+/** Where Settings goes on a surface with no Settings panel of its own: the same address's Explorer, which opens the
+ *  panel on load (liveworkspace/docs/site.md "Settings", Addresses). Teams are made and run in the Explorer too
  *  (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"), so the menu has no Teams entry. */
-export const ACCOUNT_PAGES = [
-  { href: '/account/tokens', label: 'API tokens', hint: 'Connect tools and AI', icon: 'tokens' },
-  {
-    href: '/account/settings',
-    label: 'Settings',
-    hint: 'Profile, emails and privacy',
-    icon: 'settings',
-  },
-] as const;
+export const SETTINGS_HREF = '/explorer?settings=all';
 
 /** Where a guest's menu leads: the surface's own Sign in and Create account, and Settings where a guest has some. */
 export type GuestAccount = {
@@ -100,14 +98,20 @@ type SignedIn = {
   // The profile's presence colour, null for Automatic (the avatar's colour is then picked from the name).
   colour?: string | null;
   onSignOut: () => Promise<boolean>;
-  pageHref?: (path: string) => string;
+  // Opens the Settings panel in place, where the surface has one, and fetches its code ahead of the press.
+  onOpenSettings?: () => void;
+  onPrepareSettings?: () => void;
+  // Where Settings goes without `onOpenSettings`: a path on the same address (`SETTINGS_HREF` when not given).
+  settingsHref?: string;
+  // The Explorer, on liveworkspace.app's own header (on an app's address the app's Explorer is a click away already).
+  explorerHref?: string;
   guest?: undefined;
 };
 
 type Guest = { guest: GuestAccount };
 
-/** The account control. Signed in: `pageHref` turns an account page's path into the link (in full on an app's own
- *  address); `onSignOut` ends the session, resolving false when it was refused (the menu stays open). As a guest
+/** The account control. Signed in: Settings opens the panel in place (`onOpenSettings`) or links to `settingsHref`,
+ *  and `explorerHref` adds the Explorer; `onSignOut` ends the session, resolving false when it was refused (the menu stays open). As a guest
  *  (`guest`): Sign in, Create account and, where given, Settings. */
 export function AccountMenu(props: Common & (SignedIn | Guest)) {
   const { kit, openOnMount = false, focusOnMount = false } = props;
@@ -193,15 +197,30 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
             guest && <GuestItems guest={guest} settingsIcon={kit.icons.settings} close={close} />
           ) : (
             <>
-              {ACCOUNT_PAGES.map(({ href, label: pageLabel, hint, icon }) => (
+              {account.explorerHref ? (
                 <PageItem
-                  key={href}
-                  href={account.pageHref ? account.pageHref(href) : href}
-                  label={pageLabel}
-                  hint={hint}
-                  icon={kit.icons[icon]}
+                  href={account.explorerHref}
+                  label="Explorer"
+                  hint="Your work in every app"
+                  icon={ExplorerIcon}
                 />
-              ))}
+              ) : null}
+              {account.onOpenSettings ? (
+                <SettingsItem
+                  icon={kit.icons.settings}
+                  hint="Profile, emails, API tokens"
+                  onOpen={account.onOpenSettings}
+                  onPrepare={account.onPrepareSettings}
+                  close={close}
+                />
+              ) : (
+                <PageItem
+                  href={account.settingsHref ?? SETTINGS_HREF}
+                  label="Settings"
+                  hint="Profile, emails, API tokens"
+                  icon={kit.icons.settings}
+                />
+              )}
               <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
               <button
                 type="button"
@@ -298,23 +317,70 @@ function GuestItems({
         icon={CreateAccountIcon}
       />
       {onOpenSettings ? (
-        <button
-          type="button"
-          role="menuitem"
-          tabIndex={-1}
-          aria-haspopup="dialog"
-          onClick={() => {
-            close();
-            onOpenSettings();
-          }}
-          onPointerEnter={onPrepareSettings}
-          onFocus={onPrepareSettings}
-          className={`${ITEM} cursor-pointer`}
-        >
-          <ItemBody icon={settingsIcon} label="Settings" hint="Kept in this browser" />
-        </button>
+        <SettingsItem
+          icon={settingsIcon}
+          hint="Kept in this browser"
+          onOpen={onOpenSettings}
+          onPrepare={onPrepareSettings}
+          close={close}
+        />
       ) : null}
     </>
+  );
+}
+
+// Settings as a button opening the surface's panel in place: its code fetched as the pointer or focus arrives, and
+// opened as the menu closes.
+function SettingsItem({
+  icon,
+  hint,
+  onOpen,
+  onPrepare,
+  close,
+}: {
+  icon: IconComponent;
+  hint: string;
+  onOpen: () => void;
+  onPrepare?: () => void;
+  close: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      tabIndex={-1}
+      aria-haspopup="dialog"
+      onClick={() => {
+        close();
+        onOpen();
+      }}
+      onPointerEnter={onPrepare}
+      onFocus={onPrepare}
+      className={`${ITEM} cursor-pointer`}
+    >
+      <ItemBody icon={icon} label="Settings" hint={hint} />
+    </button>
+  );
+}
+
+// Four tiles: the Explorer, every app's work in one place. The icon set has no such glyph.
+function ExplorerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
   );
 }
 

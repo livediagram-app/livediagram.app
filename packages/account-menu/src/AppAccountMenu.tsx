@@ -2,22 +2,16 @@
 
 import { useSyncExternalStore } from 'react';
 import { AccountMenu, type AccountMenuKit } from './AccountMenu';
-import {
-  appSignInHref,
-  appSignOut,
-  appSignUpHref,
-  pageHere,
-  useAppAccount,
-  workspacePageHref,
-} from './app-account';
+import { appSignInHref, appSignOut, appSignUpHref, pageHere, useAppAccount } from './app-account';
 import { AccountMenuPlaceholder, type DeferredMenuProps } from './placeholder';
 
 const noSubscription = () => () => {};
 const hydratedNow = () => true;
 const notHydrated = () => false;
 
-// The account menu on an app's own pages (its marketing header): signed in, liveworkspace.app's menu, its account
-// pages on liveworkspace.app and its Sign out the app's; signed out, the Guest menu, whose Sign in and Create account
+// The account menu on an app's own pages (its marketing header): signed in, liveworkspace.app's menu, its Settings
+// the app's own Explorer on this address with the panel open (a marketing page has no panel; nothing here leaves the
+// app's address) and its Sign out the app's; signed out, the Guest menu, whose Sign in and Create account
 // are the app's own and come back to this page. `hint` is the app's readable `<prefix>signed_in` cookie, whose name
 // cookie sits beside it. `openOnMount` and `focusOnMount` carry on from the Guest stand-in it replaces.
 export function AppAccountMenu({
@@ -45,7 +39,6 @@ export function AppAccountMenu({
       fullName={account.fullName}
       colour={account.colour}
       kit={kit}
-      pageHref={workspacePageHref}
       onSignOut={() => appSignOut()}
       {...arrival}
     />

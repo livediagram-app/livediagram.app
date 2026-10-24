@@ -12,7 +12,7 @@ const ctx = () => ({
   openItem: vi.fn(),
   navigate: vi.fn(),
   teamName: () => 'Team',
-  tokensUrl: '/account/tokens',
+  tokensUrl: '/explorer?settings=tokens',
 });
 
 const loose = (type: TimelineEvent['type'], over: Partial<TimelineEvent> = {}): TimelineEvent =>

@@ -120,13 +120,11 @@ describe('AppAccountMenu', () => {
     fireEvent.click(trigger);
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
-      'API tokensConnect tools and AI',
-      'SettingsProfile, emails and privacy',
+      'SettingsProfile, emails, API tokens',
       'Sign out',
     ]);
-    // The account pages are liveworkspace.app's, in full.
-    expect(items[0]!.getAttribute('href')).toMatch(/\/account\/tokens$/);
-    expect(items[0]!.getAttribute('href')).toMatch(/^https?:\/\//);
+    // A marketing page has no Settings panel: the app's own Explorer on this address opens it, never liveworkspace.app.
+    expect(items[0]!.getAttribute('href')).toBe('/explorer?settings=all');
   });
 
   it('paints the avatar in the colour cookie, and in the name-picked colour without one, with no request', () => {
@@ -201,6 +199,52 @@ describe('AppAccountMenu', () => {
     const trigger = screen.getByRole('button', { name: 'Guest, account menu' });
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
     expect(document.activeElement).toBe(trigger);
+  });
+});
+
+describe('AccountMenu signed in', () => {
+  const signedIn = { name: 'Ada', onSignOut: async () => true };
+
+  it('opens Settings in place where the surface has the panel: preparing on approach, opening as the menu closes', () => {
+    const onOpenSettings = vi.fn();
+    const onPrepareSettings = vi.fn();
+    render(
+      <AccountMenu
+        kit={kit}
+        {...signedIn}
+        onOpenSettings={onOpenSettings}
+        onPrepareSettings={onPrepareSettings}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    const settings = screen.getAllByRole('menuitem')[0]!;
+    expect(settings.tagName).toBe('BUTTON');
+    expect(settings.getAttribute('href')).toBeNull();
+    expect(settings.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.focus(settings);
+    expect(onPrepareSettings).toHaveBeenCalled();
+    fireEvent.click(settings);
+    expect(onOpenSettings).toHaveBeenCalledOnce();
+    expect(screen.queryAllByRole('menuitem')).toHaveLength(0);
+  });
+
+  it('offers the Explorer only where it is given (liveworkspace.app), and never API tokens', () => {
+    const { unmount } = render(<AccountMenu kit={kit} {...signedIn} explorerHref="/explorer" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    const items = screen.getAllByRole('menuitem');
+    expect(items.map((i) => i.textContent)).toEqual([
+      'ExplorerYour work in every app',
+      'SettingsProfile, emails, API tokens',
+      'Sign out',
+    ]);
+    expect(items[0]!.getAttribute('href')).toBe('/explorer');
+    unmount();
+    render(<AccountMenu kit={kit} {...signedIn} settingsHref="/explorer?settings=all&x=1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    expect(screen.queryByText('Explorer')).toBeNull();
+    expect(screen.getAllByRole('menuitem')[0]!.getAttribute('href')).toBe(
+      '/explorer?settings=all&x=1',
+    );
   });
 });
 

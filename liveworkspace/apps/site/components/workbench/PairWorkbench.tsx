@@ -11,7 +11,7 @@ import { accountApi } from '@/lib/account-api';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import { JoinShell } from '../teams/JoinPage';
-import { BUTTON } from '../settings/AccountShell';
+import { BUTTON } from '../settings/account-ui';
 
 // A pairing code: 16 random bytes as base64url.
 const CODE = /^[A-Za-z0-9_-]{22}$/;

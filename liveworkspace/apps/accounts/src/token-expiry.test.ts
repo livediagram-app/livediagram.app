@@ -83,8 +83,8 @@ describe('the expiring-token warning', () => {
     const email = tokenExpiringEmail(BASE + '/', 'CI <deploy>', Date.UTC(2026, 0, 5));
     expect(email.subject).toBe('Your liveworkspace API token expires soon');
     expect(email.html).toContain('<strong>CI &#60;deploy&#62;</strong> expires on January 5, 2026');
-    expect(email.html).toContain(`href="${BASE}/account/tokens"`);
-    expect(email.text).toContain(`Manage your tokens: ${BASE}/account/tokens`);
+    expect(email.html).toContain(`href="${BASE}/explorer?settings=tokens"`);
+    expect(email.text).toContain(`Manage your tokens: ${BASE}/explorer?settings=tokens`);
     expect(email.text).toContain('this is the only reminder we send for each one');
     expect(tokenExpiringEmail(BASE, '  ', Date.UTC(2026, 0, 5)).text).toMatch(
       /^One of your API tokens expires on January 5, 2026/,

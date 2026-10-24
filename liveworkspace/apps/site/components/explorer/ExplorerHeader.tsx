@@ -8,17 +8,14 @@
 // (ExplorerBottomBar.tsx).
 //
 // On an app's own address (lib/explorer/page-app.ts) the page is the app's: the liveworkspace logo leads to
-// liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session
-// (a guest's offering the guest's Settings, `guestSettings`).
+// liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session.
+// Either way the account menu's Settings opens the Explorer's own Settings panel in place (`settings`).
 
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { SiteSwitcher } from '@livediagram/ui';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
-import { AccountControl } from '@/components/AccountControl';
-import {
-  AppAccountControl,
-  type GuestSettingsControl,
-} from '@/components/explorer/AppAccountControl';
+import { AccountControl, type SettingsControl } from '@/components/AccountControl';
+import { AppAccountControl } from '@/components/explorer/AppAccountControl';
 import { pageApp, workspaceOrigin } from '@/lib/explorer/page-app';
 import { Wordmark } from '@/components/Wordmark';
 import { AppLogo } from '@/components/landing/AppLogo';
@@ -29,11 +26,12 @@ const noChange = () => () => {};
 export function ExplorerHeader({
   app,
   search,
-  guestSettings = null,
+  settings = null,
 }: {
   app: AppName | null;
   search: ReactNode;
-  guestSettings?: GuestSettingsControl | null;
+  // The Explorer's Settings panel, for whoever has settings here (null: a guest on liveworkspace.app has none).
+  settings?: SettingsControl | null;
 }) {
   // Null while prerendered and on liveworkspace.app.
   const host = useSyncExternalStore(noChange, pageApp, () => null);
@@ -78,7 +76,11 @@ export function ExplorerHeader({
           {search ? <div className="w-full max-w-md">{search}</div> : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {host ? <AppAccountControl settings={guestSettings} /> : <AccountControl />}
+          {host ? (
+            <AppAccountControl settings={settings} />
+          ) : (
+            <AccountControl settings={settings} />
+          )}
         </div>
       </div>
     </header>

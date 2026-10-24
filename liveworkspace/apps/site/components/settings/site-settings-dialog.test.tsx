@@ -3,12 +3,11 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { settingsStore, type AppId } from '@/lib/app-settings';
-import { settingsTarget, SettingsLanding } from './SettingsLanding';
 import SiteSettingsDialog from './SiteSettingsDialog';
 
 // The Settings panel on liveworkspace.app (liveworkspace/docs/site.md "Settings"): the shared panel
 // (@liveworkspace/settings-ui) over the site, filtered to an app or showing All, each change saved a key at a time
-// to its scope, put back when a save fails; and /account/settings, which opens it on what the address names.
+// to its scope, put back when a save fails; opened on what it is asked for, the API tokens drawn in place.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let container: HTMLDivElement;
@@ -233,39 +232,23 @@ describe('the Settings panel, for a guest on an app’s address', () => {
   });
 });
 
-describe('/account/settings', () => {
-  it('reads what the address names', () => {
-    expect(settingsTarget('?app=livedesign', '')).toEqual({
-      app: 'livedesign.app',
-      scope: 'app',
-      categoryId: null,
-    });
-    expect(settingsTarget('', '#notifications')).toEqual({
-      app: null,
-      scope: 'all',
-      categoryId: 'account:notifications',
-    });
-    expect(settingsTarget('', '#profile').categoryId).toBe('account:account');
-    expect(settingsTarget('?app=all', '').scope).toBe('all');
-    expect(settingsTarget('', '#apps').scope).toBe('all');
-    expect(settingsTarget('', '')).toEqual({ app: null, scope: null, categoryId: null });
+describe('the Settings panel, opened on a section', () => {
+  it('opens on the app it is asked for, its side of the switch chosen', async () => {
+    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
+    await open('livedesign.app', { initialScope: 'app' });
+    expect(scopeButton('livedesign').getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('opens the panel on the app the address names, and offers it again once closed', async () => {
-    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
-    window.history.replaceState(null, '', '/account/settings?app=livedesign');
-    act(() => root.render(<SettingsLanding />));
-    await settle();
-    const dialog = document.querySelector('[role="dialog"]')!;
-    expect(scopeButton('livedesign').getAttribute('aria-pressed')).toBe('true');
-    act(() => {
-      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    });
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
-    const button = document.activeElement as HTMLElement;
-    expect(button.textContent).toBe('Open Settings');
-    act(() => button.click());
-    await settle();
-    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  it('draws the API tokens in place, their code and list fetched only when their category shows', async () => {
+    fetchMock.mockImplementation((url: string) =>
+      url === '/api/account/tokens'
+        ? json(200, { tokens: [] })
+        : json(200, { all: {}, app: {}, updatedAt: null }),
+    );
+    await open(null, { initialScope: 'all', initialCategoryId: 'account:tokens' });
+    const cell = document.querySelector('[data-settings-cell="tokens"]')!;
+    expect(cell.textContent).toContain('Make a token');
+    expect(cell.textContent).toContain('No tokens yet');
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/tokens')).toHaveLength(1);
   });
 });

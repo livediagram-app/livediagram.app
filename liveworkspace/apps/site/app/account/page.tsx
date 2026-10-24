@@ -1,12 +1,10 @@
-'use client';
+import type { Metadata } from 'next';
+import { AccountRedirect } from '@/components/settings/AccountRedirect';
 
-import { useEffect } from 'react';
+export const metadata: Metadata = { title: 'Settings · liveworkspace', robots: { index: false } };
 
-// /account has no page of its own: it opens Settings, the account's own page (liveworkspace/docs/site.md "Your
-// account"). Teams are the Explorer's. The site is static, so the move happens in the browser.
+// /account has no page of its own: it opens the Settings panel, in the Explorer (liveworkspace/docs/site.md "Your
+// account").
 export default function Page() {
-  useEffect(() => {
-    window.location.replace('/account/settings');
-  }, []);
-  return null;
+  return <AccountRedirect />;
 }

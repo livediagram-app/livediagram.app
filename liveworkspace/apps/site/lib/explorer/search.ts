@@ -1,5 +1,5 @@
 // The Search panel's own entries on the Explorer (liveworkspace/docs/site.md "The Explorer", Search): the
-// Explorer's help articles in the app's help centre, and, signed in, the account's settings on liveworkspace.app.
+// Explorer's help articles in the app's help centre, and, signed in, the sections of the Settings panel.
 // Loaded with the panel (components/explorer/ExplorerSearch.tsx), never with the page.
 
 import type { SearchEntry } from '@liveworkspace/explorer/search-panel';
@@ -23,6 +23,9 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'getting-started/guest-vs-account', label: 'Guest or Account' },
 ];
 
+// The Account sections that need liveworkspace.app's own session.
+const SESSION_SECTIONS = new Set(['profile', 'tokens']);
+
 export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
   const site = siteOfApp(app);
   const help: SearchEntry[] = HELP_ARTICLES.map(({ slug, label }) => ({
@@ -34,12 +37,16 @@ export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
     newTab: true,
   }));
   if (!signedIn) return help;
+  // Each opens the Settings panel here, in place, on its section (`?settings=`); the profile and the API tokens are
+  // liveworkspace.app's session's, so from an app's address they open the panel there.
   const account: SearchEntry[] = SETTINGS_CONTENTS.map(({ id, title }) => ({
     id,
     group: 'settings',
     label: title,
     hint: 'Account Settings',
-    href: workspaceHref(`/account/settings#${id}`),
+    href: SESSION_SECTIONS.has(id)
+      ? workspaceHref(`/explorer?settings=${id}`)
+      : `/explorer?settings=${id}`,
   }));
   // Each app's own settings, in the Settings panel filtered to that app.
   const apps: SearchEntry[] = APP_NAMES.map((name) => ({
@@ -47,7 +54,7 @@ export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
     group: 'settings',
     label: `${siteOfApp(name).name} Settings`,
     hint: 'Settings',
-    href: workspaceHref(`/account/settings?app=${name}`),
+    href: `/explorer?settings=${name}`,
   }));
   return [...help, ...account, ...apps];
 }

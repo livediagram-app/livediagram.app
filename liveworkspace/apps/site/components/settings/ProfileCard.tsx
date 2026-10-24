@@ -14,7 +14,7 @@ import {
 } from '@/lib/account-settings';
 import { initials } from '@liveworkspace/account-menu/initials';
 import { setSessionColour, useSession } from '@/lib/session';
-import { ErrorNote, INPUT } from './AccountShell';
+import { ErrorNote, INPUT } from './account-ui';
 import { settingsErrorMessage, useSavedFlash } from './settings-ui';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);

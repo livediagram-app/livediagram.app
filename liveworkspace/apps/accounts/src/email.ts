@@ -69,10 +69,11 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.ch
 
 const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
 
-// The account's settings page on liveworkspace.app (this deployment's BASE_URL), where every email
+// The account's notification settings on liveworkspace.app (this deployment's BASE_URL): the Explorer with the Settings
+// panel open on Notifications (liveworkspace/docs/site.md "Settings"), where every email
 // that can be turned off is turned off, for every app. Signed out, it signs them in and comes back.
 export function settingsUrl(baseUrl: string): string {
-  return `${origin(baseUrl)}/account/settings`;
+  return `${origin(baseUrl)}/explorer?settings=notifications`;
 }
 
 // The page an invitation email's Decline link opens: it reads the token and declines only when its
@@ -234,7 +235,7 @@ export function tokenExpiringEmail(baseUrl: string, tokenName: string, expiresAt
   const which = (n: string) => (name ? `Your API token ${n}` : 'One of your API tokens');
   const d = new Date(expiresAt);
   const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-  const link = `${origin(baseUrl)}/account/tokens`;
+  const link = `${origin(baseUrl)}/explorer?settings=tokens`;
   const subject = 'Your liveworkspace API token expires soon';
   const rest = `expires on ${when}. Once it lapses, any script or connected AI tool using it will stop being able to reach your work in the liveworkspace apps.`;
   const lead = `${which(name)} ${rest}`;

@@ -204,7 +204,9 @@ describe('the series', () => {
     await recordSighting(db, 'user_ada', 'livedesign.app', T0);
     await recordSighting(db, 'user_ada', 'livediagram.app', T0 + 1);
     await run(T0 + 7 * DAY);
-    expect(sent.at(-1)!.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
+    expect(sent.at(-1)!.unsubscribeUrl).toBe(
+      'https://liveworkspace.app/explorer?settings=notifications',
+    );
     expect(sent.at(-1)!.html).toContain('https://www.livedesign.app/explorer');
   });
 
@@ -296,16 +298,16 @@ describe('the emails', () => {
     const email = lifecycleEmail(env, 'week2', { home: null });
     expect(email.html).toContain('https://liveworkspace.app/explorer');
     expect(email.text).toContain('Manage your notifications');
-    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
+    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/explorer?settings=notifications');
     expect(email.html).toContain(
-      'href="https://liveworkspace.app/account/settings" style="color:#334155;text-decoration:underline">Manage your notifications',
+      'href="https://liveworkspace.app/explorer?settings=notifications" style="color:#334155;text-decoration:underline">Manage your notifications',
     );
     // A deployment's own origin.
     expect(
       lifecycleEmail({ ...env, BASE_URL: 'https://staging.liveworkspace.app/' }, 'winback', {
         home: null,
       }).unsubscribeUrl,
-    ).toBe('https://staging.liveworkspace.app/account/settings');
+    ).toBe('https://staging.liveworkspace.app/explorer?settings=notifications');
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }

@@ -27,7 +27,7 @@ const entries: SearchEntry[] = [
     id: 'notifications',
     group: 'settings',
     label: 'Notifications',
-    href: '/account/settings#notifications',
+    href: '/explorer?settings=notifications',
   },
 ];
 

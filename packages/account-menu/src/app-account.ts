@@ -14,7 +14,6 @@ import {
   readAccountColour,
   readAccountName,
 } from '@liveworkspace/auth-client/account-name';
-import { workspaceOriginFor } from '@liveworkspace/sites';
 
 /** Signed out (or not known to be signed in), the name still on its way, or the person (`colour`: their presence
  *  colour, null for Automatic or a session from before the colour cookie). */
@@ -134,12 +133,6 @@ export const appSignUpHref = (here: string) => `${appSignInHref(here)}&screen=si
 export function pageHere(): string {
   if (typeof window === 'undefined') return '/';
   return window.location.pathname + window.location.search;
-}
-
-/** An account page's link from an app's page: liveworkspace.app's (staging's from a staging app), in full. */
-export function workspacePageHref(path: string): string {
-  const host = typeof window === 'undefined' ? '' : window.location.host;
-  return `${workspaceOriginFor(host)}${path}`;
 }
 
 /** For tests. */

@@ -1,22 +1,20 @@
 'use client';
 
 // The header's account control for the Explorer shown on an app's own address (lib/explorer/page-app.ts): the app's
-// session rather than liveworkspace.app's. Signed in, the same menu as everywhere on the site, its account pages on
-// liveworkspace.app and its Sign out the app's (the page reloads as a guest); signed out, the same control as Guest,
-// its Sign in and Create account the app's own, which come back here, and Settings, the guest's settings for this
-// app kept in this browser (`settings`, the bottom bar's).
+// session rather than liveworkspace.app's. Signed in, the same menu as everywhere on the site, its Settings the
+// Explorer's panel in place on this address (`settings`, the bottom bar's) and its Sign out the app's (the page
+// reloads as a guest); signed out, the same control as Guest, its Sign in and Create account the app's own, which
+// come back here, and Settings, the guest's settings for this app kept in this browser (the same panel).
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
 import { ACCOUNT_MENU_KIT } from '@/components/account-menu-kit';
+import type { SettingsControl } from '@/components/AccountControl';
 import { appAccount, appSignInHref, appSignOut, appSignUpHref } from '@/lib/explorer/app-session';
-import { workspaceHref } from '@/lib/explorer/page-app';
 
 const noChange = () => () => {};
 
-export type GuestSettingsControl = { onOpen: () => void; onPrepare: () => void };
-
-export function AppAccountControl({ settings = null }: { settings?: GuestSettingsControl | null }) {
+export function AppAccountControl({ settings = null }: { settings?: SettingsControl | null }) {
   const [state, setState] = useState<
     { name: string; fullName: string | null; colour: string | null } | 'out' | 'checking'
   >('checking');
@@ -46,7 +44,10 @@ export function AppAccountControl({ settings = null }: { settings?: GuestSetting
         fullName={state.fullName}
         colour={state.colour}
         kit={ACCOUNT_MENU_KIT}
-        pageHref={workspaceHref}
+        // Before the Explorer knows who is here, Settings is this address's Explorer with the panel open.
+        {...(settings
+          ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }
+          : {})}
         onSignOut={async () => {
           const left = await appSignOut();
           if (left) window.location.reload();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_SETTING_KEYS, PRESENCE_COLOURS as SHARED_PALETTE } from '@liveworkspace/settings';
 import { APP_SITES } from '@liveworkspace/sites';
-import { settingsTarget } from './explorer/host';
+import { SETTINGS_PARAM } from './explorer/host';
 import {
   ACCESSIBILITY_ROWS,
   appSettingsLinks,
@@ -83,8 +83,7 @@ describe('each app’s own settings', () => {
   it('never links to a Settings deep link, which the Explorer sends straight back here', () => {
     for (const link of appSettingsLinks()) {
       const url = new URL(link.href);
-      expect(url.searchParams.has('settings')).toBe(false);
-      expect(settingsTarget(url.search, 'livediagram')).toBeNull();
+      expect(url.searchParams.has(SETTINGS_PARAM)).toBe(false);
     }
   });
 });

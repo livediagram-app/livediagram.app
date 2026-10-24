@@ -41,7 +41,7 @@ export function cleanName(name: string): string | null {
 
 // Each app, for what only its own Settings holds (appearance, shortcuts), which opens inside the
 // editor. Its Explorer Home, not its `?settings=` deep link: the Explorer sends an app's categories
-// to the Settings panel here (lib/explorer/host.ts settingsTarget), so that link would only come back.
+// to the Settings panel (lib/explorer/host.ts settingsOpening), so that link would only come back.
 export interface AppSettingsLink {
   id: SiteId;
   name: string;
@@ -59,10 +59,11 @@ export function appSettingsLinks(): AppSettingsLink[] {
 }
 
 // The Account section's categories in the Settings panel, for the Explorer's search: each opens the panel there
-// (`/account/settings#<id>`).
+// (`/explorer?settings=<id>`).
 export const SETTINGS_CONTENTS: { id: string; title: string }[] = [
   { id: 'profile', title: 'Profile' },
   { id: 'notifications', title: 'Notifications' },
+  { id: 'tokens', title: 'API Tokens' },
   { id: 'privacy', title: 'Privacy' },
   { id: 'accessibility', title: 'Accessibility' },
 ];

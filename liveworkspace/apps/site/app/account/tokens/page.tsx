@@ -1,20 +1,11 @@
 import type { Metadata } from 'next';
-import { AccountShell } from '@/components/settings/AccountShell';
-import { TokensPanel } from '@/components/settings/TokensPanel';
+import { AccountRedirect } from '@/components/settings/AccountRedirect';
 
-export const metadata: Metadata = {
-  title: 'API tokens · liveworkspace',
-  robots: { index: false },
-  alternates: { canonical: '/account/tokens' },
-};
+export const metadata: Metadata = { title: 'API tokens · liveworkspace', robots: { index: false } };
 
+// /account/tokens is no longer a page: the API tokens are a category of the Settings panel, opened in the Explorer
+// (the token expiry email links here; liveworkspace/docs/site.md "Your
+// account").
 export default function Page() {
-  return (
-    <AccountShell
-      path="/account/tokens"
-      intro="One token works on every app’s API and MCP server. Make one for a script, or connect an AI tool from any app, and revoke either here."
-    >
-      <TokensPanel />
-    </AccountShell>
-  );
+  return <AccountRedirect />;
 }

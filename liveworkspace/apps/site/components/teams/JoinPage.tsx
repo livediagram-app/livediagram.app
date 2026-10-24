@@ -6,7 +6,7 @@ import { signInHref } from '@/lib/accounts';
 import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
-import { BUTTON } from '../settings/AccountShell';
+import { BUTTON } from '../settings/account-ui';
 import { TeamAvatar } from './Avatars';
 
 const noChange = () => () => {};

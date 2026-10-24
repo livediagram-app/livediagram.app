@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
 import {
@@ -7,29 +8,34 @@ import {
   helpHrefFor,
   itemHref,
   newItemHref,
+  LAST_APP_KEY,
   offlineHref,
+  readLastApp,
   retiredTarget,
-  settingsTarget,
+  settingsOpening,
   shareUrl,
 } from './host';
 
 const item = (over: Partial<Item>): Item => ({ id: 'p1', app: 'liveplanner', ...over }) as Item;
 
 describe('which app the person came from', () => {
-  it('reads ?from= first, then the referrer, then the last app used here', () => {
-    expect(arrival('?from=livedesign', 'https://www.livediagram.app/x', 'liveplanner')).toEqual({
+  it('reads ?from= first, then the referrer; from anywhere else (liveworkspace.app itself) it is in no app', () => {
+    expect(arrival('?from=livedesign', 'https://www.livediagram.app/x')).toEqual({
       app: 'livedesign',
       via: 'from',
     });
-    expect(arrival('', 'https://www.livediagram.app/document/1', 'liveplanner')).toEqual({
+    expect(arrival('', 'https://www.livediagram.app/document/1')).toEqual({
       app: 'livediagram',
       via: 'referrer',
     });
-    expect(arrival('?from=nope', 'https://liveworkspace.app/', 'liveplanner')).toEqual({
-      app: 'liveplanner',
-      via: 'last',
-    });
-    expect(arrival('', '', null)).toEqual({ app: null, via: null });
+    // The account menu's Explorer on liveworkspace.app: every app's work, whatever app this browser used last.
+    localStorage.setItem(LAST_APP_KEY, 'liveplanner');
+    expect(arrival('?from=nope', 'https://liveworkspace.app/')).toEqual({ app: null, via: null });
+    expect(arrival('', '')).toEqual({ app: null, via: null });
+    expect(readLastApp()).toBe('liveplanner');
+    localStorage.setItem(LAST_APP_KEY, 'nope');
+    expect(readLastApp()).toBeNull();
+    localStorage.removeItem(LAST_APP_KEY);
   });
 
   it('knows each app by its address, with or without www', () => {
@@ -73,21 +79,47 @@ describe("every app's addresses", () => {
 });
 
 describe('addresses the Explorer used to have', () => {
-  it("sends the apps' Settings deep link to the account's Settings, notifications included", () => {
-    expect(settingsTarget('?settings=notifications', 'liveplanner')).toBe(
-      '/account/settings#notifications',
-    );
-    expect(settingsTarget('?settings=account', null)).toBe('/account/settings#profile');
-    expect(settingsTarget('?settings=tokens', null)).toBe('/account/tokens');
-    expect(settingsTarget('?settings=teams', null)).toBe('/explorer/invites');
-    expect(settingsTarget('?settings=editor', 'liveplanner')).toBe(
-      '/account/settings?app=liveplanner',
-    );
-    expect(settingsTarget('?from=liveplanner', 'liveplanner')).toBeNull();
+  it('opens the Settings panel in place on the section `?settings=` names, notifications included', () => {
+    expect(settingsOpening('notifications', 'liveplanner')).toEqual({
+      app: 'liveplanner',
+      scope: 'all',
+      categoryId: 'account:notifications',
+    });
+    expect(settingsOpening('account', null)).toEqual({
+      app: null,
+      scope: 'all',
+      categoryId: 'account:account',
+    });
+    expect(settingsOpening('profile', null)).toMatchObject({ categoryId: 'account:account' });
+    expect(settingsOpening('tokens', null)).toMatchObject({ categoryId: 'account:tokens' });
+    expect(settingsOpening('accessibility', null)).toMatchObject({
+      categoryId: 'account:accessibility',
+    });
+    expect(settingsOpening('all', 'livedesign')).toEqual({
+      app: 'livedesign',
+      scope: 'all',
+      categoryId: null,
+    });
+    expect(settingsOpening('livediagram', 'liveplanner')).toEqual({
+      app: 'livediagram',
+      scope: 'app',
+      categoryId: null,
+    });
+    // An editor's own category: the side of the app the person came from, or All from no app.
+    expect(settingsOpening('editor', 'liveplanner')).toEqual({
+      app: 'liveplanner',
+      scope: 'app',
+      categoryId: null,
+    });
+    expect(settingsOpening('editor', null)).toEqual({ app: null, scope: 'all', categoryId: null });
+    expect(settingsOpening('teams', null)).toBe('teams');
+    expect(settingsOpening(null, 'liveplanner')).toBeNull();
   });
 
   it('replaces retired views with their successors, keeping the app', () => {
-    expect(retiredTarget('profile', '?from=liveplanner')).toBe('/account/settings#notifications');
+    expect(retiredTarget('profile', '?from=liveplanner')).toBe(
+      '/explorer?settings=notifications&from=liveplanner',
+    );
     expect(retiredTarget('activity', '?from=liveplanner')).toBe('/explorer/inbox?from=liveplanner');
     expect(retiredTarget('generated', '')).toBe('/explorer/search?q=made-by%3Aai');
   });

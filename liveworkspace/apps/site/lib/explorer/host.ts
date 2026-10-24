@@ -54,23 +54,26 @@ export function appOfUrl(url: string | null | undefined): AppName | null {
 export type Arrival = {
   // The app whose logo the header shows, whose items the lists open filtered to, and whose kind New makes.
   app: AppName | null;
-  // How it was decided: `?from=`, the referrer, or the last app this browser used; `host` on an app's own address.
-  via: 'from' | 'referrer' | 'last' | 'host' | null;
+  // How it was decided: `?from=` or the referrer; `host` on an app's own address.
+  via: 'from' | 'referrer' | 'host' | null;
 };
 
-/** `?from=<app>` (set by the apps' links and redirects), then the referrer, then the last app this browser used. */
-export function arrival(search: string, referrer: string, lastApp: string | null): Arrival {
+/** `?from=<app>` (set by the apps' links and redirects), then the referrer. Anyone else is in no app: on
+ *  liveworkspace.app they see every app's work (liveworkspace/docs/site.md "The Explorer", Which app). */
+export function arrival(search: string, referrer: string): Arrival {
   const from = new URLSearchParams(search).get(EXPLORER_FROM_PARAM);
   if (isAppName(from)) return { app: from, via: 'from' };
   const referred = appOfUrl(referrer);
   if (referred) return { app: referred, via: 'referrer' };
-  if (isAppName(lastApp)) return { app: lastApp, via: 'last' };
   return { app: null, via: null };
 }
 
-export function readLastApp(): string | null {
+/** The last app this browser came from: what New makes, and whose welcome and hero Home shows, in no app. It never
+ *  filters the lists. */
+export function readLastApp(): AppName | null {
   try {
-    return localStorage.getItem(LAST_APP_KEY);
+    const last = localStorage.getItem(LAST_APP_KEY);
+    return isAppName(last) ? last : null;
   } catch {
     return null;
   }
@@ -175,30 +178,49 @@ export function defaultFolderOptionsFor(app: App): readonly DefaultFolderOption[
 
 // ---------- Settings, asked for on the Explorer's address ------------------------------------------------------
 
-export const NOTIFICATIONS_SETTINGS = '/account/settings#notifications';
+/** `?settings=<section>`: the Settings panel's own address (liveworkspace/docs/site.md "Settings", Addresses). */
+export const SETTINGS_PARAM = 'settings';
 
-/** Where `?settings=<category>` (the apps' old Settings deep link: notification emails, the account menu) goes on
- *  liveworkspace.app: the account's own categories to their place in the Settings panel's Account section, and an
- *  app's own (its editor, say) to the panel filtered to that app. Null when the address names no settings. */
-export function settingsTarget(search: string, app: AppName | null): string | null {
-  const category = new URLSearchParams(search).get('settings');
-  if (!category) return null;
-  switch (category) {
-    case 'notifications':
-      return NOTIFICATIONS_SETTINGS;
-    case 'account':
-    case 'profile':
-      return '/account/settings#profile';
-    case 'tokens':
-      return '/account/tokens';
-    case 'teams':
-      // Teams are run in the Explorer; the Invites are beside them.
-      return '/explorer/invites';
-    case 'privacy':
-      return '/account/settings#privacy';
-    default:
-      return app ? `/account/settings?app=${app}` : '/account/settings#apps';
-  }
+/** The account's notification settings: every notification email's unsubscribe link lands here. */
+export const NOTIFICATIONS_SETTINGS = `/explorer?${SETTINGS_PARAM}=notifications`;
+
+// The Account section's categories an address can name, by the panel's own category ids (the profile's is `account`).
+const ACCOUNT_CATEGORIES: Readonly<Record<string, string>> = {
+  account: 'account',
+  profile: 'account',
+  notifications: 'notifications',
+  tokens: 'tokens',
+  privacy: 'privacy',
+  accessibility: 'accessibility',
+};
+
+/** Where the Settings panel opens: the app it is opened for (its side of the switch), the side (`all`, `app`, or null
+ *  for this browser's last), and the category, by its id in All (`account:notifications`). */
+export type SettingsOpening = {
+  app: AppName | null;
+  scope: 'app' | 'all' | null;
+  categoryId: string | null;
+};
+
+/** What `?settings=<section>` asks for, the panel opened in place over the Explorer (notification emails, the old
+ *  `/account/settings`, an editor's account menu): an Account category on All, `all` on All, an app's name on that
+ *  app's side, and anything else (an editor's own category) on the side of the app the person came from. `teams` is
+ *  the Invites, beside the teams. Null when it names nothing. */
+export function settingsOpening(
+  section: string | null,
+  app: AppName | null,
+): SettingsOpening | 'teams' | null {
+  if (!section) return null;
+  if (section === 'teams') return 'teams';
+  const account = ACCOUNT_CATEGORIES[section];
+  // The panel files the Account section's categories under its heading (settings-ui groupedId).
+  if (account) return { app, scope: 'all', categoryId: `account:${account}` };
+  if (section === 'all' || section === 'apps') return { app, scope: 'all', categoryId: null };
+  const named = section.toLowerCase();
+  if (isAppName(named)) return { app: named, scope: 'app', categoryId: null };
+  return app
+    ? { app, scope: 'app', categoryId: null }
+    : { app: null, scope: 'all', categoryId: null };
 }
 
 // ---------- Why the person was sent here ----------------------------------------------------------------------
@@ -221,8 +243,8 @@ export const RETIRED_TARGETS = {
   generated: '/explorer/search?q=made-by%3Aai',
   activity: '/explorer/inbox',
   tags: '/explorer',
-  // Notification switches are the account's: Settings › Notifications on liveworkspace.app. Every notification
-  // email ever sent carries this address (or `?settings=notifications`) as its unsubscribe link.
+  // Notification switches are the account's: the Settings panel on Notifications, opened in place. Every
+  // notification email ever sent carries this address (or `?settings=notifications`) as its unsubscribe link.
   profile: NOTIFICATIONS_SETTINGS,
 } as const;
 

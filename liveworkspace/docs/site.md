@@ -238,9 +238,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
-  app side opens as the guest's panel. `?ended=revoked` says, once, that the link a plan was open through was revoked.
-  `?trashed=<id>&title=` offers Undo for an item just moved to the Trash. Each is dropped from the address once
-  read.
+  app side opens as the guest's panel. `?settings=` is dropped from the address as the panel closes.
+  `?ended=revoked` says, once, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
+  for an item just moved to the Trash. Each is dropped from the address once read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
   `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
   address, This Browser's own view).
@@ -293,12 +293,12 @@ account menu on every surface and from the Explorer's bottom bar. The old addres
 bookmarks carry them: each is a tiny page that sends the browser on to the Explorer with the panel open on the same
 section (`lib/account-redirect.ts`, `replace`, so Back doesn't land on it):
 
-| Old address                                                | Goes to                                     |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| `/account`, `/account/settings`                            | `/explorer?settings=all`                    |
+| Old address                                                                             | Goes to                                  |
+| --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `/account`, `/account/settings`                                                         | `/explorer?settings=all`                 |
 | `/account/settings#profile` (`#notifications`, `#privacy`, `#accessibility`, `#tokens`) | `/explorer?settings=profile` (and so on) |
-| `/account/settings?app=<name>` (`?app=all`, `#apps`)       | `/explorer?settings=<name>` (`all`)         |
-| `/account/tokens`                                          | `/explorer?settings=tokens`                 |
+| `/account/settings?app=<name>` (`?app=all`, `#apps`)                                    | `/explorer?settings=<name>` (`all`)      |
+| `/account/tokens`                                                                       | `/explorer?settings=tokens`              |
 
 The panel reads and writes `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`).
 
@@ -360,7 +360,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
 - **Addresses.** `/explorer?settings=<section>` opens the panel there, on liveworkspace.app or an app's address:
   `?settings=<app>` on that app (`?settings=all` on All); `profile`, `notifications`, `privacy`, `accessibility` and
   `tokens` open All on that Account category, which is where every email's unsubscribe link lands. The address drops
-  `?settings=` once read, so closing the panel leaves the Explorer as it was.
+  `?settings=` as the panel closes, so the Explorer is left as it was.
 - **Loading.** The panel's All view and catalogue view are their own chunk, fetched when the panel first opens (or
   the pointer heads for Settings); each app's catalogue is its own chunk too. The app's side reads that app's scopes
   once (`GET /api/account/settings/:app`, which answers `all` too); All reads each app's once, and the `all` scope
