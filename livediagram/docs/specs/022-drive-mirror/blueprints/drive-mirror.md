@@ -66,7 +66,6 @@ Scope, by file:
 | `apps/editor/lib/drive/cloud-sync-copy.ts`                      | The row's plain-language copy, and the rhythm derived from the cadence                |
 | `apps/editor/lib/cloud-sync/providers.ts`                       | The Cloud Sync provider catalogue                                                     |
 | `apps/editor/components/drive/DriveReconnectBanner.tsx`         | The quiet Needs reconnecting / Resume sync banner                                     |
-| `apps/editor/components/drive/DriveNoticeMarker.tsx`            | The unseen-folder mark on an Explorer row                                             |
 | `apps/editor/app/drive/connected/page.tsx`                      | The OAuth redirect target                                                             |
 | `apps/editor/app/drive/open/page.tsx`                           | The Drive UI integration's Open URL                                                   |
 

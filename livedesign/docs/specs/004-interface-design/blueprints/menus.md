@@ -23,7 +23,6 @@ Scope, by file:
 | `apps/live/components/primitives/usePortalMenuPlacement.ts`               | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
 | `apps/live/components/primitives/MenuFlyoutSection.tsx`                   | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
 | `apps/live/components/primitives/MenuFlyoutPanel.tsx`                     | The flyout's surface: `menu` or `dialog`                                                                     |
-| `apps/live/components/primitives/MenuCheckRow.tsx`                        | `menuitemcheckbox`, roving                                                                                   |
 | `apps/live/components/primitives/useRowMenu.ts`                           | Built on `useMenuButton`                                                                                     |
 | `apps/live/components/primitives/EllipsisTriggerButton.tsx`               | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
 | `apps/live/components/palette/ContextMenu.tsx`                            | Control menu at a point (element, selection, cell)                                                           |

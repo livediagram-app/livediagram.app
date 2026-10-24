@@ -112,7 +112,7 @@ across title and keywords ([Help app](help-app.md), "Out of scope").
 The figures inside articles keep the illustration kit and its house style ([Help app](help-app.md),
 "In-article illustrations"); their frame (`components/Figure.tsx`) matches the cards, rounded with a soft
 shadow. No figure's text may run outside its scene. A browser sweep of every article found the shared palette
-strip (`Strip` in `components/illustrations/toolbar-layout.tsx`) running past its 420-wide scenes in eleven
+strip running past its 420-wide scenes in eleven
 figures, cutting off Media and Search, so the strip is spaced to fit beside the menu card.
 
 ## Share roles

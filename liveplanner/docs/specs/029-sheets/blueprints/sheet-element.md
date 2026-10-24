@@ -66,8 +66,6 @@ worked on like a board.', icon: <SheetArt size={18} /> }` after `plan-visualisat
 'plan-sheets', label: 'Add Sheet', caption: 'Sheet', ..., action: { type: 'shape', kind: 'plan-sheet' }, icon: <SheetArt size={18} /> }]`,
   spread into `PLAN_TILES`. `SheetArt` (`components/sheets/sheet-art.tsx`, main bundle) is a small grid with a
   filled header row and one cell ringed, on the 22-unit grid of the other Plan glyphs.
-- `palette-tile-keywords.ts`: `plan-sheet`: `spreadsheet sheet excel google sheets table grid cells formula budget
-csv`.
 - Placement: `draw-commit.ts` and `useElementCreation.ts` call `placeNewSheet()` (`lib/sheet-seeds.ts`): a new
   sheet id, the element with `planSheet: { sheetId }`, the placement remembered. `useSheetModel` takes it
   (`takePlacedSheet`) as the Sheet first draws and makes the store `create` with `title: nextSheetTitle(titles)`
