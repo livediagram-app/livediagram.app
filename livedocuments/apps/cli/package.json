@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "@livedocuments/agent-verbs": "workspace:*",
-    "@liveworkspace/api-client": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
     "@livedocuments/document-views": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
     "zod": "^4.6.7"
   },

@@ -10,7 +10,7 @@ import { ApiError } from '@liveworkspace/api-client';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/document';
 import { readDocumentSnapshot } from '../commands/snapshot';
 import type { CliIo } from '../io';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { INDEX_FILE_NAME } from './constants';
 import type { Coverage } from './coverage';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withTelemetry } from './config/config-file';
+import { withTelemetry } from '@liveworkspace/cli-kit/config-file';
 import { run } from './main';
 import { telemetryNotice, telemetryOffReason } from './telemetry';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io';

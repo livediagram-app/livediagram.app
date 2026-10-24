@@ -8,7 +8,7 @@ import { headerFactsOf, overviewView, renderView } from '@livediagram/document-v
 import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@livediagram/api-schema';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parsePullFile, PULL_FILE_SUFFIX, type PullFile } from '../sync/pull-file';
 
 const READABLE = ['document.view', 'tab.ls', 'tab.view'];

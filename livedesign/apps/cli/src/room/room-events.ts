@@ -4,7 +4,7 @@
 
 import type { ChangesetCounts } from '@livedesign/api-schema';
 import { isRecord } from '@livedesign/design';
-import { oneLine } from '../output/one-line';
+import { oneLine } from '@liveworkspace/cli-kit/one-line';
 
 export type RoomEvent =
   | { kind: 'comment'; tabId: string; elementId: string; authorName: string; text: string }

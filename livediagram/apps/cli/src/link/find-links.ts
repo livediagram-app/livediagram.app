@@ -6,7 +6,7 @@ import { posix } from 'node:path';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { LINK_FILE_NAME } from './constants';
 import { parseLinkFile, type LinkFile } from './link-file';
 

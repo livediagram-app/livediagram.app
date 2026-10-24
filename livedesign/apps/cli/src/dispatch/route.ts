@@ -11,8 +11,8 @@ import {
   type Verb,
 } from '@livedesign/agent-verbs';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
-import { didYouMean } from './did-you-mean';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
+import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 
 type Routed =
   | { kind: 'top' }

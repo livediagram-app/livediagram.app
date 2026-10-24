@@ -5,9 +5,9 @@
 import { posix } from 'node:path';
 import { MIRROR_LEVELS } from '@livediagram/agent-verbs';
 import { parse, type TomlError } from 'smol-toml';
-import { didYouMean } from '../dispatch/did-you-mean';
+import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 import { CliError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { LINK_ID_MAX, MIRROR_DEFAULT_DIR, MIRROR_DEFAULT_LEVEL } from './constants';
 
 export type MirrorLevel = (typeof MIRROR_LEVELS)[number];

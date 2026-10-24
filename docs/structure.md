@@ -9,6 +9,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
@@ -194,6 +195,25 @@ Each step is its own PR, and both products build and pass their tests after ever
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    both apps.
 5. **`api-core`** out of the two `apps/api` Workers.
+   - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
+     now with the product's own names handed in:
+     - `api-kit`: the api Workers' responses and CORS (each product's `responses.ts` binds its
+       extra headers and keeps its own answers), rate-limit keys (an IPv6 caller by its /64), link
+       unfurls, the refusal log and the `cloudflare:workers` test shim, plus the protocol helpers
+       their `api-schema`s re-export (bearer and loopback reads, base64, the API-token shape, OAuth
+       device codes and PKCE).
+     - `mcp-kit`: the MCP Worker itself (`createMcpApp`: CORS, health, the Streamable-HTTP
+       transport, the OAuth 2.1 server with the device grant), its request and tool scopes and
+       preview fonts. Each MCP hands in its server and an `OauthServer` config (its CLI client and
+       consent base) and keeps its tools.
+     - `cli-kit`: the io shape (livediagram's extends it for the repository link), exit codes and
+       errors, `config.toml`, XDG paths, debug lines, credentials and the keychain, OAuth sign-in,
+       the api transport and PNG pictures. Each CLI's `product.ts` names it (`CliProduct`) and thin
+       modules bind it, so callers did not change.
+   - Still per product: the routes, tools and commands themselves, and what sits on a product's
+     `api-schema`, `agent-verbs` or fake host (`route.ts`, `parse-flags.ts`, `print.ts`,
+     `testing/fake-io.ts` and the suites on it). Those follow `api-schema` and `agent-verbs` in
+     step 3.
 
 ## Before step 1: deciding when to switch over
 

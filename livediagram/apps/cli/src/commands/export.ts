@@ -21,7 +21,7 @@ import {
 } from '@livediagram/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
 

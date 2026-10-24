@@ -3,9 +3,7 @@
 // and on Windows a blob sealed for the user with DPAPI (PowerShell), kept in the credentials file. The token always
 // travels on the tool's stdin: its arguments, which any process can read, carry only the profile name.
 
-import type { CliIo } from '../io';
-
-const KEYCHAIN_SERVICE = 'livediagram';
+import type { CliIo } from './io';
 
 // Where a profile's token is: in the file itself, sealed in the file, or in the platform's keychain.
 export type SavedToken = { token: string } | { sealed: string } | { keychain: true };
@@ -26,7 +24,8 @@ type Store = {
   erase(profile: string): Promise<void>;
 };
 
-function storeFor(io: CliIo): Store | null {
+// `service` names the product's entries: its command ('livediagram').
+function storeFor(io: CliIo, service: string): Store | null {
   const run = async (command: string, args: readonly string[], input = '') => {
     const result = await io.runTool(command, args, input);
     return result && result.code === 0 ? result.stdout : null;
@@ -38,17 +37,17 @@ function storeFor(io: CliIo): Store | null {
           (await run(
             'security',
             ['-i'],
-            `add-generic-password -U -s ${KEYCHAIN_SERVICE} -a ${quoted(profile)} -w ${quoted(token)}\n`,
+            `add-generic-password -U -s ${service} -a ${quoted(profile)} -w ${quoted(token)}\n`,
           )) === null
             ? null
             : { keychain: true },
         get: (profile) =>
-          run('security', ['find-generic-password', '-s', KEYCHAIN_SERVICE, '-a', profile, '-w']),
+          run('security', ['find-generic-password', '-s', service, '-a', profile, '-w']),
         erase: async (profile) =>
           void (await run('security', [
             'delete-generic-password',
             '-s',
-            KEYCHAIN_SERVICE,
+            service,
             '-a',
             profile,
           ])),
@@ -61,9 +60,9 @@ function storeFor(io: CliIo): Store | null {
             [
               'store',
               '--label',
-              `livediagram CLI (${profile})`,
+              `${service} CLI (${profile})`,
               'service',
-              KEYCHAIN_SERVICE,
+              service,
               'account',
               profile,
             ],
@@ -72,12 +71,12 @@ function storeFor(io: CliIo): Store | null {
             ? null
             : { keychain: true },
         get: (profile) =>
-          run('secret-tool', ['lookup', 'service', KEYCHAIN_SERVICE, 'account', profile]),
+          run('secret-tool', ['lookup', 'service', service, 'account', profile]),
         erase: async (profile) =>
           void (await run('secret-tool', [
             'clear',
             'service',
-            KEYCHAIN_SERVICE,
+            service,
             'account',
             profile,
           ])),
@@ -103,12 +102,13 @@ function storeFor(io: CliIo): Store | null {
 // Saves the token in the platform's store; the file keeps it, with a notice, where there is none or it refuses.
 export async function saveToken(
   io: CliIo,
+  service: string,
   profile: string,
   token: string,
   filePath: string,
   log: (line: string) => void,
 ): Promise<SavedToken> {
-  const store = storeFor(io);
+  const store = storeFor(io, service);
   const saved = store ? await store.put(profile, token) : null;
   if (saved) return saved;
   log(`keychain unavailable ${store ? 'refused' : `none on ${io.platform}`}`);
@@ -119,14 +119,20 @@ export async function saveToken(
 // The token a profile saved, or null when its store no longer has it.
 export async function loadToken(
   io: CliIo,
+  service: string,
   profile: string,
   saved: SavedToken,
 ): Promise<string | null> {
   if ('token' in saved) return saved.token;
-  const token = (await storeFor(io)?.get(profile, saved))?.trim();
+  const token = (await storeFor(io, service)?.get(profile, saved))?.trim();
   return token || null;
 }
 
-export async function eraseToken(io: CliIo, profile: string, saved: SavedToken): Promise<void> {
-  if ('keychain' in saved) await storeFor(io)?.erase(profile);
+export async function eraseToken(
+  io: CliIo,
+  service: string,
+  profile: string,
+  saved: SavedToken,
+): Promise<void> {
+  if ('keychain' in saved) await storeFor(io, service)?.erase(profile);
 }

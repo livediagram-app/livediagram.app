@@ -4,7 +4,7 @@
 import type { MirrorLevel } from './link-file';
 import type { SyncAction, TabMove } from './sync-plan';
 import { plural } from '@livediagram/document';
-import { oneLine } from '../output/one-line';
+import { oneLine } from '@liveworkspace/cli-kit/one-line';
 
 export type LineContext = {
   // A path relative to the mirror directory, as the working directory reaches it.

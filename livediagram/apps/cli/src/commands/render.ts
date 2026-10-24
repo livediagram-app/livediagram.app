@@ -7,7 +7,7 @@ import { renderElementsToSvg } from '@livediagram/document';
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { pictureLine, writePicture } from '../render/png';
 
 type PictureFlags = { png?: string; svg?: string };

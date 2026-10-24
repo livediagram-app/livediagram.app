@@ -5,7 +5,7 @@ import { resolveDesign, tabPath, type VerbContext } from '@livedesign/agent-verb
 import { DESIGN_ENVELOPE_KIND, DESIGN_SCHEMA_VERSION } from '@livedesign/design';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import {
   fileSlug,
   idSlug,

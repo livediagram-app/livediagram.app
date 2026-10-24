@@ -5,7 +5,7 @@ import { resolveProject, tabPath, type VerbContext } from '@liveplanner/agent-ve
 import { PROJECT_ENVELOPE_KIND, PROJECT_SCHEMA_VERSION } from '@liveplanner/project';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import {
   fileSlug,
   idSlug,

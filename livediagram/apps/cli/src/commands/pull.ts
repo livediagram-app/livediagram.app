@@ -6,7 +6,7 @@ import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/do
 import type { CliIo } from '../io';
 import { isLocallyChanged } from '../link/sync-state';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import {
   fileSlug,
   idSlug,

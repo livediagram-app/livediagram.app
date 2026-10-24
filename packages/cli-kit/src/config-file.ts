@@ -2,8 +2,8 @@
 // `[profiles.<name>]` tables of the same. Strings in double quotes, booleans bare. A line that does not
 // read is a usage error naming the file and the line.
 
-import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { CliError } from './cli-error';
+import { EXIT } from './exit-codes';
 
 export type ConfigFile = {
   defaultProfile?: string;

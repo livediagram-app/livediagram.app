@@ -2,8 +2,8 @@
 // directory, or stdin for `-`, which is never read from a terminal (the CLI never waits on a person).
 
 import type { CliIo } from './io';
-import { CliError } from './output/cli-error';
-import { EXIT } from './output/exit-codes';
+import { CliError } from './cli-error';
+import { EXIT } from './exit-codes';
 
 // An absolute path on any system the CLI runs on: POSIX `/x`, Windows `C:\x` or `C:/x`, and a UNC `\\host\x`.
 const ABSOLUTE_PATH = /^(?:\/|[A-Za-z]:[\\/]|\\\\)/;

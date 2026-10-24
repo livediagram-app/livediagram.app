@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { defineVerb, verbById, type Verb } from '@livedesign/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
-import { didYouMean } from './did-you-mean';
+import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 import { fieldsOf, flagOf } from './fields';
 import { splitGlobals } from './globals';
 import { parseVerbArgs } from './parse-flags';
