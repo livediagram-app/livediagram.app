@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { NavChevron } from './glyphs';
 import { useSettingsUiKit } from './kit';
-import type { SettingsCategory } from './model';
+import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { SettingsCategoryList, SettingsSubcategoryLinks } from './SettingsCategoryList';
 import { SettingsCategoryPane } from './SettingsCategoryPane';
 import { firstMatchingCategory, searchSettings } from './settings-search';
@@ -20,7 +20,7 @@ export type SettingsFocus = { categoryId: string; rowKey: string };
 // contains.
 //
 // It draws the header, the rail and pane, and the footer, as the children of the caller's dialog
-// frame: each app's Settings and liveworkspace.app's "Your apps" dialog render it in their own.
+// frame: the Settings panel (SettingsPanel) renders it, in each host's own.
 export function SettingsView({
   categories,
   isMobile,
@@ -34,6 +34,8 @@ export function SettingsView({
   initialSectionId = null,
   memoryKey = null,
   onCategoryOpened,
+  switcher,
+  groups,
 }: {
   categories: readonly SettingsCategory[];
   isMobile: boolean;
@@ -55,6 +57,11 @@ export function SettingsView({
   memoryKey?: string | null;
   // A category the reader picked, for the caller's telemetry.
   onCategoryOpened?: (categoryId: string) => void;
+  // The header's This app / All switch (SettingsScopeSwitch), on the front screen. Beside the title on
+  // desktop; on a phone, a row of its own under the header, so the app's name is never squeezed.
+  switcher?: ReactNode;
+  // The rail's headings (the All view's Account and each app), each category under its `group`.
+  groups?: readonly SettingsGroupHeading[];
 }) {
   const { SearchInput, CloseButton, NoMatches } = useSettingsUiKit();
 
@@ -142,11 +149,17 @@ export function SettingsView({
         ) : (
           leading
         )}
-        <h2 className="flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {showBack ? selected?.label : title}
         </h2>
+        {switcher && !isMobile ? <div className="min-w-0 shrink">{switcher}</div> : null}
         <CloseButton onClick={onClose} />
       </header>
+      {switcher && isMobile && !showBack ? (
+        <div className="flex border-b border-slate-200 px-4 py-2 dark:border-slate-800 [&>*]:flex-1 [&>*>button]:flex-1">
+          {switcher}
+        </div>
+      ) : null}
 
       {placeholder ? (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{placeholder}</div>
@@ -159,7 +172,7 @@ export function SettingsView({
               className={
                 isMobile
                   ? 'w-full overflow-y-auto p-4'
-                  : 'w-48 shrink-0 overflow-y-auto border-r border-slate-200 dark:border-slate-800'
+                  : 'w-60 shrink-0 overflow-y-auto border-r border-slate-200 dark:border-slate-800'
               }
             >
               {/* Above the first category, in both layouts: the rail IS the
@@ -180,6 +193,7 @@ export function SettingsView({
                 onSelect={select}
                 variant={isMobile ? 'root' : 'sidebar'}
                 searching={result.searching}
+                groups={groups}
               />
               {isMobile && result.searching && result.totalMatches === 0 ? (
                 <NoMatches

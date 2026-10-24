@@ -31,7 +31,7 @@ export type SettingsSubcategoryId = 'collaborate' | 'notifications' | 'tokens';
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
 
-// Each top-level category's tile. liveworkspace.app's "Your apps" dialog shows the same tiles, from
+// Each top-level category's tile. liveworkspace.app's Settings panel shows the same tiles, from
 // the derived catalogue (settings-site-catalogue.test.ts).
 export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   account: 'account',

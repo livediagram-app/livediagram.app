@@ -1,137 +1,22 @@
-// The settings page's catalogue (liveworkspace/docs/site.md "Your account", accounts.md "Settings"):
-// the settings in the `all` scope that mean something without an editor, worded as the apps' own
-// Settings word them (livediagram's settings-catalogue.ts), so a switch reads the same here as in
-// any app. The editors' chrome (UI scale, panel opacity and the rest) is left out: it means nothing
-// without an editor, and each app shows it in its own Settings.
-import {
-  ALL_SETTING_KEYS,
-  PRESENCE_COLOURS,
-  presenceColour,
-  type AllSettingKey,
-} from '@liveworkspace/settings';
+// The account's own settings on this site (liveworkspace/docs/site.md "Settings", accounts.md "Settings"). The
+// switches themselves are plain data every host of the Settings panel shares (@liveworkspace/settings/account); what
+// is here is the site's side: the profile's helpers, each app's way into its editor, and the panel's sections for
+// the Explorer's search.
+import { PRESENCE_COLOURS, presenceColour } from '@liveworkspace/settings';
 import { APP_SITES, type SiteId } from '@liveworkspace/sites';
 
+export {
+  ACCESSIBILITY_ROWS,
+  EDITOR_ONLY_KEYS,
+  IN_APP_ROWS,
+  NOTIFICATION_ROWS,
+  PRIVACY_ROWS,
+  readAccountToggle as readToggle,
+  uncatalogued,
+  type AccountToggle as ToggleRow,
+} from '@liveworkspace/settings/account';
+
 export type SettingsBlob = Record<string, unknown>;
-
-export interface ToggleRow {
-  key: AllSettingKey;
-  label: string;
-  description: string;
-  // What an unset key means: the apps read most switches as on unless turned off.
-  fallback: boolean;
-}
-
-export interface ToggleSection {
-  id: string;
-  title: string;
-  hint: string;
-  rows: ToggleRow[];
-}
-
-const on = (key: AllSettingKey, label: string, description: string): ToggleRow => ({
-  key,
-  label,
-  description,
-  fallback: true,
-});
-
-export const NOTIFICATION_ROWS: ToggleRow[] = [
-  on(
-    'notifyComments',
-    'Someone Comments on My Work',
-    'Someone leaves a comment on a diagram, plan, document or design you own.',
-  ),
-  on(
-    'notifyMentions',
-    'Someone Mentions Me in a Comment',
-    'A teammate @mentions you in a comment.',
-  ),
-  on(
-    'notifyActionAssigned',
-    'Someone Assigns Me an Action',
-    'A teammate assigns you an action on an element.',
-  ),
-  on(
-    'notifyInviteResponse',
-    'Someone Responds to a Team Invite',
-    'Someone you invited accepts or declines, for teams you are an admin of.',
-  ),
-  on(
-    'notifyTips',
-    'Tips and Check-Ins',
-    'Occasional getting-started tips, and a nudge if you have been away a while.',
-  ),
-  on(
-    'notifyMilestones',
-    'Milestones',
-    'A note when you hit one, like sharing your first piece of work.',
-  ),
-];
-
-export const IN_APP_ROWS: ToggleRow[] = [
-  on(
-    'notificationsEnabled',
-    'In-Editor Notifications',
-    'A brief note when something happens off screen, like moving something to a folder. Errors and warnings always show.',
-  ),
-];
-
-export const PRIVACY_ROWS: ToggleRow[] = [
-  on(
-    'telemetryEnabled',
-    'Send Anonymous Usage Events',
-    'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
-  ),
-  {
-    key: 'reduceMotion',
-    label: 'Reduce Motion',
-    description:
-      'Turns off the apps’ animations and transitions on every device you use. Your device’s own setting is always respected too.',
-    fallback: false,
-  },
-];
-
-// The page's switches, by card.
-export const TOGGLE_SECTIONS: ToggleSection[] = [
-  {
-    id: 'notifications',
-    title: 'Notifications',
-    hint: 'Which emails we send you, and the notes the apps show while you work. Each holds in every app.',
-    rows: [...NOTIFICATION_ROWS, ...IN_APP_ROWS],
-  },
-  {
-    id: 'privacy',
-    title: 'Privacy and accessibility',
-    hint: 'These follow you into every app, on every device you sign in on.',
-    rows: PRIVACY_ROWS,
-  },
-];
-
-// Shared keys this page leaves to the apps: they only mean something inside an editor.
-export const EDITOR_ONLY_KEYS: readonly AllSettingKey[] = [
-  'panelOpacity',
-  'uiScale',
-  'uiScalePanels',
-  'uiScaleToolbar',
-  'uiScaleCornerButtons',
-  'middleMousePan',
-  'dockButtonNames',
-  'powerUserMode',
-  'minimalChrome',
-  'customSwatches',
-];
-
-// Every shared key is either on this page or deliberately left to the apps.
-export function uncatalogued(): AllSettingKey[] {
-  const shown = new Set<string>(TOGGLE_SECTIONS.flatMap((s) => s.rows.map((r) => r.key)));
-  return ALL_SETTING_KEYS.filter((key) => !shown.has(key) && !EDITOR_ONLY_KEYS.includes(key));
-}
-
-// A switch's state from the stored scope: a boolean as stored, anything else its fallback.
-export function readToggle(all: SettingsBlob, row: ToggleRow): boolean {
-  const value = all[row.key];
-  return typeof value === 'boolean' ? value : row.fallback;
-}
 
 // The presence colours are every app's one palette (@liveworkspace/settings PRESENCE_COLOURS), each
 // with its dark-mode shade: what collaborators see on your cursor, comments and avatar.
@@ -156,7 +41,7 @@ export function cleanName(name: string): string | null {
 
 // Each app, for what only its own Settings holds (appearance, shortcuts), which opens inside the
 // editor. Its Explorer Home, not its `?settings=` deep link: the Explorer sends an app's categories
-// here (lib/explorer/host.ts settingsTarget), so that link would only come back to this page.
+// to the Settings panel here (lib/explorer/host.ts settingsTarget), so that link would only come back.
 export interface AppSettingsLink {
   id: SiteId;
   name: string;
@@ -173,10 +58,11 @@ export function appSettingsLinks(): AppSettingsLink[] {
   }));
 }
 
-// The settings page's sections, in order, for the "On this page" list beside them
-// (components/settings/SettingsPanel.tsx renders a card for each, with these ids).
+// The Account section's categories in the Settings panel, for the Explorer's search: each opens the panel there
+// (`/account/settings#<id>`).
 export const SETTINGS_CONTENTS: { id: string; title: string }[] = [
   { id: 'profile', title: 'Profile' },
-  ...TOGGLE_SECTIONS.map((section) => ({ id: section.id, title: section.title })),
-  { id: 'apps', title: 'Your apps' },
+  { id: 'notifications', title: 'Notifications' },
+  { id: 'privacy', title: 'Privacy' },
+  { id: 'accessibility', title: 'Accessibility' },
 ];

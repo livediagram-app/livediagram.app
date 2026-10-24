@@ -1,6 +1,6 @@
-// The Settings dialog view every liveworkspace app's Settings renders, and liveworkspace.app's
-// "Your apps" dialog with it (each app's docs/specs/007-editor/user-preferences.md, "One Settings
-// view for every app"; liveworkspace/docs/site.md).
+// The one Settings panel every liveworkspace app's Settings and liveworkspace.app open (SettingsPanel: this app's
+// settings or All, each app's docs/specs/007-editor/user-preferences.md "This app or All"), and the Settings view it
+// draws (SettingsView, "One Settings view for every app"; liveworkspace/docs/site.md "Settings").
 export * from './model';
 export {
   bindRow,
@@ -41,3 +41,32 @@ export {
 } from './settings-search';
 export { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 export { readSettingsView, writeSettingsView } from './settings-view-memory';
+export { SettingsScopeSwitch, useSettingsScope, type SettingsScope } from './scope';
+export { SettingsPanel, preloadSettingsPanel, type SettingsPanelApp } from './SettingsPanel';
+export type { AccountHost } from './CatalogueSettingsView';
+export { accountCategories, type AccountSection } from './account-model';
+export { ownToggleSetter } from './own-toggle';
+export {
+  catalogueModel,
+  shortLabel,
+  visibleCatalogueRows,
+  type AppScopes,
+  type CatalogueChange,
+} from './catalogue-model';
+export { groupCategories, groupedId } from './groups';
+export { bearerSettingsRequest } from './request';
+export {
+  createSettingsStore,
+  storeFor,
+  isSettingsAppId,
+  loadAppCatalogue,
+  SETTINGS_APP_IDS,
+  settingsApiErrorMessage,
+  type SettingsApiResult,
+  type SettingsAppId,
+  type SettingsRequest,
+  type SettingsStore,
+} from './store';
+export { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
+
+export { SETTINGS_DIALOG_CLASS, SETTINGS_DIALOG_SIZE } from './frame';

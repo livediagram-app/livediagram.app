@@ -152,12 +152,10 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
   (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **GitHub** (the app's
   open-source code; hidden on a phone), **Settings** and **Appearance** (Light, Dark or the system's, the site's one switch,
-  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in. For
-  someone who came from an app it opens that app's own Settings in a dialog over the Explorer, without leaving the
-  page (the same `AppSettingsDialog` "Your apps" opens, its code and the app's catalogue fetched when the button is
-  pointed at); from no app it goes to the account's settings, `/account/settings`. The dialog names a category
-  whose parent shows nothing by a short name: its group's when it is the only one shown from it ("Panels"), else its
-  own ("Layers", "Notifications": Account's always are). The toasts and a guest's sign-in banner stand above the bar.
+  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in, and
+  opens the Settings panel ([below](#settings)) in a dialog over the Explorer, without leaving the page: filtered to
+  the app the person came from (All one click away), or on All from no app. Its code, and the app's catalogue, are
+  fetched when the button is pointed at. The toasts and a guest's sign-in banner stand above the bar.
 - **Search.** The bar's Search and Cmd/Ctrl+K open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
   only when first opened): one field over the person's items (the index's `search` view, the words in the title or
   folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help
@@ -203,8 +201,8 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **This Browser.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
   browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link) goes to the
-  matching account page: notifications to `/account/settings#notifications`, an app's own settings to
-  `/account/settings?app=<app>`. `?ended=revoked` says, once, that the link a plan was open through was revoked.
+  Settings panel on `/account/settings`: notifications to `#notifications` (All, on Notifications), the profile to
+  `#profile`, privacy to `#privacy`, an app's own settings to `?app=<app>`. `?ended=revoked` says, once, that the link a plan was open through was revoked.
   `?trashed=<id>&title=` offers Undo for an item just moved to the Trash. Each is dropped from the address once
   read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
@@ -221,7 +219,8 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   app's `POST /api/auth/token`, one request in flight at a time (it rotates the refresh cookie), else the app's
   guest token under `<app>:v2:guest-token`. The site's own session is not asked on these pages.
 - **Account calls** go to `/api/workspace/account/…` with that token (`accountFetch`); the accounts Worker
-  checks it against its own keys (`apps/accounts/src/bearer.ts`): names for anyone; for an account, settings, and
+  checks it against its own keys (`apps/accounts/src/bearer.ts`): names for anyone; for an account, settings (the
+  `all` scope and each app's, read and patched, for the Settings panel), and
   its teams, read and run (making, renaming, inviting, roles, the join link, leaving, deleting, answering an
   invitation); nothing else.
 - **Signing in.** The app's silent sign-in script is inlined in the Explorer's layout, one per switched-on app
@@ -230,7 +229,8 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
   (`appOrigin`); account and settings pages go to liveworkspace.app (`workspaceHref`); share links are
-  always the app's public site.
+  always the app's public site. The Settings panel opens here in place, its Profile and API Tokens rows linking to
+  liveworkspace.app, where the session that sets them lives.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
 - **Telemetry** goes to liveworkspace.app's `/api/telemetry`, always for the app (the service takes a page's
@@ -253,10 +253,12 @@ pages are `noindex`. Cmd/Ctrl+K opens the Search panel.
 
 Where a signed-in person runs what belongs to their account rather than to an app
 ([accounts.md](accounts.md)): `/account/tokens` (making an API token, seeing it once, and revoking it, the AI
-tools connected in an app among them) and `/account/settings`. Each is a tab of the same frame
-(`components/settings/AccountShell.tsx`). `/account` opens Settings. Signed out, the pages ask them to sign in and
-come back. They read and write `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and
-are kept out of search.
+tools connected in an app among them) and `/account/settings`, which opens the Settings panel ([below](#settings)).
+Each is a tab of the same frame (`components/settings/AccountShell.tsx`). `/account` opens Settings. Signed out,
+the pages ask them to sign in and come back. They read and write `/api/account/*` on this origin with the session
+cookie (`lib/account-api.ts`), and are kept out of search. API tokens stay a page of their own: making one shows
+its secret once, with room to copy it, which reads better as a page than as a row of a dialog; the panel's API
+Tokens row links to it.
 
 Teams are not here: they are made and run in the Explorer, wherever it shows
 ([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)). The old addresses go there, permanently
@@ -268,51 +270,57 @@ Teams are not here: they are made and run in the Explorer, wherever it shows
 | `/account/teams/<id>` (and with a `/`) | `/explorer/team?id=<id>` |
 | `/explorer?settings=teams`             | `/explorer/invites`      |
 
-**Settings**, `/account/settings` (`components/settings/SettingsPanel.tsx` and `ProfileCard.tsx`,
-the catalogue in `lib/account-settings.ts`): what belongs to the person in every app, the `all` scope
-of their settings and their profile ([accounts.md](accounts.md#settings)). Every email that can be
-turned off links here, so someone signed out signs in and comes back.
+#### Settings
 
-- **Profile**: the display name and presence colour collaborators see in every app, with a preview
-  of their cursor and avatar. The colours are the apps' one palette (`PRESENCE_COLOURS` in
-  `@liveworkspace/settings`), plus Automatic (no colour of their own, so each app picks); dark mode
-  paints each in the palette's deeper shade, as the apps do.
-  Leaving the name empty shows the name they signed up with.
-- **Notifications**: each email that can be turned off (comments, mentions, actions assigned,
-  invitation answers, tips and check-ins, milestones) and the apps' in-editor notes, worded as in the
-  apps' own Settings.
-- **Privacy and accessibility**: anonymous usage events, and Reduce Motion.
-- **Your apps**: a card per app that opens that app's own settings in a dialog on this page
-  (`components/settings/AppSettingsDialog.tsx`, `lib/app-settings.ts`): the settings in the app's
-  scope, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
-  [accounts.md](accounts.md#scopes)). The dialog is the app's own Settings view, not a copy of it:
-  the same `@liveworkspace/settings-ui` component every app's Settings renders, so it has the app's
-  rail with its category tiles and nested sub-categories, its panes, sections, collapsed sections,
-  section notes, row cards, search, phone push layout and back bar. The site maps the catalogue onto
-  the view's model (`lib/app-settings-model.tsx`): each row's value read from the stored scopes, each
-  change written as below. It has the app's switches, choices, sliders and groups of switches, hides
-  a nested row while its switch is off as the app does, and leaves the shared settings to the cards
-  above. What it keeps of its own is the framing: the header names the app with its mark, the body
-  shows a placeholder while the catalogue and settings load and a note with Try again if they fail,
-  and the footer says changes are saved to the account and links into the app. What only makes
-  sense inside the editor (appearance, shortcuts, the shared editor chrome such as UI scale and your
-  colours, lists such as tours seen) stays in the app, in the Settings its editor opens: the dialog
-  ends with "More in <app> Settings" and a link into the app (`<app>/explorer/home`), never the
-  `?settings=` deep link, which the Explorer sends back to this page. `?app=<name>` opens a dialog as the page
-  loads, and the address follows the open dialog. The dialog traps focus, closes on Escape, a click
-  outside or its close button, gives focus back to its card, and at phone width fills the screen and
-  pushes a category's pane, as the apps' Settings do. Its code and each app's catalogue load only when one first opens (or the pointer reaches
-  its card); the app's settings are read once when its dialog first opens
-  (`GET /api/account/settings/:app`) and kept for the page's lifetime. Each change is shown at once and
-  written alone as a patch of just its key in the app's scope (`PATCH { app }`), and put back with a
-  note if the write fails; a slider saves on release, as in the app. The app picks the change up the next time
-  it opens: each app reads its settings once per load, and the server's copy wins over its cached
-  one, and it only ever sends back the keys it changed itself.
+One Settings panel for every setting the account has: `SettingsPanel` in `@liveworkspace/settings-ui`, the same
+one each app's editor opens as its Settings (each app's docs/specs/007-editor/user-preferences.md "This app or
+All"). Here it is `components/settings/SiteSettingsDialog.tsx`, opened by `/account/settings`
+(`components/settings/SettingsLanding.tsx`) and by the Explorer's Settings button. There is no other settings page:
+the old page of cards (Profile, Notifications, Privacy and accessibility, and a "Your apps" card per app opening that
+app's dialog) is gone, its parts now the panel's.
 
-The page reads the settings and the profile once each as it opens. Each switch and colour is shown
-changed at once and written alone (one `PATCH`), and put back with a note if the write fails. The
-name is saved once typing pauses (800 ms), when the field is left, or as the page closes, never per
-keystroke.
+- **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
+  liveworkspace's logo. The app's side shows that app's settings, from its plain-data catalogue
+  (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](accounts.md#scopes)), in the app's own Settings view: its
+  rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes, search,
+  the phone's push layout and back bar. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
+  for what only makes sense inside the editor (appearance, shortcuts, the editors' shared chrome such as UI scale).
+  Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
+  (`liveworkspace:settings-scope:v1`); a link that names one wins.
+- **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then each app
+  under its name and logo, in the apps' order. Account holds what belongs to the person in every app, the `all`
+  scope ([accounts.md](accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
+  collaborators see, with a preview of their cursor and avatar, `ProfileCard.tsx`; the apps' one palette
+  `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it
+  **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
+  assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (a link to `/account/tokens`), then
+  **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
+  `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
+  something in an editor (UI scale, panel opacity and the rest) are left to each app's own group. Ids in All are
+  prefixed with their heading's (`account:notifications`, `livediagram.app:editor`), so two apps' categories and
+  rows never collide.
+- **Addresses.** `/account/settings?app=<name>` opens the panel on that app (`?app=all` on All);
+  `#profile`, `#notifications`, `#privacy`, `#accessibility` and `#tokens` open All on that Account category, which is
+  where every email's unsubscribe link lands. Closing the panel leaves an **Open Settings** button on the page, for the
+  same app; the address drops the category it named.
+- **Loading.** The panel's All view and catalogue view are their own chunk, fetched when the panel first opens (or
+  the pointer heads for Settings); each app's catalogue is its own chunk too. The app's side reads that app's scopes
+  once (`GET /api/account/settings/:app`, which answers `all` too); All reads each app's once, and the `all` scope
+  comes with them, so it costs no request of its own. The profile is read when its category is first shown
+  (`GET /api/account/profile`). What is read is kept for the page's lifetime (`settingsStore` in
+  `lib/app-settings.ts`), so opening the panel again, or switching sides, costs nothing.
+- **Saving.** Each change is shown at once and written alone, as a patch of just its key: an app's row to the app's
+  scope (`PATCH /api/account/settings/:app` `{ app }`), an Account switch to `all` (`PATCH /api/account/settings`
+  `{ all }`); put back with a note if the write fails; a slider saves on release, as in the app. The profile's name is
+  saved once typing pauses (800 ms), when the field is left, or as the page closes, never per keystroke; its colour
+  at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`). An app picks a
+  change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
+  cached one.
+- **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
+  the app's token; its Profile and API Tokens rows link to liveworkspace.app, since the profile and tokens are the
+  session's.
+- **The frame.** A dialog `60rem` wide on desktop (never more than 92% of the window), one fixed height (`44rem`, less
+  on a short window), full screen on a phone; it traps focus, closes on Escape, a click outside or its close button.
 
 **Joining and declining** (`components/teams/`, the logic in `lib/teams.ts`). Two thin landings stay here,
 because emails and copied links point at them and the accounts Worker makes them on this origin:

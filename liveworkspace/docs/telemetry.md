@@ -104,10 +104,10 @@ guest's sign-in banner. They keep the names the apps always gave them, so each a
 counting them. An app that draws the shared Explorer itself (its panel, its Explorer page, the
 Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
 
-Settings changed on liveworkspace.app count for their app too. In an app's dialog on the settings
-page, a change reports the event the app's own Settings sends for that row; on the settings page, a
-switch every app shares counts for the app the page was opened for (`?app=`), and opened on its own
-it counts once, for `liveworkspace.app`, with the event the first app with that switch reports
+Settings changed on liveworkspace.app count for their app too. In the Settings panel, a change to an
+app's row reports the event the app's own Settings sends for that row; a switch of its Account section
+(every app shares it) counts for the app the panel was opened for, and opened for no app it counts
+once, for `liveworkspace.app`, with the event the first app with that switch reports
 (`sharedCatalogueEvents`). The events come from the app's settings catalogue
 (`packages/settings/src/catalogues`, `catalogueEvents`), and a change made in the app's own Settings is
 the app's to report, so each change is counted once.

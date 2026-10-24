@@ -48,7 +48,7 @@ async function paintsFullInk(label: Locator): Promise<boolean> {
   return clipped.equals(released);
 }
 
-test('Settings category labels keep their descenders', async ({ page, pageErrors }) => {
+test('Settings category labels wrap rather than clip', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
@@ -60,8 +60,11 @@ test('Settings category labels keep their descenders', async ({ page, pageErrors
   const rail = dialog(page).getByRole('navigation', { name: 'Settings categories' });
   await rail.waitFor();
 
-  const labels = await clippedLabels(rail);
-  // Appearance, Keyboard, Accessibility, Privacy: the ones with descenders.
+  // The rail's names wrap onto a second line rather than being cut off (each app's
+  // docs/specs/007-editor/user-preferences.md, the dialog's width), so none is clipped at all, and
+  // each still paints its whole ink, descenders included.
+  expect(await clippedLabels(rail)).toEqual([]);
+  const labels = await rail.locator('.text-optical-line').all();
   expect(labels.length).toBeGreaterThanOrEqual(4);
   const cut: string[] = [];
   for (const label of labels) {

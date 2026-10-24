@@ -15,7 +15,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
-│  ├─ settings-ui              the Settings dialog view every app's Settings and liveworkspace.app render
+│  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards

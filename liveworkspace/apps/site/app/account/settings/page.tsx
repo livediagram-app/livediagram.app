@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { AccountShell } from '@/components/settings/AccountShell';
-import { SettingsPanel } from '@/components/settings/SettingsPanel';
-import { SETTINGS_CONTENTS } from '@/lib/account-settings';
+import { SettingsLanding } from '@/components/settings/SettingsLanding';
 
 export const metadata: Metadata = {
   title: 'Settings · liveworkspace',
@@ -9,14 +8,15 @@ export const metadata: Metadata = {
   alternates: { canonical: '/account/settings' },
 };
 
+// The Settings panel, opened over the account page (liveworkspace/docs/site.md "Settings"): the same panel every
+// app's Settings and the Explorer open.
 export default function Page() {
   return (
     <AccountShell
       path="/account/settings"
-      contents={SETTINGS_CONTENTS}
-      intro="Your profile, the emails we send you, and your privacy and accessibility choices. Each is saved as you change it, and holds in every app."
+      intro="Your profile, the emails we send you, your privacy and accessibility choices, and every app’s own settings. Each is saved as you change it."
     >
-      <SettingsPanel />
+      <SettingsLanding />
     </AccountShell>
   );
 }

@@ -137,12 +137,18 @@ export type SettingsCategory = {
   icon?: ReactNode;
   // The top-level category this nests under.
   parent?: string;
+  // The heading it is listed under (SettingsGroupHeading's id), in the All view: the account, or an app.
+  group?: string;
   // A line under a section's heading, for what every row in it shares.
   sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
   // Sections drawn as a closed accordion.
   collapsedSections?: readonly string[];
   rows: readonly SettingsRow[];
 };
+
+// A heading the rail lists categories under, in the order given: the All view's Account and each app,
+// each with its logo.
+export type SettingsGroupHeading = { id: string; label: string; icon?: ReactNode };
 
 // A section's target id: "Cloud Sync" → "cloud-sync".
 export function settingsSectionId(section: string): string {

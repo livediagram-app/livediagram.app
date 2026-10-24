@@ -41,12 +41,12 @@ export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
     hint: 'Account Settings',
     href: workspaceHref(`/account/settings#${id}`),
   }));
-  // Each app's own settings, in its dialog on the settings page.
+  // Each app's own settings, in the Settings panel filtered to that app.
   const apps: SearchEntry[] = APP_NAMES.map((name) => ({
     id: `app:${name}`,
     group: 'settings',
     label: `${siteOfApp(name).name} Settings`,
-    hint: 'Your apps',
+    hint: 'Settings',
     href: workspaceHref(`/account/settings?app=${name}`),
   }));
   return [...help, ...account, ...apps];

@@ -1,7 +1,16 @@
 'use client';
 
 import { useCallback, useMemo, useRef } from 'react';
-import { SettingsUiKitProvider, SettingsView } from '@liveworkspace/settings-ui';
+import {
+  ownToggleSetter,
+  SETTINGS_DIALOG_CLASS,
+  SETTINGS_DIALOG_SIZE,
+  SettingsPanel,
+  SettingsUiKitProvider,
+  useSettingsScope,
+  type AccountHost,
+} from '@liveworkspace/settings-ui';
+import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
@@ -11,6 +20,11 @@ import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
 import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { settingsModel } from '@/components/dialogs/settings/settings-model';
+import {
+  renderSettingsLogo,
+  SETTINGS_APP,
+  settingsRequest,
+} from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { signInEnabled } from '@/lib/auth-config';
@@ -82,6 +96,28 @@ export function SettingsDialog({
     [categories, settings, onChange],
   );
 
+  // The header's livedesign / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
+  // account whose settings liveworkspace keeps, so a guest and a workbench see this app's alone.
+  const allowAll = signedIn && !workbench;
+  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
+  const [scope, setScope] = useSettingsScope(
+    'livedesign:settings-scope:v1',
+    focus || initialCategoryId ? 'app' : null,
+  );
+  // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
+  // and synced as here); the profile is set on liveworkspace.app.
+  const account = useMemo<AccountHost>(
+    () => ({
+      shared: {
+        all: settings,
+        set: ownToggleSetter(model, (key, value) => onChange({ ...settings, [key]: value })),
+      },
+      profileHref: `${workspaceOriginFor(window.location.host)}/account/settings#profile`,
+      emails: emailEnabled,
+    }),
+    [settings, model, onChange, emailEnabled],
+  );
+
   // Which categories people actually open is the signal for whether this
   // reorganisation helped, and for what belongs on the first screen next.
   const onCategoryOpened = useCallback((id: string) => {
@@ -102,25 +138,30 @@ export function SettingsDialog({
       open
       onClose={close}
       ariaLabel="Settings"
-      // Wide enough for the rail plus a readable pane. Below `sm:` the Dialog
-      // goes edge-to-edge for every size at or above `md`, which is exactly
-      // what the phone layout wants.
-      size="2xl"
+      // Wide enough for the rail plus a readable pane, and for All's app headings (60rem). Below `sm:` the Dialog
+      // goes edge-to-edge for every size at or above `md`, which is exactly what the phone layout wants.
+      size={SETTINGS_DIALOG_SIZE}
       // The existing see-through backdrop rather than the default dim+blur:
       // Settings is where you flip things whose effect is ON the canvas
       // behind it (panel opacity, UI scale, the minimap), so blurring that
       // canvas out hides the very thing you are adjusting.
       backdrop="desktop-light"
       // One fixed height on desktop, not a cap: sized to content, the frame
-      // jumped between categories as the reader moved down the rail. 42rem
-      // holds every short category whole and keeps a long one a modal rather
-      // than a page; the pane scrolls inside. The phone layout still fills
-      // its screen, which is what a pushed pane wants.
-      className="max-h-[calc(100%-2rem)] sm:h-[min(42rem,calc(100%-6rem))] sm:max-h-[min(42rem,calc(100%-6rem))]"
+      // jumped between categories as the reader moved down the rail. The pane
+      // scrolls inside. The phone layout still fills its screen, which is what
+      // a pushed pane wants.
+      className={SETTINGS_DIALOG_CLASS}
     >
       <SettingsUiKitProvider kit={SETTINGS_KIT}>
-        <SettingsView
-          categories={model}
+        <SettingsPanel
+          app={SETTINGS_APP}
+          own={model}
+          allowAll={allowAll}
+          scope={scope}
+          onScopeChange={setScope}
+          store={settingsRequest}
+          account={account}
+          renderLogo={renderSettingsLogo}
           isMobile={isMobile}
           onClose={close}
           focus={focus ?? null}

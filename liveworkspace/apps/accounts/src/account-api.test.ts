@@ -593,6 +593,23 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     expect((await call('/settings', bearer('tok-ada'))).status).toBe(200);
   });
 
+  it('patches the settings every app shares, for the Settings panel’s Account section', async () => {
+    const patched = await call(
+      '/settings',
+      bearer('tok-ada', { method: 'PATCH', body: { all: { notifyTips: false } } }),
+    );
+    expect(patched.status).toBe(200);
+    expect(((await patched.json()) as { all: Record<string, unknown> }).all.notifyTips).toBe(false);
+    const read = (await (await call('/settings/liveplanner.app', bearer('tok-ada'))).json()) as {
+      all: Record<string, unknown>;
+    };
+    expect(read.all.notifyTips).toBe(false);
+    // A guest's bearer has no account settings to change.
+    expect(
+      (await call('/settings', bearer('tok-guest', { method: 'PATCH', body: { all: {} } }))).status,
+    ).toBe(401);
+  });
+
   it('lets a guest read names alone', async () => {
     expect((await call('/people?ids=user_ada', bearer('tok-guest'))).status).toBe(200);
     expect((await call('/teams', bearer('tok-guest'))).status).toBe(401);

@@ -1,27 +1,29 @@
-// One app's own settings (its derived catalogue and its stored scopes) as the shared Settings view's
-// model (@liveworkspace/settings-ui), so the "Your apps" dialog draws them exactly as the app's own
-// Settings does (liveworkspace/docs/site.md "Your account"). Values are read from both scopes
-// together; a change hands the row's binding and the value to store to `change`, which saves it.
-import { joinSettings } from '@liveworkspace/settings';
+// One app's settings as plain data (its derived catalogue, @liveworkspace/settings/catalogues/<app>, and its stored
+// scopes) as the Settings view's model, so the Settings panel draws another app's settings exactly as that app's
+// own Settings does (liveworkspace/docs/site.md "Settings"). Values are read from both scopes together; a change
+// hands the row's binding and the value to store to `change`, which saves it.
+import { joinSettings, type SettingsBlob } from '@liveworkspace/settings';
 import {
   readChoiceValue,
   readSliderValue,
   readToggleValue,
   type AppCatalogue,
   type CatalogueBinding,
+  type CatalogueCategory,
   type CatalogueRow,
   type CatalogueSlider,
   type StoredValue,
 } from '@liveworkspace/settings/catalogue';
-import {
-  SettingsCategoryTile,
-  type SettingsCategory,
-  type SettingsRow,
-  type SettingsTileId,
-} from '@liveworkspace/settings-ui';
-import { visibleRows, type AppScopes } from './app-settings';
+import { SettingsCategoryTile, type SettingsTileId } from './glyphs';
+import type { SettingsCategory, SettingsRow } from './model';
 
-export type AppSettingChange = (binding: CatalogueBinding, stored: StoredValue) => void;
+export type CatalogueChange = (binding: CatalogueBinding, stored: StoredValue) => void;
+
+// Both scopes for one app: the `all` every app shares, and the app's own.
+export interface AppScopes {
+  all: SettingsBlob;
+  app: SettingsBlob;
+}
 
 const TILES = new Set<string>([
   'account',
@@ -35,6 +37,20 @@ const TILES = new Set<string>([
   'privacy',
 ] satisfies SettingsTileId[]);
 
+// The rows to show now: a power user's only with Power User Mode on, and a nested row only while its switch is
+// on, as the app's own Settings does.
+export function visibleCatalogueRows(
+  category: CatalogueCategory,
+  value: AppScopes,
+): CatalogueRow[] {
+  const joined = joinSettings(value.all, value.app);
+  return category.rows.filter(
+    (row) =>
+      (!row.powerUser || joined.powerUserMode === true) &&
+      (!row.when || readToggleValue(joined, row.when)),
+  );
+}
+
 // The app's label for a slider's value, as its own slider shows it.
 const sliderLabel = (row: CatalogueSlider) => (value: number) =>
   row.labels[Math.round((value - row.min) / row.step)] ?? String(value);
@@ -43,7 +59,7 @@ function modelRow(
   row: CatalogueRow,
   joined: Record<string, unknown>,
   shown: ReadonlySet<string>,
-  change: AppSettingChange,
+  change: CatalogueChange,
 ): SettingsRow {
   const text = {
     key: row.id,
@@ -98,9 +114,9 @@ function modelRow(
   }
 }
 
-/** A path's name, short enough for the dialog's rail ("Panels › Collaborate" was cut off): its group alone when
- *  it is the only category shown from that group ("Panels"), else its own name ("Map", beside "Layers"). Account's
- *  are always by their own name ("Notifications"): the whole dialog is the account's settings. */
+/** A path's name, short enough for the rail ("Panels › Collaborate" was cut off): its group alone when it is the
+ *  only category shown from that group ("Panels"), else its own name ("Map", beside "Layers"). Account's are
+ *  always by their own name ("Notifications"). */
 export function shortLabel(label: string, groups: ReadonlyMap<string, number>): string {
   const parts = label.split(' › ');
   if (parts.length < 2) return label;
@@ -109,22 +125,22 @@ export function shortLabel(label: string, groups: ReadonlyMap<string, number>): 
   return group === 'Account' || (groups.get(group) ?? 0) > 1 ? own : group;
 }
 
-/** The app's categories with the rows showing now (a power user's only in Power User Mode, a nested
- *  row only while its switch is on), none left empty. A sub-category whose parent shows nothing sits at
- *  the top level, under a short name (shortLabel). */
-export function appSettingsModel(
+/** The app's categories with the rows showing now (a power user's only in Power User Mode, a nested row only while
+ *  its switch is on), none left empty. A sub-category whose parent shows nothing sits at the top level, under a
+ *  short name (shortLabel). */
+export function catalogueModel(
   catalogue: AppCatalogue,
   value: AppScopes,
-  change: AppSettingChange,
+  change: CatalogueChange,
 ): SettingsCategory[] {
   const joined = joinSettings(value.all, value.app);
   const shownCategories = catalogue.categories
-    .map((category) => ({ category, rows: visibleRows(category, value) }))
+    .map((category) => ({ category, rows: visibleCatalogueRows(category, value) }))
     .filter(({ rows }) => rows.length > 0);
   const ids = new Set(shownCategories.map(({ category }) => category.id));
   const byId = new Map(catalogue.categories.map((c) => [c.id, c]));
   // Each category's full path: a sub-category shown without its parent is named under it.
-  const path = (category: AppCatalogue['categories'][number]) =>
+  const path = (category: CatalogueCategory) =>
     category.parent !== undefined && !ids.has(category.parent)
       ? `${byId.get(category.parent)?.label ?? category.parent} › ${category.label}`
       : category.label;

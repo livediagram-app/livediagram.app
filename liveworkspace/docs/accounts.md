@@ -461,7 +461,8 @@ site shows it in the same view as the app, with only each row's value and change
 row's read and write against probe values, and a test beside each app's catalogue
 (`settings-site-catalogue.test.ts`) fails when the copy drifts; `UPDATE_SITE_CATALOGUE=1` writes it
 again. A row that isn't one stored value (a list, several keys at once) or isn't a preference at all
-(appearance, tokens, shortcuts) stays in the app's own Settings.
+(appearance, tokens, shortcuts) stays in the app's own Settings. Which shared switches the panel's Account section
+shows, and how they are worded, is plain data too, `@liveworkspace/settings/account`.
 
 A scope is one row, keyed by owner and scope, holding a JSON object of setting names to values.
 
@@ -492,12 +493,15 @@ the settings as they now are.
   like an account id (`user_…`) or a guest id (`guest_<uuid>`). An app reads and writes its own
   scope and `all`, and no other app's: naming another app is `403 wrong_app`
   ([Which app a client is](#which-app-a-client-is)).
-- **liveworkspace.app** reads and patches the signed-in person's `all` scope with their session
-  cookie: `GET` and `PATCH /api/account/settings`, from its settings page
-  ([Your account](site.md#your-account-account)), where the profile is set too. An app's dialog there
-  reads both of that person's scopes for the app, `GET /api/account/settings/:app`, and patches the
-  app's scope alone, `PATCH /api/account/settings/:app` `{ app }`. A body's `all` is ignored there,
-  and only the four apps' site ids are scopes.
+- **The Settings panel** (`@liveworkspace/settings-ui`, [site.md](site.md#settings)) reads and patches the
+  signed-in person's settings from the browser. On liveworkspace.app it uses their session cookie; on an app's
+  address (the Explorer there) and in each editor, the app's access token through the app's router
+  (`/api/workspace/account/…`, the bearer door, `apps/accounts/src/bearer.ts`). Either door answers the same
+  routes: `GET` and `PATCH /api/account/settings` for the `all` scope (the Account section's switches), and
+  `GET /api/account/settings/:app` for both of the person's scopes for one app (the app's rows can depend on a
+  shared switch), with `PATCH /api/account/settings/:app` `{ app }` patching the app's scope alone. A body's `all`
+  is ignored there, and only the four apps' site ids are scopes. The profile is the session's only: on
+  liveworkspace.app the panel sets it in place, elsewhere it links there.
 
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.
@@ -716,8 +720,9 @@ node scripts/map-clients.ts --local
 On liveworkspace.app, routed to the accounts Worker (`/api/account/*`).
 
 For the signed-in person, by their session cookie. Writes must come from the site's own origin. The team
-rows below (making, running, inviting, the join link, roles, removing, leaving, answering an invitation) and the
-reads of names, teams and settings are also answered for an **app's bearer**: the access token the accounts Worker
+rows below (making, running, inviting, the join link, roles, removing, leaving, answering an invitation), the
+reads of names and teams, and the settings routes (reads, and patches of `all` and of an app's scope, for the
+Settings panel) are also answered for an **app's bearer**: the access token the accounts Worker
 minted for one of the app APIs, sent by the Explorer on the app's address and by the app's editor through the app's
 router (`/api/workspace/account/…`; `src/bearer.ts`). A bearer is no ambient credential, so its writes need no
 same-origin check. A guest's bearer reads names alone; an API token (`lwt_…`) is not a bearer here, so no tool or

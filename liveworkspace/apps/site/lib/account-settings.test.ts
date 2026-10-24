@@ -3,17 +3,20 @@ import { ALL_SETTING_KEYS, PRESENCE_COLOURS as SHARED_PALETTE } from '@liveworks
 import { APP_SITES } from '@liveworkspace/sites';
 import { settingsTarget } from './explorer/host';
 import {
+  ACCESSIBILITY_ROWS,
   appSettingsLinks,
   cleanName,
   colourName,
   EDITOR_ONLY_KEYS,
+  IN_APP_ROWS,
+  NOTIFICATION_ROWS,
   PRESENCE_COLOURS,
+  PRIVACY_ROWS,
   readToggle,
-  TOGGLE_SECTIONS,
   uncatalogued,
 } from './account-settings';
 
-const rows = TOGGLE_SECTIONS.flatMap((s) => s.rows);
+const rows = [...NOTIFICATION_ROWS, ...IN_APP_ROWS, ...PRIVACY_ROWS, ...ACCESSIBILITY_ROWS];
 
 describe('the settings catalogue', () => {
   it('shows every shared key but the editors’ chrome, once each', () => {
@@ -26,10 +29,12 @@ describe('the settings catalogue', () => {
 
   it('has every email and notification switch, and privacy and accessibility', () => {
     const notify = ALL_SETTING_KEYS.filter((k) => k.startsWith('notif'));
-    const notifications = TOGGLE_SECTIONS.find((s) => s.id === 'notifications')!.rows;
+    const notifications = [...NOTIFICATION_ROWS, ...IN_APP_ROWS];
     expect(notifications.map((r) => r.key).sort()).toEqual([...notify].sort());
-    const privacy = TOGGLE_SECTIONS.find((s) => s.id === 'privacy')!.rows;
-    expect(privacy.map((r) => r.key)).toEqual(['telemetryEnabled', 'reduceMotion']);
+    expect([...PRIVACY_ROWS, ...ACCESSIBILITY_ROWS].map((r) => r.key)).toEqual([
+      'telemetryEnabled',
+      'reduceMotion',
+    ]);
   });
 
   it('reads an unset switch as the apps do', () => {

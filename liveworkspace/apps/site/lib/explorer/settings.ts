@@ -3,18 +3,13 @@
 // The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/accounts.md
 // "Settings"): whether Home's banner is hidden (`homeBanner`, the app's own scope, as each app's Settings shows it)
 // and whether anonymous events may be sent (`telemetryEnabled`, the `all` scope every app shares). One read per
-// app a page asks about, shared with the account's settings page (lib/app-settings.ts). A guest has no synced
+// app a page asks about, shared with the Settings panel (lib/app-settings.ts). A guest has no synced
 // settings: Home's banner is then this browser's own choice, and telemetry follows the browser.
 
 import { useCallback, useEffect, useState } from 'react';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
-import {
-  loadAppScopes,
-  patchAppScope,
-  rememberAppScopes,
-  type AppId,
-  type AppScopes,
-} from '@/lib/app-settings';
+import type { AppScopes } from '@liveworkspace/settings-ui';
+import { settingsStore, type AppId } from '@/lib/app-settings';
 import { setExplorerConsent, trackHomeBannerOff } from './telemetry';
 
 export type ExplorerSettings = {
@@ -40,7 +35,7 @@ export function useExplorerSettings(
       return;
     }
     let live = true;
-    void loadAppScopes(site).then((result) => {
+    void settingsStore.loadApp(site).then((result) => {
       if (!live) return;
       // Unread, telemetry stays as the apps default it: on unless turned off.
       const all = result.ok ? result.data.all : {};
@@ -59,11 +54,11 @@ export function useExplorerSettings(
     setRead((now) => {
       if (now?.site !== site) return now;
       const next = { ...now.scopes, app: { ...now.scopes.app, homeBanner: false } };
-      rememberAppScopes(site, next);
+      settingsStore.remember(site, next);
       return { site, scopes: next };
     });
-    void patchAppScope(site, { homeBanner: false }).then((result) => {
-      if (result.ok) rememberAppScopes(site, result.data);
+    void settingsStore.patchApp(site, { homeBanner: false }).then((result) => {
+      if (result.ok) settingsStore.remember(site, result.data);
     });
   }, [kind, site]);
 

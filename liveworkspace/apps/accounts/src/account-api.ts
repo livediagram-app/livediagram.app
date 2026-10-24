@@ -339,14 +339,7 @@ async function handleSignedIn(
   // The settings every app shows; each app's own are its server's to read and write.
   if (section === 'settings' && !id) {
     if (method === 'GET') return sharedSettings(db, actor);
-    if (method === 'PATCH') {
-      const result = await writeSettings(db, actor.id, null, {
-        all: (await readBody(request)).all,
-      });
-      return result.ok
-        ? json({ all: result.value.all, updatedAt: result.value.updatedAt })
-        : answer(result);
-    }
+    if (method === 'PATCH') return patchSharedSettings(request, db, actor);
   }
 
   // One app's own settings, for its dialog on the settings page: GET answers both scopes (the app's
@@ -534,8 +527,8 @@ async function appSettings(
 
 // --- The Explorer on an app's own address, by the app's bearer (bearer.ts) ---
 
-// What that page and the editors' Explorer panels need: names for a guest or an account, and for an account its
-// settings and its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no
+// What that page and the editors' Explorer panels and Settings need: names for a guest or an account, and for an
+// account its settings (the shared scope and each app's, read and patched) and its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no
 // same-origin check: a page can only send one it holds. Joining by link, API tokens and the profile stay the
 // session's.
 async function handleBearer(
@@ -570,12 +563,28 @@ async function handleBearer(
     );
     if (teams) return teams;
   }
+  // The Settings panel there shows the account's own switches (the `all` scope) beside each app's.
   if (section === 'settings' && !id && method === 'GET') return sharedSettings(db, actor);
+  if (section === 'settings' && !id && method === 'PATCH') {
+    return patchSharedSettings(request, db, actor);
+  }
   if (section === 'settings' && id && !sub) {
     const answered = await appSettings(request, db, actor, id);
     if (answered) return answered;
   }
   return error(404, 'not_found');
+}
+
+// A patch of the settings every app shares (`PATCH { all }`), on either door: it answers the scope as it now is.
+async function patchSharedSettings(
+  request: Request,
+  db: Env['AUTH_DB'],
+  actor: Reader,
+): Promise<Response> {
+  const result = await writeSettings(db, actor.id, null, { all: (await readBody(request)).all });
+  return result.ok
+    ? json({ all: result.value.all, updatedAt: result.value.updatedAt })
+    : answer(result);
 }
 
 // The account's display name, for the Timeline's "by …" and the invitation email (a token carries none).

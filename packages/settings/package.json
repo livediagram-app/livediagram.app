@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./catalogue": "./src/catalogue.ts",
-    "./catalogues/*": "./src/catalogues/*.ts"
+    "./catalogues/*": "./src/catalogues/*.ts",
+    "./account": "./src/account.ts"
   },
   "scripts": {
     "lint": "oxlint",

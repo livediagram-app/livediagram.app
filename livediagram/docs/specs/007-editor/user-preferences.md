@@ -534,8 +534,10 @@ and the dialog stays as the one complete, browsable index of them.
   - **Desktop** takes the iPadOS split view: the categories in a fixed left
     rail, the selected category's settings in the pane beside it. A category
     is always selected (Editor, unless it reopens where it was left) - the pane
-    is never empty. The dialog
-    is a fixed `42rem` tall (less on a short window), whichever category is
+    is never empty. The dialog is `60rem` wide (never more than 92% of the
+    window), so the rail (`15rem`, whose names wrap rather than being cut off)
+    and a readable pane sit side by side, and a fixed `44rem` tall (less on a
+    short window), whichever category is
     open: sized to content, the frame jumped between categories, and
     unbounded, a long category stretched it from the top of the screen to
     the bottom and read as a page, not a modal. A long category scrolls
@@ -804,9 +806,30 @@ and the dialog stays as the one complete, browsable index of them.
   standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders, Cloud Sync).
-  liveworkspace.app's "Your apps" dialog renders the same view over this app's derived catalogue
-  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md)), so the app's settings look
-  the same there as here.
+  liveworkspace.app renders the same view over this app's derived catalogue
+  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md) "Settings"), so the app's
+  settings look the same there as here.
+
+  **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
+  and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livediagram**
+  (this app's logo and name) and **All** (liveworkspace's logo). livediagram shows this app's own
+  Settings, exactly as above, and asks the network for nothing. All shows every setting the account
+  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then each app's
+  settings under its name and logo, in the apps' order. This app's group is its own Settings minus
+  the shared switches the Account section already holds (a row marked "All apps" whose key is one of
+  the Account section's), so a setting never shows twice; the other apps' groups are their
+  plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
+  liveworkspace's account API through this app's router (`/api/workspace/account/settings/<app>`)
+  with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.
+  The Account section's switches are this editor's own shared preferences, changed through this
+  editor's own row for the key when it has one (so the change is counted and synced as here), and
+  its Profile row links to liveworkspace.app, where the profile is set. Nothing of All is fetched
+  until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
+  read per other app, kept for the page's lifetime. All is offered only to a signed-in account
+  outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
+  `?settings=`) lands on livediagram; otherwise the dialog opens on the side this device chose last
+  (`livediagram:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
+  and the bearer request); the switch, the Account section and the All grouping are the package's.
 
   Email rows are **absent, not disabled**, unless BOTH Resend is configured
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those

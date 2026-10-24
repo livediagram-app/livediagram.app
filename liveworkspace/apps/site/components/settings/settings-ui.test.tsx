@@ -1,21 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { ProfileCard } from './ProfileCard';
-import { Switch } from './SettingsPanel';
 
-// The settings page's pieces (liveworkspace/docs/site.md "Your account"), as they render.
-
-describe('Switch', () => {
-  it('is a switch named by its row, with a 44px tap target', () => {
-    const html = renderToStaticMarkup(
-      <Switch checked labelledBy="l" describedBy="d" onChange={() => {}} />,
-    );
-    expect(html).toContain('role="switch"');
-    expect(html).toContain('aria-checked="true"');
-    expect(html).toContain('aria-labelledby="l"');
-    expect(html).toContain('touch-target');
-  });
-});
+// The Settings panel's profile (liveworkspace/docs/site.md "Settings"), as it renders.
 
 describe('ProfileCard', () => {
   const html = renderToStaticMarkup(

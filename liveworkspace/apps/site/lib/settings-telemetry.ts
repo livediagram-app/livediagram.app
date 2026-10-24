@@ -6,7 +6,7 @@
 // @liveworkspace/settings), so the app's settings cards count both.
 //
 // - In an app's dialog: the row's own event, in that app's name.
-// - On the settings page, a switch every app shares (the `all` scope): in the name of the app the page was opened
+// - In the Settings panel's Account section, a switch every app shares (the `all` scope): in the name of the app the page was opened
 //   for (`?app=`), with that app's event for the switch. Opened on its own, the page speaks for every app, so the
 //   change counts once, in liveworkspace.app's name, with the event the first app that has the switch reports.
 import {
@@ -31,10 +31,15 @@ export function settingsPageApp(): AppId | null {
   return appFromParam(new URLSearchParams(window.location.search).get('app'));
 }
 
-/** A shared switch flipped on the settings page. Resolves once the event is handed over (the app's catalogue is
- *  loaded on the first one, then kept), so a caller can turn telemetry off only after its own opt-out is sent. */
-export async function reportSharedSetting(key: string, next: boolean): Promise<void> {
-  const app = settingsPageApp();
+/** A shared switch flipped in the Settings panel, opened for `app` (else the app the page's `?app=` names). Resolves
+ *  once the event is handed over (the app's catalogue is loaded on the first one, then kept), so a caller can turn
+ *  telemetry off only after its own opt-out is sent. */
+export async function reportSharedSetting(
+  key: string,
+  next: boolean,
+  openedFor: AppId | null = settingsPageApp(),
+): Promise<void> {
+  const app = openedFor;
   if (app) {
     const catalogue = await loadCatalogue(app).catch(() => null);
     const event = catalogue && sharedToggleEvent(catalogue, key, next);

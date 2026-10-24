@@ -17,7 +17,7 @@
 @source '../../../../livediagram/packages/ui/src/Tooltip.tsx';
 /* The account menu, shared with every app's marketing header. */
 @source '../../../../packages/account-menu/src';
-/* The "Your apps" Settings dialog: the shared Settings view, in livediagram's dialog frame. */
+/* The Settings panel: the shared Settings view, in livediagram's dialog frame. */
 @source '../../../../packages/settings-ui/src';
 @source '../../../../livediagram/packages/ui/src/dialog';
 @source '../../../../livediagram/packages/ui/src/CompactEmptyState.tsx';

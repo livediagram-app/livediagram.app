@@ -57,9 +57,9 @@ export function ExplorerBottomBar({
   onPrepareSearch: () => void;
   // The account's settings, for a person signed in; null hides Settings.
   settingsHref: string | null;
-  // The app's own Settings, opened in a dialog over the page (as the apps' Explorers did) rather than followed.
+  // The Settings panel, opened over the page (as the apps' Explorers did) rather than followed.
   onOpenSettings?: () => void;
-  // Pointed at: the dialog's code and the app's catalogue are fetched ahead of the press.
+  // Pointed at: the panel's code and the app's catalogue are fetched ahead of the press.
   onPrepareSettings?: () => void;
 }) {
   const repo = (app && REPOS[app]) ?? REPO_URL;

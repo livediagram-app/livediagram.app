@@ -178,8 +178,8 @@ export function defaultFolderOptionsFor(app: App): readonly DefaultFolderOption[
 export const NOTIFICATIONS_SETTINGS = '/account/settings#notifications';
 
 /** Where `?settings=<category>` (the apps' old Settings deep link: notification emails, the account menu) goes on
- *  liveworkspace.app: the account's own categories to their place in Settings, and an app's own (its editor,
- *  say) to that app's settings dialog there. Null when the address names no settings. */
+ *  liveworkspace.app: the account's own categories to their place in the Settings panel's Account section, and an
+ *  app's own (its editor, say) to the panel filtered to that app. Null when the address names no settings. */
 export function settingsTarget(search: string, app: AppName | null): string | null {
   const category = new URLSearchParams(search).get('settings');
   if (!category) return null;

@@ -166,8 +166,8 @@ The page reads where it is from its own address and there is that app's page:
   the teams as they now are.
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
   origin (`imagesPath`, `shapeLibrariesPath`). Signed in, the bottom bar has a Settings button beside Appearance,
-  opening the app's own settings on liveworkspace.app (`/account/settings?app=<app>`), where `?settings=` addresses go
-  too ([site.md](site.md#the-explorer-explorer)).
+  opening the Settings panel in place, filtered to the app with All beside it ([site.md](site.md#settings)); `?settings=`
+  addresses go to the panel on liveworkspace.app (`/account/settings…`) ([site.md](site.md#the-explorer-explorer)).
 - **Telemetry.** Every event counts for the app, sent to liveworkspace.app's telemetry service.
 
 The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets are cached at the edge); see

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import type { SettingsCategory } from './model';
+import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { NavChevron } from './glyphs';
 
 type ListCategory = SettingsCategory & { matchCount?: number };
@@ -37,6 +37,7 @@ export function SettingsCategoryList({
   onSelect,
   variant,
   searching,
+  groups,
 }: {
   categories: ListCategory[];
   // Which row reads as current. Always null on the phone root screen: nothing
@@ -50,6 +51,9 @@ export function SettingsCategoryList({
   // category with none is dimmed and unclickable: the badge is the answer to
   // "which category was it in?", which is the question search is really for.
   searching?: boolean;
+  // Headings to list the categories under, in this order (the All view's Account and each app); a
+  // category is listed under the one its `group` names. Absent: one plain list.
+  groups?: readonly SettingsGroupHeading[];
 }) {
   const isRoot = variant === 'root';
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
@@ -80,79 +84,115 @@ export function SettingsCategoryList({
     if (childrenOf(categories, category.id).some((c) => c.id === selected)) onSelect(category.id);
   };
 
+  const renderCategory = (category: ListCategory) => {
+    if (category.parent) return null; // Drawn beneath its parent.
+    const children = childrenOf(categories, category.id);
+    // Held open while a sub-category holds a search hit or (on the
+    // sidebar, the only list with a selection or a disclosure) is current.
+    const searchHit = searching === true && children.some((c) => (c.matchCount ?? 0) > 0);
+    const open =
+      children.length > 0 &&
+      (searchHit ||
+        (!isRoot && (expanded.has(category.id) || children.some((c) => c.id === selected))));
+    const rowFor = (c: ListCategory, nested: boolean) => (
+      <CategoryRow
+        key={c.id}
+        label={c.label}
+        icon={c.icon ?? <IconSpace nested={nested} />}
+        nested={nested}
+        current={selected === c.id}
+        count={c.matchCount ?? 0}
+        searching={searching}
+        isRoot={isRoot}
+        onClick={() => onSelect(c.id)}
+      />
+    );
+    if (children.length === 0) return rowFor(category, false);
+    const listId = `settings-subcategories-${category.id}`;
+    return (
+      <div key={category.id} className="flex flex-col gap-0.5">
+        <CategoryRow
+          label={category.label}
+          icon={category.icon ?? <IconSpace nested={false} />}
+          current={selected === category.id}
+          count={category.matchCount ?? 0}
+          // A parent stays reachable while its sub-categories match, even
+          // when its own rows do not: it is the way down to them.
+          reachable={children.some((c) => (c.matchCount ?? 0) > 0)}
+          searching={searching}
+          isRoot={isRoot}
+          onClick={() => activateParent(category, open)}
+          // A phone gets no disclosure: its right-pointing chevron read as
+          // the row's own "go" arrow, so the sub-categories behind it went
+          // unfound. The pushed pane lists them instead.
+          disclosure={
+            isRoot
+              ? undefined
+              : {
+                  open,
+                  controls: listId,
+                  label: `${open ? 'Hide' : 'Show'} ${category.label} sub-categories`,
+                  // Nothing to fold while it is held open.
+                  locked: open && !expanded.has(category.id),
+                  onToggle: () => toggle(category.id),
+                }
+          }
+        />
+        {open ? (
+          <div
+            id={listId}
+            role="group"
+            aria-label={category.label}
+            className={
+              isRoot
+                ? 'flex flex-col divide-y divide-slate-100 border-t border-slate-100 dark:divide-slate-800 dark:border-slate-800'
+                : 'flex flex-col gap-0.5'
+            }
+          >
+            {children.map((c) => rowFor(c, true))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  if (!groups) {
+    return (
+      <nav
+        aria-label="Settings categories"
+        className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5 p-2'}
+      >
+        {categories.map(renderCategory)}
+      </nav>
+    );
+  }
   return (
     <nav
       aria-label="Settings categories"
-      className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5 p-2'}
+      className={isRoot ? 'flex flex-col gap-5' : 'flex flex-col gap-3 p-2'}
     >
-      {categories.map((category) => {
-        if (category.parent) return null; // Drawn beneath its parent.
-        const children = childrenOf(categories, category.id);
-        // Held open while a sub-category holds a search hit or (on the
-        // sidebar, the only list with a selection or a disclosure) is current.
-        const searchHit = searching === true && children.some((c) => (c.matchCount ?? 0) > 0);
-        const open =
-          children.length > 0 &&
-          (searchHit ||
-            (!isRoot && (expanded.has(category.id) || children.some((c) => c.id === selected))));
-        const rowFor = (c: ListCategory, nested: boolean) => (
-          <CategoryRow
-            key={c.id}
-            label={c.label}
-            icon={c.icon ?? <IconSpace nested={nested} />}
-            nested={nested}
-            current={selected === c.id}
-            count={c.matchCount ?? 0}
-            searching={searching}
-            isRoot={isRoot}
-            onClick={() => onSelect(c.id)}
-          />
-        );
-        if (children.length === 0) return rowFor(category, false);
-        const listId = `settings-subcategories-${category.id}`;
+      {groups.map((group) => {
+        const listed = categories.filter((c) => c.group === group.id);
+        if (listed.length === 0) return null;
+        const headingId = `settings-group-${group.id}`;
         return (
-          <div key={category.id} className="flex flex-col gap-0.5">
-            <CategoryRow
-              label={category.label}
-              icon={category.icon ?? <IconSpace nested={false} />}
-              current={selected === category.id}
-              count={category.matchCount ?? 0}
-              // A parent stays reachable while its sub-categories match, even
-              // when its own rows do not: it is the way down to them.
-              reachable={children.some((c) => (c.matchCount ?? 0) > 0)}
-              searching={searching}
-              isRoot={isRoot}
-              onClick={() => activateParent(category, open)}
-              // A phone gets no disclosure: its right-pointing chevron read as
-              // the row's own "go" arrow, so the sub-categories behind it went
-              // unfound. The pushed pane lists them instead.
-              disclosure={
-                isRoot
-                  ? undefined
-                  : {
-                      open,
-                      controls: listId,
-                      label: `${open ? 'Hide' : 'Show'} ${category.label} sub-categories`,
-                      // Nothing to fold while it is held open.
-                      locked: open && !expanded.has(category.id),
-                      onToggle: () => toggle(category.id),
-                    }
-              }
-            />
-            {open ? (
-              <div
-                id={listId}
-                role="group"
-                aria-label={category.label}
-                className={
-                  isRoot
-                    ? 'flex flex-col divide-y divide-slate-100 border-t border-slate-100 dark:divide-slate-800 dark:border-slate-800'
-                    : 'flex flex-col gap-0.5'
-                }
-              >
-                {children.map((c) => rowFor(c, true))}
-              </div>
-            ) : null}
+          <div key={group.id} role="group" aria-labelledby={headingId} className="flex flex-col">
+            <p
+              id={headingId}
+              className={`flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400 ${
+                isRoot ? 'mb-1.5 px-1' : 'mb-1 px-2.5'
+              }`}
+            >
+              {group.icon ? (
+                <span aria-hidden className="inline-flex shrink-0 [&_svg]:size-3.5">
+                  {group.icon}
+                </span>
+              ) : null}
+              <span className="min-w-0 [overflow-wrap:anywhere]">{group.label}</span>
+            </p>
+            <div className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5'}>
+              {listed.map(renderCategory)}
+            </div>
           </div>
         );
       })}
@@ -261,7 +301,9 @@ function CategoryRow({
     >
       {icon}
       <span
-        className={`text-optical-line flex-1 truncate text-sm font-medium ${
+        // Wraps rather than cuts off: a long name ("Someone Responds to a Team Invite", an app's
+        // "Panels › Collaborate") stays readable in the rail.
+        className={`text-optical-line min-w-0 flex-1 text-sm font-medium [overflow-wrap:anywhere] ${
           lit ? 'text-brand-800 dark:text-brand-100' : 'text-slate-800 dark:text-slate-100'
         }`}
       >
