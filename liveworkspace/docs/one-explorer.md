@@ -113,8 +113,9 @@ What it forwards:
   liveworkspace.app (`WORKSPACE_ORIGIN`: `http://localhost:3000` in local dev, `https://staging.liveworkspace.app`
   on staging, production's by default), so the chunks always come from the build that made the page; a test in
   `@liveworkspace/sites` (`workspace-proxy.test.ts`) holds all four routers to it.
-- `/api/workspace/account/…` to liveworkspace's `/api/account/…`: the few account reads the page makes (people's
-  names, the person's teams and a team's members, their settings), with the page's bearer token.
+- `/api/workspace/account/…` to liveworkspace's `/api/account/…`: what the page asks of the account (people's
+  names, their settings, and their teams: reading them and running them, [Teams](#teams-are-run-in-the-explorer)),
+  with the page's bearer token. The editors' panels, on the same address, use the same route.
 
 In local dev, `next dev`'s overlay font (`/__nextjs_font/…`, requested from the page's origin, not under the asset
 prefix) is not forwarded: the router sends it to the app's own editor dev server, which serves the same file. A 500
@@ -129,8 +130,8 @@ The page reads where it is from its own address and there is that app's page:
   The app's silent sign-in runs on the page, as in the app's editor.
 - **The header.** The liveworkspace logo leads to liveworkspace.app, the app's logo to the app's home, and the
   account menu is the app's: Sign In and Sign Out are the app's, its account pages are on liveworkspace.app.
-- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Account,
-  team and settings pages (and the addresses that retired to them) go to liveworkspace.app.
+- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Account and
+  settings pages (and the addresses that retired to them) go to liveworkspace.app.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
@@ -141,10 +142,9 @@ The page reads where it is from its own address and there is that app's page:
   to that page (`<offlinePath>?convert=take-offline|sync&item=<id>`, `thisBrowserConvertHref`), which takes the
   request out of the address, checks the item is the person's to move, asks them to confirm, and runs the app's own
   conversion. A link alone never moves anything.
-- **New Team.** The app's token is not one accounts makes teams from, so the Move dialog's New Team asks the app's
-  own API (the registry's `teamsPath`, `POST { name }`), which checks the person's token and vouches for them to
-  liveworkspace with it (`createTeamFor`), as its editor's Move dialog does. The app is then asked for a fresh token,
-  which names the team. An app that makes no teams (`teamsPath: null`) has no New Team on its address.
+- **Teams.** Made, run and answered here, as on liveworkspace.app: the accounts Worker takes the app's token for
+  them ([Teams](#teams-are-run-in-the-explorer)). After a change the app is asked for a fresh token, which names
+  the teams as they now are.
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
   origin (`imagesPath`, `shapeLibrariesPath`). Signed in, the header has a Settings button beside Appearance, opening
   the app's own settings on liveworkspace.app (`/account/settings?app=<app>`), where `?settings=` addresses go too.
@@ -154,6 +154,55 @@ The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets 
 [site.md](site.md#on-an-apps-own-address) for the measurements.
 
 The editors' floating Explorer panel and move-to-folder picker use the same package, inside each app.
+
+#### Teams are run in the Explorer
+
+A team is the account's, the same in every app ([accounts.md](accounts.md#teams)), and the Explorer is the one
+place it is made and run: on liveworkspace.app/explorer, on each app's own `/explorer`, and in each editor's
+Explorer panel. liveworkspace.app has no Teams page of its own any more. The host hands the Explorer the
+operations as a `TeamsHost` (`teamsHost`, as it hands over `share` and `inbox`), built by one shared client,
+`createTeamsHost` in `@liveworkspace/explorer`, over the account API (`/api/account/teams…`). liveworkspace.app
+sends its session cookie; an app's page and its editor send the app's access token through the app's router
+(`/api/workspace/account/…`). A guest, an embedded workbench frame and a deployment without accounts get no
+`teamsHost`, so none of this shows.
+
+The journeys, one way each:
+
+1. **Make a team.** Sidebar › Spaces › **New Team** (the group's last row, signed in): a dialog asks for the
+   name and an optional organisation, and **Create Team** makes it with you as its admin and opens its view, where
+   you invite people. In the editor's panel the same **New Team** sits under the rail's Spaces. The Move dialog
+   keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name
+   only); it is the same team and the same request.
+2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
+   the organisation, how many have joined and how many are invited; every member with their role; and, by role:
+   - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
+   - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
+     or turn it off. It lasts 7 days.
+   - **Roles and removal** (admins): each row's role select, and its × to remove someone, withdraw an invitation
+     or clear a declined or expired one, each confirmed in words that say which. The only admin's own row is
+     pinned (no select, no ×), with why.
+   - **The ⋯ menu**: Edit Team (name and organisation; admins), Leave Team (anyone but the only admin while
+     others remain; leaving alone deletes the team, and says so), Delete Team (admins). Each asks once. Leaving
+     or deleting goes to My Work, with a toast.
+   In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
+3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
+   invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
+   so in a toast.
+4. **Join by link.** The link (`liveworkspace.app/join?token=…`) lands on a thin page that shows the team and
+   joins it, then opens the team's view in the Explorer. Signed out, it signs in and comes back.
+5. **Decline from an email.** The email's Decline link (`/join/decline?token=…`) is a thin page that declines
+   without an account, and points at the Explorer's Invites to accept instead.
+
+Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer/invites`, and
+`/account/teams/<id>` to that team's view, `/explorer/team?id=<id>` ([site.md](site.md#your-account-account)).
+
+**What it loads.** The page asks accounts for the person's teams once as it opens (`GET /api/account/teams`, one
+request, as before): the sidebar's member counts, the Invites row and its badge, and the team list itself, which
+is fresher than the token's claim. A team's members and its join link are read only when its view opens (`GET
+/api/account/teams/:id/members`), and again after a change there. The editor's panel asks nothing about teams until
+its team's Members dialog opens. A change is shown at once: a team made, joined, renamed, left or deleted is laid
+over the token's list for the rest of the page's life (in the panel too), and the host renews its token so the
+next one names it.
 
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
@@ -223,6 +272,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 - The Explorer UI is one package, shown once on liveworkspace.app/explorer, filtered to the app the
   person came from or All, and New creates that app's kind. Each app keeps the floating panel.
 - Search covers the index only. The Timeline, comments, actions and the Inbox are centralised.
+- Teams are made, run and answered in the Explorer, wherever it shows, and nowhere else.
 - The Drive mirror covers every app.
 - Item names: Canvas, Plan, Document, Design, applied as each app moves.
 

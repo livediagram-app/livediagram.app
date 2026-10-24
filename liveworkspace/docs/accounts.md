@@ -3,16 +3,18 @@
 Teams and tokens belong to the liveworkspace account, not to an app, and so do a person's settings and
 profile. A team made once is the same team in
 livediagram, liveplanner and every app after them; one API token, or one AI tool connected over
-MCP, works on every app. They are run on liveworkspace.app ([Your account](site.md#your-account-account))
-and kept by the accounts Worker (`apps/accounts`), in its own D1 beside the accounts
+MCP, works on every app. Teams are made and run in the Explorer, wherever it shows
+([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)); tokens and settings on liveworkspace.app
+([Your account](site.md#your-account-account)). All of them are kept by the accounts Worker (`apps/accounts`), in its own D1 beside the accounts
 (`migrations/0002_teams_and_tokens.sql`). An app keeps no team or token of its own.
 
 ## Teams
 
 A team has a name, an optional organisation line (a company or department, up to 80 characters),
-admins and members. Anyone signed in can make one (up to 50 per account) and becomes its admin, on
-liveworkspace.app or from inside an app (`POST /api/account/internal/teams`, the app vouching for them
-with their access token, as it does for a token; `createTeamFor` in `@liveworkspace/auth-client`).
+admins and members. Anyone signed in can make one (up to 50 per account) and becomes its admin: from the
+Explorer (`POST /api/account/teams`, by the session on liveworkspace.app or by the app's access token on an app's
+address and in its editor), or from an app's own API (`POST /api/account/internal/teams`, the app vouching for
+them with their access token, as it does for a token; `createTeamFor` in `@liveworkspace/auth-client`).
 Admins rename it, change its organisation, invite people by email, turn its join link on and off,
 change roles (making someone else admin is how a team changes hands), remove people, clear
 answered invitations and delete it; anyone can leave. A team always keeps an admin: the last one
@@ -40,15 +42,15 @@ team takes effect when the person's token is next minted.
 
 An invitation is a member row with the invited address, `invited` until answered. Accepting it
 takes a signed-in account whose **verified** address is the one invited (signing in by code, or
-with Google, verifies it). The invitation email links to `/account/teams`, where it waits with the
-team's name, organisation and member count. Accepting or declining tells the team's admins by
+with Google, verifies it). The invitation email links to the Explorer's Invites (`/explorer/invites`),
+where it waits with the team's name, organisation and member count, beside **Accept** and **Decline**. Accepting or declining tells the team's admins by
 email, unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
 
-The Explorer on liveworkspace.app shows the invitations waiting on its sidebar, read from
-`GET /api/account/teams`, each linking to `/account/teams` to answer it. An app's editor can ask too:
-`POST /api/account/internal/invitations` `{ userId }` answers the same list `/account/teams` shows (team name, organisation, member count, role,
+The Explorer shows the invitations waiting in its sidebar, read from `GET /api/account/teams`, and answers
+them in place (`POST /api/account/invitations/:member/accept` or `/decline`). An app's API can ask too:
+`POST /api/account/internal/invitations` `{ userId }` answers the same list the Explorer shows (team name, organisation, member count, role,
 who invited them and when), for the account's verified address, in two indexed reads
 (`src/internal-invitations.ts`). The app vouches for the account, as it does for settings, and
 remembers the answer for 30 seconds (`pendingInvitationsFor` in `@liveworkspace/auth-client`).
@@ -106,7 +108,7 @@ who opens it sees the team's name and joins as a member with one click.
   has expired).
 - **The page** is `/join?token=<token>` on liveworkspace.app. Its preview, `GET /join/:token`, needs
   no session, so someone signed out sees what they'd join, then signs in and comes back to the
-  same link. Someone already in the team is taken straight to it.
+  same link. Joining, or someone already in the team, opens the team in the Explorer.
 - **Joining**, `POST /join/:token`, signed in: adds them as a joined member. Already in: nothing
   changes. An invitation waiting for their address is accepted in place rather than doubled. An
   off, expired or unknown token is `404 invite_not_found`.
@@ -604,7 +606,7 @@ it sends, with the same timings and tips each app's own series had:
 | Welcome    | when the account is made, after the sign-up's response has gone                | no                |
 | Activation | ~3 days in, to someone who hasn't made anything in any app, before week 1 goes | yes               |
 | Week 1     | ~7 days in: the Explorer, across every app                                     | yes               |
-| Week 2     | ~14 days in: teams, made on liveworkspace.app                                  | yes               |
+| Week 2     | ~14 days in: teams, made in the Explorer                                       | yes               |
 | Win-back   | once, ~4 weeks after their last save in any app                                | yes               |
 
 - **The row** is made with the account (Better Auth's `user.create.after` hook), and goes with it. The
@@ -700,7 +702,13 @@ node scripts/map-clients.ts --local
 
 On liveworkspace.app, routed to the accounts Worker (`/api/account/*`).
 
-For the signed-in person, by their session cookie. Writes must come from the site's own origin.
+For the signed-in person, by their session cookie. Writes must come from the site's own origin. The team
+rows below (making, running, inviting, the join link, roles, removing, leaving, answering an invitation) and the
+reads of names, teams and settings are also answered for an **app's bearer**: the access token the accounts Worker
+minted for one of the app APIs, sent by the Explorer on the app's address and by the app's editor through the app's
+router (`/api/workspace/account/…`; `src/bearer.ts`). A bearer is no ambient credential, so its writes need no
+same-origin check. A guest's bearer reads names alone; an API token (`lwt_…`) is not a bearer here, so no tool or
+script runs a team. Joining by link, tokens and the profile stay the session's.
 
 | Route                                                   | Does                                                                                    |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |

@@ -45,7 +45,7 @@ shareable as it is, and the device's own setting applies through System.
   is followed, so the link can't send anyone elsewhere.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
-  (`components/AccountControl.tsx`): the name again, **Teams**, **API tokens** and **Settings** (the
+  (`components/AccountControl.tsx`): the name again, **API tokens** and **Settings** (the
   [Your account](#your-account-account) pages), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.
@@ -180,6 +180,10 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
+- **Teams.** Made, run and answered here ([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)): the
+  page hands the Explorer `createTeamsHost({ fetch: accountFetch })` over this origin's `/api/account/teams…`, and
+  after a team is made, joined, left or deleted it asks for a fresh workspace token, whose `teams` claim names
+  them (`lib/explorer/new-team.ts` `renewIdentity`).
 - **This Browser.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
   browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link) goes to the
@@ -188,8 +192,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   `?trashed=<id>&title=` offers Undo for an item just moved to the Trash. Each is dropped from the address once
   read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
-  `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/invites` to
-  `/account/teams`, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
+  `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
   address, This Browser's own view).
 
 #### On an app's own address
@@ -201,14 +204,16 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
 - **Who it reads as** (`lib/explorer/app-session.ts`, `lib/explorer/token.ts`): the app's access token from the
   app's `POST /api/auth/token`, one request in flight at a time (it rotates the refresh cookie), else the app's
   guest token under `<app>:v2:guest-token`. The site's own session is not asked on these pages.
-- **Account reads** go to `/api/workspace/account/…` with that token (`accountFetch`); the accounts Worker
-  checks it against its own keys (`apps/accounts/src/bearer.ts`): names for anyone, teams, members and settings
-  for an account, nothing else.
+- **Account calls** go to `/api/workspace/account/…` with that token (`accountFetch`); the accounts Worker
+  checks it against its own keys (`apps/accounts/src/bearer.ts`): names for anyone; for an account, settings, and
+  its teams, read and run (making, renaming, inviting, roles, the join link, leaving, deleting, answering an
+  invitation); nothing else.
 - **Signing in.** The app's silent sign-in script is inlined in the Explorer's layout, one per switched-on app
   behind a check of the host (`lib/explorer/silent.ts`); Sign In and Sign Out are the app's
-  (`components/explorer/AppAccountControl.tsx`). New Team waits for liveworkspace.app's Teams page.
+  (`components/explorer/AppAccountControl.tsx`). Teams are run here as on liveworkspace.app; after a change the
+  page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
-  (`appOrigin`); account, teams and settings pages go to liveworkspace.app (`workspaceHref`); share links are
+  (`appOrigin`); account and settings pages go to liveworkspace.app (`workspaceHref`); share links are
   always the app's public site.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
@@ -231,12 +236,21 @@ pages are `noindex`. Cmd/Ctrl+K moves to the search field.
 ### Your account (`/account/…`)
 
 Where a signed-in person runs what belongs to their account rather than to an app
-([accounts.md](accounts.md)): `/account/teams`, `/account/tokens` (making an API token, seeing it
-once, and revoking it, the AI tools connected in an app among them) and `/account/settings`. Each is
-a tab of the same frame (`components/settings/AccountShell.tsx`). `/account` opens the teams.
-Signed out, the pages ask them to sign in and come back. They read and write
-`/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and are kept out of
-search.
+([accounts.md](accounts.md)): `/account/tokens` (making an API token, seeing it once, and revoking it, the AI
+tools connected in an app among them) and `/account/settings`. Each is a tab of the same frame
+(`components/settings/AccountShell.tsx`). `/account` opens Settings. Signed out, the pages ask them to sign in and
+come back. They read and write `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and
+are kept out of search.
+
+Teams are not here: they are made and run in the Explorer, wherever it shows
+([one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)). The old addresses go there, permanently
+(`public/_redirects`, pinned by `lib/teams-redirects.test.ts`), so every link already sent keeps landing:
+
+| Old address                            | Goes to                       |
+| -------------------------------------- | ----------------------------- |
+| `/account/teams` (and with a `/`)      | `/explorer/invites`           |
+| `/account/teams/<id>` (and with a `/`) | `/explorer/team?id=<id>`      |
+| `/explorer?settings=teams`             | `/explorer/invites`           |
 
 **Settings**, `/account/settings` (`components/settings/SettingsPanel.tsx` and `ProfileCard.tsx`,
 the catalogue in `lib/account-settings.ts`): what belongs to the person in every app, the `all` scope
@@ -277,39 +291,16 @@ changed at once and written alone (one `PATCH`), and put back with a note if the
 name is saved once typing pauses (800 ms), when the field is left, or as the page closes, never per
 keystroke.
 
-**Teams** (`components/teams/`, the logic in `lib/teams.ts`):
+**Joining and declining** (`components/teams/`, the logic in `lib/teams.ts`). Two thin landings stay here,
+because emails and copied links point at them and the accounts Worker makes them on this origin:
 
-- **The list**, `/account/teams`: invitations waiting for them first (team, organisation, member
-  count, who invited them; **Join team** opens the team, **Decline**), then "Your teams", one
-  rounded-3xl card per team: its tile (initials in a tone of its own), name, your role in a pill,
-  organisation, member count, how many invitations are waiting, and the first four members'
-  initials with "+N" for the rest, each disc ringed in the card's colour so the overlapping
-  initials read. The whole card opens the team. One request fills the page: the list answer
-  carries each team's counts and first four members (one query in the accounts API, however many
-  teams). With no teams, an illustrated empty state offers **Create your first team**.
-- **New team** opens a popover beside the button, not a page: the name (focused as it opens) and an
-  optional organisation. **Create team** makes it and opens its page. Escape, Cancel or a click
-  outside closes it and gives focus back to the button; Tab stays inside while it's open.
-- **A team's page**, `/account/teams/<id>`: the apps' breadcrumb bar from their export screens
-  ("All teams", the team named in a chip; copied from livediagram's `BackBar`, a link here), then
-  the team's tile, name, organisation, members and your role. **Members** (role select and Remove
-  for admins; the only admin's own role is pinned) and **Pending invitations** (waiting ones with
-  Withdraw, then any declined or expired, with Clear). In the side column, for admins: **Invite
-  people** (address and Member / Admin), **Invite by link** (turn on, copy, when it ends, a new link,
-  turn off), **Name and organisation**; for everyone, **Leave** (hidden for the only admin while
-  others remain, with why) and, for admins, **Delete team**, each confirmed once. Leaving or
-  deleting goes back to the list. People are shown by name, or an invited address read as one
-  (anna.smith@… is "Anna Smith"), with the address beneath.
-- The site is static, so every team page is one exported file (`app/account/teams/[id]`, at the
-  placeholder id `team`); `public/_redirects` serves it for any `/account/teams/:id` and the page
-  reads the id from the address. Links to it are plain anchors, so no client router asks for
-  per-team files.
-- **`/join?token=…`**: a team's join link. It shows the team; signed in, **Join** adds them and opens
-  it; signed out, **Sign in to join** or **Create an account** come back to the same link; someone
-  already in it goes straight to the team; an off or expired link says so.
+- **`/join?token=…`**: a team's join link. It shows the team; signed in, **Join** adds them and opens the team in
+  the Explorer (`/explorer/team?id=<id>`); signed out, **Sign in to join** or **Create an account** come back to
+  the same link; someone already in it goes straight to the team; an off or expired link says so.
 - **`/join/decline?token=…`**: an invitation email's Decline link, signed in or not. Opening it only
   reads; the **Decline invitation** button declines. It also says when the invitation was already
-  declined, has expired, was already accepted, or isn't valid.
+  declined, has expired, was already accepted, or isn't valid. Its other way out is the Explorer's Invites,
+  where the invitation is accepted instead.
 
 ### Accounts (`/sign-in`, `/sign-up`, `/consent`)
 

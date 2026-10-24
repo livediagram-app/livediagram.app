@@ -78,12 +78,14 @@ box of its own.
 | `Link?`                    | `ComponentType<LinkProps>`                | The host's link. Defaults to `<a>`.                                                                                                                                |
 | `onOpenItem?`              | `(href, item) => void`                    | Open an item from a menu. Defaults to a page load.                                                                                                                 |
 | `basePath?`                | `string`                                  | Where the Explorer lives. Defaults to `/explorer`.                                                                                                                 |
-| `teams?`                   | `{ id, name }[]`                          | The person's joined teams, from the token's `teams` claim. The index keeps no teams.                                                                               |
+| `teams?`                   | `{ id, name }[]`                          | The person's joined teams, from the token's `teams` claim. The index keeps no teams. Accounts' fresher list replaces it once read (`teamsHost`).                   |
+| `teamsHost?`               | `TeamsHost`                               | Teams, made and run in place ([Teams](#teams)): `createTeamsHost(…)`. Without it (a guest, a workbench frame) there is no New Team, Invites or team card.           |
+| `accounts?`                | `ExplorerAccounts`                        | People's names (the Owner column, What Happened, the Timeline), from `createExplorerAccounts`.                                                                     |
+| `tokensUrl?`               | `string`                                  | The account's API tokens page, for a token's Timeline card.                                                                                                        |
 | `viewerId?`                | `string`                                  | The person's id, for the Inbox's "Assigned to You".                                                                                                                |
 | `shareUrl?`                | `(link, item) => string`                  | A share link's address. Defaults to `${origin}/s/<code>`.                                                                                                          |
 | `share?`                   | `ShareHost`                               | The Share dialog's extras per item: `loadTabs`, `handOver` (embed, live image), `helpHref` and `onTelemetry`.                                                      |
 | `inbox?`                   | `InboxHost`                               | The Inbox's extras: `localRows` (rows the index never sees, shown with This Browser), `cardGlyph`, `actionsHelpHref` and `onTelemetry`.                            |
-| `manageTeamsUrl?`          | `string`                                  | Shows a Manage Teams row that links here.                                                                                                                          |
 | `filter?`/`onFilterChange` | `'app' \| 'all'`                          | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.                                                                          |
 | `toolbar?`                 | `ReactNode`                               | The host's own controls, beside the search field.                                                                                                                  |
 | `header?`                  | `({ search }) => ReactNode`               | The host's header, drawn above the hero and given the search field to place (null on Home with the hero). Without it the Explorer draws a plain bar.               |
@@ -106,7 +108,6 @@ box of its own.
 | `imports?`                 | `ImportHost`                              | Import from: a toolbar beside New in My Work and its folders, on Home's first run, and on Shape Libraries for sources that bring libraries.                        |
 | `itemMenu?`                | `(item) => ItemMenuVerb[]`                | The host's own verbs on an item's menu, before the destructive ones (an editor's Take Offline and Sync).                                                           |
 | `history?`                 | `boolean`                                 | History on an item's menu: the item's own Timeline (`GET /timeline?item=`), paged. On by default.                                                                  |
-| `onCreateTeam?`            | `(name) => Promise<{ id, name } \| null>` | New Team in an item's Move dialog: made on the spot, opened, and the item filed into it. Omit for a guest.                                                         |
 
 Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` is its filter lens, written as `?q=`:
 
@@ -121,12 +122,12 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'trash' }`                   | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash    |
 | `{ kind: 'inbox' }`                   | `/explorer/inbox`               | `GET /inbox`: actions, cards, forms and threads, each linking to its app |
 | `{ kind: 'timeline' }`                | `/explorer/timeline`            | `GET /timeline`: what happened, by day, as cards; filters and a calendar |
-| `{ kind: 'invites' }`                 | `/explorer/invites`             | The team invitations waiting for you, each answered on Manage Teams      |
+| `{ kind: 'invites' }`                 | `/explorer/invites`             | The team invitations waiting for you, each with Accept and Decline       |
 | `{ kind: 'gallery' }`                 | `/explorer/images`              | The Image Gallery, from the host's `gallery`                             |
 | `{ kind: 'shape-libraries' }`         | `/explorer/shape-libraries`     | Shape Libraries, from the host's `shapeLibraries`                        |
 | `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)            |
 | `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                 |
-| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's library, or one of its folders                                  |
+| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card (members, run in place) over its library, or a folder      |
 
 ### `<MoveToFolderDialog>`
 
@@ -169,8 +170,9 @@ every app's; the item lets a host count a dialog's events for that item's app.
 The content of the editor's floating Explorer panel. The host wraps it in its own movable panel. It shows:
 
 - the current item, which can be renamed and has the item menu;
-- a rail with Home, Inbox, Timeline, Shared With Me, My Work, each team, Favourites, Library (where the host has
-  a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer;
+- a rail with Home, Inbox, Timeline, Shared With Me, My Work, each team, New Team (with a `teamsHost`), Favourites,
+  Library (where the host has a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer;
+- a team's pane, whose Members button opens the team card in a dialog (with a `teamsHost`);
 - the Timeline as rows under their days, and the Library's pages as tabs, Open Page going to the tab shown;
 - the chosen section as compact rows, paged.
 
@@ -188,6 +190,51 @@ Lists that span places (Recent, Favourites, Search, Shared With Me) carry a loca
 folder, its team for a team item in no folder, or My Work for one of yours in none; an item reached through a link
 lives in someone else's library and has none. Recent and Search add an Owner column (and a line on each card): You,
 the team's name, or Shared with you (the index keeps no names, so a sharer is not named).
+
+## Teams
+
+A team is the account's, the same in every app, and it is made and run here, wherever the Explorer shows: the page
+and the editor's panel ([one-explorer.md](../../liveworkspace/docs/one-explorer.md#teams-are-run-in-the-explorer)
+has the journeys). The host hands over the operations as a `TeamsHost`, as it does `share` and `inbox`:
+
+```ts
+import { createTeamsHost } from '@liveworkspace/explorer';
+
+// liveworkspace.app: its own /api/account, by the session cookie.
+const teamsHost = createTeamsHost({ fetch: accountFetch, onTeamsChanged: renewToken });
+// An app's editor: liveworkspace's account API through the app's router, by the app's access token.
+const teamsHost = createTeamsHost({
+  baseUrl: '/api/workspace/account',
+  token: currentBearer,
+  onTeamsChanged: renewToken,
+});
+```
+
+`TeamsHost` is `myTeams`, `team(id)` (its members and, for an admin, its join link), `create`, `update`, `remove`,
+`invite`, `setRole`, `removeMember` (leaving is removing your own row), `resetInviteLink`, `clearInviteLink`,
+`answer(invitation, accept)`, and `onTeamsChanged?` (renew the token after a team is made, joined, renamed, left or
+deleted). Each write answers `{ ok: true, value }` or `{ ok: false, error }`, the account API's code, which the
+Explorer words (`teamErrorMessage`). One client, `data/teams.ts`; no host writes its own.
+
+- **New Team.** The sidebar's Spaces group ends with New Team (signed in, with a `teamsHost`); the panel's rail has
+  the same under Spaces. It opens the team dialog (`teams/TeamFormDialog.tsx`: name, optional organisation) and,
+  made, opens the team. The Move dialog's New Team tile is the same `create`, name only, filing the item into it.
+  A guest sees the sign-in nudge in New Team's place.
+- **The team card** (`teams/TeamCard.tsx`), at the top of a team's view and in the panel's Members dialog: a header
+  line (organisation, joined members, invited), Invite by Link and the ⋯ menu (Edit Team, Leave Team, Delete Team, by
+  role), one row per member (name, "you", Invited, Declined or Expired, email, role), the admins' role selects and ×,
+  and the admins' invite footer (address, Member or Admin, Invite). The last-admin rule shapes it as the server keeps
+  it (`teams/rules.ts`): the only joined admin's row is pinned, and Leave is offered to them only when they are alone
+  (it then deletes the team, and says so). Removing words itself by who goes: Remove Member, Withdraw Invite, Remove
+  from List, Leave Team. A team the person is not in is a not-found card.
+- **Invite by Link** (`teams/InviteLinkDialog.tsx`): Turn On, then the link with Copy (it says Copied, or selects the
+  field when the clipboard refuses), when it ends, New Link (the old stops working) and Turn Off.
+- **Invites** (`explorer/InvitesPane.tsx`): Accept opens the team, Decline takes the card away; each says so in a toast.
+- **What loads.** The page reads `myTeams` once as it opens (member counts, Invites and its badge, and the team
+  list, which then replaces the token's). A team's card reads `team(id)` when its view opens and after each change
+  there. The panel reads nothing about teams until its Members dialog opens. A team made, joined, renamed, left or
+  deleted is laid over the list at once for the page's life (`data/teamChanges.ts`), shared by the page and the
+  panel, until the host's renewed token says the same.
 
 ## Drag and drop
 
@@ -247,6 +294,7 @@ the list scrolls near.
 | Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place.                                                                                                                                                   |
 | Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.                                                                                                                                                             |
 | Home's hero           | My Work's count while it shows, counted by the index up to 200 ("200+" past that) beside Home's items read, so no request of its own. The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden.                                                                                                                               |
+| Teams                 | The page: the person's teams and invitations once as it opens (`myTeams`), with a `teamsHost` and signed in. A team's members and join link when its card shows, and after a change there. The panel: nothing until its Members dialog opens.                                                                                                |
 
 Nothing is fetched per row, or per folder.
 

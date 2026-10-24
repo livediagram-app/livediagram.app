@@ -44,7 +44,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Work sky, Inbox violet, Timeline amber, Shared With Me emerald,
-  a team indigo, Invites rose. Manage Teams and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
+  a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
 - **The current row** is a raised pill in the brand's rose: white, a hairline rose edge and a soft rose shadow, its
@@ -60,7 +60,7 @@ The editor's Explorer panel ([below](#the-editors-explorer)) keeps its own look.
 ## Groups and rows
 
 Top to bottom. "Opens" names the view a row selects; every view keeps its own route
-([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are Title Case (My Work, Shared With Me, Manage Teams), and every place a row's name appears (page titles, breadcrumbs, folder chips, help articles) uses the same casing. The command-line tool keeps "My Work" in the folder paths it writes to disk, so existing synced folders keep their names.
+([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are Title Case (My Work, Shared With Me, New Team), and every place a row's name appears (page titles, breadcrumbs, folder chips, help articles) uses the same casing. The command-line tool keeps "My Work" in the folder paths it writes to disk, so existing synced folders keep their names.
 
 ### Overview
 
@@ -84,7 +84,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 | My Work      | `/explorer/all`, the My Work root | The root folders        | None                       |
 | Each team    | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
 | Invites      | `/explorer/invites`               | None                    | Pending invites            |
-| Manage Teams | liveworkspace.app's teams page    | None                    | None                       |
+| New Team     | The team dialog, then the team    | None                    | None                       |
 
 - **The My Work root** lists its root folders, then its root designs, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
@@ -99,13 +99,13 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
-- **Invites** shows only while the reader has an invitation waiting on liveworkspace.app (or is on the Invites view),
-  with their count as its badge; each links to liveworkspace.app to answer it ([Teams](teams.md#invitations)). An
-  invite also reaches the reader by email.
-- **Manage Teams** is the group's last row, for signed-in readers only. Teams are made and run on liveworkspace.app
-  ([Teams](teams.md)), so it opens liveworkspace.app's teams page.
+- **Invites** shows only while the reader has an invitation waiting (or is on the Invites view), with their count as
+  its badge; each is answered there, Accept or Decline ([Teams](teams.md#invitations)). An invite also reaches the
+  reader by email.
+- **New Team** is the group's last row, for signed-in readers only. Teams are made and run in the Explorer
+  ([Teams](teams.md)): it opens the team dialog (name, optional organisation), and the team made opens.
 - A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
-  group's last item instead of Manage Teams. A deployment without sign-in shows neither.
+  group's last item instead of New Team. A deployment without sign-in shows neither.
 
 ### More
 
@@ -179,7 +179,7 @@ its own (**Timeline**).
 | My Work       | Yes                        | Yes                           | Yes                    |
 | Teams         | None                       | None                          | One row per team       |
 | Invites       | No                         | No                            | While one is pending   |
-| Manage Teams  | No                         | No                            | Yes                    |
+| New Team      | No                         | No                            | Yes                    |
 | Sign-in nudge | Yes                        | No                            | No                     |
 | This Browser  | While it holds designs     | While it holds designs        | While it holds designs |
 | Library       | Yes                        | Yes                           | Yes                    |
@@ -213,7 +213,7 @@ nothing moves on its own.
 
 Every row reserves a fixed **chevron gutter** before its icon, whether or not it can expand. So every top-level row's
 icon sits on one column, and an expandable row (My Work, a team, Library) lines up with a plain one (Home, Trash,
-Manage Teams). Each level of nesting indents the whole row (gutter, icon and label) by one step.
+New Team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
 On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
 row's height and 44 px wide, and no row reserves a gutter. Every icon at a level then sits on the column of its
@@ -233,7 +233,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Right** expands a collapsed row; on an expanded row it moves to the first child.
 - **Left** collapses an expanded row; on a collapsed or plain row it moves to the parent row.
 - **Home / End** move to the first / last visible row.
-- **Enter** and **Space** activate the row: open its view, toggle Library, or open Manage Teams.
+- **Enter** and **Space** activate the row: open its view, toggle Library, or open New Team's dialog.
 - **Typing a character** moves to the next row whose label starts with it.
 - **Shift+F10** or the **Menu** key opens a folder row's (or My Work') menu, the same menu as its `⋯` button and a
   right-click.
@@ -246,7 +246,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 ## Mobile drawer
 
 Below the `sm` breakpoint the sidebar is hidden and the pane header's menu button opens it as a drawer from the left:
-the same groups, rows, rules and keyboard model. Picking a view, or Manage Teams, closes the drawer; so do its Close button,
+the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button,
 the backdrop and Escape. It is a modal dialog named Sections: focus moves into it, Tab stays inside, and closing it
 hands focus back to the button that opened it.
 
@@ -289,9 +289,10 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Work and each team; Favourites, Library and Trash. Shared With Me carries
+Shared With Me; My Work, each team and New Team (signed in); Favourites, Library and Trash. Shared With Me carries
 its count (the panel reads no other feed until its section is shown). No
-Invites, Manage Teams or sign-in nudge: those are the Explorer page's.
+Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
+team's card in a dialog, where the team is run as on the page.
 
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
   marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
