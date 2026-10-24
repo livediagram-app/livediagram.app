@@ -11,9 +11,9 @@ import {
 } from '@liveworkspace/index-app';
 import type { Env } from './types';
 
-export type PlanWorkbench = WorkbenchStoreApi<'document'>;
+export type DocumentWorkbench = WorkbenchStoreApi<'document'>;
 
-// What a ticket or session reaches, as this api names it: one plan, or the workspace from an optional folder.
+// What a ticket or session reaches, as this api names it: one document, or the workspace from an optional folder.
 export type WorkbenchReach =
   | { scope: 'document'; documentId: string; folderId: null }
   | { scope: 'workspace'; documentId: null; folderId: string | null };
@@ -28,11 +28,11 @@ export const planReachOf = (reach: ItemReach<'document'>): WorkbenchReach =>
     ? { scope: 'workspace', documentId: null, folderId: reach.folderId }
     : { scope: 'document', documentId: reach.itemId, folderId: null };
 
-export const workbenchStore = (env: Pick<Env, 'WORKBENCH'>, personId: string): PlanWorkbench =>
+export const workbenchStore = (env: Pick<Env, 'WORKBENCH'>, personId: string): DocumentWorkbench =>
   workbenchStoreOf<'document'>(env.WORKBENCH, personId);
 
 // The store a ticket or session names, or null for a secret that names none.
 export const workbenchStoreOfSecretIn = (
   env: Pick<Env, 'WORKBENCH'>,
   secret: string,
-): PlanWorkbench | null => workbenchStoreOfSecret<'document'>(env.WORKBENCH, secret);
+): DocumentWorkbench | null => workbenchStoreOfSecret<'document'>(env.WORKBENCH, secret);

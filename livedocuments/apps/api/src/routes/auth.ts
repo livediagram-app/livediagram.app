@@ -98,7 +98,7 @@ export function configured(env: Env): Configured | null {
 
 // Where the browser comes back to. The page's own origin in production (the router hands this
 // worker the request as the browser sent it); AUTH_ORIGIN for local dev, where the router proxies
-// to localhost:8887 and the request no longer carries the address the browser is on.
+// to localhost:8987 and the request no longer carries the address the browser is on.
 function appOrigin(env: Env, request: Request): string {
   return env.AUTH_ORIGIN?.replace(/\/+$/, '') || new URL(request.url).origin;
 }
