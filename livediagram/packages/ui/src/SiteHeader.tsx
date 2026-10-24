@@ -135,20 +135,16 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
 }
 
 // A marketing page's three links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header").
-// Every one stays on a phone, only shorter: below `lg` Build with AI and Explorer are their glyphs alone,
-// below `md` the primary reads just "Template", and below 360px every link and gap tightens a little, so with
-// the account menu the bar fits a 320px phone.
+// Build with AI and Choose Template are quiet links, Explorer the one filled button, last (into the app), so the
+// bar ends on its strongest control rather than breaking in the middle. Every one stays on a phone, only
+// shorter: below `lg` the two links are their glyphs alone, and below 360px every link and gap tightens a
+// little, so with the account menu the bar fits a 320px phone.
 function MarketingActions({ ctaSurface, current }: { ctaSurface?: CtaSurface; current: boolean }) {
   return (
     <>
       <BuildWithAiLink current={current} />
-      <HeaderPrimaryCta
-        ctaSurface={ctaSurface}
-        explorerWhenSignedIn={false}
-        shortBelow="md"
-        className="max-[359px]:px-3"
-      />
-      <ExplorerLink always compactBelow="lg" />
+      <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
+      <ExplorerLink always solid />
     </>
   );
 }

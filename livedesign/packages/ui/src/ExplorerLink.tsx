@@ -21,12 +21,30 @@ const COMPACT = {
 export function ExplorerLink({
   always = false,
   compactBelow = 'sm',
+  solid = false,
 }: {
   always?: boolean;
   compactBelow?: keyof typeof COMPACT;
+  // The marketing bar's one filled button, last before the account menu: into the app. Its label always shows.
+  solid?: boolean;
 }) {
   const signedIn = useSignedInHint();
   if (signedIn && !always) return null;
+  if (solid)
+    return (
+      <a
+        href={EXPLORER_HOME_HREF}
+        aria-label="Explorer"
+        className={buttonClassName({
+          size: 'md',
+          className:
+            'relative shrink-0 border border-transparent shadow-sm touch-target-y max-[359px]:px-3',
+        })}
+      >
+        <FolderIcon aria-hidden />
+        <span className="text-optical-line">Explorer</span>
+      </a>
+    );
   const compact = COMPACT[compactBelow];
   return (
     <a

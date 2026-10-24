@@ -68,21 +68,23 @@ describe('SiteHeader: the marketing bar', () => {
     expect(html).not.toContain('Open Explorer');
   });
 
-  it('keeps every link on a phone, shorter: glyphs below lg, "Template" below md, the mark below 480px', () => {
+  it('keeps every link on a phone, shorter: the quiet links are glyphs below lg, the mark alone below 480px', () => {
     const tag = (href: string) =>
       html.match(new RegExp(`<a [^>]*href="${href}"[^>]*>.*?</a>`))?.[0] ?? '';
     for (const [href, name] of [
       ['/ai', 'Build with AI'],
-      ['/explorer/home', 'Explorer'],
+      ['/new\\?via=Home\\.Header', 'Choose Template'],
     ] as const) {
       const link = tag(href);
       expect(link.match(/<a [^>]*>/)?.[0]).not.toContain('hidden');
       expect(link).toContain(`aria-label="${name}"`);
       expect(link).toContain(`<span class="text-optical-line max-lg:hidden">${name}</span>`);
     }
-    const primary = tag('/new\\?via=Home\\.Header');
-    expect(primary).toContain('aria-label="Choose Template"');
-    expect(primary).toMatch(/<span class="max-md:hidden">Choose <\/span>Template/);
+    // Explorer is the bar's one filled button, its name shown at every width.
+    const explorer = tag('/explorer/home');
+    expect(explorer).toContain('aria-label="Explorer"');
+    expect(explorer).toContain('<span class="text-optical-line">Explorer</span>');
+    expect(explorer.match(/<a [^>]*>/)?.[0]).not.toContain('ghost');
     expect(html).toContain('max-[479px]:hidden');
     expect(html).not.toContain('max-[359px]:hidden');
   });

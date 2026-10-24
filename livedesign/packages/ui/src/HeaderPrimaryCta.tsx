@@ -4,10 +4,14 @@ import { explorerHomeHref } from '@liveworkspace/sites/workspace-proxy';
 import { ctaHref, type CtaSurface } from '@livedesign/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
+import { lucideLayoutGrid } from '@livedesign/icons/lucide';
 import { ButtonContent, buttonClassName } from './Button';
+import { lucideGlyph } from './icons/lucide-glyph';
+
+const TemplatesIcon = lucideGlyph(lucideLayoutGrid, 14);
 
 // The site header's primary (docs/specs/019-marketing/marketing-site.md "Header"): Choose Template
-// (/new, the encouraged wizard path) for a visitor, Open Explorer (their designs) for someone signed
+// (/new, the encouraged wizard path) for a visitor, Open Explorer (their documents) for someone signed
 // in. Who is signed in comes from the api's readable `ldes_signed_in` hint cookie, so the public
 // sites never load the session; it only picks a link, it authenticates nothing. The static
 // HTML is Choose Template for everyone, and both labels share one cell sized to the wider, so the swap
@@ -34,15 +38,35 @@ export function HeaderPrimaryCta({
   ctaSurface,
   explorerWhenSignedIn = true,
   shortBelow = '430px',
+  quiet = false,
   className = '',
 }: {
   ctaSurface?: CtaSurface;
   // False on a marketing page, whose Explorer link is always beside it: Choose Template for everyone.
   explorerWhenSignedIn?: boolean;
   shortBelow?: keyof typeof VERB_HIDDEN;
+  // A marketing bar's: a quiet link like Build with AI beside it, the bar's one filled button being Explorer's
+  // (SiteHeader's MarketingActions). Just its icon below `lg`, as theirs.
+  quiet?: boolean;
   className?: string;
 }) {
   const signedIn = useSignedInHint() && explorerWhenSignedIn;
+  if (quiet) {
+    return (
+      <a
+        href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
+        aria-label="Choose Template"
+        className={buttonClassName({
+          variant: 'ghost',
+          size: 'md',
+          className: `relative shrink-0 touch-target-y max-lg:px-3 max-[359px]:!px-2.5 !text-slate-600 dark:!text-slate-300 ${className}`,
+        })}
+      >
+        <TemplatesIcon aria-hidden className="text-brand-700 dark:text-brand-400" />
+        <span className="text-optical-line max-lg:hidden">Choose Template</span>
+      </a>
+    );
+  }
   const href = signedIn
     ? EXPLORER_HOME_HREF
     : ctaSurface
