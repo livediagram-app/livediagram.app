@@ -26,5 +26,3 @@ export const DEVICE_PREFERENCES = {
   'livedocuments.app': keysFor('livedocuments'),
   'livedesign.app': keysFor('livedesign'),
 } as const satisfies Record<string, DevicePreferenceKeys>;
-
-export type DevicePreferenceApp = keyof typeof DEVICE_PREFERENCES;

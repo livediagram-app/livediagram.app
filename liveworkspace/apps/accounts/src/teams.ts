@@ -396,17 +396,6 @@ export async function updateTeam(
   return ok({ id: teamId, name, organisation });
 }
 
-export async function renameTeam(
-  db: D1Database,
-  actor: Actor,
-  teamId: string,
-  rawName: unknown,
-  now = Date.now(),
-): Promise<Result<{ id: string; name: string }>> {
-  const result = await updateTeam(db, actor, teamId, { name: rawName ?? '' }, now);
-  return result.ok ? ok({ id: result.value.id, name: result.value.name }) : result;
-}
-
 // The team and every open row in it go; the apps' copies follow from the change feed. Its members (no
 // longer in it, so each by name) see it go on their Timelines.
 async function deleteTeamStatements(

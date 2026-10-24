@@ -19,8 +19,8 @@ import {
   listMembers,
   makeInviteLink,
   removeMember,
-  renameTeam,
   setMemberRole,
+  updateTeam,
   type Actor,
 } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
@@ -266,8 +266,8 @@ describe('team events', () => {
 
   it('notes a rename only when the name changes, and a deletion to every member', async () => {
     const id = await team(BEA);
-    await renameTeam(db, ADA, id, 'Design', NOW + 1);
-    await renameTeam(db, ADA, id, 'Studio', NOW + 2);
+    await updateTeam(db, ADA, id, { name: 'Design' }, NOW + 1);
+    await updateTeam(db, ADA, id, { name: 'Studio' }, NOW + 2);
     await deleteTeam(db, ADA, id, NOW + 3);
     expect(ofType('team_renamed')).toEqual([
       expect.objectContaining({ title: 'Studio', detail: { teamId: id, from: 'Design' } }),

@@ -2,12 +2,7 @@
 // card is made of, the day an event falls on, which events fold into one card, what colour and filter chip each
 // kind of event gets, and whether it is new. No React here beyond the types, so each rule is tested on its own.
 
-import {
-  APP_KINDS,
-  isApp,
-  type TimelineEvent,
-  type TimelineEventType,
-} from '@liveworkspace/index-client';
+import { isApp, type TimelineEvent, type TimelineEventType } from '@liveworkspace/index-client';
 import type { MouseEvent, ReactNode } from 'react';
 import { kindWords } from '../words';
 
@@ -458,12 +453,9 @@ export function isNewEvent(
   return event.occurredAt > lastSeenAt && event.occurredAt <= now;
 }
 
-/** The kind an app's events are, for its words (null for an account's own: teams, tokens). */
-export const kindOfApp = (app: TimelineEvent['app']) => (isApp(app) ? APP_KINDS[app] : null);
-
 // ---------- Motion ---------------------------------------------------------------------------------------------
 
-/** The entry delay of the card at `index` in the feed's cascade: 10 ms a step, capped so the last lands by 250 ms. */
+/** The entry delay of the card at `index` in the feed's cascade: 10 ms a step, capped at 100 ms. */
 export function cascadeDelayMs(index: number): number {
   const i = Number.isNaN(index) ? 0 : Math.max(0, Math.floor(index));
   return Math.min(i * 10, 100);

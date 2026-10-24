@@ -64,8 +64,3 @@ export function appOrigin(app: AppName): string {
   if (pageApp() === app) return window.location.origin;
   return siteOfApp(app).url;
 }
-
-/** For tests. */
-export function resetPageApp() {
-  seen = null;
-}

@@ -39,20 +39,7 @@ type WordReading =
 
 type ValueReading = { ok: true; value: string } | { ok: false; problem: WordProblem };
 
-const NO_FILTERS: LensFilters = {
-  'opens-in': [],
-  template: [],
-  'made-by': [],
-  edited: [],
-  people: [],
-  space: [],
-};
-
 const PLAIN: WordReading = { kind: 'text', problem: null };
-
-export function emptyLens(): Lens {
-  return { text: [], filters: NO_FILTERS };
-}
 
 /** Collapses every run of whitespace to one space and trims: the form the URL carries. */
 export function normaliseInput(input: string): string {

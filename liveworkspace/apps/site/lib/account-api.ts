@@ -38,38 +38,6 @@ export interface Invitation {
   createdAt: number;
 }
 
-export interface Member {
-  id: string;
-  userId: string | null;
-  email: string;
-  name: string | null;
-  role: TeamRole;
-  // 'declined': turned down, or left unanswered until it expired (`expired`); kept on the list for
-  // the admins until one clears it.
-  status: 'invited' | 'joined' | 'declined';
-  expired: boolean;
-  createdAt: number;
-}
-
-// A team's join link, while an admin has it on.
-export interface InviteLink {
-  url: string;
-  expiresAt: number;
-}
-
-export interface TeamDetail {
-  team: {
-    id: string;
-    name: string;
-    organisation: string | null;
-    myRole: TeamRole;
-    myMemberId: string;
-  };
-  members: Member[];
-  // The admins' only; null for members, and while the link is off.
-  inviteLink: InviteLink | null;
-}
-
 // What a join link opens onto (GET /join/:token), signed in or not.
 export interface JoinPreview {
   teamId: string;

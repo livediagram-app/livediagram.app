@@ -25,8 +25,7 @@ export function teamInitials(name: string): string {
   return letters.toUpperCase() || '?';
 }
 
-// Where a join link lands on this site, and the token it carries.
-export const JOIN_PATH = '/join';
+// The token a join link (/join) carries.
 export function joinTokenFrom(search: string): string | null {
   const token = new URLSearchParams(search).get('token');
   return token && /^[\w.-]{1,200}$/.test(token) ? token : null;

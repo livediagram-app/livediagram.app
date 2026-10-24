@@ -77,8 +77,6 @@ const ORIGIN_OF: Record<App, keyof Env> = {
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
 };
 
-export const mediaAppOf = (app: App): MediaApp => MEDIA_APP_OF[app];
-
 // Where an app's export door is, with the key it takes, or null when either is not configured.
 export function appDoor(env: Env, app: App): { origin: string; key: string } | null {
   const origin = env[ORIGIN_OF[app]];

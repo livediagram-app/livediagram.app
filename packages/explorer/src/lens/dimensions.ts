@@ -111,9 +111,6 @@ export const LENS_SETTLE_MS = 400;
 /** Separates the values of one token: `template:retrospective,kanban`. */
 export const LENS_VALUE_SEPARATOR = ',';
 
-/** The URL parameter that carries the lens string. */
-export const LENS_QUERY_PARAM = 'q';
-
 export function isLensDimension(value: string): value is LensDimension {
   return (LENS_DIMENSIONS as readonly string[]).includes(value);
 }

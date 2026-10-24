@@ -26,14 +26,6 @@ export function relativeSince(at: number, now: number): string {
   );
 }
 
-export function relativeShort(at: number, now: number): string {
-  return ladder(
-    now - at,
-    (n) => `${n}s ago`,
-    (n) => `${n} min ago`,
-  );
-}
-
 export function timeLeftCompact(deltaMs: number): string {
   if (deltaMs <= 0) return 'expired';
   const minutes = Math.ceil(deltaMs / 60_000);

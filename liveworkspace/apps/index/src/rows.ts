@@ -45,8 +45,6 @@ export type Access = {
   public?: true;
 };
 
-export const MANAGER_VIAS = new Set<Access['via']>(['owner', 'team']);
-
 export async function getItemRow(env: Env, id: string): Promise<ItemRow | null> {
   return env.INDEX_DB.prepare(`SELECT ${ITEM_COLUMNS} FROM items i WHERE i.id = ?`)
     .bind(id)

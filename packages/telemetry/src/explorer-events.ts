@@ -104,8 +104,6 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   'UI·Closed': ['SignInBannerExplorer'],
 } as const satisfies Record<string, readonly (string | null)[]>;
 
-export type ExplorerTelemetryKey = keyof typeof EXPLORER_TELEMETRY_EVENTS;
-
 const TYPES = EXPLORER_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;
 
 /** Whether the Explorer could have sent this event: a known pair with one of its own tokens. */
