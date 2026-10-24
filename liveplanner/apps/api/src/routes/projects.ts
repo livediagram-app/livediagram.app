@@ -13,12 +13,19 @@ import {
 } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 import { isValidTab, migrateIncomingTab, tabKindOf } from '@liveplanner/project';
-import { IndexError, type ItemSource } from '@liveworkspace/index-client';
-import { itemTabsOf, itemTabsRequest, itemTabsResponse } from '@liveworkspace/index-app';
+import {
+  createItemGrant,
+  itemSourceOf,
+  itemTabsOf,
+  itemTabsRequest,
+  itemTabsResponse,
+  type ItemCreateRequest,
+} from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
 import {
   INDEX_GRANT_HEADER,
+  indexIntentOf,
   INTENT_INVALID,
   MARK_USED_INVALID,
   readCreationIntent,
@@ -43,7 +50,7 @@ import { handleProjectSharedTabs } from './project-shared-tabs-route';
 import { relayProjectRename } from '../room-client';
 import { handleProjectRoomRoutes } from './project-room-routes';
 import { handleProjectSubresources } from './project-subresource-routes';
-import { compileSeededTabs } from './project-seed';
+import { compileSeededTabs, seedIntentOf } from './project-seed';
 import { hasTemplateSheets } from '@liveplanner/templates';
 import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { ProjectDTO } from '../types';
@@ -51,7 +58,7 @@ import { notifyMilestone } from '../email/notifications';
 import { initPlan, readPlanMeta, readPlanTabs, renamePlan } from '../plan-room/plan-content';
 import { identityOf } from '../plan-room/plan-route';
 import { planRoom } from '../plan-client';
-import { INDEX_APP, indexFor, linkCodeOf, planGrantOf, verifyPlanGrant } from '../index-service';
+import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleProjectIndexRoutes, handleProjectList } from './project-index-routes';
 import { resolvePlanGrant } from './plan-grant';
 import {
@@ -100,6 +107,8 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
   let planId = segments[2] ?? '';
   let grant: Awaited<ReturnType<typeof resolvePlanGrant>>;
   let renamedTo: string | null = null;
+  // Where the index filed an API client's create, for its answer.
+  let filed: { folderId: string | null; teamId: string | null } | null = null;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -112,9 +121,27 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
     }
     planId = named;
     if (planId.length > MAX_PLAN_ID) return notFound();
-    grant = request.headers.get(INDEX_GRANT_HEADER)
-      ? await resolvePlanGrant(ctx, planId)
-      : await createForCaller(ctx, planId, read);
+    if (request.headers.get(INDEX_GRANT_HEADER)) {
+      grant = await resolvePlanGrant(ctx, planId);
+    } else {
+      // An API client's create (no grant): the index makes the item under the id the client minted, and the plan
+      // opens with the grant that comes back. The id already taken is the same client re-committing its own plan:
+      // the grant it holds decides (@liveworkspace/index-app createItemGrant).
+      const create = createRequestOf(read, planId);
+      if (create instanceof Response) return create;
+      const made = await createItemGrant(
+        indexService,
+        ctx.env,
+        request,
+        grantCallerOf(ctx),
+        planId,
+        create,
+        (body, status) => json(body, { status }),
+      );
+      if (made instanceof Response) return made;
+      grant = made?.grant ?? null;
+      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+    }
   } else {
     if (!planId || planId.length > MAX_PLAN_ID) return notFound();
     grant = await resolvePlanGrant(ctx, planId);
@@ -136,38 +163,38 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
         }),
       );
   }
+  // An API client's create answers where the index filed it (the MCP names the folder it landed in).
+  if (filed && res.status === 201) {
+    const answer = (await res.json()) as { project?: ProjectDTO | null };
+    if (answer.project) answer.project = { ...answer.project, ...filed };
+    return json(answer, { status: 201 });
+  }
   return res;
 }
 
-// An API client's create (POST /api/projects without a grant): the worker makes the index's item for it, under
-// the id it minted, and opens the plan with the grant that comes back. The id already taken is the same client
-// re-committing its own plan: its grant decides.
-async function createForCaller(
-  ctx: RouteContext,
-  planId: string,
+// What an API client's create (POST /api/projects without a grant) asks the index for: the plan's title, where it
+// is filed (a folder or team named, else the index's default folder for its intent), its intent and provenance.
+// The intent is the one the plan records: the body's, else its first seeded tab's. A malformed intent refuses the
+// create before the index makes anything.
+function createRequestOf(
   body: Record<string, unknown>,
-): Promise<Awaited<ReturnType<typeof resolvePlanGrant>>> {
-  const client = indexFor(ctx.env, grantCallerOf(ctx));
-  if (!client) return json({ error: 'index_unavailable' }, { status: 503 });
-  const title = capStoredName(typeof body.name === 'string' ? body.name : '', null, 'project') || undefined;
-  const source: ItemSource | null = body.source === 'mcp' ? 'ai' : body.source === 'cli' ? 'import' : null;
-  try {
-    const { grant } = await client.createItem({
-      id: planId,
-      app: INDEX_APP,
-      ...(title ? { title } : {}),
-      teamId: typeof body.teamId === 'string' ? body.teamId : null,
-      folderId: typeof body.folderId === 'string' ? body.folderId : null,
-      source,
-    });
-    const claims = await verifyPlanGrant(ctx.env, grant.grant, planId);
-    return claims ? planGrantOf(claims, null, grant.grant) : null;
-  } catch (err) {
-    if (err instanceof IndexError && err.code === 'item_exists') return resolvePlanGrant(ctx, planId);
-    if (err instanceof IndexError) return json({ error: err.code }, { status: err.status });
-    console.error('[index] create failed', { planId, error: String(err) });
-    return json({ error: 'index_unavailable' }, { status: 503 });
-  }
+  planId: string,
+): ItemCreateRequest | Response {
+  const given = body.intent === undefined ? null : readCreationIntent(body.intent);
+  if (given && !given.ok) return intentRejected();
+  const intent = given ? given.intent : seedIntentOf(body.tabs, planId);
+  const title =
+    capStoredName(typeof body.name === 'string' ? body.name : '', null, 'project') || undefined;
+  return {
+    ...(title ? { title } : {}),
+    // Left out, the index files it by its intent's default folder; a folder or team named is where it goes.
+    ...(typeof body.folderId === 'string' || body.folderId === null
+      ? { folderId: body.folderId }
+      : {}),
+    ...(typeof body.teamId === 'string' ? { teamId: body.teamId } : {}),
+    intent: indexIntentOf(intent),
+    source: itemSourceOf(body.source),
+  };
 }
 
 // A plan the index knows (the caller holds its grant) that nothing has started yet (a copy, or an item made in
@@ -429,7 +456,8 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
         if (refused) return refused;
       }
       const liveDoc = await getProject(env, body.id);
-      if (!clash) console.info('[projects] created', { projectId: body.id, marked: making.markUsed });
+      if (!clash)
+        console.info('[projects] created', { projectId: body.id, marked: making.markUsed });
       // A genuine create may be the owner's tenth plan (docs/specs/014-identity/transactional-email.md #6).
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
       return json({ project: liveDoc }, { status: 201 });

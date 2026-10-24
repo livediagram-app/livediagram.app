@@ -126,6 +126,13 @@ export function readCreationIntent(
   return { ok: true, intent: { ...intent, templateFamily } };
 }
 
+/** The intent as the index keeps it, a word for its filters and default folders: `plan:board`,
+ *  `plan:empty:kanban` (its last part the template family the index's defaults key on). Null for none. */
+export function indexIntentOf(intent: CreationIntent | null): string | null {
+  if (!intent) return null;
+  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
+}
+
 /** Every key an intent names, most specific first: template, mode. */
 export function candidateKeysFor(intent: CreationIntent): string[] {
   const keys: string[] = [];

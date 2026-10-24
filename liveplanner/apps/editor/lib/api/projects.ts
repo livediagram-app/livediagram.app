@@ -3,6 +3,7 @@
 import type { ItemCreate, ItemTypeCatalogue } from '@liveplanner/items';
 import {
   INDEX_GRANT_HEADER,
+  indexIntentOf,
   PROJECT_CONVERSION_HEADER,
   scalableSnapshotSvg,
   svgBackgroundColor,
@@ -191,7 +192,7 @@ export async function apiCreateProject(
       ...(d.teamId ? { teamId: d.teamId } : {}),
       ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
       // The index keeps the intent as a word for filters and defaults: "plan:board", "plan:sheet:okr".
-      ...(d.intent ? { intent: intentWord(d.intent) } : {}),
+      ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
     });
   } catch (err) {
     if (err instanceof IndexError) {
@@ -229,10 +230,6 @@ export async function apiCreateProject(
   });
   const { project: liveDoc } = await expectOk<ProjectResponse>(res, 'create project');
   return liveDoc;
-}
-
-function intentWord(intent: CreationIntent): string {
-  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
 }
 
 // Fetch a project's cached SVG snapshot (docs/specs/006-project/project-snapshots.md) and return a blob URL

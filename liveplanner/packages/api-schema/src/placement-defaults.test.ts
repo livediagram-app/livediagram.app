@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  indexIntentOf,
   CREATION_TAB_KINDS,
   PLACEMENT_DEFAULT_KEYS,
   TEMPLATE_FAMILIES,
@@ -144,6 +145,16 @@ describe('readCreationIntent', () => {
     ['a template family that is not a string', { mode: 'plan', templateFamily: 3 }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
+  });
+});
+
+describe('indexIntentOf', () => {
+  it('words an intent as the index keeps it, the template family last', () => {
+    expect(indexIntentOf({ mode: 'plan', tabKind: 'board' })).toBe('plan:board');
+    expect(indexIntentOf({ mode: 'plan', tabKind: 'empty', templateFamily: 'kanban' })).toBe(
+      'plan:empty:kanban',
+    );
+    expect(indexIntentOf(null)).toBeNull();
   });
 });
 
