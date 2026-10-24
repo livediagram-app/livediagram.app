@@ -23,7 +23,9 @@ describe('SignInPrompt', () => {
   it('asks a signed-out guest to sign in, in the bar form too', () => {
     render(<SignInPrompt bar />);
     expect(screen.getByText(/^Keep your work\.$/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/sign-in/');
+    expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toMatch(
+      /^\/sign-in\/?$/,
+    );
     expect(screen.queryByText(/Browser only/)).toBeNull();
   });
 

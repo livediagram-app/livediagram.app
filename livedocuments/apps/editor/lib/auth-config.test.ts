@@ -26,10 +26,14 @@ describe('e2eAuthEnabled', () => {
 
 describe('manageTokensUrl', () => {
   it('is on liveworkspace.app unless a build points it elsewhere', async () => {
-    expect((await load()).manageTokensUrl).toBe('https://liveworkspace.app/account/tokens');
+    expect((await load()).manageTokensUrl).toBe(
+      'https://liveworkspace.app/explorer?settings=tokens',
+    );
     const staging = await load({
       NEXT_PUBLIC_ACCOUNTS_SITE_URL: 'https://staging.liveworkspace.app/',
     });
-    expect(staging.manageTokensUrl).toBe('https://staging.liveworkspace.app/account/tokens');
+    expect(staging.manageTokensUrl).toBe(
+      'https://staging.liveworkspace.app/explorer?settings=tokens',
+    );
   });
 });

@@ -25,7 +25,9 @@ describe('e2eAuthEnabled', () => {
 
 describe('accountsSiteUrl', () => {
   it('defaults to liveworkspace.app and drops a trailing slash from an override', async () => {
-    expect((await load()).manageTokensUrl).toBe('https://liveworkspace.app/account/tokens');
+    expect((await load()).manageTokensUrl).toBe(
+      'https://liveworkspace.app/explorer?settings=tokens',
+    );
     const staging = await load({
       NEXT_PUBLIC_ACCOUNTS_SITE_URL: 'https://staging.liveworkspace.app/',
     });
