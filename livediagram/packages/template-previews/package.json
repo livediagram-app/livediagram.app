@@ -23,9 +23,7 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
-    "@livediagram/icons": "workspace:*",
-    "@livediagram/templates": "workspace:*",
-    "@livediagram/ui": "workspace:*"
+    "@livediagram/templates": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/oxlint-config": "workspace:*",

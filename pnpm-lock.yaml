@@ -125,9 +125,6 @@ importers:
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
-      jose:
-        specifier: ^6.2.12
-        version: 6.2.13
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -180,12 +177,6 @@ importers:
       '@livedesign/design-views':
         specifier: workspace:*
         version: link:../../packages/design-views
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
-      '@livedesign/page-lint':
-        specifier: workspace:*
-        version: link:../../packages/page-lint
       '@livedesign/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
@@ -317,9 +308,6 @@ importers:
       '@livedesign/design-views':
         specifier: workspace:*
         version: link:../../packages/design-views
-      '@livedesign/explorer-lens':
-        specifier: workspace:*
-        version: link:../../packages/explorer-lens
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -645,9 +633,6 @@ importers:
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livedesign/page-background':
-        specifier: workspace:*
-        version: link:../page-background
       '@livedesign/page-lint':
         specifier: workspace:*
         version: link:../page-lint
@@ -1162,18 +1147,9 @@ importers:
 
   livedesign/packages/template-previews:
     dependencies:
-      '@livedesign/design':
-        specifier: workspace:*
-        version: link:../design
-      '@livedesign/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
-      '@livedesign/ui':
-        specifier: workspace:*
-        version: link:../ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -1242,9 +1218,6 @@ importers:
       '@livedesign/design':
         specifier: workspace:*
         version: link:../design
-      '@livedesign/help-registry':
-        specifier: workspace:*
-        version: link:../help-registry
       '@livedesign/icons':
         specifier: workspace:^
         version: link:../icons
@@ -1574,9 +1547,6 @@ importers:
       '@livediagram/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
-      '@livediagram/explorer-lens':
-        specifier: workspace:*
-        version: link:../../packages/explorer-lens
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -1883,9 +1853,6 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../../packages/document
-      '@livediagram/edit-operations':
-        specifier: workspace:*
-        version: link:../../packages/edit-operations
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -2150,9 +2117,6 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
-      '@livediagram/templates':
-        specifier: workspace:*
-        version: link:../templates
     devDependencies:
       '@livediagram/oxlint-config':
         specifier: workspace:*
@@ -2533,15 +2497,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
-      '@livediagram/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates
-      '@livediagram/ui':
-        specifier: workspace:*
-        version: link:../ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -2756,9 +2714,6 @@ importers:
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
-      jose:
-        specifier: ^6.2.12
-        version: 6.2.13
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -2860,9 +2815,6 @@ importers:
       '@livedocuments/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
-      '@livedocuments/explorer-lens':
-        specifier: workspace:*
-        version: link:../../packages/explorer-lens
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -3977,9 +3929,6 @@ importers:
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
-      jose:
-        specifier: ^6.2.12
-        version: 6.2.13
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -4023,9 +3972,6 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../../packages/project
@@ -4126,27 +4072,6 @@ importers:
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      prosemirror-commands:
-        specifier: ^1.7.2
-        version: 1.7.2
-      prosemirror-gapcursor:
-        specifier: ^1.4.1
-        version: 1.4.1
-      prosemirror-inputrules:
-        specifier: ^1.5.1
-        version: 1.5.1
-      prosemirror-keymap:
-        specifier: ^1.2.3
-        version: 1.2.3
-      prosemirror-model:
-        specifier: ^1.25.12
-        version: 1.25.12
-      prosemirror-state:
-        specifier: ^1.4.4
-        version: 1.4.4
-      prosemirror-view:
-        specifier: ^1.42.6
-        version: 1.42.6
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -4260,9 +4185,6 @@ importers:
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@liveplanner/templates':
-        specifier: workspace:*
-        version: link:../../packages/templates
       '@liveplanner/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
@@ -4426,9 +4348,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.1
         version: 1.32.1(zod@4.6.7)
-      '@resvg/resvg-wasm':
-        specifier: ^2.6.2
-        version: 2.6.2
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -4622,9 +4541,6 @@ importers:
       '@liveplanner/forms':
         specifier: workspace:*
         version: link:../forms
-      '@liveplanner/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../project
@@ -4919,9 +4835,6 @@ importers:
       '@liveplanner/project':
         specifier: workspace:*
         version: link:../project
-      '@liveplanner/templates':
-        specifier: workspace:*
-        version: link:../templates
     devDependencies:
       '@liveplanner/oxlint-config':
         specifier: workspace:*
@@ -5163,9 +5076,6 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@liveplanner/help-registry':
-        specifier: workspace:*
-        version: link:../help-registry
       '@liveplanner/icons':
         specifier: workspace:^
         version: link:../icons
@@ -5449,9 +5359,6 @@ importers:
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../../../livedesign/packages/photo-engine
-      '@livedesign/source-ast':
-        specifier: workspace:*
-        version: link:../../../livedesign/packages/source-ast
       '@livedesign/tailwind-config':
         specifier: workspace:*
         version: link:../../../livedesign/packages/tailwind-config
@@ -5482,9 +5389,6 @@ importers:
       '@livedocuments/agent-verbs':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/agent-verbs
-      '@livedocuments/source-ast':
-        specifier: workspace:*
-        version: link:../../../livedocuments/packages/source-ast
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/tailwind-config
@@ -5494,9 +5398,6 @@ importers:
       '@liveplanner/agent-verbs':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/agent-verbs
-      '@liveplanner/source-ast':
-        specifier: workspace:*
-        version: link:../../../liveplanner/packages/source-ast
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/tailwind-config

@@ -27,7 +27,6 @@
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
     "@livedocuments/document-views": "workspace:*",
-    "@livedocuments/explorer-lens": "workspace:*",
     "@livedocuments/help-registry": "workspace:*",
     "@livedocuments/icons": "workspace:*",
     "@livedocuments/telemetry-client": "workspace:*",

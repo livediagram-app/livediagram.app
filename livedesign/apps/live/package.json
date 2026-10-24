@@ -27,7 +27,6 @@
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
     "@livedesign/design-views": "workspace:*",
-    "@livedesign/explorer-lens": "workspace:*",
     "@livedesign/help-registry": "workspace:*",
     "@livedesign/icons": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",

@@ -30,7 +30,6 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
-    "@livediagram/explorer-lens": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/sticky-model": "workspace:*",

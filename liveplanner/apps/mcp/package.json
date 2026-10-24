@@ -30,7 +30,6 @@
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.1",
-    "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.13.13",
     "zod": "^4.6.7"
   },

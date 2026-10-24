@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/icons": "workspace:^",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/project": "workspace:*",

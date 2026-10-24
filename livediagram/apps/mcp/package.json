@@ -20,7 +20,6 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
-    "@livediagram/edit-operations": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/render-png": "workspace:*",
     "@livediagram/templates": "workspace:*",

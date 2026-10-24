@@ -21,7 +21,6 @@
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
     "@liveplanner/templates": "workspace:*"
   },
   "devDependencies": {

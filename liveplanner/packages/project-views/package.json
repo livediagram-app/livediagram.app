@@ -19,8 +19,7 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/project": "workspace:*",
-    "@liveplanner/templates": "workspace:*"
+    "@liveplanner/project": "workspace:*"
   },
   "devDependencies": {
     "@liveplanner/oxlint-config": "workspace:*",

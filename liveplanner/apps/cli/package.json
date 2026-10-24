@@ -21,7 +21,6 @@
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/project-views": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
     "@liveplanner/render-png": "workspace:*",
     "zod": "^4.6.7"
   },

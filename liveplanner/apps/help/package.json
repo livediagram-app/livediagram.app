@@ -31,7 +31,6 @@
     "@liveplanner/next-config": "workspace:*",
     "@liveplanner/oxlint-config": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
-    "@liveplanner/templates": "workspace:*",
     "@liveplanner/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.13",

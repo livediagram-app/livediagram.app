@@ -40,7 +40,6 @@
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
-    "@livedesign/help-registry": "workspace:*",
     "@livedesign/icons": "workspace:^",
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/telemetry-client": "workspace:*",

@@ -18,10 +18,8 @@
     "@livedesign/agent-verbs": "workspace:*",
     "@livedesign/api-client": "workspace:*",
     "@livedesign/api-schema": "workspace:*",
-    "@livedesign/page-lint": "workspace:*",
     "@livedesign/design": "workspace:*",
     "@livedesign/design-views": "workspace:*",
-    "@livedesign/icons": "workspace:*",
     "@livedesign/render-png": "workspace:*",
     "zod": "^4.6.7"
   },
