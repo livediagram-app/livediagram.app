@@ -2,7 +2,7 @@ import { TemplatePreview } from '@liveplanner/template-previews';
 import { ctaHref, type CtaSource } from '@liveplanner/api-schema';
 import { templateCreateHref } from '@liveplanner/templates';
 import type { GalleryTemplate } from '@/lib/template-gallery';
-import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
+import { BAND_CARD, BAND_CONTROL_HOVER } from '@liveworkspace/marketing-site/lib/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // One template as a card that creates that project straight away and opens it in the editor

@@ -28,6 +28,8 @@
 @source '../../../../packages/brand/src';
 /* The comparison pages' shared components (packages/comparisons), in this app's brand ramp. */
 @source '../../../../packages/comparisons/src';
+/* The marketing pages every product shares (@liveworkspace/marketing-site), in this app's brand ramp. */
+@source '../../../../packages/marketing-site/src';
 /* The header's account menu, shared with liveworkspace.app (@liveworkspace/account-menu). */
 @source '../../../../packages/account-menu/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */

@@ -5,7 +5,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { PageHero } from '@/components/PageHero';
+import { PageHero } from '@liveworkspace/marketing-site/components/PageHero';
 import { TryItCard } from '@/components/TryItCard';
 import { COMPARISONS } from '@/lib/alternatives';
 

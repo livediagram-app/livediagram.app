@@ -18,7 +18,7 @@ import {
   trustedTypesBootScript,
 } from '@livedocuments/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
-import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
+import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and

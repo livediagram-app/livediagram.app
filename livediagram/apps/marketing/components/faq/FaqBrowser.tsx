@@ -5,7 +5,7 @@ import { lucideGlyph } from '@livediagram/ui';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { FaqItem } from '@/components/faq/FaqItem';
-import { PageHero } from '@/components/PageHero';
+import { PageHero } from '@liveworkspace/marketing-site/components/PageHero';
 import { FAQ_CATEGORIES } from '@/lib/faq-content';
 import { filterFaq } from '@/lib/faq-filter';
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { buttonClassName, ButtonContent } from '@liveplanner/ui';
+import { buttonClassName, ButtonContent } from '@liveworkspace/ui';
 
-// The marketing pages' primary CTA link: the brand pill at the ui package's
+// The marketing pages' primary CTA link: the brand pill at @liveworkspace/ui's
 // `cta` Button size (between md and lg). Five pages hand-rolled it and had
 // already drifted (the FAQ copy lost its focus-visible outline), hence one
 // shared component, used by the feature-category hero and blocks; layout extras

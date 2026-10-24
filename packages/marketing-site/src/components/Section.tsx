@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
-import { ChevronRightIcon } from '@livediagram/ui';
-import { featureAnchor } from '@/lib/feature-anchor';
-import { EYEBROW } from '@/components/eyebrow';
+import { lucideChevronRight } from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@liveworkspace/ui';
+import { EYEBROW } from '../lib/eyebrow';
+import { featureAnchor } from '../lib/feature-anchor';
+
+// The products' ChevronRightIcon, drawn here so the package needs no product's ui.
+const ChevronRightIcon = lucideGlyph(lucideChevronRight, 14);
 
 type SectionProps = {
   id?: string;

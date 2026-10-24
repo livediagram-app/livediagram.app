@@ -1,21 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { LANDING_SECTIONS } from './landing-content';
-import { featureAnchor, featureHref } from './feature-anchor';
+import { featureAnchor } from '@liveworkspace/marketing-site/lib/feature-anchor';
 
+// How an anchor is made is tested with it in @liveworkspace/marketing-site; this holds this app's sections to it.
 describe('featureAnchor (docs/specs/019-marketing/marketing-site.md)', () => {
-  it('kebab-cases a title, dropping punctuation', () => {
-    expect(featureAnchor('Present it: notes + laser')).toBe('present-it-notes-laser');
-    expect(featureAnchor('Your screen, not everyone else’s')).toBe(
-      'your-screen-not-everyone-else-s',
-    );
-  });
-
-  it('builds the badge link', () => {
-    expect(featureHref('collaboration', 'Live presence')).toBe(
-      '/features/collaboration#live-presence',
-    );
-  });
-
   it('is unique within every section, so each badge lands on its own card', () => {
     for (const section of LANDING_SECTIONS) {
       const anchors = section.items.map((i) => featureAnchor(i.title));

@@ -10,9 +10,13 @@ import { ClientPicker } from '@/components/ai/ClientPicker';
 import { HowItWorks } from '@/components/ai/HowItWorks';
 import { McpAddressCard } from '@/components/ai/McpAddressCard';
 import { StarterPrompts } from '@/components/ai/StarterPrompts';
-import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
+import {
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
-import { EYEBROW } from '@/components/eyebrow';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 

@@ -15,7 +15,7 @@ import {
   trustedTypesBootScript,
 } from '@liveplanner/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
-import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
+import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
 import { MARKETING_DESCRIPTION, MARKETING_TITLE } from '@/lib/site-copy';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
