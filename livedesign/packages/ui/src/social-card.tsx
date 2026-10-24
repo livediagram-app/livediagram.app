@@ -4,7 +4,7 @@
 // Plain JSX with inline styles, the subset next/og's renderer understands; each app keeps its own
 // ImageResponse route, since per-route config can't be shared through a module.
 
-import { brandMarkSvg } from './brand-mark-geometry';
+import { brandMarkSvg } from './brand-app';
 import { sentencePitch } from './site';
 
 // The full mark on the card's light ground, as a data URI for next/og's resvg.

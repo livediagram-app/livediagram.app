@@ -24,6 +24,7 @@
  * these workspace components are the only place some of those classes
  * appear in the marketing app. */
 @source '../../../packages/ui/src';
+@source '../../../../packages/brand/src';
 /* The comparison pages' shared components (packages/comparisons), in this app's brand ramp. */
 @source '../../../../packages/comparisons/src';
 /* The header's account menu, shared with liveworkspace.app (@liveworkspace/account-menu). */

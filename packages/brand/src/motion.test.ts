@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { BRAND_FACES } from './brand-mark-geometry';
+import { BRAND_FACES } from './geometry';
 import {
   PRISM_SETTLE_MS,
   PRISM_SPIN_DEG_PER_S,
   prismFrame,
   restingTurn,
   settleTurn,
-} from './brand-prism-motion';
+} from './motion';
 
 const face = (key: string) => BRAND_FACES.find((f) => f.key === key)!.d;
 const visible = (frame: ReturnType<typeof prismFrame>) => frame.sides.filter((s) => s.d);

@@ -1,13 +1,18 @@
 export { Brand, BrandMark } from './Brand';
-export { brandMarkSvg, BRAND_MARK_VIEWBOX, type BrandMarkVariant } from './brand-mark-geometry';
+export {
+  brandLogoSvg,
+  brandMarkSvg,
+  BRAND_MARK_VIEWBOX,
+  type BrandMarkVariant,
+  type PrismPalette,
+  type PrismScheme,
+} from './brand-app';
 export {
   CARD_SUBTITLE_MAX,
   cardSubtitle,
   renderSocialCard,
   type SocialCardOptions,
 } from './social-card';
-export { brandLogoSvg } from './brand-logo-svg';
-export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
 export { ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
