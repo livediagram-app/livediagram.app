@@ -68,11 +68,9 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
-        !Array.isArray(prefs.pagesTourKinds) ||
         !Array.isArray(prefs.elementTourKinds)
       )
         localStorage.setItem(
@@ -81,8 +79,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
             ...prefs,
             drawTourSeen: true,
             avatarTourSeen: true,
-            pagesTourSeen: true,
-            pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',

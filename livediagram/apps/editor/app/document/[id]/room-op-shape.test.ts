@@ -32,7 +32,6 @@ const WELL_FORMED: Record<string, unknown>[] = [
   { kind: 'changeset', tabId: 't1', id: 'c', rev: 2, refetch: true, touched: [el.id] },
   { kind: 'vote', tabId: 't1', elementId: el.id, voter: 'v', delta: 1 },
   { kind: 'tab-meta', tabId: 't1', patch: { name: 'x' }, clear: ['timer'] },
-  { kind: 'article', tabId: 't1', flow: 'f', removed: true },
   { kind: 'document-meta', name: 'Doc', tabs: [{ id: 't1', name: 'T', orderIndex: 0 }] },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },

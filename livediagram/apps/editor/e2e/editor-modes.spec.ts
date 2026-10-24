@@ -71,7 +71,7 @@ async function chooseOnStart(page: Page, name: 'Diagram' | 'Draw') {
 // blank canvas, as a person drawing straight away would close it.
 async function closeStart(page: Page) {
   const start = page.getByRole('region', {
-    name: /^Start (Diagramming|Drawing|Facilitating|Making Pages)$/,
+    name: /^Start (Diagramming|Drawing|a Workshop)$/,
   });
   await start.waitFor();
   await start.getByRole('button', { name: 'Close' }).click();

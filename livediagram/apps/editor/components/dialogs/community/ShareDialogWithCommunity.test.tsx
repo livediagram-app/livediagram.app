@@ -24,7 +24,6 @@ vi.mock('@/hooks/persistence/useCommunityPost', () => ({
     return { post: h.post, loading: false, error: null, publish: vi.fn(), remove: vi.fn() };
   },
 }));
-vi.mock('@/hooks/persistence/usePublishedPicture', () => ({ usePublishedPicture: () => null }));
 vi.mock('@liveworkspace/explorer', () => ({
   ShareDialog: (p: {
     passwordLockedReason?: string | null;
