@@ -21,7 +21,6 @@ export const WELL = 'fill-slate-50 stroke-slate-200 dark:fill-slate-900/70 dark:
 export const INK = 'fill-slate-800 dark:fill-slate-100';
 export const MUTED = 'fill-slate-500 dark:fill-slate-400';
 export const BAR = 'fill-slate-200 dark:fill-slate-600';
-export const BAR_SOFT = 'fill-slate-100 dark:fill-slate-700';
 
 /** The card's stage: the canvas Frame and a 300 by 96 drawing centred in it. */
 export function Stage({
@@ -122,33 +121,6 @@ export function Pill({
       >
         {text}
       </text>
-    </g>
-  );
-}
-
-/** Rows of text drawn as soft bars: `widths` are fractions of `w`, one per line. */
-export function TextLines({
-  x,
-  y,
-  w,
-  widths,
-  gap = 5,
-  h = 2,
-  className = BAR,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  widths: readonly number[];
-  gap?: number;
-  h?: number;
-  className?: string;
-}) {
-  return (
-    <g className={className} fill="#e2e8f0">
-      {widths.map((f, i) => (
-        <rect key={i} x={x} y={y + i * gap} width={w * f} height={h} rx={h / 2} />
-      ))}
     </g>
   );
 }

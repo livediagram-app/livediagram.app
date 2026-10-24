@@ -172,61 +172,6 @@ export function MiniWindow({
   );
 }
 
-// A key cap, raised: a face over a darker base, the label centred. `pressed` drops it onto its
-// base (the fa-b-key loop) as the key goes down.
-export function KeyCap({
-  x,
-  y,
-  w = 16,
-  label,
-  pressed = false,
-  delay,
-}: {
-  x: number;
-  y: number;
-  w?: number;
-  label: string;
-  pressed?: boolean;
-  delay?: string;
-}) {
-  return (
-    <g>
-      <rect
-        className="fill-slate-300 dark:fill-slate-950"
-        x={x}
-        y={y + 2}
-        width={w}
-        height="16"
-        rx="3.5"
-      />
-      <g
-        className={pressed ? 'fa-b-key' : undefined}
-        style={delay ? { animationDelay: delay } : undefined}
-      >
-        <rect
-          className="fill-white stroke-slate-300 dark:fill-slate-700 dark:stroke-slate-600"
-          x={x}
-          y={y}
-          width={w}
-          height="16"
-          rx="3.5"
-          strokeWidth="0.8"
-        />
-        <text
-          className={STRONG}
-          x={x + w / 2}
-          y={y + 10.8}
-          textAnchor="middle"
-          fontSize="7.5"
-          fontWeight="600"
-        >
-          {label}
-        </text>
-      </g>
-    </g>
-  );
-}
-
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
 // the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
 // handles, and a palette tile with its key.
@@ -263,65 +208,6 @@ export function TabPill({
         x={x + 15}
         y="81.3"
         fontSize="6.5"
-        fontWeight={active ? 700 : 500}
-        fill={active ? color : undefined}
-      >
-        {name}
-      </text>
-    </g>
-  );
-}
-
-// A tiny roadmap: three bars on lanes, the content a Roadmap tab holds.
-export function RoadmapBars({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <path
-        className="stroke-slate-200 dark:stroke-slate-700"
-        d="M0 0 V34 M28 0 V34 M56 0 V34 M84 0 V34"
-        strokeWidth="0.6"
-      />
-      <rect x="4" y="3" width="40" height="7" rx="2" fill={SKY} />
-      <rect x="24" y="13" width="44" height="7" rx="2" fill={VIOLET} />
-      <rect x="50" y="23" width="32" height="7" rx="2" fill={EMERALD} />
-    </g>
-  );
-}
-
-// A small row of a window's tabs along its foot.
-export function WindowTab({
-  x,
-  y,
-  name,
-  color,
-  active,
-  className,
-}: {
-  x: number;
-  y: number;
-  name: string;
-  color: string;
-  active?: boolean;
-  className?: string;
-}) {
-  const w = name.length * 3.6 + 10;
-  return (
-    <g className={className}>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height="9"
-        rx="2.5"
-        fill={color}
-        fillOpacity={active ? 0.16 : 0}
-      />
-      <circle cx={x + 4} cy={y + 4.5} r="1.6" fill={color} />
-      <text
-        className={active ? undefined : SUBTLE}
-        x={x + 7.5}
-        y={y + 6.5}
-        fontSize="5.2"
         fontWeight={active ? 700 : 500}
         fill={active ? color : undefined}
       >
