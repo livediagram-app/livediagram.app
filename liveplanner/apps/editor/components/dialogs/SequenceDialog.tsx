@@ -25,7 +25,6 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
-import { useActiveTour } from '@/lib/tour-active';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { SequenceParticipantStrip } from '@/components/dialogs/SequenceParticipantStrip';
@@ -172,13 +171,11 @@ export function SequenceDialog({
       }),
     [switchTabRef, closeRef],
   );
-  const elementTourRunning = useActiveTour() === 'element';
 
   return (
     <Dialog
       open
       onClose={close}
-      closeOnEscape={!elementTourRunning}
       ariaLabel="Edit sequence diagram"
       size="3xl"
       phoneSheet

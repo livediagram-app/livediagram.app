@@ -6,7 +6,6 @@ import { track } from '@/lib/telemetry';
 import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
 import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
-import { setActiveTour } from '@/lib/tour-active';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the project" here, and there is nothing to scroll.
@@ -119,11 +118,9 @@ describe('Sankey Flows dialog Show Me', () => {
   });
 });
 
-// The Sankey element tour runs these steps from outside the dialog (docs/specs/007-editor/element-tours.md).
-describe('Sankey Flows dialog under the element tour', () => {
-  afterEach(() => setActiveTour('element', false));
-
-  it('lets the element tour switch its tabs while it is open, and nothing once it closes', () => {
+// The dialog's handle switches its tabs from outside it (lib/sankey-flows-dialog-handle.ts).
+describe('Sankey Flows dialog handle', () => {
+  it('switches its tabs while it is open, and nothing once it closes', () => {
     renderDialog();
     act(() => sankeyFlowsDialog.showText());
     expect(screen.getByRole('tab', { name: 'Text' }).getAttribute('aria-selected')).toBe('true');
@@ -131,13 +128,5 @@ describe('Sankey Flows dialog under the element tour', () => {
     expect(screen.getByRole('tab', { name: 'Table' }).getAttribute('aria-selected')).toBe('true');
     cleanup();
     expect(() => sankeyFlowsDialog.showText()).not.toThrow();
-  });
-
-  it('keeps Escape from closing the dialog while the element tour runs', () => {
-    act(() => setActiveTour('element', true));
-    const { onClose } = renderDialog();
-    fireEvent.keyDown(document, { key: 'Escape' });
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(onClose).not.toHaveBeenCalled();
   });
 });

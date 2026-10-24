@@ -30,7 +30,6 @@ spec.
 | `packages/project/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
 | `packages/project/scripts/expand-stroke-points.ts` | The debug script: a tab or project JSON file with every block expanded                                                                                  |
 | `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
-| `scripts/stroke-points-bench.ts`                    | The bench behind `pnpm bench:stroke-points`                                                                                                              |
 
 ## Interfaces and contracts
 
@@ -245,15 +244,8 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit: linear in the stroke.
-- Fitting runs only past the cap: one full RDP, then one O(n) count per
-  tolerance tried. Measured (vitest on an M-series Mac, median of 5): a 25,000-sample gentle curve
-  6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
-  case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
-  stroke that fits costs one array copy.
-- The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
-  records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
-  draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it
-  checks against the bound (spec, "Measured wins").
+- The bench that measured the wins (`scripts/stroke-points-bench.ts`) was removed 2026-10-24 with the whiteboard
+  boards it synthesised; the numbers in the spec's "Measured wins" are from it.
 
 ## Observability
 

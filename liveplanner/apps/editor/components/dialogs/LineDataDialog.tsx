@@ -6,7 +6,6 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerChartDataDialog } from '@/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';
-import { useActiveTour } from '@/lib/tour-active';
 
 // Line-chart data editor in a modal (docs/specs/009-elements/pie-chart.md). The context menu's Data category
 // only summarises the series + offers "Edit Data", which opens this — the 2-D
@@ -55,7 +54,6 @@ export function LineDataDialog({
   // closes it at its end through this handle, and while it runs Escape is its own.
   const closeRef = useLatest(close);
   useLayoutEffect(() => registerChartDataDialog({ close: () => closeRef.current() }), [closeRef]);
-  const elementTourRunning = useActiveTour() === 'element';
   const cell =
     'min-w-0 rounded border border-slate-200 bg-white px-1.5 py-1 text-sm text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   const xBtn =
@@ -74,7 +72,6 @@ export function LineDataDialog({
     <Dialog
       open
       onClose={close}
-      closeOnEscape={!elementTourRunning}
       ariaLabel="Edit chart data"
       size="xl"
       className="max-h-[90vh]"

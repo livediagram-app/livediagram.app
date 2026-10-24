@@ -12,7 +12,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
-import { useActiveTour } from '@/lib/tour-active';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import {
   parseSankeyText,
@@ -175,14 +174,13 @@ export function SankeyFlowsDialog({
       }),
     [switchTabRef, closeRef],
   );
-  const elementTourRunning = useActiveTour() === 'element';
 
   return (
     <Dialog
       open
       onClose={close}
       // While Show Me (or the element tour) runs, Escape is the tour's, never the dialog's.
-      closeOnEscape={!tour.active && !elementTourRunning}
+      closeOnEscape={!tour.active}
       ariaLabel="Edit Sankey flows"
       size="3xl"
       className="max-h-[90vh]"

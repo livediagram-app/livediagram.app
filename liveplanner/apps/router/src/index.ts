@@ -71,7 +71,7 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 //
 // The list is pinned to the registry's own categories by index.test.ts, so a
 // new category cannot quietly stop redirecting. `explorer` is deliberately
-// absent: the editor app owns that segment (it is matched first either way).
+// absent: liveworkspace's Explorer owns that segment (it is matched first either way).
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
@@ -231,7 +231,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  // Clean live-app page routes (/project, /explorer, /new, ...) and
+  // Clean live-app page routes (/project, /new, /form, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

@@ -73,7 +73,6 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   vi.useRealTimers();
-  setActiveTour('welcome', false);
   setActiveTour('plan', false);
   setActiveTour('form', false);
 });

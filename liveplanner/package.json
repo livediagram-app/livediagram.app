@@ -13,7 +13,6 @@
     "typecheck": "turbo run typecheck --filter=@liveplanner/*",
     "staging:check": "turbo run staging:check --filter=@liveplanner/*",
     "licences": "pnpm --filter @liveplanner/marketing licences",
-    "bench:stroke-points": "node --expose-gc --import ./scripts/ts-source-hooks.mjs scripts/stroke-points-bench.ts",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@liveplanner/* && rm -rf node_modules",

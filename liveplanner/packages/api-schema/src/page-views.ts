@@ -5,13 +5,15 @@
 // router can't disagree about who serves a path.
 
 // The editor app's top-level page route segments. These serve at clean URLs
-// (`/project`, `/explorer`, ...), and the router forwards them to the live
+// (`/project`, `/new`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'project',
   // The guest handoff's way back, /auth/guest (liveworkspace/docs/one-explorer-contracts.md "Guests").
   'auth',
   'embed',
+  // liveworkspace's Explorer, which the router proxies first (@liveworkspace/sites workspace-proxy); listed so a page
+  // view there counts as the app's, and so it never falls through to marketing. The editor has no /explorer page.
   'explorer',
   // A form link's page, /form/<code> (docs/specs/030-forms/forms.md "Filling in a form").
   'form',

@@ -2,12 +2,10 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { chartDataDialog } from '@/lib/chart-data-dialog-handle';
-import { setActiveTour } from '@/lib/tour-active';
 import { LineDataDialog } from './LineDataDialog';
 
 afterEach(() => {
   cleanup();
-  setActiveTour('element', false);
 });
 
 const series = [{ name: 'Sales', values: [10, 20] }];
@@ -98,14 +96,6 @@ describe('LineDataDialog', () => {
       expect(onCommit).toHaveBeenCalledWith(['Jan', 'Feb'], [{ name: 'Sales', values: [12, 20] }]);
       cleanup();
       expect(() => chartDataDialog.close()).not.toThrow();
-    });
-
-    it('keeps Escape from closing it while the element tour runs', () => {
-      act(() => setActiveTour('element', true));
-      const { onClose } = open();
-      fireEvent.keyDown(document, { key: 'Escape' });
-      fireEvent.keyDown(window, { key: 'Escape' });
-      expect(onClose).not.toHaveBeenCalled();
     });
   });
 });
