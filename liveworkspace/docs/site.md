@@ -152,9 +152,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
 - **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
-  (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **GitHub** (the app's
-  open-source code; hidden on a phone), **Settings** and **Appearance** (Light, Dark or the system's, the site's one switch,
-  `SiteAppearanceToggle`). Their hover cards open upward, above the bar. Settings shows for a person signed in, and
+  (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **Settings** and
+  **Appearance** (Light, Dark or the system's, the site's one switch, `SiteAppearanceToggle`), each named beside its
+  icon on a wide screen (`md` up) and an icon alone on a narrow one. Their hover cards open upward, above the bar. Settings shows for a person signed in, and
   opens the Settings panel ([below](#settings)) in a dialog over the Explorer, without leaving the page: filtered to
   the app the person came from (All one click away), or on All from no app. Its code, and the app's catalogue, are
   fetched when the button is pointed at. The toasts and a guest's sign-in banner stand above the bar.

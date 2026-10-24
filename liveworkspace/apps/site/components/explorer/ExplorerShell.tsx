@@ -17,7 +17,7 @@
 // over liveworkspace's account API (createTeamsHost with accountFetch).
 //
 // Under it all, the bottom bar the apps' Explorers had (ExplorerBottomBar.tsx): Search, which opens the Search panel
-// (loaded only when first wanted), GitHub, Settings and Appearance.
+// (loaded only when first wanted), Settings and Appearance.
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -545,7 +545,6 @@ export function ExplorerShell() {
         </>
       )}
       <ExplorerBottomBar
-        app={arrived.app}
         appName={arrived.app ? siteOfApp(arrived.app).name : null}
         onOpenSearch={openSearch}
         onPrepareSearch={prepareSearch}

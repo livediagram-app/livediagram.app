@@ -19,9 +19,12 @@ const LOOK = {
 export function SiteAppearanceToggle({
   look = 'header',
   className = '',
+  labelFrom,
 }: {
   look?: keyof typeof LOOK;
   className?: string;
+  // Shows the setting's name beside the icon from this width up (a bar with room for words).
+  labelFrom?: 'md';
 }) {
   const { setting, cycle } = useAppearance();
   return (
@@ -30,9 +33,12 @@ export function SiteAppearanceToggle({
         type="button"
         onClick={cycle}
         aria-label={appearanceToggleName(setting)}
-        className={`inline-flex shrink-0 items-center justify-center text-slate-500 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 ${LOOK[look]} ${className}`}
+        className={`inline-flex shrink-0 items-center justify-center gap-1.5 text-slate-500 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 ${LOOK[look]} ${labelFrom ? 'md:w-auto md:px-2' : ''} ${className}`}
       >
         <AppearanceIcon setting={setting} size={16} />
+        {labelFrom ? (
+          <span className="text-xs font-medium max-md:hidden">{APPEARANCE_LABEL[setting]}</span>
+        ) : null}
       </button>
     </Tooltip>
   );
