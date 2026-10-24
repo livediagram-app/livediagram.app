@@ -229,13 +229,10 @@ export async function openBlankSession(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank Diagram design through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
+// A blank design with its start closed: the same /new?blank=1 (kept as its own name for the specs that read as
+// "start a blank design"). livedesign has one mode, Pages, so there is no Mode step to pass.
 export async function startBlankDesign(page: Page): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  await start.getByRole('button', { name: 'Close' }).click();
-  await start.waitFor({ state: 'detached' });
+  await openStartBlank(page);
 }
 
 export type Seed = Record<string, unknown>[];
