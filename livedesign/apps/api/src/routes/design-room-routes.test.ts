@@ -11,7 +11,7 @@ import type { GrantClaims } from '@liveworkspace/index-client';
 import { INDEX_GRANT_HEADER } from '@livedesign/api-schema';
 import type { Env } from '../types';
 import { setGrantVerifierForTests } from '../index-service';
-import { sealRoomTicket } from '../room-ticket';
+import { sealRoomTicket } from '@liveworkspace/index-app';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesignRoomRoutes } from './design-room-routes';
 import { personTagFor } from '../person-tag';

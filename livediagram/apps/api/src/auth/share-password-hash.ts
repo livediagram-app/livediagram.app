@@ -4,7 +4,7 @@
 // time) until its first correct entry rewrites it.
 
 import { base64ToBytes, bytesToBase64Url } from '@livediagram/api-schema';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const PREFIX = 'pbkdf2-sha256';
 

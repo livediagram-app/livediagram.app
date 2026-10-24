@@ -10,9 +10,9 @@ import {
 } from '@liveplanner/api-schema';
 import { adderKeyFor } from '../adder-key';
 import { workbenchStore } from '../workbench-store';
-import { linkCodeOf } from '../index-service';
+import { linkCodeOf, indexService } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, sealRoomTicket } from '../room-ticket';
+import { openRoomTicket, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import { personTagFor } from '../person-tag';
@@ -47,7 +47,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
 
   if (segments.length === 4 && segments[3] === 'ws' && request.method === 'GET') {
     const id = segments[2]!;
-    const opened = await openRoomTicket(env, url.searchParams.get('t'), id);
+    const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
     const role: AccessLevel = workbench

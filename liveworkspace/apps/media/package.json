@@ -18,6 +18,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply liveworkspace-media --remote"
   },
   "dependencies": {
+    "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/media": "workspace:*"
   },
   "devDependencies": {

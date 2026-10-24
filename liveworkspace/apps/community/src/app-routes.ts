@@ -40,7 +40,7 @@ import {
 } from './posts';
 import { withLikes } from './public-routes';
 import { rowState, rowToPost, type PostRow } from './rows';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 // Ids from an app (documents, owners, copier hashes, share codes): opaque, but bounded.
 const ID_MAX = 200;

@@ -4,7 +4,7 @@
 
 import { PASSWORD_MEMORY_MAX } from './config';
 import { base64UrlToBytes, bytesToBase64Url } from './codec';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const PREFIX = 'pbkdf2-sha256';
 // About 16 ms per derivation in V8's WebCrypto.

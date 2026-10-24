@@ -15,7 +15,7 @@ import {
 } from '@liveworkspace/telemetry';
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 import { isSiteSettingsEvent, VOCABULARIES } from './vocabularies';
 
 // A batch is at most 100 three-field events: anything far larger is not one of ours.

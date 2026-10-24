@@ -5,8 +5,10 @@ import {
   ItemDb,
   type ItemHeadSync,
   nextFlushAt,
+  openRoomTicket,
   recordItemEditor,
 } from '@liveworkspace/index-app';
+import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
@@ -43,7 +45,6 @@ import {
   resolveCatchup,
 } from '../project-room-rules';
 import { opForScope } from '../room-scope';
-import { openRoomTicket } from '../room-ticket';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -674,7 +675,7 @@ export class PlanRoom extends DurableObject<Env> {
     const env = this.roomEnv;
     const session = this.readSession(ws);
     if (!env || !session?.projectId || typeof ticket !== 'string' || ticket.length > 8192) return;
-    const opened = await openRoomTicket(env, ticket, session.projectId);
+    const opened = await openRoomTicket(indexService, env, ticket, session.projectId);
     if (!opened) {
       console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;

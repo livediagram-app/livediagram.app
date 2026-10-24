@@ -5280,6 +5280,9 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -5339,6 +5342,9 @@ importers:
 
   liveworkspace/apps/media:
     dependencies:
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
@@ -5542,6 +5548,9 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings

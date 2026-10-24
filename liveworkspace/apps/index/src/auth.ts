@@ -19,7 +19,7 @@ import {
 } from '@liveworkspace/index-client';
 import { isId, isShareCode } from './codec';
 import { accountsUrl, appKey, audiences, type Env } from './env';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 export type Person = {
   id: string;

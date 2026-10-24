@@ -40,7 +40,7 @@ import {
 } from './images';
 import { stripJpegMetadata } from './jpeg-strip';
 import { syncRefs } from './refs';
-import { timingSafeEqual } from './timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const isId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= MEDIA_ID_MAX;
