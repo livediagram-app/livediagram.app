@@ -1,7 +1,7 @@
 # Live image share link
 
 > **Status: implemented, as liveworkspace's.** The live image is a platform capability now
-> ([Previews](../../../liveworkspace/docs/previews.md)): liveworkspace's previews serve it, on this app's address
+> ([Previews](../../../../liveworkspace/docs/previews.md)): liveworkspace's previews serve it, on this app's address
 > through its router, and livedocuments only draws the document when asked ([Document previews](../006-document/document-snapshots.md)
 > "The export door"). Not re-rendered per request: the platform keeps the drawing until the document is saved again.
 > The renderer was never extracted into a new package: `renderElementsToSvg` already lives DOM-free in
