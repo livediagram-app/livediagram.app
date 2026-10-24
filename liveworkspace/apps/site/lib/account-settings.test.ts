@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_SETTING_KEYS, PRESENCE_COLOURS as SHARED_PALETTE } from '@liveworkspace/settings';
 import { APP_SITES } from '@liveworkspace/sites';
+import { settingsTarget } from './explorer/host';
 import {
   appSettingsLinks,
   cleanName,
@@ -68,10 +69,17 @@ describe('the profile', () => {
 });
 
 describe('each app’s own settings', () => {
-  it('links to every app’s Settings, by its deep link', () => {
+  it('links to every app, at its Explorer Home', () => {
     const links = appSettingsLinks();
     expect(links.map((l) => l.id)).toEqual(APP_SITES.map((s) => s.id));
-    for (const link of links)
-      expect(link.href).toMatch(/^https?:\/\/.+\/explorer\?settings=editor$/);
+    for (const link of links) expect(link.href).toMatch(/^https?:\/\/[^/]+\/explorer\/home$/);
+  });
+
+  it('never links to a Settings deep link, which the Explorer sends straight back here', () => {
+    for (const link of appSettingsLinks()) {
+      const url = new URL(link.href);
+      expect(url.searchParams.has('settings')).toBe(false);
+      expect(settingsTarget(url.search, 'livediagram')).toBeNull();
+    }
   });
 });

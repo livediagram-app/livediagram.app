@@ -248,8 +248,9 @@ turned off links here, so someone signed out signs in and comes back.
   It has the app's switches, choices, sliders and groups of switches, hides a nested row while its
   switch is off as the app does, and leaves the shared settings to the cards above. What only makes
   sense inside the editor (appearance, shortcuts, the shared editor chrome such as UI scale and your
-  colours, lists such as tours seen) stays in the app: the dialog ends with "More in <app> Settings"
-  and a link to it (`<app>/explorer?settings=editor`). `?app=<name>` opens a dialog as the page
+  colours, lists such as tours seen) stays in the app, in the Settings its editor opens: the dialog
+  ends with "More in <app> Settings" and a link into the app (`<app>/explorer/home`), never the
+  `?settings=` deep link, which the Explorer sends back to this page. `?app=<name>` opens a dialog as the page
   loads, and the address follows the open dialog. The dialog traps focus, closes on Escape, a click
   outside or its close button, gives focus back to its card, and is a sheet from the bottom at phone
   width. Its code and each app's catalogue load only when one first opens (or the pointer reaches

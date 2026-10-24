@@ -154,8 +154,9 @@ export function cleanName(name: string): string | null {
   return trimmed ? trimmed : null;
 }
 
-// Each app's own Settings, opened by its `?settings=<category>` deep link on its Explorer, the same
-// link its emails use. Every app's Settings opens on its Editor category.
+// Each app, for what only its own Settings holds (appearance, shortcuts), which opens inside the
+// editor. Its Explorer Home, not its `?settings=` deep link: the Explorer sends an app's categories
+// here (lib/explorer/host.ts settingsTarget), so that link would only come back to this page.
 export interface AppSettingsLink {
   id: SiteId;
   name: string;
@@ -168,7 +169,7 @@ export function appSettingsLinks(): AppSettingsLink[] {
     id: site.id,
     name: site.name,
     pitch: site.pitch,
-    href: `${site.url}/explorer?settings=editor`,
+    href: `${site.url}/explorer/home`,
   }));
 }
 

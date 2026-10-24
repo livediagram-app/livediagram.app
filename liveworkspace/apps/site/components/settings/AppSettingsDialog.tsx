@@ -203,7 +203,7 @@ export default function AppSettingsDialog({
             <span className="font-medium text-slate-900 dark:text-white">
               More in {app.name} Settings.
             </span>{' '}
-            Appearance, shortcuts and what only makes sense in the editor.
+            Appearance, shortcuts and what only makes sense in the editor, in Settings there.
           </p>
           <a
             href={settingsHref}
