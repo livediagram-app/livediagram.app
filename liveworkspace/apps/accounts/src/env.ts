@@ -1,3 +1,5 @@
+import type { WorkbenchNamespace } from './workbench/store.ts';
+
 export interface Env {
   ENVIRONMENT: 'production' | 'staging' | 'development';
   // The origin this Worker answers on, e.g. https://liveworkspace.app (it owns only its own paths there)
@@ -39,6 +41,10 @@ export interface Env {
   TELEMETRY_KEY_LIVEDESIGN?: string;
 
   AUTH_DB: D1Database;
+  // Workbench pairings, tickets and sessions (liveworkspace/docs/workbench.md): one store per person, and the limit
+  // on a token's mints and pairing requests. Absent (tests that don't need them), the workbench routes answer 503.
+  WORKBENCH?: WorkbenchNamespace;
+  WORKBENCH_LIMITER?: RateLimit;
   CODE_IP_LIMITER: RateLimit;
   CODE_EMAIL_LIMITER: RateLimit;
   GUEST_LIMITER: RateLimit;

@@ -33,6 +33,10 @@ import {
 } from './index-timeline.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
+import { closeAccountWorkbench } from './workbench/revoke.ts';
+
+// The workbench store's Durable Object class, bound as WORKBENCH (wrangler.toml).
+export { WorkbenchStore } from './workbench/durable-object.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
@@ -66,7 +70,9 @@ export default {
     }
 
     if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
-      const response = await handleAccountApi(request, env, getAuth(env));
+      const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
+        ctx.waitUntil(promise),
+      );
       // The team emails it sent are counted after the response (telemetry.ts), and the team and token
       // events it made go to the Timeline (index-timeline.ts).
       flushServerEventsAfter(env, ctx);
@@ -83,7 +89,9 @@ export default {
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(request, getAuth(env), env.AUTH_DB, indexPurgeConfig(env));
+      return deleteAccount(request, getAuth(env), env.AUTH_DB, indexPurgeConfig(env), (userId) =>
+        closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+      );
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {

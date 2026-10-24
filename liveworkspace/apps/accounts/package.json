@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@better-auth/oauth-provider": "1.7.12",
+    "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/sites": "workspace:*",
     "better-auth": "1.7.12"
   },

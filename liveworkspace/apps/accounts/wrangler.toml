@@ -86,6 +86,24 @@ name = "TEAM_LINK_LIMITER"
 namespace_id = "1004"
 simple = { limit = 20, period = 60 }
 
+# A workbench token's ticket mints and pairing requests (src/workbench/routes.ts), per token: the
+# apps' WORKBENCH_TICKETS_PER_MINUTE.
+[[ratelimits]]
+name = "WORKBENCH_LIMITER"
+# 11xx: the platform Workers' own (telemetry 1101, community 1102), clear of the apps' 10xx.
+namespace_id = "1103"
+simple = { limit = 30, period = 60 }
+
+# Workbench pairings, tickets and sessions, one SQLite-backed store per person
+# (liveworkspace/docs/workbench.md). Its alarm runs only while something will lapse.
+[[durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WorkbenchStore"]
+
 # The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations), and of
 # guests who can never come back (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges
 # not yet taken are sent again (src/index-purge.ts).
@@ -144,6 +162,19 @@ simple = { limit = 60, period = 60 }
 name = "TEAM_LINK_LIMITER"
 namespace_id = "2004"
 simple = { limit = 20, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "WORKBENCH_LIMITER"
+namespace_id = "2103"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["WorkbenchStore"]
 
 [env.staging.triggers]
 crons = ["17 9 * * *", "*/15 * * * *"]

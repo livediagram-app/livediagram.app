@@ -119,6 +119,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -1289,6 +1292,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -2588,6 +2594,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -3740,6 +3749,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4938,6 +4950,9 @@ importers:
       '@better-auth/oauth-provider':
         specifier: 1.7.12
         version: 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))
+      '@liveworkspace/index-client':
+        specifier: workspace:^
+        version: link:../../../packages/index-client
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites

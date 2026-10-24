@@ -8,7 +8,8 @@
 // the profile are cleared first, explicitly. Every app's refresh token stops working at once; an access token
 // already issued runs out on its own (minutes). Then the index is told to purge everything it holds
 // for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
-// by the cron if the index doesn't take it now. The account is closed either way.
+// by the cron if the index doesn't take it now. Its workbench goes last: pairings, sessions and the rooms they had
+// open (liveworkspace/docs/workbench.md "Ending access"). The account is closed either way.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import { purgeFromIndex, recordPendingPurge, type IndexPurgeConfig } from './index-purge.ts';
@@ -41,6 +42,8 @@ export async function deleteAccount(
   auth: Auth,
   db: D1Database,
   index: IndexPurgeConfig = {},
+  // The account's workbench: its store dropped and its rooms closed (workbench/revoke.ts). Never fails the close.
+  closeWorkbench: (userId: string) => Promise<void> = async () => {},
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
@@ -87,5 +90,6 @@ export async function deleteAccount(
   await ctx.internalAdapter.deleteUser(result.sub);
   // A failure is logged and left for the cron; it never keeps the account open.
   await purgeFromIndex(db, index, result.sub);
+  await closeWorkbench(result.sub);
   return Response.json({ deleted: true });
 }

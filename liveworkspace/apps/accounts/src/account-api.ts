@@ -6,6 +6,8 @@
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
 //     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
 //     for notification emails, many people's notify switches at once and a team's people.
+//   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
+//     their sessions (workbench/internal.ts).
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { bearerOf, bearerPerson } from './bearer.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
@@ -82,6 +84,9 @@ import {
   verifyApiToken,
 } from './tokens.ts';
 import { reportServerEvent } from './telemetry.ts';
+import { handleWorkbenchInternal } from './workbench/internal.ts';
+import { endTokenWorkbench, tokenBySecret } from './workbench/revoke.ts';
+import { handleWorkbench } from './workbench/routes.ts';
 
 export const ACCOUNT_API_PATH = '/api/account';
 
@@ -98,16 +103,29 @@ async function readBody(request: Request): Promise<Record<string, unknown>> {
   return body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
 }
 
-export async function handleAccountApi(request: Request, env: Env, auth: Auth): Promise<Response> {
+type WaitUntil = (promise: Promise<unknown>) => void;
+
+export async function handleAccountApi(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  waitUntil: WaitUntil = (promise) => void promise,
+): Promise<Response> {
   const url = new URL(request.url);
   const parts = url.pathname.slice(ACCOUNT_API_PATH.length).split('/').filter(Boolean);
-  if (parts[0] === 'internal') return handleInternal(request, env, auth, parts.slice(1), url);
+  if (parts[0] === 'internal')
+    return handleInternal(request, env, auth, parts.slice(1), url, waitUntil);
+  // Workbenches, for every app (workbench/routes.ts): an API token, a ticket, a workbench session or the signed-in
+  // owner, each route deciding which.
+  if (parts[0] === 'workbench') {
+    return handleWorkbench({ request, env, auth, waitUntil, now: Date.now() }, parts.slice(1));
+  }
   if (parts[0] === 'index' && parts[1] === 'teams' && parts.length === 2) {
     return handleIndexTeams(request, env);
   }
   const bearer = bearerOf(request);
   if (bearer) return handleBearer(request, env, auth, parts, bearer);
-  return handleSignedIn(request, env, auth, parts);
+  return handleSignedIn(request, env, auth, parts, waitUntil);
 }
 
 // --- The index, with the key it shares with accounts (INDEX_MERGE_KEY) ---
@@ -254,6 +272,7 @@ async function handleSignedIn(
   env: Env,
   auth: Auth,
   parts: string[],
+  waitUntil: WaitUntil,
 ): Promise<Response> {
   const { method } = request;
   if (method !== 'GET' && !sameOrigin(request, env)) return error(403, 'cross_origin');
@@ -293,6 +312,8 @@ async function handleSignedIn(
     }
     if (id && !sub && method === 'DELETE') {
       if (!(await revokeApiToken(db, actor.id, id))) return error(404, 'not_found');
+      // Its workbench pairings go with it (workbench/revoke.ts).
+      await endTokenWorkbench(env, actor.id, id, waitUntil);
       reportServerEvent(env, 'Token', 'Removed', null, home);
       return json({ id });
     }
@@ -671,12 +692,17 @@ async function handleInternal(
   auth: Auth,
   parts: string[],
   url: URL,
+  waitUntil: WaitUntil,
 ): Promise<Response> {
   const db = env.AUTH_DB;
   const client = await verifiedClient(request, auth, db);
   if (!client) return error(401, 'invalid_client');
   const { clientId } = client;
   const route = `${request.method} ${parts.join('/')}`;
+
+  // An app's workbench sessions, rooms and senders' allowances (workbench/internal.ts).
+  const workbench = await handleWorkbenchInternal(request, env, client.app, route);
+  if (workbench) return workbench;
 
   if (route === 'POST tokens/verify') {
     const { token } = await readBody(request);
@@ -725,8 +751,11 @@ async function handleInternal(
 
   if (route === 'POST tokens/revoke') {
     const { token } = await readBody(request);
+    const found = typeof token === 'string' ? await tokenBySecret(db, token) : null;
     const revoked = typeof token === 'string' && (await revokeApiTokenBySecret(db, token));
-    return revoked ? json({ ok: true }) : error(404, 'invalid_token');
+    if (!revoked || !found) return error(404, 'invalid_token');
+    await endTokenWorkbench(env, found.userId, found.id, waitUntil);
+    return json({ ok: true });
   }
 
   if (route === 'POST tokens/live') {
