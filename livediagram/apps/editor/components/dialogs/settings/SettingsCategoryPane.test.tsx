@@ -14,7 +14,7 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { SettingsCategoryPane } from './SettingsCategoryPane';
+import { SettingsCategoryPane } from './test-pane';
 
 afterEach(() => {
   cleanup();

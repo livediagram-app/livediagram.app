@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { lucideCloud, lucideTriangleAlert } from '@livediagram/icons/lucide';
 import { Button, StableLabel, lucideGlyph } from '@livediagram/ui';
 import { ArrowOutIcon } from '@/components/primitives/HelpArticleLink';
-import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
 import {

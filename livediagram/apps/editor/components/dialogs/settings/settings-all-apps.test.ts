@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { rowSharedByAllApps } from './SettingsRowShell';
+import { rowSharedByAllApps } from './settings-model';
 
 // The quiet "All apps" note (docs/specs/007-editor/user-preferences.md "Shared with every app").
 describe('rowSharedByAllApps', () => {

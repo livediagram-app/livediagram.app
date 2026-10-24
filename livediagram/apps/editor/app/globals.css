@@ -53,6 +53,8 @@
 @source '../../../packages/ui/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
+/* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
+@source '../../../../packages/settings-ui/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating

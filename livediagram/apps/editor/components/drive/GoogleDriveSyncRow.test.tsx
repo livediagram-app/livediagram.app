@@ -18,6 +18,8 @@ import {
   DriveMirrorContext,
   type DriveMirrorContextValue,
 } from './drive-mirror-context';
+import { SettingsUiKitProvider } from '@liveworkspace/settings-ui';
+import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { GoogleDriveSyncRow } from './GoogleDriveSyncRow';
 
 const NOW = 10 * 60_000;
@@ -50,9 +52,12 @@ function value(
 function show(status: Partial<DriveMirrorStatus>, over: Partial<DriveMirrorContextValue> = {}) {
   const v = value(status, over);
   const view = render(
-    <DriveMirrorContext.Provider value={v}>
-      <GoogleDriveSyncRow row={ROW} />
-    </DriveMirrorContext.Provider>,
+    // In the Settings dialog's kit, whose help link the row's description ends with.
+    <SettingsUiKitProvider kit={SETTINGS_KIT}>
+      <DriveMirrorContext.Provider value={v}>
+        <GoogleDriveSyncRow row={ROW} />
+      </DriveMirrorContext.Provider>
+    </SettingsUiKitProvider>,
   );
   return { ...v, view };
 }
