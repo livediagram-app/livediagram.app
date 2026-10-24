@@ -22,7 +22,7 @@ import { useOnline } from '@/hooks/ui/useOnline';
 type DocumentLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
-  creating: { title: 'Creating your document', detail: 'Setting up a fresh canvas' },
+  creating: { title: 'Creating your document', detail: 'Setting up its first page' },
   opening: { title: 'Opening your document', detail: 'Getting everything in place' },
 };
 

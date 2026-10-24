@@ -345,8 +345,10 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your document"** to **"Opening your
-document"**; everything else stays put.
+Its label moves from **"Creating your document"** (over "Setting up its first
+page") to **"Opening your document"** (over "Getting everything in place");
+everything else stays put. A document is pages (articles, slides and
+infographics), never a canvas, so the copy says page.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
