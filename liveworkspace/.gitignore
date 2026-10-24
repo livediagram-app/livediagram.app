@@ -9,6 +9,8 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .dev.vars
+test-results/
+playwright-report/
 
 # `next dev` drops these into each app it runs; agent guidance lives in the root AGENTS.md.
 apps/*/AGENTS.md

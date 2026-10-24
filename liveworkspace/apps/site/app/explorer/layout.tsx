@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense, type ReactNode } from 'react';
 import { ExplorerShell } from '@/components/explorer/ExplorerShell';
+import { SilentSignInScript } from '@/components/explorer/SilentSignInScript';
 import { explorerSilentSignInScript } from '@/lib/explorer/silent';
 import './explorer.css';
 
@@ -14,15 +15,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// On an app's own address, the app's silent sign-in, before anything renders (lib/explorer/silent.ts).
+// On an app's own address, the app's silent sign-in, before anything renders (lib/explorer/silent.ts). Outside the
+// Suspense boundary, whose content the static export leaves to the browser, so the script is in every Explorer
+// page's HTML and runs as the page loads.
 const SILENT_SIGN_IN = explorerSilentSignInScript();
 
 export default function ExplorerLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={null}>
-      {SILENT_SIGN_IN ? <script dangerouslySetInnerHTML={{ __html: SILENT_SIGN_IN }} /> : null}
-      <ExplorerShell />
-      {children}
-    </Suspense>
+    <>
+      {SILENT_SIGN_IN ? <SilentSignInScript source={SILENT_SIGN_IN} /> : null}
+      <Suspense fallback={null}>
+        <ExplorerShell />
+        {children}
+      </Suspense>
+    </>
   );
 }

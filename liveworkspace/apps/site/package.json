@@ -10,7 +10,8 @@
     "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next out node_modules .turbo"
+    "clean": "rm -rf .next out node_modules .turbo",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
@@ -59,6 +60,7 @@
     "@liveplanner/source-ast": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveplanner/templates": "workspace:*",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",

@@ -342,6 +342,13 @@ One Worker, `liveworkspace-site`, static assets only, on the route `liveworkspac
 `.well-known` discovery documents to the accounts Worker, `/api/telemetry/*` to the telemetry
 Worker, and everything else here. Security headers come from `public/_headers`.
 
+Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
+livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
+Explorer and the sign-in pages, so they hold on every app's address too. The boot script allows the site's own build
+under its asset prefix, `/_liveworkspace/_next/`. `trusted-types-guard.test.ts` holds every sink, the header and the
+boot to this, and `pnpm test:e2e` (after `pnpm build`) opens every Explorer view and the main pages in Chromium under
+the real header, failing on any Trusted Types refusal.
+
 ## Running it locally
 
 ```sh
