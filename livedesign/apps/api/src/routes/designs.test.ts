@@ -210,8 +210,7 @@ describe('the tab autosave backstop', () => {
     });
     expect(marked.status).toBe(200);
     expect(
-      (await call(db, 'PUT', '/api/designs/P/tabs/t2', { body: { ...body([]), id: 't2' } }))
-        .status,
+      (await call(db, 'PUT', '/api/designs/P/tabs/t2', { body: { ...body([]), id: 't2' } })).status,
     ).toBe(200);
   });
 
@@ -221,16 +220,6 @@ describe('the tab autosave backstop', () => {
       const res = await call(db, 'PUT', path, { rawBody: '[1, 2]' });
       expect(res.status, path).toBe(400);
     }
-  });
-});
-
-describe('the thumbnail', () => {
-  it('is a 404 the editor turns into an icon, for no grant and for no snapshot alike', async () => {
-    const db = await design();
-    const denied = await call(db, 'GET', '/api/designs/P/thumbnail', { owner: 'stranger' });
-    expect(denied.status).toBe(404);
-    // No image store bound in this test: nothing to serve.
-    expect((await call(db, 'GET', '/api/designs/P/thumbnail')).status).toBe(404);
   });
 });
 

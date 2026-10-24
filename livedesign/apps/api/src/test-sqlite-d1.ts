@@ -264,8 +264,33 @@ function testDesignRooms(
           identity as never,
           () => {},
         ),
-      image: async (_designId: string, subject: unknown, tabId: string | null) =>
-        (await import('./thumbnail')).renderDesignImage(env, subject as never, tabId, {}),
+      exportImage: async (
+        designId: string,
+        query: { tabId: string | null; code: string | null; ifVersion: number | null },
+      ) => {
+        const { meta, savedAt } = await (
+          await import('./design-room/design-content')
+        ).readDesignHead(env, designId);
+        if (!meta) return { status: 'not_found' };
+        if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+        if (
+          query.tabId !== null &&
+          !(await (await import('./db/tabs')).designHasTab(env, designId, query.tabId))
+        ) {
+          return { status: 'not_found' };
+        }
+        const svg = await (
+          await import('./thumbnail')
+        ).drawDesign(env, { id: designId, name: meta.name }, query.tabId);
+        return svg === null
+          ? { status: 'empty', version: savedAt }
+          : {
+              status: 'ok',
+              body: svg,
+              contentType: 'image/svg+xml; charset=utf-8',
+              version: savedAt,
+            };
+      },
       heldBlobs: async (_designId: string, tabId: string, ids: string[]) =>
         (await import('./db/photo-blobs')).heldBlobs(env, tabId, ids),
       servesImage: async (designId: string, imageId: string, onlyTabId: string | null) =>

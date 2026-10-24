@@ -73,7 +73,8 @@ import {
   type PhotoBlobMeta,
 } from '../db/photo-blobs';
 import { forgetDesignMediaRefs } from '../media';
-import { renderDesignImage, type ThumbnailSubject } from '../thumbnail';
+import { drawDesign } from '../thumbnail';
+import type { ExportQuery, ExportResult } from '@liveworkspace/index-app';
 import {
   designShares,
   type ShareAnswer,
@@ -86,6 +87,7 @@ import {
   exportDesignCopy,
   importDesignCopy,
   readDesignMeta,
+  readDesignHead,
   readDesignOutline,
   type DesignCopy,
   type DesignOutline,
@@ -110,7 +112,7 @@ import { answerDesignRequest, type RouteIdentity } from './design-route';
 //     its vocabulary without changing the room. Two edits to the same element are last-writer-wins in room order.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
-// below). Content requests and thumbnail renders now run here rather than in the worker, so a design with heavy
+// below). Content requests and preview drawings now run here rather than in the worker, so a design with heavy
 // API traffic keeps its object awake for that traffic; an idle design costs nothing.
 //
 // WebSocket HIBERNATION (why this shape): sockets are accepted via
@@ -138,6 +140,8 @@ import { answerDesignRequest, type RouteIdentity } from './design-route';
 // legit client (cursor / laser broadcasts are throttled to a few dozen
 // per second), so this only ever bites a flood.
 const OP_RATE_CAP = 240;
+// What the export door answers a drawing as.
+const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 
 // Max size (chars) of a single inbound WebSocket frame. A cursor / select /
 // op frame is well under this; the cap stops a socket from broadcasting a
@@ -534,15 +538,26 @@ export class DesignRoom extends DurableObject<Env> {
     return response;
   }
 
-  async image(
-    designId: string,
-    subject: ThumbnailSubject,
-    tabId: string | null,
-  ): Promise<string | null> {
+  // The design drawn for liveworkspace's previews (liveworkspace/docs/previews.md "The export door"): the first tab or
+  // the one asked for, versioned by its last save. Stores nothing; the platform keeps and serves the picture.
+  async exportImage(designId: string, query: ExportQuery): Promise<ExportResult> {
     this.bindDesign(designId);
-    return renderDesignImage(this.requireEnv(), subject, tabId, {
+    // A design this object never held: nothing to draw, and no schema made just to say so.
+    const sql = this.state.storage.sql;
+    if (!hasDesignSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    const env = this.requireEnv();
+    const { meta, savedAt } = await readDesignHead(env, designId);
+    if (!meta) return { status: 'not_found' };
+    if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+    if (query.tabId !== null && !(await designHasTab(env, designId, query.tabId))) {
+      return { status: 'not_found' };
+    }
+    const svg = await drawDesign(env, { id: designId, name: meta.name }, query.tabId, {
       defer: (p) => this.state.waitUntil(p),
     });
+    return svg === null
+      ? { status: 'empty', version: savedAt }
+      : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
   async hasTab(designId: string, tabId: string): Promise<boolean> {

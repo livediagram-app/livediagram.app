@@ -10,7 +10,6 @@ This guide is the practical path: provision Cloudflare resources, connect livewo
 | -------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Workers paid plan**                  | All seven workers | Durable Objects need the paid plan.                                                                                                                                                                                                                   |
 | **Durable Objects**                    | `apps/api`        | `DESIGN_ROOM` (`DesignRoom`): one per design, holding its content in its own SQLite and running its realtime room. `WORKBENCH` (`WorkbenchStore`): one per person, holding their workbench pairings, tickets and sessions. Both come with the deploy. |
-| **R2 bucket `SNAPSHOTS`** (optional)   | `apps/api`        | Design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share) and share cards. Without it, snapshot endpoints `404` (the Explorer row shows a generic icon).                     |
 | **R2 bucket `PHOTO_BLOBS`** (optional) | `apps/api`        | Photo pages' tiles, sources and previews ([Photo store](../specs/031-photo/photo-store.md)). Without it, every photo blob route answers `503`.                                                                                                        |
 | **Rate Limiter bindings** (optional)   | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, API-token reads and workbench tickets. Any binding you don't provision falls through to "allow", so none are required.                           |
 | **Custom domain**                      | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                               |
@@ -23,7 +22,7 @@ livedesign keeps no database of its own: each design's content lives in its Dura
 
 - **The accounts Worker** (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`): signing in, and guests. A guest is a liveworkspace guest, the same person in every liveworkspace app, carried as a signed guest token the accounts Worker hands out; the api worker checks it against the accounts Worker's public keys, as it does an account's access token. See [Sign-in and guests](#sign-in-and-guests).
 - **The index** (`INDEX_ORIGIN` in `apps/api/wrangler.toml` `[vars]`, and the `INDEX_KEY` secret): where every design is filed, plus sharing, share links, folders, Trash and teams. The api worker checks the grants it signs (`${INDEX_ORIGIN}/api/index/jwks`) and pushes each design's summary to it with `INDEX_KEY`, which the index holds as `INDEX_KEY_LIVEDESIGN` ([liveworkspace/docs/index-service.md](../../../liveworkspace/docs/index-service.md)). Without `INDEX_KEY` the design endpoints answer as missing.
-- **The media service** (`MEDIA_URL`, and the `MEDIA_KEY` secret): uploaded images. See [Images](#images).
+- **The media service** (`MEDIA_URL`, and the `MEDIA_KEY` secret): uploaded images, and every design's previews (the Explorer thumbnail, the live image and the share card), which it draws through the api's export door ([liveworkspace/docs/previews.md](../../../liveworkspace/docs/previews.md)). See [Images](#images).
 
 `INDEX_ORIGIN` ships as `https://liveworkspace.app`; point it at your own liveworkspace deployment if you run one.
 
@@ -35,14 +34,13 @@ What you do NOT need:
 ## One-time Cloudflare setup
 
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
-2. **Create the R2 buckets** (optional, for design snapshots and photo pages):
+2. **Create the R2 bucket** (optional, for photo pages):
 
    ```sh
-   pnpm exec wrangler r2 bucket create livedesign-snapshots
    pnpm exec wrangler r2 bucket create livedesign-photo-blobs
    ```
 
-   They are bound to `SNAPSHOTS` and `PHOTO_BLOBS` in `apps/api/wrangler.toml`. To run without one, remove its `[[r2_buckets]]` block.
+   It is bound to `PHOTO_BLOBS` in `apps/api/wrangler.toml`. To run without it, remove its `[[r2_buckets]]` block.
 
 3. **Nothing else to create for the api.** Its Durable Object classes are declared through the `[[migrations]]` tag in `apps/api/wrangler.toml`, and `wrangler deploy` applies it itself on the first deploy. Each design's tables are made inside its Durable Object on first use.
 

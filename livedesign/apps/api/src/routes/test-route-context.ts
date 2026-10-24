@@ -42,7 +42,7 @@ export function makeTestRouteContext(
     // The index's grant on the design: given, or (undefined) worked out from a sqliteD1 env as the index would
     // (test-sqlite-d1.ts `testGrantFor`).
     grant?: DesignGrant | null;
-    // Per-test bindings (e.g. a SNAPSHOTS stub); an empty
+    // Per-test bindings (e.g. a PHOTO_BLOBS stub); an empty
     // Env otherwise.
     env?: Env | DesignEnv;
     // Provide to observe background dispatches; absent = the unit-test

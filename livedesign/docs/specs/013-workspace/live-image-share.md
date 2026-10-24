@@ -4,11 +4,10 @@
 > endpoint and Share-dialog option below shipped, but two design points here are
 > now superseded by [Design SVG snapshots](../006-design/design-snapshots.md) — read it for the authoritative behaviour:
 >
-> - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
->   from R2, refreshed render-on-read when the design has been saved since
->   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Design SVG snapshots](../006-design/design-snapshots.md)) — one
->   artifact, two delivery paths.
+> - **liveworkspace's, not the api's.** The image is one of liveworkspace's previews
+>   ([Previews](../../../../liveworkspace/docs/previews.md)): the router sends the address to the media service,
+>   which stores the picture, keeps it fresh against the design's last save and checks the link with the index.
+>   livedesign only draws it, through its export door. One picture, shared with the Explorer thumbnail.
 > - **Renderer already shared.** The "main work" below (extracting the renderer
 >   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
 >   `@livedesign/design` (`packages/design/src/svg-render.ts`) and powers the
@@ -41,17 +40,16 @@ export).
 
 ## Endpoint
 
-`GET /api/share/<code>/image.svg` on the api worker:
+`GET /api/share/<code>/image.svg` on the app's origin, which the router forwards to liveworkspace's media service:
 
-1. Resolve `<code>` through `getShareLink` (the single authority — expiry +
-   role). 404 if missing / revoked / expired.
+1. The index resolves `<code>` (the single authority: expiry and role). 404 if missing, revoked or expired.
 2. If the design has a share password, 404 (no image for gated shares).
-3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
-4. Render it to SVG (a Pages tab as its first page alone, [Design SVG snapshots](../006-design/design-snapshots.md) "Pages tabs") and return `Content-Type: image/svg+xml` with a short
-   `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
-   update without re-rendering on every view.
-
-The router already forwards `/api/*` to the api worker, so no router change.
+3. The tab drawn is the first tab; `?tab=<id>` selects another. A tab-scoped link
+   ([Tab-scoped share links](tab-scoped-share-links.md)) always draws its own tab, and a `?tab=` naming any other is
+   a 404.
+4. The design draws it to SVG through its export door (a Pages tab as its first page alone,
+   [Design SVG snapshots](../006-design/design-snapshots.md) "Pages tabs"), and the service returns
+   `Content-Type: image/svg+xml` with a short `Cache-Control` so embeds update without a draw on every view.
 
 ## Renderer sharing (the build's main work)
 
@@ -93,6 +91,5 @@ a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
 the Embed control uses). The menu also carries a **per-tab picker** (a
 `<select>`, shown when the design has more than one tab) that threads
 `?tab=<id>` into the copied URL / snippets; see
-[Design SVG snapshots](../006-design/design-snapshots.md#share-dialog) for the caching detail
-(a non-default tab renders on read, uncached). Out of scope for v1: a
+[Design SVG snapshots](../006-design/design-snapshots.md#share-dialog). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

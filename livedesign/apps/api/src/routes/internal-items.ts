@@ -4,14 +4,15 @@
 // and a copy into a new design.
 //
 // Each is a call to the design's Durable Object (design-client.ts). Where the design is filed, its sharing and its
-// Trash are the index's; a purge also drops what the api keeps about the design beside it (db/designs.ts
-// `purgeDesignRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
-// or someone's first time in through a link (the owner's "someone joined" email).
+// Trash are the index's; a purge also drops the design's previews in liveworkspace's media service
+// (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's path: a share link made (the
+// first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The export
+// door draws the design for liveworkspace's previews, which call it with MEDIA_KEY.
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
-import { purgeDesignRows } from '../db/designs';
+import { purgeDesignPreviews } from '../db/designs';
 import { designRoom } from '../design-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
@@ -23,11 +24,12 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    exportKey: env.MEDIA_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
         await designRoom(env, id).purge();
-        await purgeDesignRows(env, id);
+        await purgeDesignPreviews(env, id);
       },
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
@@ -58,6 +60,8 @@ export function handleInternalItems(
         await designRoom(env, to).importCopy(copy);
         return { tabs: copy.tabs.length, items: 0 };
       },
+      // The design drawn, for liveworkspace's previews (design-room.ts `exportImage`).
+      export: (id, query) => designRoom(env, id).exportImage(query),
     },
   });
 }

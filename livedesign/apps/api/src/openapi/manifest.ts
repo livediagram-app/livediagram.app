@@ -57,8 +57,8 @@ export interface RouteSpec {
   query?: QueryParam[];
   requestSchema?: BodySchema;
   responseSchema?: BodySchema;
-  /** Media type of the success body. Defaults to `application/json`; the SVG
-   *  snapshot endpoints answer `image/svg+xml`. */
+  /** Media type of the success body. Defaults to `application/json`; the tab render
+   *  answers `image/svg+xml`. */
   responseMediaType?: string;
   /** A plain-text form of the success body beside the JSON one (a design view). */
   textResponse?: { description: string };
@@ -829,20 +829,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404],
   },
   {
-    method: 'GET',
-    path: '/designs/{id}/thumbnail',
-    segment: 'designs',
-    tag: 'Designs',
-    summary:
-      "The design's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /designs/{id}; 404 when there is no snapshot.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/svg+xml',
-    statuses: [200, 404],
-  },
-  {
     method: 'POST',
     path: '/designs/{id}/room-ticket',
     segment: 'designs',
@@ -1014,52 +1000,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['design', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/image.svg',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      'Live image: the shared design as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
-    auth: 'public',
-    query: [
-      {
-        name: 'tab',
-        required: false,
-        description: "Tab id; defaults to the first tab (or the link's own tab).",
-      },
-    ],
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/svg+xml',
-    statuses: [200, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/card',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      "A link preview's text: the shared design's name. 404 wherever the live image is (a dead code, a share password).",
-    auth: 'public',
-    responseSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' } },
-      required: ['name'],
-    },
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/image.png',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      "A link preview's picture: the live image's drawing on a 1200 x 630 PNG card. Redirects to the brand card when there is nothing to draw.",
-    auth: 'public',
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/png',
-    statuses: [200, 302, 404],
   },
 
   // ---- Participants ----

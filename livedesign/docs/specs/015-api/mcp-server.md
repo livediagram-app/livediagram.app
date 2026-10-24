@@ -805,8 +805,8 @@ Worker (no DOM, no React).
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livedesign/api-schema`, shared with the api worker's
-  snapshot render ([Design SVG snapshots](../006-design/design-snapshots.md)), which passes its own byte source
-  (R2) and a total byte budget.
+  preview drawing ([Design SVG snapshots](../006-design/design-snapshots.md)), which passes its own byte source
+  (the media service) and a total byte budget.
 - **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
   pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
   screenshot 49 MB, four 112 MB, and a flat 8000x8000 PNG of 0.19 MB 461 MB, against a Worker's 128 MB in all. Time

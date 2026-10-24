@@ -10,16 +10,16 @@ remote Durable Objects before it reaches the ones holding people's designs.
 
 ## The two environments
 
-|               | Production                                       | Staging                                                          |
-| ------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| Hostname      | `livedesign.app`                                 | `staging.livedesign.app`                                         |
-| MCP host      | `mcp.livedesign.app`                             | `mcp-staging.livedesign.app`                                     |
-| Trigger       | Manual (`workflow_dispatch`)                     | Automatic, on every green CI run on `main`                       |
-| Workflow      | `deploy.yml` (**Deploy Production**)             | `deploy-staging.yml` (**Deploy Staging**)                        |
-| Worker names  | `livedesign-<app>`                               | `livedesign-<app>-staging`                                       |
-| R2            | `livedesign-snapshots`, `livedesign-photo-blobs` | `livedesign-snapshots-staging`, `livedesign-photo-blobs-staging` |
-| liveworkspace | `liveworkspace.app`                              | `staging.liveworkspace.app`                                      |
-| Indexable     | Yes                                              | **No** — `X-Robots-Tag: noindex, nofollow`                       |
+|               | Production                           | Staging                                    |
+| ------------- | ------------------------------------ | ------------------------------------------ |
+| Hostname      | `livedesign.app`                     | `staging.livedesign.app`                   |
+| MCP host      | `mcp.livedesign.app`                 | `mcp-staging.livedesign.app`               |
+| Trigger       | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
+| Workflow      | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
+| Worker names  | `livedesign-<app>`                   | `livedesign-<app>-staging`                 |
+| R2            | `livedesign-photo-blobs`             | `livedesign-photo-blobs-staging`           |
+| liveworkspace | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
+| Indexable     | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
 
@@ -216,7 +216,6 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 | Resource | Name                             | Created with                                                    | Where the id lives                        |
 | -------- | -------------------------------- | --------------------------------------------------------------- | ----------------------------------------- |
-| R2       | `livedesign-snapshots-staging`   | `wrangler r2 bucket create livedesign-snapshots-staging`        | bound by name, no id                      |
 | R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`      | bound by name, no id                      |
 | KV       | `mcp-oauth-kv-staging`           | `wrangler kv namespace create mcp-oauth-kv-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
 

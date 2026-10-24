@@ -8,6 +8,7 @@ import type { DesignDTO, Env } from '../types';
 import { getParticipant } from '../accounts/profiles';
 import { readRecordedIntent } from '../design-intent-row';
 import { designRoom } from '../design-client';
+import { mediaClient } from '../media';
 import { isDesignSource } from '@livedesign/api-schema';
 import type { DesignMeta, DesignOutline } from '../design-room/design-content';
 
@@ -57,45 +58,16 @@ export async function getDesignMeta(
   return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// The R2 key of a design's cached first-tab snapshot (docs/specs/006-design/design-snapshots.md).
-export function thumbnailKey(designId: string): string {
-  return `thumb/${designId}`;
-}
-
-// The R2 key of a design's cached share card (docs/specs/013-workspace/share-link-previews.md).
-export function shareCardKey(designId: string): string {
-  return `og/${designId}`;
-}
-
-// Every cached snapshot a design can have, for the paths that delete it.
-export function snapshotKeys(designId: string): string[] {
-  return [thumbnailKey(designId), shareCardKey(designId)];
-}
-
-// What drawing a design's image needs (its name, last save and snapshot stamp), in one call to its Durable Object.
-// Null for a design never started.
-export type DesignThumbMeta = {
-  id: string;
-  name: string;
-  savedAt: number;
-  thumbRenderedAt: number | null;
-};
-
-export async function getDesignThumbMeta(env: Env, id: string): Promise<DesignThumbMeta | null> {
-  const outline = await designRoom(env, id).outline();
-  const meta = outline.meta;
-  if (!meta) return null;
-  return {
-    id,
-    name: meta.name,
-    savedAt: outline.savedAt,
-    thumbRenderedAt: meta.thumbRenderedAt ?? null,
-  };
-}
-
-// What R2 holds about a design, for when the index purges it (routes/internal-items.ts): its cached snapshots, in
-// one delete. Workbench tickets and sessions scoped to it are in their owners' workbench stores: a ticket lapses in
-// a minute, and a session's every request is gated on the design's grant, which a purged design never gets again.
-export async function purgeDesignRows(env: Env, id: string): Promise<void> {
-  if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id));
+// What liveworkspace keeps of a design's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are in their owners'
+// workbench stores: a ticket lapses in a minute, and a session's every request is gated on the design's grant, which a
+// purged design never gets again. Best effort: a preview the purge misses is unreachable (every read asks the index).
+export async function purgeDesignPreviews(env: Env, id: string): Promise<void> {
+  const media = mediaClient(env);
+  if (!media) return;
+  try {
+    await media.deletePreviews(id);
+  } catch (err) {
+    console.warn('[purge] previews not dropped', { designId: id, error: String(err) });
+  }
 }

@@ -18,8 +18,6 @@ const GATE_KEEPERS = [
   'src/routes/share.ts',
   // The index's grant on a design: the whole of what a caller may do to it.
   'src/routes/design-grant.ts',
-  // Link previews name a shared design (docs/specs/013-workspace/share-link-previews.md).
-  'src/routes/share-preview.ts',
   'src/routes/tokens.ts',
   // The image reference index and the sweep that trusts it: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
@@ -34,7 +32,9 @@ export default defineProject({
   // (src/test-cloudflare-workers.ts).
   resolve: {
     alias: {
-      'cloudflare:workers': fileURLToPath(new URL('./src/test-cloudflare-workers.ts', import.meta.url)),
+      'cloudflare:workers': fileURLToPath(
+        new URL('./src/test-cloudflare-workers.ts', import.meta.url),
+      ),
     },
   },
   test: {

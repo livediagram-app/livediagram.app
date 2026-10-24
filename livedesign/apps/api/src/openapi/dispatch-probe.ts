@@ -178,7 +178,6 @@ export async function probeDispatch(
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder design, so a design route reaches its own routing instead of answering "no access".
   const env = {
-    SNAPSHOTS: trap('SNAPSHOTS'),
     // Images, which live in liveworkspace's media service (liveworkspace/docs/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',

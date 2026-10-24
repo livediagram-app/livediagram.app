@@ -8,8 +8,13 @@
 import type { PhotoBlobMeta } from './db/photo-blobs';
 import type { DesignCopy, DesignOutline } from './design-room/design-content';
 import type { RouteIdentity } from './design-room/design-route';
-import type { ThumbnailSubject } from './thumbnail';
-import type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
+import type {
+  ExportQuery,
+  ExportResult,
+  ShareAnswer,
+  ShareMessage,
+  SharedTabCopy,
+} from '@liveworkspace/index-app';
 import type { Env } from './types';
 
 export type DesignRoomClient = {
@@ -18,8 +23,9 @@ export type DesignRoomClient = {
   // One API request about this design, answered inside its Durable Object by the same handlers as before
   // (design-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
-  // The snapshot image a reader gets (thumbnail.ts), drawn where the content is.
-  image(subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
+  // The design drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
+  // content is.
+  exportImage(query: ExportQuery): Promise<ExportResult>;
   // Whether the design holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Of `ids`, the photo blobs this tab holds, with what they are: the source side of an adoption into another
@@ -56,7 +62,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
   return {
     outline: () => room.outline(designId),
     route: (request, identity) => room.route(designId, request, identity),
-    image: (subject, tabId) => room.image(designId, subject, tabId),
+    exportImage: (query) => room.exportImage(designId, query),
     hasTab: (tabId) => room.hasTab(designId, tabId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
@@ -76,7 +82,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
 export type DesignRoomRpc = {
   outline(designId: string): Promise<DesignOutline>;
   route(designId: string, request: Request, identity: RouteIdentity): Promise<Response>;
-  image(designId: string, subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
+  exportImage(designId: string, query: ExportQuery): Promise<ExportResult>;
   hasTab(designId: string, tabId: string): Promise<boolean>;
   heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;

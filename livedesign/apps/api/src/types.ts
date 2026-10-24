@@ -62,10 +62,6 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // R2 bucket caching each design's SVG snapshot (`thumb/<id>`) and share card
-  // (docs/specs/006-design/design-snapshots.md). Optional so a deploy without R2 still runs:
-  // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
-  SNAPSHOTS?: R2Bucket;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
   // their own.
@@ -74,7 +70,7 @@ export type Env = {
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
   // R2 bucket holding photo pages' blobs (docs/specs/031-photo/photo-store.md "The photo blob store"),
-  // apart from SNAPSHOTS. Unbound, every photo blob route answers 503 photos_unavailable.
+  // a tab's working data, not someone's pictures. Unbound, every photo blob route answers 503 photos_unavailable.
   PHOTO_BLOBS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in

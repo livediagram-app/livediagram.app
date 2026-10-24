@@ -33,8 +33,6 @@ CREATE TABLE IF NOT EXISTS design (
   tab_kind            TEXT    NULL,
   -- The comment email's throttle (email/notifications.ts).
   comment_notified_at INTEGER NULL,
-  -- When the cached first-tab snapshot in R2 was drawn (thumbnail.ts): fresh while at or after saved_at.
-  thumb_rendered_at   INTEGER NULL,
   -- The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or NULL for none.
   presentation        TEXT    NULL
 );

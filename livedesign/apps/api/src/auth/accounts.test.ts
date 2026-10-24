@@ -169,9 +169,8 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
       headers: { Authorization: 'Bearer t' },
     });
 
-  it('takes any app’s token for an item’s preview and tabs', async () => {
+  it('takes any app’s token for an item’s tabs', async () => {
     verifyMock.mockResolvedValue(claims());
-    await getPersonIdentity(LIVE, at('/api/designs/x1/thumbnail'));
     await getPersonIdentity(LIVE, at('/api/designs/x1/tabs'));
     const audiences = createVerifierMock.mock.calls.map(([o]) => o.audience);
     expect(audiences).toContainEqual([
@@ -182,10 +181,10 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     ]);
   });
 
-  it('takes only its own for anything else, a write to the preview included', async () => {
+  it('takes only its own for anything else, a write to the tabs included', async () => {
     verifyMock.mockResolvedValue(claims());
     await getPersonIdentity(LIVE, at('/api/designs/x2'));
-    await getPersonIdentity(LIVE, at('/api/designs/x2/thumbnail', 'PUT'));
+    await getPersonIdentity(LIVE, at('/api/designs/x2/tabs', 'PUT'));
     expect(createVerifierMock.mock.calls.map(([o]) => o.audience)).toEqual([
       'https://livedesign.app/api',
     ]);

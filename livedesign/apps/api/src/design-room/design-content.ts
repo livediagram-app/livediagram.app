@@ -22,7 +22,6 @@ export type DesignMeta = {
   opensIn: string | null;
   tabKind: string | null;
   createdAt: number;
-  thumbRenderedAt: number | null;
 };
 
 // What a design read takes from the design: its tabs in order (no body), its slide deck, and what it knows of
@@ -46,11 +45,10 @@ type DesignHeadRow = {
   source: string | null;
   opens_in: string | null;
   tab_kind: string | null;
-  thumb_rendered_at: number | null;
 };
 
 const DESIGN_HEAD_COLS =
-  'presentation, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, thumb_rendered_at';
+  'presentation, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind';
 
 function metaOf(head: DesignHeadRow | null): DesignMeta | null {
   if (!head || !head.created_at) return null;
@@ -62,7 +60,6 @@ function metaOf(head: DesignHeadRow | null): DesignMeta | null {
     opensIn: head.opens_in,
     tabKind: head.tab_kind,
     createdAt: head.created_at,
-    thumbRenderedAt: head.thumb_rendered_at,
   };
 }
 
@@ -88,10 +85,19 @@ export async function readDesignOutline(env: DesignEnv, designId: string): Promi
 
 // What the design knows of itself, alone (no tabs): for the doors that only need its owner or name.
 export async function readDesignMeta(env: DesignEnv, designId: string): Promise<DesignMeta | null> {
+  return (await readDesignHead(env, designId)).meta;
+}
+
+// What the design knows of itself and its last save, in one read: the export door's version
+// (liveworkspace/docs/previews.md), without the tab outline.
+export async function readDesignHead(
+  env: DesignEnv,
+  designId: string,
+): Promise<{ meta: DesignMeta | null; savedAt: number }> {
   const head = await env.DESIGN_DB.prepare(`SELECT ${DESIGN_HEAD_COLS} FROM design WHERE id = ?`)
     .bind(designId)
     .first<DesignHeadRow>();
-  return metaOf(head ?? null);
+  return { meta: metaOf(head ?? null), savedAt: head?.saved_at ?? 0 };
 }
 
 // The design's tabs alone, in order, for the Share dialog's tab picker (@liveworkspace/index-app tabs.ts): each tab's
@@ -177,17 +183,6 @@ export async function renameDesign(
     .bind(name, savedAt, designId)
     .run();
   return (res.meta.changes ?? 0) > 0;
-}
-
-// The snapshot cache's freshness stamp (thumbnail.ts).
-export async function markThumbRendered(
-  env: DesignEnv,
-  designId: string,
-  now: number,
-): Promise<void> {
-  await env.DESIGN_DB.prepare('UPDATE design SET thumb_rendered_at = ? WHERE id = ?')
-    .bind(now, designId)
-    .run();
 }
 
 // docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new

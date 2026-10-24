@@ -7,13 +7,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8989
 
-# Bundle the share card's fonts (packages/render-png/fonts at the repo root, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livedesign.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
@@ -40,18 +33,10 @@ INDEX_ORIGIN = "https://liveworkspace.app"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedesign.app"
 
-# R2 bucket caching each design's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and live image) and
-# share card (docs/specs/006-design/design-snapshots.md). Uploaded images are liveworkspace's media
-# service's (MEDIA_KEY below). Created out of band via `wrangler r2 bucket create livedesign-snapshots`.
-# Leaving the binding absent locally only turns the snapshot doors off: they answer 404 and the Explorer
-# row keeps its icon.
-[[r2_buckets]]
-binding = "SNAPSHOTS"
-bucket_name = "livedesign-snapshots"
-
 # R2 bucket holding photo pages' pixels: tiles, sources and previews, by content
-# (docs/specs/031-photo/photo-store.md "The photo blob store"). Its own bucket, not SNAPSHOTS: photo
-# blobs are a tab's working data, not someone's pictures (those are the media service's). Create with `wrangler r2 bucket create livedesign-photo-blobs`.
+# (docs/specs/031-photo/photo-store.md "The photo blob store"). Photo blobs are a tab's working data, not
+# someone's pictures (those, and every design's previews, are the media service's: MEDIA_KEY below,
+# liveworkspace/docs/previews.md). Create with `wrangler r2 bucket create livedesign-photo-blobs`.
 # Absent, every photo blob route answers 503 photos_unavailable.
 [[r2_buckets]]
 binding = "PHOTO_BLOBS"
@@ -258,13 +243,8 @@ INDEX_ORIGIN = "https://staging.liveworkspace.app"
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedesign.app"
 
-# Own bucket: `wrangler r2 bucket create livedesign-snapshots-staging`. Sharing
-# production's would let staging overwrite or delete real snapshots.
-[[env.staging.r2_buckets]]
-binding = "SNAPSHOTS"
-bucket_name = "livedesign-snapshots-staging"
-
-# Own bucket for the same reason: `wrangler r2 bucket create livedesign-photo-blobs-staging`.
+# Own bucket: `wrangler r2 bucket create livedesign-photo-blobs-staging`. Sharing production's would let staging
+# overwrite or delete real photo blobs.
 [[env.staging.r2_buckets]]
 binding = "PHOTO_BLOBS"
 bucket_name = "livedesign-photo-blobs-staging"

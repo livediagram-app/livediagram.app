@@ -317,7 +317,7 @@ read a 503 as `null` and `{}`.
   grants.
 - **The design's `outbox`**: a media key, queued by the `image_refs` and `design_tabs` triggers
   and deleted once the alarm's push lands.
-- **Design snapshots** are in the R2 `SNAPSHOTS` bucket under `thumb/<designId>`
+- **Design previews** are liveworkspace's media service's
   ([Design SVG snapshots](../../006-design/design-snapshots.md)); no image bytes are kept here.
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: the owner and the service's `app` (`imageSummary`).
@@ -371,8 +371,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
 - **Read authorisation.** Owner, or a reader of a design that references the id. Knowing an id
   is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
 - **Server-side embed.** Only ids the design may serve are read, and only from the media
-  service, so a tab cannot pull a `thumb/<designId>` snapshot, another person's image or any other
-  key into its public live image. `[QB7]`
+  service, so a tab cannot pull another person's image or any other key into its public live image. `[QB7]`
 - **Guest ids.** A guest id is a credential and never leaves this api: the service holds a guest's
   images under `mediaOwner(guestId)`, a one-way hash.
 - **Privacy.** The service strips JPEG APPn and COM segments before storage (I2). PNG, WebP and GIF
@@ -468,7 +467,7 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 | Caps, sniff, strip, dedupe                           | the media service's own tests                         |                                                |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`             | `packages/api-schema/src/image-limits.test.ts` |
 | Usage and share read from the index                  | `imageUsageByOwner`, `designServesImage`              | apps/api/src/db/images.test.ts (removed)       |
-| Snapshot embeds, missing keeps placeholder           | two `getDesignThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`               |
+| Snapshot embeds, missing keeps placeholder           | two `drawDesign` tests                                | `apps/api/src/thumbnail.test.ts`               |
 | Embed budget in document order                       | `spends a total budget in document order…`            | `packages/api-schema/src/embed-images.test.ts` |
 | Export embeds `<image>`, placeholder without href    | `image elements` suite                                | `packages/design/src/svg-render.test.ts`       |
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                              | `apps/live/lib/upload-image.test.ts`           |

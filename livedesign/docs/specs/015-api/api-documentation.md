@@ -123,8 +123,8 @@ path-template)` parity described under "Drift test", run in the api worker's
   mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
   unique.
 - **Media types** — a success body is `application/json` unless the entry sets
-  `responseMediaType`; the two SVG snapshot reads (`GET /designs/{id}/thumbnail`,
-  `GET /share/{code}/image.svg`) declare `image/svg+xml`.
+  `responseMediaType`; the tab render (`GET /designs/{id}/tabs/{tabId}/render.svg`) declares
+  `image/svg+xml`. Previews are liveworkspace's, not this api's, so they are not in its document.
 
 The served design validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;
