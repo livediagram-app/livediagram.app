@@ -26,6 +26,9 @@ const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 // renders as its own. Its labels are what a reader sees in liveplanner, so they
 // are read as the editor's.
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
+// Settings is liveworkspace's shared view too (@liveworkspace/settings-ui), so its labels ("Search
+// settings") are read the same way.
+const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -60,6 +63,7 @@ function uiLabels(): Map<string, Set<string>> {
   };
   walk(`${ROOT}/apps/editor`);
   walk(EXPLORER_PACKAGE);
+  walk(SETTINGS_PACKAGE);
   return byLower;
 }
 
@@ -93,6 +97,7 @@ function editorSource(): string {
   };
   for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
   walk(EXPLORER_PACKAGE);
+  walk(SETTINGS_PACKAGE);
   return all.toLowerCase();
 }
 

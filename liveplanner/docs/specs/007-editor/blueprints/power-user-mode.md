@@ -38,8 +38,8 @@ Scope, by file:
 | `apps/editor/components/canvas/MultiSelectionToolbar.tsx`                                                  | More on touch only; desktop bin under the flag                                   |
 | `apps/editor/components/chrome/FloatingToolbar.tsx`                                                        | Caption under the flag; toolbar name                                             |
 | `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                            | The rows, `parent`, the `presetSummary` kind; `SettingsRowContext.powerUserMode` |
-| `apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx`                                         | Nests a row's children under it as a named group; `onGoToRow`                    |
-| `apps/editor/components/dialogs/settings/SettingsPresetSummaryRow.tsx`                                     | The "Set By Power User Mode" readout                                             |
+| `packages/settings-ui/src/SettingsCategoryPane.tsx`                                                        | Nests a row's children under it as a named group; `onGoToRow`                    |
+| `packages/settings-ui/src/rows/SimpleRows.tsx`                                                             | The "Set By Power User Mode" readout                                             |
 | `apps/editor/components/dialogs/settings/power-user-preset-rows.ts`                                        | Pure: preset lines, current value, changed or not, where each row lives          |
 | `apps/editor/components/dialogs/SettingsDialog.tsx`                                                        | Computes `powerUserMode` for the row context                                     |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                                   | `onShortcutUsed` after a key the handler claimed                                 |
@@ -202,7 +202,7 @@ mapped long press, so one handler covers every input.
   `read` formatted (toggle: On / Off; choice: the option label). `restorable` is whether a baseline entry exists (no status line without one). `changed` is true when the baseline entry exists and
   is not untouched (the same test switch-off uses, `isUntouched`). `reachable` is whether that row is in the
   visible categories (`offered`).
-- `SettingsPresetSummaryRow` renders a card: a `<ul>` of lines, each `label: value`, the category, the status
+- `SettingsPresetSummaryRowView` renders a card: a `<ul>` of lines, each `label: value`, the category, the status
   ("Changed: kept when you switch off" / "Restored when you switch off") and, when reachable, a `Change` button
   (`aria-label` "Change {label} in {category}") calling `onGoToRow(categoryId, rowKey)`.
 - `SettingsDialog` keeps a `goTo` target in state: going to a row selects its category and passes the row as

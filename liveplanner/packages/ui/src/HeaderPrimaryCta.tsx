@@ -11,7 +11,7 @@ import { lucideGlyph } from './icons/lucide-glyph';
 const TemplatesIcon = lucideGlyph(lucideLayoutGrid, 14);
 
 // The site header's primary (docs/specs/019-marketing/marketing-site.md "Header"): Choose Template
-// (/new, the encouraged wizard path) for a visitor, Open Explorer (their documents) for someone signed
+// (/new, the encouraged wizard path) for a visitor, Open Explorer (their projects) for someone signed
 // in. Who is signed in comes from the api's readable `lp_signed_in` hint cookie, so the public
 // sites never load the session; it only picks a link, it authenticates nothing. The static
 // HTML is Choose Template for everyone, and both labels share one cell sized to the wider, so the swap

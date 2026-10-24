@@ -107,8 +107,22 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     }
 
     // Vacuity guard: if the source walk stops finding verbs, every assertion
-    // below passes without checking anything.
-    expect(handled.size).toBeGreaterThan(12);
+    // below passes without checking anything. The exact segments, so a route group
+    // that moves away (workbench went to liveworkspace) or arrives is named here too.
+    expect([...handled.keys()].sort()).toEqual([
+      'account',
+      'events',
+      'folders',
+      'forms',
+      'oauth',
+      'participants',
+      'preferences',
+      'projects',
+      'share',
+      'teams',
+      'tokens',
+      'trash',
+    ]);
     for (const [segment, methods] of handled) {
       expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);
     }
