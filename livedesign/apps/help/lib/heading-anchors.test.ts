@@ -1,9 +1,8 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
-import { headingId, slugOf } from './heading-id';
+import { slugOf } from '@liveworkspace/help-site/lib/heading-id';
 
 // An article's sections are linked to by anchor, from other articles and from the marketing site
 // (`/help/<path>/#<section>`). The page renders each `##` and `###` heading with the id headingId gives it; every such
@@ -34,13 +33,6 @@ function anchorsOf(mdx: string): Set<string> {
 }
 
 describe('heading ids', () => {
-  it('slug a heading through any formatting inside it', () => {
-    expect(headingId("When a Style Isn't Offered")).toBe('when-a-style-isn-t-offered');
-    expect(headingId(['Using ', createElement('code', null, 'Cmd+K'), ' fast'])).toBe(
-      'using-cmd-k-fast',
-    );
-  });
-
   it('every /help/…#anchor link names a heading of its article', () => {
     const sources = [
       ...files(HELP, ['.mdx']),

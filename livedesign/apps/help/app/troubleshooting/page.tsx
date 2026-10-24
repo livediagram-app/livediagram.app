@@ -1,27 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Troubleshooting',
   description:
     'Solutions to common problems with the livedesign editor and real-time collaboration.',
-  path: '/help/troubleshooting/',
-});
+  lede: 'Something not working? Start here.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'troubleshooting', COPY);
 
 export default function TroubleshootingPage() {
-  const articles = getArticlesByCategory('troubleshooting');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/troubleshooting/', articles: articles }}
-      title="Troubleshooting"
-      lede="Something not working? Start here."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="troubleshooting" copy={COPY} />;
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // The privacy policy covers every liveworkspace app, livedesign included, so it lives on liveworkspace.app. This
 // stub keeps the old help URL alive (it redirects there) but is noindex so search engines consolidate on that page.

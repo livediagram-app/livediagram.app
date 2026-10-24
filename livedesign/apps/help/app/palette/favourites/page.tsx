@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // Favourites is gone (docs/specs/010-palette/palette-favourites.md), and so is Popular, which replaced it: the
 // palette's categories sit on the strip, each one press away (docs/specs/007-editor/toolbar-layout.md "The category

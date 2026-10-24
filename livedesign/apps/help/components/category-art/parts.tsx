@@ -5,7 +5,7 @@
 // (chips, keycaps, ticks, sparkles, design thumbnails) that recur across the set.
 //
 // Colours follow the kit's house style: Tailwind fill/stroke classes in the light ramp, retargeted for dark by
-// app/help-art.css because the stage carries `help-art`.
+// packages/help-site/src/help-art.css because the stage carries `help-art`.
 
 import { useId, type ReactNode } from 'react';
 import { Label } from '@/components/illustrations/primitives';
