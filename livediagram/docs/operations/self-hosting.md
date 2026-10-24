@@ -8,7 +8,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All eight workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                                  |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                                  |
 | **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets, Community post and image references, and its realtime room) and two per person (`PersonStore`: their Drive mirror and shape libraries; `WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use. |
 | **R2 bucket** (optional)             | `apps/api`        | Document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Uploaded images live in liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon).                                              |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, API-token reads, and Community likes and reports. Any binding you don't provision falls through to "allow", so none are required.                                                                                                           |
@@ -82,28 +82,27 @@ After the one-time Cloudflare setup:
 git clone https://github.com/livediagram-app/livediagram.app livediagram
 cd livediagram
 pnpm install
-pnpm build           # static export for marketing + live + telemetry + help + community,
+pnpm build           # static export for marketing + editor + help + community,
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @livediagram/marketing exec wrangler deploy
 pnpm --filter @livediagram/editor exec wrangler deploy
-pnpm --filter @livediagram/telemetry exec wrangler deploy
 pnpm --filter @livediagram/help exec wrangler deploy
 pnpm --filter @livediagram/community exec wrangler deploy
 pnpm --filter @livediagram/api exec wrangler deploy
-pnpm --filter @livediagram/router exec wrangler deploy   # last, depends on the six above
+pnpm --filter @livediagram/router exec wrangler deploy   # last, binds the five above
 ```
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
 
-Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; `live`, `community` and the optional `mcp` worker deploy after `api` (each binds to it; `live` and `community` only for link previews and work without it). The GitHub Actions deploy workflow encodes this as job dependencies.
+Deploy order matters: the router's service bindings reference five other workers (`MARKETING`, `EDITOR`, `API`, `HELP`, `COMMUNITY`), so it can't deploy until they exist; `editor`, `community` and the optional `mcp` worker deploy after `api` (each binds to it; `editor` and `community` only for link previews and work without it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and every push to `main`.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
-- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all seven workers (marketing, editor, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
@@ -133,7 +132,7 @@ nothing. To run it:
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
    `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your editor app's origin and
-   `NEXT_PUBLIC_MCP_ORIGIN` (live and marketing build env) to the MCP origin, so the
+   `NEXT_PUBLIC_MCP_ORIGIN` (editor and marketing build env) to the MCP origin, so the
    consent page posts the minted token only to your trusted host and the Build
    with AI page (`/ai`) gives AI tools your address, not the hosted one.
 
@@ -231,7 +230,7 @@ pnpm --filter @livediagram/api exec wrangler secret put DRIVE_TOKEN_KEY   # open
 
 5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show livediagram a folder they made in Drive. Without it the mirror works and that one step is not offered.
 
-**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livediagram.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
+**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and editor build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livediagram.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the editor build carry the same client id.
 
 If your site redirects one host to another (livediagram.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
 
@@ -248,7 +247,7 @@ Images live in liveworkspace's media service ([liveworkspace/docs/media.md](../.
 Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and point your DNS at Cloudflare. The router stitches all paths under one hostname:
 
 - `/` → marketing
-- `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
+- `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → the editor (clean routes; `/live/*` carries only its `_next` assets)
 - `/telemetry` → a redirect to liveworkspace's telemetry dashboard (edit `telemetryDashboardUrl` in the router to point it elsewhere, or drop it)
 - `/help` → help centre
 - `/community` → Community, the public gallery of shared documents
@@ -261,7 +260,7 @@ the api's `COMMUNITY_URL` and `COMMUNITY_KEY`, and build the pages with `NEXT_PU
 `false` (a `[vars]` entry or `wrangler secret put COMMUNITY_ENABLED`): every Community route and link closes and it
 disappears from every app, with nothing deleted ([Community](../specs/025-community/community.md#turning-the-community-off)).
 
-The six downstream workers don't need their own domain; the router fans out via service bindings.
+The five downstream workers don't need their own domain; the router fans out via service bindings.
 
 ## What can break, and how to debug
 

@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, PNG rendering, sticky-note photo detection, telemetry client, the TypeScript source parser for static guards, the licences generator, test fakes, configs
+packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client, the licences generator, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -32,7 +32,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
-- **Router** stitches the six under one hostname.
+- **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
 - **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.

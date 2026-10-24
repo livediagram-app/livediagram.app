@@ -28,7 +28,7 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `apps/editor/e2e/optical-audit.spec.ts`                                  | The editor's audited screens                                                                                                                        |
 | `apps/editor/e2e/optical-audit-sites.spec.ts`                            | The help centre, telemetry dashboard, Community and marketing site                                                                                  |
 | `apps/editor/e2e/audit-screens.ts`                                       | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                                              |
-| `scripts/e2e-stack.mjs`                                                | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, `apps/community/out` at `/community/*`, marketing on its own port |
+| `scripts/e2e-stack.mjs`                                                | Also serves `apps/help/out` at `/help/*`, `apps/community/out` at `/community/*`, marketing on its own port                                  |
 | `.github/workflows/e2e.yml`                                            | Its Sites audit job builds help, telemetry, community and marketing beside live and runs the `sites` project                                        |
 
 ## Names

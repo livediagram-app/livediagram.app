@@ -67,7 +67,7 @@ Turned on, `/explorer/*` and `/api/workspace/account/*` are liveworkspace's, ser
 
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help + community) when forwarding to a binding:
+In production the Worker has five **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help + community) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
