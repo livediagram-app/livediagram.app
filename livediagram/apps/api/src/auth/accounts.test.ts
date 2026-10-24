@@ -127,7 +127,7 @@ describe('getPersonIdentity (verified token)', () => {
     });
   });
 
-  it('carries the teams claim through, for the teams mirror', async () => {
+  it('carries the teams claim through, for the teams list', async () => {
     const teams = [{ id: 'team1', name: 'Design', role: 'admin' as const }];
     verifyMock.mockResolvedValue(claims({ teams }));
     expect(await getPersonIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({ teams });

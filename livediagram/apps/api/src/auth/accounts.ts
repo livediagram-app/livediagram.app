@@ -26,7 +26,7 @@ export type AccountIdentity = {
   userId: string;
   email: string | null;
   // The account's teams as liveworkspace saw them when it minted the token (null from an older
-  // token): a nudge to catch the teams mirror up (db/team-sync.ts), never what decides access.
+  // token): what GET /api/teams lists. Access is the index's, through grants.
   teams: TeamClaim[] | null;
 };
 
