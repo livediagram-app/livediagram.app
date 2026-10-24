@@ -105,7 +105,7 @@ document renders lazily.
   thumbnail mounts paints at once, with no loader. The box never changes
   size.
 - **An empty document is never asked for.** Every document list carries
-  `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
+  `empty` per document (`DocumentSummary`, and the index's Shared With You rows): true when its
   first tab has nothing to draw (no element and no form: `drawnCount` in
   `@livediagram/document`), or it has no tab. Such a row shows the still,
   dashed sketch at once, captioned "Nothing drawn yet" where there is room,

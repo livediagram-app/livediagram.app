@@ -36,7 +36,7 @@ on in Settings.
 ## Opens
 
 What livediagram does is say when a canvas is opened. The editor's first-tab read carries `X-Document-Open: 1`
-(never in an embed), and the api records the open with the index (`POST /items/:id/open`, debounced there to one
+(never in an embed; `DOCUMENT_OPEN_HEADER` in `packages/api-schema/src/home.ts`, beside the 90-day use window), and the api records the open with the index (`POST /items/:id/open`, debounced there to one
 write a minute; `apps/api/src/routes/document-subresource-routes.ts`). Making a canvas is a use of it too, recorded
 beside the create unless it came in a bulk import. The index keeps the time for Recent and the day as a use day for
 Most Used, and Jump Back In reads both in one request. A canvas opened from This Browser is recorded in this browser
