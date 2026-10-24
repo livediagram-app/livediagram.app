@@ -8,6 +8,8 @@
  * adds the Explorer package's utilities (its explorer.css names its sources) and the page's own. */
 @source './';
 @source '../../components/explorer';
+/* The bottom bar's Appearance switch, so its wide-screen label's classes sort with this sheet's own. */
+@source '../../../../../livediagram/packages/ui/src/appearance';
 /* Home's hero art: the classes an app's hero manifest draws with (lib/explorer/hero.ts). */
 @source '../../node_modules/@liveplanner/templates/hero.json';
 @source '../../node_modules/@livedocuments/templates/hero.json';
