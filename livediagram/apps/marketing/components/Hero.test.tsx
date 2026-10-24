@@ -15,7 +15,7 @@ import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, and the dealing fan of templates.
 
 let reduceMotion = false;
 // Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
