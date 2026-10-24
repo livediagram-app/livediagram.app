@@ -19,6 +19,7 @@ import { drainPersonMerges } from './person-merges';
 import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
 import { sweep } from './purge';
 import { sweepExpiringLinks } from './share-expiry';
+import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 
@@ -102,6 +103,10 @@ const worker = {
     }
     if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
       return handlePersonPurge(request, env, (promise) => ctx.waitUntil(promise));
+    }
+    // Accounts' workbench service closing the rooms a pairing's sessions joined.
+    if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
+      return handleWorkbenchClose(request, env);
     }
     const caller = await callerOf(request, env);
     if (!caller) return unauthorized();

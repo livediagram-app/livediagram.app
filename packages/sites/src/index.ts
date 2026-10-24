@@ -108,6 +108,9 @@ export type AppItems = {
   // One item, and many: the word people see ("Plan", "Plans").
   noun: string;
   nouns: string;
+  // The app's API's word for one item: its path segment (`/api/<apiNoun>s/…`), and a workbench's item scope with its
+  // `<apiNoun>Id` (liveworkspace/docs/workbench.md).
+  apiNoun: 'document' | 'project' | 'design';
   // Where the app opens one item: `${url}${itemPath}<id>`.
   itemPath: string;
   // Where the app makes one: `${url}${newPath}` (`?folder=`, `?team=` and `?template=` ride on it).
@@ -180,6 +183,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     site: 'livediagram.app',
     noun: 'Canvas',
     nouns: 'Canvases',
+    apiNoun: 'document',
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/offline',
@@ -200,6 +204,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     site: 'liveplanner.app',
     noun: 'Plan',
     nouns: 'Plans',
+    apiNoun: 'project',
     itemPath: '/project/',
     newPath: '/new',
     offlinePath: '/offline',
@@ -216,6 +221,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     site: 'livedocuments.app',
     noun: 'Document',
     nouns: 'Documents',
+    apiNoun: 'document',
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/offline',
@@ -232,6 +238,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     site: 'livedesign.app',
     noun: 'Design',
     nouns: 'Designs',
+    apiNoun: 'design',
     itemPath: '/design/',
     newPath: '/new',
     offlinePath: '/offline',

@@ -83,6 +83,20 @@ describe('handleInternalItems', () => {
     ).toBe(400);
   });
 
+  it("closes a workbench pairing's sessions in the room, and says when the room was not reached", async () => {
+    const workbenchClose = vi.fn(async (itemId: string) => itemId === 'A');
+    const path = (id: string) => `/api/internal/items/${id}/workbench-close`;
+    const ok = await send('POST', path('A'), { pairingId: 'p1' }, { workbenchClose });
+    expect(await ok.json()).toEqual({ ok: true });
+    expect(workbenchClose).toHaveBeenCalledWith('A', 'p1');
+    expect((await send('POST', path('B'), { pairingId: 'p1' }, { workbenchClose })).status).toBe(
+      503,
+    );
+    expect((await send('POST', path('A'), {}, { workbenchClose })).status).toBe(400);
+    // An app with no workbench has no such door.
+    expect((await send('POST', path('A'), { pairingId: 'p1' }, {})).status).toBe(404);
+  });
+
   it('takes a notice at once and works it out off the path', async () => {
     const pending: Promise<unknown>[] = [];
     const notice = vi.fn(async () => {});

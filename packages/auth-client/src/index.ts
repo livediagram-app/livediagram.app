@@ -90,3 +90,17 @@ export {
   type NotifyTarget,
 } from './notify';
 export { appApiResources, audiencesFor, isExplorerRead } from './explorer-reads';
+export {
+  createWorkbenchRoomNoter,
+  createWorkbenchSessionChecker,
+  takeAllowance,
+  WORKBENCH_SESSION_CACHE_MAX,
+  WORKBENCH_SESSION_INVALID_FOR_MS,
+  WORKBENCH_SESSION_VALID_FOR_MS,
+  type WorkbenchCheckerOptions,
+  type WorkbenchLevel,
+  type WorkbenchSessionCheck,
+  type WorkbenchSessionChecker,
+  type WorkbenchSessionRefusal,
+  type WorkbenchSessionResult,
+} from './workbench';

@@ -10,7 +10,6 @@ export * from './outbox';
 export * from './activity';
 export * from './anonymise';
 export * from './teams';
-export * from './workbench';
 export * from './image-grants';
 export * from './room-ticket';
 export * from './tabs';

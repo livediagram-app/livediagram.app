@@ -4,7 +4,8 @@
 //     X-Index-Person: that account, for that app's items only;
 //   - a link visitor, by a share code (and its password), with or without a person;
 //   - an app's server, by its key and X-Index-App;
-//   - accounts, by the merge key.
+//   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
+//     token) as an app's server does, for the app X-Index-App names.
 
 import { createPersonVerifier } from '@liveworkspace/auth-client';
 import {
@@ -86,7 +87,9 @@ export async function delegatedPersonOf(
 ): Promise<Person | null | 'refused'> {
   const personId = request.headers.get(INDEX_PERSON_HEADER);
   if (personId === null) return null;
-  const app = await callerApp(request, env);
+  // The app's own key, or accounts' (its workbench service acting for a token's account on one app's items,
+  // liveworkspace/docs/workbench.md).
+  const app = (await callerApp(request, env)) ?? (await mergeDelegateApp(request, env));
   // An account only: a guest has no API token, and a link visitor is no person.
   if (!app || !isId(personId) || personId.startsWith('guest_') || personId.includes(':')) {
     return 'refused';
@@ -113,6 +116,13 @@ export async function callerApp(request: Request, env: Env): Promise<App | null>
   const token = bearerOf(request);
   if (!expected || !token) return null;
   return (await timingSafeEqual(token, expected)) ? app : null;
+}
+
+// The app accounts names when it acts for a person with its merge key, or null for a request that isn't that.
+async function mergeDelegateApp(request: Request, env: Env): Promise<App | null> {
+  const app = request.headers.get(INDEX_APP_HEADER);
+  if (!isApp(app)) return null;
+  return (await isMergeCaller(request, env)) ? app : null;
 }
 
 export async function isMergeCaller(request: Request, env: Env): Promise<boolean> {

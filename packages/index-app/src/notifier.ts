@@ -54,7 +54,7 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
   claimMilestone(env: E, ownerId: string, kind: 'milestone' | 'firstShare'): Promise<boolean>;
   /** The item's own claims table (its Durable Object's D1-shaped facade). */
   claims(env: E): ClaimsDb;
-  /** The sender's hourly allowance (workbenchAllowance(env.WORKBENCH)). */
+  /** The sender's hourly allowance (accountsAllowance(accountCredentials(env))). */
   allowance(env: E): SenderAllowance;
   /** A person's display name, or null. */
   nameOf(env: E, personId: string): Promise<string | null>;

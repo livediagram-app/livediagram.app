@@ -19,6 +19,7 @@ import {
   WORKSPACE_CLIENT_IP_HEADER,
   forwardToIndex,
   PRODUCTION_INDEX_ORIGIN,
+  WORKBENCH_ROUTE,
 } from './workspace-proxy';
 import { APP_NAMES } from './index';
 
@@ -47,8 +48,8 @@ describe('which paths go to liveworkspace', () => {
     expect(workspaceRouteFor(path, ROUTES)).toBe(route);
   });
 
-  it('is the Explorer and its account reads for an app switched on, and signing in for every app', () => {
-    const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
+  it('is the Explorer and its account reads for an app switched on, and signing in and workbenches for every app', () => {
+    const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE, WORKBENCH_ROUTE];
     for (const app of APP_NAMES) {
       expect(workspaceRoutes(app)).toEqual(
         EXPLORER_ON_APP_ORIGIN[app] ? [...ROUTES, ...signIn] : signIn,
@@ -58,6 +59,27 @@ describe('which paths go to liveworkspace', () => {
     expect(EXPLORER_ON_APP_ORIGIN.livedesign).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livedocuments).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livediagram).toBe(true);
+  });
+
+  it('sends /api/workbench/* to the accounts Worker, naming the app, with no cookies', async () => {
+    const doFetch = upstream(new Response('{}', { status: 201 }));
+    const answered = await routeToWorkspace(
+      new Request('https://liveplanner.app/api/workbench/tickets?x=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer lwt_x', Cookie: 'session=1' },
+        body: '{"projectId":"p1"}',
+      }),
+      { app: 'liveplanner', fetch: doFetch },
+    );
+    expect(answered?.status).toBe(201);
+    const sent = doFetch.mock.calls[0]![0] as Request;
+    expect(sent.url).toBe(`${PRODUCTION_WORKSPACE_ORIGIN}/api/account/workbench/tickets?x=1`);
+    expect(sent.method).toBe('POST');
+    expect(sent.headers.get(WORKSPACE_PROXY_HEADER)).toBe('liveplanner');
+    expect(sent.headers.get('Authorization')).toBe('Bearer lwt_x');
+    expect(sent.headers.get('Cookie')).toBeNull();
+    expect(await sent.text()).toBe('{"projectId":"p1"}');
+    expect(workspaceRouteFor('/api/workbenches', [WORKBENCH_ROUTE])).toBeNull();
   });
 
   it('answers null for a path it does not own, so the router carries on', () => {

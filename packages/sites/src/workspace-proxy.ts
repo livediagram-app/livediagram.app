@@ -115,11 +115,24 @@ export const SITE_ASSETS_ROUTE: WorkspaceRoute = {
   cookies: 'drop',
 };
 
-/** The routes an app's router forwards to liveworkspace.app: signing in (and the site's assets) always, the
- *  Explorer's while the app's switch is on. */
+// ---------- Workbenches ---------------------------------------------------------------------------------------------
+// (liveworkspace/docs/workbench.md). Pairing, tickets and sessions are the accounts Worker's for every app; each app
+// keeps `/api/workbench/*` on its own address, with the same requests and answers, and its router (and its API Worker,
+// for a caller that reaches it directly) forwards them there. The app's name rides in WORKSPACE_PROXY_HEADER, which
+// is how accounts knows whose item a ticket opens. No cookies either way: the routes take a bearer or the ticket.
+
+/** `/api/workbench/*` on the app's address: the workbench service in the accounts Worker. */
+export const WORKBENCH_ROUTE: WorkspaceRoute = {
+  prefix: '/api/workbench',
+  target: '/api/account/workbench',
+  cookies: 'drop',
+};
+
+/** The routes an app's router forwards to liveworkspace.app: signing in (and the site's assets) and workbenches
+ *  always, the Explorer's while the app's switch is on. */
 export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
-  const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
-  return EXPLORER_ON_APP_ORIGIN[app] ? [EXPLORER_ROUTE, ACCOUNT_ROUTE, ...signIn] : signIn;
+  const always = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE, WORKBENCH_ROUTE];
+  return EXPLORER_ON_APP_ORIGIN[app] ? [EXPLORER_ROUTE, ACCOUNT_ROUTE, ...always] : always;
 }
 
 function underPrefix(pathname: string, prefix: string): boolean {

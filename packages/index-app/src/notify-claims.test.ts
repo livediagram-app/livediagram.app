@@ -1,7 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it, vi } from 'vitest';
 import { NOTIFY_EMAIL_DEDUPE_MS } from '@liveworkspace/auth-client';
-import { claimNotice, claimNotices, type SenderAllowance } from './notify-claims';
+import {
+  accountsAllowance,
+  claimNotice,
+  claimNotices,
+  type SenderAllowance,
+} from './notify-claims';
 
 // The item's SQLite behind the D1 surface the apps hand in.
 function claimsDb() {
@@ -135,5 +140,39 @@ describe('claimNotice', () => {
       dedupeSince: 0,
     });
     expect(sql.prepare('SELECT COUNT(*) AS n FROM notify_claims').get()).toEqual({ n: 1 });
+  });
+});
+
+describe('accountsAllowance', () => {
+  it("takes from the sender's allowance at liveworkspace with the app's credentials", async () => {
+    const calls: { url: string; body: unknown }[] = [];
+    const fetcher = (async (url: string, init: RequestInit) => {
+      calls.push({ url, body: JSON.parse(init.body as string) });
+      return Response.json({ taken: 1 });
+    }) as unknown as typeof fetch;
+    const take = accountsAllowance(
+      { accountsUrl: 'https://liveworkspace.app', clientId: 'liveplanner', clientSecret: 's' },
+      fetcher,
+    );
+    const input = {
+      personId: 'user_a',
+      kind: 'notify-email',
+      max: 60,
+      windowMs: 1,
+      now: 5,
+      count: 2,
+    };
+    expect(await take(input)).toBe(1);
+    expect(calls).toEqual([
+      {
+        url: 'https://liveworkspace.app/api/account/internal/allowance',
+        body: { personId: 'user_a', kind: 'notify-email', max: 60, windowMs: 1, count: 2 },
+      },
+    ]);
+  });
+
+  it('takes nothing without credentials', async () => {
+    const input = { personId: 'user_a', kind: 'k', max: 1, windowMs: 1, now: 1, count: 1 };
+    expect(await accountsAllowance(null)(input)).toBe(0);
   });
 });

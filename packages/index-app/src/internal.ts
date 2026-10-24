@@ -6,6 +6,8 @@
 //   POST   /api/internal/items/purge          {ids}          the same for up to BULK_PURGE_MAX items (a closed account)
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
+//   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
+//                                                            in the item's room (liveworkspace/docs/workbench.md)
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?}  copy an item's content (or one tab)
 //                                                            into a new item, for `by` (who copies) through link `code`
 //                                                            (if any), from address `ip` (if known)
@@ -92,7 +94,7 @@ export type InternalItemHandlers = {
   // A notice for the app's emails, run off the index's path (waitUntil).
   notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
   // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
-  // their workbench, claims), dropped. Idempotent.
+  // claims), dropped. Idempotent.
   personClosed?: (personId: string) => Promise<unknown>;
   // A guest became an account (the index's merge): what the app keeps for the guest beside their items (images,
   // a per-person store) moves to the account. Idempotent. An app with nothing to move leaves it out and the door
@@ -102,6 +104,9 @@ export type InternalItemHandlers = {
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
   // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
   export?: (itemId: string, query: ExportQuery) => Promise<ExportResult>;
+  // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/workbench.md
+  // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
+  workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
 };
 
 export type InternalItemsOptions = {
@@ -263,6 +268,18 @@ export async function handleInternalItems(
     const reason = body?.['reason'] === 'rescoped' ? 'rescoped' : 'revoked';
     const closed = await handlers.revoke(id, codes, reason);
     return json({ ok: true, closed });
+  }
+
+  if (
+    rest.length === 2 &&
+    rest[1] === 'workbench-close' &&
+    request.method === 'POST' &&
+    handlers.workbenchClose
+  ) {
+    const pairingId = (await bodyOf(request))?.['pairingId'];
+    if (!validId(pairingId)) return badRequest('pairingId must be a pairing id');
+    const reached = await handlers.workbenchClose(id, pairingId).catch(() => false);
+    return reached ? json({ ok: true }) : json({ ok: false }, 503);
   }
 
   if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST' && handlers.notice) {

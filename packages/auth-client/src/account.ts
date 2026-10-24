@@ -71,7 +71,8 @@ function basic(credentials: ClientCredentials): string {
   return `Basic ${btoa(pair)}`;
 }
 
-async function call(
+// One internal call to the account API with the app's client credentials (also workbench.ts's).
+export async function call(
   credentials: ClientCredentials,
   path: string,
   init: { method: 'GET' | 'POST'; body?: unknown },
@@ -103,7 +104,7 @@ export function readTeamsClaim(value: unknown): TeamClaim[] | null {
   return Array.isArray(value) ? value.filter(isTeamClaim) : null;
 }
 
-async function sha256(value: string): Promise<string> {
+export async function sha256(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return btoa(String.fromCharCode(...new Uint8Array(bytes)));
 }
@@ -564,7 +565,12 @@ export async function readAccountTeams(
   userId: string,
   fetcher: typeof fetch = fetch,
 ): Promise<TeamClaim[]> {
-  const response = await call(credentials, '/teams/of', { method: 'POST', body: { userId } }, fetcher);
+  const response = await call(
+    credentials,
+    '/teams/of',
+    { method: 'POST', body: { userId } },
+    fetcher,
+  );
   if (!response.ok) throw new Error(`account teams failed: ${response.status}`);
   return readTeamsClaim(((await response.json()) as { teams?: unknown }).teams) ?? [];
 }

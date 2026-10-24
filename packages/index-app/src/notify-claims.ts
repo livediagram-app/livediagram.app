@@ -6,14 +6,17 @@
 //   `notify_claims` table (`key TEXT PRIMARY KEY, sender TEXT NOT NULL, at INTEGER NOT NULL`, indexed on `at`), so
 //   two triggers racing send one email. The table holds a day of claims at most.
 // - Per sender, across every item: at most NOTIFY_EMAILS_PER_SENDER_PER_HOUR. Taken from the sender's own
-//   allowance in their per-person store (the app's WORKBENCH Durable Object, workbench.ts `takeQuota`), so someone
-//   who mentions people in fifty items in an hour is capped the same as in one.
+//   allowance at liveworkspace (`accountsAllowance`: the sender's per-person store in the accounts Worker, kept per
+//   app), so someone who mentions people in fifty items in an hour is capped the same as in one.
 //
 // A claim the allowance refuses is released again, so the same email may go once the hour allows. An allowance that
 // can't be reached sends nothing: the email is the sender's words, and the cap is what keeps them from becoming spam.
 
-import { NOTIFY_EMAIL_DEDUPE_MS } from '@liveworkspace/auth-client';
-import { workbenchStoreOf, type WorkbenchNamespace } from './workbench';
+import {
+  NOTIFY_EMAIL_DEDUPE_MS,
+  takeAllowance,
+  type ClientCredentials,
+} from '@liveworkspace/auth-client';
 
 // The allowance kind the notification emails count against.
 export const NOTIFY_QUOTA_KIND = 'notify-email';
@@ -30,7 +33,7 @@ export type NoticeClaim = {
   rate?: { max: number; windowMs: number };
 };
 
-// The sender's allowance (the per-person store's takeQuota, through the app's WORKBENCH namespace): takes up to
+// The sender's allowance (accountsAllowance: their store at liveworkspace, kept per app): takes up to
 // `count` uses and answers how many it took.
 export type SenderAllowance = (input: {
   personId: string;
@@ -119,8 +122,11 @@ export async function claimNotice(
   return allowed === true;
 }
 
-// The allowance in each sender's own per-person store: the app's WORKBENCH namespace.
-export const workbenchAllowance =
-  (ns: WorkbenchNamespace): SenderAllowance =>
-  (input) =>
-    workbenchStoreOf(ns, input.personId).takeQuota(input);
+// The allowance in each sender's own store at liveworkspace, with the app's client credentials. No credentials
+// (a deployment not yet on liveworkspace accounts): nothing is taken, so nothing is sent.
+export const accountsAllowance =
+  (credentials: ClientCredentials | null, fetcher?: typeof fetch): SenderAllowance =>
+  async ({ personId, kind, max, windowMs, count }) => {
+    if (!credentials) return 0;
+    return takeAllowance(credentials, { personId, kind, max, windowMs, count }, fetcher);
+  };
