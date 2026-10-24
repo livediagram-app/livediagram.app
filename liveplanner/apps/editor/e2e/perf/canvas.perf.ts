@@ -29,7 +29,7 @@ import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
-// docs/instructions/trace-a-canvas-gesture.md): the reference board on a whiteboard and a diagram, at
+// docs/instructions/trace-a-canvas-gesture.md): the reference board on a Plan tab, at
 // fit and at 100%, every gesture traced with the CPU slowed to the reference speed (calibrate.ts),
 // judged against the budget. It reports and never
 // fails on a budget miss; a harness error (seeding, the stack, a missing element) does fail it.
@@ -54,15 +54,7 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
     {
       id,
       name: `Reference board (${tab})`,
-      // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
-      tabs: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Board',
-          ...(tab === 'whiteboard' ? { opensIn: 'draw' } : {}),
-          elements,
-        },
-      ],
+      tabs: [{ id: crypto.randomUUID(), name: 'Board', elements }],
     },
   );
   expect(res.ok(), `seeding the ${tab} board`).toBe(true);
@@ -373,22 +365,6 @@ async function measureZoom(
       },
     },
     {
-      gesture: 'stroke',
-      setup: () => page.keyboard.press(tab === 'whiteboard' ? '1' : 'p'),
-      act: async () => {
-        await page.mouse.move(bare.x, bare.y);
-        await page.mouse.down();
-        await moves(page, bare, 30, (k) => ({ x: k * 3, y: Math.sin(k / 3) * 20 }));
-        await page.mouse.up();
-        await page.waitForTimeout(400);
-      },
-      reset: async () => {
-        await page.keyboard.press('Escape');
-        await page.keyboard.press('v');
-        await settleUndo();
-      },
-    },
-    {
       gesture: 'hover',
       act: () => moves(page, { x: 300, y: 300 }, 40, (k) => ({ x: k * 20, y: (k % 8) * 30 })),
     },
@@ -479,7 +455,7 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
   process.stdout.write(`[canvas-perf] ${speed}\n`);
   const owner = await mintGuest(page.request);
   const measurements: Measurement[] = [];
-  for (const tab of ['whiteboard', 'diagram'] as const) {
+  for (const tab of ['plan'] as const) {
     const id = await seed(page, baseURL!, owner, tab);
     // Opened REPEATS times, each in a fresh context; the gestures run on the last.
     const opens: Measurement[] = [];
