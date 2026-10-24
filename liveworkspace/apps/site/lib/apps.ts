@@ -19,6 +19,8 @@ export type AppCopy = {
   deep: string;
   // A line naming what the app is for, the heading of its section on the page.
   tagline: string;
+  // The card's button, a verb for the work the app is for ("Start Planning").
+  action: string;
 };
 
 export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
@@ -29,6 +31,7 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'diagram',
     deep: '#0369a1',
     tagline: 'Think it through, together.',
+    action: 'Start Diagramming',
   },
   'liveplanner.app': {
     summary:
@@ -37,6 +40,7 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'board',
     deep: '#6d28d9',
     tagline: 'Turn it into a plan.',
+    action: 'Start Planning',
   },
   'livedocuments.app': {
     summary:
@@ -45,6 +49,7 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'document',
     deep: '#b45309',
     tagline: 'Write it up, beautifully.',
+    action: 'Start Writing',
   },
   'livedesign.app': {
     summary:
@@ -53,6 +58,7 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'design',
     deep: '#be123c',
     tagline: 'Make it look right.',
+    action: 'Start Designing',
   },
 };
 

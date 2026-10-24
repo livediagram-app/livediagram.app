@@ -45,9 +45,7 @@ shareable as it is, and the device's own setting applies through System.
   is followed, so the link can't send anyone elsewhere.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
-  (`components/AccountControl.tsx`): the name again, **Teams** (the Explorer's Invites,
-  `/explorer/invites`, where teams are made and answered; they are run in the Explorer,
-  [one-explorer.md](one-explorer.md#teams-are-run-in-the-explorer)), **API tokens** and **Settings** (the
+  (`components/AccountControl.tsx`): the name again over "Your account", **API tokens** and **Settings** (the
   [Your account](#your-account-account) pages), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.
@@ -82,7 +80,7 @@ moves between them, and the one account that joins them.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
-   and a photo being cropped), and **Open <app>** in its deep accent. Below `lg` the window sits between the summary and the three things it does.
+   and a photo being cropped), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**, **Start Designing**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
@@ -97,7 +95,7 @@ moves between them, and the one account that joins them.
    terminal); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Product Comparison, which points at each app's
+5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, and the telemetry dashboard) and Legal (the
    privacy policy and terms).
 
@@ -112,12 +110,12 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only one app has (livediagram's Google Drive mirror, its Offline Mode) says which. Both share `components/LegalPage.tsx`, and their date and contact
 form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
-### Product Comparison (`/compare`)
+### Comparison (`/compare`)
 
 Each app compares itself with the tools it answers on its own site, at `/alternatives` and
 `/alternatives/<slug>` ([@liveworkspace/comparisons](../../packages/comparisons/README.md)). This page
 only points at them: a card per app (its logo, its pitch and **See how <app> compares**, in its deep
-accent), linked from the footer as **Product Comparison**. It has no data of its own, so a comparison
+accent), linked from the footer as **Comparison**. It has no data of its own, so a comparison
 added in an app needs nothing here.
 
 The comparisons lived here for a while, so every old address redirects permanently from
@@ -147,8 +145,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   to its items, with **All Apps** one click away. The switch reads the app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its
   accent, and liveworkspace's own for All Apps (the apps' Explorer panels do the same). Someone who came straight here sees every app's items in
   liveworkspace's own colours.
-- **The header.** The liveworkspace logo (with the site switcher), a hairline, then the app's logo, which leads
-  back to the app. The search field sits in the middle (on Home the hero holds it), the account control on
+- **The header.** The liveworkspace logo (with the site switcher), a slanted hairline with equal space either
+  side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
+  logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
 - **Links.** Each item opens in its own app, at the address the sites registry (`APP_ITEMS`) gives: its base
   URL, item path and share path. **New** goes to the app's new-item route, with the folder or team it was made
@@ -337,7 +336,7 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   account pages also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
-- The front door, Product Comparison and the dashboard are indexable: title, description, canonical,
+- The front door, Comparison and the dashboard are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`.
 
 ## Hosting
