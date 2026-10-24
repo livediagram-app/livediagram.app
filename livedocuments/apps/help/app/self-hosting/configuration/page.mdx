@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Configuration and Optional Auth" description="The environment variables that shape a self-hosted instance, and how sign-in degrades gracefully to pure-guest mode." categoryTitle="Self-Hosting" categorySlug="self-hosting" subArticles={getSubArticles("configuration")}>
 
-A self-hosted livedocuments is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livedocuments.app's own settings (the database and KV ids, the MCP issuer and consent URL, and the guest-signing date), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
+A self-hosted livedocuments is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livedocuments.app's own settings (the KV id, the MCP issuer and consent URL, and the guest-signing date), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
 
 ## How configuration is supplied
 
@@ -36,13 +36,13 @@ Sign-in is optional. It goes through a liveworkspace accounts Worker, and the ap
 2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
 3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: nobody can finish signing in, and the API treats everyone as a guest.
 
-With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's documents when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
+Guests are liveworkspace guest tokens, issued by the same accounts Worker, so there is no separate guest secret to set. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
 
 Guest-only is what lets a self-hoster run with zero outbound runtime traffic beyond their own hosting if they want to.
 
 ## Guest-only fallback
 
-The API identifies the owner of a request in one of two equivalent ways: a verified sign-in token, or a per-browser guest id sent as a header. When sign-in is not configured, every request simply uses the guest path, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
+The API identifies a person by a verified liveworkspace token: an account's, or a guest's from the same accounts Worker. When sign-in is not configured, no token verifies and every request is answered as a link visitor's. The editor stays fully usable: documents are kept in this browser, and shared documents open, with real-time collaboration, through their links.
 
 <Figure caption="Whether sign-in is configured or not, requests resolve to a working editor.">
   <GuestFallback />

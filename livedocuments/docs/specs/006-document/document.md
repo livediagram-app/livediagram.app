@@ -47,7 +47,7 @@ The container was called a diagram until the domain language settled on document
 that named it moved in one change:
 
 - **Code:** identifiers, files and packages (`@livedocuments/document`, `apps/editor/app/document/[id]`).
-- **Database:** the baseline migration and the document's own schema name the tables and columns `documents`,
+- **Storage:** the document's own schema (`document-room/document-schema.ts`) and the index name the tables and columns `documents`,
   `document`, `document_tabs` and `document_id`, and the timeline's source, scope and event types say document. The tab kind
   `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
 - **Realtime and storage:** the Durable Object class is `DocumentRoom` (binding `DOCUMENT_ROOM`), a SQLite-backed

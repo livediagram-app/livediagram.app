@@ -66,7 +66,7 @@ drifting apart unnoticed.
 The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available —
-staging frontend, production database — so `apps/router/wrangler.toml` keeps its staging
+staging frontend, production data — so `apps/router/wrangler.toml` keeps its staging
 bindings adjacent to the production ones for eyeball comparison, and the dry-run in CI
 prints the resolved binding table.
 
@@ -260,7 +260,7 @@ nothing.)
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
-  Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
+  Per-PR previews would need a worker per PR, separate storage per PR and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's document.

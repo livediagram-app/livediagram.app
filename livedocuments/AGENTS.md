@@ -197,7 +197,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the Pages editor app, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help)
-  api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
+  api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, no D1, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedocuments.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the livedocuments command line for agents and scripts (Node, one esbuild bundle)
@@ -217,7 +217,6 @@ packages/
   diagram-lint/   # checks how a tab is laid out (overlaps, crossings, arrows behind boxes), with a fix each
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
-  source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
   oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
@@ -250,7 +249,7 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
-- Server-only secrets (the accounts client secret, Resend, D1 access) never appear in client code.
+- Server-only secrets (the accounts client secret, Resend, `INDEX_KEY`, `MEDIA_KEY`) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 
 ## Auth model
@@ -263,7 +262,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
   - **Account**: an account access token from signing in, or from signing in without a click (`/api/auth/silent`) when the browser already has a liveworkspace session.
   - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
 - **Access is the index's.** Where a document is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
-- **Content is the document's.** Each document's tabs, comments, image references and grants live in its own Durable Object's SQLite (`DocumentRoom`), which pushes its summary, Inbox rows and edits to the index and its images to the media service. D1 keeps only API tokens and workbench pairings until the shared workbench Durable Object replaces them.
+- **Content is the document's.** Each document's tabs, comments, image references and grants live in its own Durable Object's SQLite (`DocumentRoom`), which pushes its summary, Inbox rows and edits to the index and its images to the media service. Each person's workbench (pairings, tickets, sessions) is a Durable Object of its own (`WorkbenchStore`); API tokens and teams are liveworkspace accounts'. The api has no D1 database.
 - Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). Signing in moves a guest's items to the account; the index does that, not livedocuments.
 
 ## Core principle: reuse over duplication
@@ -300,7 +299,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 - **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
-- Database access goes through a Worker that holds the D1 binding — never from the browser.
+- Stored data is reached only through a Worker (the api's Durable Objects, liveworkspace's index and accounts) — never from the browser.
 
 ## Tech stack
 
@@ -320,7 +319,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
-- D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
+- The api has no D1 and no migrations: each Durable Object makes its own SQLite schema on first use (`document-room/document-schema.ts`), beside the class that owns it.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
 - **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
 - A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.

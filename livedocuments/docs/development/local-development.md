@@ -52,7 +52,7 @@ NEXT_PUBLIC_API_BASE=http://localhost:8987/api
 ```
 
 A remote api works too, and there are now two of them: `https://staging.livedocuments.app/api`
-reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
+reaches [staging](../specs/016-platform/staging-environment.md), which has its own storage and its own index and is
 the one to reach for; the production api reads and writes real people's documents.
 
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`. Its dashboard is liveworkspace.app's site (`pnpm dev:site` from the monorepo root, `http://localhost:3000/telemetry?app=livedocuments.app`).

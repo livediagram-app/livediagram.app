@@ -27,7 +27,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 - **Marketing** at `/` is the pitch and feature tour.
 - **Editor** is where pages are made and presented, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)).
-- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
+- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document; each document's content in its own Durable Object, no D1).
 - **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to livedocuments (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **MCP** at `mcp.livedocuments.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
