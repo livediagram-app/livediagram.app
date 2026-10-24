@@ -13,10 +13,7 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
-import {
-  LINT_VIEW_NAME,
-  TAB_VIEW_NAMES,
-} from '@livedocuments/api-schema';
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livedocuments/api-schema';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedocuments/document-views';
 import type { BodySchema } from './types';

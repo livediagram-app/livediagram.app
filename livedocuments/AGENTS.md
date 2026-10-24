@@ -237,7 +237,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 - The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
 - A free hosted version runs alongside at livedocuments.app. **No paid tier and no plan to introduce one.**
-- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Sign-in (the liveworkspace accounts Worker) is optional: when unset the api worker and live frontend degrade to pure-guest mode.
+- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). The accounts Worker is optional: with its settings unset the api worker degrades to pure-guest mode, and the editor (which always offers sign-in) keeps working.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
