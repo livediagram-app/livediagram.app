@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3201",
-    "build": "node ../../packages/licences/scripts/generate.ts --out . && next build && node ../../packages/licences/scripts/verify.ts .",
+    "build": "node ../../packages/licences/scripts/generate.ts --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../packages/licences/scripts/generate.ts --out .",
     "lint": "oxlint",
     "test": "vitest run",
@@ -21,6 +21,7 @@
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/comparisons": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/licences": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

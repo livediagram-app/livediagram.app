@@ -1,6 +1,4 @@
-import type { AppId, Side } from './contract.ts';
-
-export type LicenceApp = { id: AppId; label: string; side: Side; bundler: 'next' | 'worker' };
+import type { LicenceApp } from '@liveworkspace/licences/tables';
 
 // Every deployed app, in the order the page lists them. apps.test.ts fails when
 // a directory in apps/ is missing here.

@@ -1,19 +1,8 @@
-import type { TextRef } from './texts.ts';
+import type { EmbeddedWork } from '@liveworkspace/licences/tables';
+import type { TextRef } from '@liveworkspace/licences/texts';
 
-// Material a bundler cannot see into: libraries compiled into an emitted
-// WebAssembly binary or font, and third-party geometry vendored into our own
-// source (docs/specs/002-project-scope/third-party-licences.md "What counts as
-// shipped"). Every emitted binary asset must match at least one entry.
-export type EmbeddedWork = {
-  id: string;
-  name: string;
-  version: string;
-  licence: string;
-  carrier: string;
-  homepage: string;
-  trigger: { assets: RegExp } | { sources: string[] };
-  texts: TextRef[];
-};
+// The works this product's bundlers cannot see into (docs/specs/002-project-scope/third-party-licences.md
+// "What counts as shipped"). Every emitted binary asset must match at least one entry.
 
 const WEBP_WASM = /^webp_(enc|dec)(_simd)?\.[\w-]+\.wasm$/;
 

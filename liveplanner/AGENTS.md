@@ -218,10 +218,10 @@ packages/
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
-  licences/     # build-time generator of the /licences page from what each app bundles
+  licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ # this product's brand ramps (violet) over @liveworkspace/tailwind-config's theme
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, tailwind-config, icons, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

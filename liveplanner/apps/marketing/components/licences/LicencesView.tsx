@@ -1,4 +1,4 @@
-import type { LicencesManifest, LicencesSection, WorkEntry } from '@liveplanner/licences';
+import type { LicencesManifest, LicencesSection, WorkEntry } from '@liveworkspace/licences';
 
 import { LicenceTexts } from './LicenceTexts';
 

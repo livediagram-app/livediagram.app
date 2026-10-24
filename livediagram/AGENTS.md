@@ -216,10 +216,10 @@ packages/
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
-  licences/     # build-time generator of the /licences page from what each app bundles
+  licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   fake-google/  # in-memory Google Drive + OAuth, for tests only
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, help-registry, tailwind-config, icons, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

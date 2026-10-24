@@ -88,7 +88,7 @@ SOFTWARE.
 - Used for: draw.io's view geometry (edge routers, perimeters, label points), ported to TypeScript
   and changed in `apps/editor/lib/drawio/route/`, so imported draw.io diagrams keep their routes.
 - Licence: Apache License 2.0, full text in
-  [`packages/licences/texts/drawio-31.7.0-LICENSE.txt`](./packages/licences/texts/drawio-31.7.0-LICENSE.txt).
+  [`../packages/licences/texts/drawio-31.7.0-LICENSE.txt`](../packages/licences/texts/drawio-31.7.0-LICENSE.txt).
 
 ```text
 Copyright (c) 2006-2015, JGraph Holdings Ltd

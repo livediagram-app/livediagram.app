@@ -1060,7 +1060,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
   Shapes.js; Apache-2.0). Each file opens with draw.io's copyright and a change notice, and each
   ported function names its source; the licences package lists it as an embedded work
   (`drawio-mxgraph`, triggered by each ported file under `apps/editor/lib/drawio/route/`) with
-  draw.io's `LICENSE` committed as `packages/licences/texts/drawio-31.7.0-LICENSE.txt`, and
+  draw.io's `LICENSE` committed as `../packages/licences/texts/drawio-31.7.0-LICENSE.txt`, and
   `THIRD_PARTY_NOTICES.md` names it.
 - `lib/drawio/__fixtures__/routes.drawio` (hand-written, MIT) holds the route cases (trunks,
   floating ends, waypoints and routers, curves, edges on edges); `__fixtures__/routes/*.json` are

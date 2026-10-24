@@ -1,10 +1,7 @@
-import type { TextRef } from './texts.ts';
+import type { Override } from '@liveworkspace/licences/tables';
 
-// Texts for exact package versions that ship no licence file
-// (docs/specs/002-project-scope/third-party-licences.md "Licence texts"). Keyed
-// to the version, so an upgrade fails the build until someone reviews it again.
-export type Override = { package: string; version: string; licence?: string; texts: TextRef[] };
-
+// Texts for exact package versions this product ships that carry no licence file
+// (docs/specs/002-project-scope/third-party-licences.md "Licence texts"), keyed to the version.
 export const OVERRIDES: readonly Override[] = [
   {
     package: '@resvg/resvg-wasm',
