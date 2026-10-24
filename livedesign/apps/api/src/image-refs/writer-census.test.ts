@@ -26,6 +26,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   'api/src/design-room/design-content.ts': 1,
   // anonymiseDesign: rewrites a closed account's name in comments, never an image.
   'api/src/design-room/design-anonymise.ts': 1,
+  // A shared tab's copies (docs/specs/006-design/tab-design-many-to-many.md): @liveworkspace/index-app takes one in
+  // through tabWriteStatements (the app's insertTab), and a later body from another holder replaces the data in the
+  // same batch as this file's bodyTaken, which stamps the element count and replaces its references.
+  'api/src/design-room/tab-shares.ts': 1,
   // The test SQLite's purge of a design (a Durable Object's deleteAll in production).
   'api/src/test-sqlite-d1.ts': 1,
 };
@@ -57,5 +61,4 @@ describe('writers of tabs', () => {
     }
     expect(found).toEqual(KNOWN_WRITERS);
   });
-
 });

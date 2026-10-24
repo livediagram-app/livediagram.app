@@ -1,6 +1,7 @@
 // tabs — one row per tab in the design's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the design by
 // `design_tabs`. Runs only inside the design's Durable Object, on `env.DESIGN_DB` (design-room/design-db.ts).
 
+import { shareLeaveStatements } from '@liveworkspace/index-app';
 import { capElementActions, drawnCount, type Tab } from '@livedesign/design';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -342,6 +343,9 @@ export async function deleteTabRow(
     // the media service the design no longer shows its images (design-room/design-outbox.ts).
     imageRefPruneTabStatement(env, tabId),
     env.DESIGN_DB.prepare('DELETE FROM photo_blob_refs WHERE tab_id = ?').bind(tabId),
+    // A shared tab (design-room/tab-shares.ts): every other holder hears that this design left, and nothing else it
+    // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
+    ...shareLeaveStatements(env.DESIGN_DB, tabId),
     env.DESIGN_DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
   ]);
   const row = (unlinked as { results?: { data?: string | null }[] } | undefined)?.results?.[0];

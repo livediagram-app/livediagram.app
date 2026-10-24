@@ -149,13 +149,13 @@ could have opened it (its owner, a joined team member, a share-link holder).
 Anyone else gets the same not-found they would for an id that never existed,
 so the state leaks nothing.
 
-## Tabs copied into other designs
+## Tabs shared with other designs
 
-A tab belongs to one design: **Add to Design** copies it
-([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)), so a
-copy in another design is its own tab and carries on there whatever happens to
-this one. Trashing a design does not touch its tabs; purging it removes them
-with the rest of its content.
+A tab put into another design with **Add to Design** is in both
+([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)): each
+design keeps its own copy, and the copies stay in step. Trashing a design does
+not touch its tabs, which stay in step while it waits in the Trash; purging it
+removes its copies and tells the other designs it left, so theirs carry on.
 
 ## The purge
 

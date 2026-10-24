@@ -10,6 +10,8 @@
 // Made on first use, never on construction (design-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_design_schema`; a later change adds a step to STEPS, never edits one.
 
+import { tabSharesSchema } from '@liveworkspace/index-app';
+
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
 // follow-up for tabs over 2 MB; until then the cap refuses them, as it did on D1.
@@ -140,6 +142,9 @@ CREATE TABLE IF NOT EXISTS photo_blob_refs (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS photo_blob_refs_blob ON photo_blob_refs (blob_id);
 
+-- A tab shared with other designs (docs/specs/006-design/tab-design-many-to-many.md): tab_shares lists the OTHER
+-- designs holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
+${tabSharesSchema()}
 -- What the design owes the index (design-outbox.ts): a key per thing whose derived rows changed, filled by the
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox)

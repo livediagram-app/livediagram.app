@@ -5,27 +5,27 @@ import { AddToDesignMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another Design',
   description:
-    'Copy the active tab into another design you own, straight from the tab menu. The copy is its own tab: edits in one design stay in that design.',
+    'Add the active tab to another design you own, straight from the tab menu. Both designs share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-design/',
 });
 
 <ArticleLayout
   title="Add a Tab to Another Design"
-  description="Reuse a tab elsewhere: copy the active tab into another of your designs, then change each one as you like."
+  description="Reuse a tab elsewhere: add the active tab to another of your designs, and edits made in either place appear in both."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one design belongs in another too: a glossary, a shared timeline, a set of slides two projects both rely on. **Add to Design** copies the active tab into another design you own, without leaving the editor.
+Sometimes a tab you built in one design belongs in another too: a glossary, a shared timeline, a set of slides two projects both rely on. **Add to Design** adds the active tab to another design you own, without leaving the editor.
 
 ## Adding a tab to another design
 
 <Step n={1}>Open the tab's menu (the **⋯** button on the active tab, or right-click the tab).</Step>
 <Step n={2}>Choose **Add to Design**.</Step>
 <Step n={3}>
-  In the **Add to Design** dialog, pick the destination. Each design shows as a tile with a
-  preview of its canvas, and the filter box at the top narrows a long list. A message confirms when
-  the tab has been added.
+  In the **Add to Design** dialog, pick the destination. Each design shows as a tile with a preview
+  of its canvas, and the filter box at the top narrows a long list. A message confirms when the tab
+  has been added.
 </Step>
 
 The option is greyed out when there is nowhere to add the tab to: if this is your only design, until you create another, and in a [design in This Browser](/help/privacy-and-security/offline-mode/). It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/).
@@ -34,12 +34,17 @@ The option is greyed out when there is nowhere to add the tab to: if this is you
   <AddToDesignMenu />
 </Figure>
 
-## A copy, not a shared tab
+## One tab, shared between designs
 
-Add to Design puts a copy of the tab in the other design, as it is at that moment. From then on the two tabs are separate: edit, rename or delete either one and the other stays as it was. In the other design the copy sits outside any [tab folder](/help/tabs/tab-folders/).
+Add to Design doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either design and the change lands in the other as well, a few seconds after you stop editing. If the other design is already open in another window, reload it to see the latest edits. If the tab is edited in both designs at once, the later edit is the one both keep. A tab can be in up to 20 designs at once.
+
+Two things stay per-design, so each design can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
+
+Removing the tab from one design doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last design containing it. Deleting a whole design works the same way: while it waits in the Trash its shared tabs stay in step, and once it is deleted for good they stay, with their contents, in every other design they are in. Taking a design offline tells you first how many of its tabs are shared: they stay in the other designs, and the copies in this browser stop sharing edits with them.
 
 <Tip>
-  Want a second copy in the same design instead? Use **Duplicate** in the same menu.
+  Prefer an independent copy you can tailor per project? Use **Duplicate** in the same menu first,
+  then add the duplicate to the other design.
 </Tip>
 
 </ArticleLayout>

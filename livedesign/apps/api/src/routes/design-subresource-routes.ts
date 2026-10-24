@@ -14,6 +14,7 @@ import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
+import { handleTabLink } from './tab-link-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -149,9 +150,9 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
   const rendered = await handleTabRender(ctx);
   if (rendered) return rendered;
 
-  // /api/designs/<id>/tabs/<tabId>/link — owner only.
-  // A tab belongs to exactly one design (its Durable Object holds it), so there is no linking an existing tab into
-  // another design any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
+  // /api/designs/<id>/tabs/<tabId>/link — share a tab from another of the caller's designs into this one.
+  const linked = await handleTabLink(ctx);
+  if (linked) return linked;
 
   return null;
 }

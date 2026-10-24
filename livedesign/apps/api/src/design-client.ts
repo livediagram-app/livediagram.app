@@ -9,6 +9,7 @@ import type { PhotoBlobMeta } from './db/photo-blobs';
 import type { DesignCopy, DesignOutline } from './design-room/design-content';
 import type { RouteIdentity } from './design-room/design-route';
 import type { ThumbnailSubject } from './thumbnail';
+import type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
 import type { Env } from './types';
 
 export type DesignRoomClient = {
@@ -39,6 +40,11 @@ export type DesignRoomClient = {
   joined(personId: string): Promise<void>;
   // A closed account's name off the design (design-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
+  // A tab shared between designs (design-room/tab-shares.ts): the tab and its holders for one joining, the join
+  // recorded, and what another holder (`from`) sends.
+  sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
+  receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
 };
 
 export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): DesignRoomClient {
@@ -59,6 +65,9 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     revokeCodes: (codes, reason) => room.revokeCodes(designId, codes, reason),
     joined: (personId) => room.joined(designId, personId),
     anonymise: (personId) => room.anonymise(designId, personId),
+    sharedTabCopy: (tabId) => room.sharedTabCopy(designId, tabId),
+    shareJoined: (tabId, member, seen) => room.shareJoined(designId, tabId, member, seen),
+    receiveShares: (from, messages) => room.receiveShares(designId, from, messages),
   };
 }
 
@@ -80,5 +89,13 @@ export type DesignRoomRpc = {
   revokeCodes(designId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   joined(designId: string, personId: string): Promise<void>;
   anonymise(designId: string, personId: string): Promise<number>;
+  sharedTabCopy(designId: string, tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(
+    designId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean>;
+  receiveShares(designId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
   fetch(request: Request): Promise<Response>;
 };

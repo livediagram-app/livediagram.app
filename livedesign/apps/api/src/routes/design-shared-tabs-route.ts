@@ -3,23 +3,26 @@
 // notice"): how many of the design's tabs are also in other designs, and how
 // many designs, so the user hears that those tabs stay before they act.
 //
-// A tab is held by exactly one design now (each design's content is its own Durable Object, docs/specs/015-api/api.md
-// "Storage"), so the answer is always none; the route stays for the editors that still ask.
+// Runs in the design's room: its `tab_shares` list the other designs each shared tab is in
+// (design-room/tab-shares.ts).
 
-import type { SharedTabsSummary } from '@livedesign/api-schema';
+import { mayLinkTabs } from '@liveworkspace/index-app';
+import { sharedTabsSummary } from '../design-room/tab-shares';
 import { forbidden, json } from '../responses';
-import { gateEdit, requireOwner, type RouteContext } from './context';
+import { grantOn, requireOwner, type DesignRouteContext } from './context';
 
 // Returns null when the request isn't this route.
-export async function handleDesignSharedTabs(ctx: RouteContext): Promise<Response | null> {
-  const { request, segments } = ctx;
+export async function handleDesignSharedTabs(ctx: DesignRouteContext): Promise<Response | null> {
+  const { request, env, segments } = ctx;
   if (segments.length !== 4 || segments[3] !== 'shared-tabs' || request.method !== 'GET') {
     return null;
   }
-  // Answered for whoever may edit the design: 400 with no caller, 403 without the grant.
+  // Answered for exactly who may delete the design or take it offline: 400 with no caller, 403 without an edit grant
+  // of their own (not a share link's, not one tab's).
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  if (!(await gateEdit(ctx, segments[2]!))) return forbidden();
-  const sharedTabs: SharedTabsSummary = { tabs: 0, designs: 0 };
-  return json({ sharedTabs });
+  const grant = grantOn(ctx, segments[2]!);
+  if (!mayLinkTabs(grant && { level: grant.role, tab: grant.tabScope, shareCode: grant.shareCode }))
+    return forbidden();
+  return json({ sharedTabs: await sharedTabsSummary(env, segments[2]!) });
 }

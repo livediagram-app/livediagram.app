@@ -9,6 +9,8 @@ import {
   renewRoomGrant,
   roomGrantStep,
   recordItemEditor,
+  owesShares,
+  ShareSchedule,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -72,6 +74,13 @@ import {
 } from '../db/photo-blobs';
 import { forgetDesignMediaRefs } from '../media';
 import { renderDesignImage, type ThumbnailSubject } from '../thumbnail';
+import {
+  designShares,
+  type ShareAnswer,
+  type ShareMessage,
+  type SharedTabCopy,
+} from './tab-shares';
+import { designRoom } from '../design-client';
 import { hasDesignSchema, migrateDesignSchema } from './design-schema';
 import {
   exportDesignCopy,
@@ -227,6 +236,11 @@ export class DesignRoom extends DurableObject<Env> {
   private designRowReady = false;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
   private flushAt: number | null = null;
+  // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
+  // minute, since it is a call to another design rather than a push.
+  private readonly shares = new ShareSchedule(
+    () => this.schemaReady && owesShares(this.state.storage.sql),
+  );
   private lastFlushAt = 0;
   private draining = false;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
@@ -347,6 +361,7 @@ export class DesignRoom extends DurableObject<Env> {
     const row = sql.exec('SELECT id FROM design LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.designId === null) this.designId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
+    this.shares.restore();
   }
 
   // Every call names its design; an object answers for one design only.
@@ -384,6 +399,8 @@ export class DesignRoom extends DurableObject<Env> {
       void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
       this.armAlarm();
     }
+    // A shared tab's holders get their copy on idle (tab-shares.ts).
+    if (this.shares.noteWrite()) this.armAlarm();
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
@@ -392,7 +409,35 @@ export class DesignRoom extends DurableObject<Env> {
   }
 
   // Push what the outbox holds to the index and the media service now. A failure keeps it and retries later.
+  // Push what the outbox holds now, and send what the shared tabs' holders are owed. A failure keeps it and retries
+  // later.
   async drain(): Promise<void> {
+    await this.drainIndex();
+    await this.drainShares();
+  }
+
+  // Send the other holders of its shared tabs what they are owed (tab-shares.ts). A failure keeps it for later.
+  private async drainShares(): Promise<void> {
+    const env = this.roomEnv;
+    const designId = this.designId;
+    if (!env || !designId || !this.schemaReady) {
+      this.shares.clear();
+      return;
+    }
+    this.draining = true;
+    try {
+      const done = await this.shares.send(() =>
+        designShares.drain(env, designId, (to, messages) =>
+          designRoom(env, to).receiveShares(designId, messages),
+        ),
+      );
+      if (done && done.sent > 0) console.debug('[tab-shares] sent', { designId, sent: done.sent });
+    } finally {
+      this.draining = false;
+    }
+  }
+
+  private async drainIndex(): Promise<void> {
     const env = this.roomEnv;
     const designId = this.designId;
     this.flushAt = null;
@@ -588,6 +633,52 @@ export class DesignRoom extends DurableObject<Env> {
     } catch (err) {
       console.warn('[room] owner and team not taken from the grant', { error: String(err) });
     }
+  }
+
+  // ---------- RPC: a tab shared with other designs (tab-shares.ts) --------------------------------------------
+
+  // A design joining this tab's holders: the tab as held here and who holds it.
+  async sharedTabCopy(designId: string, tabId: string): Promise<SharedTabCopy | null> {
+    this.bindDesign(designId);
+    return designShares.copyOf(this.requireEnv(), designId, tabId);
+  }
+
+  // `member` now holds the tab too.
+  async shareJoined(
+    designId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean> {
+    this.bindDesign(designId);
+    return designShares.recordJoin(this.requireEnv(), designId, tabId, member, seenUpdatedAt);
+  }
+
+  // What another holder of a shared tab sent. A design with nothing stored holds no tab, and makes no schema to say
+  // so.
+  async receiveShares(
+    designId: string,
+    from: string,
+    messages: ShareMessage[],
+  ): Promise<ShareAnswer[]> {
+    const sql = this.state.storage.sql;
+    if (this.designId === null && !hasDesignSchema((q) => sql.exec(q)))
+      return messages.map(() => 'gone');
+    this.bindDesign(designId);
+    return designShares.receive(this.requireEnv(), designId, from, messages);
+  }
+
+  // A design going for good tells the other holders of its shared tabs it left, so their copies stop counting it.
+  // Best effort: a holder that misses this hears `gone` the next time it sends here, and drops it then.
+  private async leaveShares(): Promise<void> {
+    const env = this.roomEnv;
+    const designId = this.designId;
+    const sql = this.state.storage.sql;
+    if (!env || !designId || !sql || !hasDesignSchema((q) => sql.exec(q))) return;
+    this.ensureSchema();
+    await designShares.leaveAll(env, designId, (to, messages) =>
+      designRoom(env, to).receiveShares(designId, messages),
+    );
   }
 
   private requireEnv(): DesignEnv {
@@ -881,6 +972,7 @@ export class DesignRoom extends DurableObject<Env> {
     if (designId !== undefined) this.bindDesign(designId);
     this.closeSockets(() => [DESIGN_TRASHED_CLOSE, 'design-purged']);
     this.opLog = [];
+    await this.leaveShares();
     await this.ledger.settled();
     // What the design holds outside its own storage: its photo blobs' markers (and the blobs no other design
     // holds), and its images' references at the media service.
@@ -896,6 +988,7 @@ export class DesignRoom extends DurableObject<Env> {
     this.schemaReady = false;
     this.designRowReady = false;
     this.flushAt = null;
+    this.shares.clear();
     this.maintenanceAt = null;
     console.info('[room] purged');
   }
@@ -1198,6 +1291,7 @@ export class DesignRoom extends DurableObject<Env> {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
+      this.shares.at,
       this.maintenanceAt,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
@@ -1212,7 +1306,10 @@ export class DesignRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     this.checkGrants(now);
-    if (this.flushAt !== null && this.flushAt <= now) await this.drain();
+    if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
+    // A shared tab written while the push was in flight (its write armed nothing then).
+    this.shares.noteWrite();
+    if (this.shares.due(now)) await this.drainShares();
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }

@@ -185,7 +185,7 @@ export function AddTabToDesignDialog({
   return (
     <OrganiseDialogFrame
       title="Add to Design"
-      sub="Copy this tab into another design. The copy is a separate tab: edits stay in the design they’re made in."
+      sub="Link this tab into another design. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input

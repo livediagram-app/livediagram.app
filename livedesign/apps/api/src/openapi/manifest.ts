@@ -428,6 +428,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/designs/{id}/tabs/{tabId}/link',
+    segment: 'designs',
+    tag: 'Designs',
+    summary:
+      'Add to Design: share a tab another of your designs holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { from: { type: 'string' } },
+      required: ['from'],
+    },
+    responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404, 409],
+  },
+  {
+    method: 'POST',
     path: '/designs/{id}/copy',
     segment: 'designs',
     tag: 'Designs',

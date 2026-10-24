@@ -2,7 +2,7 @@
 
 > **Storage today.** The `tabs` rows described here live in each design's own SQLite, in its Durable Object
 > ([API app](../015-api/api.md) "Storage"), not in a shared D1 database; the numbered migrations below are history.
-> A tab belongs to one design ([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
+> A tab shared with other designs is a copy in each, kept in step ([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
 
 Move from the single-row `diagrams.data` JSON blob (which serialises every
 tab on every save) to a normalised `designs` + `tabs` split where each
@@ -301,19 +301,13 @@ row. An empty write over an already-empty / brand-new row, and any
 non-empty write, are unaffected. This is intentionally independent of the
 client guard — belt and suspenders against the most destructive failure.
 
-### A save never adopts another design's tab
+### A save only ever reaches its own design's tab
 
-The save upserts by tab id, so a tab id seen elsewhere (a share link) could otherwise overwrite that tab and link it
-into the caller's own design. So when this design has no tab with the
-id, and the id already names a tab not linked to this design, the save
-is **refused with 409 `tab_id_taken`**, never overwritten or adopted, and
-the worker logs `[tabs] refused a save onto another design's tab`.
-Linking an existing tab into a design has its own route
-(`POST /api/designs/:id/tabs/:tabId/link`,
-[Tab ↔ design many-to-many](tab-design-many-to-many.md)). The check
-(`tabBelongsElsewhere` in `apps/api/src/db/tabs.ts`, called from
-`apps/api/src/routes/tab-put-route.ts`) runs only when the design has no
-such tab, so the common autosave pays nothing.
+The save upserts by tab id, against the design's own store: another design's tabs are in another design's object, so a
+tab id seen elsewhere (a share link) can name only a new tab here, shared with nothing. A tab shared with other
+designs ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) is this design's own copy under the same id: the save writes that
+copy, and this design's object sends it on to the others. Putting an existing tab into another design is the `link`
+route, never a save.
 
 ## Cutover (historical)
 

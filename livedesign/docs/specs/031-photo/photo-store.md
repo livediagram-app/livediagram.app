@@ -40,12 +40,12 @@ rev? }`: the pixel size, the layer stack ([Photo layers](photo-layers.md)), the 
 
 Under a design's tab, on the api worker ([API app](../015-api/api.md)):
 
-| Method | Path                                                    | Gate | Does                                                                                                                                                                                                                                                |
-| ------ | ------------------------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                       |
-| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                               |
+| Method | Path                                                  | Gate | Does                                                                                                                                                                                                                                            |
+| ------ | ----------------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                   |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                           |
 | POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-adopt`    | edit | Body `{ fromDesign, fromTab, ids }` (at most 2000): adds this tab's refs to blobs `fromTab` holds, where the caller may read `fromTab` in `fromDesign`. For duplicating a tab, and layers pasted between tabs. Answers `{ adopted: string[] }`. |
-| GET    | `/api/designs/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                              |
+| GET    | `/api/designs/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                          |
 
 - **A blob batch** is one request body: a 4-byte big-endian length, then that many bytes of JSON
   `[{ id, type, size }]`, then the blobs' bytes back to back in that order. At most 64 blobs and 24 MB a batch; a
@@ -106,7 +106,9 @@ ids }` (the stack's order) and `{ op: 'preview', blob }`; or `{ kind: 'photo', t
 - **Copying a design** (Copy to my files, a tab-scoped copy, a Community copy, a template from a design) gives
   every copied tab refs to every blob its source tab held, in the same batch as the copy.
 - **Duplicating a tab** in the editor adopts its blobs into the new tab (`photo-blobs-adopt`) before the new tab's first save.
-- **A tab linked into another design** is the same tab: its refs serve both.
+- **A tab shared with another design** ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)) is a copy
+  in each: a body sent to the other designs carries the blobs it names that the sender's tab holds, and each design
+  taking it in records refs to them (its marker first), so the bytes stay while any design's tab names them.
 - **Layers pasted** from one tab's photo into another's adopt their blobs into the target tab first.
 
 ## Offline Mode designs
