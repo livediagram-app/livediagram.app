@@ -1,7 +1,12 @@
-// "Import from" sources' buttons on liveworkspace.app's Explorer, as livediagram's editor draws them (its
-// components/dialogs/import-source-icons.tsx): original glyphs, not the vendors' logos; nothing here ships a vendor
-// trademark mark.
+// "Import from" sources' icons (livediagram/docs/specs/013-workspace/folders.md "Import from"), for the Explorer's
+// Import From buttons and livediagram's /import page: art, painted, like livediagram's export format icons. Original
+// glyphs only: the repo ships no vendor trademark marks.
 
+/**
+ * Microsoft Whiteboard's button: an original glyph (a whiteboard with a drawn stroke on a blue
+ * tile), not Microsoft's logo; the repo ships no vendor trademark marks
+ * (livediagram/docs/specs/004-interface-design/iconography.md).
+ */
 export function MsWhiteboardSourceIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden focusable="false">
@@ -29,6 +34,11 @@ export function MsWhiteboardSourceIcon() {
   );
 }
 
+/**
+ * Excalidraw's button: an original glyph (a hand-drawn box and a pencil on a violet tile), not
+ * Excalidraw's logo; the repo ships no vendor trademark marks
+ * (livediagram/docs/specs/004-interface-design/iconography.md).
+ */
 export function ExcalidrawSourceIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden focusable="false">
@@ -51,6 +61,11 @@ export function ExcalidrawSourceIcon() {
   );
 }
 
+/**
+ * draw.io's button: an original glyph (a box joined by an elbow connector to a decision diamond on
+ * a deep orange tile), not draw.io's logo; the repo ships no vendor trademark marks
+ * (livediagram/docs/specs/004-interface-design/iconography.md).
+ */
 export function DrawioSourceIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden focusable="false">

@@ -642,7 +642,7 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
 - `DrawioImportDialog`: title "Import from draw.io", subtitle "Each diagram becomes its own document,
   named and dated after the file.", its help link the `drawioImport` article
   (`explorer/drawio-import`, Explorer category).
-- `DrawioSourceIcon` (`import-source-icons.tsx`): an original glyph, a box joined by an elbow
+- `DrawioSourceIcon` (`packages/explorer/src/library/import-source-icons.tsx`, repo root): an original glyph, a box joined by an elbow
   connector to a decision diamond, white on `#c2410c` (5.2:1).
 
 ## Interfaces and contracts

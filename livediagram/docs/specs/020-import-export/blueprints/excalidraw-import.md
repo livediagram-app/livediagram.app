@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/editor/hooks/persistence/useExcalidrawImportLauncher.tsx`                          | Opens the dialog (loaded on first open)                                            |
 | `apps/editor/components/dialogs/ExcalidrawImportPanel.tsx`, `ExcalidrawImportDialog.tsx` | Pick, progress, report; the dialog host                                            |
 | `apps/editor/app/import/import-sources.tsx`, `useImportDialogs.tsx`                      | The Excalidraw row of "Import from" and its wiring                                 |
-| `apps/editor/components/dialogs/import-source-icons.tsx`                                 | `ExcalidrawSourceIcon`                                                             |
+| `packages/explorer/src/library/import-source-icons.tsx` (repo root)                      | `ExcalidrawSourceIcon`                                                             |
 | `apps/editor/scripts/excalidraw-verify.mts`                                              | Real copies through parser and landing, aggregates only (local)                    |
 | `apps/editor/lib/excalidraw-embedded.ts`                                                 | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
 | `apps/editor/hooks/canvas/useClipboard.ts`                                               | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
@@ -257,7 +257,7 @@ zoom)`, `onDropFile(file, at)`.
 - `IMPORT_SOURCES` (`app/import/import-sources.tsx`) gains `{ id: 'excalidraw', name: 'Excalidraw',
 icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useExplorerImport` maps it to
   `useExcalidrawImportLauncher(importScenes).openExcalidrawImport` and renders its dialog.
-- `ExcalidrawSourceIcon` (`components/dialogs/import-source-icons.tsx`): 20 px, an original glyph
+- `ExcalidrawSourceIcon` (`packages/explorer/src/library/import-source-icons.tsx` (repo root)): 20 px, an original glyph
   (a hand-drawn box and a pencil, white on a `#6965db` tile); `aria-hidden`.
 - `useExcalidrawFileImport({ importScenes, onDone })`: steps `pick { error? }` → `reading` →
   `importing { board, boards, images? }` → `onDone(outcome)`. `open(files)`: no files → stay;

@@ -5,7 +5,7 @@ import {
   DrawioSourceIcon,
   ExcalidrawSourceIcon,
   MsWhiteboardSourceIcon,
-} from '@/components/dialogs/import-source-icons';
+} from '@liveworkspace/explorer/imports';
 
 export type ImportSourceId = 'microsoft-whiteboard' | 'excalidraw' | 'drawio';
 
