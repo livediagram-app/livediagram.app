@@ -25,7 +25,6 @@ packages/
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   diagram-lint/ checks how a tab is drawn: overlaps, crossings, arrows behind boxes, with a fix each
-  render-png/     SVG to PNG with resvg (wasm) and Inter, for the MCP server's previews, the api's share cards and the CLI's renders
   sticky-vision/  finds sticky notes in a photo of a wall (classical CV, no DOM)
   sticky-model/   the learned boundary model's pure parts (cues, decode) + its training scripts
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)

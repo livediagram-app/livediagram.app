@@ -215,7 +215,6 @@ packages/
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
-  render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine), sending to liveworkspace's telemetry service

@@ -25,7 +25,7 @@
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/plan-art": "workspace:*",
-    "@liveplanner/render-png": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",

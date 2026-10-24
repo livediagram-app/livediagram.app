@@ -47,7 +47,7 @@ gave nobody a reason to tell them apart or click.
   Community link, each stamped with the time it was drawn and redrawn when the document has been saved since. A
   tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a document
   deletes both objects with its snapshots.
-- **Drawn by the shared resvg renderer** (`@livediagram/render-png/worker`, the MCP server's), with Inter as the
+- **Drawn by the shared resvg renderer** (`@liveworkspace/render-png/worker`, the MCP server's), with Inter as the
   one font, so a card's text matches the MCP previews.
 - **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`; a Community link's
   `public, max-age=30`, so a hidden post's card cannot linger.

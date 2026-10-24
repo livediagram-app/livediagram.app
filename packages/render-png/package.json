@@ -1,5 +1,5 @@
 {
-  "name": "@livedocuments/render-png",
+  "name": "@liveworkspace/render-png",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -23,8 +23,8 @@
     "@resvg/resvg-wasm": "^2.6.2"
   },
   "devDependencies": {
-    "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/vitest-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
+    "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

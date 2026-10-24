@@ -25,7 +25,6 @@ packages/
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   diagram-lint/   checks how a tab is laid out: overlaps, crossings, arrows behind boxes, with a fix each
-  render-png/     SVG to PNG with resvg (wasm) and Inter, for the MCP server's previews, the api's share cards and the CLI's renders
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   licences/       build-time generator of the /licences page from what each app bundles
   source-ast/     parses the repo's own TypeScript with TypeScript 7, for the static guards that read code

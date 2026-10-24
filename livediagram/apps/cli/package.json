@@ -22,7 +22,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/icons": "workspace:*",
-    "@livediagram/render-png": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "smol-toml": "^1.9.1",
     "zod": "^4.6.7"
   },

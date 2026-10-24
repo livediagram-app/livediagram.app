@@ -7,7 +7,7 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8987
 
-# Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
+# Bundle the share card's fonts (packages/render-png/fonts at the repo root, Inter Regular and Bold) as raw bytes for the resvg PNG
 # renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
 # draws shapes but no text. Inheritable, so staging takes it too.
 [[rules]]

@@ -28,7 +28,6 @@ packages/
   sheets/         the Sheet engine: A1 addressing, formulas and functions, recalculation, writes, CSV, clipboard (pure)
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   project-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
-  render-png/     SVG to PNG with resvg (wasm) and Inter, for the MCP server's previews, the api's share cards and the CLI's renders
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   licences/       build-time generator of the /licences page from what each app bundles
   source-ast/     parses the repo's own TypeScript with TypeScript 7, for the static guards that read code

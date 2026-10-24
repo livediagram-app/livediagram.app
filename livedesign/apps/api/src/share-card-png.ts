@@ -8,7 +8,7 @@ import { SHARE_CARD_WIDTH, shareCardSvg } from './share-card';
 export async function shareCardPng(svg: string): Promise<Uint8Array | null> {
   const card = shareCardSvg(svg);
   if (card === null) return null;
-  const { workerPngRenderer } = await import('@livedesign/render-png/worker');
+  const { workerPngRenderer } = await import('@liveworkspace/render-png/worker');
   // The card is already 1200 x 630; the bound only guards a future card size against a Worker's memory.
   const { png } = await workerPngRenderer.renderPng(card, 1, SHARE_CARD_WIDTH);
   return png;

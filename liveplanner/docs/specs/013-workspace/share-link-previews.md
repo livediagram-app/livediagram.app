@@ -48,7 +48,7 @@ gave nobody a reason to tell them apart or click.
 - **Cached in R2** beside the snapshots: `og/<projectId>` for the first tab, stamped with the time it was drawn and redrawn when the project has been saved since. A
   tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a project
   deletes it with its snapshots.
-- **Drawn by the shared resvg renderer** (`@liveplanner/render-png/worker`, the MCP server's), with Inter as the
+- **Drawn by the shared resvg renderer** (`@liveworkspace/render-png/worker`, the MCP server's), with Inter as the
   one font, so a card's text matches the MCP previews.
 - **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
 

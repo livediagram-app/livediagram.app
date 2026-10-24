@@ -17,7 +17,7 @@ compatibility_flags = ["nodejs_compat"]
 [dev]
 port = 8888
 
-# Bundle the embedded fonts (packages/render-png/fonts/Inter-Regular.ttf, Inter-Bold.otf) as raw bytes so render.ts
+# Bundle the embedded fonts (packages/render-png/fonts at the repo root/Inter-Regular.ttf, Inter-Bold.otf) as raw bytes so render.ts
 # can hand it to resvg as a fontBuffer — Workers have no system fonts, so
 # without this the PNG renders shapes but no text (docs/specs/015-api/mcp-server.md §5).
 [[rules]]

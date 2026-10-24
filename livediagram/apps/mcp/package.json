@@ -21,7 +21,7 @@
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/icons": "workspace:*",
-    "@livediagram/render-png": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.1",

@@ -22,7 +22,7 @@
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
     "@livediagram/icons": "workspace:*",
-    "@livediagram/render-png": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

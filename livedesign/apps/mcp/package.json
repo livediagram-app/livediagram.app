@@ -22,7 +22,7 @@
     "@livedesign/design": "workspace:*",
     "@livedesign/edit-operations": "workspace:*",
     "@livedesign/icons": "workspace:*",
-    "@livedesign/render-png": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.1",

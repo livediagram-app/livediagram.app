@@ -175,7 +175,7 @@ In order of precedence:
 ## Previews
 
 `tab render` draws with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
-`@liveplanner/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
+`@liveworkspace/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 
 ## One catalogue for the CLI and the MCP
