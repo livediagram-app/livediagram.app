@@ -35,7 +35,7 @@ script that hands them to the shared generator.
 | `apps/marketing/app/licences/page.tsx`                                     | The `/licences` route                                                         |
 | `apps/marketing/components/licences/LicencesView.tsx`                      | Server-rendered sections and entries                                          |
 | `apps/marketing/components/licences/LicenceTexts.tsx`                      | Client: lazy texts in fixed-height boxes                                      |
-| `apps/marketing/app/licences.css`                                          | The entries' short `lic-*` classes, imported by `globals.css`                 |
+| `../packages/marketing-site/src/css/licences.css`                          | The entries' short `lic-*` classes, imported by `globals.css`                 |
 | `apps/marketing/app/sitemap.ts`                                            | Lists `/licences`                                                             |
 | `packages/ui/src/SiteFooter.tsx`                                           | "Licences" footer link; legal strip at AA contrast                            |
 | `packages/ui/src/ShareRail.tsx`                                            | Its "Share" label at AA contrast (found by the page's axe run)                |

@@ -3,11 +3,11 @@
 @import '@livedocuments/template-previews/preview-art-tile.css';
 @import '@livedocuments/template-previews/preview-motion.css';
 @import '@livedocuments/ui/hero-band.css';
-@import './hero-fan.css';
+@import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import './hero-animations.css';
 @import './hero-scenes/pages.css';
 @import './hero-scenes/article.css';
-@import './promises.css';
+@import '@liveworkspace/marketing-site/css/promises.css';
 @import './feature-art/core.css';
 @import './feature-art/content.css';
 @import './feature-art/canvas.css';
@@ -15,9 +15,9 @@
 @import './feature-art/versatility.css';
 @import './feature-art/modes.css';
 @import './feature-art/features.css';
-@import './page-motion.css';
+@import '@liveworkspace/marketing-site/css/page-motion.css';
 @import './privacy-art.css';
-@import './licences.css';
+@import '@liveworkspace/marketing-site/css/licences.css';
 
 /* Scan the shared UI package so utility classes used inside its
  * components (e.g. `text-brand-700` in <Brand>'s wordmark) are
