@@ -44,15 +44,6 @@ export function whiteboardBackgroundOf(
   return WHITEBOARD_BACKGROUNDS.find((b) => b.pattern === pattern)?.id ?? 'plain';
 }
 
-// The shapes a whiteboard once drew as marker outlines on display; ./legacy-whiteboard-tab writes
-// that look onto them when a stored whiteboard tab is read.
-export const WHITEBOARD_INKED_SHAPES: ReadonlySet<string> = new Set([
-  'square',
-  'circle',
-  'triangle',
-  'diamond',
-]);
-
 const BORDER_STROKES = Object.entries(BORDER_STROKE_PX) as [BorderStroke, number][];
 
 // The border preset nearest a pen width, ties to the thicker: a recognised

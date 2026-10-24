@@ -1,5 +1,7 @@
 # Retired schemes: blueprint
 
+**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
+
 Derived from [Retired colour schemes](../retired-schemes.md), with Default's dark half from
 [Canvas and palette, Default scheme, dark half](../../008-canvas/canvas-and-palette.md#default-scheme-dark-half). The
 spec decides; this file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Dn`.

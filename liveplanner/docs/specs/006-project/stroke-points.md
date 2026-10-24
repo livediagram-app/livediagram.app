@@ -68,6 +68,8 @@ pen's pressure at each point when it reported one. It replaces the former `point
 
 ## Migration of stored strokes
 
+**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
+
 - A stroke stored in the former shape (`points` as `{ nx, ny }` objects, optional `pressures`)
   is converted to `packedPoints` by the stored-tab migration (`migrateStoredTab`) that every
   stored-tab entry point already runs: the api's tab read and thumbnail, the offline store, and

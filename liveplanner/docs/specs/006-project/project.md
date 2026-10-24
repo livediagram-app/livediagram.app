@@ -53,8 +53,7 @@ that named it moved in one change:
 - **Realtime and storage:** the Durable Object class is `PlanRoom` (binding `PLAN_ROOM`), a SQLite-backed class declared
   new in its first migration (liveplanner was never deployed, so it carries no rename history); it holds each plan's
   content ([API](../015-api/api.md#storage)); the room ops are `project-meta` and `project-trashed`.
-- **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
-  offline projects (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
+- **Copies from elsewhere** are upgraded where they arrive: the browser's cached
   preferences (`upgradeLegacyPreferences`), the offline store (moved to the `projects` object
   store on the next visit), and stored names: a project still called "Untitled diagram" counts as
   untitled, exactly as "Untitled project" does.

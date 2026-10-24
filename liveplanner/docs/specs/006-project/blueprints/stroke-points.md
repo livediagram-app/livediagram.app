@@ -1,5 +1,7 @@
 # Stroke points blueprint
 
+The migration of the former `{ nx, ny }` shape (`legacy-stroke-points.ts`, `migrateLegacyStrokePoints`) was removed from liveplanner 2026-10-24: no liveplanner plan was ever stored in it. Where this file still names it, it describes livediagram.
+
 Derived from [Stroke points](../stroke-points.md). Engineering precision only; design lives in the
 spec.
 
@@ -27,7 +29,6 @@ spec.
 | `packages/project/src/stroke-points-cache.ts`      | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
 | `packages/project/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
 | `packages/project/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `packages/project/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
 | `packages/project/scripts/expand-stroke-points.ts` | The debug script: a tab or project JSON file with every block expanded                                                                                  |
 | `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
 
@@ -113,9 +114,6 @@ export function packFreehandPoints(
   rawPoints: readonly Point[],
   pressures?: readonly number[],
 ): Box & Pick<FreehandElement, 'packedPoints'>; // freehandGeometry + encode
-
-// legacy-stroke-points.ts
-export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // identity when none
 
 // stored-tab.ts: the untrusted-input guards
 export function migrateIncomingTab(tab: unknown): unknown; // non-tabs pass through for validation
@@ -270,14 +268,12 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Memoised decode: same arrays, bounded, LRU, oversize                                | `packages/project/src/stroke-points-cache.test.ts`                                 |
 | Corrupt block draws nothing and logs once                                           | `stroke-points-cache.test.ts`                                                       |
 | Debug decoder and expansion                                                         | `packages/project/src/stroke-points-debug.test.ts`                                 |
-| Migration: shape, extent widening, pressures, idempotent                            | `packages/project/src/legacy-stroke-points.test.ts`                                |
 | Validation accepts packed, rejects former shape and corrupt                         | `packages/project/src/validate.test.ts`                                            |
 | Pen outline unchanged                                                               | `packages/project/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                                         | `packages/project/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
 | Api migrates former shape on create and save                                        | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
 | Clipboard and tab import migrate                                                    | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
 | Room ops migrated on receipt                                                        | `apps/editor/app/project/[id]/room-op-migrate.test.ts`                               |
-| Untrusted tabs and elements: migrated or passed through                             | `packages/project/src/legacy-stroke-points.test.ts`                                |
 | MCP packs a model's former-shape stroke; an update's points replace the block       | `packages/project/src/element-normalise.test.ts`                                   |
 | Every template builds a valid tab with packed strokes (MCP and editor)              | `packages/templates/src/template-tab.test.ts`                                       |
 

@@ -1,5 +1,7 @@
 # Retired colour schemes
 
+**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
+
 A colour scheme leaves the catalogue by being **migrated away on load**, not by lingering as a scheme nobody can pick.
 A project saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
 next save persists the rewrite. There is no list of retired schemes that still resolve.

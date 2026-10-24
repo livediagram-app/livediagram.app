@@ -23,7 +23,6 @@ Scope, by file:
 | `packages/project/src/arrow-rebind-swap.ts`                     | `swapCrossingEnds`                                                                                 |
 | `packages/project/src/arrow-endpoint-spread.ts`                 | Quarter fans                                                                                       |
 | `packages/project/src/validate.ts`                              | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
-| `packages/project/src/legacy-groups.ts`                         | Legacy group anchors resolved through the table                                                    |
 | `packages/project/src/duplicate.ts`                             | Endpoint copy without `manual`                                                                     |
 | `apps/editor/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |

@@ -1,12 +1,7 @@
-// Every tab-level migration a stored tab needs on the way in, in one call
-// (docs/specs/011-theme/retired-schemes.md): the api worker's tab read and thumbnail render, the
-// offline store's tab load and a file import all run this, so a new migration
-// is added once and reaches every entry point.
-import { upgradeLegacyLinks } from './legacy-links';
-import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-import { migrateRetiredScheme } from './retired-schemes';
-import { migrateRetiredTheme } from './retired-themes';
-import { dropCustomTheme } from './retired-custom-themes';
+// Everything a stored tab needs settled on the way in, in one call: the api worker's tab read and thumbnail render,
+// the offline store's tab load and a file import all run this, so a new step is added once and reaches every entry
+// point. liveplanner's plans have only ever been stored in the current shapes (each plan's Durable Object, from
+// 2026-10-23), so the read-time migrations of livediagram's former shapes are gone.
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -18,20 +13,15 @@ import { isRecord } from './is-record';
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
-  // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
-  const schemed = dropCustomTheme(
-    migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
-  );
+  const schemed = settleTabFields(tab);
   if (!Array.isArray(schemed.elements)) return schemed;
-  // Element links from before the project rename (./legacy-links) are upgraded here too.
   // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
   // Keys settle before stacks lay out (docs/specs/009-elements/stack.md): a key's rows come from the arrows and tag
   // colours, not from where anything is, and a key a stack holds must have its height before the stack lays it out.
   const elements = settleStacks(
     settleDiagramKeys(
-      upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
+      migrateStoredElements(schemed.elements),
       tagColoursOf(schemed as { tagColours?: unknown }),
     ),
   );

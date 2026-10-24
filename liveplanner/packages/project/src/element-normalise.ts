@@ -163,7 +163,7 @@ function normaliseSticky(el: Raw): Raw {
 // edit touched, leaving the rest of the diagram as it is).
 export function normaliseElement(el: unknown): unknown {
   if (!isRecord(el)) return el;
-  // A stroke in a former stored shape (docs/specs/006-project/stroke-points.md) is packed first.
+  // The stored-element steps run first.
   // Unsettled: a lone element's host is not beside it, so settling it here would detach it; normaliseElements settles
   // the whole list.
   const [current] = migrateStoredElementsUnsettled([
@@ -278,9 +278,8 @@ export function lanesToFront<T>(elements: T[]): T[] {
 // A whole element list from the model made safe. Anything that is not an
 // array comes back as it was, for validation to reject.
 /**
- * An ops-mode update: the model's fields over the element's. Points the model sends in the former
- * `{ nx, ny }` shape replace the stroke's packed ones (docs/specs/006-project/stroke-points.md):
- * left beside them, the migration would keep the old block and drop the new points.
+ * An ops-mode update: the model's fields over the element's. Points the model sends replace the stroke's packed
+ * ones (docs/specs/006-project/stroke-points.md) rather than sitting beside them.
  */
 export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
   const base = isRecord(prev) ? prev : {};

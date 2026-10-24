@@ -231,14 +231,6 @@ function endpointRule(ep: unknown): string | null {
         : `a pinned end's field: a whole number from 0 to ${ENTITY_MAX_FIELDS - 1}`;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
-    // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no
-    // current code writes this, but a browser still running a pre-removal build can. Accepting it
-    // keeps that save from failing; migrateLegacyGroups freezes it to a free end on the next read
-    // (rowToTab / the offline store), so nothing downstream sees it.
-    case 'pinned-group':
-      return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string)
-        ? null
-        : 'a pinned-group end: groupId and an anchor';
     default:
       return 'an end of kind free, pinned or on-arrow';
   }

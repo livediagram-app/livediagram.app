@@ -441,8 +441,6 @@ export * from './ink-legibility';
 export * from './colour-background';
 export * from './tab-window';
 export * from './tab-has-drawing';
-export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (
@@ -718,15 +716,10 @@ export * from './geometry-guides';
 // Layer order + union bounds, and the load-time migration of projects saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
-export * from './legacy-groups';
-export * from './legacy-docks';
-export * from './legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
-export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
-export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
 
 // Photoshop-style layers (docs/specs/006-project/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

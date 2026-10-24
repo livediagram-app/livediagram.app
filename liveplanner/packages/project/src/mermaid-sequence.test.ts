@@ -277,7 +277,6 @@ describe('layoutSequence', () => {
     const life = els.find((e) => e.id.startsWith('life-A')) as Element & { from: { x: number } };
     expect(guardEl.x).toBeGreaterThan(life.from.x);
   });
-
 });
 
 describe('late activations and notes', () => {
