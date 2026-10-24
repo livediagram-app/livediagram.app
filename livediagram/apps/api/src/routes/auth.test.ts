@@ -82,6 +82,12 @@ describe('GET /api/auth/sign-in', () => {
     expect(location.searchParams.get('state')).toBeTruthy();
   });
 
+  it('asks for the registration page for Create account', async () => {
+    const res = await call('/api/auth/sign-in?return_to=%2Fnew&screen=sign-up');
+    const location = new URL(res.headers.get('Location')!);
+    expect(location.searchParams.get('prompt')).toBe('create');
+  });
+
   it('keeps the verifier in an HttpOnly cookie scoped to /api/auth', async () => {
     const { res } = await signInCookie();
     const pkce = setCookies(res).find((c) => c.startsWith('ld_pkce='))!;
