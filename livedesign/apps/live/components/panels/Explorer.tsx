@@ -33,29 +33,26 @@ import type { ExplorerProps } from './Explorer.types';
 const renderAppLogo: RenderAppLogo = (app) =>
   app === 'all' ? <BrandMark accentColor={PLATFORM_SITE.accent} /> : <BrandMark />;
 
+// The popover hangs from its button and is never dragged.
+const NO_MOVE = () => {};
+
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
 // always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
-// movable panel, which docks in a corner or opens as the menu button's popover. The open design shows on top, read
+// movable panel, opened only as the canvas menu button's popover. The open design shows on top, read
 // once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
-  position,
   currentDesignId,
   currentShareCode = null,
   onRenameCurrent,
-  onMoveTo,
-  onReset,
   onNewDesign,
   menuActions,
-  dock,
   popoverOpen,
   onPopoverClose,
   popoverAnchor,
-  asPopover,
-  dismissOnOutside,
 }: ExplorerProps) {
   const minimalChrome = useMinimalChrome();
   const isMobile = useIsMobileViewport();
-  const sheet = isMobile && !!asPopover;
+  const sheet = isMobile;
   const router = useAppNavigation();
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
   // The person: an account, or this browser's guest, as the Explorer page has them, so the Timeline, History and
@@ -87,7 +84,7 @@ function ExplorerImpl({
   }, [currentDesignId, currentShareCode]);
 
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
-  const shown = asPopover === true && popoverOpen === true;
+  const shown = popoverOpen === true;
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -107,14 +104,13 @@ function ExplorerImpl({
       layoutChrome
       // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
       opaque
-      position={position}
-      defaultCorner={isMobile ? 'top-banner' : 'top-left'}
-      width={isMobile ? 'w-auto' : 'w-80'}
+      // Only ever the menu button's popover: never placed in a corner or dragged.
+      position={null}
+      defaultCorner="top-left"
       popoverWidth="w-[38rem]"
       // On a phone it opens as a sheet: edge to edge, down to the tab bar.
       popoverSheet={sheet}
-      onReset={onReset}
-      onMoveTo={onMoveTo}
+      onMoveTo={NO_MOVE}
       headerActions={
         sheet ? undefined : (
           <ExplorerHeaderMenu
@@ -124,13 +120,11 @@ function ExplorerImpl({
           />
         )
       }
-      {...dock}
       popoverOpen={popoverOpen}
       onPopoverClose={onPopoverClose}
       popoverAnchor={popoverAnchor}
-      asPopover={asPopover}
-      dismissOnOutside={dismissOnOutside}
-      collapsible
+      asPopover
+      dismissOnOutside
     >
       <ExplorerPanel
         renderAppLogo={renderAppLogo}
@@ -165,9 +159,8 @@ function ExplorerImpl({
         {...explorerLibrary}
         teamsHost={isSignedIn ? explorerTeamsHost : null}
         onOrganise={trackOrganise}
-        // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
-        // beside the new-design wizard and the status screens, which must stay narrow or it covers their card.
-        layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}
+        // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
+        layout={sheet ? 'sheet' : 'side'}
         open={shown}
         divider={minimalChrome ? 'lines' : 'titles'}
         // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).

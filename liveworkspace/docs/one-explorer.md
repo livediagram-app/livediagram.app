@@ -173,6 +173,11 @@ The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets 
 [site.md](site.md#on-an-apps-own-address) for the measurements.
 
 The editors' floating Explorer panel and move-to-folder picker use the same package, inside each app.
+The panel is never docked and never open on its own: in every editor it starts closed, is never reopened
+from a remembered state, and opens only as a popover from the canvas's top-left menu button (☰), closing on a
+press outside, Esc, the button again or opening an item. Its code loads the first time it opens (fetched ahead
+once the editor is idle). The editors' status screens (deleted, couldn't load, not found) show neither the panel
+nor the menu button.
 
 #### Teams are run in the Explorer
 

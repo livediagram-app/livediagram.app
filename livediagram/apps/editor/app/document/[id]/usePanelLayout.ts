@@ -10,8 +10,6 @@ type Pos = { x: number; y: number };
 // Positions are null until the user drags a panel, after which it
 // remembers its spot.
 export function usePanelLayout() {
-  // The Explorer's spot on the status screens (error, not found), where it is a corner panel.
-  const [explorerPosition, setExplorerPosition] = useState<Pos | null>(null);
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): present only while the Laser tool is active, so
@@ -32,8 +30,6 @@ export function usePanelLayout() {
   const [zenMode, setZenMode] = useState(false);
 
   return {
-    explorerPosition,
-    setExplorerPosition,
     mapPosition,
     setMapPosition,
     commentsPanelPosition,

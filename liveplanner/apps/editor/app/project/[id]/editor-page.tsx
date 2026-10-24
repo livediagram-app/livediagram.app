@@ -13,7 +13,6 @@ import {
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
@@ -90,9 +89,6 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     loadError,
     sharePasswordGate,
     loadingProject,
-    explorerPosition,
-    newProject,
-    setExplorerPosition,
     projectOwnerName,
     setSharePasswordGate,
     setLoadingProject,
@@ -101,20 +97,6 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
   // which a project in This Browser opens under (docs/specs/006-project/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
-  // The full Explorer panel that sits behind the error / not-found status
-  // screens (identical in both), built once from state. Just a React
-  // element until a branch returns it, so building it on every render is
-  // free when no status screen shows.
-  const fullExplorer = (
-    <LazyExplorer
-      position={explorerPosition}
-      currentProjectId={null}
-      onMoveTo={(x, y) => setExplorerPosition({ x, y })}
-      onReset={() => setExplorerPosition(null)}
-      onNewProject={newProject}
-    />
-  );
-
   // The project is in the Trash (docs/specs/013-workspace/trash.md): from the
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.
@@ -129,14 +111,12 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Plan deleted" explorer={fullExplorer}>
-        {card}
-      </StatusShell>
+      <StatusShell title="Plan deleted">{card}</StatusShell>
     );
   }
 
   // The load FAILED (network / 5xx) rather than 404'd. Retryable, so
-  // show the error card (with the Explorer behind it for navigation)
+  // show the error card
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
     const card = <LoadErrorCard embed={!appChrome} ownerId={ownerId} />;
@@ -145,9 +125,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load plan" explorer={fullExplorer}>
-        {card}
-      </StatusShell>
+      <StatusShell title="Couldn’t load plan">{card}</StatusShell>
     );
   }
 
@@ -228,20 +206,19 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   );
 }
 
-// Full-height status chrome (error / not-found / password gate): the
+// Full-height status chrome (deleted / error / not-found / password gate): the
 // editor header (title-only, every action disabled) over a slate surface
-// that holds the status card and, optionally, the Explorer for
-// navigation. Shared by the status branches so the header + main wrapper
-// (and the Explorer behind it) isn't repeated per branch.
+// that holds the status card alone. No Explorer panel and no menu button: the
+// Explorer opens only from the canvas's menu button
+// (docs/specs/007-editor/toolbar-layout.md). Shared by the status branches so
+// the header + main wrapper isn't repeated per branch.
 function StatusShell({
   title,
   showHeader = true,
-  explorer,
   children,
 }: {
   title: string;
   showHeader?: boolean;
-  explorer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -256,10 +233,7 @@ function StatusShell({
           onRename={() => {}}
         />
       ) : null}
-      <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
-        {children}
-        {explorer}
-      </main>
+      <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">{children}</main>
     </div>
   );
 }

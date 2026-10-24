@@ -40,4 +40,10 @@ describe('the project page’s first load', () => {
     const src = read('app/project/[id]/useTemplateFlow.ts');
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);
   });
+
+  // The Explorer opens only from the canvas's menu button (docs/specs/007-editor/toolbar-layout.md): the status
+  // screens (deleted, couldn't load, not found) render neither it nor its code.
+  it('shows no Explorer panel on the status screens', () => {
+    expect(read('app/project/[id]/editor-page.tsx')).not.toMatch(/LazyExplorer|panels\/Explorer\b/);
+  });
 });

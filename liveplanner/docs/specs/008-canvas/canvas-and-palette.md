@@ -18,7 +18,7 @@ The picker also holds the **Zen mode** button (a fullscreen / expand icon, short
 
 ## Explorer
 
-Opens as a popover from the **menu button** at the top left of the canvas ([Toolbar layout](../007-editor/toolbar-layout.md)), on a desktop and a phone alike. The status screens (error, not found) have no strip, so they show it as a stand-alone panel in the top-left corner, built on the shared `MovablePanel`. Title: `EXPLORER`.
+Opens as a popover from the **menu button** at the top left of the canvas ([Toolbar layout](../007-editor/toolbar-layout.md)), on a desktop and a phone alike. That button is the only way in: the Explorer never shows docked or open on its own (not when a document opens, not from a remembered state), and the status screens (deleted, couldn't load, not found) show no Explorer and no menu button at all, only their card, whose own links reach the Explorer page. Title: `EXPLORER`.
 
 Sections, top to bottom:
 

@@ -55,8 +55,6 @@ const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.Tidy
 // Explorer and the cluster popovers render beside the corner layer. The
 // tool-config panels, on screen only while
 // their own tool is active, live in useCanvasToolPanels.
-// The Explorer popover never moves, so its MovablePanel's move handler has nothing to do.
-const NO_MOVE = () => {};
 
 export function useCanvasChromePanels({
   props,
@@ -237,18 +235,13 @@ export function useCanvasChromePanels({
   const explorerEl =
     zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
-        // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
-        position={null}
         currentDocumentId={currentDocumentId}
         currentShareCode={currentShareCode ?? null}
         onRenameCurrent={onRenameCurrentDocument}
-        onMoveTo={NO_MOVE}
         onNewDocument={explorerHandlers.onNewDocument}
         menuActions={explorerMenu}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
-        asPopover
-        dismissOnOutside
         onPopoverClose={closeDockPanel}
       />
     );

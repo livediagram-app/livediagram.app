@@ -171,7 +171,10 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
 the top-left corner of the canvas toggles the real Explorer open as a
-popover hanging under it, and closed again. The popover hangs from the
+popover hanging under it, and closed again. It starts closed on every page and is never
+reopened from a remembered state; pressing the button is the only thing that opens it. A press
+outside, Esc, the button again or opening an item closes it. The status screens (deleted,
+couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
