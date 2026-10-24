@@ -131,7 +131,3 @@ function openingTag(svg: string, open: string): string | null {
   const end = svg.indexOf('>', start);
   return svg.slice(start, end < 0 ? svg.length : end);
 }
-
-// How many recent diagrams the landing hero needs before its fan shows them in place of templates
-// (docs/specs/019-marketing/returning-visitor.md).
-export const RECENT_FAN_MIN = 3;

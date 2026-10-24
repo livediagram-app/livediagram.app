@@ -1,18 +1,17 @@
 # Returning visitor
 
-Status: shipped
+Status: shipped (the hero fan retired, October 2026)
 
 ## What
 
-The landing page's hero ends in a fan of template cards dealt along its foot ([Marketing site](marketing-site.md),
-"Hero"): that is for someone new, picking a way in. Somebody who already works here mostly wants to get back to
-their work. So a visitor whose recent-designs snapshot (below) holds **at least three designs**
-(`RECENT_FAN_MIN`) sees **their own designs** on that fan instead: their **four most recent** (fewer if they have
-fewer), most recent first, then a card to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for
-everything else. With fewer than three they see the template fan, exactly as someone new does.
+The landing page's hero always ends in the fan of template cards ([Marketing site](marketing-site.md), "Hero"),
+with its Shuffle button, for every visitor, signed in or not, new or returning. It never shows the visitor's own
+recent work: the hero is for starting something new, and the Explorer is where their work is.
 
-A **returning visitor** is a browser whose recent-designs snapshot (below) holds at least one design.
-Everyone else, including a returning person in a fresh browser, sees the templates.
+Until October 2026 a browser with at least three recent items saw its four most recent on that fan instead, with a
+card to Explorer Home (and before that, **Welcome back**). That went, so every app's hero is the same.
+
+The recent snapshot below stays: other pages read it.
 
 ## The recent-designs snapshot
 
@@ -49,32 +48,6 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   the landing page it returns to (and the next person on a shared computer) never shows the account's
   designs. Deleting the account does the same.
 
-## Their designs on the fan
-
-- **Cards:** the fan's own cards (`components/HeroFanMine.tsx`), in its fan of poses (four cards for three
-  designs and Explorer Home, five for four): each design's name, its **preview** (`components/RecentPreview.tsx`:
-  its snapshot from this browser's cache, the one the editor leaves on each save, on the design's own background
-  colour, as the Explorer's cards draw it; with no snapshot, the Pages glyph on a quiet tint), and under the preview,
-  right-aligned at the card's foot, how long since it was saved ("2 hours ago"). The foot runs off the band, so the
-  time is out of sight at rest; pointing at (or focusing) a card straightens it and lifts it 4.25rem, enough to bring
-  the time into view (the fan clips only its foot, so the lifted card keeps its title). Pressing one opens the
-  design (`/design/<id>`).
-- **Explorer Home**, the last card: "Explorer Home" with "Open" at the top right, over a tinted panel ("All your
-  designs"), to `/explorer/home`.
-- **On a phone** the fan shows three cards, the three most recent designs, and leaves Explorer Home off: the
-  band has room for three, and a returning visitor came for their designs.
-- **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
-  nothing is swapped. Each card springs in a beat after the one before it when the fan deals.
-- **Keyboard and screen readers:** real links, in reading order.
-
-## No flash, no shift
-
-The static HTML is the same for everyone (the template fan's opening hand). The fan is hidden from first paint
-once script runs (`<html data-hero-deal>`, the hero fan's head script) until it deals, and it deals whichever hand
-fits after hydration: a returning visitor's designs, or a shuffled template hand. The cards are the same size
-either way, so nothing moves, and the headline, the page's largest paint, is untouched. Previews fade in as the
-cache answers.
-
 ## Performance
 
 No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per design card), after
@@ -84,8 +57,3 @@ team designs ride the editor's existing design list (no new request): one more q
 which reads each joined team design's first-tab count to skip the empty ones and draws the full
 summary for the twelve it keeps, so it grows with the size of your teams' libraries (about 1 ms at
 1,000 team designs, 9 ms at 10,000, measured on SQLite).
-
-## Appearance
-
-The cards are the fan's white cards in either appearance; the
-previews are the designs as their theme draws them, as in the Explorer.

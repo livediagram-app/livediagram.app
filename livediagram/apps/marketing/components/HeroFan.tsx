@@ -1,6 +1,6 @@
 'use client';
 
-import { ctaHref, RECENT_FAN_MIN } from '@livediagram/api-schema';
+import { ctaHref } from '@livediagram/api-schema';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
@@ -13,8 +13,6 @@ import {
   nextFanKind,
   shuffleFan,
 } from '@/lib/hero-starts';
-import { HeroFanMine } from './HeroFanMine';
-import { useRecentDiagrams } from './useRecentDiagrams';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
@@ -78,11 +76,6 @@ export function HeroFan() {
   const swaps = useRef(0);
   // The kinds on show, kept beside the state so a swap reads them without an updater.
   const shown = useRef<TemplateKind[]>(slots);
-  // A returning visitor with enough recent diagrams sees theirs here instead (HeroFanMine), and nothing
-  // is dealt.
-  const recent = useRecentDiagrams();
-  const mine = recent && recent.length >= RECENT_FAN_MIN ? recent.slice(0, 4) : null;
-  const returning = mine !== null;
 
   // Deal this visit's hand: shuffle the whole pool and lay its first HERO_FAN_SLOTS in, each springing up.
   useEffect(() => {
@@ -106,7 +99,7 @@ export function HeroFan() {
   }, []);
 
   useEffect(() => {
-    if (!dealt || returning || held || shuffling || !onScreen || reduceMotion) return;
+    if (!dealt || held || shuffling || !onScreen || reduceMotion) return;
     let out: number | undefined;
     const tick = window.setInterval(() => {
       if (document.visibilityState === 'hidden') return;
@@ -131,7 +124,7 @@ export function HeroFan() {
       window.clearTimeout(out);
       setLeaving(null);
     };
-  }, [dealt, returning, held, shuffling, onScreen, reduceMotion, wide, full]);
+  }, [dealt, held, shuffling, onScreen, reduceMotion, wide, full]);
 
   useEffect(() => () => shuffleTimers.current.forEach((t) => window.clearTimeout(t)), []);
 
@@ -177,7 +170,7 @@ export function HeroFan() {
   return (
     <div
       ref={rootRef}
-      data-dealt={dealt || returning ? '' : undefined}
+      data-dealt={dealt ? '' : undefined}
       onPointerEnter={() => setHeld(true)}
       onPointerLeave={() => setHeld(false)}
       onFocus={() => setHeld(true)}
@@ -186,70 +179,65 @@ export function HeroFan() {
       }}
       className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-x-clip px-4 pt-3 [clip-path:inset(-24rem_0_0_0)] sm:mt-28 sm:h-56 sm:gap-5"
     >
-      {mine ? <HeroFanMine diagrams={mine} /> : null}
-      {mine
-        ? null
-        : slots.map((kind, i) => {
-            const t = heroTemplate(kind);
-            const motion =
-              shuffling === 'out' || leaving === i
-                ? 'hero-fan-out'
-                : shuffling === 'in' || entering === i || firstDeal
-                  ? 'hero-fan-in'
-                  : '';
-            return (
-              // The pose sits on the slot, the swap's motion on the card inside it, so the two never fight
-              // over one transform; hovering or focusing a card straightens and lifts its slot.
-              <div
-                key={i}
-                className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none ${POSE[i]}`}
-                style={{ '--hero-flick': FLICK[i] } as CSSProperties}
-              >
-                <a
-                  key={kind}
-                  href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
-                  style={shuffling ? { animationDelay: `${i * SHUFFLE_STAGGER_MS}ms` } : undefined}
-                  className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
-                >
-                  <span className="truncate text-xs font-semibold sm:text-sm">
-                    <span className="sr-only">{createLabelPrefix(t.title)}</span>
-                    {t.title}
-                  </span>
-                  <span className="flex h-20 items-center justify-center rounded-lg bg-slate-50 sm:h-32 sm:rounded-xl [&>svg]:h-14 [&>svg]:w-auto sm:[&>svg]:h-24">
-                    <TemplatePreview kind={kind} />
-                  </span>
-                </a>
-              </div>
-            );
-          })}
-      {mine ? null : (
-        // A fresh hand on demand (docs/specs/019-marketing/marketing-site.md "Hero"): to the right of the cards.
-        <button
-          type="button"
-          onClick={shuffle}
-          disabled={shuffling !== null}
-          aria-label="Shuffle templates"
-          title="Shuffle templates"
-          className="flex size-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border border-brand-100 bg-white text-slate-500 shadow-sm transition hover:text-brand-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-default sm:size-10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
-        >
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`size-4 transition-transform duration-300 ${shuffling ? 'rotate-180' : ''}`}
+      {slots.map((kind, i) => {
+        const t = heroTemplate(kind);
+        const motion =
+          shuffling === 'out' || leaving === i
+            ? 'hero-fan-out'
+            : shuffling === 'in' || entering === i || firstDeal
+              ? 'hero-fan-in'
+              : '';
+        return (
+          // The pose sits on the slot, the swap's motion on the card inside it, so the two never fight
+          // over one transform; hovering or focusing a card straightens and lifts its slot.
+          <div
+            key={i}
+            className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none ${POSE[i]}`}
+            style={{ '--hero-flick': FLICK[i] } as CSSProperties}
           >
-            <path d="m18 14 4 4-4 4" />
-            <path d="m18 2 4 4-4 4" />
-            <path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22" />
-            <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
-            <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />
-          </svg>
-        </button>
-      )}
+            <a
+              key={kind}
+              href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
+              style={shuffling ? { animationDelay: `${i * SHUFFLE_STAGGER_MS}ms` } : undefined}
+              className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
+            >
+              <span className="truncate text-xs font-semibold sm:text-sm">
+                <span className="sr-only">{createLabelPrefix(t.title)}</span>
+                {t.title}
+              </span>
+              <span className="flex h-20 items-center justify-center rounded-lg bg-slate-50 sm:h-32 sm:rounded-xl [&>svg]:h-14 [&>svg]:w-auto sm:[&>svg]:h-24">
+                <TemplatePreview kind={kind} />
+              </span>
+            </a>
+          </div>
+        );
+      })}
+      {/* A fresh hand on demand (docs/specs/019-marketing/marketing-site.md "Hero"): to the right of the cards. */}
+      <button
+        type="button"
+        onClick={shuffle}
+        disabled={shuffling !== null}
+        aria-label="Shuffle templates"
+        title="Shuffle templates"
+        className="flex size-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border border-brand-100 bg-white text-slate-500 shadow-sm transition hover:text-brand-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-default sm:size-10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
+      >
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`size-4 transition-transform duration-300 ${shuffling ? 'rotate-180' : ''}`}
+        >
+          <path d="m18 14 4 4-4 4" />
+          <path d="m18 2 4 4-4 4" />
+          <path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22" />
+          <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
+          <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />
+        </svg>
+      </button>
     </div>
   );
 }
