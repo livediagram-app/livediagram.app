@@ -2,7 +2,7 @@
 // drawn from the live editor's PollPromptSheet and PollPanel (apps/editor/components/panels). Labels
 // are the real UI strings.
 
-import { Label, Panel, Scene, Shape } from './primitives';
+import { Label, Panel, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 /** What everyone is asked: the sheet that rises from the bottom of the screen, with the canvas
  *  still live behind it. */

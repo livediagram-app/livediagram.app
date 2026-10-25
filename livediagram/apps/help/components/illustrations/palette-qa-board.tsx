@@ -3,7 +3,7 @@
 // marked Most wanted, a vote of your own filled in, heat bars measuring each
 // row against the top, and the composer with its Anonymous switch.
 
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import { CollabCard } from './palette-collaborate';
 
 const ROWS: { text: string; votes: number; mine?: boolean }[] = [

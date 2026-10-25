@@ -3,7 +3,7 @@
 // the editor's: FLOWCHART_STEP_LABEL (packages/document/src/flowchart.ts) and the toolbar's Add Step /
 // Add Branch.
 
-import { Arrow, Label, Scene, Shape } from './primitives';
+import { Arrow, Label, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 /** A key on the keyboard and what it does, as the Mind Maps figures draw them. */
 function KeyHint({ x, y, k, text }: { x: number; y: number; k: string; text: string }) {

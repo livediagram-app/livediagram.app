@@ -6,7 +6,14 @@
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Label, Dialog, Cursor } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Label,
+  Dialog,
+  Cursor,
+} from '@liveworkspace/help-site/art/primitives';
 import { Glyph } from './element-indicators';
 
 // --- Tab-bar building blocks -------------------------------------------------

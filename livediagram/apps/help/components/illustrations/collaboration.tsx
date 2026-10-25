@@ -13,7 +13,7 @@ import {
   Label,
   Tabs,
   TextBar,
-} from './primitives';
+} from '@liveworkspace/help-site/art/primitives';
 
 // --- Comments ----------------------------------------------------------------
 

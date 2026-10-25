@@ -5,7 +5,7 @@
 // in capitals where the editor prints them in capitals.
 
 import type { ReactNode } from 'react';
-import { Avatar, Label, Scene } from './primitives';
+import { Avatar, Label, Scene } from '@liveworkspace/help-site/art/primitives';
 
 // --- Glyphs ------------------------------------------------------------------
 

@@ -5,7 +5,7 @@
 // passes. Labels are the real UI strings.
 
 import type { ReactNode } from 'react';
-import { Button, Label, Scene, Shape, TextBar } from './primitives';
+import { Button, Label, Scene, Shape, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 type Role = 'edit' | 'participate' | 'view';
 

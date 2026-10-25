@@ -7,7 +7,7 @@ import { DevelopersArt } from './developers';
 import { ExplorerArt } from './explorer';
 import { GettingStartedArt } from './getting-started';
 import { PaletteArt } from './palette';
-import { PoliciesArt } from './policies';
+import { PoliciesArt } from '@liveworkspace/help-site/art/scenes/policies';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
 import { SearchPanelArt } from './search-panel';
 import { SelectionModesArt } from './selection-modes';

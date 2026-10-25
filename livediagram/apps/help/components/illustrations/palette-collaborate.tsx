@@ -11,7 +11,7 @@
 import type { ReactNode } from 'react';
 
 import { CollaborateCategories as CategoryPicker } from './palette-behaviour';
-import { Scene, Label, Avatar } from './primitives';
+import { Scene, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared card chrome ------------------------------------------------------
 

@@ -4,7 +4,14 @@
 // Split out from palette-tools.tsx (already at size) per the no-god-files
 // rule; composed only from the shared primitives.
 
-import { Scene, Shape, Cursor, Panel, Label, SelectionBox } from './primitives';
+import {
+  Scene,
+  Shape,
+  Cursor,
+  Panel,
+  Label,
+  SelectionBox,
+} from '@liveworkspace/help-site/art/primitives';
 import { PaletteCategoryPanel } from './palette-rows';
 
 /** The palette's Draw category with the Highlighter row armed, the "Drag to

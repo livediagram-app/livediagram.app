@@ -5,7 +5,17 @@
 // event storming board making room for a note dragged into a gap with Alt held.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, Tabs, Button } from './primitives';
+import {
+  Scene,
+  Label,
+  Shape,
+  Avatar,
+  Cursor,
+  TextBar,
+  Dialog,
+  Tabs,
+  Button,
+} from '@liveworkspace/help-site/art/primitives';
 import { Glyph } from './element-indicators';
 
 // --- Following someone -------------------------------------------------------------------------

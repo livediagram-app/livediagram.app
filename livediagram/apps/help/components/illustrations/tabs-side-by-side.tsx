@@ -3,7 +3,7 @@
 // bar across both panes, the editor's chrome in the pane being edited and the seam's two buttons.
 // Composed only from the shared primitives so the house style holds.
 
-import { Arrow, Cursor, Label, Scene, Shape } from './primitives';
+import { Arrow, Cursor, Label, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 const W = 440;
 const H = 230;

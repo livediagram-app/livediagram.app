@@ -1,6 +1,6 @@
-import { Arrow, Avatar, Cursor, Label, Shape } from '@/components/illustrations/primitives';
-import { Button } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Arrow, Avatar, Cursor, Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Button } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 // Collaboration: three people on one canvas at once. Their cursors, Sam's live selection, a comment thread
 // pinned to a shape, and the presence avatars beside Share.

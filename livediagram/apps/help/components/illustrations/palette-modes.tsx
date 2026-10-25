@@ -3,7 +3,7 @@
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
+import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
 import { PickerTrigger, PixelCharacter } from './selection-modes';
 

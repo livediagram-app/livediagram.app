@@ -2,7 +2,7 @@
 // drawing docs/specs/009-elements/entity.md, docs/specs/009-elements/lane.md and
 // docs/specs/021-event-storming/event-storming.md).
 
-import { Scene, Label, Shape, Arrow, Panel } from './primitives';
+import { Scene, Label, Shape, Arrow, Panel } from '@liveworkspace/help-site/art/primitives';
 
 // --- Entities ----------------------------------------------------------------
 

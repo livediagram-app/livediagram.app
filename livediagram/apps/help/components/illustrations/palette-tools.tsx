@@ -14,7 +14,7 @@ import {
   Tabs,
   Label,
   TextBar,
-} from './primitives';
+} from '@liveworkspace/help-site/art/primitives';
 
 /** A freehand pencil stroke mid-draw: a smooth hand-drawn curve on the canvas
  *  with the "Drag to draw" mode banner and a pencil cursor. */
