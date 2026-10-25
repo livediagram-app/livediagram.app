@@ -3,7 +3,7 @@
 // Notifications category. Labels are the real ones from apps/live. Composed only from the shared
 // primitives so the house style holds.
 
-import { Scene, Panel, Dialog, Button, Label } from './primitives';
+import { Scene, Panel, Dialog, Button, Label } from '@liveworkspace/help-site/art/primitives';
 import { Switch } from './settings-dialog';
 
 /** The Trash view: one group per scope, each row with when it was deleted, the

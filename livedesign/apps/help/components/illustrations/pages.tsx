@@ -6,7 +6,7 @@
 // shared primitives.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, TextBar, Tabs } from './primitives';
+import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
 import { BackgroundGlyph, LayoutGlyph, PadlockGlyph, TitleIcon } from './page-title-bar';
 
 // --- Shared bits -------------------------------------------------------------------------------

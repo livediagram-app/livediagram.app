@@ -1,148 +1,192 @@
 import type { ReactNode } from 'react';
-import { Arrow, Cursor, Label, SelectionBox, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
-const TABS = ['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech'];
-// Each tab's centre, spaced by its label's width.
-const TAB_X = [117, 158, 195, 241, 288, 325];
+// The strip on a logo page, as Toolbar Layout lists it: Draw first, then Shapes, Write, Icons and Media. Each
+// name's centre along the strip.
+const CATEGORIES = [
+  { name: 'Draw', x: 104 },
+  { name: 'Shapes', x: 148 },
+  { name: 'Write', x: 192 },
+  { name: 'Icons', x: 232 },
+  { name: 'Media', x: 272 },
+];
 
 const S = 'fill-none stroke-slate-500';
 
-// One shape outline per tile, centred on (cx, cy).
-const TILE_GLYPHS: ((cx: number, cy: number) => ReactNode)[] = [
-  (cx, cy) => (
-    <rect x={cx - 11} y={cy - 8} width={22} height={16} rx={1.5} className={S} strokeWidth={1.6} />
-  ),
-  (cx, cy) => (
-    <rect x={cx - 11} y={cy - 8} width={22} height={16} rx={6} className={S} strokeWidth={1.6} />
-  ),
-  (cx, cy) => <ellipse cx={cx} cy={cy} rx={11} ry={8} className={S} strokeWidth={1.6} />,
-  (cx, cy) => (
-    <path
-      d={`M${cx} ${cy - 10} L${cx + 12} ${cy} L${cx} ${cy + 10} L${cx - 12} ${cy} Z`}
-      className="fill-violet-100 stroke-violet-500"
-      strokeWidth={1.6}
-      strokeLinejoin="round"
-    />
-  ),
-  (cx, cy) => (
-    <path
-      d={`M${cx} ${cy - 9} L${cx + 11} ${cy + 8} H${cx - 11} Z`}
-      className={S}
-      strokeWidth={1.6}
-      strokeLinejoin="round"
-    />
-  ),
-  (cx, cy) => (
-    <path
-      d={`M${cx - 6} ${cy - 8} H${cx + 6} L${cx + 11} ${cy} L${cx + 6} ${cy + 8} H${cx - 6} L${cx - 11} ${cy} Z`}
-      className={S}
-      strokeWidth={1.6}
-      strokeLinejoin="round"
-    />
-  ),
-  (cx, cy) => (
-    <path
-      d={`M${cx - 9} ${cy - 6} a9 3 0 0 1 18 0 v12 a9 3 0 0 1 -18 0 Z M${cx - 9} ${cy - 6} a9 3 0 0 0 18 0`}
-      className={S}
-      strokeWidth={1.6}
-    />
-  ),
-  (cx, cy) => (
-    <path
-      d={`M${cx - 7} ${cy - 8} H${cx + 12} L${cx + 7} ${cy + 8} H${cx - 12} Z`}
-      className={S}
-      strokeWidth={1.6}
-      strokeLinejoin="round"
-    />
-  ),
-  (cx, cy) => (
-    <path
-      d={`M${cx} ${cy - 10} l2.9 6 6.6 0.9 -4.8 4.6 1.2 6.5 -5.9 -3.1 -5.9 3.1 1.2 -6.5 -4.8 -4.6 6.6 -0.9 Z`}
-      className="fill-amber-200 stroke-amber-500"
-      strokeWidth={1.3}
-      strokeLinejoin="round"
-    />
-  ),
+// Draw's four tools (Palette Tools): the Pen for precise paths, the Freehand pencil, the Shape Pen and the Polygon,
+// each glyph drawn about its tile's centre.
+const TOOLS: { name: string; glyph: (cx: number, cy: number) => ReactNode }[] = [
+  {
+    name: 'Pen',
+    glyph: (cx, cy) => (
+      <>
+        <path
+          d={`M${cx} ${cy - 9} L${cx + 6} ${cy + 1} L${cx} ${cy + 7} L${cx - 6} ${cy + 1} Z`}
+          className={S}
+          strokeWidth={1.4}
+          strokeLinejoin="round"
+        />
+        <path d={`M${cx} ${cy - 9} V${cy + 1}`} className={S} strokeWidth={1.2} />
+        <circle cx={cx} cy={cy + 1} r={1.5} className="fill-slate-500" />
+      </>
+    ),
+  },
+  {
+    name: 'Freehand',
+    glyph: (cx, cy) => (
+      <path
+        d={`M${cx - 9} ${cy + 5} c3 -8 6 -8 8 -2 s5 4 9 -8`}
+        className={S}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+    ),
+  },
+  {
+    name: 'Shape Pen',
+    glyph: (cx, cy) => (
+      <>
+        <path
+          d={`M${cx - 7} ${cy + 1} c0 -6 5 -9 9 -8 s5 6 3 9 -8 5 -12 -1`}
+          className="fill-none stroke-slate-400"
+          strokeWidth={1.2}
+          strokeDasharray="2 2"
+        />
+        <circle cx={cx + 1} cy={cy} r={6} className={S} strokeWidth={1.4} />
+      </>
+    ),
+  },
+  {
+    name: 'Polygon',
+    glyph: (cx, cy) => (
+      <path
+        d={`M${cx} ${cy - 8} L${cx + 8} ${cy - 2} L${cx + 5} ${cy + 7} L${cx - 5} ${cy + 7} L${cx - 8} ${cy - 2} Z`}
+        className={S}
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+      />
+    ),
+  },
 ];
 
-// Palette: the strip of categories with Shapes open, its grid of tiles, and a diamond on its way from the
-// panel to the canvas.
+// Palette: the strip as it is on a logo page, with Draw open and the Pen chosen, drawing a curve on the artboard: the
+// placed anchors, a handle being dragged out of the last one, and the path following it.
 export function PaletteArt() {
   return (
     <Stage>
-      <Card x={40} y={14} w={320} h={30} r={10}>
+      <Card x={52} y={14} w={252} h={30} r={10}>
+        {/* The tool picker, holding Select. */}
         <path
-          d="M54 22 v13 l3.4 -3.1 2.2 4.6 2.2 -1 -2.1 -4.4 4.4 -0.3 Z"
+          d="M64 22 v13 l3.4 -3.1 2.2 4.6 2.2 -1 -2.1 -4.4 4.4 -0.3 Z"
           className="fill-slate-500"
         />
         <line x1={84} y1={21} x2={84} y2={37} className="stroke-slate-200" strokeWidth={1.2} />
-        {TABS.map((t, i) => (
-          <Label
-            key={t}
-            x={TAB_X[i]!}
-            y={29.5}
-            anchor="middle"
-            size={9.5}
-            weight={i === 0 ? 700 : 500}
-            tone={i === 0 ? 'accent' : 'body'}
-          >
-            {t}
-          </Label>
-        ))}
-        <rect x={100} y={38} width={34} height={2.5} rx={1.2} className="fill-brand-500" />
+        {CATEGORIES.map((c) => {
+          const on = c.name === 'Draw';
+          return (
+            <Label
+              key={c.name}
+              x={c.x}
+              y={29.5}
+              anchor="middle"
+              size={9.5}
+              weight={on ? 700 : 500}
+              tone={on ? 'accent' : 'body'}
+            >
+              {c.name}
+            </Label>
+          );
+        })}
+        <rect x={90} y={38} width={28} height={2.5} rx={1.2} className="fill-brand-500" />
       </Card>
 
-      {/* The Shapes panel. */}
-      <Card x={48} y={52} w={170} h={132} r={10}>
-        <Label x={60} y={64} size={9} weight={700} tone="muted">
-          SHAPES
+      {/* The Draw panel. */}
+      <Card x={52} y={52} w={124} h={110} r={10}>
+        <Label x={64} y={64} size={9} weight={700} tone="muted">
+          DRAW
         </Label>
-        {TILE_GLYPHS.map((glyph, i) => {
-          const tx = 58 + (i % 3) * 52;
-          const ty = 74 + Math.floor(i / 3) * 34;
-          const on = i === 3;
+        {TOOLS.map((t, i) => {
+          const tx = 60 + (i % 2) * 56;
+          const ty = 72 + Math.floor(i / 2) * 44;
+          const on = t.name === 'Pen';
           return (
-            <g key={i}>
+            <g key={t.name}>
               <rect
                 x={tx}
                 y={ty}
-                width={46}
-                height={30}
-                rx={6}
+                width={52}
+                height={40}
+                rx={7}
                 className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-slate-50 stroke-slate-200'}
                 strokeWidth={on ? 1.6 : 1}
               />
-              {glyph(tx + 23, ty + 15)}
+              {t.glyph(tx + 26, ty + 16)}
+              <Label
+                x={tx + 26}
+                y={ty + 33}
+                anchor="middle"
+                size={7.5}
+                weight={on ? 700 : 500}
+                tone={on ? 'accent' : 'body'}
+              >
+                {t.name}
+              </Label>
             </g>
           );
         })}
       </Card>
 
-      {/* Dragged onto the canvas. */}
-      <Arrow from={[186, 96]} to={[262, 112]} kind="curved" dashed tone="muted" width={2} />
-      <Shape
-        x={272}
-        y={96}
-        w={78}
-        h={64}
-        kind="diamond"
-        label="Decide"
-        fill="fill-violet-100"
-        stroke="stroke-violet-500"
+      {/* The logo artboard, the pen mid-curve. */}
+      <Label x={206} y={60} size={8.5} weight={600} tone="muted">
+        1024 x 1024 · Logo
+      </Label>
+      <Card x={206} y={68} w={140} h={140} r={4}>
+        <circle
+          cx={276}
+          cy={138}
+          r={50}
+          className="fill-none stroke-sky-300"
+          strokeWidth={1}
+          strokeDasharray="4 4"
+        />
+        <path
+          d="M276 68 V208 M206 138 H346"
+          className="fill-none stroke-sky-200"
+          strokeWidth={0.8}
+        />
+      </Card>
+      <path
+        d="M236 168 C246 118 276 104 296 124 S318 174 326 150"
+        className="fill-none stroke-brand-500"
+        strokeWidth={3}
+        strokeLinecap="round"
       />
-      <SelectionBox x={268} y={92} w={86} h={72} />
-      <Cursor x={318} y={140} colour="violet" />
-
-      <Shape x={262} y={176} w={52} h={26} label="" fill="fill-white" stroke="stroke-slate-300" />
-      <Shape
-        x={322}
-        y={176}
-        w={52}
-        h={26}
-        kind="stadium"
-        fill="fill-emerald-100"
-        stroke="stroke-emerald-400"
+      {/* The handle being dragged out of the last anchor. */}
+      <line x1={312} y1={176} x2={340} y2={124} className="stroke-brand-400" strokeWidth={1.2} />
+      <circle cx={312} cy={176} r={3} className="fill-brand-400" />
+      <circle cx={340} cy={124} r={3} className="fill-brand-400" />
+      {[
+        [236, 168],
+        [296, 124],
+        [326, 150],
+      ].map(([x, y]) => (
+        <rect
+          key={x}
+          x={x! - 3.5}
+          y={y! - 3.5}
+          width={7}
+          height={7}
+          className="fill-white stroke-brand-600"
+          strokeWidth={1.4}
+        />
+      ))}
+      {/* The pen nib at the handle's end. */}
+      <path
+        d="M340 124 l10 -4 4 -10 -6 -4 -10 4 Z M340 124 l7 -7"
+        className="fill-white stroke-slate-700"
+        strokeWidth={1.4}
+        strokeLinejoin="round"
       />
     </Stage>
   );

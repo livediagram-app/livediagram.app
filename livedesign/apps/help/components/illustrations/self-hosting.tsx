@@ -2,7 +2,7 @@
 // deploy flow, and where optional configuration comes from. Composed only from the shared primitives so the house
 // style holds.
 
-import { Scene, Shape, Arrow, Panel, Label } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 
 /** The whole stack at a glance: the static apps and the router sitting in
  *  front of the api Worker, which owns D1 and the Durable Object room. */

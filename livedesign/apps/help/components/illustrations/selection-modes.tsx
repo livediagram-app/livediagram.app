@@ -10,7 +10,7 @@
 // TopCenterChrome.tsx (the Format banner).
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label, Cursor } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
 import {
   EraserGlyph,
   HandGlyph,
@@ -23,7 +23,7 @@ import {
   SpotlightGlyph,
   ZenGlyph,
   iso,
-} from './palette-modes-parts';
+} from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
 
 // --- The picker -------------------------------------------------------------
 

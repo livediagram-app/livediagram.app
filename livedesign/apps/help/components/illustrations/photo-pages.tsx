@@ -7,7 +7,7 @@
 // joined to Contents at the bottom right (PhotoClusterSegment.tsx), with its histogram, its three tabs and the Layers
 // tab's blend mode, opacity and rows (PhotoPanel.tsx, PhotoLayersTab.tsx). Composed from the shared primitives.
 
-import { Label, Panel, Scene, Tabs, TextBar } from './primitives';
+import { Label, Panel, Scene, Tabs, TextBar } from '@liveworkspace/help-site/art/primitives';
 import { PadlockGlyph, TitleButton } from './page-title-bar';
 
 type GlyphProps = { cx: number; cy: number; on?: boolean };
