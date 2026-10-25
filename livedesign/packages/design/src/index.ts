@@ -87,12 +87,15 @@ export type {
 // around; callers outside it use plain `string`.
 // The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
 // background patterns) is shared by every product: @liveworkspace/model-core/basics.
-import type {
-  TabId,
-  ElementId,
-  TextSize,
-  BackgroundPattern,
-} from '@liveworkspace/model-core/basics';
+import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
+// This product's patterns: the shared ones but those it retired (./retired-patterns), which a stored tab moves off.
+import type { BackgroundPattern } from './retired-patterns';
+export {
+  RETIRED_PATTERNS,
+  isBackgroundPattern,
+  migrateRetiredPattern,
+  type BackgroundPattern,
+} from './retired-patterns';
 export {
   PADDING_PX,
   ARROW_FLOWS,
@@ -109,7 +112,6 @@ export {
   type TextAlignY,
   type IconPosition,
   type ArrowFlow,
-  type BackgroundPattern,
   type AnimatedBackgroundPattern,
   type SeasonalBackgroundPattern,
 } from '@liveworkspace/model-core/basics';

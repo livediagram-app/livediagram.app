@@ -403,10 +403,12 @@ function isRetiredDiagramTourEvent(category: string, action: string, type: strin
 // The Format and Isometric tools (removed 2026-10-24, docs/specs/026-plan/plan-mode.md "Tools"): no tool picker
 // offers them in Plan, so the two canvas modes, the painter's copies and its Format panel settings are no longer
 // sent, and the Modes section went with them. The image export's UI·Toggled·IsometricExport followed on 2026-10-25
-// (docs/specs/008-canvas/canvas-and-palette.md "Retired features"), when its toggle went.
+// (docs/specs/008-canvas/canvas-and-palette.md "Retired features"), when its toggle went, and the Isometric background
+// pattern later that day (the same section): no picker offers it, so Canvas·Changed·Isometric is no longer sent.
 const FORMAT_AND_ISOMETRIC = new Set([
   'Canvas|Used|FormatPainter',
   'Canvas|Used|Isometric',
+  'Canvas|Changed|Isometric',
   'Element|Changed|FormatPainter',
   'UI|Toggled|IsometricExport',
 ]);

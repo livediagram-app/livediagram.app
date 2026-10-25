@@ -234,17 +234,6 @@ function patternStyleFor(
         backgroundSize: '36px 18px',
         backgroundPosition: `${px}px ${py}px, ${(px + 18) % 36}px ${py}px`,
       };
-    case 'isometric':
-      // Isometric rhombi: two ~30° diagonals corner-to-corner in a
-      // √3:1 tile. Like the crosshatch/diagonal tiles, an SVG that
-      // rasterizes once keeps the lines crisp and seam-free. Reads as
-      // 3D / technical "isometric paper".
-      return {
-        ...base,
-        backgroundImage: isometricBg(fadedPatternColor),
-        backgroundSize: '28px 16px',
-        backgroundPosition: `${px}px ${py}px`,
-      };
     case 'checkerboard':
       // Alternating filled squares via a tiled conic-gradient — the
       // only solid-fill pattern in the catalogue, so it reads as
@@ -310,18 +299,6 @@ function svgTileUrl(tile: { w: number; h: number; inner: string }): string {
     tileUrls.set(tile, url);
   }
   return url;
-}
-
-// Isometric rhombi: both ~30° diagonals corner-to-corner in a 28×16
-// tile (atan(16/28) ≈ 30°). Corner-to-corner lines always tile
-// seamlessly, so the rhombus grid is continuous and drift-free.
-function isometricBg(stroke: string): string {
-  const enc = stroke.replace(/#/g, '%23');
-  return (
-    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='16'>" +
-    `<path d='M0 16 L28 0 M0 0 L28 16' stroke='${enc}' stroke-width='1' fill='none'/>` +
-    '</svg>")'
-  );
 }
 
 // Honeycomb. The heropatterns.com hexagon tile: a single even-odd fill
@@ -442,12 +419,6 @@ export function backgroundPatternTile(
           w: 48,
           h: 24,
           inner: `<path d='M0 12 Q12 4 24 12 T48 12' fill='none' stroke='${c}' stroke-width='1'/>`,
-        };
-      case 'isometric':
-        return {
-          w: 28,
-          h: 16,
-          inner: `<path d='M0 16 L28 0 M0 0 L28 16' stroke='${c}' stroke-width='1' fill='none'/>`,
         };
       case 'hexagonal':
         return {

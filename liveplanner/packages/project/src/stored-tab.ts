@@ -2,6 +2,7 @@
 // the offline store's tab load and a file import all run this, so a new step is added once and reaches every entry
 // point. liveplanner's plans have only ever been stored in the current shapes (each plan's Durable Object, from
 // 2026-10-23), so the read-time migrations of livediagram's former shapes are gone.
+import { migrateRetiredPattern } from './retired-patterns';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -14,7 +15,8 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  const schemed = settleTabFields(tab);
+  // A retired background pattern (./retired-patterns) moves onto its replacement.
+  const schemed = migrateRetiredPattern(settleTabFields(tab));
   if (!Array.isArray(schemed.elements)) return schemed;
   // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
   // Keys settle before stacks lay out (docs/specs/009-elements/stack.md): a key's rows come from the arrows and tag

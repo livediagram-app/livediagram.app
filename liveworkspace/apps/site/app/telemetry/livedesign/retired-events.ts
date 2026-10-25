@@ -97,8 +97,14 @@ function isRetiredAiAssistant(category: string, action: string, type: string | n
 }
 
 // The isometric view (removed 2026-10-25, docs/specs/008-canvas/canvas-and-palette.md "Retired features"; livediagram
-// keeps it): the canvas tool, the image export's Isometric view toggle and the tool's help article.
-const ISOMETRIC_VIEW = new Set(['Canvas|Used|Isometric', 'UI|Toggled|IsometricExport']);
+// keeps it): the canvas tool, the image export's Isometric view toggle and the tool's help article. The Isometric
+// background pattern followed later that day (the same section): no picker offers it, so picking it, Canvas·Changed·
+// Isometric, is no longer sent.
+const ISOMETRIC_VIEW = new Set([
+  'Canvas|Used|Isometric',
+  'UI|Toggled|IsometricExport',
+  'Canvas|Changed|Isometric',
+]);
 const ISOMETRIC_HELP_ID = 'isometric-mode';
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {

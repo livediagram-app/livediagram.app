@@ -538,6 +538,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "BackgroundPattern": {
+    "description": "A tab's canvas background pattern.",
     "enum": [
       "grid",
       "blank",
@@ -549,7 +550,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagonal",
       "waves",
       "bricks",
-      "isometric",
       "hexagonal",
       "engineering",
       "checkerboard",

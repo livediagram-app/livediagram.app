@@ -156,7 +156,7 @@ describe('CanvasThemeDialog home', () => {
       themeId: 'lavender',
       finish: 'professional',
       font: 'roboto-slab',
-      backgroundPattern: 'isometric',
+      backgroundPattern: 'crosshatch',
     });
     expect(
       screen.getByRole('button', { name: 'Looks page 3 of 5' }).getAttribute('aria-current'),
