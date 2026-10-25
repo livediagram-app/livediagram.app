@@ -81,7 +81,7 @@ ids and member ids mentioned anywhere in the thread. The Inbox's
 thread query includes a thread when the reader is **mentioned** in it, as
 well as when they commented or own the project, still scoped to projects they
 can open. The thread row carries `mentionsYou`, and its hint reads
-**Mentioned You** (it wins over "Your project"). A resolved thread leaves the
+**Mentioned you** (it wins over "On your project"). A resolved thread leaves the
 page as every thread does.
 
 A Plan card's thread ([Items](../026-plan/items.md) "Comments") lists the same way, read straight from the

@@ -38,14 +38,39 @@ export function inboxCount(data: InboxData | null, viewerId: string | null): num
   return inboxSections(data, viewerId).forMe.length;
 }
 
-/** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, unless
- *  they have commented (then it is plainly a thread they are in). */
-export function threadHint(
+/** Why a row is in the Inbox, as its chip says it: the work handed to or by the person, a thread's reason, or a
+ *  form's new responses. */
+export type InboxReason =
+  | { kind: 'assigned'; label: 'Assigned to you' }
+  | { kind: 'waiting'; label: string }
+  | { kind: 'mention'; label: 'Mentioned you' }
+  | { kind: 'yours'; label: string }
+  | { kind: 'replied'; label: 'You replied' }
+  | { kind: 'responses'; label: string };
+
+/** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
+ *  they reply; then that they replied. Null for a thread the index lists for none of these. */
+export function threadReason(
   t: Pick<InboxThread, 'app' | 'mentionsYou' | 'onYourItem' | 'youCommented'>,
-): string | null {
-  if (t.mentionsYou) return 'Mentioned You';
-  return t.onYourItem && !t.youCommented ? `Your ${kindWords(t.app).lowerOne}` : null;
+): InboxReason | null {
+  if (t.mentionsYou) return { kind: 'mention', label: 'Mentioned you' };
+  if (t.onYourItem && !t.youCommented) {
+    return { kind: 'yours', label: `On your ${kindWords(t.app).lowerOne}` };
+  }
+  return t.youCommented ? { kind: 'replied', label: 'You replied' } : null;
 }
+
+/** An action or card's reason: theirs to do, or waiting on whoever they handed it to. */
+export function actionReason(a: Pick<InboxAction, 'assigneeName'>, forMe: boolean): InboxReason {
+  if (forMe) return { kind: 'assigned', label: 'Assigned to you' };
+  return { kind: 'waiting', label: `Waiting on ${a.assigneeName?.trim() || 'a teammate'}` };
+}
+
+/** A form's reason: how many responses the person hasn't seen. */
+export const formReason = (unseen: number): InboxReason => ({
+  kind: 'responses',
+  label: `${unseen} new ${unseen === 1 ? 'response' : 'responses'}`,
+});
 
 /** Everything the Inbox lists: Home's pill, so "Inbox is clear" is never said over an open thread or new responses. */
 export function inboxTotal(data: InboxData | null, viewerId: string | null): number | undefined {

@@ -307,6 +307,24 @@ export const FormIcon = lucide(
   16,
 );
 
+// Why an Inbox row is there, beside its words: a mention (lucide at-sign), a thread you replied in (reply), an item
+// of yours, and a person with no name (user).
+export const AtSignIcon = lucide(
+  <>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
+  </>,
+  12,
+);
+export const ReplyIcon = lucide(<path d="M20 18v-2a4 4 0 0 0-4-4H4M9 17l-5-5 5-5" />, 12);
+export const UserIcon = lucide(
+  <>
+    <circle cx="12" cy="8" r="5" />
+    <path d="M20 21a8 8 0 0 0-16 0" />
+  </>,
+  12,
+);
+
 // The two badge marks of liveplanner's VisibilityBadge, on their 9-unit grid.
 export function TeamBadgeGlyph() {
   return (
