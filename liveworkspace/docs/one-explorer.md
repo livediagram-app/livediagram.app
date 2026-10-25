@@ -198,6 +198,14 @@ The page reads where it is from its own address and there is that app's page:
   liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
   to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
   apps' old `/offline` pages only redirect to it, their query kept.
+- **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
+  index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store
+  directly; for the page, the app also keeps a snapshot of them in localStorage under
+  `liveworkspace:this-browser-inbox:<app>` (`@liveworkspace/explorer/this-browser`): the ids of the person they are
+  for (the account, and this browser's guest), at most 100 actions and 100 threads, newest first. The app works it
+  out again about 1.5 s after its offline store last writes, once a page load and as the panel's Inbox reads, and
+  drops it when no offline items are left. The page lists it, with the This Browser pill, only to the person it
+  names, and hears it change. liveworkspace.app can't read it, as it can't read the list.
 - **Take Offline and Sync.** Where the app's editor runs them (the registry's `offlineConversions`), each of the
   app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This Browser
   row has **Sync** for a person signed in. Only the app can write its offline store: in the editor's panel both run
