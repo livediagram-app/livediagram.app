@@ -55,7 +55,7 @@ describe('Delete in the tab menu', () => {
     open({ onDelete, onClose });
     expect(onDelete).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Delete this tab?' })).toBeNull();
+    expect(screen.queryByRole('alertdialog', { name: 'Delete this tab?' })).toBeNull();
   });
 
   it('asks first, with the warning, when deleting does what an undo cannot take back', () => {
