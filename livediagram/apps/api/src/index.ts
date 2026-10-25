@@ -9,7 +9,7 @@ import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-schema';
 import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livediagram/api-schema';
-import { hasApiTokenPrefix, isAnyApiTokenFormat } from './auth/legacy-token';
+import { hasApiTokenPrefix, isApiTokenFormat } from '@livediagram/api-schema';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
@@ -124,13 +124,13 @@ async function routeApiRequest(
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
     // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path. A token
-    // carried over from the old livediagram.app (`lvd_`, auth/legacy-token.ts) takes the same path.
+    // carried over from the old livediagram.app (`lvd_`, @liveworkspace/api-kit api-token.ts) takes the same path.
     if (bearer && hasApiTokenPrefix(bearer)) {
       // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
       // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
       // than drops its credential.
       try {
-        tokenAuth = isAnyApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
+        tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
       } catch (err) {
         if (!(err instanceof AccountsUnavailable)) throw err;
         return json(

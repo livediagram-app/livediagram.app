@@ -365,7 +365,7 @@ describe('workbench sessions at the front door', () => {
   });
 });
 
-// API tokens carried over from the old livediagram.app (docs/migration.md step 1.5, auth/legacy-token.ts): `lvd_`
+// API tokens carried over from the old livediagram.app (docs/migration.md step 1.5, @liveworkspace/api-kit api-token.ts): `lvd_`
 // takes the token path as `lwt_` does.
 describe('carried-over lvd_ API tokens', () => {
   beforeEach(() => {

@@ -1,42 +1,17 @@
 // livediagram's stored-tab upgrades for the migration's splitter (docs/migration.md step 3, "Each tab is upgraded
-// before it moves"): every upgrade `migrateStoredTab` (@livediagram/document stored-tab.ts) runs, in its order, but
-// WITHOUT `dropRetiredPages` and `dropRetiredPlan`, so a former Pages or Plan tab keeps its pages, articles, boards
-// and Plan-only elements for liveplanner, livedocuments and livedesign to read.
-//
-// RECONCILE: this mirrors migrateStoredTab by hand. Once @livediagram/document's stored-tab.ts takes an option to
-// keep the retired content, this becomes a call to it; until then a new upgrade added there must be added here too.
-// A body the upgrades can't read (a malformed element) is handed back as it came, as migrateIncomingTab does.
-
-import {
-  dropCustomTheme,
-  migrateRetiredScheme,
-  migrateRetiredTheme,
-  migrateStoredElements,
-  migrateWhiteboardKind,
-  settleDiagramKeys,
-  settleStacks,
-  settleTabFields,
-  tagColoursOf,
-  upgradeLegacyLinks,
-  type Tab,
-} from '@livediagram/document';
+// before it moves"): `migrateStoredTabKeepingRetired` (@livediagram/document stored-tab.ts), every upgrade
+// `migrateStoredTab` runs but without its Pages and Plan drops, so a former Pages or Plan tab keeps its pages,
+// articles, boards and Plan-only elements for liveplanner, livedocuments and livedesign to read. The migrate tool
+// uses the same function. A body the upgrades can't read (a malformed element) is handed back as it came, as
+// migrateIncomingTab does.
+import { migrateStoredTabKeepingRetired, type Tab } from '@livediagram/document';
 
 type Body = Record<string, unknown>;
+type UpgradableTab = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>;
 
 export function upgradeStoredTabKeepingRetired(body: Body): Body {
   try {
-    const tab = body as unknown as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>;
-    const schemed = dropCustomTheme(
-      migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
-    );
-    if (!Array.isArray(schemed.elements)) return schemed;
-    const elements = settleStacks(
-      settleDiagramKeys(
-        upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
-        tagColoursOf(body),
-      ),
-    );
-    return elements === schemed.elements ? schemed : { ...schemed, elements };
+    return migrateStoredTabKeepingRetired(body as unknown as UpgradableTab) as unknown as Body;
   } catch {
     console.warn('[migration] tab-unreadable', {
       elements: Array.isArray(body.elements) ? body.elements.length : 0,
