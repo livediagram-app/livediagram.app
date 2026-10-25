@@ -122,9 +122,14 @@ describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ldes_silent')");
   });
 
-  it('leaves the sign-in pages, the guest hand-off, consent pages and embeds alone', () => {
-    for (const path of ['/sign-in', '/get-started', '/auth', '/oauth', '/embed', '/workbench']) {
+  it('leaves the sign-in pages, the guest hand-off and embeds alone', () => {
+    for (const path of ['/sign-in', '/get-started', '/auth', '/embed', '/workbench']) {
       expect(SILENT_SIGN_IN_SKIP_PATHS).toContain(path);
     }
+  });
+
+  // A person signed in to liveworkspace who arrives from an AI tool is signed in on the way, not shown Sign in.
+  it('signs the AI-tool consent and device pages in without a click', () => {
+    expect(SILENT_SIGN_IN_SKIP_PATHS).not.toContain('/oauth');
   });
 });

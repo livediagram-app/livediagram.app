@@ -337,8 +337,10 @@ It never bounces:
   and the other apps stay signed in, so signing in to that app again is one click with no code;
 - inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
   (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
-- on the sign-in pages, the guest hand-off's way back, the AI-tool consent pages, embeds, a share
-  link (`?s=`) or liveplanner's form links, so their own flows are never interrupted;
+- on the sign-in pages, the guest hand-off's way back, embeds, a share link (`?s=`) or liveplanner's
+  form links, so their own flows are never interrupted. The AI-tool consent and device pages (`/oauth/*`)
+  do bounce: they only work signed in, and the bounce keeps their address, so someone arriving from an AI
+  tool with a liveworkspace session but none in the app is signed in rather than shown a Sign in step;
 - when the app's API isn't on the page's own site, or the address is too long to carry (1,500
   characters), or the browser has no `sessionStorage` or cookies to guard it.
 

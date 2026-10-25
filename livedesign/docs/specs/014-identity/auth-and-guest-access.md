@@ -39,7 +39,7 @@ Someone signed in to liveworkspace (in another app, or on liveworkspace.app) who
 2. That route sends the browser to the accounts site's authorize with `prompt=none`, keeping the PKCE verifier and the return address in its own HttpOnly `ldes_silent_pkce` cookie (a clicked sign-in in another tab keeps `ldes_pkce`) and setting a two-minute readable `ldes_silent` guard. The accounts site answers at once, never with a page: a code when there is a session, `error=login_required` when not.
 3. **`GET /api/auth/callback`** knows the bounce by its cookie's `state`. With a code it signs in exactly as step 2 above does; with an error, or a failed swap, it does nothing. Either way it goes back to the same path, query and hash.
 
-It never bounces more than once per tab, nor in any tab within two minutes of the last bounce (`ldes_silent`); with a session here; after the person signed out of livedesign (`ldes_signed_out=1`); inside a frame (embeds, the workbench); for a crawler or an automated browser (`navigator.webdriver`, which keeps the e2e suites unbounced); on `/sign-in`, `/get-started`, `/auth/*`, `/oauth/*`, `/embed/*`, `/workbench/*` or a share link (`?s=`); or when the API isn't on the page's own origin (an app's dev server on its own port). The route refuses the bounce for the signed-out mark and the guard too, and whatever goes wrong (no sign-in configured, rate limited) it goes straight back to the page, never to an error.
+It never bounces more than once per tab, nor in any tab within two minutes of the last bounce (`ldes_silent`); with a session here; after the person signed out of livedesign (`ldes_signed_out=1`); inside a frame (embeds, the workbench); for a crawler or an automated browser (`navigator.webdriver`, which keeps the e2e suites unbounced); on `/sign-in`, `/get-started`, `/auth/*`, `/embed/*`, `/workbench/*` or a share link (`?s=`); or when the API isn't on the page's own origin (an app's dev server on its own port). The AI-tool consent and device pages (`/oauth/*`) do bounce: they only work signed in, so someone signed in to liveworkspace who arrives there from an AI tool or the CLI with no session here is signed in on the way, never shown a Sign in step that one click would pass straight through. The bounce comes back to the same address, so the request's `session` (or the device code) is kept. The route refuses the bounce for the signed-out mark and the guard too, and whatever goes wrong (no sign-in configured, rate limited) it goes straight back to the page, never to an error.
 
 **The cost** is one bounce per new tab for anyone without a session here: four extra requests (the stopped page, the route, the accounts site, the callback). Measured locally against the dev stacks it adds about 85 ms to a signed-in person's first load and about 50 ms to a guest's; later loads in the tab add nothing. A guest's things still become the account's: the accounts site merges a guest at a sign-in that finds its session already there, as at any other ([Guest → account migration](#guest--account-migration)).
 
@@ -97,9 +97,15 @@ the marketing site's "No Catch" night section:
   (`guestReturnHref`). The connect pages have no guest link: they only work signed in.
 - **The card.** A near-opaque card (no backdrop blur, so the lines moving behind it never make it repaint) holding the page's title (the `h1`), an optional line under it, the error or notice, and its action (on
   `/sign-in` after a failed hand-off, **Try again**).
-- **The pitch.** Beside the card, an eyebrow, a heading and its promise rows (four on the account pages, three on the connect pages), each a tinted icon, a coloured lead
-  and a line. The account pages say what an account adds ("No catch": every device, teams to create and join, AI tools, 0 paywalls); the connect
-  pages say what connecting means ("Connect": live, your call, revoke any time). The pitch holds no controls.
+- **The pitch.** Beside the card, an eyebrow, a heading and its promise rows (four on the account pages, three on the
+  connect pages), one row under another at every width. Each row is a tinted icon, one title in its tone's colour and
+  a line under it, as on liveworkspace.app's sign-in pitch (`liveworkspace/apps/site/components/account/Pitch.tsx`):
+  the title stands alone, with no lead word or second title beside it. The account pages say what an account adds
+  ("No catch": your designs sync on every device, create and join teams, connect your AI assistant, still completely
+  free); the connect pages say what connecting means ("Connect": changes show live, you approve every connection,
+  revoke access any time). The pitch holds no controls. Its frame is shared by every editor, `AuthPitch`
+  (`../packages/workbench/src/components/chrome/AuthPitch.tsx`); the rows are this app's
+  (`apps/live/components/chrome/auth-pitches.tsx`).
 - **Decorative lines keep drawing** behind the content on wide screens, in any direction: four slots each take a
   random route that enters through one edge and leaves through another, bending across the stage on the way
   (`randomTrace`, `../packages/workbench/src/components/chrome/auth-lines.ts`). A route draws in, holds, then trails off the far edge over 14
@@ -112,8 +118,8 @@ the marketing site's "No Catch" night section:
   with a slight tilt and overshoot like a shape dropped on the canvas, the promise rows slide in like stickies being
   placed and each row's icon pops once its row has landed. Everything has settled by about 660ms; under reduced motion
   the page simply appears.
-- **Large screens.** From `2xl` the frame widens to 88rem, the pitch heading grows, the promise rows sit in a
-  two-by-two grid and the card gains room; from 1920px the whole frame (not the lines) is zoomed 1.2 times, and 1.35
+- **Large screens.** From `2xl` the frame widens to 88rem, the pitch heading grows, the promise rows stay one per
+  row and the card gains room; from 1920px the whole frame (not the lines) is zoomed 1.2 times, and 1.35
   times from 2400px, so a big monitor is filled at a readable size rather than left with a small island.
 - **Both themes.** Dark mode wears the Midnight palette (the root carries `data-palette="midnight"` while the frame is
   mounted, as on the Explorer; [Colour scheme](../004-interface-design/color-scheme.md#explorer-midnight)), so the
@@ -181,6 +187,11 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 
 - **No hint, or `ldes_signed_in=0`**: a guest. The create goes ahead at once, This Browser.
 - **`ldes_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
+- **The consent and device pages** (`/oauth/*`) read the hint the same way. With `ldes_signed_in=1` they show their
+  loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
+  sign-in as signed out: a slow session used to show a signed-in person "Sign in to connect", and the click then
+  signed them straight in. Only the session's own answer that there is no one, or no hint, shows the Sign in step
+  (`signInGateOf`, `../packages/workbench/src/hooks/auth/useSignInGate.ts`).
 - The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a design in This Browser, the safe direction.
 
 ### The account name cookie

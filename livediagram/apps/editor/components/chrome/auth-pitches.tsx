@@ -1,9 +1,9 @@
 // The two pitches the Night Band frame shows beside its card (docs/specs/014-identity/auth-and-guest-access.md "The
 // look: Night Band"): what an account adds, on the account pages, and what connecting means, on the connect pages.
-// Copy only; no controls.
+// Each title stands alone, as on liveworkspace.app's sign-in pitch; the shared AuthPitch draws them. Copy only.
 import { Glyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
-import { AuthPitch, type PitchRow } from './AuthStage';
+import { AuthPitch, type PitchRow } from '@liveworkspace/workbench/components/chrome/AuthPitch';
 
 function Icon({ children }: { children: ReactNode }) {
   return (
@@ -59,28 +59,24 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'emerald',
     icon: DEVICES,
-    lead: 'Every device',
-    title: 'Your canvases sync',
+    title: 'Your canvases sync on every device',
     line: 'Start on a laptop, pick up on a phone.',
   },
   {
     tone: 'violet',
     icon: PEOPLE,
-    lead: 'Teams',
     title: 'Create and join teams',
     line: 'Share a workspace with the people you work with.',
   },
   {
     tone: 'sky',
     icon: SPARKLE,
-    lead: 'AI tools',
-    title: 'Connect your assistant',
-    line: 'Let it find, read and draw on your boards.',
+    title: 'Connect your AI assistant',
+    line: 'Let it find, read and draw on your canvases.',
   },
   {
     tone: 'amber',
     icon: PAGE,
-    lead: '0 paywalls',
     title: 'Still completely free',
     line: 'Every feature, for everyone. No paid tier.',
   },
@@ -90,22 +86,19 @@ export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'emerald',
     icon: PULSE,
-    lead: 'Live',
-    title: 'Changes show as they happen',
-    line: 'Edits land on your boards like a teammate’s.',
+    title: 'Changes show live',
+    line: 'Edits land on your canvases like a teammate’s.',
   },
   {
     tone: 'sky',
     icon: CHECK,
-    lead: 'Your call',
     title: 'You approve every connection',
     line: 'Nothing connects until you say so here.',
   },
   {
     tone: 'amber',
     icon: UNDO,
-    lead: 'Revoke',
-    title: 'Access, any time',
+    title: 'Revoke access any time',
     line: 'On liveworkspace.app, under API tokens.',
   },
 ];
@@ -124,7 +117,7 @@ export function ConnectPitch() {
   return (
     <AuthPitch
       eyebrow="Connect"
-      heading="Your boards, wherever you work."
+      heading="Your canvases, wherever you work."
       rows={CONNECT_PITCH_ROWS}
     />
   );
