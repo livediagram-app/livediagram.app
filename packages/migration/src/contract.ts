@@ -167,7 +167,13 @@ export type MovedParts = {
 export type CrossReference = {
   from: { app: MigrationApp; id: string; tabId: string; elementId: string };
   to: { app: MigrationApp; id: string; tabId: string | null };
-  kind: 'tab-window' | 'chart-source' | 'link';
+  /** `plan-element`: a Plan board, card, view or Sheet on a tab that left Plan's app, frozen into a picture. */
+  kind: 'tab-window' | 'chart-source' | 'link' | 'plan-element';
+  /** What the migrate tool draws into the frozen element's picture slot (an image element with `imageId: null`, at
+   *  `from.elementId` in `from.tabId`): the old document's tab `tabId`, whole (`elementId` null, a tab window's view)
+   *  or one element of it (a Plan board, card, view or Sheet as it last drew). Absent when nothing is drawn (a link,
+   *  or a chart, which keeps its last read values). */
+  picture?: { tabId: string; elementId: string | null };
 };
 
 // ---- The browser's Local only parts ----------------------------------------------------------------------------------
@@ -255,6 +261,10 @@ export type OldDocumentInput = {
   plan: MigrationPlanData | null;
   changesets: MigrationChangeset[];
   imageGrants: { imageId: string; createdAt: number }[];
+  /** Old owner ids of everyone who may have written the document's items or sheets (its owner is always included):
+   *  participants, team members, people it was shared with. Card and sheet people are stored as a one-way hash of
+   *  the owner id, so only these can be recomputed for liveplanner; the rest keep their old hash. */
+  people?: string[];
 };
 
 /** What the splitter needs of the products, handed in so it imports none of them. */
@@ -273,6 +283,15 @@ export type SplitHooks = {
   ): { pageId: string; x: number; y: number; width: number; height: number }[];
   /** The media owner of an image the document places, for `imageOwners` (null when the image is unknown). */
   imageOwner(imageId: string): string | null;
+  /** The app that keeps an old document's id, for links to other documents (a first pass over the snapshot can
+   *  answer it). Absent, or null for an unknown document: livediagram. */
+  keptByOf?(documentId: string): MigrationApp | null;
+  /** The address of a part (and one of its tabs) for a frozen reference's link. Absent: the apps' own addresses
+   *  (`PART_ORIGINS` in ./split). */
+  partUrl?(app: MigrationApp, id: string, tabId: string | null): string;
+  /** liveplanner's public id of a person on items for a new owner id. Absent: the splitter's own (SHA-256 of
+   *  `liveplanner-item-person:` + id, the first 12 bytes in hex, as liveplanner's `itemPersonId`). */
+  itemPersonId?(newOwnerId: string): string;
 };
 
 export type SplitResult = {
@@ -287,7 +306,23 @@ export type SplitResult = {
 
 /** A browser's Local only document, as the old editor kept it in IndexedDB (`livediagram-offline`, store
  *  `documents`): tabs inline, each with its `id` and `name`. */
-export type LocalDocumentInput = { id: string; name: string; tabs: unknown[] };
+export type LocalDocumentInput = {
+  id: string;
+  name: string;
+  tabs: unknown[];
+  // The rest of the record, under its own names, all optional (a record may predate any of them). With `items` or
+  // `sheets` the liveplanner part carries them; without, its plan is null.
+  /** The browser's old owner id (`livediagram:v2:self-id`), for recomputing card people. */
+  ownerId?: string;
+  createdAt?: number;
+  savedAt?: number;
+  presentation?: string | null;
+  items?: unknown[];
+  itemsRev?: number;
+  itemsNextKey?: number;
+  itemTypes?: unknown;
+  sheets?: unknown[];
+};
 
 export type LocalSplitResult = {
   /** The tabs the local document keeps (livediagram's), raw. */
