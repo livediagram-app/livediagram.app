@@ -165,6 +165,38 @@ When a guest signs in or signs up, the things they made as a guest **become the 
 
 A guest's documents in This Browser are not part of the merge; they stay in the browser until the person moves them ([Moving documents in This Browser after signing in](#moving-documents-in-this-browser-after-signing-in)).
 
+## Returning guests from the old site
+
+The old livediagram.app kept a guest as a bare UUID in `localStorage` under `livediagram:v2:self-id`, with its
+HMAC signature under `livediagram:v2:self-sig` (absent for a guest from before 2026-09-25). Both editors are served
+at `www.livediagram.app`, so this editor finds those keys in a returning guest's browser. Their documents were
+copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `docs/migration.md`, step 6).
+
+- **When.** On a page load of `/new` or the editor (never an embed or a workbench), once auth has settled and the
+  page has an identity of its own: the signed-in account, else this browser's guest token. With neither (the guest
+  handoff failed) it waits for a later load.
+- **What.** When `self-id` holds a UUID, the editor posts `{ legacyId, signature }` (`LegacyGuestClaim`,
+  `signature` null when `self-sig` is absent) to `POST /api/legacy-guest/claim` with the same Bearer every other
+  call sends. At most one attempt per page load, in the background: nothing waits for it. A `self-id` that is not
+  a UUID was not written by the old site, and is left alone and never sent.
+- **The answer.** `{ merged: true }` or `{ merged: false }` (`LegacyGuestClaimAnswer`): the editor removes
+  `self-id` and `self-sig`, and nothing else. Any other outcome (a network failure, any non-2xx) keeps both keys,
+  and the next page load tries again.
+- **After a merge** the editor raises the `claimed` api-write signal (`lib/api/write-signal.ts`), and the views
+  that list the person's documents read their list again a second later (the editor's pickers,
+  `useDocumentList`, and /new's Jump Back In card), so the claimed work appears without a reload.
+- **Into whom.** The caller, guest or account. A guest who signs in later carries the claimed work with them
+  through the ordinary [Guest → account merge](#guest--account-merge).
+- **Counted** (no ids): `Participant`/`Moved`/`LegacyGuest` on a merge, `Participant`/`Moved`/`LegacyGuestUnknown`
+  or `LegacyGuestClaimed` when the api had nothing to merge.
+- A browser repair keeps both keys ([Load recovery](../007-editor/load-recovery.md#repairing-a-browser)): they
+  are the only way back to the old guest's work.
+- **Where it lives**: `lib/legacy-guest-claim.ts`, `lib/api/migration.ts`, `hooks/persistence/useLegacyGuestClaim.ts`.
+
+Documents a guest kept in This Browser on the old site are not part of the claim: they never left the browser,
+and their Pages and Plan parts are set aside and offered separately
+([Offline Mode → Moving retired parts](../006-document/offline-mode.md#moving-retired-parts-to-the-other-apps)).
+
 ## Deleting an account
 
 Settings > Account > Delete Account deletes the whole account: the person's livediagram data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:

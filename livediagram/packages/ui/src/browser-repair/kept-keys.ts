@@ -23,6 +23,10 @@ export const REPAIR_KEPT_KEYS: readonly string[] = [
   'livediagram:v2:collab-key',
   'livediagram:v2:collab-secret',
   'livediagram:v2:community-key',
+  // The old livediagram.app's guest, until the editor has claimed its work (apps/editor/lib/legacy-guest-claim.ts):
+  // losing them loses the only way back to it.
+  'livediagram:v2:self-id',
+  'livediagram:v2:self-sig',
 ];
 
 /** Key prefixes a repair keeps: the Google Drive mirror's state. */

@@ -29,6 +29,7 @@ import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccount
 import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
+import { SettingsRetiredPartsRow } from './SettingsRetiredPartsRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
 
 // This editor's Settings catalogue (settings-catalogue.ts, rows that read and write themselves over
@@ -78,6 +79,8 @@ export function settingsModel(
         return { ...row, kind: 'custom', render: () => <SettingsDeleteAccountRow row={row} /> };
       case 'trash':
         return { ...row, kind: 'custom', render: () => <SettingsTrashRow row={row} /> };
+      case 'retiredParts':
+        return { ...row, kind: 'custom', render: () => <SettingsRetiredPartsRow row={row} /> };
       case 'cloudSync':
         return { ...row, kind: 'custom', render: () => <SettingsCloudSyncRow row={row} /> };
       case 'defaultFolders':

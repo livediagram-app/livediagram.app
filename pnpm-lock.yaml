@@ -1476,6 +1476,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
