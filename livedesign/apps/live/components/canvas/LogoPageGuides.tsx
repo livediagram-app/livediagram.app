@@ -6,12 +6,7 @@
 // strength. A view only: never stored, never exported, taking no presses. While Mirror is on, its
 // axes are drawn solid (a centre line per reflection, a spoke per radial copy). Over the artwork on a page with content; under the page's
 // own cards (the layout invitation) on an empty page, which has no artwork to sit over.
-import {
-  logoGuides,
-  mirrorAxisLines,
-  type GuideLine,
-  type LaidOutPage,
-} from '@livedesign/design';
+import { logoGuides, mirrorAxisLines, type GuideLine, type LaidOutPage } from '@livedesign/design';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { LOGO_GUIDE_ALPHA } from '@/lib/logo-guide-prefs';
@@ -24,7 +19,7 @@ function Line({ l, ...rest }: { l: GuideLine } & React.SVGProps<SVGLineElement>)
 }
 
 /** Whether a logo page's guides are drawn for this viewer: Show Guides on for the page (it is per
- *  page), an editor, and not zen, presenting or the isometric view. */
+ *  page), an editor, and not zen or presenting. */
 export function showsLogoGuides(view: PagesModeView, bare: boolean, pageId: string): boolean {
   return !bare && !!view.edit && !!view.logo?.guidesOn(pageId);
 }

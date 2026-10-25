@@ -184,12 +184,6 @@ export const CANVAS_TOOLS: {
     // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
     mutates: true,
   },
-  {
-    id: 'isometric',
-    name: 'Isometric View',
-    keywords: 'isometric 3d tilt perspective depth angle i',
-    needsContent: true,
-  },
 ];
 
 // The tool switches, minus whichever tool is already in force. Grouped with

@@ -652,8 +652,8 @@ export const EXPORT_OPTIONS = chart(
   'UI',
   'Toggled',
   'Export Options',
-  'Image export options: the canvas pattern, the isometric view, hidden layers.',
-  { types: ['PatternExport', 'IsometricExport', 'HiddenLayersExport'] },
+  'Image export options: the canvas pattern, hidden layers.',
+  { types: ['PatternExport', 'HiddenLayersExport'] },
 );
 
 export const TAB_IMPORTS = chart(

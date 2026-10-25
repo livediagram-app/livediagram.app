@@ -190,7 +190,7 @@ takes these blocks:
 - `longpress-hold` and the new `element-pop-in`.
 
 The only change on the way is `element-pop-in`. Non-motion canvas rules stay in `globals.css`:
-the sticky peel, isometric depth, cursors and note ink.
+the sticky peel, cursors and note ink.
 
 ### View Transitions
 

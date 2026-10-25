@@ -325,10 +325,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-        {/* Pages mode cuts elements off at the page edges (PageClip); not in the
-          isometric view, whose 3D stack a clip would flatten. */}
+        {/* Pages mode cuts elements off at the page edges (PageClip). */}
         <PageClip
-          pages={props.pagesMode && props.canvasTool !== 'isometric' ? props.pagesMode.pages : null}
+          pages={props.pagesMode ? props.pagesMode.pages : null}
           // A page under a layout preview shows only the preview.
           hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
           elements={elements}
@@ -360,7 +359,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           />
         </PageClip>
         {/* A wireframe page's camera and system bars, over what is on its screen. */}
-        {props.pagesMode && props.canvasTool !== 'isometric' ? (
+        {props.pagesMode ? (
           <WireframeDeviceOverlays
             pages={props.pagesMode.pages}
             frameTheme={props.pagesMode.frameTheme}
@@ -410,7 +409,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
 
         {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-        <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+        <SelectionGripsLayer onHosts={setGripHosts}>
           <LayerSelectionChrome
             selectionInput={props.selectionInput}
             tabId={props.activeTabId ?? ''}

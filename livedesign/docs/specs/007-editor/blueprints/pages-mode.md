@@ -578,7 +578,7 @@ pageHasOrientation(page)`, then a logo page's **Background** and
   swallowed (`endsDrag`); Escape cancels. `reorderSlot` = count of other units (`laidOutUnits`)
   whose centre is left of the dragged unit's centre (unit rect centre + screen dx / zoom); the
   marker sits in the gap between units.
-- Bare sheets: `CanvasPages` `bare` (zen, presenting, the isometric view) drops `edit`,
+- Bare sheets: `CanvasPages` `bare` (zen, presenting) drops `edit`,
   labels, the navigator and the first page's choice.
 
 ### Kinds, adding, getting around
@@ -747,7 +747,7 @@ targets - locked, locked)`, the counts taken from the pages before the commit; `
   pages' pictures (`pageImageIds(tab.pages)`) with the elements' images, each once.
 
 `ImageExportOpts.page` makes `renderTabToCanvas` / `renderTabToSvg` use `pageExportFrame(page)`:
-bounds = the page rect, no padding, no isometric, no tab backdrop or pattern; background =
+bounds = the page rect, no padding, no tab backdrop or pattern; background =
 `backgroundSvg` (rect fill or `<linearGradient>` along the CSS gradient line, then a `<pattern>`
 anchored at the page's corner); surface = `pageSurface(page) ?? 'light'`; elements filtered to
 those whose bounds meet the page (arrows kept). The canvas rasterises `backgroundSvg` first.
@@ -1138,7 +1138,7 @@ Gaps (no unit test; browser-checked or uncovered):
 - The export dialog's page row (`ExportPagePicker`), `pageExportFrame` for a filled page, the
   elements clipped to a page in PDF / PNG / SVG, and the PDF bytes.
 - The Slides button and its popover, no Layers in Pages mode, the letterbox
-  (`LETTERBOX_SPREAD`) and bare sheets in zen, presenting and isometric view.
+  (`LETTERBOX_SPREAD`) and bare sheets in zen and presenting.
 - `pressIsOffPage` (only the pages are drawn on) and the per-element surface provider
   (`PageSurfacesProvider`, `useElementSurface`).
 - Telemetry for the remaining page events (`PagePortrait`, `PageLandscape`, `PageSize`,

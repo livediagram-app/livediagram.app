@@ -7,7 +7,6 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
@@ -23,13 +22,13 @@ const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
 // How presses on the bare canvas surface route between the tools
-// (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
+// (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
 // intercepts (spotlight grow / shrink, middle-mouse pan,
 // draw-to-size), the background context menu, and the outer <main> +
-// inner wrapper pointerdowns that arm the long-press menu, the
-// isometric orbit, and the pan-vs-marquee choice. Canvas mounts the
+// inner wrapper pointerdowns that arm the long-press menu and the
+// pan-vs-marquee choice. Canvas mounts the
 // returned handlers verbatim; every piece of state they drive stays
-// owned by its existing hook (pan / marquee, spotlight, iso camera,
+// owned by its existing hook (pan / marquee, spotlight,
 // the draw gesture).
 export function useCanvasSurfaceGestures({
   canvasTool,
@@ -43,7 +42,6 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   spotlight,
-  isoCamera,
   beginPendingDrawGesture,
   interceptPress,
   onCanvasContextMenu,
@@ -62,7 +60,6 @@ export function useCanvasSurfaceGestures({
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
   spotlight: ReturnType<typeof useSpotlight>;
-  isoCamera: ReturnType<typeof useIsometricCamera>;
   // Starts the queued draw-to-size gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
@@ -118,11 +115,7 @@ export function useCanvasSurfaceGestures({
   const routePanOrMarquee = (e: ReactPointerEvent) => {
     const laserOnTouch = canvasTool === 'laser' && e.pointerType === 'touch';
     if (laserOnTouch) return;
-    const wantsPan =
-      spaceHeldRef.current ||
-      canvasTool === 'pan' ||
-      canvasTool === 'laser' ||
-      canvasTool === 'isometric';
+    const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'laser';
     if (wantsPan) {
       startPan(e);
     } else {
@@ -266,11 +259,8 @@ export function useCanvasSurfaceGestures({
     // menu and open a tab-level context menu instead.
     e.preventDefault();
     // Spotlight suppresses all context menus (right-click is its
-    // shrink gesture, handled in onContextMenuCapture). Isometric
-    // (docs/specs/008-canvas/isometric-view.md) likewise: right-click-drag orbits the camera, so the
-    // canvas / tab menu must never open in that tool or it interrupts
-    // the orbit gesture.
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
+    // shrink gesture, handled in onContextMenuCapture).
+    if (canvasTool === 'spotlight') return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
     // pointerdown already armed a marquee (or pan) whose release would
     // deselect, and deselecting closes the menu this click is opening.
@@ -292,15 +282,6 @@ export function useCanvasSurfaceGestures({
     // (touch has no right-click). Armed before the marquee / pan logic;
     // a finger that moves cancels it, so it never fights a drag.
     canvasLongPress.onPointerDown(e);
-    // Isometric (docs/specs/008-canvas/isometric-view.md): holding the RIGHT button and dragging orbits
-    // the camera too — a mouse-only alternative to Shift-drag / the orbit
-    // button. The canvas / tab context menu is suppressed wholesale while
-    // the isometric tool is active (see onContextMenu above), so a
-    // right-press starts an orbit without ever popping a menu.
-    if (canvasTool === 'isometric' && e.button === 2) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     // Primary button only. A right- (or middle-) click must fall
     // through to onContextMenu untouched: it opens the menu, and if
     // we also armed a marquee here the matching pointerup would fire
@@ -335,13 +316,6 @@ export function useCanvasSurfaceGestures({
     // Restrict to direct hits on `main` so element clicks (which
     // bubble up here) don't also trigger.
     if (e.target !== e.currentTarget) return;
-    // Isometric (docs/specs/008-canvas/isometric-view.md): Shift-drag orbits the camera (spin + tilt)
-    // instead of panning, so the plain drag stays a pan. Self-contained
-    // in the camera hook; take it before the pan branch below.
-    if (canvasTool === 'isometric' && e.shiftKey) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     routePanOrMarquee(e);
   };
 
@@ -390,10 +364,10 @@ export function useCanvasSurfaceGestures({
   // The bare surface around the content layer: the layer is scaled with the zoom, so zoomed out (a phone's usual
   // view) most of the empty canvas is <main> itself. Only a finger's double-tap means anything there: it zooms
   // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom"). The tools that make the layer inert
-  // (Spotlight, Isometric) give every press on <main> a meaning of their own.
+  // (Spotlight) give every press on <main> a meaning of their own.
   const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget || !pressedByFinger()) return;
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
+    if (canvasTool === 'spotlight') return;
     const at = doublePressAt(e);
     if (at) onCanvasDoubleClick(at.x, at.y, true);
   };

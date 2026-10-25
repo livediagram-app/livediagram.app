@@ -1,14 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { Button, trustedHtml, Switch } from '@livedocuments/ui';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
 
 // The options-and-download second screen for an image export format
-// (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
-// permanently on the main export grid; they only affect image formats, so
-// they now live here, behind the format card (docs/specs/010-palette/style-presets.md), above a live preview
-// of exactly what will be exported. Owns the two toggle states and hands them
+// (PNG / SVG / PDF). The background-pattern toggle used to sit
+// permanently on the main export grid; it only affects image formats, so
+// it now lives here, behind the format card (docs/specs/010-palette/style-presets.md), above a live preview
+// of exactly what will be exported. Owns the toggle states and hands them
 // to the parent's renderer on Download.
 export function ImageExportPanel({
   label,
@@ -31,23 +30,20 @@ export function ImageExportPanel({
   hasHiddenLayers: boolean;
   // Build the preview SVG markup for the given options (same content the
   // export produces). Called on each toggle change.
-  renderPreview: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => string;
+  renderPreview: (opts: { pattern: boolean; hiddenLayers: boolean }) => string;
   // False until the icon catalogues + image bitmaps have loaded, so the
   // preview doesn't flash placeholder glyphs first.
   previewReady: boolean;
   // Render + download the image with the chosen options. The parent owns the
   // rasteriser + telemetry; this panel just collects the options.
-  onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
+  onExport: (opts: { pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
   // A page export (docs/specs/007-editor/pages-mode.md "Export"): the page is
-  // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
+  // its own background, so the pattern toggle does not show.
   pageExport?: boolean;
   // The page choice (ExportPagePicker), under the back bar and above the preview.
   pagePicker?: ReactNode;
 }) {
-  // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
-  // isometric projection. Off by default — the standard export is flat top-down.
-  const [isometric, setIsometric] = useState(false);
   // Backdrop pattern (docs/specs/010-palette/style-presets.md): paint the tab's grid / dots / … pattern. On by
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
@@ -57,8 +53,8 @@ export function ImageExportPanel({
 
   // Rebuild the preview only when an option or the loaded assets change.
   const previewSvg = useMemo(
-    () => (previewReady ? renderPreview({ isometric, pattern, hiddenLayers }) : ''),
-    [previewReady, renderPreview, isometric, pattern, hiddenLayers],
+    () => (previewReady ? renderPreview({ pattern, hiddenLayers }) : ''),
+    [previewReady, renderPreview, pattern, hiddenLayers],
   );
 
   return (
@@ -83,47 +79,8 @@ export function ImageExportPanel({
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>
         )}
       </div>
-      {/* Isometric toggle. The help `?` sits beside the LABEL, not at the
-          row's end: trailing it after the switch pushed this row's toggle
-          out of line with the one below, and a `?` at the edge reads as
-          belonging to the panel rather than to this option. It used to be a
-          "What's the isometric view?" line under the last toggle, a footnote
-          to the whole panel with nothing tying it to the one option it
-          answers for.
-
-          A link cannot nest inside a button, so the row's hit target is an
-          overlay button behind the content (the card stays one click target,
-          as every settings row in the editor is) and the content sits above
-          it, click-through except for the `?` itself. */}
       {pageExport ? null : (
         <>
-          <div className="relative flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10">
-            <button
-              type="button"
-              onClick={() => {
-                // Fire before the flip so an opt-out still reaches the wire.
-                track('UI', 'Toggled', 'IsometricExport');
-                setIsometric((v) => !v);
-              }}
-              aria-pressed={isometric}
-              // The label lives outside this button (so the `?` can sit in it),
-              // so the button names itself.
-              aria-label="Isometric view"
-              className="absolute inset-0 cursor-pointer rounded-lg"
-            />
-            <span className="pointer-events-none relative flex flex-col">
-              <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
-                Isometric view
-                <HelpArticleLink article="isometricMode" className="pointer-events-auto" />
-              </span>
-              <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                Tilt the export into the isometric projection.
-              </span>
-            </span>
-            <span className="pointer-events-none relative">
-              <Switch presentational size="sm" checked={isometric} />
-            </span>
-          </div>
           {/* Background-pattern toggle. */}
           <button
             type="button"
@@ -132,7 +89,7 @@ export function ImageExportPanel({
               setPattern((v) => !v);
             }}
             aria-pressed={pattern}
-            className="mt-2 flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+            className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
           >
             <span className="flex flex-col">
               <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
@@ -178,7 +135,7 @@ export function ImageExportPanel({
         <Button
           variant="primary"
           size="md"
-          onClick={() => onExport({ isometric, pattern, hiddenLayers })}
+          onClick={() => onExport({ pattern, hiddenLayers })}
           disabled={busy}
         >
           {busy ? 'Exporting…' : `Download ${label}`}

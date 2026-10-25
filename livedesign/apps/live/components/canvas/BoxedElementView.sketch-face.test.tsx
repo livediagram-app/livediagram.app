@@ -29,7 +29,6 @@ function draw(element: BoxedElement, fontFamily?: string) {
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
-      isoDepth={0}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabLocked={false}

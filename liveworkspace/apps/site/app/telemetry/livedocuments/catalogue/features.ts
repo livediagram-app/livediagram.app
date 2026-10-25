@@ -630,7 +630,6 @@ const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
   FormatPainter: 'Format Painter',
-  Isometric: 'Isometric',
 };
 
 export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>

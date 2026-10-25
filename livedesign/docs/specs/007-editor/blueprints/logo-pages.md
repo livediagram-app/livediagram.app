@@ -319,7 +319,7 @@ on)` (which also calls `preloadCombineEngine()` when turned on), `mirrorPages`
   centre line under a solid one skipped.
 - `LogoPageGuides({ view, bare })` (mounted by `LogoCanvasOverlays`, after the elements) draws the
   guides of logo pages **with content**; `CanvasPages` draws an empty logo page's inside its
-  own box. `showsLogoGuides(view, bare, pageId)`: not bare (zen, presenting, isometric), an editor,
+  own box. `showsLogoGuides(view, bare, pageId)`: not bare (zen, presenting), an editor,
   Show Guides on for that page.
 - `useLogoEditor` appends `logoPageSnapBoxes(guidedPages)` (the logo pages with Show Guides on) to
   the page snap boxes; `logoGuideSnapper` and `logoTidyGuides` take the same guided pages.

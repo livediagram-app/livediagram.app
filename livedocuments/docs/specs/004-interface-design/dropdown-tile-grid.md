@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 The **canvas-tool** picker (Select / Hand / Format / Laser /
-Spotlight / Isometric / Zen), the strip's selection mode, lays its options out as an icon-over-label **tile grid**
+Spotlight / Zen), the strip's selection mode, lays its options out as an icon-over-label **tile grid**
 instead of one long vertical list. The palette's categories are a bar of their own, not a dropdown
 ([Toolbar layout](../007-editor/toolbar-layout.md) "The category bar").
 

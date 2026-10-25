@@ -313,10 +313,9 @@ their bottom-row buttons. What changes to fit the width:
     card matching the canvas's parity so centring stays whole).
   - Thirteen-pixel glyphs (the Behaviour and mode icons) centred on a half
     pixel in an even tile. They are 14px.
-    Separately, the corner panels were permanently promoted to their own
-    compositing layer (a fix for isometric flicker), which costs sub-pixel text
-    anti-aliasing on a 1x display. The promotion is now gated on an isometric
-    scene being on the page. Tile captions went from 9px to 10px.
+    Separately, the corner panels are no longer promoted to their own
+    compositing layer (it was a fix for the retired isometric view's flicker,
+    and cost sub-pixel text anti-aliasing on a 1x display). Tile captions went from 9px to 10px.
 
 - The dropdown-style controls (selection mode, category, More) sit on a
   faint tint so

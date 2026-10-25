@@ -42,8 +42,6 @@ import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndica
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
-import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
@@ -241,12 +239,6 @@ function CanvasView(props: CanvasProps) {
   const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
 
-  // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
-  // transform fragment, pivoted on the content centre — see
-  // useIsometricView. Shift-drag on the canvas spins / tilts it (see
-  // the <main> pointerdown handler).
-  const { isoCamera, isoFragment } = useIsometricView({ canvasTool, elements, mainRef });
-
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
     pan: !!pan,
@@ -316,7 +308,6 @@ function CanvasView(props: CanvasProps) {
     setPan,
     setMarquee,
     spotlight,
-    isoCamera,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: (e) => formatPagePress(e) || pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
@@ -456,19 +447,9 @@ function CanvasView(props: CanvasProps) {
               // click vs pointerdown). Clicks then fall through to <main>, where the
               // capture handler turns them into grow / shrink, and middle-mouse or
               // held-Space still pans.
-              // Isometric view (docs/specs/008-canvas/isometric-view.md): like Spotlight, the layer goes
-              // pointer-events-none so NO element kind can be selected / dragged —
-              // it's a read-only view tool. Clicks fall through to <main>, where a
-              // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
               className={`absolute inset-0 origin-center touch-none ${
-                canvasTool === 'spotlight' || canvasTool === 'isometric'
-                  ? 'pointer-events-none'
-                  : ''
+                canvasTool === 'spotlight' ? 'pointer-events-none' : ''
               } ${pendingDraw ? '' : cursorClass}`}
-              // Scopes the [data-iso] CSS (globals.css): frames settle just under
-              // the base plane while the camera orbits so they can't z-fight
-              // (flicker) with the coplanar contents above them.
-              data-iso={canvasTool === 'isometric' ? '' : undefined}
               // A whiteboard pen draws wherever it presses, so nothing under it swaps
               // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/drawing-tools.md "Markers").
               data-pen-in-hand={
@@ -481,16 +462,7 @@ function CanvasView(props: CanvasProps) {
               style={{
                 // Translate is in canvas-coords (applied first); scale is centred
                 // on the wrapper so zooming keeps the viewport centre stable.
-                // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
-                // so it transforms the content first): that keeps the pan translate
-                // in screen space, so a drag moves the scene the way the cursor
-                // moves at any camera angle. The fragment (built above as
-                // isoFragment) pivots the tilt around the content centre so the
-                // canvas tilts in place / stays centred while orbiting rather than
-                // swinging off-screen. preserve-3d lets the depth layer's
-                // translateZ stack read as real extruded height.
-                transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-                ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
+                transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
                 // Draw-mode cursor: every intent gets a custom inline-SVG
                 // cursor (crosshair at the pointer tip plus a small glyph
                 // hinting at what's about to land). Without this, tool
@@ -502,10 +474,6 @@ function CanvasView(props: CanvasProps) {
                 ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
               }}
             >
-              {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
-            behind the real element layer, which caps each column at z=0.
-            Only mounted while the tool is active. */}
-              {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
               {/* Pages mode's A4 pages, under every element (CanvasPages). */}
               {props.pagesMode ? (
                 // The image store's access, for the pages' pictures (page-image-access).
@@ -516,9 +484,9 @@ function CanvasView(props: CanvasProps) {
                     key={props.activeTabId}
                     view={props.pagesMode}
                     zoom={viewportZoom}
-                    // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
-                    // layout invites or add button.
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
+                    // Zen and presenting show the sheets alone: no labels, cogs, layout invites or add
+                    // button.
+                    bare={props.zenMode === true}
                     placing={!!pendingDraw}
                     onOpenTheme={props.onOpenCanvasTheme}
                   />
@@ -578,7 +546,7 @@ function CanvasView(props: CanvasProps) {
                 {props.pagesMode ? (
                   <LogoCanvasOverlays
                     view={props.pagesMode}
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
+                    bare={props.zenMode === true}
                     pendingDraw={pendingDraw}
                     penStroke={penStroke}
                     pathDraft={pathTool.draftView}
@@ -691,8 +659,6 @@ function CanvasView(props: CanvasProps) {
               handleZoomIn={handleZoomIn}
               handleZoomOut={handleZoomOut}
               handleSetZoom={handleSetZoom}
-              onIsoOrbit={isoCamera.startOrbit}
-              onIsoReset={isoCamera.reset}
             />
             {/* Lazy per-tab load (docs/specs/006-design/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would

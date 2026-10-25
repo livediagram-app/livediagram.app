@@ -97,7 +97,7 @@ Grouped by priority; each links the keyed article.
 - Share dialog - header (roles / real-time) -> `sharing`
 - Palette settings - auto-attach arrows -> `auto-attach-arrows`
 - Palette settings - alignment guides -> `alignment-guides`
-- Export dialog header -> `exporting-documents` (isometric toggle -> `isometric-mode`)
+- Export dialog header -> `exporting-documents`
 - Import dialog header -> `import-tabs`. The Markdown note (`markdown-import`)
   rides on the **Markdown format's own paste step**, not the format picker:
   under the grid it asked "Importing a Markdown outline?" of a reader who had

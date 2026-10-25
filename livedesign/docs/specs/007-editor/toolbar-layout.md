@@ -20,7 +20,7 @@ someone is on, each opening a flyout of its tiles:
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Format / Laser / Spotlight / Slide Deck / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Format / Laser / Spotlight / Slide Deck / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then the category bar** ("The category bar"). Its tiles are the Palette's tiles (`palette-tile-defs`, arranged
   by the page kind's palette layout, [Pages](pages-mode.md) "The palette's kind"), rendered by the shared
@@ -358,10 +358,9 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     card matching the canvas's parity so centring stays whole).
   - Thirteen-pixel glyphs (the selection mode icons) centred on a half
     pixel in an even tile. They are 14px.
-    Separately, the corner panels were permanently promoted to their own
-    compositing layer (a fix for isometric flicker), which costs sub-pixel text
-    anti-aliasing on a 1x display. The promotion is now gated on an isometric
-    scene being on the page. Tile captions went from 9px to 10px.
+    Separately, the corner panels are no longer promoted to their own
+    compositing layer (it was a fix for the retired isometric view's flicker,
+    and cost sub-pixel text anti-aliasing on a 1x display). Tile captions went from 9px to 10px.
 
 - The dropdown-style control (the selection mode) sits on a
   faint tint so

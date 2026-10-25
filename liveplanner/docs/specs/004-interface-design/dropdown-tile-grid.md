@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-The **canvas-tool** picker (Select / Hand / Format /
-Isometric / Zen) and the **palette category** picker
+The **canvas-tool** picker (Select / Hand /
+Zen) and the **palette category** picker
 (Popular / Shapes / Tools / Components / Devices / Icons / Technology) lay
 their options out as an icon-over-label **tile grid** instead of one long
 vertical list.

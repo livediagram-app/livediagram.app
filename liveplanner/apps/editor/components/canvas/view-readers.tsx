@@ -30,7 +30,7 @@ export function ZoomedRemoteCursor(props: Omit<ComponentProps<typeof RemoteCurso
 }
 
 // The corner zoom controls. Only a Sheet zooms (docs/specs/029-sheets/sheet.md "Zoom"), its cells, Fit putting it back
-// to 100%; on a Board, Dashboard or Form tab the zoom buttons are hidden, leaving Isometric and Zen when they apply.
+// to 100%; on a Board, Dashboard or Form tab the zoom buttons are hidden, leaving Zen when it applies.
 export function ViewZoomControls(
   props: Omit<ComponentProps<typeof ZoomControls>, 'zoom' | 'zoomHidden'>,
 ) {

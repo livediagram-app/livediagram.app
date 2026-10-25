@@ -162,7 +162,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // --- Plain key tool + element-add shortcuts ---
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
-      //   V (S alias) = Select, H = Hand, I = Isometric,
+      //   V (S alias) = Select, H = Hand,
       //   Z = Zen (tools)
       //   F = Frame, R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)

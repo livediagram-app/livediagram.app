@@ -72,13 +72,6 @@ type ChromeExtras = {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
-  // Begin an isometric orbit drag from the given screen coordinates
-  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
-  // which only renders while the isometric tool is active.
-  onIsoOrbit: (clientX: number, clientY: number) => void;
-  // Reset the isometric camera to its default angle (wired to
-  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
-  onIsoReset: () => void;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -168,8 +161,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     offscreenContent,
     onFitToScreen,
     onRedo,
-    onIsoOrbit,
-    onIsoReset,
     onCancelIdentity,
     onUndo,
     pendingDraw,
@@ -546,8 +537,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}
               onFitToScreen={onFitToScreen}
-              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
-              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
               // View-only visitors have no palette (so no canvas-tool

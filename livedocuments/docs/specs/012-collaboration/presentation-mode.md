@@ -88,7 +88,7 @@ This is the one part of the feature that is not free. Tab bodies live in their o
 
 ## Entry and the Slide Deck panel
 
-**Slide Deck is a canvas tool**, alongside Select, Hand, Format, Laser, Spotlight and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
+**Slide Deck is a canvas tool**, alongside Select, Hand, Format, Laser and Spotlight. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
 
 The tool and the panel are both called **Slide Deck** — the thing you are making — rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
 

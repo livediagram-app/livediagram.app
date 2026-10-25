@@ -32,7 +32,7 @@ type PlanImageExport = {
   formats: readonly ExportFormatKey[] | undefined;
   // The tab the images draw (the tab itself on any other tab).
   imageTab: Tab;
-  // A Board, Sheet or Dashboard tab: no canvas options (isometric, pattern, hidden layers).
+  // A Board, Sheet or Dashboard tab: no canvas options (pattern, hidden layers).
   plain: boolean;
   // What the image exporters add: the Sheets' cells and the plan views' pictures.
   opts: { sheets?: ReadonlyMap<string, SheetRenderModel>; resolvePlanArt?: ResolvePlanArt };

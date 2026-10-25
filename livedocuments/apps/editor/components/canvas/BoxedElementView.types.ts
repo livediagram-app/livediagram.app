@@ -99,9 +99,6 @@ export type BoxedElementViewProps = {
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Paint index within the elements layer. Isometric mode only: it stops
-  // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
-  isoDepth: number;
   // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
   stackGlide?: boolean;
   // The banner / callout / card masthead lines (docs/specs/009-elements/web-components-and-no-groups.md).
