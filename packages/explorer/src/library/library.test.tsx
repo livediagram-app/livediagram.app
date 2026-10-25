@@ -67,6 +67,28 @@ describe('the Image Gallery', () => {
     expect(host.list).toHaveBeenCalledTimes(1);
   });
 
+  it("counts another app's items as uses, naming the app", async () => {
+    const host = galleryHost([image(1)], {
+      usage: vi.fn(async () => ({
+        'img-1': [
+          {
+            id: 'doc-1',
+            title: 'Brief',
+            href: 'https://livedocuments.app/document/doc-1',
+            app: 'livedocuments',
+          },
+        ],
+      })),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    fireEvent.click(await screen.findByRole('button', { name: 'Used in 1 item' }));
+    expect(screen.queryByText('Not used')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Brief' }).getAttribute('href')).toBe(
+      'https://livedocuments.app/document/doc-1',
+    );
+    expect(screen.getByText('in livedocuments')).toBeTruthy();
+  });
+
   it('deletes after asking, saying where it is still used', async () => {
     const host = galleryHost([image(1)]);
     page({ kind: 'gallery' }, { gallery: host });

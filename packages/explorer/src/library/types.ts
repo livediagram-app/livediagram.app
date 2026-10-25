@@ -20,8 +20,8 @@ export type GalleryImage = {
   createdAt?: number;
 };
 
-/** An item that places an image. */
-export type GalleryUse = { id: string; title: string; href?: string };
+/** An item that places an image. `app` names another app's ("livediagram"); absent, the host's own. */
+export type GalleryUse = { id: string; title: string; href?: string; app?: string };
 
 export type GalleryHost = {
   /** The person's images, newest first; null when images are off where the host keeps them. */

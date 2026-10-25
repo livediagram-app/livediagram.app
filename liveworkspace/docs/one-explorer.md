@@ -235,7 +235,9 @@ The page reads where it is from its own address and there is that app's page:
   them ([Teams](#teams-are-run-in-the-explorer)). After a change the app is asked for a fresh token, which names
   the teams as they now are.
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
-  origin (`imagesPath`, `shapeLibrariesPath`). Signed in, the bottom bar has a Settings button beside Appearance,
+  origin (`imagesPath`, `shapeLibrariesPath`). The Gallery lists the person's images from every app, and its "Used
+  in" badge counts every app's items that place one: another app's item is named with its app and opens there
+  ([media.md](media.md#usage)). Signed in, the bottom bar has a Settings button beside Appearance,
   opening the Settings panel in place, filtered to the app with All beside it ([site.md](site.md#settings)), as the
   account menu's Settings does; `?settings=` addresses open the same panel here, on the section they name
   ([site.md](site.md#the-explorer-explorer)).

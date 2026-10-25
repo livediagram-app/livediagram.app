@@ -6,7 +6,7 @@
 // takes the app's renderer.
 
 import { createElement } from 'react';
-import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { ShapePreview } from './ShapePreview';
 import type {
   GalleryHost,
@@ -80,6 +80,25 @@ async function imageSize(file: File): Promise<{ width: number; height: number }>
   return size;
 }
 
+// One use as the Gallery shows it: this app's item opens on the host's origin; another app's (the gallery lists every
+// app's images, so their uses are every app's) on that app's site, named with its app. An older api sends no app:
+// this app's.
+export function galleryUse(
+  host: AppName,
+  use: { id: string; name: string; app?: string },
+  itemUrl: (id: string) => string,
+): GalleryUse {
+  const app = use.app && isAppName(use.app) ? use.app : host;
+  if (app === host) return { id: use.id, title: use.name, href: itemUrl(use.id) };
+  const site = siteOfApp(app);
+  return {
+    id: use.id,
+    title: use.name,
+    href: `${site.url}${APP_ITEMS[app].itemPath}${encodeURIComponent(use.id)}`,
+    app: site.name,
+  };
+}
+
 function galleryHost(app: AppName, path: string, token: Token, origin: string): GalleryHost {
   const base = `${origin}${path}`;
   const item = APP_ITEMS[app];
@@ -102,10 +121,12 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
     usage: async (signal) => {
       const res = await call(token, `${base}/usage`, {}, signal);
       if (res.status === 503) return {};
-      const body = (await res.json()) as { usage: Record<string, { id: string; name: string }[]> };
+      const body = (await res.json()) as {
+        usage: Record<string, { id: string; name: string; app?: string }[]>;
+      };
       const out: Record<string, GalleryUse[]> = {};
       for (const [id, uses] of Object.entries(body.usage)) {
-        out[id] = uses.map((u) => ({ id: u.id, title: u.name, href: itemUrl(u.id) }));
+        out[id] = uses.map((u) => galleryUse(app, u, itemUrl));
       }
       return out;
     },

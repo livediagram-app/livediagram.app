@@ -58,6 +58,28 @@ describe("the Library's hosts over an app's API", () => {
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok');
   });
 
+  it("names another app's uses by their app, opening on that app's site", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        json({
+          usage: {
+            i1: [
+              { id: 'c1', name: 'Board', app: 'livediagram' },
+              { id: 'd1', name: 'Brief', app: 'livedocuments' },
+            ],
+          },
+        }),
+      ),
+    );
+    const usage = await libraryHosts('livediagram').gallery!.usage!();
+    const [own, other] = usage.i1!;
+    expect(own).toMatchObject({ id: 'c1', title: 'Board' });
+    expect(own!.app).toBeUndefined();
+    expect(other).toMatchObject({ id: 'd1', title: 'Brief', app: 'livedocuments' });
+    expect(other!.href).toMatch(/livedocuments.*\/document\/d1$/);
+  });
+
   it('answers null when images are off, and says why an upload was refused', async () => {
     vi.stubGlobal(
       'fetch',

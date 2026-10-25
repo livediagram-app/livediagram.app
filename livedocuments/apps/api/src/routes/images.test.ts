@@ -5,6 +5,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor, type TestMediaService } from '../test-media-service';
 import { liveDoc, mediaImages, tabWith } from '../db/test-image-fixtures';
 import { upsertTab } from '../db/tabs';
+import { drainOutbox } from '../document-room/document-outbox';
 import { clearMediaOwnersForTests } from '../media';
 import { clearImageGrantCachesForTests } from '../db/image-grants';
 import type { Env } from '../types';
@@ -290,12 +291,22 @@ describe('handleImages', () => {
       title: string,
       ownerId = 'user_ada',
       trashedAt: number | null = null,
+      app = 'livedocuments',
     ) => ({
       id,
       title,
       ownerId,
       trashedAt,
+      app,
     });
+    const index = (items: Record<string, ReturnType<typeof item>>) =>
+      indexFor.mockReturnValue({
+        getItem: async (id: string) => {
+          const found = items[id];
+          if (!found) throw new Error('not_found');
+          return { item: found };
+        },
+      });
 
     it("maps each image to the owner's documents that place it, once each, by name", async () => {
       mediaImages(media, 'user_ada', ['a', 'b']);
@@ -313,29 +324,122 @@ describe('handleImages', () => {
           { document: 'trashed', images: ['b'] },
         ],
       });
-      const items: Record<string, ReturnType<typeof item>> = {
+      index({
         Z: item('Z', 'Zebra'),
         A: item('A', 'Apple'),
         theirs: item('theirs', 'Theirs', 'user_bob'),
         trashed: item('trashed', 'Gone', 'user_ada', 1),
-      };
-      indexFor.mockReturnValue({
-        getItem: async (id: string) => {
-          const found = items[id];
-          if (!found) throw new Error('not_found');
-          return { item: found };
-        },
       });
       const res = await call('GET', '/api/images/usage');
       expect(await res.json()).toEqual({
         usage: {
           a: [
-            { id: 'A', name: 'Apple' },
-            { id: 'Z', name: 'Zebra' },
+            { id: 'A', name: 'Apple', app: 'livedocuments' },
+            { id: 'Z', name: 'Zebra', app: 'livedocuments' },
           ],
-          b: [{ id: 'A', name: 'Apple' }],
+          b: [{ id: 'A', name: 'Apple', app: 'livedocuments' }],
         },
       });
+    });
+
+    it("counts another app's items: the gallery lists every app's images", async () => {
+      mediaImages(media, 'user_ada', ['a'], 'livediagram.app');
+      media.sql
+        .prepare(`INSERT INTO refs (app, document, image_id) VALUES ('livediagram.app', 'C', 'a')`)
+        .run();
+      index({ C: item('C', 'Board', 'user_ada', null, 'livediagram') });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: { a: [{ id: 'C', name: 'Board', app: 'livediagram' }] },
+      });
+    });
+
+    // The owner's report: an image placed in a livedocuments document read "Not used". Each place a document can
+    // hold a picture, saved through the document's own write path and pushed from its outbox as the room's drain
+    // does, reads as used: an image element on an infographic page, in an article's zone and on a slide, and each
+    // kind of page's background picture. livedocuments has no groups or containers, and a table cell holds text
+    // only (docs/specs/009-elements/web-components-and-no-groups.md), so these are every place.
+    it('reads an image as used from every place a document can hold one', async () => {
+      const placed = ['info-el', 'info-bg', 'art-el', 'art-bg', 'slide-el', 'slide-bg'];
+      mediaImages(media, 'user_ada', placed);
+      liveDoc(db.sql, 'doc', 'user_ada');
+      const image = (id: string, imageId: string) => ({
+        id,
+        type: 'image',
+        imageId,
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 80,
+      });
+      const background = (imageId: string) => ({
+        fill: { kind: 'image', imageId, tone: '#808080' },
+      });
+      const tabs = [
+        {
+          id: 'infographic',
+          name: 'Infographic',
+          pages: [
+            {
+              id: 'p1',
+              orientation: 'portrait',
+              kind: 'infographic',
+              background: background('info-bg'),
+            },
+          ],
+          elements: [image('e1', 'info-el')],
+        },
+        {
+          id: 'article',
+          name: 'Article',
+          pages: [
+            {
+              id: 'p1',
+              orientation: 'portrait',
+              kind: 'article',
+              flow: 'f1',
+              background: background('art-bg'),
+            },
+          ],
+          articles: {
+            f1: {
+              blocks: [
+                { id: 'b1', type: 'paragraph', runs: [{ text: 'Hello' }] },
+                {
+                  id: 'z1',
+                  type: 'zone',
+                  zone: 'object',
+                  width: 200,
+                  height: 120,
+                  at: { page: 'p1', x: 0, y: 40 },
+                },
+              ],
+            },
+          },
+          elements: [image('e1', 'art-el')],
+        },
+        {
+          id: 'slides',
+          name: 'Slides',
+          pages: [
+            {
+              id: 'p1',
+              orientation: 'landscape',
+              kind: 'slide',
+              background: background('slide-bg'),
+            },
+          ],
+          elements: [image('e1', 'slide-el')],
+        },
+      ];
+      for (const [i, tab] of tabs.entries()) await upsertTab(db.env, 'doc', tab as never, i);
+      await drainOutbox(db.env, 'doc', null);
+      index({ doc: item('doc', 'Brief') });
+      const { usage } = (await (await call('GET', '/api/images/usage')).json()) as {
+        usage: Record<string, unknown>;
+      };
+      expect(Object.keys(usage).sort()).toEqual([...placed].sort());
+      for (const id of placed)
+        expect(usage[id]).toEqual([{ id: 'doc', name: 'Brief', app: 'livedocuments' }]);
     });
 
     it('answers an empty map when nothing places them', async () => {
