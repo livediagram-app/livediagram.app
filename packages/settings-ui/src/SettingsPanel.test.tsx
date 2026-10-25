@@ -12,8 +12,8 @@ import { fixtureCategories } from './test/fixture';
 import { renderWithKit } from './test/kit';
 
 // The one Settings panel (each app's docs/specs/007-editor/user-preferences.md "This app or All"): this app's
-// settings with nothing fetched, or All, with the Account section, Common (the settings two or more apps have, once)
-// and every app's own settings under its name.
+// settings with nothing fetched, or All, with the Account section and one set of categories merged across Common
+// (the settings two or more apps have, once) and every app, each app's own rows under its name.
 
 type Call = { path: string; method: string; body: unknown };
 
@@ -104,7 +104,7 @@ describe('SettingsPanel', () => {
     expect(within(pane()).getByRole('switch', { name: 'Alignment Guides' })).toBeTruthy();
   });
 
-  it('shows All: the Account section, Common, then every app under its name, the editor’s own without the shared rows', async () => {
+  it('shows All: the Account section, then one set of categories merged across Common and every app', async () => {
     const { calls, request } = fakeRequest();
     const own = fixtureCategories({
       privacy: [
@@ -131,30 +131,39 @@ describe('SettingsPanel', () => {
       '/settings/livediagram.app',
       '/settings/livedocuments.app',
     ]);
+    // Account is the one heading; no app has a group of its own.
     const headings = [...rail().querySelectorAll('[role="group"] > p')].map((p) => p.textContent);
-    // livedocuments' own settings outside Common are its email switch alone, folded into Account › Notifications,
-    // so it has no heading of its own.
-    expect(headings).toEqual(['Account', 'Common', 'livediagram', 'liveplanner', 'livedesign']);
-    // The editor's own Privacy held only a shared switch, which the Account section has.
-    const planner = within(rail()).getByRole('group', { name: 'liveplanner' });
-    expect(within(planner).queryByRole('button', { name: /^Privacy/ })).toBeNull();
-    expect(within(planner).getByRole('button', { name: /^Editor/ })).toBeTruthy();
-    // Its common settings are under Common, as its own rows (changed through the editor), and not in its group.
-    expect(within(planner).queryByRole('button', { name: /^Map/ })).toBeNull();
-    fireEvent.click(within(planner).getByRole('button', { name: /^Editor/ }));
-    expect(within(pane()).queryByRole('switch', { name: 'Alignment Guides' })).toBeNull();
-    expect(within(pane()).getByRole('switch', { name: 'Auto-Attach Arrows' })).toBeTruthy();
-    const common = within(rail()).getByRole('group', { name: 'Common' });
-    fireEvent.click(within(common).getByRole('button', { name: /^Editor/ }));
+    expect(headings).toEqual(['Account']);
+    const apps = within(rail()).getByRole('group', { name: 'Apps' });
+    const top = [...apps.children].map(
+      (child) => child.querySelector('button')?.textContent ?? child.textContent,
+    );
+    // One Editor and one Panels for every app; the editor's Privacy held only a shared switch, which Account has.
+    expect(top.filter((label) => label === 'Editor')).toHaveLength(1);
+    expect(top).toContain('Panels');
+    expect(top).not.toContain('Privacy');
+    expect(top).not.toContain('Common');
+    // Editor: the common settings first, as the editor's own rows (changed through it), then liveplanner's own row
+    // under its logo and name.
+    fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
     const guides = within(pane()).getByRole('switch', { name: 'Alignment Guides' });
+    expect(guides.closest('[data-settings-app]')).toBeNull();
     fireEvent.click(guides);
     const ownGuides = own[0]!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
     expect(ownGuides.onChange).toHaveBeenCalledWith(true);
-    // Only the other apps' common settings come from their catalogues (Pages' Contents, say).
-    expect(within(common).getByRole('button', { name: /^Pages/ })).toBeTruthy();
+    const planner = pane().querySelector<HTMLElement>('[data-settings-app="liveplanner.app"]')!;
+    expect(within(planner).getByRole('heading', { name: 'liveplanner' })).toBeTruthy();
+    expect(planner.querySelector('[data-logo="liveplanner.app"]')).not.toBeNull();
+    expect(within(planner).getByRole('switch', { name: 'Auto-Attach Arrows' })).toBeTruthy();
+    // Common's Panels › Map nests under the editor's own Panels, once.
+    fireEvent.click(within(apps).getByRole('button', { name: /^Panels/ }));
+    expect(within(apps).getAllByRole('button', { name: /^Map/ })).toHaveLength(1);
+    // The other apps' common settings (Pages' Contents) nest under the one Editor.
+    expect(within(apps).getByRole('button', { name: /^Pages/ })).toBeTruthy();
     expect(calls.filter((c) => c.method === 'PATCH')).toEqual([]);
     // An Account switch reads and writes through the host's shared preferences.
     const account = within(rail()).getByRole('group', { name: 'Account' });
+    fireEvent.click(within(account).getByRole('button', { name: 'Account' }));
     fireEvent.click(within(account).getByRole('button', { name: /^Notifications/ }));
     const tips = within(pane()).getByRole('switch', { name: 'Tips and Check-Ins' });
     expect(tips.getAttribute('aria-checked')).toBe('false');
@@ -164,7 +173,7 @@ describe('SettingsPanel', () => {
     expect(localStorage.getItem('test:settings-scope')).toBe('all');
   });
 
-  it("writes an Account switch to the `all` scope, and another app's row to its own", async () => {
+  it("writes an Account switch to the `all` scope, a common row to `all`, and an app's own row to its own", async () => {
     const { calls, request } = fakeRequest((call) =>
       call.method === 'PATCH' && call.path === '/settings'
         ? { all: { notifyTips: false } }
@@ -174,8 +183,9 @@ describe('SettingsPanel', () => {
     await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
     // No editor here: all four apps are read.
     expect(calls.filter((c) => c.method === 'GET')).toHaveLength(4);
-    const account = within(rail()).getByRole('group', { name: 'Account' });
-    fireEvent.click(within(account).getByRole('button', { name: /^Notifications/ }));
+    const account = () => within(rail()).getByRole('group', { name: 'Account' });
+    fireEvent.click(within(account()).getByRole('button', { name: 'Account' }));
+    fireEvent.click(within(account()).getByRole('button', { name: /^Notifications/ }));
     await act(async () => {
       fireEvent.click(within(pane()).getByRole('switch', { name: 'Tips and Check-Ins' }));
     });
@@ -189,9 +199,21 @@ describe('SettingsPanel', () => {
         .getByRole('switch', { name: 'Tips and Check-Ins' })
         .getAttribute('aria-checked'),
     ).toBe('false');
-    // A common setting, under Common, to `all`.
-    const common = within(rail()).getByRole('group', { name: 'Common' });
-    fireEvent.click(within(common).getByRole('button', { name: /^Editor/ }));
+    // An app's own email switch, folded into Account › Notifications under its logo and name, to its own scope.
+    const planner = pane().querySelector<HTMLElement>('[data-settings-app="liveplanner.app"]')!;
+    expect(within(planner).getByRole('heading', { name: 'liveplanner' })).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(within(planner).getByRole('switch', { name: 'Someone Joins My Plan' }));
+    });
+    expect(calls.at(-1)).toEqual({
+      path: '/settings/liveplanner.app',
+      method: 'PATCH',
+      body: { app: { notifyProjectJoin: false } },
+    });
+    // A common setting, once in the merged Editor, to `all`.
+    const apps = within(rail()).getByRole('group', { name: 'Apps' });
+    fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
+    expect(within(pane()).getAllByRole('switch', { name: 'Alignment Guides' })).toHaveLength(1);
     await act(async () => {
       fireEvent.click(within(pane()).getByRole('switch', { name: 'Alignment Guides' }));
     });
@@ -200,23 +222,12 @@ describe('SettingsPanel', () => {
       method: 'PATCH',
       body: { all: { alignmentGuides: false } },
     });
-    // An app's own row, to its own scope: its email switch, folded into Account › Notifications under its name.
-    const planner = within(rail()).getByRole('group', { name: 'liveplanner' });
-    expect(within(planner).queryByRole('button', { name: /^Plans/ })).toBeNull();
-    expect(within(planner).queryByRole('button', { name: /^Notifications/ })).toBeNull();
-    fireEvent.click(
-      within(within(rail()).getByRole('group', { name: 'Account' })).getByRole('button', {
-        name: /^Notifications/,
-      }),
+    // Tours: liveplanner's and livediagram's own, one category, each under its app, the app opened for first.
+    fireEvent.click(within(apps).getByRole('button', { name: /^Tours/ }));
+    const blocks = [...pane().querySelectorAll('[data-settings-app]')].map((el) =>
+      el.getAttribute('data-settings-app'),
     );
-    await act(async () => {
-      fireEvent.click(within(pane()).getByRole('switch', { name: 'Someone Joins My Plan' }));
-    });
-    expect(calls.at(-1)).toEqual({
-      path: '/settings/liveplanner.app',
-      method: 'PATCH',
-      body: { app: { notifyProjectJoin: false } },
-    });
+    expect(blocks).toEqual(['liveplanner.app', 'livediagram.app']);
   });
 
   it('shows a common setting as an app kept it before it was shared, and writes it to `all` with the rest kept', async () => {
@@ -234,16 +245,16 @@ describe('SettingsPanel', () => {
       return { all: {}, app: {} };
     });
     renderWithKit(<Host request={request} initial="all" />);
-    await waitFor(() => expect(screen.getByRole('group', { name: 'Common' })).toBeTruthy());
-    const common = within(rail()).getByRole('group', { name: 'Common' });
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Apps' })).toBeTruthy());
+    const apps = within(rail()).getByRole('group', { name: 'Apps' });
     // Show Home Banner sits under the platform's Explorer, off as livediagram kept it.
-    fireEvent.click(within(common).getByRole('button', { name: /^Explorer/ }));
+    fireEvent.click(within(apps).getByRole('button', { name: /^Explorer/ }));
     expect(
       within(pane()).getByRole('switch', { name: 'Show Home Banner' }).getAttribute('aria-checked'),
     ).toBe('false');
     // Presenting (under Editor): livediagram's copy (the first app with one), and a change keeps its other fields.
-    fireEvent.click(within(common).getByRole('button', { name: /^Editor/ }));
-    fireEvent.click(within(common).getByRole('button', { name: /^Presenting/ }));
+    fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
+    fireEvent.click(within(apps).getByRole('button', { name: /^Presenting/ }));
     const loop = within(pane()).getByRole('switch', { name: 'Loop the Deck' });
     expect(loop.getAttribute('aria-checked')).toBe('false');
     await act(async () => {
@@ -257,6 +268,22 @@ describe('SettingsPanel', () => {
     expect(
       within(pane()).getByRole('switch', { name: 'Loop the Deck' }).getAttribute('aria-checked'),
     ).toBe('true');
+  });
+
+  it('lands a category remembered from the old per-app layout on its merged category', async () => {
+    localStorage.setItem(
+      'test:settings-view:all',
+      JSON.stringify({ categoryId: 'livediagram.app:tours', anchor: null }),
+    );
+    const { request } = fakeRequest();
+    renderWithKit(<Host request={request} initial="all" />);
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Apps' })).toBeTruthy());
+    expect(
+      within(rail())
+        .getByRole('button', { name: /^Tours/ })
+        .getAttribute('aria-current'),
+    ).toBe('page');
+    expect(pane().querySelector('[data-settings-app="livediagram.app"]')).not.toBeNull();
   });
 
   it("shows the app's own side's settings, a common one under Common, written to the shared scope", async () => {

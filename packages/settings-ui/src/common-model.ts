@@ -40,6 +40,7 @@ export function commonModel({
   order,
   own,
   change,
+  structure = false,
 }: {
   common: CommonCatalogue;
   all: SettingsBlob;
@@ -49,6 +50,8 @@ export function commonModel({
   // The editor's own Settings and preferences, where the panel is an editor's.
   own?: { categories: readonly SettingsCategory[]; prefs: SettingsBlob };
   change: (app: SettingsAppId, binding: CatalogueBinding, stored: StoredValue) => void;
+  // Every category under its own name, an empty one kept (catalogueModel's `structure`), for All's merge.
+  structure?: boolean;
 }): SettingsCategory[] {
   const ownRows = new Map<string, SettingsRow>(
     (own?.categories ?? []).flatMap((category) => category.rows.map((row) => [row.key, row])),
@@ -78,15 +81,20 @@ export function commonModel({
 
   const writer = (key: string): SettingsAppId | undefined =>
     from.get(key) ?? order.find((app) => keyApps.get(key)?.includes(app));
-  const categories = catalogueModel(common.catalogue, scopes, (binding, stored) => {
-    const app = writer(binding.key);
-    if (app) change(app, binding, stored);
-  }).map((category) => ({
+  const categories = catalogueModel(
+    common.catalogue,
+    scopes,
+    (binding, stored) => {
+      const app = writer(binding.key);
+      if (app) change(app, binding, stored);
+    },
+    { structure },
+  ).map((category) => ({
     ...category,
     // The heading says every row here is shared, so no row repeats "All apps".
     rows: category.rows.map((row) => ({ ...(ownRows.get(row.key) ?? row), allApps: false })),
   }));
-  return groupCategories(COMMON_GROUP, categories);
+  return groupCategories(COMMON_GROUP, categories, { keepEmpty: structure });
 }
 
 /** Every Common row's id: what each app's own group leaves out. */

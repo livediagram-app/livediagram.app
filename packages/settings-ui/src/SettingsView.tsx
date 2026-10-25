@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { NavChevron } from './glyphs';
 import { useSettingsUiKit } from './kit';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
@@ -69,16 +69,37 @@ export function SettingsView({
   // category" (see `selected` below), so one piece of state serves both layouts, across a resize
   // or rotate too. A targeted open wins, including on a phone, where it lands on the pushed pane
   // rather than the root list. Without one, the dialog reopens where it was last left.
-  const target = focus?.categoryId ?? initialCategoryId ?? null;
+  //
+  // An id a category answers to besides its own (`aliases`: the old per-app layout's, a bare deep link's) is read as
+  // that category's, so a remembered or linked category from before All was merged still lands on it.
+  const canonical = useMemo(() => {
+    const ids = new Set(categories.map((c) => c.id));
+    const aliases = new Map<string, string>();
+    for (const c of categories) {
+      for (const alias of c.aliases ?? []) {
+        if (!ids.has(alias) && !aliases.has(alias)) aliases.set(alias, c.id);
+      }
+    }
+    return (id: string | null) => (id === null ? null : (aliases.get(id) ?? id));
+  }, [categories]);
+  const target = canonical(focus?.categoryId ?? initialCategoryId ?? null);
   const remembered = useRememberedSettingsView(memoryKey);
-  const restore = target ? null : remembered;
+  const [restore] = useState(() =>
+    target || !remembered ? null : { ...remembered, categoryId: canonical(remembered.categoryId) },
+  );
   const [selectedId, setSelectedId] = useState<string | null>(
     target ?? restore?.categoryId ?? null,
   );
+  const initialId = canonical(initialCategoryId);
+  // Read by the stable callbacks below, so a change of categories (a value changed) keeps them, and the rows' memo.
+  const canonicalRef = useRef(canonical);
+  canonicalRef.current = canonical;
 
   const [query, setQuery] = useState('');
   // The row to ring: a targeted open's, or one the power user preset readout went to.
-  const [goTo, setGoTo] = useState<SettingsFocus | null>(focus);
+  const [goTo, setGoTo] = useState<SettingsFocus | null>(() =>
+    focus ? { ...focus, categoryId: canonical(focus.categoryId) ?? focus.categoryId } : null,
+  );
   const result = useMemo(() => searchSettings(categories, query), [categories, query]);
 
   // While searching, the rail shows every category (with a match badge) and the pane shows only
@@ -88,7 +109,9 @@ export function SettingsView({
   // beside a rail full of hits. On a phone there is no pane until you tap one, so doing it there
   // would push a category open the moment you started typing and hide the badges you were
   // searching for.
-  const effectiveId = isMobile ? selectedId : firstMatchingCategory(result, selectedId);
+  const effectiveId = canonical(
+    isMobile ? selectedId : firstMatchingCategory(result, canonical(selectedId)),
+  );
   // Desktop never shows an empty pane beside the rail: no selection, or one not (yet) among the
   // visible categories (a remembered one whose capability has not loaded), shows the first
   // category without forgetting the choice.
@@ -112,7 +135,8 @@ export function SettingsView({
   );
   // Stable, so the pane's memoised rows keep their memo across a keystroke.
   const goToRow = useCallback(
-    (categoryId: string, rowKey: string) => {
+    (to: string, rowKey: string) => {
+      const categoryId = canonicalRef.current(to) ?? to;
       setQuery('');
       select(categoryId);
       setGoTo({ categoryId, rowKey });
@@ -120,9 +144,9 @@ export function SettingsView({
     [select],
   );
   const openCategory = useCallback(
-    (categoryId: string) => {
+    (to: string) => {
       setQuery('');
-      select(categoryId);
+      select(canonicalRef.current(to) ?? to);
       setGoTo(null);
     },
     [select],
@@ -221,7 +245,7 @@ export function SettingsView({
                 category={selected}
                 isMobile={isMobile}
                 focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
-                focusSectionId={selected.id === initialCategoryId ? initialSectionId : null}
+                focusSectionId={selected.id === initialId ? initialSectionId : null}
                 onGoToRow={goToRow}
                 onOpenCategory={openCategory}
               />

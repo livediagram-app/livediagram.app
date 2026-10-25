@@ -135,11 +135,14 @@ export function catalogueModel(
   catalogue: AppCatalogue,
   value: AppScopes,
   change: CatalogueChange,
+  // Every category as the catalogue nests it, an empty one too, under its own name: for the All view, which merges
+  // the apps' categories by their place (mergeAppCategories) and drops what is left empty itself.
+  { structure = false }: { structure?: boolean } = {},
 ): SettingsCategory[] {
   const joined = joinSettings(value.all, value.app);
   const shownCategories = catalogue.categories
     .map((category) => ({ category, rows: visibleCatalogueRows(category, value) }))
-    .filter(({ rows }) => rows.length > 0);
+    .filter(({ rows }) => structure || rows.length > 0);
   const ids = new Set(shownCategories.map(({ category }) => category.id));
   const byId = new Map(catalogue.categories.map((c) => [c.id, c]));
   // Each category's full path: a sub-category shown without its parent is named under it.
@@ -162,7 +165,7 @@ export function catalogueModel(
       category.tile ?? (parent !== undefined && !nested ? byId.get(parent)?.tile : undefined);
     return {
       id: category.id,
-      label: shortLabel(path(category), groups),
+      label: structure ? category.label : shortLabel(path(category), groups),
       ...(nested ? { parent } : {}),
       ...(tile && TILES.has(tile)
         ? { icon: <SettingsCategoryTile id={tile as SettingsTileId} /> }

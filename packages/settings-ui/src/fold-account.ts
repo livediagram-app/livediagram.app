@@ -3,9 +3,9 @@
 // of its own, and each app's catalogue an Account › Notifications; listed under the app as well, the account read
 // twice. Here an app's copies are folded into the Account section's category of the same name: the rows the Account
 // section doesn't already hold (an editor's Trash and Delete Account, an app's own email switches, its own
-// accessibility rows) join it under a heading with the app's name, and the editor's identity row gives way to the
-// Profile's header card.
-import type { SettingsCategory, SettingsRow } from './model';
+// accessibility rows) join it under the app's sub-heading (its logo and name, as in the merged categories), and the
+// editor's identity row gives way to the Profile's header card.
+import type { SettingsAppHeading, SettingsCategory, SettingsRow } from './model';
 
 // An app's category ids that are the Account section's, by the Account section's own id for them.
 const FOLDED: Readonly<Record<string, string>> = {
@@ -32,13 +32,13 @@ export function foldIntoAccount({
   accountGroup,
   app,
   appGroup,
-  appName,
+  appHeading,
 }: {
   account: SettingsCategory[];
   accountGroup: string;
   app: readonly SettingsCategory[];
   appGroup: string;
-  appName: string;
+  appHeading: SettingsAppHeading;
 }): SettingsCategory[] {
   const left: SettingsCategory[] = [];
   const profileId = `${accountGroup}:account`;
@@ -52,14 +52,28 @@ export function foldIntoAccount({
     const rows: SettingsRow[] = category.rows
       .filter((row) => !DRAWN_BY_ACCOUNT.has(local(appGroup, row.key)))
       // The Profile keeps an editor's own sections (Your Data, Cloud Sync, Danger Zone), which only an editor has;
-      // anywhere else the app's rows sit under its name, beside the Account section's own.
-      .map((row) => (target === 'account' ? row : { ...row, section: appName }));
+      // anywhere else the app's rows sit under its logo and name, beside the Account section's own.
+      .map((row) => (target === 'account' ? row : { ...row, app: appGroup }));
     if (rows.length === 0) continue;
+    const heading: SettingsAppHeading = {
+      ...appHeading,
+      ...(category.sectionNotes ? { sectionNotes: category.sectionNotes } : {}),
+      ...(category.collapsedSections ? { collapsedSections: category.collapsedSections } : {}),
+    };
+    const headings = (existing?: SettingsCategory) =>
+      target === 'account'
+        ? existing?.appHeadings
+        : { ...existing?.appHeadings, [appGroup]: heading };
     const targetId = `${accountGroup}:${target}`;
     const at = account.findIndex((c) => c.id === targetId);
     if (at >= 0) {
       const existing = account[at]!;
-      account[at] = { ...existing, rows: [...existing.rows, ...rows] };
+      const appHeadings = headings(existing);
+      account[at] = {
+        ...existing,
+        ...(appHeadings ? { appHeadings } : {}),
+        rows: [...existing.rows, ...rows],
+      };
       continue;
     }
     // The Account section has none (API Tokens where the host offers no tokens, say): the app's becomes it,
@@ -73,6 +87,14 @@ export function foldIntoAccount({
       rows,
     };
     delete made.parent;
+    delete made.sectionNotes;
+    delete made.collapsedSections;
+    const appHeadings = headings();
+    if (appHeadings) made.appHeadings = appHeadings;
+    else {
+      if (category.sectionNotes) made.sectionNotes = category.sectionNotes;
+      if (category.collapsedSections) made.collapsedSections = category.collapsedSections;
+    }
     if (hasProfile && target !== 'account' && target !== 'privacy' && target !== 'accessibility') {
       made.parent = profileId;
     }

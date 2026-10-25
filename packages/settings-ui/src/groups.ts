@@ -39,14 +39,20 @@ export function groupCategories(
   {
     omit,
     groupOf,
-  }: { omit?: (row: SettingsRow) => boolean; groupOf?: (rowKey: string) => string } = {},
+    keepEmpty = false,
+  }: {
+    omit?: (row: SettingsRow) => boolean;
+    groupOf?: (rowKey: string) => string;
+    // Keeps a category left with no rows, so the All view's merge still knows where its sub-categories sit.
+    keepEmpty?: boolean;
+  } = {},
 ): SettingsCategory[] {
   const kept = categories
     .map((category) => ({
       category,
       rows: omit ? category.rows.filter((row) => !omit(row)) : category.rows,
     }))
-    .filter(({ rows }) => rows.length > 0);
+    .filter(({ rows }) => keepEmpty || rows.length > 0);
   const ids = new Set(kept.map(({ category }) => category.id));
   return kept.map(({ category: { parent, ...category }, rows }) => ({
     ...category,
