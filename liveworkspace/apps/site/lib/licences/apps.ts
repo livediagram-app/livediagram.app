@@ -10,5 +10,6 @@ export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'gateway', label: 'Gateway', side: 'server', bundler: 'worker' },
   { id: 'index', label: 'Index', side: 'server', bundler: 'worker' },
   { id: 'media', label: 'Media', side: 'server', bundler: 'worker' },
+  { id: 'status', label: 'Status', side: 'server', bundler: 'worker' },
   { id: 'telemetry', label: 'Telemetry', side: 'server', bundler: 'worker' },
 ];

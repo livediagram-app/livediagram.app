@@ -2,7 +2,7 @@
 // one workers.dev Worker that does what the zone's path routes do, forwarding each request unchanged to the
 // Worker that owns its path, so liveworkspace stays one origin.
 
-export type Target = 'ACCOUNTS' | 'INDEX' | 'MEDIA' | 'TELEMETRY' | 'COMMUNITY' | 'SITE';
+export type Target = 'ACCOUNTS' | 'INDEX' | 'MEDIA' | 'TELEMETRY' | 'COMMUNITY' | 'STATUS' | 'SITE';
 
 export type Env = Record<Target, Fetcher>;
 
@@ -17,6 +17,7 @@ const ROUTES: ReadonlyArray<readonly [prefix: string, target: Target]> = [
   ['/api/previews', 'MEDIA'],
   ['/api/telemetry', 'TELEMETRY'],
   ['/api/community', 'COMMUNITY'],
+  ['/api/status', 'STATUS'],
 ];
 
 export function targetFor(pathname: string): Target {

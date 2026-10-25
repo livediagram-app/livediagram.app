@@ -1,6 +1,6 @@
 # The gateway (until liveworkspace.app is on this account)
 
-liveworkspace.app is one origin made of six Workers on path routes of the `liveworkspace.app` zone
+liveworkspace.app is one origin made of seven Workers on path routes of the `liveworkspace.app` zone
 ([site.md](site.md)). Until that zone moves to the liveworkspace Cloudflare account
 (`851be7d244b76a6557bcbe6c4ded80f5`), there is nothing to put those routes on, so liveworkspace answers on a
 stand-in origin instead: one **gateway** Worker on `workers.dev` that does what the zone's routes do.
@@ -22,27 +22,31 @@ service binding. Its table is the zone's routes, most specific first:
 | `/api/media*`, `/api/previews*`                                                                                   | media     |
 | `/api/telemetry*`                                                                                                 | telemetry |
 | `/api/community*`                                                                                                 | community |
+| `/api/status*`                                                                                                    | status    |
 | everything else                                                                                                   | site      |
 
 So liveworkspace stays one origin: the pages still call `/api/auth/…` same-origin, sign-in cookies are the
 gateway host's, and the accounts Worker's issuer is `<gateway>/api/auth`. The gateway holds no logic and no
-state; the six Workers behind it are not on `workers.dev` themselves.
+state; the seven Workers behind it are not on `workers.dev` themselves.
 
 ## Where the origin is written
 
 Everywhere liveworkspace's origin is written in code and configuration (Worker vars, hosted profiles, the
 shared packages' defaults, the apps' fallbacks and links), it is the gateway's: `https://liveworkspace.app`
 reads as the production gateway, `https://staging.liveworkspace.app` as the staging one. Docs and specs keep
-naming liveworkspace.app, which is still where liveworkspace lives. The six Workers' `liveworkspace.app`
+naming liveworkspace.app, which is still where liveworkspace lives. The seven Workers' `liveworkspace.app`
 routes are left out of their `wrangler.toml` (each marks the spot), since a deploy fails on a zone the
 account does not have.
 
 ## When liveworkspace.app moves
 
 1. Add the `liveworkspace.app` zone to the account.
-2. Put the routes back in the six `wrangler.toml` files, where each marks them.
+2. Put the routes back in the seven `wrangler.toml` files, where each marks them.
 3. Replace the gateway origins with `https://liveworkspace.app` and `https://staging.liveworkspace.app`
    again, in the same files (search for `liveworkspace-gateway`).
 4. Redeploy liveworkspace, then every app (their builds carry the origin), and re-point each app's
    accounts client registration and its `ACCOUNTS_URL` / `API_RESOURCE` secrets at liveworkspace.app.
-5. Delete `apps/gateway`, its two Workers and this page.
+5. Give the status Worker the `global_fetch_strictly_public` compatibility flag and drop its `PLATFORM` binding to
+   the gateway, so its checks of liveworkspace.app go out and come back in through the zone's routes
+   ([status.md](status.md#where-the-checks-go)).
+6. Delete `apps/gateway`, its two Workers and this page.

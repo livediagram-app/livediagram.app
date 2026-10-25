@@ -6,7 +6,8 @@ import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 // pages, and the Explorer. The APIs are Workers on more specific routes of the same origin: accounts on
 // /api/auth/* and /api/account/* (and the two .well-known documents), the index on /api/index/* (the
 // Explorer's lists), media on /api/previews/* (every item's picture), telemetry on /api/telemetry/*, the
-// Community on /api/community/* (whose pages each app hosts itself; liveworkspace.app has none).
+// Community on /api/community/* (whose pages each app hosts itself; liveworkspace.app has none), and the status
+// history on /api/status* (the status page's hourly checks).
 // The shared settings are every Next app's (@liveworkspace/next-config).
 
 // In development the dev server stands in for those routes, so the whole site works from one
@@ -17,6 +18,7 @@ const TELEMETRY_DEV = process.env.TELEMETRY_DEV_ORIGIN ?? 'http://localhost:8790
 const COMMUNITY_DEV = process.env.COMMUNITY_DEV_ORIGIN ?? 'http://localhost:8791';
 const INDEX_DEV = process.env.INDEX_DEV_ORIGIN ?? 'http://localhost:8793';
 const MEDIA_DEV = process.env.MEDIA_DEV_ORIGIN ?? 'http://localhost:8792';
+const STATUS_DEV = process.env.STATUS_DEV_ORIGIN ?? 'http://localhost:3010';
 
 // The build's assets under a path of their own (@liveworkspace/sites/workspace-proxy SITE_ASSET_PREFIX), because the
 // sign-in pages and the Explorer are also served under each app's own address, whose `/_next` is the app's. The
@@ -43,6 +45,7 @@ const nextConfig: NextConfig = {
     '@liveworkspace/explorer',
     '@liveworkspace/index-client',
     '@liveworkspace/sites',
+    '@liveworkspace/status',
     '@liveworkspace/telemetry',
     '@liveworkspace/trusted-types',
   ],
@@ -65,6 +68,8 @@ const nextConfig: NextConfig = {
               source: '/api/community/:path*',
               destination: `${COMMUNITY_DEV}/api/community/:path*`,
             },
+            // The status page's stored history (liveworkspace/docs/status.md); `:path*` takes /api/status itself too.
+            { source: '/api/status/:path*', destination: `${STATUS_DEV}/api/status/:path*` },
           ];
         },
       }),

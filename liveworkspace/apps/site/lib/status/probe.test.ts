@@ -8,7 +8,7 @@ import {
   summarise,
   viewServices,
 } from './probe';
-import { allServices, statusGroups, type Probe } from './services';
+import { allServices, statusGroups, type Probe } from '@liveworkspace/status';
 
 // liveworkspace/docs/site.md "Status": what each answer means.
 

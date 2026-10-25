@@ -13,6 +13,7 @@ apps/index         the index, /api/index/* (the Explorer's lists)
 apps/media         media, /api/media/* and /api/previews/* (previews.md)
 apps/telemetry     the telemetry API, /api/telemetry/* (telemetry.md)
 apps/community     the Community API, /api/community/* (community.md)
+apps/status        the hourly status checks and their history, /api/status* (status.md)
 ```
 
 The APIs are Workers on more specific routes of the same origin, so the pages call them as
@@ -143,7 +144,7 @@ Offline Mode is every app's. Every app is MIT-licensed, and the terms say so app
 ### Licences (`/licences`)
 
 The third-party licences of this website and the platform's services (accounts, Community, index,
-media, telemetry), linked from the footer and listed in the sitemap. It is each product's page
+media, status, telemetry), linked from the footer and listed in the sitemap. It is each product's page
 ([Third-party licences](../../livediagram/docs/specs/002-project-scope/third-party-licences.md)) on
 liveworkspace's own tables: the same generator (`@liveworkspace/licences`) and page body
 (`@liveworkspace/marketing-site`), with the site's apps, overrides and embedded works in
@@ -180,8 +181,10 @@ site). The apps had a page each at `/status`, a static list that said "Operation
 pages are gone, and each app's router sends its old `/status` here permanently, to the app's own group
 (`/status#livediagram`, `statusPageUrl` in `@liveworkspace/sites/workspace-proxy`).
 
-The page checks the services live, from the visitor's browser: the site is static, so there is no server of
-its own to check from, and nothing here invents one. Every check is an endpoint the service already answers,
+The page shows two kinds of check side by side. **Live checks** run from the visitor's browser, so they show what
+_this visitor_ sees, now. **Hourly checks** run on Cloudflare, from the status Worker ([status.md](status.md)), and are
+kept for 90 days, so the page can show the last one, a bar per day and recent incidents. Both check the same services,
+from one list, `@liveworkspace/status`, so they never drift. Every check is an endpoint the service already answers,
 chosen to be cheap (no database read where one can be avoided, or one the edge caches):
 
 | Group         | Service            | Check                                              | Up when                      |
@@ -210,12 +213,35 @@ router have no check of their own, and the page says which check stands for them
 `staging.` addresses and the MCP servers aren't checked; on a dev server, each app's router port and its MCP
 Worker's port.
 
+The hourly checks can read every answer, so the pages a browser can only call **Reached** get a true state there
+(up on a 2xx or 3xx).
+
 Each service shows its state as an icon and a word, never colour alone: **Operational** (answered as expected),
 **Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
 give), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
 (`HTTP 200`, `Reached`, `Through the API`; where a bare code would mislead, what it means instead: Media's expected
 404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked") and a strip of the checks made since the page was opened (at most 30
-each, kept in memory and gone on reload). There is no uptime history: nothing records one, so the page shows none.
+each, kept in memory and gone on reload).
+
+Under that, each service shows its stored history, from one `GET /api/status/history` on load:
+
+- **liveworkspace's last check**, by a cloud icon, under this visit's (by a person icon), in the same columns: how
+  long it took, its answer and its state as an icon and a word.
+- **90 days** as a bar per day, oldest on the left, with when the run was ("Checked by liveworkspace 23 min ago")
+  and the uptime over them (`99.98% over 90 days`) under it. A bar's colour and height
+  both say its worst state (tall for up, middle for slow, short for down, a faint stub for a day without checks), and
+  hovering, focusing or tapping the strip shows the day: its date, uptime, worst state as an icon and a word, and its
+  incidents. To assistive tech the strip is one image with a summary in words ("99.98% up over 90 days; 2 days with
+  incidents, the last on 12 October").
+
+Below the groups, **Recent incidents** lists the last 90 days' (at most 50), newest first: the service under its
+group's logo, the worst state as an icon and a word, when it began, how long it lasted (or **Ongoing**), and the
+first error. The latest 10 show, and **Show all** the rest. The realtime rooms take the API's check, so their
+incidents would repeat the API's and are left out of the list (their bars still show them). With none, it says so.
+
+The stored history is read again every 5 minutes while the tab is visible; it changes once an hour, so nothing reads
+it faster. When the Worker can't be reached or has nothing yet (a dev server without it, the hour after a first
+deploy), the page shows its live checks alone and says so quietly, once, above the groups.
 
 On top, the overall state (all operational, some slow, or some down), how many services answered, the median
 answer time, when the last round finished and a countdown to the next. A round runs on load and then every 60
@@ -227,12 +253,16 @@ never a coloured dot, each with its own summary and an anchor (`#livediagram`). 
 group carries the group's state as the rows do, an icon and words ("All up", "1 slow", "2 down"), never a dot. The page follows the site's
 landing design: the tinted radial hero, rounded cards, light and dark, a 16px gutter on a phone. Its motion (the
 live pulse, the strip settling, the countdown ring) is in `app/status/status-motion.css`, paced as content, and
-stops for reduced motion. The catalogue is `lib/status/services.ts`, the checks `lib/status/probe.ts`.
+stops for reduced motion.
 
 **What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (23 for four apps, with
 livediagram's Community pages; 29 in all),
 every one a `HEAD`, an `OPTIONS` or a small JSON `GET` with `cache: no-store`, and only while someone has the page
-open and visible.
+open and visible. The history is one more request on load and one every 5 minutes, cached for 2 minutes: 7.4 KB, under 1 KB
+gzipped, for every service over 90 days ([status.md](status.md#performance)). The strips and cards are memoised,
+so the countdown's one-second tick doesn't redraw 35 strips of 90 bars. The catalogue is
+`@liveworkspace/status`; the browser's checks `lib/status/probe.ts`, the stored history's reader
+`lib/status/history.ts`.
 
 ### The Explorer (`/explorer/…`)
 
@@ -583,8 +613,8 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 One Worker, `liveworkspace-site`, static assets only, on the route `liveworkspace.app/*` (and
 `www.`). The APIs' routes are more specific, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
-`/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, and everything else
-here. Security headers come from `public/_headers`.
+`/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
+the status Worker, and everything else here. Security headers come from `public/_headers`.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
@@ -599,11 +629,11 @@ the real header, failing on any Trusted Types refusal.
 corepack pnpm dev:workspace           # from the repo root: http://localhost:3000
 ```
 
-That runs the site's dev server on 3000 and the five APIs behind it (accounts on 8787, telemetry on 8790, the
-Community on 8791, media on 8792, the index on 8793; first-time setup for each is in
+That runs the site's dev server on 3000 and the six APIs behind it (accounts on 8787, telemetry on 8790, the
+Community on 8791, media on 8792, the index on 8793, status on 3010; first-time setup for each is in
 [the README](../README.md#local-development) and the API's own doc). The dev server forwards `/api/auth/*`,
-`/api/account/*`, `/.well-known/*`, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*` and `/api/community/*`
-to them (`next.config.ts`), so the whole site works from one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
+`/api/account/*`, `/.well-known/*`, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*`, `/api/community/*` and
+`/api/status*` to them (`next.config.ts`), so the whole site works from one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
 
 ## Not done yet
 

@@ -38,6 +38,10 @@ And it runs the One Explorer's index, its API at liveworkspace.app/api/index: wh
 Document and Design is and who can reach it, with the grants that let an app open one. See
 [docs/index-service.md](docs/index-service.md).
 
+And it checks every service, its own and each app's, once an hour from Cloudflare, keeping 90 days for the
+status page at liveworkspace.app/status, its API at liveworkspace.app/api/status. Its first deploy (a migration
+and a deploy per environment, no secrets) is in [docs/status.md](docs/status.md#first-deploy).
+
 And it pairs every app's API tokens with workbenches (developer tools that frame an app's editor beside an
 agent), and holds the tickets and sessions those open, in the accounts Worker. See
 [docs/workbench.md](docs/workbench.md).
@@ -114,7 +118,7 @@ corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 ```
 
 `dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
-(8790), the Community Worker (8791), the media Worker (8792) and the index Worker (8793) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
+(8790), the Community Worker (8791), the media Worker (8792), the index Worker (8793) and the status Worker (3010) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
 accounts Worker (and `/api/previews/*` to the media Worker), so the pages and the API share one origin, as on liveworkspace.app. That origin,
 `http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
 

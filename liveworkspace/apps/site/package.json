@@ -36,6 +36,7 @@
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/status": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",

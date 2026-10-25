@@ -32,6 +32,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
+│  ├─ status                   the status page's one list of services, how an answer is judged, the history's wire shapes
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
@@ -42,12 +43,14 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ liveworkspace/              the platform's own apps
-│  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
+│  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
-│  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
+│  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
+│  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
+│  └─ apps/gateway             the workers.dev stand-in for liveworkspace.app's routes, until the zone moves
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
 │  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
@@ -117,6 +120,7 @@ liveworkspace/
 │  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
 │  ├─ community                    every product's Community listings (docs/community.md there)
 │  ├─ media                        every product's uploaded images and previews (docs/media.md, docs/previews.md there)
+│  ├─ status                       hourly checks of every service and 90 days of history (docs/status.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
