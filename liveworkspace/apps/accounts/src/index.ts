@@ -48,6 +48,12 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
+    // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
+    // once the real one is set (auth.ts getAuth).
+    if (!env.BETTER_AUTH_SECRET) {
+      console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
+      return Response.json({ error: 'not_configured' }, { status: 503 });
+    }
 
     if (request.method === 'GET') {
       if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);

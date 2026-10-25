@@ -35,13 +35,12 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | ----------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md)) |
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                          |
-| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                                |
 | `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))     |
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                        |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Non-secret configuration (`TELEMETRY_ENABLED`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -85,4 +84,4 @@ NEXT_PUBLIC_API_BASE=
 ## Tooling (to be added)
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
-- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
+- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).

@@ -1,22 +1,38 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { redactAddress } from '@liveworkspace/email';
 import type { Env } from '../types';
+
+const { reportServerEvent } = vi.hoisted(() => ({ reportServerEvent: vi.fn(async () => {}) }));
+vi.mock('../server-telemetry', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../server-telemetry')>()),
+  reportServerEvent,
+}));
+
 import { appBaseUrl, EMAIL_SEND_TIMEOUT_MS, emailEnabled, sendEmail } from './client';
 
-const withKey = { RESEND_API_KEY: 're_test' } as unknown as Env;
-const noKey = {} as Env;
+// A stand-in for the `send_email` binding (liveworkspace/docs/email.md).
+function fakeBinding(send = vi.fn(async (_message: unknown) => ({ messageId: 'm' }))) {
+  return { send };
+}
+const withBinding = (binding = fakeBinding(), vars: Record<string, string> = {}) =>
+  ({ EMAIL: binding, ...vars }) as unknown as Env;
+const noBinding = {} as Env;
+const message = { kind: 'Milestone', to: 'a@b.com', subject: 's', html: 'h' } as const;
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  reportServerEvent.mockClear();
+});
 
 describe('emailEnabled', () => {
-  it('is false without a key', () => expect(emailEnabled(noKey)).toBe(false));
-  it('is true with a key', () => expect(emailEnabled(withKey)).toBe(true));
-  it('is false for an empty key', () =>
-    expect(emailEnabled({ RESEND_API_KEY: '' } as unknown as Env)).toBe(false));
+  it('is false without the EMAIL binding', () => expect(emailEnabled(noBinding)).toBe(false));
+  it('is true with the EMAIL binding', () => expect(emailEnabled(withBinding())).toBe(true));
 });
 
 describe('appBaseUrl', () => {
   it('defaults to livediagram.app', () =>
-    expect(appBaseUrl(noKey)).toBe(
+    expect(appBaseUrl(noBinding)).toBe(
       'https://livediagram-router.liveworkspace-easing509.workers.dev',
     ));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
@@ -26,94 +42,91 @@ describe('appBaseUrl', () => {
 });
 
 describe('sendEmail', () => {
-  it('no-ops without a key and never calls fetch', async () => {
+  it('no-ops without the binding and sends nothing', async () => {
     const f = vi.fn();
     vi.stubGlobal('fetch', f);
-    const res = await sendEmail(noKey, {
-      kind: 'Milestone',
-      to: 'a@b.com',
-      subject: 's',
-      html: '<p>h</p>',
-    });
-    expect(res).toEqual({ sent: false });
+    expect(await sendEmail(noBinding, message)).toEqual({ sent: false });
     expect(f).not.toHaveBeenCalled();
+    expect(reportServerEvent).not.toHaveBeenCalled();
   });
 
-  it('POSTs to Resend with auth + payload when keyed', async () => {
-    const f = vi.fn().mockResolvedValue(new Response('{"id":"x"}', { status: 200 }));
-    vi.stubGlobal('fetch', f);
-    const res = await sendEmail(withKey, {
+  it('sends through the binding, from the default sender, and counts the kind', async () => {
+    const binding = fakeBinding();
+    const res = await sendEmail(withBinding(binding), {
       kind: 'Milestone',
       to: 'a@b.com',
       subject: 'Hi',
       html: '<p>h</p>',
     });
     expect(res).toEqual({ sent: true });
-    const [url, init] = f.mock.calls[0] as [
-      string,
-      RequestInit & { headers: Record<string, string> },
-    ];
-    expect(url).toBe('https://api.resend.com/emails');
-    expect(init.method).toBe('POST');
-    expect(init.headers.Authorization).toBe('Bearer re_test');
-    expect(JSON.parse(init.body as string)).toMatchObject({
-      to: ['a@b.com'],
-      subject: 'Hi',
-      from: expect.stringContaining('hello@livediagram.app'),
-    });
-  });
-
-  it('honours a RESEND_FROM override', async () => {
-    const f = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
-    vi.stubGlobal('fetch', f);
-    await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Env, {
-      kind: 'Milestone',
+    expect(binding.send).toHaveBeenCalledTimes(1);
+    expect(binding.send.mock.calls[0]![0]).toMatchObject({
+      from: { email: 'hello@livediagram.app', name: 'livediagram' },
       to: 'a@b.com',
-      subject: 's',
-      html: 'h',
+      subject: 'Hi',
+      html: '<p>h</p>',
     });
-    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string)).toHaveProperty(
-      'from',
-      'X <x@y.com>',
+    expect(reportServerEvent).toHaveBeenCalledWith(expect.anything(), 'Email', 'Sent', 'Milestone');
+  });
+
+  it('honours an EMAIL_FROM override', async () => {
+    const binding = fakeBinding();
+    await sendEmail(withBinding(binding, { EMAIL_FROM: 'X <x@y.com>' }), message);
+    expect(binding.send.mock.calls[0]![0]).toHaveProperty('from', { email: 'x@y.com', name: 'X' });
+  });
+
+  it('sends List-Unsubscribe when given an unsubscribe link', async () => {
+    const binding = fakeBinding();
+    await sendEmail(withBinding(binding), { ...message, unsubscribeUrl: 'https://app.test/p' });
+    expect(binding.send.mock.calls[0]![0]).toHaveProperty('headers', {
+      'List-Unsubscribe': '<https://app.test/p>',
+    });
+  });
+
+  it("returns sent:false on a refusal, reporting Email Service's code", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const refused = Object.assign(new Error('suppressed'), { code: 'E_RECIPIENT_SUPPRESSED' });
+    const binding = fakeBinding(vi.fn().mockRejectedValue(refused));
+    expect(await sendEmail(withBinding(binding), message)).toEqual({ sent: false });
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error',
+      'Api',
+      'E_RECIPIENT_SUPPRESSED.SendEmail',
     );
+    // The log line carries the redacted address, never the whole one.
+    const logged = String(vi.mocked(console.error).mock.calls[0]![0]);
+    expect(logged).toContain(redactAddress('a@b.com'));
+    expect(logged).not.toContain('to=a@b.com');
   });
 
-  it('returns sent:false on a non-2xx response', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('nope', { status: 422 })));
-    expect(
-      await sendEmail(withKey, { kind: 'Milestone', to: 'a@b.com', subject: 's', html: 'h' }),
-    ).toEqual({
-      sent: false,
-    });
-  });
-
-  it('never throws — returns sent:false when fetch rejects', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
-    expect(
-      await sendEmail(withKey, { kind: 'Milestone', to: 'a@b.com', subject: 's', html: 'h' }),
-    ).toEqual({
-      sent: false,
-    });
+  it('never throws: returns sent:false and reports Network when the send rejects without a code', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const binding = fakeBinding(vi.fn().mockRejectedValue(new Error('network')));
+    expect(await sendEmail(withBinding(binding), message)).toEqual({ sent: false });
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error',
+      'Api',
+      'Network.SendEmail',
+    );
   });
 });
 
-// A hung Resend call no longer holds the daily email cron behind it: the send gives up, as a failure.
+// A hung send no longer holds the daily email cron behind it: the send gives up, as a failure.
 describe('sendEmail timeout', () => {
-  it('fails a send Resend never answers, after EMAIL_SEND_TIMEOUT_MS', async () => {
-    // The bound itself is the platform's (AbortSignal.timeout); stand in an already-expired one.
-    const timeout = vi
-      .spyOn(AbortSignal, 'timeout')
-      .mockImplementation(() => AbortSignal.abort(new DOMException('timed out', 'TimeoutError')));
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (_url: string, init: RequestInit) => {
-        if (init.signal?.aborted) throw init.signal.reason;
-        return new Response('{}', { status: 200 });
-      }),
-    );
+  it('fails a send the binding never answers, after EMAIL_SEND_TIMEOUT_MS', async () => {
+    vi.useFakeTimers();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const sent = sendEmail(withKey, { kind: 'Milestone', to: 'a@b.com', subject: 's', html: 'h' });
+    const binding = fakeBinding(vi.fn(() => new Promise<never>(() => {})));
+    const sent = sendEmail(withBinding(binding), message);
+    await vi.advanceTimersByTimeAsync(EMAIL_SEND_TIMEOUT_MS);
     expect(await sent).toEqual({ sent: false });
-    expect(timeout).toHaveBeenCalledWith(EMAIL_SEND_TIMEOUT_MS);
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error',
+      'Api',
+      'Network.SendEmail',
+    );
   });
 });

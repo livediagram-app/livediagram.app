@@ -35,6 +35,17 @@ INDEX_ORIGIN = "https://liveworkspace-gateway.liveworkspace-easing509.workers.de
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedesign.app"
 
+# The sender for livedesign's email (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md).
+# Its domain must be onboarded to Cloudflare Email Service on this account.
+EMAIL_FROM = "livedesign <hello@livedesign.app>"
+
+# Cloudflare Email Service (liveworkspace/docs/email.md): livedesign's notifications, milestones and
+# account-deleted email go out through this binding, with EMAIL_FROM above as the sender. No API key: the binding
+# is the credential. Without it the whole email feature is inert (no sends, `emailEnabled: false`), so a
+# deployment with email off does zero extra work. `wrangler dev` simulates it, printing each email.
+[[send_email]]
+name = "EMAIL"
+
 # R2 bucket holding photo pages' pixels: tiles, sources and previews, by content
 # (docs/specs/031-photo/photo-store.md "The photo blob store"). Photo blobs are a tab's working data, not
 # someone's pictures (those, and every design's previews, are the media service's: MEDIA_KEY below,
@@ -128,19 +139,8 @@ simple = { limit = 120, period = 60 }
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
-# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional email
-# (docs/specs/014-identity/transactional-email.md); the onboarding series is liveworkspace's. All
-# optional; an absent RESEND_API_KEY makes the whole email feature inert — no sends, so a deployment
-# with email off does zero extra work:
-#
-#   - RESEND_API_KEY: worker secret. Local dev: drop
-#     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
-#     Production: `wrangler secret put RESEND_API_KEY`.
-#   - RESEND_FROM: optional [vars] From identity, e.g.
-#     "livedesign <hello@livedesign.app>" (the default). The domain
-#     must be verified in Resend.
-#   - APP_BASE_URL: optional [vars] public origin for links in emails.
-#     Defaults to "https://livedesign.app".
+# APP_BASE_URL (optional, from hosted-vars.json) is the public origin for links in emails. Defaults to
+# "https://livedesign.app".
 
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
@@ -211,7 +211,7 @@ simple = { limit = 120, period = 60 }
 # carry over from the production config above.
 #
 # The values that genuinely differ from production are the R2 buckets, the
-# index origin, and the email vars that name the public origin. Everything
+# index origin, and APP_BASE_URL, the public origin email links name. Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
 
@@ -227,13 +227,17 @@ name = "livedesign-api-staging"
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
-RESEND_FROM = "livedesign staging <hello@livedesign.app>"
+EMAIL_FROM = "livedesign <hello@livedesign.app>"
 
 # Staging's own index (see the top-level [vars]).
 INDEX_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedesign.app"
+
+# Email Service, restated because bindings don't inherit (see the top-level [[send_email]]).
+[[env.staging.send_email]]
+name = "EMAIL"
 
 # Own bucket: `wrangler r2 bucket create livedesign-photo-blobs-staging`. Sharing production's would let staging
 # overwrite or delete real photo blobs.
@@ -292,11 +296,8 @@ deleted_classes = ["WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
 # TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
-# hand exactly as it is for production:
-#   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-# Worker secrets are per-environment, so staging's never collide with
-# production's.
+# `_STAGING` GitHub secrets via the deploy workflow. Worker secrets are
+# per-environment, so staging's never collide with production's.
 
 # The daily announce runs on staging too, against staging's media service. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.

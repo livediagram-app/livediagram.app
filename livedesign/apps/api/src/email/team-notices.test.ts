@@ -57,7 +57,7 @@ beforeEach(() => {
   db = sqliteD1({
     ...ACCOUNTS_ENV,
     ...INDEX_ENV,
-    RESEND_API_KEY: 're',
+    EMAIL: { send: vi.fn(async () => ({ messageId: 'm' })) },
     APP_BASE_URL: 'https://app.test',
   });
   for (const [id, address] of [

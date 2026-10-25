@@ -37,12 +37,13 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                |
 | `INDEX_KEY`                                     | api             | The plan rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index))           |
 | `MEDIA_KEY`                                     | api             | liveworkspace's media service cannot draw the plans' previews through the export door, and a purge leaves a plan's previews to lapse ([previews.md](../../../../liveworkspace/docs/previews.md)) |
-| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                                                                                                      |
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                              |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEPLANNER`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in plain text, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, `APP_BASE_URL` per environment) is equally non-secret but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every environment's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Email has no secret at all: the api sends through Cloudflare Email Service's `send_email` binding, `EMAIL`, which is the credential ([Transactional email](../014-identity/transactional-email.md), [liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Without the binding, all transactional email is inert.
+
+Non-secret configuration (`TELEMETRY_ENABLED`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in plain text, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, `APP_BASE_URL` per environment) is equally non-secret but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every environment's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -84,4 +85,4 @@ Each app or worker that needs env vars ships a `.env.example` documenting **whic
 ## Tooling (to be added)
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
-- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
+- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).

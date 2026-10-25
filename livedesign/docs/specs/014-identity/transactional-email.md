@@ -1,10 +1,10 @@
-# Transactional email (Resend)
+# Transactional email
 
-**Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
-into the api worker so the product can send a small set of account and notification emails. Like
-sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on a secret**: when
-`RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the canvas stay
+**Status: in progress.** Optional: on wherever the `EMAIL` binding is declared. The api worker sends a small set of account and
+notification emails through Cloudflare Email Service, the platform's one email path
+([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)),
+it is **entirely gated on configuration**: when the `EMAIL` binding is absent the whole feature is inert — no
+sends, no new request work — and everything else behaves exactly as before. Guests and the canvas stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -65,17 +65,20 @@ recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
-## 2. Gating — the secret is the switch
+## 2. Gating — the binding is the switch
 
-- `RESEND_API_KEY` (secret) — when **unset**, `emailEnabled(env)` is false and
-  every send is a no-op, so a deployment with email off does zero extra work.
-- `RESEND_FROM` (plain var, optional) — the From identity. Default
-  `livedesign <hello@livedesign.app>`. Requires a domain verified in Resend.
+- `EMAIL` (`send_email` binding) — declared in `apps/api/wrangler.toml` as `[[send_email]]`, and restated as
+  `[[env.staging.send_email]]` because bindings don't inherit. When **absent**, `emailEnabled(env)` is false
+  and every send is a no-op, so a deployment with email off does zero extra work. There is no API key: the
+  binding is the credential.
+- `EMAIL_FROM` (plain var) — the From identity, a bare address or `Name <address>`. Set to
+  `livedesign <hello@livedesign.app>` in production and staging, which is also the default. Its domain must be
+  onboarded to Email Service on the liveworkspace account ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
   Default `https://livedesign.app`.
 
-Local dev: drop `RESEND_API_KEY=re_…` into `apps/api/.dev.vars` (gitignored).
-Production: `wrangler secret put RESEND_API_KEY`.
+Email off means no binding: a fork turns it off by dropping the `[[send_email]]` blocks. Locally,
+`wrangler dev` simulates the binding, printing each email and saving it to files, so nothing is sent.
 
 ## 3. Where addresses come from
 
@@ -104,10 +107,12 @@ autosaves is one request, and a guest's is never sent.
 
 ## 6. Code shape
 
-- `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`
-  (POST `https://api.resend.com/emails`, `Bearer RESEND_API_KEY`). Never throws:
-  returns `{ sent }` and logs on failure, so email is always best-effort and
-  never blocks or fails the caller.
+- `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`, which hands the message to
+  the shared `@liveworkspace/email` (`sendEmail(env.EMAIL, …)`, from `EMAIL_FROM`, with `List-Unsubscribe`
+  for opt-out emails, giving up after 10 seconds). Never throws: returns `{ sent }` and logs on failure (the
+  address redacted), so email is always best-effort and never blocks or fails the caller.
+- `apps/api/src/email/send-test-email.test.ts` — a manual preview harness (`EMAIL_PREVIEW=1`) that renders
+  each template through the client into `apps/api/.wrangler/email-preview/`.
 - `apps/api/src/email/templates.ts` — the `{ kind, subject, html }` builders
   (on-brand, inline-styled HTML; links use `APP_BASE_URL`). `kind` is the
   template's telemetry token (see below): it rides on the builder's return so
@@ -136,12 +141,12 @@ the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
 anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
-writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
-request never completed). Server-side rather than through `POST /api/events`
+writes `Error·Api·<code>.SendEmail`, where `<code>` is Email Service's refusal code (such as
+`E_RECIPIENT_SUPPRESSED`), or `Network.SendEmail` when the error carries none (a timeout, say). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a cron or
 a `waitUntil` after the response has gone, so this is the only place that can
-count it. Before this, a dead
-`RESEND_API_KEY` was invisible — every failure went to `console.error` and
+count it. Before this, a broken
+sender was invisible — every failure went to `console.error` and
 nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own
 failure is swallowed: telemetry must never turn a delivered email into a thrown
 send. The template kind and nothing else goes on the wire — never an address, a
@@ -153,12 +158,12 @@ name, or a recipient count.
 - No design content, names, or anything the user typed is ever in an email
   beyond what the notification is about (a design's name, a team the two share)
   and the user's own email.
-- Off by default; a deployment opts in by providing a Resend key + domain
+- Off without the binding; a deployment opts in by declaring it, with a sender on an onboarded domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) intact — no required SaaS call).
 
 ## 8. Out of scope (for now)
 
-Dark-mode email variants, bounce handling (Resend handles
+Dark-mode email variants, bounce handling (Email Service handles
 delivery; sends are best-effort, and one-time ones are idempotent through their claims and stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for its notification, stored

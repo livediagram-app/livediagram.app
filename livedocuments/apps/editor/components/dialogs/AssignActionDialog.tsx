@@ -63,7 +63,7 @@ type AssignActionDialogProps = {
   documentId: string | null;
   documentTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a deployment
-  // without Resend (never advertise a send we can't perform).
+  // without the EMAIL binding (never advertise a send we can't perform).
   emailEnabled: boolean;
   // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the
   // picked team's library root so teammates become assignable without an

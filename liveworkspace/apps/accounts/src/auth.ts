@@ -62,6 +62,11 @@ export type Auth = ReturnType<typeof build>;
 let cached: { env: Env; auth: Auth } | null = null;
 
 export function getAuth(env: Env): Auth {
+  // Without a secret Better Auth falls back to its public default (its isProduction is false on Workers) and
+  // encrypts the first JWKS key with it; once the real secret is set, every signJWT throws.
+  if (!env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32) {
+    throw new Error('BETTER_AUTH_SECRET is missing or shorter than 32 characters');
+  }
   if (cached?.env !== env) cached = { env, auth: build(env) };
   return cached.auth;
 }

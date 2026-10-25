@@ -21,10 +21,10 @@ import { addUser, testD1 } from './test-d1.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = 1_000 * DAY;
-const env = { ENVIRONMENT: 'production', BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev' } as Pick<
-  Env,
-  'ENVIRONMENT' | 'BASE_URL'
->;
+const env = {
+  ENVIRONMENT: 'production',
+  BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+} as Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>;
 
 let db: D1Database;
 let sql: DatabaseSync;
@@ -32,7 +32,7 @@ let sent: { to: string; subject: string; unsubscribeUrl?: string; html: string; 
 let failing: boolean;
 
 const send: SendEmail = async (email) => {
-  if (failing) throw new Error('Resend refused the email (500)');
+  if (failing) throw new Error('Email Service refused the email');
   sent.push(email);
 };
 
@@ -114,8 +114,12 @@ describe('the welcome', () => {
     await account('user_ada', T0, true, 'liveworkspace.app');
     await account('user_bea', T0, true, 'liveworkspace.app');
     await sendWelcomes(db, env, send, ['user_ada'], T0);
-    expect(sent[0]!.html).toContain('href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps"');
-    expect(sent[0]!.text).toContain('Pick an app: https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps');
+    expect(sent[0]!.html).toContain(
+      'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps"',
+    );
+    expect(sent[0]!.text).toContain(
+      'Pick an app: https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps',
+    );
     expect(sent[0]!.html).not.toContain('livediagram.app/new');
     // Later in the series, the first app they opened.
     await recordSighting(db, 'user_bea', 'liveplanner.app', T0 + 1);
@@ -125,7 +129,9 @@ describe('the welcome', () => {
     const ada = sent.find(
       (e) => e.to === 'user_ada@example.com' && e.subject !== 'Welcome to liveworkspace',
     )!;
-    expect(ada.html).toContain('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps');
+    expect(ada.html).toContain(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps',
+    );
   });
 
   it('keeps the app signed up through over the first one opened', async () => {
@@ -239,7 +245,8 @@ describe('the series', () => {
 describe('telemetry', () => {
   const posted: { app: string; events: { type: string }[] }[] = [];
   const telemetry = {
-    TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
+    TELEMETRY_URL:
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
     TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
     TELEMETRY_KEY_LIVEDESIGN: 'lds',
     TELEMETRY: {
@@ -296,18 +303,31 @@ describe('the emails', () => {
       'https://staging.livedesign.app',
     );
     const email = lifecycleEmail(env, 'week2', { home: null });
-    expect(email.html).toContain('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer');
+    expect(email.html).toContain(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer',
+    );
     expect(email.text).toContain('Manage your notifications');
-    expect(email.unsubscribeUrl).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
+    expect(email.unsubscribeUrl).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+    );
     expect(email.html).toContain(
       'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications" style="color:#334155;text-decoration:underline">Manage your notifications',
     );
     // A deployment's own origin.
     expect(
-      lifecycleEmail({ ...env, BASE_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/' }, 'winback', {
-        home: null,
-      }).unsubscribeUrl,
-    ).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
+      lifecycleEmail(
+        {
+          ...env,
+          BASE_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/',
+        },
+        'winback',
+        {
+          home: null,
+        },
+      ).unsubscribeUrl,
+    ).toBe(
+      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+    );
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }

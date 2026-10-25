@@ -117,14 +117,14 @@ export type Env = {
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
   TELEMETRY_KEY?: string;
-  // Resend API key for this app's notification and milestone emails
-  // (docs/specs/014-identity/transactional-email.md; the onboarding series is liveworkspace's). When
-  // absent the whole email feature is inert: no sends. Set via `wrangler secret put RESEND_API_KEY` for prod;
-  // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
-  RESEND_API_KEY?: string;
-  // From identity for outbound email (optional). Defaults to
-  // "livediagram <hello@livediagram.app>". The domain must be verified in Resend.
-  RESEND_FROM?: string;
+  // Cloudflare Email Service's `send_email` binding for this app's notification and milestone emails
+  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md; the onboarding series is
+  // liveworkspace's). Declared in wrangler.toml, no key: the binding is the credential. When absent the whole
+  // email feature is inert: no sends.
+  EMAIL?: SendEmail;
+  // From identity for outbound email (optional), a bare address or "Name <address>". Defaults to
+  // "livediagram <hello@livediagram.app>". Its domain must be onboarded to Email Service on this account.
+  EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram-router.liveworkspace-easing509.workers.dev".
   APP_BASE_URL?: string;

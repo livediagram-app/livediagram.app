@@ -661,8 +661,8 @@ rules every app keeps, and the two questions it asks before it writes, are share
 
 A short series that introduces liveworkspace, one per account rather than one per app, so someone who
 uses all four apps hears it once (`migrations/0008_email_lifecycle.sql`, `src/lifecycle.ts`, the
-emails in `src/lifecycle-email.ts`). It is sent by this Worker, through Resend like every other email
-it sends, with the same timings and tips each app's own series had:
+emails in `src/lifecycle-email.ts`). It is sent by this Worker, through Cloudflare Email Service ([email.md](email.md)) like
+every other email it sends, with the same timings and tips each app's own series had:
 
 | Stage      | When                                                                           | Can be turned off |
 | ---------- | ------------------------------------------------------------------------------ | ----------------- |

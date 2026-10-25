@@ -101,15 +101,14 @@ export type Env = {
   // livedesign's Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
-  // Resend API key for livedesign's own email (docs/specs/014-identity/transactional-email.md):
-  // notifications, milestones, team invites, token expiry and account deletion. When absent none of
-  // them is sent. The onboarding series is liveworkspace's, sent by its accounts Worker. Set via
-  // `wrangler secret put RESEND_API_KEY` for prod; drop into `apps/api/.dev.vars` for local dev
-  // (gitignored, never commit).
-  RESEND_API_KEY?: string;
-  // From identity for outbound email (optional). Defaults to
-  // "livedesign <hello@livedesign.app>". The domain must be verified in Resend.
-  RESEND_FROM?: string;
+  // Cloudflare Email Service's `send_email` binding for livedesign's own email
+  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md): notifications, milestones and
+  // account deletion. No key: the binding is the credential. When absent none of them is sent. The onboarding
+  // series is liveworkspace's, sent by its accounts Worker. `wrangler dev` simulates it, printing each email.
+  EMAIL?: SendEmail;
+  // From identity for outbound email (optional), a bare address or `Name <address>`. Defaults to
+  // "livedesign <hello@livedesign.app>". The domain must be onboarded to Email Service on this account.
+  EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livedesign.app".
   APP_BASE_URL?: string;

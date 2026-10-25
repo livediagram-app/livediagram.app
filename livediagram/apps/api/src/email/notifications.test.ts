@@ -19,7 +19,10 @@ import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import { notifyFirstShare, notifyMilestone, notifyNewComment } from './notifications';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as DocumentEnv;
+const env = {
+  EMAIL: { send: vi.fn(async () => ({ messageId: 'm' })) },
+  APP_BASE_URL: 'https://app.test',
+} as unknown as DocumentEnv;
 const liveDoc = { id: 'd1', ownerId: 'user_u1', name: 'Roadmap' };
 
 // These accounts have a verified address and the switch on; anyone else gets nothing (opted out, or no address).

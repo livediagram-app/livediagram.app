@@ -156,9 +156,9 @@ the index mints is long enough, from the CSPRNG, that guessing one is out of rea
 
 **Capabilities**
 
-| Method | Path                | Auth | Notes                                                                                                                                                                                                                                      |
-| ------ | ------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| GET    | `/api/capabilities` | none | Returns `{ emailEnabled }` plus the CLI fields (`apiBase`, `authEnabled`, `oauthIssuer?`, `projectFormat`, `cli?`). `emailEnabled` is true iff Resend is configured; the editor app hides the email-notification toggles when it is false. |
+| Method | Path                | Auth | Notes                                                                                                                                                                                                                                                 |
+| ------ | ------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/capabilities` | none | Returns `{ emailEnabled }` plus the CLI fields (`apiBase`, `authEnabled`, `oauthIssuer?`, `projectFormat`, `cli?`). `emailEnabled` is true iff the api has its `EMAIL` binding; the editor app hides the email-notification toggles when it is false. |
 
 **User preferences** (see [User preferences](../007-editor/user-preferences.md))
 

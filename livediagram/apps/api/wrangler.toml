@@ -26,6 +26,9 @@ port = 8687
 # production's, https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
+# The sender for this app's email (see EMAIL below). liveplanner.app until livediagram.app moves to this
+# account and is onboarded to Email Service (liveworkspace/docs/email.md "Senders until the domains move").
+EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 
 # Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
 # Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
@@ -65,8 +68,8 @@ OAUTH_ISSUER = "https://livediagram-mcp.liveworkspace-easing509.workers.dev"
 #     the same environment's id into the editor app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
 #     (scripts/hosted-vars.mjs build-env --env ...), and verify / verify-build
 #     prove the two agree on every deploy.
-#   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
-#     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
+#   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand like any other
+#     secret: `wrangler secret put GOOGLE_CLIENT_SECRET` and
 #     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
 # Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
 # shows no Drive entry, which is the default when unset.
@@ -208,19 +211,19 @@ simple = { limit = 10, period = 60 }
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
-# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
-# lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
-# the whole email feature inert — no sends, and the email_lifecycle table
-# is never touched, so a deployment with email off does zero extra work:
+# Transactional & lifecycle email (docs/specs/014-identity/transactional-email.md) goes out through
+# Cloudflare Email Service (liveworkspace/docs/email.md). No API key: the `send_email` binding below is the
+# credential, and without it the whole email feature is inert — no sends, and the email_lifecycle table is
+# never touched, so a deployment with email off (a fork that drops the binding) does zero extra work:
 #
-#   - RESEND_API_KEY: worker secret. Local dev: drop
-#     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
-#     Production: `wrangler secret put RESEND_API_KEY`.
-#   - RESEND_FROM: optional [vars] From identity, e.g.
-#     "livediagram <hello@livediagram.app>" (the default). The domain
-#     must be verified in Resend.
-#   - APP_BASE_URL: optional [vars] public origin for links in emails.
+#   - EMAIL: the `send_email` binding. `wrangler dev` simulates it, printing each email and saving it to a
+#     file, so nothing is sent locally.
+#   - EMAIL_FROM: [vars] From identity. Its domain must be onboarded to Email Service on this account;
+#     livediagram.app isn't yet, so it sends from liveplanner.app until that domain moves.
+#   - APP_BASE_URL: optional [vars] public origin for links in emails (hosted-vars.json per environment).
 #     Defaults to "https://livediagram-router.liveworkspace-easing509.workers.dev".
+[[send_email]]
+name = "EMAIL"
 
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
@@ -317,7 +320,7 @@ name = "livediagram-api-staging"
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
-RESEND_FROM = "livediagram staging <hello@livediagram.app>"
+EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 
 # Lock the AI endpoint to the staging origin so the model key behind it
 # can't be spent from a third-party page (docs/specs/021-event-storming/note-reader.md). Production states the
@@ -397,13 +400,17 @@ new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 tag = "v2"
 deleted_classes = ["WorkbenchStore"]
 
+# Email Service's binding, restated because bindings don't inherit. Staging sends real email, to the same
+# people production would (docs/specs/016-platform/staging-environment.md), from the same sender.
+[[env.staging.send_email]]
+name = "EMAIL"
+
 
 # The four ACCOUNTS_* / API_RESOURCE values and
 # TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
-# model key (GOOGLE_AI_STUDIO_API_KEY) are provisioned by
-# hand exactly as they are for production:
-#   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# `_STAGING` GitHub secrets via the deploy workflow. The model key
+# (GOOGLE_AI_STUDIO_API_KEY) is provisioned by hand exactly as it is for production:
+#   cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 # The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
 #   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging
 # with a DRIVE_TOKEN_KEY of its own, never production's, so a staging row can

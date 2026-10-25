@@ -465,7 +465,7 @@ export type CapabilitiesResponse = {
   oauthIssuer?: string;
   documentFormat?: number;
   cli?: { minVersion: string };
-  // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
+  // True only when the deployment has its EMAIL binding (Cloudflare Email Service) (docs/specs/014-identity/transactional-email.md). The
   // editor app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.

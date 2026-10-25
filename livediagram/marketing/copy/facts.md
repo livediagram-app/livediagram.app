@@ -68,7 +68,7 @@ Node-hosted backend, no SSR.
 ## Not yet shipped (do not imply these exist)
 
 - Team workspaces (a document belongs to one identity today).
-- Transactional email (Resend).
+- Transactional email (Cloudflare Email Service).
 - Operational transform / CRDT (realtime is last-writer-wins today).
 
 ## Links

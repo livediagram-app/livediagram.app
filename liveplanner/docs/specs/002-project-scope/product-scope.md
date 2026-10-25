@@ -58,7 +58,7 @@ tree and their specs stay until it goes ([Build phase](../005-project-roadmap/pr
   ([Next.js](../016-platform/nextjs.md)).
 - **Cloudflare only**: Workers, D1, Durable Objects, KV and R2; no Node-hosted backend
   ([Deployment](../016-platform/deployment.md)).
-- **Optional integrations**: sign-in (the liveworkspace accounts Worker), Resend and a model provider are each gated on their own key, and the planner
+- **Optional integrations**: sign-in (the liveworkspace accounts Worker), email (Cloudflare Email Service's `EMAIL` binding) and a model provider are each gated on their own key or binding, and the planner
   runs fully without them ([Business model + licence](business-model-and-licence.md)).
 - **No secrets in source** ([Secrets policy](secrets-policy.md)).
 

@@ -19,7 +19,11 @@ import { sendEmail } from './client';
 import { commentNotificationEmail } from './templates';
 import { notifyNewComment } from './notifications';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as DocumentEnv;
+// Email on: a stand-in for the `send_email` binding (sendEmail itself is mocked above).
+const env = {
+  EMAIL: { send: vi.fn(async () => ({ messageId: 'm' })) },
+  APP_BASE_URL: 'https://app.test',
+} as unknown as DocumentEnv;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
   notifyDocumentJoin: true,

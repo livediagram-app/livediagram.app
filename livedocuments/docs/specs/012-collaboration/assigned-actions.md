@@ -8,7 +8,7 @@ assigned action to the element, optionally emailing the assignee. It sits on the
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
-email ([Transactional email (Resend)](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
+email ([Transactional email](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
 
 An action is collaboration metadata on an element, exactly like a comment
 thread: it lives in the element, persists through the normal tab autosave,
@@ -151,7 +151,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
 - **"Email {name} about this action"**: the shared iOS-style toggle
   (`@liveworkspace/ui`'s `Switch` at `sm`, the same control every settings row uses), **default
   on**, rendered only when `useCapabilities().emailEnabled` is true
-  ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without Resend never advertises a send it
+  ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without the `EMAIL` binding never advertises a send it
   can't perform. **Hidden entirely for a self-assignment** (guest or
   signed-in) — you don't email yourself about your own action, so the
   row disappears rather than defaulting off.
@@ -215,7 +215,7 @@ The server, not the client, establishes every fact that matters:
 - reads the **document name from the document**, not the body;
 - resolves the assignee's address from liveworkspace: an account's verified address, or an invited
   person's invite address; never a client header
-  ([Transactional email (Resend)](../014-identity/transactional-email.md) §5, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
+  ([Transactional email](../014-identity/transactional-email.md) §5, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
 - resolves the assigner's display name from the caller's own profile (then their verified address), so a
   spoofed `assignerName` in a tab blob can never sign an email;
 - no-ops silently unless `emailEnabled(env)` and the assignee's
@@ -239,7 +239,7 @@ assigned you an action on _{document name}_", the action name, the first
 ~200 characters of the description, and a CTA linking to the document (when
 the assignee can open it, see above). All
 user-influenced strings (action name, description, document name, assigner
-name) are HTML-escaped. The content stays within [Transactional email (Resend)](../014-identity/transactional-email.md) §7: everything in
+name) are HTML-escaped. The content stays within [Transactional email](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
 or a document/team fact the two already share.
 

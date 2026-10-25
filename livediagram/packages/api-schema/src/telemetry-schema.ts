@@ -96,7 +96,7 @@ export const TELEMETRY_CATEGORIES = [
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
   // the api worker, which is the only place that knows a send happened —
   // nothing reaches a browser, so without this the whole onboarding series
-  // was unmeasurable and a broken RESEND_API_KEY was invisible. Never an
+  // was unmeasurable and a refused send was invisible. Never an
   // address, a name, or a count of recipients: the kind and nothing else.
   'Email',
   // Error tracking (docs/specs/017-telemetry/telemetry.md): generic failure counts. The action slot

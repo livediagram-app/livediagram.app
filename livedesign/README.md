@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). It runs free at [livedesign.app](https://livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Resend (transactional email), each gated on its own key — and the editor runs fully without any of them.
+[MIT](LICENSE). It runs free at [livedesign.app](https://livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own configuration — and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedesign.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

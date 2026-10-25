@@ -1,10 +1,10 @@
-# Transactional email (Resend)
+# Transactional email
 
-**Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
-into the api worker so the product can send a small set of account emails. Like
-sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on a secret**: when
-`RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the editor stay
+**Status: in progress.** Optional. The api worker sends a small set of account emails through
+Cloudflare Email Service, as every liveworkspace app does ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+There is no third-party provider and no API key: the worker's `send_email` binding, `EMAIL`, is the
+credential. The feature is **entirely gated on that binding**: a deployment without it is inert —
+no sends, no new request work — and everything else behaves exactly as before. Guests and the editor stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -77,21 +77,24 @@ recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
-## 2. Gating — the secret is the switch
+## 2. Gating — the binding is the switch
 
-- `RESEND_API_KEY` (secret) — when **unset**, `emailEnabled(env)` is false and
-  every send is a no-op, so a deployment with email off does no extra work for
-  email. This mirrors the model-key-absent → AI-hidden pattern.
+- `EMAIL` (`send_email` binding, `[[send_email]] name = "EMAIL"` in `apps/api/wrangler.toml`, restated
+  as `[[env.staging.send_email]]` because bindings don't inherit) — when **absent**,
+  `emailEnabled(env)` is false and every send is a no-op, so a deployment with email off does no
+  extra work for email. Email off means no binding: a fork turns it off by deleting those blocks.
+  This mirrors the model-key-absent → AI-hidden pattern.
 - Addresses and the notification settings come from the liveworkspace accounts
   Worker (`ACCOUNTS_URL` and the client credentials). A deployment without it
   sends no email: it has no address to send to.
-- `RESEND_FROM` (plain var, optional) — the From identity. Default
-  `liveplanner <hello@liveplanner.app>`. Requires a domain verified in Resend.
+- `EMAIL_FROM` (plain var) — the From identity, `liveplanner <hello@liveplanner.app>` in production
+  and staging (and the default when unset). Its domain must be onboarded to Email Service on the
+  liveworkspace account, which adds the SPF and DKIM records itself.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
   Default `https://liveplanner.app`.
 
-Local dev: drop `RESEND_API_KEY=re_…` into `apps/api/.dev.vars` (gitignored).
-Production: `wrangler secret put RESEND_API_KEY`.
+Local dev: nothing to set. `wrangler dev` simulates the binding, printing each email and saving its
+text and HTML to files instead of sending it, which is also the way to look over a template.
 
 ## 3. Data model
 
@@ -104,9 +107,10 @@ keys of the last two are SHA-256 hashes).
 
 ## 4. Code shape
 
-- `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`
-  (POST `https://api.resend.com/emails`, `Bearer RESEND_API_KEY`). Never throws:
-  returns `{ sent }` and logs on failure, so email is always best-effort and
+- `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`, which hands the
+  message to `@liveworkspace/email`'s `sendEmail(env.EMAIL, …)` (the platform's one caller of the
+  binding: it sends `List-Unsubscribe` and gives up after 10 seconds). Never throws: returns
+  `{ sent }` and logs on failure, with the address redacted, so email is always best-effort and
   never blocks or fails the caller.
 - `apps/api/src/email/templates.ts` — the `{ kind, subject, html }` builders
   (on-brand, inline-styled HTML; links use `APP_BASE_URL`). `kind` is the
@@ -139,12 +143,12 @@ All sends use `ctx.waitUntil` — email is never on the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` reports one
 anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
-reports `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
-request never completed). Server-side rather than from a browser
+reports `Error·Api·<code>.SendEmail`, where `<code>` is Email Service's refusal code (such as
+`E_RECIPIENT_SUPPRESSED`), or `Network.SendEmail` for a failure without one (a timeout, say). Server-side rather than from a browser
 because nothing about an email reaches a browser: the send happens in a cron or
 a `waitUntil` after the response has gone, so this is the only place that can
-count it. Before this, every email was unmeasurable and a dead
-`RESEND_API_KEY` was invisible — every failure went to `console.error` and
+count it. Before this, every email was unmeasurable and a broken
+sender was invisible — every failure went to `console.error` and
 nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own
 failure is swallowed: telemetry must never turn a delivered email into a thrown
 send. The template kind and nothing else goes on the wire — never an address, a
@@ -155,13 +159,13 @@ name, or a recipient count.
 - Authenticated-only; the address is the verified token claim, never input.
 - No project content, names, or anything the user typed is ever in an email
   beyond the team name and the user's own email.
-- Off by default; a deployment opts in by providing a Resend key + domain
-  (keeps [Business model + licence](../002-project-scope/business-model-and-licence.md)'s degrade-never-break rule — no required SaaS call).
+- Optional; a deployment opts in by declaring the `EMAIL` binding with a sender on an onboarded
+  domain (keeps [Business model + licence](../002-project-scope/business-model-and-licence.md)'s degrade-never-break rule — no required SaaS call).
 
 ## 6. Out of scope (for now)
 
-Dark-mode email variants, bounce handling (Resend handles delivery; sends are
-best-effort). Per-notification **email preferences** are no longer out of
+Dark-mode email variants, bounce handling (Email Service handles delivery and
+refuses suppressed recipients; sends are best-effort). Per-notification **email preferences** are no longer out of
 scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each notification, stored in the person's settings at
 the accounts Worker ([User preferences](../007-editor/user-preferences.md)).

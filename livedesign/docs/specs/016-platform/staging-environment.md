@@ -141,25 +141,22 @@ code as production's.
 
 ## Integrations
 
-Each is wired to its own tenant or its own data — but **only two are switched on**.
-Resend is configured and dormant, waiting on a key that is deliberately not
-set. `GET /api/capabilities` is the authoritative answer at any moment; as of the
-first deploy it returns `{"emailEnabled":false}` on staging against
-`{"emailEnabled":true}` on production.
+Each is wired to its own tenant or its own data, and all three are switched on.
+`GET /api/capabilities` is the authoritative answer at any moment: with the `EMAIL` binding declared in
+both environments it returns `{"emailEnabled":true}` on staging as on production.
 
-| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`. |
-| **Telemetry** — ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                      |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily email cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.        |
+| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`.                                       |
+| **Telemetry** — ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                            |
+| **Email** — ON     | Cloudflare Email Service through the `[[env.staging.send_email]]` binding `EMAIL` ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)), restated because bindings don't inherit. `EMAIL_FROM` is production's sender, and `APP_BASE_URL` points every link back at staging. No key: the binding is the credential. Staging runs the same daily email cron as production, so it mails **real people** (see the warning below). |
 
 > **Email warning.** Staging sends the same emails as production
-> (notifications, milestones, token-expiry warnings). With `RESEND_API_KEY` set, any
-> address that signs into staging receives them, from the same verified domain as
-> production's — so a staging account made with a colleague's address mails that
-> colleague. That is why the key is unset by default: absent, the email feature is inert
-> ([Transactional email (Resend)](../014-identity/transactional-email.md)).
-> Set it for a specific test, use addresses you own, and remove it afterwards.
+> (notifications, milestones). Any address that signs into staging receives them, from
+> the same sender as production's — so a staging account made with a colleague's address
+> mails that colleague. Use addresses you own. To take staging's email off, drop the
+> `[[env.staging.send_email]]` block and redeploy: without the binding the email feature is
+> inert ([Transactional email](../014-identity/transactional-email.md)).
 
 ## Secrets
 
@@ -177,11 +174,9 @@ value the deploy workflow syncs:
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
-`RESEND_API_KEY` is **not** in the workflow for either
-environment; it is provisioned once by hand with `wrangler secret put ... --env
-staging`, exactly as production provisions them. Keeping the workflow's secret list
-identical across the two environments is deliberate: a secret that exists in one
-workflow and not the other is how the environments start to differ.
+Email needs no secret in either environment: the `EMAIL` binding is the credential. Keeping
+the workflow's secret list identical across the two environments is deliberate: a secret that
+exists in one workflow and not the other is how the environments start to differ.
 
 ## One workflow body, two callers
 
@@ -239,10 +234,7 @@ as production's first deploy did ([Deployment](deployment.md) "First deploy").
 Still outstanding:
 
 ```bash
-# 1. Worker secrets not carried by the workflow
-cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-
-# 2. GitHub secrets — Settings → Secrets and variables → Actions
+# GitHub secrets — Settings → Secrets and variables → Actions
 #    the _STAGING entries in the table above
 ```
 

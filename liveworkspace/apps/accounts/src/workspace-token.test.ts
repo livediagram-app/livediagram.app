@@ -56,11 +56,7 @@ const decode = (token: string) =>
   >;
 
 function ask(headers: Record<string, string> = {}) {
-  return workspaceToken(
-    new Request(`${BASE}/api/auth/workspace-token`, { headers }),
-    env,
-    auth,
-  );
+  return workspaceToken(new Request(`${BASE}/api/auth/workspace-token`, { headers }), env, auth);
 }
 
 async function sessionCookie(): Promise<string> {
@@ -109,10 +105,16 @@ describe("liveworkspace.app's own token", () => {
 
   it('gives anyone else a guest token, keeping the browser’s guest and setting its cookie', async () => {
     const guestId = 'guest_00000000-0000-4000-8000-000000000001';
-    const response = await ask({ cookie: `${GUEST_COOKIE}=${await signGuestCookie(guestId, SECRET)}` });
+    const response = await ask({
+      cookie: `${GUEST_COOKIE}=${await signGuestCookie(guestId, SECRET)}`,
+    });
     const body = (await response.json()) as { token: string; kind: string; sub: string };
     expect(body).toMatchObject({ kind: 'guest', sub: guestId });
-    expect(decode(body.token)).toMatchObject({ sub: guestId, kind: 'guest', aud: RESOURCES.production });
+    expect(decode(body.token)).toMatchObject({
+      sub: guestId,
+      kind: 'guest',
+      aud: RESOURCES.production,
+    });
     const set = response.headers.getSetCookie()[0]!;
     expect(set).toMatch(/HttpOnly/);
     expect(await readGuestCookie(set.split(';')[0]!.slice(GUEST_COOKIE.length + 1), SECRET)).toBe(

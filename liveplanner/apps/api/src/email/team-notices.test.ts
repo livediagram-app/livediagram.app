@@ -25,6 +25,9 @@ import { handleInternalItems } from '../routes/internal-items';
 import { sendEmail } from './client';
 import { notifyMentions, notifyMilestone } from './notifications';
 
+// A fake EMAIL binding: only its presence matters here, since sendEmail itself is mocked.
+const fakeEmail = () => ({ send: vi.fn(async () => ({ messageId: 'm' })) }) as unknown as SendEmail;
+
 // The five notification emails that ride on liveworkspace (docs/specs/014-identity/profile-and-email-notifications.md):
 // the tenth plan and the first share link (milestones, claimed once at accounts), someone joining a shared plan
 // (the index's notice, throttled in the plan), an action assigned and a mention (the plan's team at accounts,
@@ -55,7 +58,7 @@ beforeEach(() => {
   db = sqliteD1({
     ...ACCOUNTS_ON,
     ...INDEX_ON,
-    RESEND_API_KEY: 're',
+    EMAIL: fakeEmail(),
     APP_BASE_URL: 'https://app.test',
   });
   for (const [id, address] of [
@@ -395,7 +398,7 @@ describe('a mention', () => {
     const other = sqliteD1({
       ...ACCOUNTS_ON,
       ...INDEX_ON,
-      RESEND_API_KEY: 're',
+      EMAIL: fakeEmail(),
       APP_BASE_URL: 'https://app.test',
     });
     const comment = (id: string, from: number) =>

@@ -63,7 +63,7 @@ type AssignActionDialogProps = {
   designId: string | null;
   designTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a deployment
-  // without Resend (never advertise a send we can't perform).
+  // whose api has no `EMAIL` binding (never advertise a send we can't perform).
   emailEnabled: boolean;
   // Inline personal-design fix (docs/specs/012-collaboration/assigned-actions.md §2): file the design into the
   // picked team's library root so teammates become assignable without an

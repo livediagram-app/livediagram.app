@@ -25,6 +25,9 @@ port = 8887
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
+# The sender for outbound email (the EMAIL binding, below; liveworkspace/docs/email.md).
+EMAIL_FROM = "liveplanner <hello@liveplanner.app>"
+
 # The central index (liveworkspace/docs/one-explorer.md): where every plan is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the plan rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
@@ -116,19 +119,15 @@ type = "ratelimit"
 namespace_id = "1011"
 simple = { limit = 60, period = 60 }
 
-# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional email
-# (docs/specs/014-identity/transactional-email.md); the onboarding series is liveworkspace's. All
-# optional; an absent RESEND_API_KEY makes the whole email feature inert — no sends, so a deployment
-# with email off does zero extra work:
-#
-#   - RESEND_API_KEY: worker secret. Local dev: drop
-#     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
-#     Production: `wrangler secret put RESEND_API_KEY`.
-#   - RESEND_FROM: optional [vars] From identity, e.g.
-#     "liveplanner <hello@liveplanner.app>" (the default). The domain
-#     must be verified in Resend.
-#   - APP_BASE_URL: optional [vars] public origin for links in emails.
-#     Defaults to "https://liveplanner.app".
+# Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email
+# Service's `send_email` binding (liveworkspace/docs/email.md); the onboarding series is liveworkspace's. No API
+# key: the binding is the credential. A deployment without it sends nothing and does zero extra work, so a fork
+# turns email off by deleting this block (and staging's). `wrangler dev` simulates it, printing each email and
+# saving its text and HTML to files instead of sending. EMAIL_FROM (in [vars]) is the From identity; its domain
+# must be onboarded to Email Service on this account. APP_BASE_URL is the public origin for links in emails,
+# from `hosted-vars.json`, defaulting to "https://liveplanner.app".
+[[send_email]]
+name = "EMAIL"
 
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
@@ -211,7 +210,7 @@ name = "liveplanner-api-staging"
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
-RESEND_FROM = "liveplanner staging <hello@liveplanner.app>"
+EMAIL_FROM = "liveplanner <hello@liveplanner.app>"
 
 # Staging's own index (see the top-level [vars]).
 INDEX_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
@@ -260,6 +259,10 @@ simple = { limit = 60, period = 60 }
 # A different script is a different Durable Object namespace, so staging's
 # PLAN_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
+# Bindings don't inherit into an environment, so staging restates the email binding (above).
+[[env.staging.send_email]]
+name = "EMAIL"
+
 [[env.staging.durable_objects.bindings]]
 name = "PLAN_ROOM"
 class_name = "PlanRoom"
@@ -274,8 +277,7 @@ deleted_classes = ["WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
 # TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
-# hand exactly as it is for production:
-#   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# `_STAGING` GitHub secrets via the deploy workflow. Email needs no secret: the
+# binding above is the credential.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

@@ -805,8 +805,8 @@ and the dialog stays as the one complete, browsable index of them.
   (`livedocuments:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
   and the bearer request); the switch, the Account section and the All grouping are the package's.
 
-  Email rows are **absent, not disabled**, unless BOTH Resend is configured
-  ([Transactional email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
+  Email rows are **absent, not disabled**, unless BOTH email is configured (the `EMAIL` binding,
+  [Transactional email](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
   out entirely rather than becoming a row that pushes a blank pane.
   **Power-user-only rows** (Minimal chrome) are absent the same way unless

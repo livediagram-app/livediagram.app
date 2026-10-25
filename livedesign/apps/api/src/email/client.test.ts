@@ -1,22 +1,27 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
-import { appBaseUrl, EMAIL_SEND_TIMEOUT_MS, emailEnabled, sendEmail } from './client';
+import { EMAIL_SEND_TIMEOUT_MS } from '@liveworkspace/email';
+import { appBaseUrl, emailEnabled, sendEmail } from './client';
 
-const withKey = { RESEND_API_KEY: 're_test' } as unknown as Env;
-const noKey = {} as Env;
+vi.mock('../server-telemetry', () => ({ reportServerEvent: vi.fn(async () => {}) }));
+import { reportServerEvent } from '../server-telemetry';
 
-afterEach(() => vi.restoreAllMocks());
+// A stand-in for Email Service's `send_email` binding.
+const fakeBinding = () => ({ send: vi.fn(async (_message: unknown) => ({ messageId: 'm' })) });
+const withBinding = (binding = fakeBinding(), extra: Partial<Env> = {}) =>
+  ({ EMAIL: binding, ...extra }) as unknown as Env;
+const noBinding = {} as Env;
+
+afterEach(() => vi.clearAllMocks());
 
 describe('emailEnabled', () => {
-  it('is false without a key', () => expect(emailEnabled(noKey)).toBe(false));
-  it('is true with a key', () => expect(emailEnabled(withKey)).toBe(true));
-  it('is false for an empty key', () =>
-    expect(emailEnabled({ RESEND_API_KEY: '' } as unknown as Env)).toBe(false));
+  it('is false without the binding', () => expect(emailEnabled(noBinding)).toBe(false));
+  it('is true with the binding', () => expect(emailEnabled(withBinding())).toBe(true));
 });
 
 describe('appBaseUrl', () => {
   it('defaults to livedesign.app', () =>
-    expect(appBaseUrl(noKey)).toBe('https://livedesign.app'));
+    expect(appBaseUrl(noBinding)).toBe('https://livedesign.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
     expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
       'https://example.com',
@@ -24,94 +29,136 @@ describe('appBaseUrl', () => {
 });
 
 describe('sendEmail', () => {
-  it('no-ops without a key and never calls fetch', async () => {
-    const f = vi.fn();
-    vi.stubGlobal('fetch', f);
-    const res = await sendEmail(noKey, {
+  it('no-ops without the binding and reports nothing', async () => {
+    const res = await sendEmail(noBinding, {
       kind: 'AccountDeleted',
       to: 'a@b.com',
       subject: 's',
       html: '<p>h</p>',
     });
     expect(res).toEqual({ sent: false });
-    expect(f).not.toHaveBeenCalled();
+    expect(reportServerEvent).not.toHaveBeenCalled();
   });
 
-  it('POSTs to Resend with auth + payload when keyed', async () => {
-    const f = vi.fn().mockResolvedValue(new Response('{"id":"x"}', { status: 200 }));
-    vi.stubGlobal('fetch', f);
-    const res = await sendEmail(withKey, {
+  it('sends through the binding from the default sender, and counts it', async () => {
+    const binding = fakeBinding();
+    const res = await sendEmail(withBinding(binding), {
       kind: 'AccountDeleted',
       to: 'a@b.com',
       subject: 'Hi',
       html: '<p>h</p>',
     });
     expect(res).toEqual({ sent: true });
-    const [url, init] = f.mock.calls[0] as [
-      string,
-      RequestInit & { headers: Record<string, string> },
-    ];
-    expect(url).toBe('https://api.resend.com/emails');
-    expect(init.method).toBe('POST');
-    expect(init.headers.Authorization).toBe('Bearer re_test');
-    expect(JSON.parse(init.body as string)).toMatchObject({
-      to: ['a@b.com'],
+    expect(binding.send).toHaveBeenCalledOnce();
+    expect(binding.send.mock.calls[0]![0]).toMatchObject({
+      from: { email: 'hello@livedesign.app', name: 'livedesign' },
+      to: 'a@b.com',
       subject: 'Hi',
-      from: expect.stringContaining('hello@livedesign.app'),
+      html: '<p>h</p>',
     });
+    expect(binding.send.mock.calls[0]![0]).not.toHaveProperty('headers');
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Email',
+      'Sent',
+      'AccountDeleted',
+    );
   });
 
-  it('honours a RESEND_FROM override', async () => {
-    const f = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
-    vi.stubGlobal('fetch', f);
-    await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Env, {
+  it('honours an EMAIL_FROM override', async () => {
+    const binding = fakeBinding();
+    await sendEmail(withBinding(binding, { EMAIL_FROM: 'X <x@y.com>' }), {
       kind: 'AccountDeleted',
       to: 'a@b.com',
       subject: 's',
       html: 'h',
     });
-    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string)).toHaveProperty(
-      'from',
-      'X <x@y.com>',
+    expect(binding.send.mock.calls[0]![0]).toHaveProperty('from', { email: 'x@y.com', name: 'X' });
+  });
+
+  it('sends List-Unsubscribe for an opt-out email', async () => {
+    const binding = fakeBinding();
+    await sendEmail(withBinding(binding), {
+      kind: 'CommentNotification',
+      to: 'a@b.com',
+      subject: 's',
+      html: 'h',
+      unsubscribeUrl: 'https://app.test/explorer?settings=notifications',
+    });
+    expect(binding.send.mock.calls[0]![0]).toHaveProperty('headers', {
+      'List-Unsubscribe': '<https://app.test/explorer?settings=notifications>',
+    });
+  });
+
+  it("returns sent:false on a refusal, reported under Email Service's code", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const binding = {
+      send: vi.fn(async () => {
+        throw Object.assign(new Error('suppressed'), { code: 'E_RECIPIENT_SUPPRESSED' });
+      }),
+    };
+    expect(
+      await sendEmail(withBinding(binding as never), {
+        kind: 'AccountDeleted',
+        to: 'someone@b.com',
+        subject: 's',
+        html: 'h',
+      }),
+    ).toEqual({ sent: false });
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error',
+      'Api',
+      'E_RECIPIENT_SUPPRESSED.SendEmail',
     );
+    // The address is redacted in the log line.
+    expect(String(vi.mocked(console.error).mock.calls[0]![0])).toContain('so***@b.com');
+    expect(String(vi.mocked(console.error).mock.calls[0]![0])).not.toContain('someone@b.com');
   });
 
-  it('returns sent:false on a non-2xx response', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('nope', { status: 422 })));
+  it('never throws — returns sent:false, as Network, when the send rejects without a code', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const binding = { send: vi.fn().mockRejectedValue(new Error('network')) };
     expect(
-      await sendEmail(withKey, { kind: 'AccountDeleted', to: 'a@b.com', subject: 's', html: 'h' }),
-    ).toEqual({
-      sent: false,
-    });
-  });
-
-  it('never throws — returns sent:false when fetch rejects', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
-    expect(
-      await sendEmail(withKey, { kind: 'AccountDeleted', to: 'a@b.com', subject: 's', html: 'h' }),
-    ).toEqual({
-      sent: false,
-    });
+      await sendEmail(withBinding(binding as never), {
+        kind: 'AccountDeleted',
+        to: 'a@b.com',
+        subject: 's',
+        html: 'h',
+      }),
+    ).toEqual({ sent: false });
+    expect(reportServerEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      'Error',
+      'Api',
+      'Network.SendEmail',
+    );
   });
 });
 
-// A hung Resend call no longer holds the daily email cron behind it: the send gives up, as a failure.
+// A hung send doesn't hold the daily email cron behind it: @liveworkspace/email gives up, as a failure.
 describe('sendEmail timeout', () => {
-  it('fails a send Resend never answers, after EMAIL_SEND_TIMEOUT_MS', async () => {
-    // The bound itself is the platform's (AbortSignal.timeout); stand in an already-expired one.
-    const timeout = vi
-      .spyOn(AbortSignal, 'timeout')
-      .mockImplementation(() => AbortSignal.abort(new DOMException('timed out', 'TimeoutError')));
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (_url: string, init: RequestInit) => {
-        if (init.signal?.aborted) throw init.signal.reason;
-        return new Response('{}', { status: 200 });
-      }),
-    );
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    const sent = sendEmail(withKey, { kind: 'AccountDeleted', to: 'a@b.com', subject: 's', html: 'h' });
-    expect(await sent).toEqual({ sent: false });
-    expect(timeout).toHaveBeenCalledWith(EMAIL_SEND_TIMEOUT_MS);
+  it('fails a send the binding never answers', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const binding = { send: vi.fn(() => new Promise<never>(() => {})) };
+      const sent = sendEmail(withBinding(binding as never), {
+        kind: 'AccountDeleted',
+        to: 'a@b.com',
+        subject: 's',
+        html: 'h',
+      });
+      await vi.advanceTimersByTimeAsync(EMAIL_SEND_TIMEOUT_MS);
+      expect(await sent).toEqual({ sent: false });
+      expect(reportServerEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        'Error',
+        'Api',
+        'Network.SendEmail',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

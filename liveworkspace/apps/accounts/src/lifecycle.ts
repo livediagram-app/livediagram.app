@@ -192,7 +192,7 @@ async function runStage(
   const counts: StageCounts = { sent: 0, skipped: 0, failed: 0, taken: 0 };
   const limit = ids ? ids.length : SWEEP_LIMIT;
   const { results } = await dueStatement(ctx.db, stage, now, limit, ids).all<Due>();
-  // One at a time: Resend limits how fast one account may send.
+  // One at a time: Email Service limits how fast one account may send.
   for (const row of results) counts[await deliver(ctx, stage, row, now)] += 1;
   return counts;
 }

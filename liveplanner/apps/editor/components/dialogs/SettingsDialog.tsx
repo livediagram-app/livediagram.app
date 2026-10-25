@@ -66,7 +66,7 @@ export function SettingsDialog({
   initialSectionId = null,
 }: SettingsDialogProps) {
   const isMobile = useIsMobileViewport();
-  // Email rows need Resend configured AND a signed-in account: a guest has
+  // Email rows need email configured AND a signed-in account: a guest has
   // no address, so those switches could never apply (docs/specs/014-identity/transactional-email.md).
   const { emailEnabled } = useCapabilities();
   const { accountUserId, isSignedIn } = useAccountBootstrap();

@@ -1,15 +1,11 @@
+import { sendEmail as send } from '@liveworkspace/email';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 import { reportServerEvent } from './telemetry.ts';
 
-// Every email goes through Resend, the same provider the apps use. Without RESEND_API_KEY a
-// development Worker prints the message to its log instead (the code is in the subject), so local
-// sign-in works without a key; staging and production refuse, so a missing key is never silent.
-const RESEND_ENDPOINT = 'https://api.resend.com/emails';
-
-// The longest a send may wait on Resend, which answers in well under a second. A sign-in code is
-// sent while the person waits on the page, so a hung call must not hold the request for long.
-export const EMAIL_SEND_TIMEOUT_MS = 10_000;
+// Every email goes through Cloudflare Email Service's binding (liveworkspace/docs/email.md), as the apps' do.
+// Without the binding a development Worker prints the message to its log instead (the code is in the subject), so
+// local sign-in works without it; staging and production refuse, so a missing binding is never silent.
 
 type Email = {
   to: string;
@@ -21,29 +17,12 @@ type Email = {
 };
 
 export async function sendEmail(env: Env, email: Email): Promise<void> {
-  if (!env.RESEND_API_KEY) {
-    if (env.ENVIRONMENT !== 'development') throw new Error('RESEND_API_KEY is not set');
+  if (!env.EMAIL) {
+    if (env.ENVIRONMENT !== 'development') throw new Error('the EMAIL binding is not set');
     console.log(`[email] To: ${email.to} Subject: ${email.subject}`);
     return;
   }
-  const response = await fetch(RESEND_ENDPOINT, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      from: `liveworkspace <${env.EMAIL_FROM}>`,
-      to: [email.to],
-      subject: email.subject,
-      text: email.text,
-      html: email.html,
-      ...(email.unsubscribeUrl && {
-        headers: { 'List-Unsubscribe': `<${email.unsubscribeUrl}>` },
-      }),
-    }),
-    signal: AbortSignal.timeout(EMAIL_SEND_TIMEOUT_MS),
-  });
-  if (!response.ok) {
-    throw new Error(`Resend refused the email (${response.status}): ${await response.text()}`);
-  }
+  await send(env.EMAIL, { from: `liveworkspace <${env.EMAIL_FROM}>`, ...email });
 }
 
 export function codeEmail(code: string) {

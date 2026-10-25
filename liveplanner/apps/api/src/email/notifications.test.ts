@@ -23,7 +23,11 @@ import { sendEmail } from './client';
 import { commentNotificationEmail, formResponseEmail } from './templates';
 import { notifyNewComment, notifyFormResponse } from './notifications';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as PlanEnv;
+// A fake EMAIL binding: only its presence matters here, since sendEmail itself is mocked.
+const env = {
+  EMAIL: { send: vi.fn(async () => ({ messageId: 'm' })) },
+  APP_BASE_URL: 'https://app.test',
+} as unknown as PlanEnv;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = { notifyComments: true, notifyFormResponses: true };
 

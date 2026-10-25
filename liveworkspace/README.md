@@ -148,13 +148,14 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 
 1. Create the databases and put their ids in `apps/accounts/wrangler.toml` (they are placeholders):
    `wrangler d1 create liveworkspace-accounts` (and `liveworkspace-accounts-staging`).
-2. Verify `liveworkspace.app` as a sending domain in Resend, the provider every app emails
-   through, and create an API key with sending access for it.
+2. Onboard `liveworkspace.app` to Cloudflare Email Service, which every app emails through
+   (`wrangler email sending enable liveworkspace.app`; [docs/email.md](docs/email.md)). No key: the
+   Workers send through their `EMAIL` binding.
 3. Create a Turnstile widget for `liveworkspace.app` and every app's hostnames
    ([docs/accounts.md](docs/accounts.md#before-deploy)), and put its site key in
    `TURNSTILE_SITE_KEY`.
-4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
-   `ADMIN_TOKEN` (`openssl rand -hex 32`) and `RESEND_API_KEY`.
+4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`
+   and `ADMIN_TOKEN` (`openssl rand -hex 32`).
 5. For Google: create an OAuth client (Web application) in Google Cloud with
    `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one
    for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. For Google on the apps'

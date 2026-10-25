@@ -9,7 +9,7 @@
 //              http://localhost:3000/api/auth, the origin it signs for
 //   ADMIN_TOKEN=local-admin-token node scripts/e2e-local.ts
 //
-// The emailed code is read back from the dev server's log (run it without RESEND_API_KEY), so pass the
+// The emailed code is read back from the dev server's log (wrangler dev simulates the EMAIL binding), so pass the
 // file `pnpm dev` writes to: DEV_LOG=/path/to/dev.log
 import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -113,7 +113,7 @@ async function requestCode(email: string): Promise<string> {
   let code: string | undefined;
   for (let i = 0; i < 20 && !code; i++) {
     const log = readFileSync(devLog!, 'utf8').slice(logBefore);
-    // Without RESEND_API_KEY the dev server logs each email; the code is in its subject.
+    // The dev server's simulated EMAIL binding logs each email; the code is in its subject.
     code = log.match(/\b(\d{6}) is your liveworkspace sign-in code/)?.[1];
     if (!code) await sleep(250);
   }

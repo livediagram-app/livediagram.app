@@ -225,7 +225,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/api/src/email/client.ts Error·Api': {
     values: ['Http500.SendEmail', 'Http429.SendEmail'],
-    open: 'Http<status>.SendEmail, any status Resend answers',
+    open: '<code>.SendEmail, the code Email Service refuses with (Network when it has none)',
   },
   // Agent changesets (docs/specs/024-agents/agent-changesets.md), typed by the front door
   // (apps/api/src/changesets/front-door.ts).

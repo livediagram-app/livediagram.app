@@ -111,7 +111,10 @@ describe('teams', () => {
       error: 'admin_only',
     });
     expect(await deleteTeam(db, BEA, teamId)).toMatchObject({ ok: false, error: 'admin_only' });
-    expect(await updateTeam(db, CY, teamId, { name: 'Mine' })).toMatchObject({ ok: false, status: 404 });
+    expect(await updateTeam(db, CY, teamId, { name: 'Mine' })).toMatchObject({
+      ok: false,
+      status: 404,
+    });
     expect(await updateTeam(db, ADA, teamId, { name: 'Studio' })).toMatchObject({ ok: true });
   });
 

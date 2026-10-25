@@ -8,56 +8,64 @@ const env = (over: Partial<Env>) =>
 afterEach(() => vi.unstubAllGlobals());
 
 describe('sendCodeEmail', () => {
-  it('sends through Resend with the key, from liveworkspace', async () => {
-    const fetch = vi.fn(async () => new Response('{"id":"x"}'));
-    vi.stubGlobal('fetch', fetch);
-    await sendCodeEmail(env({ RESEND_API_KEY: 're_key' }), 'ada@example.com', '123456');
+  const binding = (send: () => Promise<{ messageId: string }>) => ({ send: vi.fn(send) });
 
-    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('https://api.resend.com/emails');
-    expect((init.headers as Record<string, string>).authorization).toBe('Bearer re_key');
-    expect(JSON.parse(String(init.body))).toMatchObject({
-      from: 'liveworkspace <sign-in@liveworkspace.app>',
-      to: ['ada@example.com'],
-      subject: '123456 is your liveworkspace sign-in code',
+  it('sends through the EMAIL binding, from liveworkspace', async () => {
+    const EMAIL = binding(async () => ({ messageId: 'm' }));
+    await sendCodeEmail(env({ EMAIL: EMAIL as unknown as SendEmail }), 'ada@example.com', '123456');
+
+    expect(EMAIL.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: { email: 'sign-in@liveworkspace.app', name: 'liveworkspace' },
+        to: 'ada@example.com',
+        subject: '123456 is your liveworkspace sign-in code',
+      }),
+    );
+  });
+
+  it('fails when Email Service refuses, so the page can say the code was not sent', async () => {
+    const EMAIL = binding(async () => {
+      throw Object.assign(new Error('domain not onboarded'), { code: 'E_SENDER_NOT_VERIFIED' });
     });
-  });
-
-  it('fails when Resend refuses, so the page can say the code was not sent', async () => {
-    vi.stubGlobal('fetch', async () => new Response('domain not verified', { status: 403 }));
     await expect(
-      sendCodeEmail(env({ RESEND_API_KEY: 're_key' }), 'ada@example.com', '123456'),
-    ).rejects.toThrow('Resend refused the email (403)');
+      sendCodeEmail(env({ EMAIL: EMAIL as unknown as SendEmail }), 'ada@example.com', '123456'),
+    ).rejects.toThrow('domain not onboarded');
   });
 
-  it('logs the email in development without a key', async () => {
-    const fetch = vi.fn();
-    vi.stubGlobal('fetch', fetch);
+  it('logs the email in development without the binding', async () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     await sendCodeEmail(env({ ENVIRONMENT: 'development' }), 'ada@example.com', '123456');
 
-    expect(fetch).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledWith(
       '[email] To: ada@example.com Subject: 123456 is your liveworkspace sign-in code',
     );
     log.mockRestore();
   });
 
-  it('refuses outside development without a key, rather than dropping the email', async () => {
+  it('refuses outside development without the binding, rather than dropping the email', async () => {
     await expect(sendCodeEmail(env({}), 'ada@example.com', '123456')).rejects.toThrow(
-      'RESEND_API_KEY is not set',
+      'the EMAIL binding is not set',
     );
   });
 });
 
 describe('inviteResponseEmail', () => {
   it('links to the account’s settings, where admins turn these off', () => {
-    const email = inviteResponseEmail('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/', 'Design', 'Ada', true);
-    expect(email.unsubscribeUrl).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
+    const email = inviteResponseEmail(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+      'Design',
+      'Ada',
+      true,
+    );
+    expect(email.unsubscribeUrl).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+    );
     expect(email.html).toContain(
       'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications"',
     );
-    expect(email.text).toContain('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
+    expect(email.text).toContain(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+    );
   });
 
   it("opens the team's view in the Explorer", () => {
@@ -68,6 +76,8 @@ describe('inviteResponseEmail', () => {
       true,
       'team_1',
     );
-    expect(email.html).toContain('href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/team?id=team_1"');
+    expect(email.html).toContain(
+      'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/team?id=team_1"',
+    );
   });
 });

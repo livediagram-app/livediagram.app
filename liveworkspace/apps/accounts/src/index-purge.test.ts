@@ -121,11 +121,14 @@ describe('deleteAccount', () => {
 
   const close = () =>
     deleteAccount(
-      new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account', {
-        method: 'POST',
-        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
-        body: JSON.stringify({ token: 'access-token' }),
-      }),
+      new Request(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+        {
+          method: 'POST',
+          headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+          body: JSON.stringify({ token: 'access-token' }),
+        },
+      ),
       auth,
       db,
       config,

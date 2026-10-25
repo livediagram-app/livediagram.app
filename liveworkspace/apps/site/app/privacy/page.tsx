@@ -332,11 +332,8 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Cloudflare</strong>: hosting, databases, image storage, and Turnstile on the
-            sign-in pages.
-          </li>
-          <li>
-            <strong>Resend</strong>: delivering every email we send, sign-in codes included.
+            <strong>Cloudflare</strong>: hosting, databases, image storage, Turnstile on the sign-in
+            pages, and delivering every email we send, sign-in codes included.
           </li>
           <li>
             <strong>Google</strong>: sign-in with Google, if you choose it.

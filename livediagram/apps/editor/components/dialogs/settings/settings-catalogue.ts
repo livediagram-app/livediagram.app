@@ -103,7 +103,7 @@ function emailSwitch(
 // This is a flat catalogue, so it stays one file however long it gets.
 
 // What a row needs to know about the deployment / session to decide whether
-// it applies at all. Email rows need BOTH: Resend configured (docs/specs/014-identity/transactional-email.md), or
+// it applies at all. Email rows need BOTH: email configured (the api's EMAIL binding, docs/specs/014-identity/transactional-email.md), or
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.

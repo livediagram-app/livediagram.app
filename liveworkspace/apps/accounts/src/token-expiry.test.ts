@@ -15,7 +15,10 @@ import { mintApiToken, revokeApiToken } from './tokens.ts';
 const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 9, 23, 9, 17);
-const env = { BASE_URL: BASE, TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry' };
+const env = {
+  BASE_URL: BASE,
+  TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
+};
 
 let db: D1Database;
 let sql: DatabaseSync;
@@ -100,7 +103,7 @@ describe('the expiring-token warning', () => {
   it('tries a failed send again on the next run', async () => {
     addToken('soon', 'user_ada', NOW + 3 * DAY);
     const down = async () => {
-      throw new Error('Resend refused the email (500)');
+      throw new Error('Email Service refused the email');
     };
     expect(await sweepExpiringTokens(db, env, down, NOW)).toEqual({ sent: 0, failed: 1 });
     expect(warnedAt('soon')).toBeNull();

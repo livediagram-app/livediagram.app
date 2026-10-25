@@ -36,13 +36,14 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so documents stay in This Browser ([04](../014-identity/auth-and-guest-access.md))                                      |
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                          |
 | `INDEX_KEY`                                     | api             | The document rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index)) |
-| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                                                                                                |
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                        |
 | `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                               |
 
+Email needs no secret: the api sends through Cloudflare Email Service's `send_email` binding `EMAIL`, declared in `wrangler.toml`, and without it all transactional email is inert ([64](../014-identity/transactional-email.md), [liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDOCUMENTS`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. `MEDIA_KEY` likewise matches liveworkspace's media service's `MEDIA_KEY_LIVEDOCUMENTS`; a mismatch there is loud, as every image route answers 503. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `MEDIA_URL`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedocuments.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedocuments.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -86,4 +87,4 @@ NEXT_PUBLIC_API_BASE=
 ## Tooling (to be added)
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
-- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
+- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).

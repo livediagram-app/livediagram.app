@@ -3,7 +3,7 @@
 // doesn't stop without warning. An account message: it can't be turned off.
 //
 // Bounded: one query picks at most TOKEN_EXPIRY_SWEEP_LIMIT tokens, the soonest to expire first, by
-// the partial index in migrations/0002_teams_and_tokens.sql; one sends at a time (Resend limits how
+// the partial index in migrations/0002_teams_and_tokens.sql; one sends at a time (Email Service limits how
 // fast one account may send); one batched update stamps those that went. A failed send isn't
 // stamped, so the next day's run tries again while the token is still in its week.
 import { tokenExpiringEmail } from './email.ts';

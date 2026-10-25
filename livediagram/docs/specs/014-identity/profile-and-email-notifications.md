@@ -3,10 +3,10 @@
 **Status: shipped.** A signed-in user's account surface: their avatar, name,
 email, and join date, plus the two account actions that once had no home of
 their own, **delete my account** and **email notification preferences**.
-Builds on the Resend integration ([Transactional & lifecycle email (Resend)](transactional-email.md)) and the synced preference store
+Builds on the email integration ([Transactional & lifecycle email](transactional-email.md)) and the synced preference store
 ([User preferences](../007-editor/user-preferences.md)).
 
-Like [Transactional & lifecycle email (Resend)](transactional-email.md) the email half is **entirely gated on `RESEND_API_KEY`**: when
+Like [Transactional & lifecycle email](transactional-email.md) the email half is **entirely gated on the `EMAIL` binding** (Cloudflare Email Service's `send_email`): when
 email is off, the notification toggles are absent (they'd do nothing) and no
 notification email is ever sent.
 
@@ -26,7 +26,7 @@ retired and its three parts redistributed:
   and emails belong to the liveworkspace account, so it is a card, not a form. The
   avatar is the account's initial. A guest sees a card explaining that they are working as a guest.
 - **Email notifications** are the six rows in **Notifications > Email**
-  (§3). Absent unless Resend is configured AND the reader is signed in, since
+  (§3). Absent unless email is configured AND the reader is signed in, since
   a guest has no address to send to.
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
 
@@ -35,7 +35,7 @@ retired and its three parts redistributed:
 The route survives as a client-side redirect to
 `/explorer?settings=notifications`, and **must keep doing so**: every
 notification email ever sent carries that URL both as its "Manage your
-notifications" link and as its `List-Unsubscribe` header ([Transactional & lifecycle email (Resend)](transactional-email.md)). Those
+notifications" link and as its `List-Unsubscribe` header ([Transactional & lifecycle email](transactional-email.md)). Those
 messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
 the one dead link a product cannot ship. New mail links at the deep link
 directly.
@@ -51,13 +51,13 @@ directly.
 ### Delete account moves here
 
 Account self-deletion already exists end to end (`DELETE /api/account`,
-[Transactional & lifecycle email (Resend)](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
+[Transactional & lifecycle email](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
 no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then wipe livediagram's data and close the
-liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
+liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email](transactional-email.md) describes.
 Account deletion is immediate and total within livediagram: it removes the account's documents
 **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.
@@ -76,10 +76,10 @@ people's documents they visited) are wiped too.
 
 `GET /api/capabilities` (the fail-closed feature probe the client already
 uses for the photo reader) gains `emailEnabled: boolean`, true only when
-`emailEnabled(env)` (i.e. `RESEND_API_KEY` is set). `CapabilitiesResponse`
+`emailEnabled(env)` (i.e. the `EMAIL` binding is present). `CapabilitiesResponse`
 and `useCapabilities()` carry it through. The profile page hides the Email
 notifications section entirely when it's false: with no email backend the
-toggles would be inert, and a deployment without Resend should not advertise a
+toggles would be inert, and a deployment without email should not advertise a
 setting it can't honour.
 
 ## 3. Email notification preferences
@@ -122,9 +122,9 @@ notified.
 
 They are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional & lifecycle email (Resend)](transactional-email.md) send. Recipients'
+request's critical path — same contract as every [Transactional & lifecycle email](transactional-email.md) send. Recipients'
 addresses come only from liveworkspace, which answers each account's
-verified address (`getOwnerEmails`, [Transactional & lifecycle email (Resend)](transactional-email.md) §3), never from a client header.
+verified address (`getOwnerEmails`, [Transactional & lifecycle email](transactional-email.md) §3), never from a client header.
 
 ### a. Someone joins my document — `notifyDocumentJoin`
 
@@ -151,7 +151,7 @@ a guest visit is still recorded in `shared_with` and counted as
   _{document name}_", with a CTA back to the document.
 
 The document **name** is the recipient owner's _own_ content going back to
-them, so including it does not widen the [Transactional & lifecycle email (Resend)](transactional-email.md) §7 content rule (which is
+them, so including it does not widen the [Transactional & lifecycle email](transactional-email.md) §7 content rule (which is
 about not leaking _other_ users' content). The joiner's display name is
 included when known (the owner already sees it in live presence and the
 Shared-with-you list); it's HTML-escaped like the team name.
@@ -175,11 +175,11 @@ scope liveworkspace reads, and sends nothing itself.
 
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
-  `X-Owner-Email` and [Transactional & lifecycle email (Resend)](transactional-email.md) §7).
+  `X-Owner-Email` and [Transactional & lifecycle email](transactional-email.md) §7).
 - The only user-influenced strings in a notification body (a document name, a
   joiner name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
-- Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
+- Off by default at the deployment level (no `EMAIL` binding → no sends, no
   UI), and off per-notification when the recipient opts out. No required SaaS call
   ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)): the toggles just hide.
 

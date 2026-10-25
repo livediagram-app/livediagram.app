@@ -1,18 +1,19 @@
-// docs/specs/014-identity/transactional-email.md: Resend client. The whole email feature is gated on RESEND_API_KEY:
-// absent, every send is a no-op, so a deployment with email off does zero extra work. Sends are best-effort: this never throws, so an email or
-// network failure can't fail or delay the request that triggered it (callers
-// run sends inside ctx.waitUntil or the daily cron).
+// docs/specs/014-identity/transactional-email.md: livedesign's email, sent through Cloudflare Email Service's
+// `send_email` binding by the shared @liveworkspace/email (liveworkspace/docs/email.md). The whole email feature is
+// gated on the `EMAIL` binding: absent, every send is a no-op, so a deployment with email off does zero extra work.
+// Sends are best-effort: this never throws, so an email failure can't fail or delay the request that triggered it
+// (callers run sends inside ctx.waitUntil or the daily cron).
 
+import { redactAddress, sendEmail as sendThroughBinding } from '@liveworkspace/email';
 import type { Env } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
-const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const DEFAULT_FROM = 'livedesign <hello@livedesign.app>';
 const DEFAULT_BASE_URL = 'https://livedesign.app';
 
 export function emailEnabled(env: Env): boolean {
-  return typeof env.RESEND_API_KEY === 'string' && env.RESEND_API_KEY.length > 0;
+  return env.EMAIL !== undefined && env.EMAIL !== null;
 }
 
 // Public origin for links in emails. Trailing slashes stripped so callers can
@@ -44,57 +45,34 @@ type EmailMessage = {
   unsubscribeUrl?: string;
 };
 
-// The longest a send may wait on Resend, which answers in well under a second. Sends run in the daily
-// email cron and in waitUntil after a response: a hung call held the whole cron batch behind it.
-// A timed-out send is a failed send, logged like any other. Safe range: 3 s to 30 s.
-export const EMAIL_SEND_TIMEOUT_MS = 10_000;
-
 export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: boolean }> {
   if (!emailEnabled(env)) return { sent: false };
   try {
-    const headers: Record<string, string> = msg.unsubscribeUrl
-      ? { 'List-Unsubscribe': `<${msg.unsubscribeUrl}>` }
-      : {};
-    const res = await fetch(RESEND_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: env.RESEND_FROM ?? DEFAULT_FROM,
-        to: [msg.to],
-        subject: msg.subject,
-        html: msg.html,
-        ...(msg.unsubscribeUrl ? { headers } : {}),
-      }),
-      signal: AbortSignal.timeout(EMAIL_SEND_TIMEOUT_MS),
+    // @liveworkspace/email gives up after 10 s, so a hung send can't hold the daily email cron behind it.
+    await sendThroughBinding(env.EMAIL!, {
+      from: env.EMAIL_FROM ?? DEFAULT_FROM,
+      to: msg.to,
+      subject: msg.subject,
+      html: msg.html,
+      ...(msg.unsubscribeUrl ? { unsubscribeUrl: msg.unsubscribeUrl } : {}),
     });
-    // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
-    // because nothing about an email reaches a browser: the send happens in a
-    // cron or a waitUntil after the response has gone. Without it the notifications
-    // (docs/specs/014-identity/transactional-email.md) were unmeasurable and a dead RESEND_API_KEY was invisible.
-    // reportServerEvent gates on TELEMETRY_ENABLED and swallows its own failure.
-    if (!res.ok) {
-      console.error(
-        `[email] send failed (${res.status}) subject="${msg.subject}" to=${redact(msg.to)}`,
-      );
-      await reportServerEvent(env, 'Error', 'Api', `Http${res.status}.SendEmail`);
-      return { sent: false };
-    }
-    await reportServerEvent(env, 'Email', 'Sent', msg.kind);
-    return { sent: true };
   } catch (err) {
-    console.error(`[email] send threw subject="${msg.subject}" to=${redact(msg.to)}`, err);
-    await reportServerEvent(env, 'Error', 'Api', 'Network.SendEmail');
+    // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
+    // because nothing about an email reaches a browser: the send happens in a cron or a waitUntil after the
+    // response has gone. Without it the notifications (docs/specs/014-identity/transactional-email.md) were
+    // unmeasurable and a refused sender was invisible. The code is Email Service's (E_RECIPIENT_SUPPRESSED, …);
+    // a timeout or anything without one counts as Network. reportServerEvent gates on TELEMETRY_ENABLED and
+    // swallows its own failure.
+    const code = (err as { code?: unknown } | null)?.code;
+    console.error(`[email] send failed subject="${msg.subject}" to=${redactAddress(msg.to)}`, err);
+    await reportServerEvent(
+      env,
+      'Error',
+      'Api',
+      `${typeof code === 'string' && code ? code : 'Network'}.SendEmail`,
+    );
     return { sent: false };
   }
-}
-
-// Log addresses partially so `wrangler tail` stays useful without dumping full
-// emails into the log stream.
-function redact(email: string): string {
-  const at = email.indexOf('@');
-  if (at < 1) return '***';
-  return `${email.slice(0, 2)}***${email.slice(at)}`;
+  await reportServerEvent(env, 'Email', 'Sent', msg.kind);
+  return { sent: true };
 }

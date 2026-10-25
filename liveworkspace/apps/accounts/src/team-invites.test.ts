@@ -74,7 +74,9 @@ describe('the join link', () => {
     expect(await currentInviteLink(db, id, SECRET, BASE, T0)).toBeNull();
     const made = await makeInviteLink(db, ADA, id, SECRET, BASE, T0);
     if (!made.ok) throw new Error(made.error);
-    expect(made.value.url).toMatch(/^https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\?token=[\w-]{43}$/);
+    expect(made.value.url).toMatch(
+      /^https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\?token=[\w-]{43}$/,
+    );
     expect(made.value.expiresAt).toBe(T0 + INVITE_LINK_TTL_MS);
     // The admin sees the same link again later.
     expect(await currentInviteLink(db, id, SECRET, BASE, T0 + DAY)).toEqual(made.value);
@@ -309,16 +311,17 @@ describe('the account API routes', () => {
 
   beforeEach(() => {
     mail = [];
-    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
-      mail.push(JSON.parse(String(init.body)) as { to: string[]; subject: string; text: string });
-      return new Response('{}');
-    });
     env = {
       BASE_URL: BASE,
       EMAIL_FROM: 'sign-in@liveworkspace.app',
       AUTH_DB: db,
       ENVIRONMENT: 'production',
-      RESEND_API_KEY: 're_test',
+      EMAIL: {
+        send: async (m: { to: string; subject: string; text: string }) => {
+          mail.push({ ...m, to: [m.to] });
+          return { messageId: 'm' };
+        },
+      } as unknown as SendEmail,
       BETTER_AUTH_SECRET: SECRET,
     } as unknown as Env;
     signedIn = { id: ADA.id, name: 'Ada', email: ADA.email!, emailVerified: true };
@@ -379,7 +382,10 @@ describe('the account API routes', () => {
   it('puts a Decline link in the invitation, which works signed out and tells the admins', async () => {
     const id = await team();
     await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
-    const link = /https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\/decline\?token=(\S+)/.exec(mail[0]!.text);
+    const link =
+      /https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\/decline\?token=(\S+)/.exec(
+        mail[0]!.text,
+      );
     expect(link).not.toBeNull();
     const token = decodeURIComponent(link![1]!);
 
@@ -412,6 +418,7 @@ describe('counting team emails, teams and tokens', () => {
   let env: Env;
   let posted: { app: string; events: { category: string; action: string; type?: string }[] }[];
   let mail: string[];
+  let emailDown = false;
   let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
   const auth = {
     api: { getSession: async () => (signedIn ? { user: signedIn, session: {} } : null) },
@@ -419,19 +426,23 @@ describe('counting team emails, teams and tokens', () => {
 
   beforeEach(() => {
     posted = [];
+    emailDown = false;
     mail = [];
-    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
-      mail.push(String(init.body));
-      return new Response('{}');
-    });
     env = {
       BASE_URL: BASE,
       EMAIL_FROM: 'sign-in@liveworkspace.app',
       AUTH_DB: db,
       ENVIRONMENT: 'production',
-      RESEND_API_KEY: 're_test',
+      EMAIL: {
+        send: async (m: { to: string; subject: string }) => {
+          if (emailDown) throw new Error('down');
+          mail.push(JSON.stringify({ ...m, to: [m.to] }));
+          return { messageId: 'm' };
+        },
+      } as unknown as SendEmail,
       BETTER_AUTH_SECRET: SECRET,
-      TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
+      TELEMETRY_URL:
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
       TELEMETRY_KEY_LIVEDESIGN: 'lds',
       TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
       TELEMETRY: {
@@ -594,9 +605,9 @@ describe('counting team emails, teams and tokens', () => {
         app: reminder.inviterApp,
       });
     await sweepInvitations(db, send, T0 + DAY);
-    vi.stubGlobal('fetch', async () => new Response('down', { status: 500 }));
+    emailDown = true;
     expect(await sweepInvitations(db, send, T0 + 7 * DAY)).toMatchObject({ failed: 1 });
-    vi.stubGlobal('fetch', async () => new Response('{}'));
+    emailDown = false;
     await sweepInvitations(db, send, T0 + 21 * DAY);
     await flushServerEvents(env);
     expect(counted()).toEqual([

@@ -47,16 +47,18 @@ beforeEach(() => {
   addClient(d1.sql, 'livediagram', 'livediagram.app');
   addClient(d1.sql, 'lonely', null);
   sent = [];
-  vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
-    sent.push(JSON.parse(String(init.body)) as { to: string[]; subject: string });
-    return new Response('{}');
-  });
   env = {
     BASE_URL: BASE,
     EMAIL_FROM: 'sign-in@liveworkspace.app',
     AUTH_DB: d1.db,
     ENVIRONMENT: 'production',
-    RESEND_API_KEY: 're_test',
+    // Each email as the binding gets it, its recipient as a list as the assertions read it.
+    EMAIL: {
+      send: async (m: { to: string; subject: string }) => {
+        sent.push({ ...m, to: [m.to] });
+        return { messageId: 'm' };
+      },
+    } as unknown as SendEmail,
   } as unknown as Env;
   signedIn = { id: 'user_ada', name: 'Ada', email: 'ada@example.com', emailVerified: true };
 });

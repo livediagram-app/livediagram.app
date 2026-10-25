@@ -62,8 +62,8 @@ type AssignActionDialogProps = {
   // whether they can actually open this project (docs/specs/012-collaboration/assigned-actions.md §4).
   projectId: string | null;
   projectTeamId: string | null;
-  // capabilities.emailEnabled — hides the email offer on a deployment without email
-  // without Resend (never advertise a send we can't perform).
+  // capabilities.emailEnabled — hides the email offer on a deployment
+  // without email configured (never advertise a send we can't perform).
   emailEnabled: boolean;
   // Inline personal-project fix (docs/specs/012-collaboration/assigned-actions.md §2): file the project into the
   // picked team's library root so teammates become assignable without an

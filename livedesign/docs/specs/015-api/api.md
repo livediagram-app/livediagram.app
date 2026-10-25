@@ -80,13 +80,13 @@ Routes that need a person answer 400 via the shared `missingAuth()` helper when 
 
 **Meta and catalogues**
 
-| Method | Path                                     | Auth | Notes                                                                                                                                                                                                                                     |
-| ------ | ---------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/openapi.json`                      | none | This API's OpenAPI 3.1 description.                                                                                                                                                                                                       |
-| GET    | `/api/capabilities`                      | none | Returns `{ emailEnabled }` plus the CLI fields (`apiBase`, `authEnabled`, `oauthIssuer?`, `designFormat`, `cli?`). `emailEnabled` is true iff Resend is configured; the editor app hides the email-notification toggles when it is false. |
-| GET    | `/api/templates`, `/api/templates/:kind` | none | The template library, and one template read as an outline view (`json=1` for JSON); an unknown kind is 404 `unknown_template` with the kinds.                                                                                             |
-| GET    | `/api/icons?query=&limit=`               | none | Icons for a query, best first, as the palette ranks them.                                                                                                                                                                                 |
-| GET    | `/api/schema`, `/api/schema/:kind`       | none | The element kinds edit operations make, and one kind's sizes, aliases and stored fields; an unknown kind is 404 `unknown_kind`.                                                                                                           |
+| Method | Path                                     | Auth | Notes                                                                                                                                                                                                                                               |
+| ------ | ---------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/openapi.json`                      | none | This API's OpenAPI 3.1 description.                                                                                                                                                                                                                 |
+| GET    | `/api/capabilities`                      | none | Returns `{ emailEnabled }` plus the CLI fields (`apiBase`, `authEnabled`, `oauthIssuer?`, `designFormat`, `cli?`). `emailEnabled` is true iff the `EMAIL` binding is present; the editor app hides the email-notification toggles when it is false. |
+| GET    | `/api/templates`, `/api/templates/:kind` | none | The template library, and one template read as an outline view (`json=1` for JSON); an unknown kind is 404 `unknown_template` with the kinds.                                                                                                       |
+| GET    | `/api/icons?query=&limit=`               | none | Icons for a query, best first, as the palette ranks them.                                                                                                                                                                                           |
+| GET    | `/api/schema`, `/api/schema/:kind`       | none | The element kinds edit operations make, and one kind's sizes, aliases and stored fields; an unknown kind is 404 `unknown_kind`.                                                                                                                     |
 
 **Designs (meta)**
 
@@ -529,6 +529,6 @@ A new owner-keyed column adds a row here, a statement to `deleteAccount`, and an
 Before the first deploy:
 
 1. Create the R2 bucket: `wrangler r2 bucket create livedesign-photo-blobs` (and its `-staging` twin).
-2. Set the worker secrets: the accounts client (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `INDEX_KEY`, `MEDIA_KEY`, and optionally `TELEMETRY_KEY` and `RESEND_API_KEY`.
+2. Set the worker secrets: the accounts client (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `INDEX_KEY`, `MEDIA_KEY`, and optionally `TELEMETRY_KEY`. Email needs no secret: the `EMAIL` binding in `wrangler.toml` is the credential.
 
 The Durable Object class (`DesignRoom`) is declared in `apps/api/wrangler.toml` and needs no setup; a later `[[migrations]]` tag deletes the retired `WorkbenchStore`. After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `livedesign-api` means the API must deploy before the router.

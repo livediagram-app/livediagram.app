@@ -68,8 +68,8 @@ The planner is real:
   ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
 - **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
   per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
-- **Transactional email** (optional; [Transactional email (Resend)](../014-identity/transactional-email.md)):
-  new comments, form responses and account messages, off until a `RESEND_API_KEY` is set; onboarding and team
+- **Transactional email** (optional; [Transactional email](../014-identity/transactional-email.md)):
+  new comments, form responses and account messages, off without the api's `EMAIL` binding; onboarding and team
   emails come from liveworkspace.
 
 **No project content lives in `localStorage`.** A project is stored on the server, or in IndexedDB for an Offline
@@ -98,8 +98,8 @@ only small per-browser state, under `liveplanner:*` keys:
   - **The help centre** around the Plan category, and the brand's remaining sky hexes.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
-- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, register the accounts client, set up
-  Resend, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
+- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, register the accounts client, onboard
+  liveplanner.app to Cloudflare Email Service, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
 
 ## Later
 

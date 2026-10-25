@@ -3,7 +3,11 @@ import type { Env } from './env.ts';
 import { signInOptions } from './sign-in-options.ts';
 
 const env = (extra: Partial<Env> = {}) =>
-  ({ TURNSTILE_SITE_KEY: 'site-key', BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', ...extra }) as Env;
+  ({
+    TURNSTILE_SITE_KEY: 'site-key',
+    BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+    ...extra,
+  }) as Env;
 
 describe('sign-in options', () => {
   it('gives the pages the Turnstile key and the name limit, and caches briefly', async () => {

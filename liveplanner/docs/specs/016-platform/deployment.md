@@ -156,12 +156,12 @@ Subsequent deploys are idempotent updates.
 
 Production lives at **`https://liveplanner.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
 
-| Worker                       | Hostnames                                 |
-| ---------------------------- | ----------------------------------------- |
-| `liveplanner-router`         | `liveplanner.app`, `www.liveplanner.app`  |
-| `liveplanner-mcp`            | `mcp.liveplanner.app`                     |
-| `liveplanner-router-staging` | `staging.liveplanner.app`                 |
-| `liveplanner-mcp-staging`    | `mcp-staging.liveplanner.app`             |
+| Worker                       | Hostnames                                |
+| ---------------------------- | ---------------------------------------- |
+| `liveplanner-router`         | `liveplanner.app`, `www.liveplanner.app` |
+| `liveplanner-mcp`            | `mcp.liveplanner.app`                    |
+| `liveplanner-router-staging` | `staging.liveplanner.app`                |
+| `liveplanner-mcp-staging`    | `mcp-staging.liveplanner.app`            |
 
 `wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.liveplanner.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `liveplanner.app` ([Creating the API token](#creating-the-api-token)); a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. From the router:
 
@@ -176,4 +176,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 
 - Preview deploys for PRs (one environment tracking `main` is all there is — see [Staging environment](staging-environment.md) "What staging is not").
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above (e.g. `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.
+- Per-worker secrets that are **not** in the optional sync table above would be set by hand with `wrangler secret put` and persist across deploys. There are none today: email needs no secret, its `send_email` binding being the credential ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
