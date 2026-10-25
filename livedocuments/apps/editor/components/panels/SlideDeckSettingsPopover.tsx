@@ -1,8 +1,7 @@
 'use client';
 
-import { HoverCard } from '@livedocuments/ui';
+import { HoverCard, SettingsToggleRow } from '@livedocuments/ui';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
-import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
 import {
   AUTO_ADVANCE_CHOICES,
   SLIDE_SPEEDS,
