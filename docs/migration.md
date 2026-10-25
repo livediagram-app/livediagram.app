@@ -75,10 +75,31 @@ the copy takes).
    team). A member whose email has no account yet becomes a pending invitation, sent only after the switch. This
    replaces 0002's "teams are managed separately". Recreating writes no `team_*` Timeline events and sends no
    invitation emails at import time.
-5. Left behind, as already decided (0002): old `ld_` API tokens are revoked (only `lwt_` tokens work), workbench
-   pairings and sessions are gone, profile pictures are not kept.
-   Drive connections can't move (their tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client
-   changes), so each person reconnects. MCP clients and the CLI sign in again. Step 8's email says all of this.
+5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old
+   tokens are revoked at the switch"). Checked against both codebases:
+   - The old tokens are `lvd_<base64url(32 random bytes)>`, stored as the lowercase SHA-256 hex of the whole
+     token (`apps/api/src/auth/api-token.ts`). The accounts Worker stores `lwt_` tokens in exactly that form
+     (`hashApiToken`, `src/tokens.ts`), so an old row's hash can be copied as it is and the secret is never
+     needed.
+   - Copy every live row of `api_tokens` (not revoked, not expired) into `api_token`: owner through the owner map,
+     name, `readOnly`, `createdAt`, `lastUsedAt`, `expiresAt` and `expiryWarnedAt` unchanged. Old tokens last six
+     months from creation, like new ones, so each lapses on the day it would have, and the accounts Worker's
+     expiry warning takes over (once per token: one already warned isn't warned again). The old cap was 10 per
+     account and the new one is 20, so a copy only goes over it where someone also made tokens on the new side;
+     the cap only stops new tokens being made, so nothing breaks.
+   - Accept the `lvd_` prefix as well as `lwt_` wherever a token's shape is checked: `isApiTokenFormat` in
+     `apps/accounts/src/tokens.ts` and `packages/api-kit/src/api-token.ts`, and livediagram's api, which picks
+     the token path by prefix (`apps/api/src/index.ts`). Only imported rows can have that prefix, since nothing
+     mints `lvd_` any more. A copied token works on every app's API, as every token now does.
+   - **Connected AI tools.** The old MCP server's OAuth hands the client an `lvd_` token as its access token,
+     with no refresh token (`apps/mcp/src/oauth.ts`), so a connection keeps working on the copied token until it
+     expires. Copy the old MCP's dynamic client registrations as well (`client:<id>` in its `OAUTH_KV`, the same
+     shape and key the new MCP reads, `packages/mcp-kit/src/oauth-clients.ts`), with their remaining time to
+     live, so when a token lapses the tool signs in again on its own instead of failing on an unknown client.
+     Some tools may still ask to be reconnected, which step 8's email says.
+6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
+   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes), so each person reconnects.
+   Step 8's email says so.
 
 ## 2. Copy documents into livediagram
 
@@ -125,7 +146,7 @@ A livediagram document can hold tabs that now belong to four products. Each tab 
   step 8's per-person list and the router's redirects.
 - **References that now cross products**: a slide's tab window onto a diagram tab, a chart anchored to a sheet,
   a diagram's link to a board. Each keeps its last picture or value and becomes a link to the other product's
-  document; none stays live. List them in the rehearsal and look at real ones before deciding.
+  document; none stays live.
 - **Plan data lives in tables, not tabs** (`items`, `sheets`, `sheet_cells`, `sheet_refs`, `plan_board_statuses`,
   `form_links`, `form_reports`, `form_reads`), so the liveplanner copy reads those by tab id. A form's public link
   keeps working: the old form URL redirects to liveplanner's.
@@ -150,19 +171,44 @@ holds what was posted. `apps/community` is the last livediagram app on Clerk; it
 
 ## 6. Guests
 
-Guests' documents are copied. Guest work on the old site belongs to a guest id held in that browser, so:
+Guests' documents are copied. What the two sites do with guests, checked against both codebases:
 
-1. Copy guest-owned documents (steps 2–5) under their guest ids, with `owner_aliases` to find them.
-2. When that browser first opens the new site, its old guest id has to reach the accounts Worker, which hands out
-   guest tokens (`liveworkspace/docs/accounts.md`, Guests). The old site's browser storage is on the same
-   livediagram.app origin, so the new editor can read the old guest id on first load and swap it for a guest token
-   for that id, once, proven by the old guest token's signature. That needs a small door on the accounts Worker
-   and the old guest signing key as a secret there.
-3. From then on the guest is an ordinary guest: signing in adopts their documents through `POST /api/migrate`, as
-   now.
+- **Old.** A guest is a bare UUID in the browser's `localStorage` (`livediagram:v2:self-id`), minted by the api
+  with an HMAC signature under `GUEST_ID_HMAC_SECRET` kept beside it (`livediagram:v2:self-sig`). Signing has been
+  live in production since 2026-09-25 12:00 UTC (`GUEST_SIGNING_LIVE_AT`); a guest from before then has an
+  unsigned id. The server keeps guest rows for good: there is no expiry.
+- **New.** A guest is `guest_<uuid>`, made by the accounts Worker and kept in its `lw_guest` cookie on
+  liveworkspace.app, the same guest in every app; the editor keeps a guest token for it
+  (`livediagram:v2:guest-token`). Signing in merges the guest's index items into the account
+  (`POST /internal/merge` on the index).
+- **The same origin.** Both serve the editor on `https://www.livediagram.app` (the apex redirects there), so once
+  the zone moves the new editor can read what the old one left in that browser.
 
-A guest who never comes back keeps their documents until guest documents' usual expiry. Guests can't be emailed;
-the old site's banner before the switch (step 7) tells them nothing is needed.
+So the old id can't simply be reused, and the plan is:
+
+1. Copy guest-owned documents (steps 2–5) under a placeholder owner per old guest, `legacy_guest_<uuid>`, which no
+   live credential can ever hold.
+2. The new editor, on first load, looks for `livediagram:v2:self-id`. When it finds one, it sends the old id and
+   its signature, with its own guest or account token, to a one-time door on livediagram's api. The door checks
+   the signature with the old `GUEST_ID_HMAC_SECRET` (copied as a secret), or, for an unsigned id, accepts it only
+   when the guest's first sighting predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids. It
+   then asks the index to merge `legacy_guest_<uuid>` into the caller, guest or account, and the editor removes
+   the old keys. A retry merges nothing and is harmless.
+3. From then on the work is the browser's ordinary new guest's, or the account's if they were signed in (a
+   signed-in person whose old guest work never moved is covered by the same door).
+
+A guest who never comes back keeps their copied documents, unreachable but intact, as on the old site. Guests
+can't be emailed; the old site's banner before the switch (step 7) tells them nothing is needed.
+
+**Local only documents.** For a guest the old site's default is a Local only document, kept in that browser's
+IndexedDB and never sent to the server, so no server step can copy it. Both editors use the same database
+(`livediagram-offline`, version 2), so the new editor opens them as they are, but it drops Pages and Plan tabs on
+read and saves without them (rules, above), which would lose them for good. Before the switch the new editor needs a
+one-time pass over the local store, run before anything reads a document: for each local document holding Pages,
+Plan or design tabs, keep the raw tabs aside, then offer to move them into livedocuments, liveplanner or livedesign
+(through the same splitter as step 3, as the browser's guest or account), and drop them from the local copy only
+once that has succeeded. The same pass covers any old queued offline edits still waiting to be sent. The rehearsal
+should include a browser with a real old local store.
 
 ## 7. The switch
 
@@ -180,20 +226,21 @@ the old site's banner before the switch (step 7) tells them nothing is needed.
 
 ## 8. Email everyone (once)
 
-Sent after the switch, from `hello@livediagram.app` once that domain is onboarded:
+Sent at the end of the migration, once step 9's checks have passed, from `hello@livediagram.app` once that domain is onboarded:
 
 - what changed: livediagram is part of liveworkspace, and sign-in is liveworkspace's, with the same email, by code
   or Google; nothing to do to keep their work;
 - where their split documents went, as a short list of links built from `moved_parts`, for the people who had any;
-- what they must redo: API tokens (old ones stopped), MCP clients and the CLI (sign in again), Google Drive
-  (reconnect); their teams came across, managed in liveworkspace now;
+- their API tokens still work until they expire, and are managed in liveworkspace's Settings now; their teams
+  came across, managed in liveworkspace too;
+- connected AI tools (MCP) keep working, but some may need reconnecting, especially when their token comes up for
+  renewal: remove livediagram from the tool and add it again;
+- what they must redo: reconnect Google Drive;
 - the updated privacy page (Clerk is no longer a processor), and how to delete their account.
 
-Points to settle: Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota
-that starts low; step 0's account count decides whether this goes in daily batches, and whether a service notice
-this size belongs there. Respect step 1's unsubscribes only for what is marketing; a notice about someone's own
-account and data is a service message. A short notice a week before, as well, would cost little and lower
-surprise.
+Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota that starts low;
+step 0's account count decides whether this goes in daily batches. A notice about someone's own account and data
+is a service message, so it goes to everyone, unsubscribed or not.
 
 ## 9. Check
 
@@ -205,6 +252,10 @@ surprise.
 - A sample of old URLs (documents, share links, embeds, forms, Community posts, help) answers the right page.
 - Sign in as a few migrated accounts on staging: Google-only, by code, a team owner, someone who had already signed
   up on the new side, and a guest who comes back and then signs in.
+- An old `lvd_` token answers on livediagram's api and MCP, a revoked or expired one doesn't, and an AI tool
+  connected on the old site keeps working, then signs in again on its own after its token is made to lapse.
+- A browser with an old guest id and old Local only documents (signed, unsigned, and holding Pages and Plan tabs)
+  ends up with all its work, nothing dropped.
 
 ## 10. Clean up
 
@@ -222,14 +273,14 @@ After a set quiet period (30 days is a starting point):
 
 - livediagram is the only source. The other apps may take work before the switch, and so may the new livediagram;
   none of it may be lost (rules, step 1's owner map, step 9's checks).
-- Guests' documents are copied (step 6).
+- Guests' documents are copied (step 6), Local only documents included.
 - History is kept where it has a home (step 2).
 - Teams are recreated in accounts (step 1).
+- API tokens and AI tool connections are carried over (step 1).
+- References that now cross products keep a picture and a link (step 3).
+- One email, at the end of the migration (step 8).
 
 ## Open questions for the owner
 
-1. **Cross-product references** (step 3): is a static picture plus a link acceptable?
-2. **Email**: one email after the switch, or a notice before as well? Cloudflare Email Service, or a broadcast tool
-   for this one send?
-3. **Order with liveworkspace.app's own move**: one switch for both domains, or livediagram.app first?
-4. **Quiet period** before step 10, and how long the cold export is kept.
+1. **Order with liveworkspace.app's own move**: one switch for both domains, or livediagram.app first? (Later.)
+2. **Quiet period** before step 10, and how long the cold export is kept. (Later.)
