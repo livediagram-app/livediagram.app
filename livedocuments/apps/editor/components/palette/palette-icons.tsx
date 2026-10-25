@@ -73,13 +73,6 @@ export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="laser" size={size} />;
 }
 
-// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the canvas in
-// 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="isometric" size={size} />;
-}
-
 // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
 // deck IS. Deliberately not a "play" triangle — the tool opens the workbench
 // where you build slides, and only the Start button inside it presents.

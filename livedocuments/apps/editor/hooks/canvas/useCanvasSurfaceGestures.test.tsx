@@ -27,7 +27,6 @@ function setup(canvasTool = 'select', { readOnly = false } = {}) {
       setPan,
       setMarquee,
       spotlight: {},
-      isoCamera: {},
       beginPendingDrawGesture: () => false,
       onCanvasContextMenu: readOnly ? undefined : onCanvasContextMenu,
       onDeselect,
@@ -74,7 +73,7 @@ describe('canvas background context menu', () => {
     expect(onCanvasContextMenu).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['spotlight', 'isometric'])('never opens in the %s tool', (tool) => {
+  it.each(['spotlight'])('never opens in the %s tool', (tool) => {
     const { result, onCanvasContextMenu } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -125,7 +124,7 @@ describe('a right-click on the empty canvas', () => {
     expect(calls).toEqual(['deselect']);
   });
 
-  it.each(['spotlight', 'isometric'])('keeps the selection in the %s tool', (tool) => {
+  it.each(['spotlight'])('keeps the selection in the %s tool', (tool) => {
     const { result, onDeselect } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -273,7 +272,6 @@ describe('a double press on the bare canvas', () => {
         setMarquee: vi.fn(),
         // The inert tools handle the press themselves; any of their calls is a no-op here.
         spotlight: inertTool(),
-        isoCamera: inertTool(),
         beginPendingDrawGesture: () => false,
         onDeselect: vi.fn(),
         onCanvasDoubleClick,
@@ -328,7 +326,7 @@ describe('a double press on the bare canvas', () => {
     child.dblSurface(document.createElement('div'));
     expect(child.onCanvasDoubleClick).not.toHaveBeenCalled();
 
-    for (const tool of ['spotlight', 'isometric']) {
+    for (const tool of ['spotlight']) {
       const inert = dblSetup(tool);
       inert.press('touch');
       inert.dblSurface();

@@ -1,6 +1,5 @@
 import {
   FormatPainterIcon,
-  IsometricIcon,
   LaserIcon,
   PanIcon,
   SelectIcon,
@@ -11,7 +10,7 @@ import {
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
 // The canvas-tool dropdown's option set (Select / Hand / Format /
-// Laser / Spotlight / Isometric / Zen), grouped (group index drives
+// Laser / Spotlight / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Format and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
@@ -39,7 +38,7 @@ function buildAll(
   return [
     { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
     { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },
-    // Format / Laser / Spotlight / Isometric all act on
+    // Format / Laser / Spotlight all act on
     // existing content, so they're disabled on an empty canvas —
     // only Select + Hand stay available until something's drawn.
     // Format painter as a persistent tool: pick a base element,
@@ -89,14 +88,6 @@ function buildAll(
             disabled: canvasEmpty,
           },
         ]),
-    {
-      id: 'isometric',
-      label: 'Isometric',
-      shortcut: 'I',
-      icon: <IsometricIcon />,
-      group: 2,
-      disabled: canvasEmpty,
-    },
     // Zen hides the chrome rather than acting on content, so it stays
     // available on an empty canvas. Exit lives on the zoom dock (the only
     // chrome left in zen) and on Z / Esc.

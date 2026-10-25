@@ -53,8 +53,8 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.l).toBeUndefined();
   });
 
-  it('keeps Isometric on I and Zen on Z', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
+  it('keeps Zen on Z and leaves I unbound (the isometric view is livediagram only)', () => {
+    expect(VIEW_TOOL_KEYS.i).toBeUndefined();
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
   });
 });

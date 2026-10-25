@@ -20,7 +20,6 @@ import {
   layOutPages,
   layerBands,
   layerOpacityOf,
-  shade,
   exportFontIds,
   visibleLayerElements,
   type ArrowElement,
@@ -33,16 +32,13 @@ import {
   type Tab,
 } from '@livedocuments/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
-// MCP worker reuses the same element drawing. The canvas / isometric / backdrop
+// MCP worker reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
   canvasSurface,
-  type CanvasSurface,
   boxedNeedsSvgRaster,
   contentBounds,
-  describeBoxedExport,
   EXPORT_BG,
-  EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
   r2,
   supportsShadow,
@@ -52,27 +48,16 @@ import {
   svgFontDefs,
   svgShadowDefs,
   xmlEscape,
-  type ExportShape,
 } from '@livedocuments/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
-import {
-  isoCanvasMatrix,
-  isoDepthLayers,
-  isoExtrudes,
-  isoLayerBrightness,
-  isoProjectBounds,
-  ISO_TILT_DEG,
-} from './isometric';
-import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
+import { drawBoxed } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
 
-// Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
-// the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
-// off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
+// Shared options for the image exports (PNG / SVG / PDF). `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
 // `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
 // elements embed their photo instead of a placeholder; absent ids (or no map)
@@ -80,7 +65,6 @@ import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page
 // `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
 // so the export matches what the canvas shows.
 export type ImageExportOpts = {
-  isometric?: boolean;
   pattern?: boolean;
   hiddenLayers?: boolean;
   images?: ExportImageMap;
@@ -90,8 +74,8 @@ export type ImageExportOpts = {
   // directly will honour.
   fontCss?: string;
   // One page to export (docs/specs/007-editor/pages-mode.md "Export"): the
-  // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
-  // backdrop do not apply.
+  // frame becomes exactly its sheet, painted with its background; the tab's own
+  // backdrop does not apply.
   page?: LaidOutPage;
   // Slides' animated backgrounds painted so far in this export, so a background repeated across a
   // deck is painted once (lib/page-motion-canvas.ts). Absent, each page paints its own.
@@ -263,12 +247,7 @@ export async function renderTabToCanvas(
   });
   const bounds = frame ? frame.bounds : contentBounds(els, labels);
   const pad = frame ? 0 : EXPORT_PADDING;
-  // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
-  // affine and size the canvas to the tilted footprint so nothing clips. The
-  // matrix is applied to the drawing context after positioning, so every
-  // element / arrow drawer stays in plain canvas coordinates.
-  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
-  const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
   // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
   const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
@@ -281,9 +260,7 @@ export async function renderTabToCanvas(
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
   ctx.scale(scale, scale);
-  // Background colour, painted across the whole canvas BEFORE the iso tilt so
-  // the triangular margins around the parallelogram fill too. The pattern (if
-  // on) sits flat over it — like the editor, whose backdrop never tilts.
+  // Background colour, painted across the whole canvas; the pattern (if on) sits over it.
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // Elements that carry no colours of their own are drawn in the ink of the
   // paper being exported onto (docs/specs/007-editor/editor-app.md), so a dark canvas exports dark-canvas
@@ -331,23 +308,12 @@ export async function renderTabToCanvas(
       // Pattern is decorative — a render failure must never abort the export.
     }
   }
-  // Position the (projected) content min-corner at the padding offset, then
-  // apply the iso projection so element coords map onto the tilted plane.
+  // Position the content min-corner at the padding offset.
   ctx.translate(pad - draw.x, pad - draw.y);
-  if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
   // The writing, over the page and under every element (its zones' elements sit over it).
   if (writing) {
     await document.fonts?.ready;
     drawArticleOps(ctx, writing.ops);
-  }
-
-  // Isometric: paint every element's extrusion column first, so all the
-  // depth sits behind all the element bodies (matching the editor's single
-  // depth plane behind the element layer).
-  if (iso) {
-    for (const { el, alpha } of ordered) {
-      if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el, alpha, surface);
-    }
   }
   // `ordered` keeps frame sections behind their contents
   // (docs/specs/008-canvas/canvas-and-palette.md).
@@ -479,69 +445,10 @@ export async function renderTabToCanvas(
   }
 }
 
-// --- Shared boxed-element export description --------------------------
-//
-// Both visual exporters (the PNG canvas renderer + the SVG renderer)
-// make the SAME decisions — which silhouette a boxed element maps to,
-// its fill / stroke defaults, and where its label sits — then draw with
-// their own primitives. Encoding that decision ONCE here keeps the two
-// renderers from drifting (a new export-visible shape or a tweaked
-// default lands in one place, not two).
-
-// The image-placeholder colours shared by both renderers. Element fill /
-// stroke / text fall through to the diagram's defaultFillColor / -Stroke /
-// -Text (matching the canvas), so there's no separate "export ink" default.
-// Round to 2dp so the markup stays compact without visible drift.
-function svgSilhouette(
-  el: BoxedElement,
-  kind: ExportShape['kind'],
-  dx: number,
-  dy: number,
-  fill: string,
-): string {
-  const x = el.x + dx;
-  const y = el.y + dy;
-  const cx = x + el.width / 2;
-  const cy = y + el.height / 2;
-  if (kind === 'ellipse') {
-    return `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(fill)}"/>`;
-  }
-  if (kind === 'diamond') {
-    return `<polygon points="${r2(cx)},${r2(y)} ${r2(x + el.width)},${r2(cy)} ${r2(cx)},${r2(y + el.height)} ${r2(x)},${r2(cy)}" fill="${xmlEscape(fill)}"/>`;
-  }
-  return `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(fill)}"/>`;
-}
-
-// Isometric extrusion column for one boxed element (docs/specs/008-canvas/isometric-view.md) — the SVG
-// counterpart of drawBoxedExtrusion. Stepped silhouette copies, dimmed toward
-// the floor, behind the element body.
-function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
-  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
-  // on-screen IsometricDepthLayer + the canvas exporter).
-  if (!isoExtrudes(el)) return '';
-  const { shape, opacity } = describeBoxedExport(el, { surface });
-  if (shape.kind === 'none' || shape.kind === 'sticker') return '';
-  const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
-  const az = (ISO_TILT_DEG.z * Math.PI) / 180;
-  const k = Math.tan((ISO_TILT_DEG.x * Math.PI) / 180);
-  const ox = Math.sin(az);
-  const oy = Math.cos(az);
-  const layers = isoDepthLayers();
-  const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
-  const parts = [`<g${opAttr}>`];
-  for (let i = layers.length - 1; i >= 0; i--) {
-    const z = -layers[i]!;
-    const fill = shade(accent, 1 - isoLayerBrightness(i, layers.length));
-    parts.push(svgSilhouette(el, shape.kind, z * k * ox, z * k * oy, fill));
-  }
-  parts.push('</g>');
-  return parts.join('');
-}
-
 // Exported so the export dialog can render a live preview of the image
 // export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
-// three image formats under the current isometric / pattern options.
+// three image formats under the current pattern option.
 // A slide's animated background in the SVG export: a picture of its gradient with the motion as
 // it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
 // pages-mode.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
@@ -596,11 +503,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       : inner.join('\n');
   const bounds = frame ? frame.bounds : contentBounds(els, labels);
   const pad = frame ? 0 : EXPORT_PADDING;
-  // Isometric export: the viewBox spans the projected (tilted) footprint and a
-  // <g matrix> applies the iso projection to the content, while the background
-  // rect stays in viewBox space so it fills the whole frame.
-  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
-  const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  const draw = bounds;
   const vbX = draw.x - pad;
   const vbY = draw.y - pad;
   const vbW = draw.w + pad * 2;
@@ -638,28 +541,13 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
-  // Backdrop pattern (docs/specs/010-palette/style-presets.md) over the colour, flat (never tilted — the
-  // editor's backdrop doesn't tilt in isometric either).
+  // Backdrop pattern (docs/specs/010-palette/style-presets.md) over the colour.
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (bg) {
     parts.push(bg.defs);
     parts.push(
       `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${bg.fill}"/>`,
     );
-  }
-  if (iso) {
-    parts.push(`<g transform="matrix(${r2(iso.a)} ${r2(iso.b)} ${r2(iso.c)} ${r2(iso.d)} 0 0)">`);
-    // All extrusion columns behind all element bodies (matching the canvas).
-    for (const band of bands) {
-      parts.push(
-        wrapBand(
-          layerOpacityOf(band.layer),
-          band.elements
-            .filter((el) => el.type !== 'arrow')
-            .map((el) => svgBoxedExtrusion(el, surface)),
-        ),
-      );
-    }
   }
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
@@ -714,7 +602,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }
-  if (iso) parts.push('</g>');
   parts.push('</svg>');
   return parts.join('\n');
 }

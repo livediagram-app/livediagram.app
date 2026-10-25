@@ -3,7 +3,7 @@
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
 // (svgBoxed / svgArrow / labels) and their pure helpers live here; the in-app
-// export keeps only its isometric + backdrop-pattern orchestration on top.
+// export keeps only its backdrop-pattern orchestration on top.
 //
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
@@ -533,8 +533,8 @@ export function boxedNeedsSvgRaster(
 // to the content bounds with padding. Layer bands paint bottom -> top with
 // frame sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md), everything else
 // in array order as on the canvas. Hidden layers are skipped, so server snapshots (docs/specs/006-document/document-snapshots.md) and
-// MCP inline images match what the canvas shows. No isometric projection or
-// backdrop pattern — those are in-app export extras (apps/editor/lib/export-tab).
+// MCP inline images match what the canvas shows. No backdrop pattern — that is an
+// in-app export extra (apps/editor/lib/export-tab).
 export function renderElementsToSvg(
   tab: Tab,
   opts: {

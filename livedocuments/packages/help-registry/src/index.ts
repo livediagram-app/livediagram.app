@@ -127,8 +127,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
-    articleCount: 7,
+      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight and Slide Deck.',
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -871,14 +871,6 @@ export const articles: Article[] = [
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'isometric-mode',
-    title: 'Isometric Mode',
-    description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
-    keywords: '3d tilt perspective iso angle view projection orbit rotate camera export',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
   },
   // ---- Palette landings: Elements ----
   {
