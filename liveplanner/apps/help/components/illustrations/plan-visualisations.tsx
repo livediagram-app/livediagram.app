@@ -4,7 +4,7 @@
 // VISUALISATION_INFO, GanttView, GanttScaleControls, gantt-rows, PlanViewSettingsPanel, SWIMLANE_LABELS).
 
 import type { ReactNode } from 'react';
-import { Scene, Label, TextBar, Tabs } from './primitives';
+import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
 
 // --- Start Planning: Visualisations ------------------------------------------
 

@@ -6,7 +6,14 @@
 // rule. The casting scene itself stays there as `DotVoting`, since the tally
 // pill is shared with the session-tools overview.
 
-import { Scene, Label, Shape, Panel, Button, Avatar } from './primitives';
+import {
+  Scene,
+  Label,
+  Shape,
+  Panel,
+  Button,
+  Avatar,
+} from '@liveworkspace/help-site/art/primitives';
 
 /** A settings toggle, on or off. */
 function Switch({ x, y, on = false }: { x: number; y: number; on?: boolean }) {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Label } from '@/components/illustrations/primitives';
-import { Window, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Window, Stage } from '@liveworkspace/help-site/art/parts';
 
 const G = 'fill-none stroke-current';
 
@@ -61,14 +61,14 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
     ),
   },
   {
-    label: 'Images',
+    label: 'Trash',
     glyph: (
       <>
-        <rect x={-5.5} y={-4.5} width={11} height={9} rx={1.5} className={G} strokeWidth={1.3} />
+        <path d="M-5.5 -3.5 h11 M-2 -3.5 v-1.5 h4 v1.5" className={G} strokeWidth={1.3} />
         <path
-          d="M-5 3.5 l3.5 -3.5 2.5 2.5 2 -2 3 3"
+          d="M-4.2 -3.5 l0.8 9 h6.8 l0.8 -9"
           className={G}
-          strokeWidth={1.2}
+          strokeWidth={1.3}
           strokeLinejoin="round"
         />
       </>
@@ -76,12 +76,12 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
   },
 ];
 
-const DOCS: { title: string; kind: 'flow' | 'board' | 'slide' | 'sticky' | 'tree' | 'sheet' }[] = [
+const DOCS: { title: string; kind: 'board' | 'form' | 'sticky' | 'dashboard' | 'sheet' }[] = [
   { title: 'Roadmap', kind: 'board' },
-  { title: 'System map', kind: 'flow' },
+  { title: 'Event sign-up', kind: 'form' },
   { title: 'Team retro', kind: 'sticky' },
-  { title: 'Kickoff deck', kind: 'slide' },
-  { title: 'Org chart', kind: 'tree' },
+  { title: 'Q3 overview', kind: 'dashboard' },
+  { title: 'Bug triage', kind: 'board' },
   { title: 'Budget', kind: 'sheet' },
 ];
 
@@ -125,29 +125,24 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           ))}
         </g>
       );
-    case 'flow':
+    case 'form':
       return (
         <g>
-          <rect
-            x={x + 6}
-            y={y + 12}
-            width={16}
-            height={11}
-            rx={2}
-            className="fill-white stroke-brand-400"
-            strokeWidth={1}
-          />
-          <path
-            d={`M${x + 32} ${y + 7} l8 10.5 -8 10.5 -8 -10.5 Z`}
-            className="fill-white stroke-brand-400"
-            strokeWidth={1}
-          />
-          <rect x={x + 46} y={y + 12} width={14} height={11} rx={2} className="fill-brand-400" />
-          <path
-            d={`M${x + 22} ${y + 17.5} h2 M${x + 40} ${y + 17.5} h6`}
-            className="stroke-brand-400"
-            strokeWidth={1}
-          />
+          <rect x={x + 18} y={y + 4} width={28} height={4} rx={2} className="fill-brand-400" />
+          {[0, 1].map((r) => (
+            <g key={r}>
+              <rect
+                x={x + 14}
+                y={y + 11 + r * 8}
+                width={36}
+                height={6}
+                rx={1.5}
+                className="fill-white stroke-slate-300"
+                strokeWidth={0.8}
+              />
+            </g>
+          ))}
+          <rect x={x + 22} y={y + 28} width={20} height={5} rx={2} className="fill-brand-500" />
         </g>
       );
     case 'sticky':
@@ -172,40 +167,48 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           ))}
         </g>
       );
-    case 'slide':
+    case 'dashboard':
       return (
         <g>
-          <rect x={x + 8} y={y + 5} width={48} height={26} rx={2} className="fill-brand-500" />
           <rect
-            x={x + 13}
-            y={y + 11}
-            width={24}
-            height={4}
+            x={x + 7}
+            y={y + 5}
+            width={22}
+            height={24}
             rx={2}
-            className="fill-white help-art-as-drawn"
+            className="fill-white stroke-slate-200"
+            strokeWidth={0.8}
           />
-          <rect x={x + 13} y={y + 19} width={16} height={3} rx={1.5} className="fill-brand-200" />
-        </g>
-      );
-    case 'tree':
-      return (
-        <g>
-          <rect x={x + 25} y={y + 5} width={14} height={8} rx={2} className="fill-teal-200" />
+          <circle
+            cx={x + 18}
+            cy={y + 17}
+            r={7}
+            className="fill-none stroke-brand-200"
+            strokeWidth={3}
+          />
           <path
-            d={`M${x + 32} ${y + 13} v4 M${x + 14} ${y + 21} v-4 h36 v4`}
-            className="fill-none stroke-slate-300"
-            strokeWidth={1}
+            d={`M${x + 18} ${y + 10} a7 7 0 0 1 6.6 9.4`}
+            className="fill-none stroke-brand-500"
+            strokeWidth={3}
           />
-          {[7, 25, 43].map((dx) => (
+          <rect
+            x={x + 33}
+            y={y + 5}
+            width={24}
+            height={24}
+            rx={2}
+            className="fill-white stroke-slate-200"
+            strokeWidth={0.8}
+          />
+          {[0, 1, 2].map((b) => (
             <rect
-              key={dx}
-              x={x + dx}
-              y={y + 21}
-              width={14}
-              height={8}
-              rx={2}
-              className="fill-white stroke-teal-400"
-              strokeWidth={0.9}
+              key={b}
+              x={x + 37 + b * 6}
+              y={y + 25 - [8, 14, 11][b]!}
+              width={4}
+              height={[8, 14, 11][b]!}
+              rx={1}
+              className={['fill-emerald-300', 'fill-brand-400', 'fill-amber-300'][b]}
             />
           ))}
         </g>

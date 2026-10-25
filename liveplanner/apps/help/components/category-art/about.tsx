@@ -1,5 +1,5 @@
-import { Label } from '@/components/illustrations/primitives';
-import { Chip, Stage, Window } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
 // About liveplanner: what it is in one picture. Three windows fanned out, one per kind of tab (a board of cards, a
 // sheet of rows, a form to fill in), under the two promises: free, and no trackers.

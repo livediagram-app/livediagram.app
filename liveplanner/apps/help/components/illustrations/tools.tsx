@@ -2,7 +2,7 @@
 // mode, and the two layout tidiers (Auto-Align, Auto Layout).
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Label } from './primitives';
+import { Scene, Shape, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- AI ---------------------------------------------------------------------
 
