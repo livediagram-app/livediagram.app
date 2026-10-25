@@ -29,10 +29,12 @@ import {
   type ArticleFlow,
   type ArticleStyle,
   type ArticleZoneBlock,
+  tabPageKind,
   type PageEdit,
   type Tab,
 } from '@livedocuments/document';
 import { enterPages, type PagesIds } from './enter';
+import { kindNotOffered } from './page-changes';
 
 type ArticleWriteOutcome =
   { tab: Tab; flow: string; created: boolean; lines: string[] } | { refusal: PagesRefusal };
@@ -86,19 +88,25 @@ export function applyArticleWrite(
   // A new article: on the fresh tab's empty, unchosen first page, else after the last page.
   const created = flow === undefined;
   if (created) {
+    const pages = pagesOf(current);
+    const laid = layOutPages(pages);
+    const first = pages[0]!;
+    const takesFirst = offersPageKindChoice(
+      pages,
+      first.id,
+      elementIdsOnPage(current.elements, laid, first.id).size,
+    );
+    // One kind a tab: a new article joins only an article tab, or the fresh tab's unchosen first page.
+    if (!takesFirst && tabPageKind(pages) !== 'article')
+      return refuse('kind_not_offered', kindNotOffered(current, 'article'));
     if (write.size && (write.size === 'fit' || !pageSizesFor('article').includes(write.size)))
       return refuse(
         'size_not_offered',
         `An article takes the sizes ${pageSizesFor('article').join(', ')}.`,
       );
-    const pages = pagesOf(current);
-    const laid = layOutPages(pages);
-    const first = pages[0]!;
     const newFlow = ids.flow?.() ?? nextArticleFlowId(new Set(flows));
     let pageId: string;
-    if (
-      offersPageKindChoice(pages, first.id, elementIdsOnPage(current.elements, laid, first.id).size)
-    ) {
+    if (takesFirst) {
       current = withPageKindChosen(current, first.id, 'article', newFlow)!;
       pageId = first.id;
     } else {

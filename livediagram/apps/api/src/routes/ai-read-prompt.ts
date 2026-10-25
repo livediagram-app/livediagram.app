@@ -28,7 +28,7 @@ export function buildReadNotesPrompt(): string {
   ].join('\n');
 }
 
-// The answer's shape, for a provider that can be held to it (docs/specs/007-editor/ai-assistance.md). JSON
+// The answer's shape, for a provider that can be held to it (docs/specs/021-event-storming/note-reader.md). JSON
 // mode alone let the model break its own quoting or stop after `{"texts":[`,
 // failing every note in the batch; a strict schema constrains the output as it
 // is written. The route still validates every field regardless.

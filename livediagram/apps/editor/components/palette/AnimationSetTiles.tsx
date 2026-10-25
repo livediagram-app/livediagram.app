@@ -24,7 +24,7 @@ import {
 } from '@/components/palette/context-menu-tiles';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import { AnimationSetPreview, previewFrame } from '@/components/palette/animation-set-previews';
-import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import { useRevertOnUnmount } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
 // A kept value: an old Shape value the set does not offer, or, where the element is offered only part of the Shape set
 // (a boundary, a chart's motions), a Shape value outside that part.

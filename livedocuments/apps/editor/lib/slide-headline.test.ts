@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Tab } from '@livedocuments/document';
 import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 

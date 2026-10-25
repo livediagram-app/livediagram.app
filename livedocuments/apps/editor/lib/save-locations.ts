@@ -6,13 +6,9 @@ export type SaveLocationId = 'livedocuments' | 'browser';
 
 // Where a new document goes when nobody picked (docs/specs/006-document/save-locations.md "The default
 // depends on who is creating"): a guest starts This Browser, so a visitor trying things out never
-// leaves an orphan on the server; a signed-in person, or anyone on a deployment without sign-in,
-// starts on livedocuments.
-export function defaultSaveLocationFor(who: {
-  signedIn: boolean;
-  signInEnabled: boolean;
-}): SaveLocationId {
-  return who.signInEnabled && !who.signedIn ? 'browser' : 'livedocuments';
+// leaves an orphan on the server; a signed-in person starts on livedocuments.
+export function defaultSaveLocationFor(who: { signedIn: boolean }): SaveLocationId {
+  return who.signedIn ? 'livedocuments' : 'browser';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,

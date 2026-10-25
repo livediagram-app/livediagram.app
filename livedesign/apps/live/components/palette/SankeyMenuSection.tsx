@@ -33,13 +33,13 @@ import {
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows } from '@/components/primitives/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideALargeSmall,
@@ -48,8 +48,8 @@ import {
   lucideHash,
   lucidePalette,
   lucideRoute,
-} from '@livedesign/icons/lucide';
-import { MENU_CELL_INPUT } from '@/components/palette/menu-editor-classes';
+} from '@liveworkspace/icons/lucide';
+import { MENU_CELL_INPUT } from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 import type { SankeySetters } from '@/hooks/canvas/useSankeySetters';
 import {
   AlignGlyph,

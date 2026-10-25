@@ -19,7 +19,9 @@ import { FUNCTION_FAMILIES } from '@liveplanner/sheets';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 let phone = false;
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => phone }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => phone,
+}));
 vi.mock('@/hooks/ui/useColourPalette', () => ({
   useColourPalette: () => ({
     swatches: { presets: ['#ff0000', '#00ff00'] },

@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { SaveFailedToast } from '@/components/illustrations/troubleshooting';
-import { UndoStep } from '@/components/illustrations/undo-redo';
+import { UndoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
 
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
@@ -12,14 +12,14 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with autosave and undo." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different document, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them with undo or the Trash.
+Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different canvas, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them with undo or the Trash.
 
 ## First, find them
 
 1. **Check the right tab.** Each tab stores its own content. If a tab looks empty, confirm you are on the tab you actually edited. See [tabs](/help/tabs/using-tabs/).
-2. **Check the right document.** It is easy to have two similar documents open. Open [your documents](/explorer/recent) and confirm you are in the one you edited.
-3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's documents. If you just signed in, your guest documents move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
-4. **Reload the page.** A refresh reloads your saved document and clears any temporary display issue.
+2. **Check the right canvas.** It is easy to have two similar canvases open. Open [your canvases](/explorer/recent) and confirm you are in the one you edited.
+3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's canvases. If you just signed in, your guest canvases move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
+4. **Reload the page.** A refresh reloads your saved canvas and clears any temporary display issue.
 5. **Check whether the tab was a Plan tab.** Plan mode moved to [liveplanner](https://liveplanner.app), livediagram's sister app for planning work. A tab that was in Plan now opens in Diagram with its ordinary elements, but its boards, cards, sheets, dashboards and forms are no longer shown. See [Editor Modes](/help/canvas/editor-modes/).
 
 ## How saving works
@@ -37,7 +37,7 @@ There is no "saved" indicator to watch, because saving is the normal state. What
 
 ### "A new version of livediagram is ready"
 
-When livediagram is updated while you have a document open, and the update changes how documents are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. **Not now** hides the notice; reload whenever suits you.
+When livediagram is updated while you have a canvas open, and the update changes how canvases are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. **Not now** hides the notice; reload whenever suits you.
 
 ## Recover a recent step
 
@@ -51,9 +51,9 @@ If you have just undone, moved or deleted something by mistake, [Redo](/help/can
 2. **Press Redo** (**Cmd/Ctrl+Shift+Z**, or **Ctrl+Y**) if you went back too far.
 3. Undo covers your own recent steps in this session. It is cleared when you reload, and it never reaches into someone else's edits.
 
-A deleted document is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it. A document left empty for 30 days moves there on its own, so look there too.
+A deleted canvas is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it. A canvas left empty for 30 days moves there on its own, so look there too.
 
-If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the document, the note that appears with its change has an **Undo** that puts it back, separately from your own undo history.
+If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the canvas, the note that appears with its change has an **Undo** that puts it back, separately from your own undo history.
 
 ## What collaboration does and doesn't protect
 
@@ -61,8 +61,8 @@ If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the 
 
 **Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while another editor has it selected, so you can see that it is spoken for before you start.
 
-If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the document, still without a page reload.
+If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the canvas, still without a page reload.
 
-If you have checked the right tab, document, and identity, reloaded, and the change is still missing, [contact us](/help/contact/) with the document URL and roughly when you made the edit.
+If you have checked the right tab, canvas, and identity, reloaded, and the change is still missing, [contact us](/help/contact/) with the canvas URL and roughly when you made the edit.
 
 </ArticleLayout>

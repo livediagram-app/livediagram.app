@@ -19,63 +19,18 @@
 // redistributing vendors' proprietary SVGs (docs/specs/002-project-scope/third-party-licences.md). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
-// (colour + SVG markup) lives in @liveplanner/icons/tech-icon-catalog and
+// (colour + SVG markup) lives in @liveworkspace/icons/tech-icon-catalog and
 // loads as an async chunk through lib/icon-registry.ts, keeping ~25 kB out
 // of the editor's first-load JS. Nothing here may import the data module
 // statically.
 
-import type { TechIconDef, TechProvider } from '@liveplanner/icons';
-import { getLoadedTechIconCatalog, getTechIconLoaded } from './icon-registry';
-
-// The catalogue types live in @liveplanner/icons (shared with the Workers'
+// The catalogue types live in @liveworkspace/icons (shared with the Workers'
 // headless renders); re-exported so existing import sites keep resolving.
-export type { TechIconDef, TechProvider } from '@liveplanner/icons';
+export type { TechIconDef, TechProvider } from '@liveworkspace/icons';
 
-// Drag-from-palette MIME for a Technology tile dropped on the canvas.
-// Distinct from ICON_DND_MIME so the tile creates a STANDALONE icon
-// element and is ignored by the shape drop-target (a coloured brand tile
-// beside a shape's text is meaningless, and the inline-icon renderer only
-// knows line-art prims). Value carried = the tech-icon id.
-export const TECH_ICON_DND_MIME = 'application/x-liveplanner-tech-icon';
-
-// Provider display names for the palette filter + hover cards.
-export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
-  { id: 'aws', label: 'AWS' },
-  { id: 'azure', label: 'Azure' },
-  { id: 'cloudflare', label: 'Cloudflare' },
-  { id: 'firebase', label: 'Firebase' },
-  { id: 'generic', label: 'Generic' },
-];
-
-// The tech-icon id set + `isTechIconId` live in @liveplanner/icons
+// The tech-icon id set + `isTechIconId` live in @liveworkspace/icons
 // (tech-icon-ids.ts) so the project package's connector geometry can use
 // them too (a tech icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md);
 // re-exported so existing import sites keep resolving. Still a lightweight
 // first-load module — only the colour/glyph data waits on the async chunk.
-export { isTechIconId, TECH_ICON_IDS } from '@liveplanner/icons';
-
-// Resolves the full definition (colour + glyph markup). Returns undefined for
-// an unknown id AND until the async catalogue chunk has loaded — check
-// `isTechIconId` to tell "not a tech icon" from "data still in flight"
-// (tech-icon-glyph.tsx uses exactly that split to paint a skeleton tile).
-export function getTechIcon(id: string | undefined): TechIconDef | undefined {
-  return getTechIconLoaded(id);
-}
-
-// Case-insensitive search over label + keywords + id, optionally narrowed
-// to one provider. Empty query returns the (filtered) catalogue. Empty
-// result set until the catalogue chunk loads — the picker subscribes via
-// useIconCatalogs and re-runs the search when the data lands.
-export function searchTechIcons(query: string, provider: TechProvider | 'all'): TechIconDef[] {
-  const catalog = getLoadedTechIconCatalog();
-  const base = provider === 'all' ? catalog : catalog.filter((i) => i.provider === provider);
-  const q = query.trim().toLowerCase();
-  if (!q) return base;
-  return base.filter(
-    (i) =>
-      i.label.toLowerCase().includes(q) ||
-      i.keywords.includes(q) ||
-      i.id.includes(q) ||
-      i.provider.includes(q),
-  );
-}
+export { isTechIconId, TECH_ICON_IDS } from '@liveworkspace/icons';

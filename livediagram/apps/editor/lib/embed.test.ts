@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEmbedSnippet, embedUrlFor } from './embed';
+import { embedUrlFor } from './embed';
 
 describe('embedUrlFor', () => {
   it('builds the query-form embed URL on the given origin', () => {
@@ -18,17 +18,5 @@ describe('embedUrlFor', () => {
     expect(embedUrlFor('https://livediagram.app', 'a/b?c')).toBe(
       'https://livediagram.app/embed?s=a%2Fb%3Fc',
     );
-  });
-});
-
-describe('buildEmbedSnippet', () => {
-  it('emits an iframe pointing at the embed URL with the default size', () => {
-    const snippet = buildEmbedSnippet('https://livediagram.app', 'abc123');
-    expect(snippet).toContain('src="https://livediagram.app/embed?s=abc123"');
-    expect(snippet).toContain('width="800"');
-    expect(snippet).toContain('height="500"');
-    expect(snippet).toContain('allowfullscreen');
-    expect(snippet.startsWith('<iframe ')).toBe(true);
-    expect(snippet.endsWith('</iframe>')).toBe(true);
   });
 });

@@ -14,7 +14,7 @@
 import { useCallback, useState } from 'react';
 import type { FacilitatorReason } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 /** Where a document's baton token lives while the tab is open. */
 const tokenKey = (documentId: string) => `livediagram:facilitator:${documentId}`;

@@ -109,7 +109,7 @@ and moves stay with the owner and joined team members. No level grants any of th
   another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
   before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
 - **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
-  a warning toast ("The link you opened that document with was revoked, so it is no longer open to you."). A session
+  a warning toast ("The link you opened that canvas with was revoked, so it is no longer open to you."). A session
   ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
   sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
   access to this document was removed while you had it open. Ask its owner to share it with you again.") instead of
@@ -168,4 +168,4 @@ Specified in the research and not built yet:
 ## Domain language
 
 **Participant** is this access level. The `participants` table and its records are a person's **display identity**
-(name, colour, picture); prose calls them that, never "participant" ([Domain language](../003-system-architecture/domain-language.md)).
+(name, colour); prose calls them that, never "participant" ([Domain language](../003-system-architecture/domain-language.md)).

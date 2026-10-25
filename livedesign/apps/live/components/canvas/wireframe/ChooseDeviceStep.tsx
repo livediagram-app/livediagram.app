@@ -1,7 +1,7 @@
 'use client';
 
-// Choose a Device (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the step a
-// Wireframe card turns the Add a Page popover, and the first page's choice, to. The device tiles,
+// Choose a Device (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the step the
+// first page's Wireframe card turns its choice to. The device tiles,
 // the one last chosen in this browser ringed and focused, and Back to the kinds.
 import type { WireframeDeviceId } from '@livedesign/design';
 import { ChevronLeftIcon } from '@livedesign/ui';

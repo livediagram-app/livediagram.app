@@ -19,7 +19,7 @@
 
 import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
 import { useSequenceSetters } from '@/hooks/canvas/useSequenceSetters';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   bringElementsToFrontLayer,
   isBoxed,

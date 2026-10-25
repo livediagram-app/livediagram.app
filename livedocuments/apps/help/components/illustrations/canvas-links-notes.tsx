@@ -3,8 +3,18 @@
 // pill at the top of the canvas (chrome/TopCenterChrome.tsx), the note popover (notes/NotePopover.tsx)
 // and the Link element dialog (dialogs/LinkPickerDialog.tsx).
 
-import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, Tabs, Button } from './primitives';
-import { Glyph } from './element-indicators';
+import {
+  Scene,
+  Label,
+  Shape,
+  Avatar,
+  Cursor,
+  TextBar,
+  Dialog,
+  Tabs,
+  Button,
+} from '@liveworkspace/help-site/art/primitives';
+import { Glyph } from '@liveworkspace/help-site/art/illustrations/element-indicators';
 
 // --- Following someone -------------------------------------------------------------------------
 

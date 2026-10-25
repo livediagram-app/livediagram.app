@@ -1,7 +1,10 @@
 # Explorer filters
 
-Status: shipped. The grammar, matching, suggestion engine and view models live in `@livedocuments/explorer-lens`
-(`packages/explorer-lens`); the Explorer page renders the chips, the field, the states and the routes over it.
+Status: shipped on the shared Explorer, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The
+grammar, matching, suggestion engine and view models live in its `src/lens/` (pure, no DOM or React); the field, the
+chips and the states are its SearchField and Lens components. The index narrows the lists
+themselves: the filters are `GET /items` and `GET /shared` query parameters
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "The lens's filters").
 
 ## What
 
@@ -22,82 +25,83 @@ Two different things narrow a list, and they never mix:
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
-An **aggregate view** lists documents from every place at once: **Recent**, **Favourites**, **Search results** and
-**Shared With Me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
-`space:` token. Every other document view is a **scoped view**.
+An **aggregate view** lists items from every place at once: **Recent**, **Favourites**, **Shared With Me**
+and **Search results**. Only aggregate views have no scope to narrow by, so only they show the **Space**
+chip and apply the `space:` token. My Work, a folder and a team are **scoped views**.
+
+Which apps' items a list holds is the **Documents / All** switch in the page header, not a dimension of the lens.
 
 ## Views
 
-| View                                                     | Route                                                                              | Lens                              |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Work, and each of its folders                         | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
-| A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
-| This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
-| Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
-| Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
+| View                                               | Route                                                                              | Lens                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| My Work, and each of its folders                   | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
+| Recent, Favourites, Shared With Me, Search results | `/explorer/recent`, `/explorer/favourites`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
+| Home, Inbox, Timeline, Trash                       | Their own                                                                          | None: typing opens Search results |
 
-- **Search results** (`/explorer/search`) lists every document the reader can open: their own (My Work and this
-  browser), every team's they have joined, and Shared With Me, newest first, with no cap. It has no sidebar row; its
-  page title is **Search results**.
-- A view that lists no documents has no lens of its own. Typing into the field there takes the reader to Search
-  results with what they typed, the field keeping focus; the view they left keeps no `q`.
-- **A scoped lens reaches the whole scope.** While a lens is set on a scoped view, the list holds every matching
-  document in the scope, its subfolders at any depth included, as one flat list, newest first. Folder rows step
-  aside while the lens is set and return when it is cleared. A row from a subfolder names its folder (the
-  [Recent folder chip](recent-folder-chip.md)).
-- **Recent** lists the 12 newest documents that match.
-- **This Browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
-  **This Browser** pill ([Explorer structure](explorer-structure.md#documents-in-this-browser)).
+- **Search results** (`/explorer/search`) lists every item the reader can open: their own, every team's they have
+  joined, and Shared With Me, newest first (the index's `view=search`). It has no sidebar row.
+- A view that lists no items has no lens of its own. Typing into the field there takes the reader to Search results
+  with what they typed, the field keeping focus; the view they left keeps no `q`.
+- **A scoped lens reaches the whole scope.** While a lens is set on a scoped view, the list holds every matching item
+  in the scope, its subfolders at any depth included (`deep=1` on a folder; `view=all` on My Work and a team's root),
+  as one flat list, newest first. Folder rows step aside while the lens is set and return when it is cleared. A row
+  from a subfolder names its folder.
+- The old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
 
 ## The chip row
 
-Every document view shows one row of chips under its page header and breadcrumb:
+Every list view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Made by AI, Edited, People), then **Space**
-  on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
+- One chip per dimension, in dimension order (Opens in while every app shows, Template, Made by AI, Edited, People), then **Space** on aggregate views
+  only. Template shows only when the host names template families (`lensTemplates`).
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
-- A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape,
-  Tab, a click outside or the chip again closes it, focus returning to the chip.
+- A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape, Tab,
+  a click outside or the chip again closes it, focus returning to the chip.
 - Under the row, every reported issue reads as one line, its word named (the messages of the
   [Token grammar](#token-grammar)).
 - On a phone the row scrolls sideways in one line.
 
 ## Dimensions
 
-Each dimension is a closed list of values. The interface says what a value means.
+| Dimension | Key        | Chip label  | Values and their labels                                                                              | Index filter |
+| --------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------- | ------------ |
+| Text      | (none)     | (the field) | Free words                                                                                           | `q`          |
+| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `document` liveplanner, `document` livedocuments, `design` livedesign: its app | `apps`       |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)        | `source=ai`  |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year     | `since`      |
+| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                           | `owner`      |
+| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only           | `space`      |
 
-| Dimension | Key       | Chip label  | Values and their labels                                                                          |
-| --------- | --------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| Text      | (none)    | (the field) | Free words                                                                                       |
-| Made by   | `made-by` | Made by AI  | `ai` Made by AI: the document's `source` is an AI tool through the MCP server (not the CLI)      |
-| Edited    | `edited`  | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year |
-| People    | `people`  | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                 |
-| Space     | `space`   | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only       |
-
-- **No Opens in.** Every document opens in Pages, the one editor mode, so a filter by mode would narrow nothing:
-  there is no `opens-in` dimension. `opens-in:pages` is a word like any other unknown key: searched as text and
-  reported `unknown_dimension`.
-- **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
-  their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
-  AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
-  old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
-- **Edited** reads the document's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
-  back that many days from now; Last 12 months counts back 12 calendar months from now; This year starts at midnight on
-  1 January. A save in the future (a skewed clock) counts as edited.
-- **People** on a document is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
-  is `others`.
-- **Space** on a document is `mine` for one in My Work or in this browser ([Offline Mode](../006-document/offline-mode.md),
-  the documents the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
-  token names a team by id; every label shows the team's **name**, never the id.
-- A row that cannot answer a dimension (a Shared With Me row carries no provenance) matches no
-  value of it.
-- **More filters** (favourited, sharing) join later behind a "More filters" disclosure.
+- **No Template.** livedocuments has no template families, so it offers no Template chip, and a typed
+  `template:` token is searched as text.
+- **Made by AI is a filter, not a place.** AI-made items live at the root of their space or in a folder like any
+  other, and `made-by:ai` finds them anywhere. Every row, card and details row of an AI-made item carries a **Made by
+  AI** pill (a sparkle and the words), so what the filter reads is visible.
+- **Edited** reads the item's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
+  back that many days from now; Last 12 months counts back 12 calendar months; This year starts at midnight on
+  1 January. Several values keep the widest. The cutoff sent to the index is rounded to the minute, so a list is not
+  read again every millisecond.
+- **People** is the owner: `me` when the reader owns the item, `others` otherwise. Both values together admit
+  everyone and send nothing.
+- **Space** is `mine` for an item in My Work, `team:<id>` for one in a team, `shared` for one reached through a link.
+  A token names a team by id; every label shows the team's **name**.
+- **Opens in** is the app an item opens in, named by its kind (`opens-in:document`) and labelled with the app's name from
+  `@liveworkspace/sites`. Its chip and suggestions show while a list holds every app's items (All, and
+  liveworkspace.app's Explorer); on a list held to the host's own app there is no chip, and a typed `opens-in:` token
+  still reads and narrows within that app (another app's leaves the list empty). **Kind** was not carried over: a
+  document's tabs are not in the index.
 
 ## Matching
 
-- A dimension may hold **several values**: they combine with **or** (`edited:today,7d` lists both). Dimensions combine with **and**.
-- Text matches the document's **name**: every word must appear in it, ignoring case and accents.
+- The index matches: the lists page, so the reader's side cannot narrow them. A dimension may hold **several
+  values**: they combine with **or**. Dimensions combine with **and**.
+- Text matches the item's **title or the name of its folder**: every word must appear in one of them. It is SQLite
+  `LIKE`, so capitals are ignored for ASCII letters and accents are not folded ("cafe" does not find "Café").
 - The empty lens matches everything.
+- The Explorer still runs the lens's non-text dimensions over a row the reader just changed (renamed, moved, shared),
+  so the row stays honest until the list is read again (`compileLens`, `{ text: false }`).
 
 ## Token grammar
 
@@ -130,23 +134,15 @@ The string is words separated by whitespace.
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
-(Made by, Edited, People, Space), each list in its dimension's value order (teams after My
-documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
-writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
-written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
+(Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My Work and Shared
+With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
+writing produces only this one. Clearing a chip removes every token of its dimension. The index takes at most 16 words
+and 8 values per filter.
 
 ## The field
 
-The top-bar search is the lens field on every Explorer view. It sits in the Explorer header, left of the account
-control; on a desktop (`lg` and up) the header is three columns and the field is **centred** between the brand and
-the account, on every page (each side column grows to its content first, so a narrow desktop never overlaps them);
-below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
-filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
-
-On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New document inside its end,
-and the header draws none. With the hero hidden ([Hiding the banner](explorer-home.md#hiding-the-banner)), Home
-draws the header's field like every other page. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
-Search results; the header's field there takes the focus with the caret after the typed words.
+The top-bar search is the lens field on every Explorer view; on Home it is the hero's. Its placeholder reads "Search
+or filter documents" (the host's word for its items).
 
 - Each token renders as a **pill** inside the field: "Edited: Today, Last 7 days", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.
@@ -154,57 +150,46 @@ Search results; the header's field there takes the focus with the caret after th
 
 ### Suggestions
 
-Typing in the field offers **suggestions** in a list under it:
-
-- A word that is the start of a dimension key (`op`, `made`, `edited`) offers those **dimensions**, each with its chip
-  label. Accepting one writes `<key>:` and offers its values.
-- A word `<key>:<start>` offers that dimension's **values** whose value or label starts with `<start>`, each with its
-  label: `edited:7d` reads "Last 7 days · Edited"; a team reads by its name. In a comma list only the entry after the
-  last comma is matched, and values already in the list are not offered again.
-- A value that would match nothing on its own, with every other dimension and word of the field kept, is still offered
-  and **marked** "No matches"; it is never hidden.
+- A word that is the start of a dimension key (`made`, `ed`) offers those **dimensions**. Accepting one writes
+  `<key>:` and offers its values.
+- A word `<key>:<start>` offers that dimension's **values** whose value or label starts with `<start>`. In a comma
+  list only the entry after the last comma is matched, and values already in the list are not offered again.
+- When the list on screen is loaded whole, a value that would match nothing on its own is still offered and **marked**
+  "No matches"; it is never hidden. A list with more pages to come marks nothing, since it cannot know.
 - Space and its values are offered on aggregate views only. An empty word offers nothing.
-- Accepting a value writes it into the word (after the list's earlier entries), then a space; the rest of the field is
-  left as it is.
-
-Keyboard:
 
 | Key       | Does                                                                                            |
 | --------- | ----------------------------------------------------------------------------------------------- |
 | Down / Up | Moves through the suggestions; no suggestion is active until one is pressed                     |
-| Enter     | Accepts the active suggestion; with none active, nothing beyond what typing already applied     |
+| Enter     | Accepts the active suggestion                                                                   |
 | Tab       | Accepts the active suggestion; with none active, moves focus on as usual                        |
-| Escape    | Closes the suggestions; the field keeps its text                                                |
+| Escape    | Closes the suggestions; a second press clears the words                                         |
 | Backspace | At the start of the text, right after a pill: first selects the pill, a second press removes it |
 
 ### Accessibility
 
-- The field follows the WAI-ARIA **combobox** pattern: the input has `role="combobox"`, `aria-autocomplete="list"`,
-  `aria-expanded`, `aria-controls` naming the suggestion `listbox`, and `aria-activedescendant` naming the active
-  option. Its label is "Filter documents".
-- Each option's name is its label and dimension, plus "no matches" when marked: "Last 7 days, Edited, no matches".
+- The field is a WAI-ARIA **combobox** labelled "Filter documents", controlling the suggestion `listbox`.
 - Each pill has an accessible name ("Filter Edited: Today, Last 7 days", plus "not applied: <reason>" when muted)
-  and a **remove** button named "Remove filter Edited: Today, Last 7 days", in the tab order.
-- After the lens changes, a polite **live region** announces the count once typing settles: "12 of 40 documents",
-  "40 documents", or "No documents match".
-- Chips sit in a `group` named "Filters". A chip is **multi-select**: a button with `aria-haspopup="listbox"` and
-  `aria-expanded`, named "Edited: Today, Last 7 days" when set and "Edited, any" when not, opening a listbox with
-  `aria-multiselectable="true"`. Its options are `option`s with `aria-selected`; choosing one toggles it, and the
-  first option, "Any", clears every value. **Made by AI**, a dimension of one value, is a toggle button with
+  and a remove button.
+- After the lens changes, a polite **live region** announces the count once the list has loaded and 400 ms have
+  passed: "12 documents", "50 or more documents" while more pages remain (the index pages and gives no total), or "No documents
+  match". Arriving at a view says nothing.
+- Chips sit in a `group` named "Filters". A multi-select chip is a button with `aria-haspopup="listbox"`, named
+  "Edited: Today, Last 7 days" when set and "Edited, any" when not, opening a listbox with
+  `aria-multiselectable="true"` whose first option, "Any", clears it. **Made by AI** is a toggle button with
   `aria-pressed`.
-- A set chip shows its values as text and each chosen option a check, never by colour alone. Text and focus rings meet WCAG 2.2 AA
-  contrast; every pill, remove button and chip is at least 24 by 24 CSS pixels. Nothing animates under reduced motion.
+- A set chip shows its values as text and each chosen option a check, never by colour alone.
 
 ## URL and carry-over
 
 - The lens lives in the view's URL as `?q=<string>`, whitespace collapsed, removed when empty. Every change replaces
-  the current history entry (no entry per keystroke). While typing, the address bar follows the field at most every
-  250 ms (`LENS_URL_WRITE_MS`, a trailing write) and at once when the field loses focus: a write per keystroke ran a
-  held key past Safari's limit of 100 history writes in 10 seconds, which throws. The rows narrow a beat behind the
-  field (a deferred value), so typing never waits on a long list.
+  the current history entry (`onNavigate(view, href, { replace: true })`). While typing, the address follows the field
+  at most every 250 ms (a trailing write) and at once when the field loses focus: a write per keystroke ran a held key
+  past Safari's limit of 100 history writes in 10 seconds. The first search from a view with no lens is a new entry,
+  so Back returns to it.
 - Moving between aggregate views **carries** the lens. Entering a scoped view, or a view with no lens, starts with an
   empty lens; each view's URL keeps its own. Back and Forward restore the lens of the entry they land on.
-- The lens is **not** stored: a new session starts unfiltered. Saved views come later.
+- The lens is **not** stored: a new session starts unfiltered.
 
 ## States
 
@@ -212,23 +197,18 @@ Keyboard:
 | -------------- | ------------------------------------------------------------------------------------------------------ |
 | Empty          | The view's own empty copy, unchanged: there is nothing here at all                                     |
 | Filtered empty | "No documents match these filters", the reported reasons under it, and **Clear Filters** (empties `q`) |
-| Failed         | "Couldn’t load documents" and **Try again**; the lens stays as it was                                  |
-
-- **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,
-  Recent, Favourites and Search results; the shared list for Shared With Me. A failed read never reads as Empty.
-  When only the shared list failed, the other views still list what loaded, and a notice says the documents shared
-  with the reader could not load.
-- The live region speaks only on document views, and only after the lens changes.
+| Failed         | "Couldn’t load this list." and **Try again**; the lens stays as it was                                 |
 
 ## Telemetry
 
-Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the Explorer emits
-`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`,
-`MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
-non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
-the reader's own change does.
+Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the
+Explorer calls the host's `onLensSelected(<Facet>)` once, and livedocuments emits `Explorer / Selected / <Facet>`, with
+`<Facet>` from the closed set `Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`
+(`LENS_TELEMETRY_TYPES`).
+Text counts when it goes from empty to non-empty. Never a value, a word or an id. A lens arriving with a link, or
+restored by Back, counts for nothing. `Kind` is a retired type.
 
 ## Help
 
-The help centre's [Search and filter documents](../../../apps/help/app/explorer/filters/page.mdx) article describes the
+The help centre's [Search and Filter Documents](../../../apps/help/app/explorer/filters/page.mdx) article describes the
 field, the chips and the typed filters; Search results opens it from its Help button.

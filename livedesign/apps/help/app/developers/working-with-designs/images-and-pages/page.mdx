@@ -5,11 +5,11 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Images, Pages and More',
   description:
-    'livedesign API examples for image uploads, pages, SVG renders of a tab, copying a design and custom themes.',
+    'livedesign API examples for image uploads, pages, SVG renders of a tab and copying a design.',
   path: '/help/developers/working-with-designs/images-and-pages/',
 });
 
-<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a design: images, pages, pictures of a tab, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-designs" parentArticle={{ title: "Working with Designs", slug: "working-with-designs" }} subArticles={getSubArticles("working-with-designs").filter((a) => a.slug !== "images-and-pages")}>
+<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a design: images, pages, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-designs" parentArticle={{ title: "Working with Designs", slug: "working-with-designs" }} subArticles={getSubArticles("working-with-designs").filter((a) => a.slug !== "images-and-pages")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-designs/edit-operations/), but a design holds more than elements: the images it shows and its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a design id in `$DOC`; paths are relative to `https://livedesign.app/api`, and `/api/openapi.json` has every field.
 
@@ -88,19 +88,5 @@ curl -X POST https://livedesign.app/api/designs/$DOC/copy \
 ```
 
 Makes a copy in your own files and answers `201` with the new `design`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
-
-## Custom Themes
-
-Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a design.
-
-```bash
-curl -X POST https://livedesign.app/api/custom-themes \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
-        "definition": { "backgroundColor": "#0f172a", "backgroundPattern": "grid", "patternColor": "#1e293b",
-          "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
-```
-
-A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on the path lists yours.
 
 </ArticleLayout>

@@ -1,0 +1,202 @@
+/* @liveworkspace/explorer's classes are Tailwind utilities over the host's theme (slate, and the host's
+   `--color-brand-*` ramp). A host imports this beside its Tailwind entry so Tailwind scans the package:
+     @import '@liveworkspace/explorer/explorer.css'; */
+@source './src';
+/* The shared design system it draws with (@liveworkspace/ui): buttons, count badges, empty states, hover cards. */
+@source '../ui/src';
+
+/* The Timeline's arrivals (livediagram's tl-fan-out): a card is dealt in from the right, a collapsed run folds up
+   from below, and a day picked in the filter's calendar pulses its label. Gone under reduced motion. */
+@keyframes lw-tl-fan-out {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, -2px, 0) rotate(3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+@keyframes lw-tl-fan-out-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, 12px, 0) rotate(-3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+@keyframes lw-tl-date-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 0 rgb(14 165 233 / 0);
+  }
+  50% {
+    text-shadow: 0 0 12px rgb(14 165 233 / 0.9);
+  }
+}
+.lw-tl-fan-out {
+  animation: lw-tl-fan-out 150ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+.lw-tl-fan-out-up {
+  animation: lw-tl-fan-out-up 150ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+.lw-tl-date-pulse {
+  animation: lw-tl-date-pulse 0.7s ease-in-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-tl-fan-out,
+  .lw-tl-fan-out-up,
+  .lw-tl-date-pulse {
+    animation: none;
+  }
+}
+
+/* A share pass opening into its list, or closing its space as it leaves (the Share dialog): the row eases between
+   0fr and 1fr, so the passes around it glide rather than jump. Gone under reduced motion. */
+@keyframes lw-pass-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+@keyframes lw-pass-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+.lw-pass-open {
+  animation: lw-pass-open 200ms ease-out both;
+}
+.lw-pass-close {
+  animation: lw-pass-close 200ms ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-pass-open,
+  .lw-pass-close {
+    animation-duration: 1ms;
+  }
+}
+/* A list's rows arriving (liveplanner's lvd-cascade): each rises in a beat after the one above, capped so the
+   whole list settles within 250ms. Only on a list's first paint (useCascade), never on rows scrolled into view. */
+@keyframes lw-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lw-cascade > * {
+  animation: lw-row-in 120ms ease-out both;
+}
+.lw-cascade > *:nth-child(2) {
+  animation-delay: 10ms;
+}
+.lw-cascade > *:nth-child(3) {
+  animation-delay: 20ms;
+}
+.lw-cascade > *:nth-child(4) {
+  animation-delay: 30ms;
+}
+.lw-cascade > *:nth-child(5) {
+  animation-delay: 40ms;
+}
+.lw-cascade > *:nth-child(6) {
+  animation-delay: 50ms;
+}
+.lw-cascade > *:nth-child(7) {
+  animation-delay: 60ms;
+}
+.lw-cascade > *:nth-child(8) {
+  animation-delay: 70ms;
+}
+.lw-cascade > *:nth-child(9) {
+  animation-delay: 80ms;
+}
+.lw-cascade > *:nth-child(10) {
+  animation-delay: 90ms;
+}
+.lw-cascade > *:nth-child(n + 11) {
+  animation-delay: 100ms;
+}
+/* A deleted row plays out rather than vanishing: it slides aside and fades as the rows below close the gap. */
+@keyframes lw-row-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+.lw-row-out {
+  animation: lw-row-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-cascade > *,
+  .lw-row-out {
+    animation: none;
+  }
+}
+
+/* Home's hero tiles (src/hero/WorkKinds.tsx): each picture draws in its own app's brand ramp, whatever the host's,
+   from the `--wk-*` steps its tile sets. In dark the picture turns as the help centres' art does (help-art.css): the
+   paper goes dark, the ink light, pale tints become tinted wells. Literal colours, never the tokens being redefined,
+   so nothing refers to itself. `help-art-as-drawn` keeps a part's colours in both appearances. */
+.lw-work-art {
+  --color-brand-50: var(--wk-50);
+  --color-brand-100: var(--wk-100);
+  --color-brand-200: var(--wk-200);
+  --color-brand-300: var(--wk-300);
+  --color-brand-400: var(--wk-400);
+  --color-brand-500: var(--wk-500);
+  --color-brand-600: var(--wk-600);
+  --color-brand-700: var(--wk-700);
+}
+.dark .lw-work-art {
+  --color-white: #0f172a;
+  --color-slate-50: #020617;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-brand-50: color-mix(in oklab, var(--wk-500) 16%, #1e293b);
+  --color-brand-100: color-mix(in oklab, var(--wk-500) 28%, #0f172a);
+  --color-brand-200: color-mix(in oklab, var(--wk-500) 45%, #0f172a);
+  --color-brand-300: var(--wk-400);
+  --color-amber-100: color-mix(in oklab, #f59e0b 22%, #0f172a);
+  --color-amber-200: color-mix(in oklab, #f59e0b 40%, #0f172a);
+  --color-emerald-100: color-mix(in oklab, #10b981 22%, #0f172a);
+  --color-emerald-200: color-mix(in oklab, #10b981 40%, #0f172a);
+  --color-sky-200: color-mix(in oklab, #0ea5e9 40%, #0f172a);
+  --color-violet-100: color-mix(in oklab, #8b5cf6 22%, #0f172a);
+}
+.dark .lw-work-art .help-art-as-drawn {
+  --color-white: #ffffff;
+}

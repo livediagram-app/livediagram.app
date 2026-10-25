@@ -31,17 +31,3 @@ export function useTabFinish(): Finish | undefined {
 export function useElementFinish(own: unknown): Finish {
   return resolveFinish(own, useContext(CanvasFinishContext));
 }
-
-// The finish of the element whose face is being drawn (docs/specs/008-canvas/finish.md "Faces"), provided by the
-// element's view (BoxedElementView, and a Plan body drawn over the canvas): the face's own parts that draw a look
-// inline, where the face stylesheet (app/face-finish.css) cannot reach it, read it here. Flexible outside a face.
-const FaceFinishContext = createContext<Finish>('flexible');
-
-export function FaceFinishProvider({ finish, children }: { finish: Finish; children: ReactNode }) {
-  return <FaceFinishContext.Provider value={finish}>{children}</FaceFinishContext.Provider>;
-}
-
-/** The finish the face being drawn is in; Flexible outside an element. */
-export function useFaceFinish(): Finish {
-  return useContext(FaceFinishContext);
-}

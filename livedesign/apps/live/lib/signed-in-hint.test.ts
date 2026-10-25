@@ -8,21 +8,21 @@ describe('readSignedInHint', () => {
   });
 
   it('reads the hint the api sets as probably signed in', () => {
-    expect(readSignedInHint('other=1; lp_signed_in=1')).toBe(true);
+    expect(readSignedInHint('other=1; ldes_signed_in=1')).toBe(true);
   });
 
   it('reads a signed-out hint as a guest', () => {
-    expect(readSignedInHint('lp_signed_in=0')).toBe(false);
+    expect(readSignedInHint('ldes_signed_in=0')).toBe(false);
   });
 
   it('ignores other cookies that merely contain the name, and malformed parts', () => {
-    expect(readSignedInHint('xlp_signed_in=1; lp_signed_inx=1; junk')).toBe(false);
+    expect(readSignedInHint('xldes_signed_in=1; ldes_signed_inx=1; junk')).toBe(false);
   });
 
   it('reads document.cookie by default', () => {
-    document.cookie = 'lp_signed_in=1';
+    document.cookie = 'ldes_signed_in=1';
     expect(readSignedInHint()).toBe(true);
-    document.cookie = 'lp_signed_in=';
+    document.cookie = 'ldes_signed_in=';
     expect(readSignedInHint()).toBe(false);
   });
 });

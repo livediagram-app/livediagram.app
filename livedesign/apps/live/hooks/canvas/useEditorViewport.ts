@@ -8,9 +8,12 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
-import { prefersReducedMotion } from '@/lib/motion-preference';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
-import type { Selection } from '@/lib/selection-store';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livedesign/design';
@@ -18,10 +21,10 @@ import {
   computeFitToScreen,
   computeViewportCanvasRect,
   computeViewportCenter,
-} from '@/lib/viewport';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
-import { onMapShown } from '@/lib/fit-clear-of-panel';
+} from '@liveworkspace/workbench/lib/viewport';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
@@ -29,7 +32,7 @@ import { tabFitView } from '@/lib/tab-fit-view';
 // of a single nodes-fill-the-screen view. 30% was too far out, the
 // text on every element became unreadable; 60% keeps labels legible
 // while still showing a workable chunk of canvas around the
-// pointer. Deliberately wider than lib/responsive's MOBILE_BREAKPOINT_PX
+// pointer. Deliberately wider than @liveworkspace/workbench/lib/responsive's MOBILE_BREAKPOINT_PX
 // (640, the "dock the panels" line): tablets in the 640–768 band keep
 // the desktop layout but still benefit from the zoomed-out overview, so
 // this is its own constant rather than the shared one.

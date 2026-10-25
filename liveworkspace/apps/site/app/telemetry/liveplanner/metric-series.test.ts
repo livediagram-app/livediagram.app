@@ -4,14 +4,17 @@ import { countedVerbs } from '@liveplanner/agent-verbs';
 import { pascalToken } from '@liveplanner/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as DASHBOARD } from './DashboardView';
+import { platformEmailKinds } from '../platform-emitters';
 import {
   CLI_COMMAND_METRICS,
   EMAIL_KIND_METRICS,
   NEW_VISITORS,
   RETURNING_VISITORS,
 } from './metric-catalogue';
-import { groupMetrics, headlineCaption, isStack, type MetricGroup } from './metric-series';
+import { groupMetrics, headlineCaption, isStack, type MetricGroup } from '../_shared/metric-series';
+import { LIVEPLANNER as APP } from './config';
+
+const DASHBOARD = APP.dashboard;
 
 describe('chart stacks', () => {
   const stack = {
@@ -37,7 +40,8 @@ describe('chart stacks', () => {
 
 describe('the Emails Sent stack', () => {
   // The head's total is the sum of its members, so a template with no chart
-  // would silently drop out of it. Read the api's EmailKind union as source.
+  // would silently drop out of it. Read the api's EmailKind union as source,
+  // and the kinds the accounts Worker counts in this app's name.
   const source = readFileSync(
     resolve(__dirname, '../../../../../../liveplanner/apps/api/src/email/templates.ts'),
     'utf8',
@@ -46,12 +50,13 @@ describe('the Emails Sent stack', () => {
   const kinds = [...union.matchAll(/'([A-Za-z0-9]+)'/g)].map((m) => m[1]);
 
   it('reads the template kinds', () => {
-    expect(kinds.length).toBeGreaterThan(10);
+    expect(kinds.length).toBeGreaterThan(5);
   });
 
-  it('has one chart per email template', () => {
+  it('has one chart per email template, the onboarding series the accounts Worker sends among them', () => {
     const charted = EMAIL_KIND_METRICS.map((m) => m.type);
-    expect([...charted].sort()).toEqual([...kinds].sort());
+    const sent = new Set([...kinds, ...platformEmailKinds()]);
+    expect([...charted].sort()).toEqual([...sent].sort());
   });
 
   it('is what Dashboard stacks', () => {
@@ -125,13 +130,13 @@ describe('previousCount (trend arrows)', () => {
   };
 
   it('reads the api previous window, the last 30 days included', async () => {
-    const { previousCount } = await import('./metric-series');
+    const { previousCount } = await import('../_shared/metric-series');
     expect(previousCount(summary, 'last30', NEW_VISITORS, 30)).toBe(60);
     expect(previousCount(summary, 'today', NEW_VISITORS, 1)).toBe(4);
   });
 
   it('has nothing to compare the last 30 days against without it', async () => {
-    const { previousCount } = await import('./metric-series');
+    const { previousCount } = await import('../_shared/metric-series');
     const older = { ...summary, previousWindows: undefined };
     expect(previousCount(older, 'last30', NEW_VISITORS, 30)).toBeNull();
   });

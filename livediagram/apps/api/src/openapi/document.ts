@@ -23,22 +23,13 @@ const ERROR_SCHEMA: JsonSchema = {
 };
 
 const SECURITY_SCHEMES: Record<string, JsonSchema> = {
-  // A Clerk session JWT OR an API token (`lvd_…`), both presented as
+  // An account access token, a guest token, or an API token (`lwt_…`), all presented as
   // `Authorization: Bearer <credential>` (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/public-api-and-tokens.md).
   Bearer: {
     type: 'http',
     scheme: 'bearer',
     description:
-      'A Clerk session JWT or an API token (`lvd_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
-  },
-  // The guest path: an unsigned per-browser owner id (docs/specs/014-identity/auth-and-guest-access.md). First-party
-  // app use; an `X-Owner-Sig` HMAC is also required once enforcement is on.
-  GuestId: {
-    type: 'apiKey',
-    in: 'header',
-    name: 'X-Owner-Id',
-    description:
-      'Per-browser guest owner id. First-party app path; external callers use a Bearer token.',
+      'An account access token, a guest token, or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
   },
 };
 
@@ -49,9 +40,8 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
       // that wants every operation's security stated).
       return [];
     case 'clerk':
-      return [{ Bearer: [] }];
     case 'guest-or-clerk':
-      return [{ Bearer: [] }, { GuestId: [] }];
+      return [{ Bearer: [] }];
   }
 }
 
@@ -192,7 +182,6 @@ const TAGS = [
     description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
-  { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
     name: 'Workbench',
@@ -202,7 +191,7 @@ const TAGS = [
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
-  { name: 'AI', description: 'Optional AI diagram assistant.' },
+  { name: 'AI', description: 'Optional AI reading of sticky-note handwriting from a wall photo.' },
   {
     name: 'Telemetry',
     description: 'Anonymous first-party usage events, passed on to liveworkspace.',
@@ -227,7 +216,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
       description:
         'The REST API behind livediagram. The same surface the web editor uses, callable ' +
         'programmatically. External callers authenticate with an API token ' +
-        '(`Authorization: Bearer lvd_…`); see the "API tokens" help article to create one. ' +
+        '(`Authorization: Bearer lwt_…`); see the "API tokens" help article to create one. ' +
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
         'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },

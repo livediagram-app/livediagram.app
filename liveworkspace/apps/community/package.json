@@ -18,7 +18,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply liveworkspace-community --remote"
   },
   "dependencies": {
-    "@liveworkspace/community": "workspace:*"
+    "@liveworkspace/community": "workspace:*",
+    "@liveworkspace/index-app": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",

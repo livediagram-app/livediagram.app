@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
-import { overFloatingPanel } from '@/lib/canvas-pointer';
+import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 // Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). While a palette tile is being dragged, this
 // paints a translucent footprint of what will land — sized to the shape's

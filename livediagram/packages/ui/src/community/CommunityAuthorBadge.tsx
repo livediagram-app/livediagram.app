@@ -2,18 +2,18 @@
 
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { IDENTITY_FILL, identityVars } from '../identity-fill';
-import { PictureDisc } from '../PictureDisc';
+import { GlyphDisc } from '@liveworkspace/ui';
 
-// The one initial shown for an author with no picture (docs/specs/025-community/community.md).
+// The one initial shown for an author (docs/specs/025-community/community.md).
 export function communityAuthorInitial(name: string): string {
   const first = name.trim().charAt(0);
   return first ? first.toUpperCase() : '?';
 }
 
-// Who shared a Community post: their picture, or their initial on a disc in their own colour, and their
-// display name ("Anonymous" for an anonymous post). Never an id. Shared by the Community app, the editor
-// and the landing page so an author looks the same everywhere; the disc is the shared PictureDisc, as for
-// every other person in the product.
+// Who shared a Community post: their initial on a disc in their own colour, and their display name
+// ("Anonymous" for an anonymous post). Never an id. Shared by the Community app, the editor and the landing
+// page so an author looks the same everywhere. A post's `author.picture` is not drawn: liveworkspace accounts
+// have no profile pictures.
 export function CommunityAuthorBadge({
   author,
   size = 22,
@@ -27,9 +27,7 @@ export function CommunityAuthorBadge({
 }) {
   return (
     <span className={`flex min-w-0 items-center gap-2 ${className}`}>
-      {/* The initial holds the box until the picture loads, and stays if it fails (profile-picture.md). */}
-      <PictureDisc
-        pictureUrl={author.picture}
+      <GlyphDisc
         size={size}
         aria-hidden
         // The author's colour, deepened in dark mode so the white initial stays readable.
@@ -37,7 +35,7 @@ export function CommunityAuthorBadge({
         style={{ ...identityVars(author.color), fontSize: Math.round(size * 0.48) }}
       >
         {communityAuthorInitial(author.name)}
-      </PictureDisc>
+      </GlyphDisc>
       {showName ? <span className="truncate">{author.name}</span> : null}
     </span>
   );

@@ -1,4 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -25,8 +26,11 @@ function tsxFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const FILES = tsxFiles(ROOT).map((path) => ({
-  path: path.slice(ROOT.length),
+// The editor code every editor shares (@liveworkspace/workbench) renders here too.
+const WORKBENCH = `${ROOT}../../../packages/workbench/src`;
+
+const FILES = [...tsxFiles(ROOT), ...tsxFiles(WORKBENCH)].map((path) => ({
+  path: relative(ROOT, path),
   source: readFileSync(path, 'utf8'),
 }));
 

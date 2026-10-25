@@ -10,7 +10,7 @@ import {
   r1,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is moving work along a board" loop, liveplanner's loader: a three-column board (To do, Doing,
 // Done) whose cards settle in, then the "You" cursor picks a card up from To do and carries it to Doing while the

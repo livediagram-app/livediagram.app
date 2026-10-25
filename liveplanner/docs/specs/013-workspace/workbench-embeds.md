@@ -2,6 +2,12 @@
 
 **Status: built** for both scopes: the api, the pages, the pairing page and the CLI commands.
 
+**Where it runs.** Pairing, tickets and sessions are liveworkspace's, one service for every app in the accounts
+Worker ([Workbenches](../../../../liveworkspace/docs/workbench.md)). `/api/workbench/*` on liveplanner's address is
+forwarded there with the same requests and answers, and the pairing page is liveworkspace.app's. liveplanner keeps
+what is its own: the frame (`/embed/workbench`), the confinement of its API to a session's scope, checking a
+presented session with liveworkspace, and closing its rooms when a pairing ends.
+
 A **workbench** is a developer tool that shows a project live beside an agent: an agent workbench first, then VS Code
 and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
 there, everything they draw reaches liveplanner at once, and their agent, working through the
@@ -47,6 +53,9 @@ that acts as the person on one project only.
      `{ url, scope, folderId, expiresAt }`. `scope` is `project` when absent, so today's callers are unchanged. A
      `folderId` the token's owner cannot reach answers `404` (CLI exit 3); a project scope without a `projectId`,
      or a workspace scope with one, is refused `400 invalid_value`. The ticket stores the scope and the folder.
+   - **What is checked.** The project or folder as its owner reaches it now: a project in the Trash answers
+     `410 project_trashed`, one they cannot reach `404`. The tab is not checked: the CLI resolves `--tab` against
+     the project first, and a frame asked for a tab that is gone opens the first.
    - **The origin** is exactly `scheme://host[:port]`, nothing more: `https` anywhere, `http` only on a loopback
      host (`localhost`, `127.0.0.1`, `[::1]`). `*`, `null`, a path, a query or any other scheme is refused
      `400 invalid_origin`; another workbench's scheme (a VS Code webview's) joins the list in this spec first.
@@ -85,8 +94,8 @@ second, explicit approval, never an existing pairing widened in silence.
 2. **Ask.** `liveplanner workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
    (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
    for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in liveplanner".
-3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
-   person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
+3. **Approve.** `https://liveworkspace.app/workbench/pair?code=<code>` is liveworkspace.app's page for every app (never
+   framed), for a signed-in person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
    open your projects with the token **liveplanner CLI**?", with **Allow** and **Don't allow**. The workbench name
    is the one the CLI sent, shown beside the origin, which is what is enforced. A workspace request reads: "Allow
    **Acme Editor** at `https://127.0.0.1:5175` to open **your whole workspace**, and to create, move, share and
@@ -96,7 +105,8 @@ second, explicit approval, never an existing pairing widened in silence.
 
 - A pairing lives as long as its token: revoking the token removes its pairings.
 - **Settings > API tokens** lists each token's paired workbenches (name, origin, scope, when paired), each with
-  **Unpair**, which ends that pairing's open sessions as revoking does.
+  **Unpair**, which ends that pairing's open sessions as revoking does: their rooms close at once, and a session
+  this app checked a moment before is refused within a minute.
 - Pairing is per origin, so one workbench on a laptop and on a LAN address pairs separately.
 
 ## What a workbench session may do
@@ -109,7 +119,7 @@ second, explicit approval, never an existing pairing widened in silence.
 - **Never more than the token.** The session's level is the minting token's level on the project, capped by the
   owner's own access now: a view token gives a read-only frame.
 - **Only what the editor of one project needs.** The project, its tabs, comments, changesets, items and room;
-  reading the person's display identity, preferences and custom themes; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
+  reading the person's display identity and preferences; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other projects, the person's library and folders,
   writing preferences or the profile, the guest migration, tokens, teams and the account. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
@@ -262,4 +272,5 @@ What a workbench does to fit this contract (its own documentation holds the deta
   (the target's kind).
 - Telemetry: `Session·Opened·Workbench` when a page mounts the editor, `Session·Opened·WorkbenchWorkspace` when a
   workspace frame mounts the Explorer; `Cli·Used·WorkbenchOpen` and
-  `Cli·Used·WorkbenchPair` for the commands; `Token·Linked·Workbench` when a pairing is approved.
+  `Cli·Used·WorkbenchPair` for the commands. Approving a pairing happens on liveworkspace.app, which records no
+  app event for it, so `Token·Linked·Workbench` is no longer sent.

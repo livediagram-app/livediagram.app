@@ -3,7 +3,7 @@
 // CLI75), so the CLI never writes a tab whole; names change through their own routes.
 
 import { z } from 'zod';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type {
   ChangesetReplaceBody,
   DocumentResponse,

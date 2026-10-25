@@ -6,11 +6,11 @@
 // page's own, for the session; a page turned on starts from the last settings chosen.
 import type { ReactNode } from 'react';
 import { MIRROR_AXES, RADIAL_COPIES } from '@livedesign/design';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { MirrorAxisGlyph } from './logo-glyphs';
 import { TitlePopoverButton } from './TitlePopoverButton';
+import { SwitchRow } from '@livedesign/ui';
 
 // The popover's width: the axis tiles two across.
 const POPOVER_WIDTH = 248;

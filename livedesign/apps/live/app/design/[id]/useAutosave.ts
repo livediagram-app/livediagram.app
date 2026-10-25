@@ -17,12 +17,11 @@ import {
   apiSaveTab,
   connectRoom,
   reportSaveFailure,
-  type DesignListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
 import { isDesignDeleted } from '@/lib/design-tombstones';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDesignTrashedError } from '@/lib/design-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { prepareTabSave, relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
@@ -35,11 +34,10 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { emptyAfterSave } from '@/lib/list-row-empty';
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
-import { noteSaveFailing, noteTabTooLarge } from '@/lib/save-health';
+import { noteSaveFailing, noteTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 import { noteTabSaved } from '@/lib/tab-saved';
 
 // Per-tab autosave (docs/specs/006-design/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
@@ -76,7 +74,6 @@ export function useAutosave(opts: {
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
-  setDesignList: Dispatch<SetStateAction<DesignListItem[]>>;
   // A save refused because the design is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDesignTrashed: () => void;
@@ -107,7 +104,6 @@ export function useAutosave(opts: {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDesignList,
     onDesignTrashed,
     changesetSeen,
     noteTabRevision,
@@ -431,21 +427,6 @@ export function useAutosave(opts: {
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
-          // Bump the current design's row locally so the Explorer's
-          // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/designs on every autosave.
-          setDesignList((prev) =>
-            prev.map((d) =>
-              d.id === designId
-                ? {
-                    ...d,
-                    savedAt: now,
-                    name: designName,
-                    empty: emptyAfterSave(tabs, loadedTabIdsRef.current, d.empty),
-                  }
-                : d,
-            ),
-          );
         })
         .catch((err: unknown) => {
           timing.cancel();
@@ -460,7 +441,7 @@ export function useAutosave(opts: {
           const status = saveFailureStatus(err);
           if (status === 'forbidden') writesForbiddenRef.current = true;
           setSaveStatus(status);
-          // A failure the retry may fix keeps the banner up and the leave prompt armed (lib/save-health.ts).
+          // A failure the retry may fix keeps the banner up and the leave prompt armed (@liveworkspace/workbench/lib/save-health.ts).
           noteSaveFailing(status === 'error');
           noteTabTooLarge(status === 'tooLarge');
           if (status === 'error' && retryTimerRef.current === null) {
@@ -499,7 +480,6 @@ export function useAutosave(opts: {
     remoteOpJournalRef,
     ownWrites,
     roomRef,
-    setDesignList,
     setSaveStatus,
     setSavedAt,
   ]);

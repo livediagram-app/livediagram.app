@@ -20,12 +20,12 @@ import type { Element, ShapeKind, Tab } from './index';
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
-import { ADDER_KEY_LENGTH } from './adder';
+import { ADDER_KEY_LENGTH } from '@liveworkspace/model-core/adder';
 import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
-import { parseStrokePoints } from './stroke-points';
+import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
   type ElementValidationIssue,
@@ -37,10 +37,10 @@ import {
   isNum,
   issue,
   oneOfRule,
-} from './validate-primitives';
-import { isRecord } from './is-record';
+} from '@liveworkspace/model-core/validate-primitives';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
-export type { ElementValidationIssue } from './validate-primitives';
+export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
 // Bounds. Generous vs any real project, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -231,14 +231,6 @@ function endpointRule(ep: unknown): string | null {
         : `a pinned end's field: a whole number from 0 to ${ENTITY_MAX_FIELDS - 1}`;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
-    // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no
-    // current code writes this, but a browser still running a pre-removal build can. Accepting it
-    // keeps that save from failing; migrateLegacyGroups freezes it to a free end on the next read
-    // (rowToTab / the offline store), so nothing downstream sees it.
-    case 'pinned-group':
-      return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string)
-        ? null
-        : 'a pinned-group end: groupId and an anchor';
     default:
       return 'an end of kind free, pinned or on-arrow';
   }
@@ -298,7 +290,7 @@ function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null 
 }
 
 // Optional pen recipe (docs/specs/006-project/stroke-points.md) and straight-edge flag
-// (docs/specs/008-canvas/polygon-tool.md).
+// (docs/specs/008-canvas/finish.md "Polygons").
 const FREEHAND_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'pen', valid: (v) => v === 'highlighter', rule: oneOfRule(['highlighter']) },
   {

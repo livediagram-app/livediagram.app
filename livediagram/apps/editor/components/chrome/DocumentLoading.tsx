@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@livediagram/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
-import { useOnline } from '@/hooks/ui/useOnline';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
@@ -22,8 +22,8 @@ import { useOnline } from '@/hooks/ui/useOnline';
 type DocumentLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
-  creating: { title: 'Creating your document', detail: 'Setting up a fresh canvas' },
-  opening: { title: 'Opening your document', detail: 'Getting everything in place' },
+  creating: { title: 'Creating your canvas', detail: 'Setting up a fresh canvas' },
+  opening: { title: 'Opening your canvas', detail: 'Getting everything in place' },
 };
 
 const SLOW_AFTER_MS = 10_000;

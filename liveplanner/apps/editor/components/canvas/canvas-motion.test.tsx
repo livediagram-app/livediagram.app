@@ -4,7 +4,7 @@ import { render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { useElementPopIn } from './useElementPopIn';
-import { CanvasArrivalProvider } from './CanvasArrivalContext';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):
 // a newly added element keeps its own 360ms spring (app/canvas-motion.test.ts)

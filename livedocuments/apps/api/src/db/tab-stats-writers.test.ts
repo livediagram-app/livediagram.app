@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livedocuments/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { sqliteD1, type SqliteD1, testCopyDocument } from '../test-sqlite-d1';
 import { tabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
@@ -16,7 +15,7 @@ function withDocument(id = 'A'): SqliteD1 {
   const db = sqliteD1();
   db.sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, 'owner', id, T0, T0);
   return db;
@@ -122,7 +121,7 @@ describe('copyDocument', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 2), 0);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await testCopyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });

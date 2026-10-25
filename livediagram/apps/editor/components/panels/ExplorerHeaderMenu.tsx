@@ -2,8 +2,12 @@
 
 import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
   SettingsIcon,
   GithubIcon,
@@ -11,11 +15,12 @@ import {
   SearchGlyph,
 } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
+import { explorerHref } from '@/lib/explorer-href';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
-import { assignAppLocation } from '@/lib/app-location';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
+import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
@@ -52,7 +57,7 @@ export function ExplorerHeaderMenu({
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Document"
+            label="New Canvas"
             onClick={run(onNewDocument)}
           />
         ) : null,
@@ -62,7 +67,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation('/explorer');
+            assignAppLocation(explorerHref());
           })}
         />,
       ],

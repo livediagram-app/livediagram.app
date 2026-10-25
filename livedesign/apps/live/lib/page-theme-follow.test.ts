@@ -31,7 +31,7 @@ const tabOn = (fill: PageFill) =>
         textColor: '#0f172a',
       },
     ],
-    pages: [{ id: 'p', orientation: 'portrait', kind: 'infographic', background: { fill } }],
+    pages: [{ id: 'p', orientation: 'portrait', kind: 'wireframe', background: { fill } }],
   }) as unknown as Tab;
 const fillOf = (t: Tab) => pagesOf(t)[0]!.background?.fill;
 

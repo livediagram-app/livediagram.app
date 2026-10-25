@@ -18,19 +18,18 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livedesign/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/page-lint": "workspace:*",
     "@livedesign/design": "workspace:*",
     "@livedesign/design-views": "workspace:*",
     "@livedesign/edit-operations": "workspace:*",
-    "@livedesign/page-background": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

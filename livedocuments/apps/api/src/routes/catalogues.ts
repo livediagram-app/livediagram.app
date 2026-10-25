@@ -5,7 +5,7 @@
 import type { IconSearchResponse, TemplateCatalogueResponse } from '@livedocuments/api-schema';
 import { renderView } from '@livedocuments/document-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@livedocuments/edit-operations';
-import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@livedocuments/icons/search';
+import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@liveworkspace/icons/search';
 import { buildTemplateTab, templateCatalogue, templateKindOf } from '@livedocuments/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';
 import type { RouteContext } from './context';

@@ -5,7 +5,7 @@
 // of the menu's items (the arrow keys reach it). On a board it wears the board's colours (`palette`); elsewhere the
 // chrome's.
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
-import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 import type { PlanPalette } from './plan-palette';
 
 export function AddCardTypeButton({

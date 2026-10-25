@@ -13,6 +13,7 @@ describe('test', () => {
     expect(refused(run('test w1 label=Load planView={"view":"calendar"}'))).toEqual({
       code: 'test_failed',
       operation: 1,
+      op: 'test w1 label=Load planView={"view":"calendar"}',
       details: [
         'w1 label: expected "Load", actual "Workload"',
         'w1 planView: expected {"view":"calendar"}, actual {"view":"workload"}',

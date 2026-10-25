@@ -1,6 +1,9 @@
 'use client';
 
-import { useLocalStorageValue, writeLocalStorageValue } from './useLocalStorageValue';
+import {
+  useLocalStorageValue,
+  writeLocalStorageValue,
+} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 import { track } from '@/lib/telemetry';
 
 // Per-device toggle that disables ALL editor keyboard shortcuts

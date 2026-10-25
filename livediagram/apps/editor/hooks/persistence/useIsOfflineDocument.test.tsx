@@ -46,7 +46,7 @@ describe('useIsOfflineDocument', () => {
     expect(result.current).toBe(false);
   });
 
-  // docs/specs/006-document/offline-mode.md "Syncing in place": Sync Document flips it with no reload.
+  // docs/specs/006-document/offline-mode.md "Syncing in place": Sync Canvas flips it with no reload.
   it('follows the document leaving the store', async () => {
     offline.add('c');
     const { result } = renderHook(() => useIsOfflineDocument('c'));

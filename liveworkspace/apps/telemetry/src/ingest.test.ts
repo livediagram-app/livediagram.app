@@ -27,7 +27,7 @@ describe('ingest', () => {
     expect(env.rows[0]!.ts).toBeGreaterThan(0);
   });
 
-  it('checks each app against its own vocabulary: livedocuments’, and nothing yet from livedesign', async () => {
+  it('checks each app against its own vocabulary: livedocuments’ and livedesign’s', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     await handleIngest(
       post({ app: 'livedocuments.app', events: [created] }, fromPage('https://livedocuments.app')),
@@ -37,8 +37,9 @@ describe('ingest', () => {
       post({ app: 'livedesign.app', events: [created] }, fromPage('https://livedesign.app')),
       env,
     );
-    expect(env.rows).toHaveLength(1);
+    expect(env.rows).toHaveLength(2);
     expect(env.rows[0]).toMatchObject({ app: 'livedocuments.app', category: 'Document' });
+    expect(env.rows[1]).toMatchObject({ app: 'livedesign.app', category: 'Document' });
   });
 
   it('refuses a page speaking for another app', async () => {
@@ -49,6 +50,89 @@ describe('ingest', () => {
     );
     await handleIngest(
       post({ app: 'livediagram.app', events: [created] }, fromPage('https://evil.example')),
+      env,
+    );
+    expect(env.rows).toHaveLength(0);
+  });
+
+  it('takes only the Explorer’s events from liveworkspace.app, in an app’s name or its own', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const lens = { category: 'Explorer', action: 'Selected', type: 'OpensIn' };
+    const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };
+    await handleIngest(
+      post(
+        { app: 'liveplanner.app', events: [lens, projectCreated, view] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    await handleIngest(
+      post(
+        { app: 'liveworkspace.app', events: [view, created] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    // An unknown token for a known pair is not the Explorer's either.
+    await handleIngest(
+      post(
+        { app: 'livediagram.app', events: [{ ...lens, type: 'Anything' }] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    expect(env.rows.map((r) => [r.app, r.category, r.type])).toEqual([
+      ['liveplanner.app', 'Explorer', 'OpensIn'],
+      ['liveplanner.app', 'UI', 'ExplorerViewCard'],
+      ['liveworkspace.app', 'UI', 'ExplorerViewCard'],
+    ]);
+  });
+
+  it('takes an app’s settings events from liveworkspace.app, and only that app’s, and the shared ones in its own name', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const comments = { category: 'UI', action: 'Toggled', type: 'NotifyCommentsOff' };
+    const join = { category: 'UI', action: 'Toggled', type: 'NotifyProjectJoinOff' };
+    await handleIngest(
+      post(
+        { app: 'liveplanner.app', events: [comments, join] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    // livediagram has no Project Joined switch.
+    await handleIngest(
+      post(
+        { app: 'livediagram.app', events: [join, comments] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    // The settings page opened for no app counts a switch every app shares once, in liveworkspace.app's name, and
+    // only such a switch.
+    await handleIngest(
+      post(
+        { app: 'liveworkspace.app', events: [comments, join] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    expect(env.rows.map((r) => [r.app, r.type])).toEqual([
+      ['liveplanner.app', 'NotifyCommentsOff'],
+      ['liveplanner.app', 'NotifyProjectJoinOff'],
+      ['livediagram.app', 'NotifyCommentsOff'],
+      ['liveworkspace.app', 'NotifyCommentsOff'],
+    ]);
+  });
+
+  it('never lets an app’s page, or a key, speak for liveworkspace.app', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [view] }, fromPage('https://livediagram.app')),
+      env,
+    );
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [view] }, { 'X-Telemetry-Key': 'lp-key' }),
       env,
     );
     expect(env.rows).toHaveLength(0);

@@ -10,7 +10,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@livedocuments/agent-verbs';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DocumentResponse } from '@livedocuments/api-schema';
 import {
   documentToEnvelopeText,
@@ -20,7 +20,7 @@ import {
 } from '@livedocuments/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
 

@@ -2,7 +2,7 @@
 // house stroke in `currentColor`: the Sheet toolbar's Insert Chart menu, the cell menu, a chart's Chart Type tiles and
 // a Dashboard's chart picker all show a type by the same picture.
 import { Glyph, Prims } from '@livedocuments/ui';
-import { lucideChartPie } from '@livedocuments/icons/lucide';
+import { lucideChartPie } from '@liveworkspace/icons/lucide';
 import type { ChartType } from '@livedocuments/document';
 
 const AXES = 'M3 3v18h18';

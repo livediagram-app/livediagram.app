@@ -1,5 +1,5 @@
 import { SiteHeader } from '@liveplanner/ui';
-import { SearchInput } from '@/components/SearchInput';
+import { SearchInput } from '@liveworkspace/help-site/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's). Brand links back to the
 // marketing home, the search box sits in the centre slot so it's reachable

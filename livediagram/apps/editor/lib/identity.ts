@@ -3,8 +3,9 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { fnv1aString } from '@livediagram/document';
-import { randomPick } from './random';
+import { colorForKey } from '@livediagram/api-schema';
+import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { randomPick } from '@liveworkspace/workbench/lib/random';
 import type { AccessLevel } from '@livediagram/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
@@ -50,10 +51,6 @@ export type Participant = {
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
-  // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
-  // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
-  // screen. Our own entry carries our picture whatever the switch says.
-  picture?: string;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
   statusLine?: string;
@@ -154,22 +151,12 @@ const ANIMALS = [
   'Wolf',
 ];
 
-// Curated palette of distinguishable colours. White initials fall below AA on
-// every one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
-export const PARTICIPANT_COLORS = [
-  '#0ea5e9', // sky-500
-  '#10b981', // emerald-500
-  '#f59e0b', // amber-500
-  '#ef4444', // red-500
-  '#8b5cf6', // violet-500
-  '#ec4899', // pink-500
-  '#14b8a6', // teal-500
-  '#f97316', // orange-500
-  '#6366f1', // indigo-500
-  '#84cc16', // lime-500
-];
+// The palette is liveworkspace's one presence palette (@liveworkspace/settings), the same in every
+// app. The deterministic pick lives in @livediagram/api-schema, which the api worker shares: it fills
+// in the colour of a profile that never set one.
+export { colorForKey };
 
-function pick<T>(arr: T[]): T {
+function pick<T>(arr: readonly T[]): T {
   // Non-empty by construction (the catalogues above), so the bang is safe.
   return randomPick(arr)!;
 }
@@ -179,17 +166,7 @@ export function randomName(): string {
 }
 
 export function randomColor(): string {
-  return pick(PARTICIPANT_COLORS);
-}
-
-// Deterministic palette pick for identities that have no persisted
-// colour of their own (e.g. team member rows, docs/specs/013-workspace/teams.md, which are
-// keyed by email rather than a participant record). Same key, same
-// colour, every render and every device — FNV-1a over the key, mapped
-// onto the curated palette above.
-export function colorForKey(key: string): string {
-  // `| 0` reads the hash as signed, the way colours have always been picked, so no key changes colour.
-  return PARTICIPANT_COLORS[Math.abs(fnv1aString(key) | 0) % PARTICIPANT_COLORS.length]!;
+  return pick(PRESENCE_COLOUR_VALUES);
 }
 
 // Pick a colour from the palette that isn't in `taken`. When the
@@ -206,10 +183,10 @@ export function colorForKey(key: string): string {
 // records can stay random.
 export function nextFreeColor(taken: Set<string>, preferred?: string): string {
   if (preferred && !taken.has(preferred)) return preferred;
-  for (const c of PARTICIPANT_COLORS) {
+  for (const c of PRESENCE_COLOUR_VALUES) {
     if (!taken.has(c)) return c;
   }
-  return preferred ?? PARTICIPANT_COLORS[0]!;
+  return preferred ?? PRESENCE_COLOUR_VALUES[0]!;
 }
 
 // Up to two characters for the avatar: shared with the headless export, so

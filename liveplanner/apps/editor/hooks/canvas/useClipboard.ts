@@ -29,7 +29,7 @@
 // shortcut hook. Paste is driven entirely by the native `paste` event
 // the hook registers, so `pasteFromClipboard` stays internal.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
 import {
   duplicateElements,
@@ -40,8 +40,8 @@ import {
   type Element,
   type Tab,
 } from '@liveplanner/project';
-import { anyModalOpen } from '@/lib/modal-guard';
-import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
+import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
   clipboardWriteFor,
   copyTooLargeMessage,
@@ -55,10 +55,10 @@ import { pasteTranslation } from '@/lib/paste-placement';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { FILE_NOT_TAKEN, dropImportHint } from '@/lib/drop-import-hint';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON or
 // the in-app copy's id).

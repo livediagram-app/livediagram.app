@@ -3,7 +3,7 @@ import { RESIZE_HANDLE_CLASS, resizeCursor } from '@/components/canvas/element-p
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
-} from '@/components/chrome/floating-controls';
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
 
 // resizeCursor drives the inline cursor on every resize grip (single
 // selection, edge handles, AND the union/group handles). The union

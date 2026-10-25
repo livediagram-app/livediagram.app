@@ -26,7 +26,7 @@ import {
   lucideUsers,
   lucideVote,
   lucideWorkflow,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -34,6 +34,7 @@ import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
+import { StartSaveSwitch } from './StartSaveSwitch';
 import { otherModeMatches } from './other-mode-matches';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from './start-panel-open';
@@ -88,7 +89,7 @@ const COPY: Record<
   },
   workshop: {
     title: 'Start a Workshop',
-    line: 'Pick a session format to run, or close this to start from a blank session.',
+    line: 'Pick a session format to run, or close this to start from a blank workshop.',
     noMatch: 'session templates',
     help: 'templates',
   },
@@ -169,6 +170,8 @@ export function StartFromTemplates({
       onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
       lead={<StartModeSwitch />}
       onClose={close}
+      // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
+      footer={(palette) => <StartSaveSwitch palette={palette} />}
     />
   );
 }

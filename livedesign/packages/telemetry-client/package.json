@@ -16,11 +16,13 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livedesign/api-schema": "workspace:*"
+    "@livedesign/api-schema": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

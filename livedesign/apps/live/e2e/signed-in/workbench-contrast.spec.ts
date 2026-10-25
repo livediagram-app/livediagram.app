@@ -1,33 +1,28 @@
 import type { Page } from '@playwright/test';
 import { auditContrast, type ContrastReport } from '../contrast';
-import { expect, expectNoPageErrors, test } from '../fixtures';
+import { expect, expectNoPageErrors, openStartBlank, test } from '../fixtures';
 import { WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
 // Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
-// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes: the pairing page in its pending
-// state, the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
-// consent, both drawn by OauthShell and its primary fill, and a paired-workbench row in Settings > API tokens.
+// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is
+// liveworkspace.app's, liveworkspace/docs/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
+// consent, both drawn by OauthShell and its primary fill, and Settings > API Tokens with a paired workbench (the
+// tokens themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings).
 // All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode
 // audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
 // audit.
 
-const CODE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const DAY = 86_400_000;
 const NOW = Date.now();
-const TOKEN = {
-  id: 'tok_contrast',
-  name: 'livedesign CLI',
-  createdAt: NOW - 10 * DAY,
-  expiresAt: NOW + 170 * DAY,
-  lastUsedAt: NOW - DAY,
-  readOnly: false,
-};
+// The token is the liveworkspace account's (made on liveworkspace.app); the app knows only its id and name.
+const TOKEN = { id: 'tok_contrast', name: 'livedesign CLI' };
 const PAIRING = {
   id: 'pair_contrast',
   tokenId: TOKEN.id,
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
+  scope: 'design',
   pairedAt: NOW - 2 * DAY,
 };
 const VIEWPORT = { width: 1280, height: 800 };
@@ -60,29 +55,6 @@ for (const scheme of ['dark', 'light'] as const) {
   test.describe(`OAuth shell contrast, ${scheme} mode`, () => {
     test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
 
-    test('the pairing page, pending', async ({ page, pageErrors }) => {
-      await signedIn(page, scheme);
-      await page.route(`**/api/workbench/pairing-requests/${CODE}`, (route) =>
-        route.fulfill({
-          json: {
-            request: {
-              origin: PAIRING.origin,
-              name: PAIRING.name,
-              tokenName: TOKEN.name,
-              expiresAt: NOW + 600_000,
-              status: 'pending',
-            },
-          },
-        }),
-      );
-      await page.goto(`/workbench/pair?code=${CODE}`);
-      await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
-      await expectScheme(page, scheme);
-      await page.screenshot({ path: test.info().outputPath(`pair-pending-${scheme}.png`) });
-      expectAA(await auditContrast(page), `pairing page, pending, ${scheme}`);
-      expectNoPageErrors(pageErrors);
-    });
-
     test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
       await signedIn(page, scheme);
       await page.route(`${MCP}/oauth/device/session/*`, (route) =>
@@ -106,25 +78,24 @@ for (const scheme of ['dark', 'light'] as const) {
   test.describe(`Workbench pairing contrast, Settings, ${scheme} mode`, () => {
     test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
 
-    test('a paired workbench under its token', async ({ page, pageErrors }) => {
+    test('the API Tokens row with a paired workbench', async ({ page, pageErrors }) => {
       await signedIn(page, scheme);
-      await page.route('**/api/tokens', (route) =>
-        route.request().method() === 'GET'
-          ? route.fulfill({ json: { tokens: [TOKEN] } })
-          : route.fallback(),
-      );
       await page.route('**/api/workbench/pairings', (route) =>
         route.fulfill({ json: { pairings: [PAIRING] } }),
       );
-      await page.goto('/explorer/home?settings=tokens');
+      // Settings opens on its deep link wherever the editor is (a blank design here; the Explorer is
+      // liveworkspace.app's).
+      await openStartBlank(page);
+      await page.goto(`${new URL(page.url()).pathname}?settings=tokens`);
       const pairings = page.getByRole('list', { name: 'Paired workbenches' });
       await expect(pairings.getByText('Acme Editor')).toBeVisible();
       await expectScheme(page, scheme);
       await page.screenshot({ path: test.info().outputPath(`pair-settings-${scheme}.png`) });
-      // The token card holding the row, so the audit judges this surface and nothing behind the dialog.
+      // The row's body (Manage API Tokens and the paired workbenches), so the audit judges this surface and
+      // nothing behind the dialog.
       expectAA(
-        await auditContrast(page, 'li:has([aria-label^="Unpair "])'),
-        `paired workbench row, ${scheme}`,
+        await auditContrast(page, 'div:has(> div > ul[aria-labelledby])'),
+        `API Tokens row with a paired workbench, ${scheme}`,
       );
       expectNoPageErrors(pageErrors);
     });

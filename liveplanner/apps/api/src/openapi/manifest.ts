@@ -66,8 +66,8 @@ export interface RouteSpec {
   query?: QueryParam[];
   requestSchema?: BodySchema;
   responseSchema?: BodySchema;
-  /** Media type of the success body. Defaults to `application/json`; the SVG
-   *  snapshot endpoints answer `image/svg+xml`. */
+  /** Media type of the success body. Defaults to `application/json`; the tab render
+   *  answers `image/svg+xml`. */
   responseMediaType?: string;
   /** A plain-text form of the success body beside the JSON one (a project view). */
   textResponse?: { description: string };
@@ -419,6 +419,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/tabs/{tabId}/link',
+    segment: 'projects',
+    tag: 'Plans',
+    summary:
+      'Add to Plan: share a tab another of your plans holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { from: { type: 'string' } },
+      required: ['from'],
+    },
+    responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404, 409],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/copy',
     segment: 'projects',
     tag: 'Plans',
@@ -428,23 +444,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: { type: 'object', properties: { name: nameField } },
     responseSchema: wrap('project', 'Project'),
     statuses: [201, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/projects/{id}/folder',
-    segment: 'projects',
-    tag: 'Plans',
-    summary: 'Move a plan into a personal or team folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        folderId: { type: ['string', 'null'] },
-        teamId: { type: ['string', 'null'] },
-      },
-    },
-    statuses: [204, 400, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -666,6 +665,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
     responseSchema: listOf('threads', 'ProjectCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/notify-action',
+    segment: 'projects',
+    tag: 'Plans',
+    summary:
+      "Email a teammate that an action on this plan was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the plan; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off.",
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        teamId: { type: 'string' },
+        assigneeUserId: { type: 'string' },
+        assigneeMemberId: { type: 'string' },
+        actionName: { type: 'string' },
+        description: { type: 'string' },
+      },
+      required: ['teamId', 'actionName'],
+    },
+    statuses: [202, 400, 401, 403, 404],
   },
   // The project's type catalogue (docs/specs/026-plan/item-types.md).
   {
@@ -1012,27 +1032,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/projects/{id}/tabs/{tabId}/link',
-    segment: 'projects',
-    tag: 'Plans',
-    summary: 'Add (link) an existing tab into this plan.',
-    auth: 'guest-or-clerk',
-    responseSchema: wrap('tab', 'TabSummary'),
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/projects/{id}/share',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: "List a plan's share links and password state.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('links', 'ShareLink'),
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
     path: '/projects/{id}/share',
     segment: 'projects',
     tag: 'Sharing',
@@ -1052,79 +1051,32 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 401, 403, 404, 410],
   },
   {
-    method: 'DELETE',
-    path: '/projects/{id}/share',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: 'Revoke all share links for a plan.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/projects/{id}/share-password',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: "Set or clear a plan's share password.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { password: { type: ['string', 'null'] } },
-      required: ['password'],
-    },
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/projects/{id}/share/{code}',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: 'Revoke one share link by its code.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/projects/{id}/share/{code}',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: 'Change which tabs a share link opens: one tab, or null for all.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { tabId: { type: ['string', 'null'] } },
-      required: ['tabId'],
-    },
-    responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/projects/{id}/share/{code}/extend',
-    segment: 'projects',
-    tag: 'Sharing',
-    summary: 'Re-arm an expiring share link.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
     method: 'GET',
-    path: '/projects/{id}/thumbnail',
+    path: '/projects/{id}/tabs',
     segment: 'projects',
     tag: 'Plans',
     summary:
-      "The plan's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /projects/{id}; 404 when there is no snapshot.",
+      "The plan's tabs alone, in order: id, name and kind (board, sheet, dashboard, form, or diagram for an ordinary tab), without their content. Read-gated like GET /projects/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/svg+xml',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        tabs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              kind: { type: ['string', 'null'] },
+            },
+            required: ['id', 'name', 'kind'],
+          },
+        },
+      },
+      required: ['tabs'],
+    },
     statuses: [200, 404],
   },
   {
@@ -1174,137 +1126,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/folders',
     segment: 'folders',
     tag: 'Folders',
-    summary: 'Create a folder (personal or team).',
+    summary:
+      'Make a folder at the top of My Work, or inside another (`parentId`); inside a team’s folder it is the ' +
+      'team’s (`teamId`). Made at the liveworkspace index as the caller.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string' },
+        id: { type: 'string', description: 'Optional: a client-made UUID.' },
         name: { type: 'string' },
         parentId: { type: ['string', 'null'] },
         teamId: { type: ['string', 'null'] },
       },
-      required: ['id', 'name'],
+      required: ['name'],
     },
     responseSchema: wrap('folder', 'Folder'),
-    statuses: [201, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'PUT',
-    path: '/folders/{id}',
-    segment: 'folders',
-    tag: 'Folders',
-    summary: 'Rename or reparent a folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, parentId: { type: ['string', 'null'] } },
-    },
-    responseSchema: wrap('folder', 'Folder'),
-    statuses: [200, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'DELETE',
-    path: '/folders/{id}',
-    segment: 'folders',
-    tag: 'Folders',
-    summary: 'Delete a folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404],
-  },
-
-  // ---- Custom themes ----
-  {
-    method: 'GET',
-    path: '/custom-themes',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: "List the caller's saved custom themes.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('themes', 'CustomTheme'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/custom-themes',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: 'Create a custom theme.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        definition: ref('CustomThemeDefinition'),
-      },
-      required: ['id', 'name', 'definition'],
-    },
-    responseSchema: wrap('theme', 'CustomTheme'),
-    statuses: [201, 400, 401, 413],
-  },
-  {
-    method: 'PUT',
-    path: '/custom-themes/{id}',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: "Update a custom theme's name or definition.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, definition: ref('CustomThemeDefinition') },
-    },
-    responseSchema: wrap('theme', 'CustomTheme'),
-    statuses: [200, 400, 401, 403, 404, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/custom-themes/{id}',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: 'Delete a custom theme.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 503],
   },
 
   // ---- API tokens ----
-  {
-    method: 'GET',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: "List the caller's API tokens (metadata only; the secret is never returned).",
-    auth: 'clerk',
-    responseSchema: listOf('tokens', 'ApiToken'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/tokens',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Mint an API token. The secret is returned once, here only.',
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { name: { type: 'string' } } },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        token: { type: 'string', description: 'The secret, shown once.' },
-        id: { type: 'string' },
-        name: { type: ['string', 'null'] },
-        expiresAt: { type: 'number' },
-      },
-      required: ['token', 'id', 'expiresAt'],
-    },
-    statuses: [201, 400, 401, 409],
-  },
   {
     method: 'GET',
     path: '/tokens/current',
@@ -1327,15 +1168,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/tokens/{id}',
-    segment: 'tokens',
-    tag: 'API tokens',
-    summary: 'Revoke an API token.',
-    auth: 'clerk',
-    statuses: [204, 401, 404],
   },
 
   // ---- Shared with you ----
@@ -1376,27 +1208,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/shared',
-    segment: 'shared',
-    tag: 'Sharing',
-    summary: 'List plans shared with the caller.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('shared', 'SharedWithItem'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/shared/{projectId}',
-    segment: 'shared',
-    tag: 'Sharing',
-    summary: 'Remove a plan from the caller\'s "shared with you" list.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401],
-  },
-  {
-    method: 'GET',
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
@@ -1413,52 +1224,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['project', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/image.svg',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      'Live image: the shared plan as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
-    auth: 'public',
-    query: [
-      {
-        name: 'tab',
-        required: false,
-        description: "Tab id; defaults to the first tab (or the link's own tab).",
-      },
-    ],
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/svg+xml',
-    statuses: [200, 404, 410],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/card',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      "A link preview's text: the shared plan's name. 404 wherever the live image is (a dead code, a share password).",
-    auth: 'public',
-    responseSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' } },
-      required: ['name'],
-    },
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/share/{code}/image.png',
-    segment: 'share',
-    tag: 'Sharing',
-    summary:
-      "A link preview's picture: the live image's drawing on a 1200 x 630 PNG card. Redirects to the brand card when there is nothing to draw.",
-    auth: 'public',
-    responseSchema: { type: 'string' },
-    responseMediaType: 'image/png',
-    statuses: [200, 302, 404],
   },
 
   // ---- Participants ----
@@ -1490,7 +1255,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 503],
   },
 
   // ---- Preferences ----
@@ -1499,204 +1264,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: "Get the caller's editor preferences (opaque blob).",
+    summary:
+      "Get the caller's settings: those every app shares and liveplanner's own, as one object. null where this deployment keeps none (the editor keeps them in the browser).",
     auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { prefs: { type: 'object' } } },
-    statuses: [200, 401],
+    responseSchema: {
+      type: 'object',
+      properties: { prefs: { oneOf: [{ type: 'object' }, { type: 'null' }] } },
+    },
+    statuses: [200, 401, 503],
   },
   {
     method: 'PUT',
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: 'Replace the editor preferences blob.',
+    summary:
+      'Change settings: each key named takes its value whole, a key set to null is deleted, keys not named stay.',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
       properties: { prefs: { type: 'object' } },
       required: ['prefs'],
     },
-    statuses: [204, 400, 401],
-  },
-
-  // ---- Favourites (docs/specs/013-workspace/favourites.md) ----
-  {
-    method: 'GET',
-    path: '/favourites',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'The plan ids the caller has starred, newest first.',
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { ids: { type: 'array', items: { type: 'string' } } },
-    },
-    statuses: [200, 401],
-  },
-  {
-    method: 'PUT',
-    path: '/favourites/{projectId}',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'Star a plan for the caller. Idempotent; 404 when there is no such plan.',
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/favourites/{projectId}',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'Un-star a plan for the caller.',
-    auth: 'guest-or-clerk',
-    statuses: [204, 401],
-  },
-
-  // ---- Tags (docs/specs/013-workspace/tags.md) ----
-  {
-    method: 'GET',
-    path: '/tags',
-    segment: 'tags',
-    tag: 'Account',
-    summary: "The caller's tags, alphabetical, and which live plans each is on.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: {
-        tags: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              name: { type: 'string' },
-              colour: { type: 'string' },
-              createdAt: { type: 'integer' },
-            },
-          },
-        },
-        links: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { tagId: { type: 'string' }, projectId: { type: 'string' } },
-          },
-        },
-      },
-    },
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/tags',
-    segment: 'tags',
-    tag: 'Account',
-    summary:
-      'Make a tag: a client-minted id, a name (1 to 32 characters, one per person ignoring case) and a colour ' +
-      '(a standard colour name or #rrggbb). 409 tag_name_taken or tag_limit (100).',
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { id: { type: 'string' }, name: { type: 'string' }, colour: { type: 'string' } },
-      required: ['id', 'name', 'colour'],
-    },
-    statuses: [201, 400, 401, 409],
-  },
-  {
-    method: 'PUT',
-    path: '/tags/{tagId}',
-    segment: 'tags',
-    tag: 'Account',
-    summary: "Rename and / or recolour one of the caller's tags.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, colour: { type: 'string' } },
-    },
-    statuses: [200, 400, 401, 404, 409],
-  },
-  {
-    method: 'DELETE',
-    path: '/tags/{tagId}',
-    segment: 'tags',
-    tag: 'Account',
-    summary: "Delete one of the caller's tags; it comes off every plan.",
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/tags/{tagId}/projects/{projectId}',
-    segment: 'tags',
-    tag: 'Account',
-    summary:
-      "Put a tag on a plan. Idempotent; 404 when the tag is not the caller's or there is no such plan.",
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/tags/{tagId}/projects/{projectId}',
-    segment: 'tags',
-    tag: 'Account',
-    summary: 'Take a tag off a plan.',
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-
-  // ---- Default folders (docs/specs/013-workspace/default-folders.md) ----
-  {
-    method: 'GET',
-    path: '/placement-defaults',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, " +
-      'template:retrospective, template:kanban), dangling ones included.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: {
-      type: 'object',
-      properties: {
-        defaults: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { key: { type: 'string' }, folderId: { type: 'string' } },
-            required: ['key', 'folderId'],
-          },
-        },
-      },
-    },
-    statuses: [200, 401],
-  },
-  {
-    method: 'PUT',
-    path: '/placement-defaults/{key}',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary:
-      "Set the caller's default folder for a key: their own personal folder or a folder of a team " +
-      'they have joined. Refusals: default_key_invalid, default_folder_invalid (400), ' +
-      'folder_not_found (404).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { folderId: { type: 'string', minLength: 1 } },
-      required: ['folderId'],
-    },
-    statuses: [204, 400, 401, 404, 429],
-  },
-  {
-    method: 'DELETE',
-    path: '/placement-defaults/{key}',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary: "Clear the caller's default folder for a key. Idempotent; default_key_invalid (400).",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 400, 401, 429],
+    statuses: [204, 400, 401, 404, 413, 503],
   },
 
   // ---- Trash (docs/specs/013-workspace/trash.md) ----
@@ -1711,22 +1301,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: listOf('trash', 'TrashedProject'),
     statuses: [200, 400, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/trash',
-    segment: 'trash',
-    tag: 'Trash',
-    summary: 'Empty the personal Trash, or one team Trash with team=<id> (joined members only).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [{ name: 'team', required: false, description: 'Empty this team Trash instead.' }],
-    responseSchema: {
-      type: 'object',
-      properties: { purged: { type: 'number' } },
-      required: ['purged'],
-    },
-    statuses: [200, 400, 401, 404],
   },
   {
     method: 'POST',
@@ -1751,77 +1325,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 400, 401, 404],
   },
 
-  // ---- Timeline (docs/specs/013-workspace/timeline.md) ----
-  {
-    method: 'GET',
-    path: '/timeline',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "A plan's history (scope=project:<id>) or a team's activity (scope=team:<id>), newest first. Keyset-paginated via nextCursor. The scope is required.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: {
-        items: { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
-        nextCursor: { type: 'string' },
-      },
-    },
-    statuses: [200, 400, 401, 403],
-  },
-  {
-    method: 'GET',
-    path: '/timeline/unread',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: "Count of other people's events since the caller last viewed Home (capped at 99).",
-    auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { count: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-
-  // ---- Activity (docs/specs/013-workspace/inbox.md) ----
-  {
-    method: 'GET',
-    path: '/activity',
-    segment: 'activity',
-    tag: 'Account',
-    summary:
-      'What is outstanding for the caller across every plan they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in, on elements and on Plan cards. Capped at 100 per kind, newest first.',
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: {
-        actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
-        threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
-        cards: { type: 'array', items: { $ref: '#/components/schemas/ActivityCard' } },
-        cardThreads: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/ActivityCardThread' },
-        },
-        formResponses: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/ActivityFormResponses' },
-        },
-      },
-      required: ['actions', 'threads', 'cards', 'cardThreads'],
-    },
-    statuses: [200, 400, 401],
-  },
-
-  // ---- Explorer Home (docs/specs/013-workspace/explorer-home.md) ----
-  {
-    method: 'GET',
-    path: '/home',
-    segment: 'home',
-    tag: 'Account',
-    summary:
-      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 plans they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on plans the caller can open over the last 14 days, one group per plan per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
-    auth: 'guest-or-clerk',
-    responseSchema: { $ref: '#/components/schemas/HomeResponse' },
-    statuses: [200, 400, 401, 429],
-  },
-
   // ---- Account ----
   {
     method: 'DELETE',
@@ -1832,29 +1335,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
     statuses: [204, 401],
-  },
-  {
-    method: 'POST',
-    path: '/migrate',
-    segment: 'migrate',
-    tag: 'Account',
-    summary: 'Migrate a guest owner id onto the signed-in account (used at sign-up).',
-    auth: 'guest-or-clerk',
-    statuses: [200, 400, 401, 403],
-  },
-  {
-    method: 'POST',
-    path: '/guest-id',
-    segment: 'guest-id',
-    tag: 'Account',
-    summary: 'Mint a signed guest owner id (first-party app).',
-    auth: 'public',
-    responseSchema: {
-      type: 'object',
-      properties: { ownerId: { type: 'string' }, ownerSig: { type: ['string', 'null'] } },
-      required: ['ownerId'],
-    },
-    statuses: [200],
   },
 
   // ---- Teams ----
@@ -1874,228 +1354,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams',
     segment: 'teams',
     tag: 'Teams',
-    summary: 'Create a team.',
+    summary:
+      'Make a team on liveworkspace with you as its admin: the same team in every app, managed on liveworkspace.app.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string' },
         name: { type: 'string' },
         organisation: { type: ['string', 'null'] },
       },
-      required: ['id', 'name'],
+      required: ['name'],
     },
     responseSchema: wrap('team', 'Team'),
-    statuses: [201, 400, 401],
-  },
-  {
-    method: 'GET',
-    path: '/teams/invites',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: "List the caller's pending team invites.",
-    auth: 'clerk',
-    responseSchema: listOf('invites', 'TeamInvite'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'GET',
-    path: '/teams/invite-link/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Resolve a team invite link to its team info.',
-    auth: 'public',
-    responseSchema: 'TeamInviteLinkInfo',
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: "Read the invite an email's decline token names: its team name and status.",
-    auth: 'public',
-    responseSchema: 'TeamInviteDecline',
-    statuses: [200, 404, 429],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: "Decline the invite an email's decline token names. No sign-in; idempotent.",
-    auth: 'public',
-    responseSchema: 'TeamInviteDecline',
-    statuses: [200, 404, 409, 429],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-link/{token}/join',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Join a team via its invite link.',
-    auth: 'clerk',
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Get a team with its members and (for admins) its invite link.',
-    auth: 'clerk',
-    tokenUsable: true,
-    responseSchema: { type: 'object' },
-    statuses: [200, 401, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: "Update a team's name or organisation (admin).",
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, organisation: { type: ['string', 'null'] } },
-    },
-    responseSchema: wrap('team', 'Team'),
-    statuses: [200, 400, 401, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Delete a team (admin).',
-    auth: 'clerk',
-    statuses: [204, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Create or rotate a team invite link (admin).',
-    auth: 'clerk',
-    responseSchema: wrap('inviteLink', 'TeamInviteLink'),
-    statuses: [201, 401, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Disable a team invite link (admin).',
-    auth: 'clerk',
-    statuses: [204, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/members',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Invite a member by email (admin).',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { email: { type: 'string' } },
-      required: ['email'],
-    },
-    responseSchema: wrap('member', 'TeamMember'),
-    statuses: [201, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'GET',
-    path: '/teams/{id}/access-check',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Whether a joined teammate can open a plan the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
-    auth: 'clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { canAccess: { type: 'boolean' } },
-      required: ['canAccess'],
-    },
-    statuses: [200, 400, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/notify-action',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Email a joined teammate that an action on a plan element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        assigneeUserId: { type: 'string' },
-        projectId: { type: 'string' },
-        actionName: { type: 'string' },
-        description: { type: 'string' },
-      },
-      required: ['assigneeUserId', 'projectId', 'actionName'],
-    },
-    statuses: [202, 400, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/notify-mention',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The plan must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        projectId: { type: 'string' },
-        commentText: { type: 'string' },
-        mentions: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
-          },
-        },
-        // A Plan card's comment: the card, so the email's button opens it.
-        itemId: { type: 'string' },
-      },
-      required: ['projectId', 'commentText', 'mentions'],
-    },
-    statuses: [202, 400, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/members/{memberId}/accept',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Accept your own team invite.',
-    auth: 'clerk',
-    responseSchema: wrap('member', 'TeamMember'),
-    statuses: [200, 401, 403, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: "Change a member's role (admin).",
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { role: ref('TeamRole') }, required: ['role'] },
-    responseSchema: wrap('member', 'TeamMember'),
-    statuses: [200, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary: 'Remove a member, or decline/leave (admin or self).',
-    auth: 'clerk',
-    statuses: [204, 401, 403, 404, 409],
+    statuses: [201, 400, 401, 409, 503],
   },
   {
     method: 'GET',
@@ -2114,6 +1385,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [200, 401, 403, 404],
   },
+  {
+    method: 'GET',
+    path: '/teams/{id}/members',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      "A team's joined and invited people (joined member), for the assignee picker and @-mentions. Not for API tokens.",
+    auth: 'clerk',
+    responseSchema: listOf('members', 'TeamMember'),
+    statuses: [200, 401, 404],
+  },
 
   // ---- OAuth (MCP) ----
   {
@@ -2125,19 +1407,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     requestSchema: { type: 'object', properties: { clientName: { type: 'string' } } },
     statuses: [201, 400, 403, 404, 409],
-  },
-
-  // ---- Link unfurl ----
-  {
-    method: 'GET',
-    path: '/unfurl',
-    segment: 'unfurl',
-    tag: 'Meta',
-    summary: 'Server-side link unfurl for link cards (SSRF-safe, rate-limited).',
-    auth: 'public',
-    query: [{ name: 'url', required: true, description: 'The URL to unfurl.' }],
-    responseSchema: 'UnfurlResult',
-    statuses: [200, 400, 429],
   },
 
   // ---- Telemetry ----

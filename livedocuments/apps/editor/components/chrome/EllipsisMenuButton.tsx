@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { PortalMenu } from './TabPortalMenu';
-import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 

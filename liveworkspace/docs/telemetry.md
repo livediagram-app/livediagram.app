@@ -31,8 +31,8 @@ The same three fields as before, plus the app it came from:
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
-together. The service imports each sending app's vocabulary (livediagram's, liveplanner's and
-livedocuments'), and only stores an event that its app could have sent.
+together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
+livedocuments' and livedesign's), and only stores an event that its app could have sent.
 
 ## Sending events
 
@@ -45,8 +45,12 @@ livedocuments'), and only stores an event that its app could have sent.
 The answer is always `204`, whether the batch was stored or not, so telemetry can never surface an
 error to the page or Worker that sent it. A batch stores at most 100 events.
 
-**From a browser**, each app's `@<app>/telemetry-client` buffers events and sends them in batches,
-with `navigator.sendBeacon` on page hide. It sends the body as `text/plain`, with no cookies, so a
+**From a browser**, each app buffers events and sends them in batches, with `navigator.sendBeacon`
+on page hide. The batching is one engine for every sender, `@liveworkspace/telemetry/emitter`
+(`createTelemetryEngine`). The browser side around it (the opt-out rule, the public sites' tracker,
+client error tracking, timings, page hide) is `@liveworkspace/telemetry-client`, also shared; each
+app's `@<app>/telemetry-client` only binds it to the app: its name here, the key its preferences are
+stored under, its vocabulary's types and its error and timing tokens. It sends the body as `text/plain`, with no cookies, so a
 cross-site send needs no CORS preflight. The service stores a browser batch only when its `Origin` is
 one of its app's own sites (`TELEMETRY_APP_ORIGINS`), so one site can't post in another's name.
 Browser batches are rate-limited per network (120 a minute; the IPv6 /64), and the address is never
@@ -54,7 +58,22 @@ stored.
 
 **From a Worker** (the apps' api and mcp Workers report server-side events, such as a sign-up, an
 email sent or a 500), the request carries `X-Telemetry-Key` with that app's own secret. A key only
-ever speaks for its own app. Worker batches skip the rate limit, and they are the only way to send
+ever speaks for its own app. The accounts Worker holds each app's key too: it counts the onboarding
+emails it sends once per account under the app each one speaks for
+([accounts.md](accounts.md#onboarding-emails)), and the team invitation, reminder and answer emails
+under the app the inviter signed up through ([accounts.md](accounts.md#reminders-and-expiry)), and
+the expiring-token warnings under the app the token's owner signed up through
+([accounts.md](accounts.md#expiry-warnings)), so
+each app's dashboard reads them from `Email·Sent` as before. It also counts what is done to teams and
+API tokens on liveworkspace.app, under the app the person acting signed up through (an email's
+Decline, which needs no account, under the inviter's): `Team·Created`, `Team·Changed` (a rename, or
+`Role`), `Team·Deleted`, `Team·Added·Member` (an invitation sent), `Team·Shared·Link` and
+`Team·Removed·Link` (the join link on and off), `Team·Removed·Member` / `Invite` / `Self`,
+`Team·Joined`, `Team·Declined·Invite` / `Email`, `Token·Created·Manual` and `Token·Removed`. Each is
+reported after the change succeeds and the app is looked up only when the batch goes, after the
+response, so a request does no extra query or request for it. One that speaks for liveworkspace.app
+itself isn't counted, since no dashboard charts the platform. The dashboard's emitter checks scan
+the accounts Worker beside each app (`apps/site/app/telemetry/platform-emitters.ts`). Worker batches skip the rate limit, and they are the only way to send
 the events an app marks as server-only (its `server-emitted-events.ts`), so a stale browser bundle
 can't count those twice.
 
@@ -73,17 +92,92 @@ Each app configures where to send:
 A person's opt-out (the app's user preference) is still honoured in the browser, before anything is
 sent.
 
+## The Explorer on liveworkspace.app
+
+The one Explorer lives on liveworkspace.app ([site.md](site.md#the-explorer-explorer)), so the events
+each app's own Explorer used to send now come from there: the Timeline, Home and its first run, the
+filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed and its Try Again
+(`Home·Loaded·Retry`), the Share dialog (links copied and revoked, and each link made by level,
+lifetime and tab, extended, rescoped or given a password: `<Noun>·Shared`), folders made,
+renamed (`Folder·Renamed`), re-parented and deleted, default folders set and cleared (`Folder·Changed` / `Cleared`, `Kind` or
+`Template`), the Trash (`Trash·Restored` / `Deleted` / `Cleared`, `Personal` or `Team`), items moved
+into, within and out of a team (`Team·Added` / `Moved` / `Removed` with the item's noun) and a
+guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
+counting them. An app that draws the shared Explorer itself (its panel, its Explorer page, the
+Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
+
+Settings changed on liveworkspace.app count for their app too. In the Settings panel, a change to an
+app's row reports the event the app's own Settings sends for that row; a switch of its Account section
+(every app shares it) counts for the app the panel was opened for, and opened for no app it counts
+once, for `liveworkspace.app`, with the event the first app with that switch reports
+(`sharedCatalogueEvents`). The events come from the app's settings catalogue
+(`packages/settings/src/catalogues`, `catalogueEvents`), and a change made in the app's own Settings is
+the app's to report, so each change is counted once.
+
+- **Whose they are.** An event counts for the app the page is filtered to, or, filtered to All Apps,
+  for `liveworkspace.app` itself (`PLATFORM_TELEMETRY_APP`). A Share dialog's events count for the
+  app of the item it shares, and a revoked pass under that app's noun (liveplanner's `Project`, the
+  others' `Document`).
+- **What it may send.** The Explorer's events, each with its closed set of type tokens:
+  `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`, and in an app's name
+  that app's settings events. The site's emitter (`apps/site/lib/explorer/telemetry.ts`) drops any
+  other Explorer event before it is kept, and the ingest takes a batch from liveworkspace.app's origin
+  (`PLATFORM_TELEMETRY_ORIGINS`) only for these events, in an app's name (and in that app's
+  vocabulary) or, for the Explorer's and a shared switch's, in its own. No app's page or Worker key can speak for
+  `liveworkspace.app`.
+- **Batching.** The same engine as the apps': one request per app every 10 seconds, sooner once 25
+  events wait, and a beacon on page hide. Never one request per event.
+- **The person's choice.** Signed in, their `telemetryEnabled` setting (the `all` scope every app
+  shares, on unless turned off), read with the app's settings once per page; until it is read, a
+  few events wait rather than go out unasked. A guest's choice lives in each app's own browser
+  storage, so on liveworkspace.app a guest's browser that asks sites not to track (Global Privacy
+  Control or Do Not Track) sends nothing.
+- **The dashboards.** Each app's checks scan the site's emitter beside the accounts Worker
+  (`apps/site/app/telemetry/platform-emitters.ts`), through that app's vocabulary, and read its
+  computed types from `EXPLORER_TELEMETRY_EVENTS`; every one has a chart on each app's dashboard.
+  All apps adds `liveworkspace.app`'s own events (the Explorer on All Apps) to its totals.
+
 ## The dashboard
 
 `https://liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
-`?app=liveplanner.app` or `?app=livedocuments.app` opens one app's own dashboard, with all of its tabs, catalogues and
-explanations. Picking an app on the page updates the link.
+`?app=liveplanner.app`, `?app=livedocuments.app` or `?app=livedesign.app` opens one app's own dashboard, with all of
+its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
   last 30 days) and the 30-day trend line, each app's share against the span before it, and the
   busiest events. The same event from two apps counts as one row, added up.
-- **One app** shows the dashboard that app had before, unchanged. Each app's catalogue lives in
-  `<app>/` in the dashboard's folder, and only loads when that app is picked.
+- **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
+  `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's
+  data in `<app>/`, which only loads when that app is picked.
+
+```
+app/telemetry/_shared     the views and their logic, once: AppDashboard, the tabs, cards, charts, rankings
+app/telemetry/<app>       the app's data: config.ts, its catalogue, event explanations, retired events, tests
+```
+
+`<app>/config.ts` is the whole difference between two apps' dashboards (`TelemetryAppConfig` in
+`_shared/app.ts`): its name, the noun for what it makes (document, project, design), its accent, its
+category colours, how its events read (`createEventExplanation` over its own sentences), its retired
+events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
+nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
+out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
+which gives it to every view through context. The views draw with the shared design system,
+`@liveworkspace/ui` (buttons, fields, tooltips, hover cards, menus), and with `@livediagram/ui` for the
+icons and brand marks the apps' UI packages do not share yet. The shared views are tested against
+every app's config (`_shared/test-apps.ts`).
+
+**Loading.** The page never goes blank while numbers load: on the first visit, on picking an app
+whose summary hasn't come yet, and while that app's own dashboard code downloads. The header, the
+app chips and the closing note stay put, and where the numbers go a skeleton holds their shapes in
+the layout they will take: the three window tiles and the trend chart, then for All apps the "By
+app" cards and the busiest-event rows under their real titles, and for one app the tab row and a
+grid of metric cards. The skeleton reserves the heights of the panel and tabs above the fold, so
+nothing above the cards moves when the data lands. It is static markup with a gentle pulse that
+stops under reduced motion, and it is marked busy for assistive tech. An app's earlier numbers are
+not kept on screen dimmed in the meantime: the two dashboards are different shapes, and another
+app's numbers under the new app's chip would read as the new app's. A summary already fetched shows
+at once, and changing the window or tab never fetches, so neither shows the skeleton. A failed fetch
+keeps its own message.
 
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
@@ -111,27 +205,20 @@ the repo root runs the site with this Worker behind it, at http://localhost:3000
 
 ## Which apps send
 
-livediagram, liveplanner and livedocuments send events, and each has its own dashboard under
-`apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`). Each folder's
-tests read that app's source: every event an emitter can send must be in its vocabulary and have a
-chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every event has an explanation
-(`event-explanation.test.ts`).
-
-livedesign is in `TELEMETRY_APPS`, so the dashboard lists it in its own colour, but it doesn't send
-yet: the service stores nothing from it (`NOTHING_YET` in `apps/telemetry/src/vocabularies.ts`),
-and picking it on the dashboard says there are no events yet. When it does: import its vocabulary
-in `vocabularies.ts`, add its dashboard under `apps/site/app/telemetry/livedesign/`, and set its
-key.
+livediagram, liveplanner, livedocuments and livedesign send events, and each has its own dashboard
+data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
+`livedesign/`). Each folder's tests read that app's source: every event an emitter can send must be
+in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
+event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
+`retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`).
 
 ## First deploy
 
-1. Create the databases and put their ids in `apps/telemetry/wrangler.toml` (they are
-   placeholders): `wrangler d1 create liveworkspace-telemetry` (and
-   `liveworkspace-telemetry-staging`).
+1. The databases exist and their ids are in `apps/telemetry/wrangler.toml`; for a new environment,
+   create one with `wrangler d1 create liveworkspace-telemetry` (and `liveworkspace-telemetry-staging`).
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM`,
-   `TELEMETRY_KEY_LIVEPLANNER` and `TELEMETRY_KEY_LIVEDOCUMENTS` (and `TELEMETRY_KEY_LIVEDESIGN`
-   once livedesign sends events).
+   `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_KEY_LIVEDOCUMENTS` and `TELEMETRY_KEY_LIVEDESIGN`.
 3. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`. The dashboard ships with the
    site ([site.md](site.md)).
 4. The Worker takes the route `liveworkspace.app/api/telemetry*` only, so the rest of the zone is
@@ -143,11 +230,15 @@ HTTPS, not a service binding. Only the key has to be copied across.
 ## Adding an app
 
 1. Add its site to `TELEMETRY_APPS` and its origins to `TELEMETRY_APP_ORIGINS` in
-   `packages/telemetry/src/apps.ts`.
+   `packages/telemetry/src/apps.ts`. Its vocabulary must take the Explorer's events
+   (`EXPLORER_TELEMETRY_EVENTS`), which its dashboard then charts.
 2. Add its vocabulary to `apps/telemetry/src/vocabularies.ts`, and a `TELEMETRY_KEY_<APP>` secret to
    `src/env.ts` and `appKey`.
-3. Add its dashboard under `apps/site/app/telemetry/<app>/`, with a `Body` the page loads when the
-   app is picked.
+3. Add its dashboard data under `apps/site/app/telemetry/<app>/`: a `config.ts` (a
+   `TelemetryAppConfig`), its catalogue and explanations, and a `Body.tsx` that hands the config to
+   `AppDashboard`, which the page loads when the app is picked. Add the config to
+   `_shared/test-apps.ts` so the shared views' tests run against it, and its brand scale to
+   `telemetry.css`.
 4. In the app, send batches as above, and allow `https://liveworkspace.app` in its CSP
    `connect-src`.
 
@@ -161,6 +252,19 @@ HTTPS, not a service binding. Only the key has to be copied across.
 - **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
+- **One set of views** (October 2026): the four apps' dashboards were near-copies (420 files, 65,261
+  lines); with the views shared they are 200 files and 43,705 lines. In the production build, an app's
+  dashboard loads 83.6 to 108.6 KiB of JavaScript (gzipped; 96.1 to 113.6 before), and every app's
+  together 290.0 KiB, against 415.5, since the views' chunks are now one set the browser caches across
+  apps. livediagram's own grew 1.5 KiB (the shared views read the app's config through context).
+  The page's first load is unchanged (219 KiB). The dashboard's stylesheet reads only
+  `@livediagram/ui` and the other apps' `Brand.tsx` (20.5 KiB gzipped, was 20.7).
+- **Accounts' team and token events**: reporting one is an array push on the request; the app it
+  counts for is read (one primary-key read each) and the batch sent, one per app, in `waitUntil` after
+  the response, bounded at two seconds. No query or request is added to the request itself.
+- **Telemetry Worker**: taking settings events from liveworkspace.app bundles the four settings
+  catalogues: 112 KiB to 182 KiB (19.4 to 25.0 KiB gzipped). Their 300 events become one set per app
+  once per isolate, in about 0.3 ms.
 - **Apps**: a browser batch is now cross-site, so it can't reuse the app's own connection; the first
   send on a page opens one more connection, to liveworkspace.app. Sends are batched (every 10
   seconds, and on page hide), so this is one connection per page view, off the critical path.

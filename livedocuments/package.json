@@ -15,13 +15,13 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@livedocuments/* && rm -rf node_modules",
-    "icons:vendor": "pnpm --filter @livedocuments/icons vendor:lucide",
+    "icons:vendor": "pnpm --filter @liveworkspace/icons vendor:lucide",
     "icons:sheet": "pnpm --filter @livedocuments/editor icons:sheet",
     "icons:brand": "pnpm --filter @livedocuments/editor icons:brand"
   },
   "devDependencies": {
-    "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/prettier-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",

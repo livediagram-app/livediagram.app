@@ -4,7 +4,7 @@
 // Nothing is read or written when no Plan board is among the elements, nor written when nothing changes. A refused
 // save leaves the board as made, with nothing brought. The save names the catalogue's revision it read; when another
 // change landed first, the card types are read again and brought to them (CARD_TYPES_SAVE_ATTEMPTS).
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import type { ProjectResponse, ItemTypesRequest } from '@liveplanner/api-schema';
 import {
   boardTypeIdsOf,

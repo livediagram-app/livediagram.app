@@ -1,129 +1,108 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Sparkle, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Shadow } from '@liveworkspace/help-site/art/parts';
+import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the editor's helpers. An AI prompt drawing a sign-up flow, the appearance switch set to Dark, and Zen
-// mode tucking the chrome away.
+// A wireframe screen's blocks, each as drawn (a little off) and where Auto-align puts it: lined up on a shared left
+// edge and rounded to the 10 px grid.
+const BLOCKS = [
+  { from: [7, 0], to: [0, 0], w: 60, h: 8, tone: 'fill-brand-500' },
+  { from: [-5, 16], to: [0, 14], w: 92, h: 40, tone: 'fill-brand-100' },
+  { from: [9, 63], to: [0, 60], w: 80, h: 6, tone: 'fill-slate-300' },
+  { from: [-4, 76], to: [0, 72], w: 70, h: 6, tone: 'fill-slate-300' },
+  { from: [6, 98], to: [0, 96], w: 92, h: 14, tone: 'fill-brand-500' },
+] as const;
+
+// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livedesign's helper: Auto-align
+// (the command palette's Actions, Layout Cleanup) taking a wireframe's drifting blocks and lining them up on one
+// edge, beside the shared appearance switch and Zen mode.
 export function ToolsArt() {
   return (
-    <Stage>
-      {/* The AI prompt. */}
+    <Scene>
+      {/* The command that runs it. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
-        <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />
-        <Sparkle cx={47} cy={33} r={3.5} className="fill-violet-300" />
-        <Label x={54} y={41} size={10.5} weight={700} tone="strong">
-          Ask AI
+        <Label x={34} y={38} size={8} weight={700} tone="muted">
+          ACTIONS
         </Label>
         <rect
-          x={32}
-          y={56}
-          width={180}
-          height={34}
-          rx={8}
-          className="fill-slate-50 stroke-violet-300"
-          strokeWidth={1.4}
-        />
-        <Label x={42} y={73.5} size={10} tone="body">
-          Draw a sign-up flow
-        </Label>
-        <rect x={149} y={65} width={1.5} height={17} className="fill-violet-500" />
-        <rect
-          x={160}
-          y={62}
-          width={46}
+          x={30}
+          y={46}
+          width={184}
           height={22}
           rx={6}
-          className="fill-violet-500 dark:fill-violet-700"
+          className="fill-brand-50 stroke-brand-200"
+          strokeWidth={1}
         />
-        <Label x={183} y={73.5} anchor="middle" size={9} weight={700} tone="onAccent">
-          Draw
+        <path
+          d="M40 51 v12 M44 54 h12 M44 60 h8"
+          className="stroke-brand-600"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+        <Label x={64} y={57.5} size={10} weight={700} tone="accent">
+          Auto-align
+        </Label>
+        <Label x={34} y={82} size={9} tone="muted">
+          Snaps the drift to a 10 px grid
         </Label>
       </Card>
 
-      {/* The flow it draws. */}
-      <Shape
-        x={262}
-        y={18}
-        w={104}
-        h={36}
-        label="Sign up"
-        fill="fill-violet-50"
-        stroke="stroke-violet-400"
-      />
-      <Shape x={262} y={88} w={104} h={36} label="Verify email" />
-      <Shape x={262} y={158} w={104} h={36} accent label="Welcome" />
-      <Arrow
-        from={[314, 54]}
-        to={[314, 85]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Arrow
-        from={[314, 124]}
-        to={[314, 155]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Sparkle cx={372} cy={20} r={6} className="fill-amber-400" />
-      <Sparkle cx={254} cy={98} r={4.5} className="fill-violet-400" />
-      <Sparkle cx={378} cy={150} r={4} className="fill-amber-300" />
+      {/* Before and after, on a phone screen. */}
+      {(
+        [
+          { ox: 246, key: 'from', label: 'Before' },
+          { ox: 318, key: 'to', label: 'After' },
+        ] as const
+      ).map((p) => (
+        <g key={p.key}>
+          <Label x={p.ox + 32} y={22} anchor="middle" size={8.5} weight={600} tone="muted">
+            {p.label}
+          </Label>
+          <Shadow x={p.ox} y={30} w={64} h={130} r={10} />
+          <rect
+            x={p.ox}
+            y={30}
+            width={64}
+            height={130}
+            rx={10}
+            className="fill-white stroke-slate-300"
+            strokeWidth={1.5}
+          />
+          <rect x={p.ox + 24} y={34} width={16} height={3} rx={1.5} className="fill-slate-700" />
+          {p.key === 'to' && (
+            <line
+              x1={p.ox + 8}
+              y1={40}
+              x2={p.ox + 8}
+              y2={154}
+              className="stroke-rose-400"
+              strokeWidth={1}
+              strokeDasharray="2 2"
+            />
+          )}
+          {BLOCKS.map((b, i) => {
+            const [dx, dy] = b[p.key];
+            const s = 48 / 92;
+            return (
+              <rect
+                key={i}
+                x={p.ox + 8 + dx}
+                y={44 + dy}
+                width={b.w * s}
+                height={b.h}
+                rx={2}
+                className={b.tone}
+              />
+            );
+          })}
+        </g>
+      ))}
       <path
-        d="M226 62 C240 62 246 40 258 37"
-        className="fill-none stroke-violet-300"
+        d="M312 94 h3 m-3 -4 l4 4 -4 4"
+        className="fill-none stroke-brand-500"
         strokeWidth={1.6}
-        strokeDasharray="3 4"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
-
-      {/* Appearance. */}
-      <Card x={22} y={116} w={200} h={36} r={10}>
-        <rect x={30} y={123} width={60} height={22} rx={6} className="fill-transparent" />
-        <circle cx={42} cy={134} r={4} className="fill-amber-400" />
-        <path
-          d="M42 126 v2 M42 140 v2 M34 134 h2 M48 134 h2 M36.5 128.5 l1.4 1.4 M46.1 138.1 l1.4 1.4 M36.5 139.5 l1.4 -1.4 M46.1 129.9 l1.4 -1.4"
-          className="stroke-amber-400"
-          strokeWidth={1.3}
-          strokeLinecap="round"
-        />
-        <Label x={54} y={134.5} size={9.5} weight={500} tone="body">
-          Light
-        </Label>
-        <rect
-          x={92}
-          y={122}
-          width={64}
-          height={24}
-          rx={7}
-          className="fill-slate-800 help-art-as-drawn"
-        />
-        <path
-          d="M108 128 a6 6 0 1 0 6 8.5 a5 5 0 0 1 -6 -8.5 Z"
-          className="fill-brand-200 help-art-as-drawn"
-        />
-        <Label x={120} y={134.5} size={9.5} weight={700} className="fill-white help-art-as-drawn">
-          Dark
-        </Label>
-        <Label x={170} y={134.5} size={9.5} weight={500} tone="body">
-          System
-        </Label>
-      </Card>
-
-      {/* Zen mode. */}
-      <Card x={22} y={166} w={130} h={36} r={10}>
-        <path
-          d="M34 184 c4 -6 14 -6 18 0 c-4 6 -14 6 -18 0 Z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.4}
-        />
-        <path
-          d="M33 192 l20 -16"
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-        <Label x={62} y={184.5} size={9.5} weight={600} tone="body">
-          Zen mode
-        </Label>
-        <rect x={112} y={177} width={30} height={16} rx={8} className="fill-brand-500" />
-        <circle cx={134} cy={185} r={6} className="fill-white help-art-as-drawn" />
-      </Card>
-    </Stage>
+    </Scene>
   );
 }

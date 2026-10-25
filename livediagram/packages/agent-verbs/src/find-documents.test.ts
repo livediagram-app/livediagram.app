@@ -6,7 +6,7 @@ import {
   matchDocuments,
   readLibraries,
 } from './find-documents';
-import { createApiClient, type ApiClient } from '@livediagram/api-client';
+import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
 
 function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
   return {

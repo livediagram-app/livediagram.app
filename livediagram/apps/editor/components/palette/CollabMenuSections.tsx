@@ -44,11 +44,14 @@ import {
   type RoomDoor,
 } from '@livediagram/document';
 import { DateInput } from '@livediagram/ui';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 
 // Each collaboration kind contributes exactly ONE section to the Tools group —
 // an agenda has Segments and nothing else, a chair has Chair and nothing else.

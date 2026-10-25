@@ -43,22 +43,7 @@ export interface CheckOutcome {
 
 export declare function elementsOf(snap: Snapshot): Element[];
 export declare function find(snap: Snapshot, word: Word): Element[];
-export declare function linked(
-  snap: Snapshot,
-  a: Word,
-  b: Word,
-  opts?: { directed?: boolean },
-): boolean;
-export declare function flows(snap: Snapshot, a: Word, b: Word): boolean;
-export declare function inside(snap: Snapshot, word: Word, group: Word): boolean;
-export declare function sketched(tab: Tab): boolean;
 export declare function mentionsAll(snap: Snapshot, words: Word[]): Reasoned;
-export declare function elementsFor(snap: Snapshot, words: Word[]): Reasoned;
-export declare function allLinked(
-  snap: Snapshot,
-  pairs: [Word, Word][],
-  opts?: { directed?: boolean },
-): Reasoned;
 export declare function pagesOf(snap: Snapshot): Page[];
 export declare function runChecks(
   task: { checks?: readonly (readonly [string, (ctx: CheckContext) => CheckResult])[] },

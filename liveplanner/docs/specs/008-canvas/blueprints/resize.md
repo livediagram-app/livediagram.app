@@ -1,8 +1,7 @@
 # Resize blueprint
 
 Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ratio lock",
-"Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
-Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
+"Rotation" and "Adding elements", for the resize of boxed elements and multi-selections and where every selection grip draws ("The handles are always on
 top").
 
 ## Domain and naming
@@ -54,10 +53,6 @@ unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the re
   No snap, `guides: null`.
 - `unionResizeMember` floors each side at `min(MIN_SIZE, the side at the press)`, so a member that
   began thinner than `MIN_SIZE` is never bumped up.
-- Draw-to-size (`useCanvasDrawGesture.nextDrawDrag`): with `e.shiftKey` the end point becomes the
-  square of side `max(|dx|, |dy|)` in the drag's direction, then `snapLeadingAxis(box, corner, lead,
-snapEdge)` with `lead` from the raw pointer, so the square survives the snap; without Shift each
-  moving edge snaps on its own.
 - Whiteboard: `useCanvasSurfaceGestures` turns a Shift press into an additive marquee unless the
   target is inside `[data-canvas-handle]`. `ResizeHandles`, `EdgeResizeHandle` and
   `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
@@ -113,9 +108,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   nothing. `CanvasElementsLayer` is the only renderer of element views, and it always mounts one.
 - An element on a hidden layer is not drawn, so its grips are not either; a layer-preview solo draws
   only that band's elements and so only their grips.
-- Isometric view: painting goes by depth, not z-index, so `[data-iso] [data-selection-grips]` takes
-  `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
-  paint index (above the arrows' `1px` nudge).
 - A later element that forms its own stacking context, or a descendant with its own z-index (a
   lane's gutter and a face's settings button, both `z-10`), stays under the layer.
 - Remote cursors (`z-index: 40`) stay above the grips.
@@ -140,8 +132,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   anchor, free multi.
 - `hooks/canvas/useEditorDrag.shift-resize.test.tsx`: every boxed kind from a corner and an edge,
   every tab kind, Shift pressed and released mid-drag.
-- `components/canvas/useCanvasDrawGesture.test.tsx` "with Shift": square, leading-axis snap, up-left,
-  mid-drag toggle.
 - `components/canvas/SelectionGripsLayer.test.tsx`: the layer draws last and above; a box's eight
   handles land in the layer and none in the element; the frame's box, rotation and shift; cursor
   and counter-scale kept; a handle press starts the resize without reaching the element body; an
@@ -155,7 +145,7 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
 - `MIN_SIZE = 20` (canvas px, `resize-geometry.ts`), the spec's 20x20 floor.
 - `SELECTION_GRIPS_Z_INDEX = 30` (`SelectionGripsLayer.tsx`): above element descendants that carry
   `z-10` and an element being edited (`10`), below remote cursors (`40`). Safe range 11 to 39.
-- `ALIGN_SNAP_THRESHOLD` for resize snaps; draw-to-size uses `6 / viewportZoom` with a 1 px floor.
+- `ALIGN_SNAP_THRESHOLD` for resize snaps.
 
 ## Defaults ledger
 

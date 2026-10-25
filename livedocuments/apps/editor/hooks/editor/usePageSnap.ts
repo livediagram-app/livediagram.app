@@ -7,12 +7,12 @@
 import { useEffect } from 'react';
 import type { LaidOutPage } from '@livedocuments/document';
 import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { pageInView } from '@/lib/page-contents';
 import { pageSnap, type SnapBand, type SnapFrame } from '@/lib/page-snap';
 import { track } from '@/lib/telemetry';
-import type { View } from '@/lib/viewport-store';
-import { useLatest } from '@/hooks/ui/useLatest';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // How long a view moved by anything but a gesture rests before it snaps: past a held arrow key's
 // repeat and a glide's frames, short of feeling like a second, separate move.

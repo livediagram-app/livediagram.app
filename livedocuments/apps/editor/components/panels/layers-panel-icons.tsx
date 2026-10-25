@@ -17,7 +17,7 @@ import {
   lucideScanEye,
   lucideSendToBack,
   lucideTrash2,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 // Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (grip, eye,
 // lock, ellipsis), the header's New Layer, the footer's merge + delete, the row menu's verbs, and

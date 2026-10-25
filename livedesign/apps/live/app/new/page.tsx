@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import type { NewDesignSettings } from './new-design-settings';
 import { DesignLoading } from '@/components/chrome/DesignLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
@@ -23,9 +23,10 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { untitledNameForTemplate, type TemplateKind } from '@livedesign/templates';
+import { handTemplatePick } from '@liveworkspace/explorer';
+import { isBlankTemplate, untitledNameForTemplate, type TemplateKind } from '@livedesign/templates';
 import { creationIntentOf } from '@livedesign/api-schema';
 import {
   choosePlacementAgainUrl,
@@ -34,14 +35,12 @@ import {
   newDesignStartsBlank,
   placementParamsFromSearch,
 } from '@/lib/new-design-params';
-import { backOutTarget } from '@/lib/back-out';
-import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
+import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@livedesign/templates';
 import { NEW_DESIGN_THEME_ID, newDesignContent } from '@/lib/new-design-content';
 
 // In-place handoff (docs/specs/007-editor/new-design-route.md): once a design is created, this page
@@ -69,7 +68,7 @@ export default function NewDesignPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -99,8 +98,7 @@ export default function NewDesignPage() {
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
+    // string, not ThemeId: the picker hands back a theme id as a plain string.
     // Where it goes (new-design-settings.ts): store and placement, decided at commit.
     settings: NewDesignSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).
@@ -152,21 +150,26 @@ export default function NewDesignPage() {
   const selfId = authLoaded ? (accountUserId ?? guestId) : null;
   useEffect(() => {
     if (!selfId) return;
-    const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
+    // A first visit seeds the profile: a signed-in person's account name (which the api reads as the
+    // account's own and does not pin), else the random placeholder.
+    const name = (accountUserId && accountDisplayName) || seed.name;
+    const local: Participant = { id: selfId, name, color: seed.color, status: 'online' };
     let cancelled = false;
     void (async () => {
-      const stored = await apiLoadSelf(selfId).catch(() => null);
+      // undefined: the profile could not be read, so the seed stands in and is not saved over it.
+      const stored = await apiLoadSelf(selfId).catch(() => undefined);
       if (cancelled) return;
       if (stored) {
         setSelf({ ...stored, status: 'online' });
-      } else {
+      } else if (stored === null) {
+        setSelf(local);
         await apiSaveSelf(local).catch(() => {});
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [selfId, seed]);
+  }, [selfId, seed, accountUserId, accountDisplayName]);
   // Identity for the commit path. The session's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
@@ -183,7 +186,7 @@ export default function NewDesignPage() {
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
     // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };
@@ -211,7 +214,7 @@ export default function NewDesignPage() {
     // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(
       !offline && (!templateKind || isBlankTemplate(templateKind))
-        ? { designId, tabId, placementChosen: settings.placementChosen === true }
+        ? { itemId: designId, tabId, placementChosen: settings.placementChosen === true }
         : null,
     );
     // A Retry re-runs the create, not the preference write below.
@@ -291,10 +294,10 @@ export default function NewDesignPage() {
     setOpenedId(designId);
   };
 
-  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): the
-  // store for who is creating, decided now (a guest at once, a signed-in browser once identity settles), and the
-  // /new?folder= / ?team= context when there is one; without one it carries no placement, so a default folder may
-  // answer (docs/specs/013-workspace/default-folders.md "Precedence").
+  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): This
+  // Browser for a guest, livedesign for a signed-in person or anyone with a /new?folder= / ?team= context
+  // (docs/specs/006-design/save-locations.md), and that context when there is one; without one the index files it at
+  // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);

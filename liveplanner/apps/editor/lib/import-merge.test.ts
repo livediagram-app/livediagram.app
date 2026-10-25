@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import { mergeImportedTab } from './import-merge';
 
@@ -17,12 +17,6 @@ describe('mergeImportedTab', () => {
   });
 
   // An exported whiteboard from before editor modes comes back as an ordinary tab.
-  it('reads an old whiteboard export as a diagram tab', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const old = { ...tab(), kind: 'whiteboard' } as unknown as Tab;
-    expect(mergeImportedTab(tab(), old).kind).toBe('diagram');
-  });
-
   it('carries a Form tab’s form, so an imported Form tab is not left without one', () => {
     // docs/specs/030-forms/forms.md: a form restored from a file comes back as a copy. Only the kind came across, so
     // the tab read as a Form tab holding no form.
@@ -44,19 +38,6 @@ describe('mergeImportedTab', () => {
   });
 
   // A file is a stored tab like any other (docs/specs/011-theme/retired-schemes.md).
-  it('migrates an imported tab saved against a retired scheme', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const out = mergeImportedTab(
-      tab(),
-      tab({ theme: 'charcoal', backgroundColor: '#2b2b33', patternColor: '#636373' }),
-    );
-    expect(out).toMatchObject({
-      theme: 'brand',
-      backgroundColor: '#0d121a',
-      patternColor: '#1c2735',
-    });
-  });
-
   it('keeps what the import does not specify', () => {
     const mine = tab({
       theme: 'midnight',
@@ -67,25 +48,5 @@ describe('mergeImportedTab', () => {
     expect(out.theme).toBe('midnight');
     expect(out.kind).toBe('board');
     expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
-  });
-
-  // Anchor docking is retired: a file exported while it
-  // existed brings its relations in, and they are dropped on the way.
-  it('drops a stored dock relation', () => {
-    const imported = tab({
-      elements: [
-        {
-          id: 'd',
-          type: 'sticky',
-          x: 0,
-          y: 0,
-          width: 200,
-          height: 200,
-          esDock: { hostId: 'h', side: 'before' },
-        },
-      ] as unknown as Tab['elements'],
-    });
-    const out = mergeImportedTab(tab(), imported);
-    expect(out.elements[0]).not.toHaveProperty('esDock');
   });
 });

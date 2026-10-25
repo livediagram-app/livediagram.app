@@ -55,7 +55,6 @@ export function renderLabel(
   hug?: TextHugLabel,
   // Told the editor's live content on every change, for a label that sizes its box without the
   // rest of `hug`: a mind node growing to fit its lines (useMindLabelFit).
-  onLiveText?: (editor: HTMLElement) => void,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/007-editor/editor-modes.md).
@@ -121,7 +120,7 @@ export function renderLabel(
         alignY={alignY}
         padding={textPadding}
         textScale={textScale}
-        onLiveText={hug?.onLiveText ?? onLiveText}
+        onLiveText={hug?.onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
         cursorAtEnd={editCursorAtEnd}

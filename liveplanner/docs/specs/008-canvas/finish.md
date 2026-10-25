@@ -183,7 +183,8 @@ shadow under Marker (a badge's pill coloured in), wobbled with its art under Ske
 
 ### Polygons
 
-A Polygon-tool outline ([Polygon tool](polygon-tool.md)) is placed point by point, so it is a drawing like a shape's
+A polygon is a freehand stroke with `straightEdges` (from a template, an import or the MCP; liveplanner has no
+Polygon tool): its points are joined by straight segments, not smoothed. It is placed point by point, so it is a drawing like a shape's
 outline, not a hand's stroke, and follows its tab's finish as a shape does:
 
 - **Professional:** an unset line draws Thin (1 px).

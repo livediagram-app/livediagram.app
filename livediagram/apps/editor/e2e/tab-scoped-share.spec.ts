@@ -2,9 +2,9 @@ import {
   test,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  mintGuest,
+  seedDocumentItem,
 } from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
@@ -13,10 +13,9 @@ import {
 // realtime frame; rescoping to All tabs reloads the visitor into every tab.
 
 const SECRET = 'TOP SECRET PRICING';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+test('a tab-scoped link opens its tab and nothing else', async ({ page, browser }) => {
+  const owner = await mintGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
@@ -33,39 +32,32 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
-    data: {
-      id: liveDoc,
-      name: 'Launch plan',
-      tabs: [
-        { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
-        { id: roadmap, name: 'Roadmap', elements: [box('r1', 200, 'Q3 beta')] },
-        { id: hiring, name: 'Hiring', elements: [] },
-      ],
-    },
+  const seeded = await seedDocumentItem(page.request, owner, {
+    id: liveDoc,
+    name: 'Launch plan',
+    tabs: [
+      { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
+      { id: roadmap, name: 'Roadmap', elements: [box('r1', 200, 'Q3 beta')] },
+      { id: hiring, name: 'Hiring', elements: [] },
+    ],
   });
   expect(seeded.ok()).toBe(true);
 
   // The owner scopes a new link to Roadmap.
-  await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    },
-    { id: owner, sig: guestSigFor(owner) },
-  );
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => localStorage.setItem('livediagram:v2:name-confirmed', '1'));
   await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share This Document' });
+  // The shared Share dialog (@liveworkspace/explorer): issue a pass for one tab, then each pass with its own scope.
+  const dialog = page.getByRole('dialog', { name: /^Share / });
   await dialog
     .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });
-  await dialog.getByRole('button', { name: /create/i }).click();
-  const scopeSelect = dialog.getByRole('combobox', { name: /^Tabs link .+ opens$/ });
+  await dialog.getByRole('button', { name: 'Create Pass' }).click();
+  const pass = dialog.locator('[data-share-link]').first();
+  const scopeSelect = pass.getByRole('combobox', { name: 'Tabs this pass opens' });
   await expect(scopeSelect).toHaveValue(roadmap);
-  const url = await dialog.locator('ul input[readonly]').first().inputValue();
+  const url = await pass.getByRole('textbox', { name: 'Pass link' }).inputValue();
 
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
@@ -97,7 +89,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every tab.
-  await scopeSelect.selectOption({ label: 'All tabs' });
+  await scopeSelect.selectOption({ label: 'Every tab' });
   await expect(visitor.getByRole('button', { name: /Pricing/ })).toBeVisible({ timeout: 15_000 });
   await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 

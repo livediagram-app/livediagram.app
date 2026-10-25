@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { auditContrast } from './contrast';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankProject, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankProject, test } from './fixtures';
 
 // Tooltips and hover cards (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md), in a real
 // browser: the 1 s tooltip delay, instant keyboard focus, the instant hover
@@ -13,20 +13,20 @@ const HOVER_CARD = '[role="tooltip"][data-hint="hover-card"]';
 // Well under the 1 s delay, and well over a frame: "instant" means this.
 const INSTANT_MS = 300;
 
-// A captioned Square tile, in the strip's Search popover: the category flyouts' tiles show their names, so the
-// tooltip lives on Search's captioned tiles (the palette tile grid, as More's were).
-const SEARCH = '[data-toolbar-search]';
-const squareTile = (page: Page) =>
-  page.locator(SEARCH).getByRole('button', { name: 'Add Square', exact: true });
+// A control with a tooltip: the title bar's role pill, whose tooltip says who owns the plan
+// (docs/specs/007-editor/editor-app.md#role-pill). (These tests used the diagram palette's tiles, which Plan
+// does not have.)
+const TOOLTIP_TEXT = 'Owned by you';
+const pillTrigger = (page: Page) =>
+  page.locator('header').getByRole('button', { name: 'Editing. Owned by you' });
 
-// A blank project with the quick tour out of the way (its dialog would cover
-// the palette mid-hover), and the strip's Search open on "square".
+// A plan with a square on its tab, so the canvas and its zoom controls show (Start Planning covers an empty tab).
 async function openEditor(page: Page) {
   await startBlankProject(page);
-  await dismissQuickTour(page);
-  await page.getByRole('button', { name: 'Search elements' }).click();
-  await page.locator(SEARCH).getByRole('textbox', { name: 'Search elements' }).fill('square');
-  await expect(squareTile(page)).toBeVisible();
+  await seedTab(page, [
+    { id: 'sq', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+  ]);
+  await expect(pillTrigger(page)).toBeVisible();
 }
 
 // Park the pointer on empty canvas, away from every trigger.
@@ -42,42 +42,40 @@ async function keyboardFocus(page: Page, target: Locator) {
   await expect(target).toBeFocused();
 }
 
-test.describe('Tooltip on a palette tile', () => {
-  test('names the tile only after a 500 ms hover', async ({ page, pageErrors }) => {
+test.describe('Tooltip on a control', () => {
+  test('names it only after a 500 ms hover', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
-    await squareTile(page).hover();
+    await pillTrigger(page).hover();
 
     await page.waitForTimeout(250);
     await expect(page.locator(TOOLTIP)).toHaveCount(0);
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
-    await expect(tooltip).toHaveText('Add Square');
+    await expect(tooltip).toHaveText(TOOLTIP_TEXT);
     expectNoPageErrors(pageErrors);
   });
 
   test('opens at once on keyboard focus, and Escape dismisses it', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
-    const tile = squareTile(page);
+    const tile = pillTrigger(page);
     await keyboardFocus(page, tile);
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: INSTANT_MS });
-    await expect(tooltip).toHaveText('Add Square');
+    await expect(tooltip).toHaveText(TOOLTIP_TEXT);
 
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
-    // The press is not consumed: the Search popover the tile sits in closes on it too.
-    await expect(page.locator(SEARCH)).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 
   test('stays open while the pointer moves onto it', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
-    await squareTile(page).hover();
+    await pillTrigger(page).hover();
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
 
@@ -96,12 +94,12 @@ test.describe('Hover card', () => {
   test('opens at once on hover, with its title and description', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
-    await page.getByRole('button', { name: 'Zoom in', exact: true }).hover();
+    await page.getByRole('button', { name: 'Theme and canvas', exact: true }).hover();
 
     const card = page.locator(HOVER_CARD);
     await expect(card).toBeVisible({ timeout: INSTANT_MS });
-    await expect(card).toContainText('Zoom in');
-    await expect(card).toContainText('Zoom in by 10%.');
+    await expect(card).toContainText('Theme & canvas');
+    await expect(card).toContainText("Change this tab's theme and canvas background.");
     expectNoPageErrors(pageErrors);
   });
 });
@@ -143,7 +141,7 @@ test.describe('Hints in dark mode', () => {
       true,
     );
     await parkPointer(page);
-    await squareTile(page).hover();
+    await pillTrigger(page).hover();
     await expect(page.locator(TOOLTIP)).toBeVisible({ timeout: 1_500 });
 
     const dark = await hintColours(page, TOOLTIP);
@@ -170,7 +168,7 @@ test.describe('Hints in dark mode', () => {
   }) => {
     await openEditor(page);
     await parkPointer(page);
-    await page.getByRole('button', { name: 'Zoom in', exact: true }).hover();
+    await page.getByRole('button', { name: 'Theme and canvas', exact: true }).hover();
     await expect(page.locator(HOVER_CARD)).toBeVisible({ timeout: INSTANT_MS });
 
     const dark = await hintColours(page, HOVER_CARD);

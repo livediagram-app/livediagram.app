@@ -120,7 +120,7 @@ type ElementLink =
   | { kind: 'url'; url: string }; // external address, opens in a new tab
 ```
 
-Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + `designs` rows in D1). The `apps/live/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
+Persistence shape lives in [Api](../015-api/api.md) (per-tab rows in each design's own SQLite, in its Durable Object). The `apps/live/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
 
 ### Colours are colours
 
@@ -131,7 +131,7 @@ the stored-element migrations drop it wherever elements enter (a load, a peer's 
 write, the api's own reads and writes), and the element paints with that colour's default. Nothing in livedesign
 fetches from outside a design ([Images](../009-elements/images.md) "External-URL images"), and a colour must not
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
-blanked in a room hello) and a custom theme's colours (refused on save).
+blanked in a room hello).
 
 ### Styles have their types
 

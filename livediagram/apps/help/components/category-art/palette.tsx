@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Arrow, Cursor, Label, SelectionBox, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Arrow, Cursor, Label, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 const TABS = ['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech'];
 // Each tab's centre, spaced by its label's width.

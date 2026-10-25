@@ -2,51 +2,46 @@
 
 // docs/specs/006-document/save-locations.md "The default depends on who is creating": /new stores a guest's
 // document on This Browser, a signed-in person's on livediagram, and never makes a signed-in person's
-// create This Browser because Clerk had not answered yet.
+// create This Browser because sign-in had not answered yet.
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const clerk = vi.hoisted(() => ({ clerkEnabled: true }));
-vi.mock('@/lib/clerk-config', () => clerk);
-
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 
-function setUat(value: string | null) {
-  document.cookie =
-    value === null
-      ? '__client_uat=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-      : `__client_uat=${value}`;
+function setHint(signedIn: boolean) {
+  document.cookie = signedIn
+    ? 'ld_signed_in=1'
+    : 'ld_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 }
 
-type Props = { authLoaded: boolean; clerkUserId: string | null };
+type Props = { authLoaded: boolean; accountUserId: string | null };
 const render = (initial: Props) =>
   renderHook((p: Props) => useNewDocumentLocation(p), { initialProps: initial });
 
 describe('useNewDocumentLocation', () => {
   afterEach(() => {
-    setUat(null);
-    clerk.clerkEnabled = true;
+    setHint(false);
   });
 
   describe('resolveSaveLocation', () => {
     it('keeps a signed-in person on livediagram', async () => {
-      const { result } = render({ authLoaded: true, clerkUserId: 'user_1' });
+      const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
       await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
     });
 
     it('answers a guest at once, without waiting for identity', async () => {
       const settle = vi.fn(() => new Promise<void>(() => {}));
-      const { result } = render({ authLoaded: false, clerkUserId: null });
+      const { result } = render({ authLoaded: false, accountUserId: null });
       await expect(result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
       expect(settle).not.toHaveBeenCalled();
     });
 
     it('waits for identity when the browser looks signed in, then reads the settled answer', async () => {
-      setUat('1760000000');
-      const hook = render({ authLoaded: false, clerkUserId: null });
+      setHint(true);
+      const hook = render({ authLoaded: false, accountUserId: null });
       const settle = vi.fn(async () => {
-        hook.rerender({ authLoaded: true, clerkUserId: 'user_1' });
+        hook.rerender({ authLoaded: true, accountUserId: 'user_1' });
       });
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe(
         'livediagram',
@@ -55,21 +50,49 @@ describe('useNewDocumentLocation', () => {
     });
 
     it('makes a guest This Browser when the hint was stale', async () => {
-      setUat('1760000000');
-      const hook = render({ authLoaded: false, clerkUserId: null });
-      const settle = async () => hook.rerender({ authLoaded: true, clerkUserId: null });
+      setHint(true);
+      const hook = render({ authLoaded: false, accountUserId: null });
+      const settle = async () => hook.rerender({ authLoaded: true, accountUserId: null });
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
     });
 
     it('keeps a folder or team link on livediagram', async () => {
-      const { result } = render({ authLoaded: false, clerkUserId: null });
+      const { result } = render({ authLoaded: false, accountUserId: null });
       await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livediagram');
     });
 
-    it('keeps everyone on livediagram without sign-in', async () => {
-      clerk.clerkEnabled = false;
-      const { result } = render({ authLoaded: false, clerkUserId: null });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
+    // save-locations.md "On the start screen": the wizard's switch, once flipped, decides the create.
+    it('goes where the wizard’s switch says, without waiting for identity', async () => {
+      setHint(true);
+      const settle = vi.fn(() => new Promise<void>(() => {}));
+      const guest = render({ authLoaded: true, accountUserId: null });
+      await expect(
+        guest.result.current.resolveSaveLocation(false, vi.fn(), 'livediagram'),
+      ).resolves.toBe('livediagram');
+      const waiting = render({ authLoaded: false, accountUserId: null });
+      await expect(
+        waiting.result.current.resolveSaveLocation(false, settle, 'browser'),
+      ).resolves.toBe('browser');
+      expect(settle).not.toHaveBeenCalled();
+    });
+
+    it('keeps a folder or team link on livediagram whatever the switch says', async () => {
+      const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
+      await expect(result.current.resolveSaveLocation(true, vi.fn(), 'browser')).resolves.toBe(
+        'livediagram',
+      );
+    });
+  });
+
+  describe('signedIn', () => {
+    it('is the hint until sign-in answers, then the answer', () => {
+      setHint(true);
+      const hook = render({ authLoaded: false, accountUserId: null });
+      expect(hook.result.current.signedIn).toBe(true);
+      hook.rerender({ authLoaded: true, accountUserId: null });
+      expect(hook.result.current.signedIn).toBe(false);
+      hook.rerender({ authLoaded: true, accountUserId: 'user_1' });
+      expect(hook.result.current.signedIn).toBe(true);
     });
   });
 });

@@ -1,61 +1,55 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SharedWithMeTable } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Shared With Me',
   description:
-    'Designs other people have shared with you collect under Shared With Me in the Explorer, so a link you were sent is easy to find again.',
+    'Items other people have shared with you collect under Shared With Me in the Explorer, so a link you were sent is easy to find again.',
   path: '/help/explorer/shared-with-you/',
 });
 
 <ArticleLayout
   title="Shared With Me"
-  description="Open a share link someone sent you and the design lands under Shared With Me, ready to reopen any time."
+  description="Open a share link someone sent you and the item lands under Shared With Me, ready to reopen any time."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Shared With Me** collects the designs other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer sidebar's **Overview** group, just below the Timeline, and its row shows a count of how many designs are there.
+**Shared With Me** collects the items other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer sidebar's **Overview** group, just below the Timeline, with a count of what it holds.
 
-## How a design gets here
+## How an item gets here
 
-When you open a [share link](/help/collaboration/sharing/) that someone sent you, that design is remembered and added to **Shared With Me**. You do not have to do anything extra: opening the link once is enough. Until you have opened one, the section says **Nothing shared with you yet**.
+When you open a [share link](/help/collaboration/sharing/) someone sent you, that item is remembered and added to **Shared With Me**. Opening the link once is enough. Until you have opened one, the page says **Nothing shared with you yet**.
 
-Opening a link to one of your own designs doesn't add it, and designs in your [teams](/help/explorer/team-spaces/) live in the team's space; they only show up here if you open one through a share link.
+Opening a link to one of your own items doesn't add it, and items in your [teams](/help/explorer/team-spaces/) live in the team's library.
+
+Shared With Me covers every liveworkspace app: choose **All Apps** at the top of the page to see a Canvas or a Document someone shared with you beside your designs.
 
 ## Reading the list
 
-Shared With Me is a table, with the designs you opened most recently first:
+Shared With Me is a table of its own, whichever view the rest of the Explorer is in:
 
-- **Name**, with a picture of the design. Click it to open the design on its share link, no need to dig the original link out of your messages.
-- **Owner**: whose design it is (hidden on a phone, to save room).
+- **Name**, with a picture of the item. Click it to open the item on its share link, without digging the original link out of your messages.
+- **Owner**: whose item it is (hidden on a phone, to save room).
 - **Role**: **Edit**, **Participate** or **View**, the access the share link gives you.
-- **Updated**: when the design last changed.
-
-<Figure caption="Shared With Me: each design's owner, your role on it, when it last changed, and a cross to dismiss it.">
-  <SharedWithMeTable />
-</Figure>
+- **Updated**: when the item last changed (hidden on a phone too).
 
 Type in the Explorer's search box to [filter](/help/explorer/filters/) the list.
 
-## Dismissing a design
+## Removing an item
 
-Click the × at the end of a row (**Dismiss**), or choose **Dismiss** in the design's ⋯ menu, then confirm with **Remove** when you are done with a design. That only removes it from your Shared With Me list; it does not affect the design or anyone else's access. Open the share link again and it comes back.
+Click the **×** at the end of a row (**Dismiss**) and confirm, or choose **Remove from Shared With Me** in the item's **⋯** menu, when you are done with it. That only removes it from your list; it does not affect the item or anyone else's access. Open the share link again and it comes back.
 
-## When a design disappears by itself
-
-The list only offers designs you can still open. If the owner revokes the link, it [expires](/help/collaboration/sharing/share-link-expiry/), the owner turns sharing off, or the design goes to the Trash, the design drops off the list. If the owner shares it again and you open the new link, it returns.
+The list only offers items you can still open: if the owner turns the link off, it [runs out](/help/collaboration/sharing/share-link-expiry/), or the item goes to the Trash, it drops off.
 
 ## Guests and signing in
 
-Shared With Me works without an account: the list is kept for this browser's guest identity. It is stored on the server rather than in the browser, so it is the same wherever you are signed in, and signing up carries a guest's list into your new account.
+Shared With Me works without an account: the list is kept for your guest identity, which is the same in every liveworkspace app. Signing in carries it into your account.
 
 <Tip>
-  Shared designs stay separate from **My Work**: they are other people's designs you have access
-  to, not your own library, so they never clutter your folders. They do show up in
-  [Recent](/help/explorer/recent/) and in
-  [search](/help/search-panel/the-search-panel/search-designs/).
+  Shared items stay separate from **My Work**: they are other people's items you have access to, not
+  your own library, so they never clutter your folders. They do show up in
+  [Recent](/help/explorer/recent/) and in search.
 </Tip>
 
 </ArticleLayout>

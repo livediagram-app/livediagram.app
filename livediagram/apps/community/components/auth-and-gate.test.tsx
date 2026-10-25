@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CommunitySession } from '@/lib/session';
 
 // The two pieces around the app: CommunityGate (docs/specs/025-community/community.md "Turning the Community
-// off") and the Clerk session My Shares loads ("My Shares").
+// off") and the session My Shares asks for ("My Shares").
 
 const h = vi.hoisted(() => ({
   enabled: true,
-  auth: { isLoaded: true, isSignedIn: true, getToken: vi.fn() },
   replace: vi.fn(),
 }));
 
@@ -17,22 +15,28 @@ vi.mock('@livediagram/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@livediagram/ui')>()),
   useCommunityEnabled: () => h.enabled,
 }));
-vi.mock('@clerk/react', () => ({
-  ClerkProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
-  useAuth: () => h.auth,
-}));
-vi.mock('@/lib/session', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/session')>()),
-  clerkPublishableKey: 'pk_test_x',
-}));
 
-import ClerkSession from './auth/ClerkSession';
+import { AccountSession } from './auth/AccountSession';
 import { CommunityGate } from './CommunityGate';
+
+const fetchMock = vi.fn<typeof fetch>();
+
+function tokenAnswer(body: unknown): Response {
+  return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
+}
+
+function setHint(value: '1' | '0' | null) {
+  document.cookie =
+    value === null
+      ? 'ld_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+      : `ld_signed_in=${value}; path=/`;
+}
 
 beforeEach(() => {
   h.enabled = true;
-  h.auth = { isLoaded: true, isSignedIn: true, getToken: vi.fn() };
   h.replace.mockReset();
+  fetchMock.mockReset();
+  vi.stubGlobal('fetch', fetchMock);
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   Object.defineProperty(window, 'location', {
     configurable: true,
@@ -42,6 +46,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  setHint(null);
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -60,34 +66,62 @@ describe('CommunityGate', () => {
   });
 });
 
-describe('ClerkSession', () => {
+describe('AccountSession', () => {
+  async function reported(): Promise<CommunitySession> {
+    const onSession = vi.fn<(s: CommunitySession) => void>();
+    render(<AccountSession onSession={onSession} />);
+    await waitFor(() => expect(onSession).toHaveBeenCalled());
+    return onSession.mock.calls.at(-1)![0];
+  }
+
   it('reports who is signed in, with their token', async () => {
-    h.auth.getToken.mockResolvedValue('token-1');
-    const onSession = vi.fn<(s: CommunitySession) => void>();
-    render(<ClerkSession onSession={onSession} />);
-    await waitFor(() => expect(onSession).toHaveBeenCalled());
-    const session = onSession.mock.calls.at(-1)![0];
-    expect(session).toMatchObject({ loaded: true, signedIn: true });
+    setHint('1');
+    fetchMock.mockResolvedValue(
+      tokenAnswer({
+        signedIn: true,
+        accessToken: 'token-1',
+        expiresAt: Date.now() + 15 * 60_000,
+        user: { id: 'user_1' },
+      }),
+    );
+    const session = await reported();
+    expect(session).toMatchObject({ loaded: true, signedIn: true, userId: 'user_1' });
     expect(await session.getToken()).toBe('token-1');
+    // Still fresh, so the token is reused rather than asked for again.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("retries once when Clerk's token is briefly null on a live session", async () => {
-    h.auth.getToken.mockResolvedValueOnce(null).mockResolvedValueOnce('token-2');
-    const onSession = vi.fn<(s: CommunitySession) => void>();
-    render(<ClerkSession onSession={onSession} />);
-    await waitFor(() => expect(onSession).toHaveBeenCalled());
-    expect(await onSession.mock.calls.at(-1)![0].getToken()).toBe('token-2');
-    expect(h.auth.getToken).toHaveBeenCalledTimes(2);
+  it('asks again for a token that is nearly spent', async () => {
+    setHint('1');
+    fetchMock
+      .mockResolvedValueOnce(
+        tokenAnswer({ signedIn: true, accessToken: 'old', expiresAt: Date.now(), user: { id: 'u' } }),
+      )
+      .mockResolvedValueOnce(
+        tokenAnswer({
+          signedIn: true,
+          accessToken: 'new',
+          expiresAt: Date.now() + 15 * 60_000,
+          user: { id: 'u' },
+        }),
+      );
+    const session = await reported();
+    expect(await session.getToken()).toBe('new');
   });
 
-  it('gives no token, without retrying, when signed out', async () => {
-    h.auth = { isLoaded: true, isSignedIn: false, getToken: vi.fn().mockResolvedValue(null) };
-    const onSession = vi.fn<(s: CommunitySession) => void>();
-    render(<ClerkSession onSession={onSession} />);
-    await waitFor(() => expect(onSession).toHaveBeenCalled());
-    const session = onSession.mock.calls.at(-1)![0];
-    expect(session.signedIn).toBe(false);
+  it('is signed out, without asking, for a browser with no hint', async () => {
+    const session = await reported();
+    expect(session).toMatchObject({ loaded: true, signedIn: false, userId: null });
     expect(await session.getToken()).toBeNull();
-    expect(h.auth.getToken).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('is signed out when the api has no session, or cannot be reached', async () => {
+    setHint('1');
+    fetchMock.mockResolvedValueOnce(tokenAnswer({ signedIn: false }));
+    expect((await reported()).signedIn).toBe(false);
+    cleanup();
+    fetchMock.mockRejectedValueOnce(new Error('offline'));
+    expect((await reported()).signedIn).toBe(false);
   });
 });

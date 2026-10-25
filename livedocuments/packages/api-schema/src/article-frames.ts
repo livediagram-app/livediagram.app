@@ -6,7 +6,7 @@ import { articlesOf, diffArticleFlow, type ArticleOp, type Tab } from '@livedocu
 import type { RoomOp } from './room-messages';
 
 // The most characters of block ops one `article` frame carries: well inside the room's 256K cap on a
-// message (apps/api/src/document-room.ts MAX_MESSAGE_CHARS), with room for the envelope.
+// message (apps/api/src/document-room/document-room.ts MAX_MESSAGE_CHARS), with room for the envelope.
 const ARTICLE_FRAME_CHARS = 200_000;
 
 type ArticlesTab = Pick<Tab, 'id'> & { articles?: unknown };

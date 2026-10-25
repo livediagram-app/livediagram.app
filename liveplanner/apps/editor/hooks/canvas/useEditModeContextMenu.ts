@@ -9,9 +9,9 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { isBoxed, type Element } from '@liveplanner/project';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
-import { editMenuAnchor } from '@/lib/context-menu-anchor';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { editMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 export function useEditModeContextMenu({
   editingId,

@@ -281,6 +281,5 @@ a component's nodes are positioned:
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing the plain layout's arrows around
 obstacles, and any LLM
-involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
-key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
-gets). See issue #12 for the fuller rationale and open questions.
+involvement (Auto Layout is deterministic and offline-safe, and every deployment
+gets it). See issue #12 for the fuller rationale and open questions.

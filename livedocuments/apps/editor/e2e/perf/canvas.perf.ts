@@ -4,9 +4,10 @@ import type { Browser, CDPSession, Page } from '@playwright/test';
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
+  adoptGuest,
+  mintGuest,
   ownerHeaders,
+  seedDocumentItem,
   test,
 } from '../fixtures';
 import {
@@ -36,7 +37,6 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const VIEW = { width: 1440, height: 900 };
 const SHAPE_IDS = buildReferenceBoard()
   .filter((el) => el.type === 'shape')
@@ -48,9 +48,10 @@ type Point = { x: number; y: number };
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
   const id = crypto.randomUUID();
   const elements = buildReferenceBoard();
-  const res = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
-    data: {
+  const res = await seedDocumentItem(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
+    {
       id,
       name: `Reference board (${tab})`,
       // The whiteboard series stores `opensIn: 'draw'` on its tab, which opens in Pages like every tab
@@ -64,7 +65,7 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
         },
       ],
     },
-  });
+  );
   expect(res.ok(), `seeding the ${tab} board`).toBe(true);
   return id;
 }
@@ -92,33 +93,29 @@ const OPEN_SETTLE_TIMEOUT_MS = 60_000;
 // ready for gestures.
 async function openBoard(browser: Browser, owner: string, id: string, throttle: number) {
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark' });
-  await ctx.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('livedocuments:v2:self-id', o);
-      if (sig) localStorage.setItem('livedocuments:v2:self-sig', sig);
-      localStorage.setItem('livedocuments:v2:name-confirmed', '1');
-      // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
-      // frames together, from the very start, since long tasks alone miss a frame that only renders.
-      const w = window as unknown as {
-        __longTasks: { start: number; end: number }[];
-        __busy: { start: number; end: number }[];
-      };
-      w.__longTasks = [];
-      w.__busy = [];
-      new PerformanceObserver((list) => {
-        for (const e of list.getEntries()) {
-          const span = { start: e.startTime, end: e.startTime + e.duration };
-          w.__longTasks.push(span);
-          w.__busy.push(span);
-        }
-      }).observe({ type: 'longtask', buffered: true });
-      new PerformanceObserver((list) => {
-        for (const e of list.getEntries())
-          w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
-      }).observe({ type: 'long-animation-frame', buffered: true });
-    },
-    { o: owner, sig: guestSigFor(owner) },
-  );
+  await adoptGuest(ctx, owner);
+  await ctx.addInitScript(() => {
+    localStorage.setItem('livedocuments:v2:name-confirmed', '1');
+    // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
+    // frames together, from the very start, since long tasks alone miss a frame that only renders.
+    const w = window as unknown as {
+      __longTasks: { start: number; end: number }[];
+      __busy: { start: number; end: number }[];
+    };
+    w.__longTasks = [];
+    w.__busy = [];
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries()) {
+        const span = { start: e.startTime, end: e.startTime + e.duration };
+        w.__longTasks.push(span);
+        w.__busy.push(span);
+      }
+    }).observe({ type: 'longtask', buffered: true });
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries())
+        w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
+    }).observe({ type: 'long-animation-frame', buffered: true });
+  });
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
@@ -232,9 +229,7 @@ async function targets(page: Page): Promise<{ shape: Point; bare: Point }> {
         return (
           !!hit &&
           !!hit.closest('[data-canvas-a11y-root]') &&
-          !hit.closest(
-            '[data-element-id], [data-floating-panel], [data-whiteboard-dock], header, nav',
-          )
+          !hit.closest('[data-element-id], [data-floating-panel], header, nav')
         );
       };
       for (let y = 220; y < h - 260; y += 37)
@@ -483,7 +478,7 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
       ? ': this machine is slower than the reference speed, so these numbers read harsher than the budget.'
       : '.');
   process.stdout.write(`[canvas-perf] ${speed}\n`);
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const measurements: Measurement[] = [];
   for (const tab of ['whiteboard', 'diagram'] as const) {
     const id = await seed(page, baseURL!, owner, tab);

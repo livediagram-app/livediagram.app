@@ -37,7 +37,7 @@ const ledger: TabLedger = {
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
   const stubFetch = vi.fn(fetch);
   const env = {
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: (name: string) => name,
       get: () => ({ fetch: stubFetch }),
     },

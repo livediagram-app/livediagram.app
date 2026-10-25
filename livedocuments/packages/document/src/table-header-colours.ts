@@ -4,7 +4,7 @@
 // so a dark page gets a dark band under light ink rather than a light band under white ink.
 import { defaultStrokeColor, defaultTextColor, hexToRgb, type CanvasSurface } from './colors';
 import { readableInk } from './cell-colours';
-import { mixHex } from './color-wash';
+import { mixHex } from '@liveworkspace/model-core/color-wash';
 import type { TableElement } from './index';
 
 /** The grid stroke's share of the default header band (an opaque 18% tint). */

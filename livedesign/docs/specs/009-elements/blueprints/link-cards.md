@@ -6,32 +6,33 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                       |
-| -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/design/src/element-types.ts`                   | `LinkCardElement`, `LinkCardMeta`                                          |
-| `packages/design/src/factories.ts`                       | `createLinkCard`: 280×120, no link, no meta                                |
-| `packages/design/src/index.ts`                           | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
-| `packages/design/src/colors.ts`                          | Default fill, stroke, text; `supportsColours` true                         |
-| `packages/design/src/themes.ts`                          | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
-| `packages/design/src/validate.ts`                        | Link card carries no extra required fields                                 |
-| `packages/design/src/svg-render.ts`                      | Export: generic `rect` branch                                              |
-| `packages/api-schema/src/index.ts`                       | `UnfurlResult`                                                             |
-| `apps/api/src/routes/unfurl.ts`                          | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
-| `apps/api/src/index.ts`                                  | Dispatch of `unfurl`                                                       |
-| `apps/api/wrangler.toml`                                 | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
-| `apps/live/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
-| `apps/live/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
-| `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
-| `apps/live/components/canvas/LinkCardView.tsx`           | Card face: banner, favicon, title, destination, "Open link" row            |
-| `apps/live/components/canvas/element-variant.ts`         | The card chrome: 10 px radius, 1 px border, fill                           |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Excludes link cards from the corner link badge                             |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click → `onEditLink`                                                |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
-| `apps/live/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
-| `apps/live/app/design/[id]/useElementCreation.ts`        | `addLinkCard`: arms the draw gesture                                       |
-| `apps/live/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
-| `apps/live/lib/search.ts`                                | Palette search entry                                                       |
+| File                                                                           | Role                                                                                                                      |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `packages/design/src/element-types.ts`                                         | `LinkCardElement`, `LinkCardMeta`                                                                                         |
+| `packages/design/src/factories.ts`                                             | `createLinkCard`: 280×120, no link, no meta                                                                               |
+| `packages/design/src/index.ts`                                                 | `isBoxed` includes `link-card`; `elementSupportsText` excludes it                                                         |
+| `packages/design/src/colors.ts`                                                | Default fill, stroke, text; `supportsColours` true                                                                        |
+| `packages/design/src/themes.ts`                                                | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
+| `packages/design/src/validate.ts`                                              | Link card carries no extra required fields                                                                                |
+| `packages/design/src/svg-render.ts`                                            | Export: generic `rect` branch                                                                                             |
+| `packages/api-schema/src/index.ts`                                             | `UnfurlResult`                                                                                                            |
+| `apps/api/src/routes/unfurl.ts`                                                | `handleUnfurl`: routing, the per-IP throttle, this product's User-Agent                                                   |
+| `../packages/api-kit/src/unfurl.ts`, `../packages/api-kit/src/unfurl-fetch.ts` | `UnfurlResult`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`; `unfurl` (the bounded fetch), every product's |
+| `apps/api/src/index.ts`                                                        | Dispatch of `unfurl`                                                                                                      |
+| `apps/api/wrangler.toml`                                                       | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                                                                    |
+| `apps/live/lib/api/unfurl.ts`                                                  | `apiUnfurl`: fail-soft client                                                                                             |
+| `apps/live/hooks/canvas/useElementLinks.ts`                                    | `applyElementLink`: sets the link, then fetches and commits `meta`                                                        |
+| `../packages/workbench/src/lib/url-safety.ts`                                  | `normaliseUrl`, `isSafeFollowUrl`                                                                                         |
+| `apps/live/components/canvas/LinkCardView.tsx`                                 | Card face: banner, favicon, title, destination, "Open link" row                                                           |
+| `apps/live/components/canvas/element-variant.ts`                               | The card chrome: 10 px radius, 1 px border, fill                                                                          |
+| `apps/live/components/canvas/BoxedElementView.tsx`                             | Excludes link cards from the corner link badge                                                                            |
+| `apps/live/components/canvas/useBoxedElementGestures.ts`                       | Double-click → `onEditLink`                                                                                               |
+| `apps/live/components/canvas/EditorCanvasHost.tsx`                             | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`                                                            |
+| `apps/live/components/dialogs/LinkPickerDialog.tsx`                            | The shared link editor                                                                                                    |
+| `apps/live/components/palette/palette-tile-defs.tsx`                           | `tools:link-card` tile                                                                                                    |
+| `apps/live/app/design/[id]/useElementCreation.ts`                              | `addLinkCard`: arms the draw gesture                                                                                      |
+| `apps/live/hooks/canvas/useShapeDrawing.ts`                                    | Commit: `track('Element', 'Added', 'LinkCard')`                                                                           |
+| `apps/live/lib/search.ts`                                                      | Palette search entry                                                                                                      |
 
 ## Domain and naming
 
@@ -151,7 +152,7 @@ export type UnfurlResult = {
   favicon?: string;
 };
 
-// apps/api/src/routes/unfurl.ts
+// packages/api-kit/src/unfurl.ts (the monorepo's)
 export function isBlockedHost(hostname: string): boolean;
 export function parsePublicHttpUrl(raw: string): URL | null;
 export function buildUnfurlResult(collected: CollectedMeta, finalUrl: string): UnfurlResult;
@@ -201,7 +202,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ## Security and trust
 
 - **Unauthenticated outbound fetch.** The endpoint needs no owner, so it is throttled per IP
-  (`UNFURL_RATE_LIMITER`) and exempt from guest signatures (`OWNER_SCOPED_SEGMENTS` excludes it).
+  (`UNFURL_RATE_LIMITER`) and needs no Bearer.
 - **SSRF.** Scheme and host validated before the fetch and again on the final URL. DNS names that
   resolve to private addresses are not resolved here; Workers `fetch` cannot reach a private
   network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`.
@@ -227,7 +228,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
   16 px favicon or glyph, title (12 px semibold, `line-clamp-2`, `textColor`), destination (10 px,
   truncated), and a right arrow that nudges on hover when followable.
 - **Palette**: `tools:link-card`, "Add Link Card", Behaviour group, "move" tile group; draw banner
-  "Tap to drop or drag to draw a link card".
+  "Click to drop or drag to draw a link card" ("Tap to drop …" on a phone).
 - **Export**: rect with `rx` 6 and the card's fill and stroke, no text (D56).
 
 ## Accessibility
@@ -259,11 +260,11 @@ LinkUnfurled` exist.
 
 | Rule                                                    | Test                                                        | File                                           |
 | ------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------- |
-| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `apps/api/src/routes/unfurl.test.ts`           |
-| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `apps/api/src/routes/unfurl.test.ts`           |
+| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `../packages/api-kit/src/unfurl.test.ts`       |
+| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`       |
 | Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                |
-| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `apps/api/src/routes/unfurl.test.ts`           |
-| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`           |
+| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `../packages/api-kit/src/unfurl.test.ts`       |
+| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `../packages/api-kit/src/unfurl.test.ts`       |
 | Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                |
 | 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/design/src/factories.test.ts`        |
 | Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`            |

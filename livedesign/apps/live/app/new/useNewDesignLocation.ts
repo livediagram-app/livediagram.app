@@ -1,9 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import { signInEnabled } from '@/lib/auth-config';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
 import { readSignedInHint } from '@/lib/signed-in-hint';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 const subscribeNever = () => () => {};
 // The prerender has no cookies: it reads as a guest, and the client snapshot follows at hydration.
@@ -12,7 +11,7 @@ const serverHint = () => false;
 // Where /new stores a new design (docs/specs/006-design/save-locations.md "The default depends on who is
 // creating"); nobody is asked. Every create decides once, at commit: a `/new?folder=` / `?team=` context names a server
 // place, so it is livedesign whoever is creating; otherwise a guest is known at once and never waits, and a browser
-// that looks signed in (the `lp_signed_in` hint, docs/specs/014-identity/auth-and-guest-access.md "Who is a guest,
+// that looks signed in (the `ldes_signed_in` hint, docs/specs/014-identity/auth-and-guest-access.md "Who is a guest,
 // before sign-in answers") waits for identity (`settle`, the page's own wait) and then reads the settled answer, so a
 // signed-in person is never handed a design in This Browser.
 export function useNewDesignLocation(opts: {
@@ -26,12 +25,11 @@ export function useNewDesignLocation(opts: {
     hasPlacementParams: boolean,
     settle: () => Promise<unknown>,
   ): Promise<SaveLocationId> => {
-    if (hasPlacementParams || !signInEnabled) return 'livedesign';
+    if (hasPlacementParams) return 'livedesign';
     if (!latest.current.authLoaded && latest.current.signedInHint) await settle();
     const now = latest.current;
     const location = defaultSaveLocationFor({
       signedIn: now.authLoaded ? !!now.accountUserId : now.signedInHint,
-      signInEnabled,
     });
     debugLog(`[new] save location=${location} settled=${now.authLoaded}`);
     return location;

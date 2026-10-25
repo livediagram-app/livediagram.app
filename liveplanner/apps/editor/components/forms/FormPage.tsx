@@ -21,7 +21,7 @@ import {
   type FormDefinition,
 } from '@liveplanner/forms';
 import { lucideGlyph, Tooltip } from '@liveplanner/ui';
-import { lucideEye } from '@liveplanner/icons/lucide';
+import { lucideEye } from '@liveworkspace/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import { setFormShareHost } from '@/lib/form-share-store';
@@ -42,7 +42,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
 

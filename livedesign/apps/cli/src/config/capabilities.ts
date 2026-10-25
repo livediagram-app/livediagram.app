@@ -5,7 +5,7 @@ import type { CapabilitiesResponse } from '@livedesign/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { cacheDir } from './paths';
 import type { Profile } from './profiles';
 
@@ -78,7 +78,7 @@ export async function loadCapabilities(
   const entry: CacheEntry = {
     fetchedAt: io.now(),
     host: profile.host,
-    capabilities: capabilities as CapabilitiesResponse,
+    capabilities: capabilities,
   };
   // The cache only saves a request: one that cannot be written (a read-only home) never fails the command.
   try {

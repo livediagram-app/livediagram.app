@@ -1,10 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import {
-  type FreehandElement,
-  type Tab,
-  TAB_SCHEMA_VERSION,
-  type ExportedTabEnvelope,
-} from '@liveplanner/project';
+import { describe, expect, it } from 'vitest';
+import { type Tab, TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from '@liveplanner/project';
 import { defaultCatalogue } from '@liveplanner/items';
 import { parseImportedTab } from './import-tab';
 
@@ -115,32 +110,6 @@ describe('parseImportedTab — malformed elements', () => {
 describe('parseImportedTab — stroke points (docs/specs/006-project/stroke-points.md)', () => {
   it('writes version 2, the first with packed stroke points', () => {
     expect(TAB_SCHEMA_VERSION).toBe(2);
-  });
-
-  it('packs the former { nx, ny } strokes of a version 1 file', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const stroke = {
-      id: 'f1',
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      closed: false,
-      points: [
-        { nx: 0, ny: 0 },
-        { nx: 1, ny: 1 },
-      ],
-    };
-    const result = parse(
-      envelope({ schemaVersion: 1, tab: { ...validTab, elements: [stroke] } as unknown as Tab }),
-    );
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      const el = result.tab.elements[0] as FreehandElement;
-      expect(el.type).toBe('freehand');
-      expect(typeof el.packedPoints).toBe('string');
-    }
   });
 });
 

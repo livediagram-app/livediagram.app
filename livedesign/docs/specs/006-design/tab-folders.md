@@ -9,18 +9,18 @@ This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace
 ## Scope
 
 - **One level.** A folder contains tabs; folders never contain folders.
-- **Per-design.** Tab order already lives on the `design_tabs` link, not on the shared `tabs` row, because a tab can be shared into several designs ([Tab ↔ design many-to-many](tab-design-many-to-many.md)). Folder membership lives in the same place, for the same reason: a tab shared into two designs can sit in a folder in one and be loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
+- **Per-design.** Tab order lives on the `design_tabs` link, not on the `tabs` row, and folder membership lives in the same place. Folder membership is **never** part of the tab body (`tabs.data`).
 - **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the design carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
 
 ## Data model
 
-Migration `0018` adds one nullable column to the link table from [Tab ↔ design many-to-many](tab-design-many-to-many.md):
+One nullable column on the design's link table, in its own SQLite (`apps/api/src/design-room/design-schema.ts`):
 
 ```sql
-ALTER TABLE design_tabs ADD COLUMN folder TEXT;  -- NULL = loose (no folder)
+design_tabs.folder TEXT  -- NULL = loose (no folder)
 ```
 
-No backfill (every existing tab is loose), no index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the legacy `tabs` table the way `order_index` is (migration 0011) — folder membership is a design-link concept with no legacy equivalent.
+No index (folders are derived by a client-side scan over the already-ordered read). The column lives on the design's link to the tab (`design_tabs.folder`, in the design's own SQLite), beside its order.
 
 ## Ordering: one flat list, folders are contiguous runs
 

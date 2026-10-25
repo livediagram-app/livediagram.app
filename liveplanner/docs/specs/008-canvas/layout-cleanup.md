@@ -61,11 +61,12 @@ canvas. This is also the routine the agents' graph input leans on to place nodes
 - **Scope:** the whole active tab. Boxed elements that aren't wired to anything
   (loose stickies / text / images) pass through with their positions untouched;
   spacing respects element sizes.
-- **Graph input** (importers, the MCP, AI output) gets the layout described in the sections up to
-  "Two-way edges bow apart", pinned to the origin the caller gives.
+- **Laid-out input** (a template's flowchart, an agent's elements left unplaced) gets the layout described in the
+  sections up to "Tidy Up keeps a flowchart a flowchart", pinned to the origin the caller gives. (liveplanner's
+  node/edge graph input, its Mermaid import and its cluster layout were removed 2026-10-24.)
 - **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
-  graph does not, and the graph-input layout trashed it.
+  graph does not, and the generated-graph layout trashed it.
 - One undoable op (`commit` snapshots the pre-layout state), so it can be
   undone in a single step.
 
@@ -143,23 +144,11 @@ of their boxes (a bottom to a bottom) loops out 24 px past the farther end and b
 boxes' own edges. An arrow whose ends
 do not face each other keeps its L, which already meets both ends square.
 
-### Two-way edges bow apart
-
-In laid-out graph input (a Mermaid import), a
-pair of straight arrows between the same two boxes in opposite directions (a
-state diagram's Private -> Shared and Shared -> Private) is curved apart, each
-bowing to its own side of the line between the boxes (`arrow-reciprocal.ts`):
-at least `RECIPROCAL_BOW` (36), and for a labelled pair running up and down, far
-enough for the two labels to sit side by side (a curve's label moves half its
-bow), capped at 140. Drawn straight they lay on top of each other, only the
-fan-out's few pixels apart, with their labels colliding. Arrows that already
-carry a curve or a routing are left as they are.
-
 ### Tidy Up keeps a flowchart a flowchart
 
-The editor's Auto Layout (`cleanupElements` → `tidyLayoutElements`, a separate entry so graph-input callers never load it,
+The editor's Auto Layout (`cleanupElements` → `tidyLayoutElements`, a separate entry so the agent apply path never loads it,
 `auto-layout-tidy.ts`) reads the drawing as well as the graph. On the checkout template the
-graph-input layout squared both decisions, straightened every elbow into a diagonal, ran the retry
+generated-graph layout squared both decisions, straightened every elbow into a diagonal, ran the retry
 loop back through the column it returns along, and landed the flow on top of the title. The tidy
 profile:
 

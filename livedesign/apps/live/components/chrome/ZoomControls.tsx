@@ -1,4 +1,4 @@
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';

@@ -1,8 +1,6 @@
-// Room ops as they arrive from peers (docs/specs/006-project/stroke-points.md "Migration of
-// stored strokes"): a peer whose browser loaded before a deploy still sends elements in a former
-// stored shape, so every op that carries elements (a whole tab, an added or updated
-// element) runs the stored-element migrations before anything applies it. Pure; the op
-// itself back when nothing needed migrating.
+// Room ops as they arrive from peers: every op that carries elements (a whole tab, an added or updated element)
+// runs the stored-element steps (malformed fields dropped, attached elements settled) before anything applies it.
+// Pure; the op itself back when nothing needed settling.
 import { migrateIncomingElements, migrateIncomingTab, type Tab } from '@liveplanner/project';
 import type { RoomOp } from '@liveplanner/api-schema';
 

@@ -6,7 +6,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { parseAvatarSay } from '@livediagram/api-schema';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   admitBubble,
   bubbleEndsAt,
@@ -15,7 +15,7 @@ import {
   SeenIds,
   type SpeechBubble,
 } from '@/lib/avatar-speech';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let bubbles: SpeechBubble[] = [];
 const listeners = createListeners();

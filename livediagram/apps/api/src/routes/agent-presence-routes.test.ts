@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { accountsServiceFor } from '../test-accounts-service';
 import * as roomClient from '../room-client';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -27,7 +28,7 @@ function call({
   tab = 't1',
   body,
   token = { id: 'tok_1' },
-  owner = 'owner',
+  owner = 'guest_00000000-0000-4000-8000-000000000001',
   raw,
 }: Call = {}) {
   return handleDocuments(
@@ -43,10 +44,14 @@ function call({
 
 beforeEach(() => {
   sql = sqliteD1();
+  accountsServiceFor(sql.env).profiles.set('guest_00000000-0000-4000-8000-000000000001', {
+    name: 'Webber',
+    color: '#3b82f6',
+    createdAt: 1,
+  });
   pending = [];
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
+    INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES ('d1', 'guest_00000000-0000-4000-8000-000000000001', 'Shop', 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[{"id":"web-app","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":60,"label":"Web app"},{"id":"web-api","type":"shape","shape":"square","x":200,"y":0,"width":100,"height":60,"label":"Web API"}]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
   `);
@@ -58,7 +63,10 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('PUT presence', () => {
   it('sets the owner’s presence with status, resolved focus and ttl, at the token’s level', async () => {

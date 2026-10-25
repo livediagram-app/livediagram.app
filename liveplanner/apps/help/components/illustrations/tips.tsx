@@ -2,7 +2,7 @@
 // the palette strip as a quick-add launchpad, and Zen mode. Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Panel, Label, TextBar } from './primitives';
+import { Scene, Panel, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 /** Settings › Keyboard: the Keyboard Shortcuts switch, turned off, above the
  *  All Shortcuts reference it gates. */

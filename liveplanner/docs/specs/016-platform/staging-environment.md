@@ -5,8 +5,8 @@ A second, complete copy of the platform at **https://staging.liveplanner.app**, 
 as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
 The point is to have somewhere a change is _running_ before anyone decides to ship it —
-in particular somewhere a **D1 migration runs against a real remote database** before it
-runs against the one holding people's projects.
+in particular somewhere a new plan schema step runs in real remote Durable Objects before it
+runs in the ones holding people's projects.
 
 ## The two environments
 
@@ -17,8 +17,6 @@ runs against the one holding people's projects.
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `liveplanner-<app>`                  | `liveplanner-<app>-staging`                |
-| D1           | `liveplanner`                        | `liveplanner-staging`                      |
-| R2           | `liveplanner-snapshots`              | `liveplanner-snapshots-staging`            |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
@@ -66,15 +64,15 @@ drifting apart unnoticed.
 The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available —
-staging frontend, production database — so `apps/router/wrangler.toml` keeps its staging
+staging frontend, production data — so `apps/router/wrangler.toml` keeps its staging
 bindings adjacent to the production ones for eyeball comparison, and the dry-run in CI
 prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
-come free: a different script is a different DO namespace, so the staging
-`PROJECT_ROOM` is already separate.
+Staging gets its own **KV namespace**, and talks to liveworkspace's staging index, accounts and media service (its
+previews). The api has no D1. Durable Objects come free: a different script is a different DO namespace, so the staging
+`PLAN_ROOM` (and every plan's content in it) is already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -82,19 +80,16 @@ scoped per script by Cloudflare, so the staging worker's `1001` is not productio
 something.
 
 Consequence worth stating plainly: **staging has no production data.** It starts empty
-and stays a scratch environment. It is for exercising code paths and migrations, not for
+and stays a scratch environment. It is for exercising code paths and schema steps, not for
 reproducing a specific user's project.
 
-## Migrations run on staging first
+## Schema steps run on staging first
 
-`deploy-staging.yml` applies `wrangler d1 migrations apply DB --remote --env staging`
-before the staging api worker deploys, exactly as production does. That makes every
-merge to `main` a rehearsal of the production migration step against a real remote D1,
-one manual deploy earlier than the rehearsal used to happen, which was never.
+There is no migration step in the deploy: each plan's object brings its own SQLite up to date on first use
+(`plan-schema.ts`). Staging is where a new step first runs against real remote objects, one manual deploy before
+production, so a step that fails shows on staging plans first.
 
-A migration that fails halts the staging deploy and turns the `main` build red — which
-is the whole point, and the reason the staging deploy is chained to CI rather than fired
-in parallel with it.
+The staging deploy is chained to a green CI run rather than fired in parallel with it, so a red `main` never reaches it.
 
 ## noindex, at the edge
 
@@ -133,8 +128,7 @@ from production's in exactly one value:
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md)
-"Hosted profile") / `NEXT_PUBLIC_SIGN_IN_ENABLED` (on when the environment's
-`ACCOUNTS_CLIENT_ID` is set) are `true` in both so the staging build exercises the same
+"Hosted profile") is `true` in both so the staging build exercises the same
 code as production's.
 
 ## Integrations
@@ -148,15 +142,15 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.liveplanner.app/api/auth/callback`. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                  |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.     |
+| **Telemetry** — ON | Events go to liveworkspace's staging telemetry service (`TELEMETRY_URL` in the hosted profile), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                   |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging sends the same notification emails as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.     |
 
-> **Email warning.** Staging runs the same daily lifecycle-email cron as production
-> (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
-> address that signs into staging receives them, from the same verified domain as
+> **Email warning.** Staging sends the same notification emails as production (new
+> comments, form responses). With `RESEND_API_KEY` set, any address that signs into
+> staging receives them, from the same verified domain as
 > production's — so a staging account made with a colleague's address mails that
 > colleague. That is why the key is unset by default: absent, the email feature is inert
-> and the `email_lifecycle` table is never touched ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
+> ([Transactional email (Resend)](../014-identity/transactional-email.md)).
 > Set it for a specific test, use addresses you own, and remove it afterwards.
 
 ## Secrets
@@ -164,14 +158,15 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
 value the deploy workflow syncs:
 
-| GitHub secret                    | Synced to                       | Notes                                                                                                                    |
-| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                            |
-| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                  |
-| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                          |
-| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                    |
-| `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                  |
-| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEPLANNER` ([Telemetry](../017-telemetry/telemetry.md)). |
+| GitHub secret                    | Synced to                       | Notes                                                                                                                          |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                                  |
+| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                        |
+| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                |
+| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                          |
+| `INDEX_KEY_STAGING`              | staging api                     | liveplanner's key at the staging index: the same value as staging liveworkspace's `INDEX_KEY_LIVEPLANNER`. Never production's. |
+| `MEDIA_KEY_STAGING`              | staging api                     | liveplanner's key at the staging media service, which serves its previews: the same value as its `MEDIA_KEY_LIVEPLANNER`.      |
+| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEPLANNER` ([Telemetry](../017-telemetry/telemetry.md)).       |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
@@ -209,15 +204,13 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the three data stores exist, and their ids are committed:
+**Done** — the data store exists, and its id is committed:
 
-| Resource | Name                            | Where the id lives       |
-| -------- | ------------------------------- | ------------------------ |
-| D1       | `liveplanner-staging`           | `apps/api/wrangler.toml` |
-| R2       | `liveplanner-snapshots-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`          | `apps/mcp/wrangler.toml` |
+| Resource | Name                   | Where the id lives       |
+| -------- | ---------------------- | ------------------------ |
+| KV       | `mcp-oauth-kv-staging` | `apps/mcp/wrangler.toml` |
 
-Both were created in `ENAM`, Cloudflare's default for the account rather than a
+It was created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
 staging ever needs to reproduce production's read latency, that is the knob.
 
@@ -260,7 +253,7 @@ nothing.)
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
-  Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
+  Per-PR previews would need a worker per PR, their own data per PR and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's project.

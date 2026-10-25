@@ -8,9 +8,9 @@ Scope, by file:
 
 | File                                                         | Role                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `packages/design/src/shape-marker.ts`                      | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
-| `packages/design/src/element-types.ts`                     | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
-| `packages/design/src/data-shapes.ts`                       | `isSelfDrawingShape`: the menu gate                                        |
+| `../packages/model-core/src/shape-marker.ts`                 | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
+| `packages/design/src/element-types.ts`                       | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
+| `packages/design/src/data-shapes.ts`                         | `isSelfDrawingShape`: the menu gate                                        |
 | `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |

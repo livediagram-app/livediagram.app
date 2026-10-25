@@ -1,0 +1,314 @@
+-- The One Explorer index (liveworkspace/docs/index-service.md, liveworkspace/docs/one-explorer-contracts.md):
+-- one row per Canvas, Plan, Document and Design across every app, and everything about it except its
+-- content, which stays in the item's own Durable Object in its app. Nothing here keeps a copy of teams:
+-- membership comes from the `teams` claim of the caller's access token.
+--
+-- `scope` is the space an item or folder lives in: `p:<owner id>` for a person's own, `t:<team id>` for a
+-- team's. Every Explorer list walks an index that starts with it, so a person's lists cost what they hold
+-- whatever the table's size.
+
+CREATE TABLE folders (
+  id         TEXT    PRIMARY KEY,
+  name       TEXT    NOT NULL,
+  -- NULL: the scope's root. Same scope as this folder, which the service checks.
+  parent_id  TEXT    NULL REFERENCES folders (id) ON DELETE SET NULL,
+  owner_id   TEXT    NOT NULL,
+  team_id    TEXT    NULL,
+  scope      TEXT    NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+-- A scope's tree, paged in the order folders were made; also where folder-name search looks.
+CREATE INDEX folders_scope ON folders (scope, created_at, id);
+CREATE INDEX folders_parent ON folders (parent_id);
+CREATE INDEX folders_owner ON folders (owner_id);
+
+CREATE TABLE items (
+  id           TEXT    PRIMARY KEY,
+  app          TEXT    NOT NULL CHECK (app IN ('livediagram', 'liveplanner', 'livedocuments', 'livedesign')),
+  kind         TEXT    NOT NULL CHECK (kind IN ('canvas', 'plan', 'document', 'design')),
+  owner_id     TEXT    NOT NULL,
+  team_id      TEXT    NULL,
+  scope        TEXT    NOT NULL,
+  -- Deleting a folder moves its items up a level first; SET NULL only guards the root.
+  folder_id    TEXT    NULL REFERENCES folders (id) ON DELETE SET NULL,
+  title        TEXT    NOT NULL,
+  source       TEXT    NULL CHECK (source IS NULL OR source IN ('person', 'ai', 'import', 'template')),
+  intent       TEXT    NULL,
+  -- What the item last pushed about its content (JSON, at most 2 KB): counts, mode, thumbnail key.
+  summary      TEXT    NOT NULL DEFAULT '{}',
+  created_at   INTEGER NOT NULL,
+  updated_at   INTEGER NOT NULL,
+  -- In the Trash since; the daily sweep purges it 30 days on.
+  trashed_at   INTEGER NULL,
+  trash_reason TEXT    NULL CHECK (trash_reason IS NULL OR trash_reason IN ('deleted', 'empty')),
+  -- The updated_at the empty clean-up last moved it to the Trash for: restored unchanged, it is not moved again.
+  empty_swept_for INTEGER NULL
+);
+-- All, Unsorted and a team's list: live items in a scope, newest change first.
+CREATE INDEX items_live ON items (scope, updated_at DESC, id DESC) WHERE trashed_at IS NULL;
+-- The same, filtered to one app (each app's Explorer opens on its own items).
+CREATE INDEX items_live_app ON items (scope, app, updated_at DESC, id DESC) WHERE trashed_at IS NULL;
+-- The Trash.
+CREATE INDEX items_trash ON items (scope, updated_at DESC, id DESC) WHERE trashed_at IS NOT NULL;
+-- Unsorted: live items in no folder.
+CREATE INDEX items_unsorted ON items (scope, updated_at DESC, id DESC)
+  WHERE trashed_at IS NULL AND folder_id IS NULL;
+-- A folder's items, and moving them up when it is deleted. Partial, so Unsorted (folder_id IS NULL, most
+-- items) can never walk it across every person.
+CREATE INDEX items_folder ON items (folder_id, updated_at DESC, id DESC) WHERE folder_id IS NOT NULL;
+-- The daily sweep of items 30 days in the Trash.
+CREATE INDEX items_trashed_at ON items (trashed_at) WHERE trashed_at IS NOT NULL;
+-- The daily empty clean-up (purge.ts sweepEmpty): live items with nothing in them, oldest change first. The summary
+-- is what the item last pushed; '{}' is an item whose content was never written.
+CREATE INDEX items_empty ON items (updated_at)
+  WHERE trashed_at IS NULL AND (summary = '{}' OR json_extract(summary, '$.hasContent') = 0);
+-- A guest's items on merge, and the Inbox's "threads on my items".
+CREATE INDEX items_owner ON items (owner_id);
+
+CREATE TABLE favourites (
+  person_id  TEXT    NOT NULL,
+  item_id    TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id)
+);
+CREATE INDEX favourites_person_created ON favourites (person_id, created_at DESC, item_id DESC);
+CREATE INDEX favourites_item ON favourites (item_id);
+
+-- When each person last opened each item: Recent. Written at most once a minute per pair. `hidden`: the person
+-- hid it from Recent (Hide from Recent), theirs alone; an item hidden before it was ever opened has a row with
+-- last_opened_at 0, which Show in Recent removes again.
+CREATE TABLE opens (
+  person_id      TEXT    NOT NULL,
+  item_id        TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  last_opened_at INTEGER NOT NULL,
+  hidden         INTEGER NOT NULL DEFAULT 0 CHECK (hidden IN (0, 1)),
+  PRIMARY KEY (person_id, item_id)
+);
+CREATE INDEX opens_recent ON opens (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0;
+CREATE INDEX opens_item ON opens (item_id);
+
+-- The UTC days (ms / 86,400,000) each person opened each item: Most Used counts them over USE_WINDOW_DAYS. One row
+-- per person, item and day (INSERT OR IGNORE on open); days past the window are pruned, so a person's rows stay
+-- bounded by what they opened in it.
+CREATE TABLE use_days (
+  person_id TEXT    NOT NULL,
+  item_id   TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  day       INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id, day)
+);
+CREATE INDEX use_days_person_day ON use_days (person_id, day);
+CREATE INDEX use_days_item ON use_days (item_id);
+
+-- The Timeline (src/timeline.ts): what happened to the items people reach, to their teams and to their API
+-- tokens. One row per event, whatever its audience. The index writes created, renamed, moved, trashed, restored,
+-- shared, unshared, favourited, synced and taken_offline in the same batch as the change, and commented,
+-- comment_resolved, action_assigned and action_done from an item's collab push; an app reports `edited` (one
+-- row per person, item and UTC day, its id `ed:<item>:<person>:<day>`, its time moving on) and image_uploaded
+-- (one per person, app and day); liveworkspace accounts reports its team and token events. The item's name
+-- when it happened is kept in `title` (the team's or token's for an account event); `detail` is JSON (the old
+-- name, the folder moved to, a comment's words). Names of people are never kept, only `actor_name` when a
+-- report carries one. An event about no item (`item_id` NULL: a team, a token, images, an item taken offline)
+-- keeps its own `app` (`liveworkspace` for accounts'). A purged item's events go with it.
+CREATE TABLE timeline_events (
+  id          TEXT    PRIMARY KEY,
+  app         TEXT    NOT NULL,
+  item_id     TEXT    NULL REFERENCES items (id) ON DELETE CASCADE,
+  -- An account or guest id, or 'deleted' once their account is closed.
+  actor_id    TEXT,
+  actor_name  TEXT,
+  type        TEXT    NOT NULL,
+  title       TEXT    NOT NULL,
+  detail      TEXT,
+  occurred_at INTEGER NOT NULL
+);
+CREATE INDEX timeline_events_item ON timeline_events (item_id, occurred_at DESC);
+CREATE INDEX timeline_events_actor ON timeline_events (actor_id);
+
+-- Who sees each event: the item's scope when it happened (`p:<owner>` or `t:<team>`, the same strings as
+-- items.scope), so a team's events reach everyone in it, newcomers included; a favourite reaches only the
+-- person who starred it; an action assigned reaches its assignee too; an account event reaches the scopes it
+-- names. An event about no item that no scope sees any more is swept daily. An item that changes scope takes its events' rows with it. `app` and
+-- `occurred_at` are copied in, so a page is one index range per scope: by scope, then app, then time.
+CREATE TABLE timeline_event_scopes (
+  scope       TEXT    NOT NULL,
+  event_id    TEXT    NOT NULL REFERENCES timeline_events (id) ON DELETE CASCADE,
+  app         TEXT    NOT NULL,
+  occurred_at INTEGER NOT NULL,
+  PRIMARY KEY (scope, event_id)
+);
+CREATE INDEX timeline_scopes_app ON timeline_event_scopes (scope, app, occurred_at DESC, event_id DESC);
+CREATE INDEX timeline_scopes_all ON timeline_event_scopes (scope, occurred_at DESC, event_id DESC);
+CREATE INDEX timeline_scopes_event ON timeline_event_scopes (event_id);
+
+-- When each person last looked at their Timeline: what is new since is marked so.
+CREATE TABLE timeline_scope_state (
+  person_id    TEXT    PRIMARY KEY,
+  last_seen_at INTEGER NOT NULL
+);
+
+-- Events a person took off their own Timeline (Remove from Timeline): theirs alone, the event stays for
+-- everyone else who sees it.
+CREATE TABLE timeline_dismissals (
+  person_id  TEXT    NOT NULL,
+  event_id   TEXT    NOT NULL REFERENCES timeline_events (id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (person_id, event_id)
+);
+CREATE INDEX timeline_dismissals_event ON timeline_dismissals (event_id);
+
+-- Share links, as the apps have them today. A link whose `expires_at` has passed opens nothing but stays
+-- listed for its owner to extend or delete.
+CREATE TABLE share_links (
+  code       TEXT    PRIMARY KEY,
+  item_id    TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  level      TEXT    NOT NULL CHECK (level IN ('view', 'participate', 'edit')),
+  tab_id     TEXT    NULL,
+  expiry     TEXT    NOT NULL DEFAULT 'never' CHECK (expiry IN ('never', 'week', 'month', 'sixMonths')),
+  expires_at INTEGER NULL,
+  created_at INTEGER NOT NULL,
+  -- A public link (a Community post's): it never asks for the item's share password, and while one is set it
+  -- opens nothing, as if closed.
+  public     INTEGER NOT NULL DEFAULT 0 CHECK (public IN (0, 1))
+);
+CREATE INDEX share_links_item ON share_links (item_id, created_at);
+-- The daily Share Link Expiring pass (src/share-expiry.ts): links lapsing within the week, by expiry.
+CREATE INDEX share_links_expires ON share_links (expires_at) WHERE expires_at IS NOT NULL;
+
+-- An item's share password: only its PBKDF2 hash (`pbkdf2-sha256$<iterations>$<salt>$<hash>`, as
+-- liveplanner stores it).
+CREATE TABLE share_passwords (
+  item_id    TEXT    PRIMARY KEY REFERENCES items (id) ON DELETE CASCADE,
+  hash       TEXT    NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- The items shared with a person through a link they opened: Shared with me. Reaching the item still
+-- needs that link to be live.
+CREATE TABLE shared_with (
+  person_id  TEXT    NOT NULL,
+  item_id    TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  share_code TEXT    NOT NULL,
+  last_seen  INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id)
+);
+CREATE INDEX shared_with_person_seen ON shared_with (person_id, last_seen DESC, item_id DESC);
+CREATE INDEX shared_with_item_code ON shared_with (item_id, share_code);
+
+-- The folder a person files each kind of new item into, by a key the apps define (e.g. `mode:plan`).
+CREATE TABLE placement_defaults (
+  person_id   TEXT    NOT NULL,
+  default_key TEXT    NOT NULL,
+  folder_id   TEXT    NOT NULL REFERENCES folders (id) ON DELETE CASCADE,
+  updated_at  INTEGER NOT NULL,
+  PRIMARY KEY (person_id, default_key)
+);
+CREATE INDEX placement_defaults_folder ON placement_defaults (folder_id);
+
+-- What the Inbox needs about each comment thread, pushed by the item per tab. The comments themselves stay
+-- in the item's content. A card's thread (a Plan card's) comes under the tab '~cards', `card` saying which card
+-- and the board that shows it (JSON).
+CREATE TABLE collab_threads (
+  app                 TEXT    NOT NULL,
+  item_id             TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id              TEXT    NOT NULL,
+  tab_name            TEXT    NOT NULL DEFAULT '',
+  element_id          TEXT    NOT NULL,
+  element_label       TEXT    NOT NULL,
+  resolved            INTEGER NOT NULL,
+  comment_count       INTEGER NOT NULL,
+  participant_ids     TEXT    NOT NULL DEFAULT '[]',
+  mentioned_ids       TEXT    NOT NULL DEFAULT '[]',
+  latest_text         TEXT    NOT NULL,
+  latest_author_name  TEXT    NOT NULL,
+  latest_author_color TEXT    NOT NULL DEFAULT '',
+  card                TEXT    NULL,
+  first_at            INTEGER NOT NULL,
+  latest_at          INTEGER NOT NULL,
+  PRIMARY KEY (app, item_id, tab_id, element_id)
+);
+CREATE INDEX collab_threads_item ON collab_threads (item_id, tab_id, resolved, latest_at DESC);
+
+-- Who commented on or is mentioned in each thread, one row each, so "threads I am in" walks an index
+-- rather than every thread's JSON.
+CREATE TABLE collab_thread_people (
+  app        TEXT NOT NULL,
+  item_id    TEXT NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id     TEXT NOT NULL,
+  element_id TEXT NOT NULL,
+  person_id  TEXT NOT NULL,
+  PRIMARY KEY (person_id, app, item_id, tab_id, element_id)
+);
+CREATE INDEX collab_thread_people_item ON collab_thread_people (item_id, tab_id);
+
+-- An element's action, or an open card assigned to someone (under the tab '~cards', with `card`).
+CREATE TABLE collab_actions (
+  app           TEXT    NOT NULL,
+  item_id       TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id        TEXT    NOT NULL,
+  tab_name      TEXT    NOT NULL DEFAULT '',
+  element_id    TEXT    NOT NULL,
+  action_id     TEXT    NOT NULL,
+  element_label TEXT    NOT NULL,
+  name          TEXT    NOT NULL,
+  description   TEXT    NOT NULL DEFAULT '',
+  status        TEXT    NOT NULL CHECK (status IN ('open', 'done', 'wont-do')),
+  assignee_id   TEXT    NULL,
+  assignee_name TEXT    NULL,
+  assigner_id   TEXT    NOT NULL,
+  assigner_name TEXT    NULL,
+  team_id       TEXT    NULL,
+  card          TEXT    NULL,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  PRIMARY KEY (app, item_id, tab_id, element_id, action_id)
+);
+CREATE INDEX collab_actions_item ON collab_actions (item_id, tab_id);
+CREATE INDEX collab_actions_assignee ON collab_actions (assignee_id, status, updated_at DESC);
+CREATE INDEX collab_actions_assigner ON collab_actions (assigner_id, status, updated_at DESC);
+
+-- A form on an item's tab and how many responses it has taken, pushed by the item's app on each response; and how
+-- many of them each person has seen. The Inbox's Form Responses lists those with more than the person has seen.
+CREATE TABLE collab_forms (
+  app          TEXT    NOT NULL,
+  item_id      TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id       TEXT    NOT NULL,
+  heading      TEXT    NOT NULL,
+  board_tab_id TEXT    NULL,
+  responses    INTEGER NOT NULL,
+  latest_at    INTEGER NOT NULL,
+  PRIMARY KEY (item_id, tab_id)
+);
+
+CREATE TABLE collab_form_reads (
+  person_id TEXT    NOT NULL,
+  item_id   TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id    TEXT    NOT NULL,
+  seen      INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id, tab_id)
+);
+CREATE INDEX collab_form_reads_item ON collab_form_reads (item_id);
+
+-- An item purged from the index whose app has not yet confirmed dropping its content. The cron tells
+-- the app within 15 minutes and retries each (at most hourly) until the app answers.
+CREATE TABLE purge_tombstones (
+  item_id         TEXT    PRIMARY KEY,
+  app             TEXT    NOT NULL,
+  created_at      INTEGER NOT NULL,
+  attempts        INTEGER NOT NULL DEFAULT 0,
+  last_attempt_at INTEGER NULL,
+  last_error      TEXT    NULL
+);
+CREATE INDEX purge_tombstones_due ON purge_tombstones (last_attempt_at);
+
+-- A closed account being purged (src/account-purge.ts): recorded when accounts asks, so whatever one call
+-- leaves undone the cron finishes. Kept, and the purge run again, for two hours after the request, then
+-- forgotten. `team_ids`: the teams that closed with the account (JSON), whose items of theirs go too.
+CREATE TABLE person_purges (
+  person_id    TEXT    PRIMARY KEY,
+  team_ids     TEXT    NOT NULL DEFAULT '[]',
+  requested_at INTEGER NOT NULL,
+  -- When a pass last found nothing left; NULL while work remains.
+  finished_at  INTEGER NULL,
+  runs         INTEGER NOT NULL DEFAULT 0
+);

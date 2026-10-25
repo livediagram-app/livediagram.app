@@ -17,7 +17,7 @@ who can open the document and read the thread, and a teammate on another team
 almost certainly cannot.
 
 - On a **personal document** or for a **guest** there is nobody to mention.
-  Typing `@` then shows one quiet row, "Mention teammates on a team document",
+  Typing `@` then shows one quiet row, "Mention teammates on a team canvas",
   and nothing is inserted.
 - An **invited** member (no account yet) can be mentioned. They are keyed by
   their membership row, like an invited assignee, and get the email at their
@@ -106,8 +106,8 @@ The server decides everything that matters:
   account has no preferences and is emailed at their invite address.
 - `commentText` is required, at most 5000 characters; the email
   quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`, migration
-  0087): a hash of the author, document, recipient and the body's text is sent at most once per 24 hours
+- Each email is **claimed** before it goes (in the document's own
+  `notify_claims`): a hash of the author, document, recipient and the body's text is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
@@ -115,7 +115,7 @@ The server decides everything that matters:
   deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
 - A canvas comment and an
   assigned action ([Assigned actions](assigned-actions.md)) are deduped on their exact text: neither is stored where the route can read it when the request lands
-  (both reach D1 only with the next tab save), so a client that rewords each
+  (both reach the stored tab only with the next tab save), so a client that rewords each
   request gets past the dedupe, and the hourly cap is the bound.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the

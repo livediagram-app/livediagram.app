@@ -4,10 +4,12 @@
   "environments": {
     "production": {
       "APP_BASE_URL": "https://www.livedesign.app",
+      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry",
       "MEDIA_URL": "https://liveworkspace.app/api/media"
     },
     "staging": {
       "APP_BASE_URL": "https://staging.livedesign.app",
+      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
       "MEDIA_URL": "https://staging.liveworkspace.app/api/media"
     }
   }

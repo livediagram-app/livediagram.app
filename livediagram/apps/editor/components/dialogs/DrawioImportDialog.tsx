@@ -1,4 +1,4 @@
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type {
@@ -24,7 +24,7 @@ export function DrawioImportDialog({
     <Dialog open onClose={onClose} ariaLabel={DRAWIO_IMPORT_TITLE} size="lg">
       <DialogHeader
         title={DRAWIO_IMPORT_TITLE}
-        subtitle="Each diagram becomes its own document, named and dated after the file."
+        subtitle="Each diagram becomes its own canvas, named and dated after the file."
       >
         <HelpArticleLink article="drawioImport" size="md" />
         <DialogCloseButton onClick={onClose} />

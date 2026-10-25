@@ -68,21 +68,22 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                       | Slots                                                                                                                                                                                                                                                                                  |
-| ----------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Home`      | `/`                                   | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `HeroSearch`, `HeroBlank`, `HeroBlankDraw`, `HeroBlankSession`, `HeroBlankIllustration`, `HeroFan`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                      | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `Templates`, `Closing`                                                                                                                                                                           |
-| `Compare`   | liveworkspace.app's `/alternatives/*` | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
-| `Faq`       | `/faq`                                | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
-| `Ai`        | `/ai`                                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Status`    | `/status`                             | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Dashboard` | `/telemetry`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Help`      | `/help`, `/help/*`                    | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                                                                                                                                  |
+| ----------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Home`      | `/`                                | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `HeroSearch`, `HeroBlank`, `HeroBlankDraw`, `HeroBlankSession`, `HeroBlankIllustration`, `HeroFan`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `Templates`, `Closing`                                                                                                                                                                           |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
+| `Faq`       | `/faq`                             | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
+| `Ai`        | `/ai`                              | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
 
 The slots:
 
-- `Header` / `HeaderBlank`: the shared `SiteHeader` pair, Choose Template (`/new`) and Start Blank
-  (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)).
+- `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
+  pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
+  bar has no Start Blank, so its `HeaderBlank` no longer fires.
 - `HeaderDraw` / `HeaderIllustration` / `HeaderSession` (**retired** in October 2026 with the Start Blank
   menu, [Start Blank](marketing-site.md#start-blank); the slots stay so their stored history still reads):
   the menu's rows beside Choose Template. The help centre's header has one Start button, its `Header`.
@@ -110,8 +111,8 @@ The slots:
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
 - `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
 
-A link into `/new` from a public page with no source (the apps menu's Editor
-item, a link inside a help article) is deliberately not a CTA and is not
+A link into `/new` from a public page with no source (the Explorer
+footer's Editor link, a link inside a help article) is deliberately not a CTA and is not
 counted. Adding a CTA means adding its slot to `CTA_SOURCES` and building its
 `href` with `ctaHref(href, source)`; `cta-sources.test.ts` pins the table.
 

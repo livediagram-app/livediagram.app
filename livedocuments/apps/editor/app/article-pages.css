@@ -348,15 +348,37 @@
 }
 
 /* Margin notes (docs/specs/007-editor/article-pages.md "Comments and actions"): the text a comment
-   or an action is on, tinted, tied to its marker in the margin. */
+   or an action is on, tinted in its note's colour (indigo, emerald; never the amber chrome), tied
+   to its marker in the margin. The underline's style parts them without colour: solid for a
+   comment, dashed for an action. */
 .article-flow .article-note {
-  border-bottom: 2px solid rgb(245 158 11 / 0.7);
+  border-bottom: 2px solid rgb(99 102 241 / 0.7);
   /* Translucent, so it reads on a dark page as on paper. */
-  background: rgb(251 191 36 / 0.22);
+  background: rgb(129 140 248 / 0.22);
 }
 .article-flow .article-note-action {
-  border-bottom-color: rgb(14 165 233 / 0.7);
-  background: rgb(56 189 248 / 0.2);
+  border-bottom-style: dashed;
+  border-bottom-color: rgb(16 185 129 / 0.7);
+  background: rgb(52 211 153 / 0.22);
+}
+
+/* A marker's press area on a touch screen: 44 x 38 at full size, half the 6 px stacking gap above
+   and below, so stacked markers never take each other's presses. */
+@media (pointer: coarse) {
+  [data-article-note]::before {
+    content: '';
+    position: absolute;
+    inset: -3px -6px;
+  }
+}
+
+/* Never presented: while a deck runs the markers hide and the tint goes. */
+html[data-presenting] [data-article-note] {
+  visibility: hidden;
+}
+html[data-presenting] .article-flow .article-note {
+  background: none;
+  border-bottom-color: transparent;
 }
 
 /* On a phone the page toolbar takes the Toolbar strip's place at the top of the canvas

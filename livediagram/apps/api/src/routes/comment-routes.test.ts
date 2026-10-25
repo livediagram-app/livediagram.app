@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentCommentsResponse } from '@livediagram/api-schema';
 import type { Comment, Element } from '@livediagram/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { accountsServiceFor } from '../test-accounts-service';
+import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -53,7 +54,14 @@ type Call = {
   token?: string;
 };
 
-function call({ method = 'POST', path, body, owner = 'owner', code, token }: Call) {
+function call({
+  method = 'POST',
+  path,
+  body,
+  owner = 'guest_00000000-0000-4000-8000-000000000001',
+  code,
+  token,
+}: Call) {
   return handleDocuments(
     makeTestRouteContext(method, `/api/documents/d1${path}`, {
       env: sql.env,
@@ -78,21 +86,28 @@ beforeEach(() => {
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-      VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
+    INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+      VALUES ('d1', 'guest_00000000-0000-4000-8000-000000000001', 'Payments', 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
+  testShareLink(sql, 'd1', 'VIEW', 'participate');
+  testShareLink(sql, 'd1', 'TAB2', 'participate', 't2');
+  testShareLink(sql, 'd1', 'LOOK', 'view');
+  accountsServiceFor(sql.env).profiles.set('guest_00000000-0000-4000-8000-000000000001', {
+    name: 'Webber',
+    color: '#3b82f6',
+    createdAt: 1,
+  });
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('add', () => {
   it('stamps the author and, for an agent, the token, and bumps the revision', async () => {
@@ -109,7 +124,7 @@ describe('add', () => {
       text: 'hello',
       authorName: 'Webber',
       authorColor: '#3b82f6',
-      authorId: 'owner',
+      authorId: 'guest_00000000-0000-4000-8000-000000000001',
       tokenId: 'tok_1',
     });
     expect((await stored()).rev).toBe(before + 1);
@@ -220,7 +235,10 @@ describe('delete-own', () => {
       shape('a', {
         commentThread: {
           resolved: false,
-          comments: [comment('c1', { authorId: 'owner' }), comment('c2')],
+          comments: [
+            comment('c1', { authorId: 'guest_00000000-0000-4000-8000-000000000001' }),
+            comment('c2'),
+          ],
         },
       }),
     ]);
@@ -229,93 +247,10 @@ describe('delete-own', () => {
     expect((await threadOf('a'))!.comments.map((c) => c.id)).toEqual(['c2']);
     expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(404);
   });
-
-  it('takes the comment’s words off the Timeline, with its thread’s resolved snippet', async () => {
-    seed([
-      shape('a', {
-        commentThread: { resolved: false, comments: [comment('c1', { authorId: 'owner' })] },
-      }),
-    ]);
-    // Posted and resolved: two events carrying c1's text.
-    const posted = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'reply' } });
-    expect(posted.status).toBe(201);
-    const reply = (await posted.json<{ comment: Comment }>()).comment.id;
-    const insert = sql.sql.prepare(
-      `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
-         description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
-    );
-    insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ documentId: 'd1' }));
-    insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ documentId: 'd1' }));
-    // Another document's event under the same comment id is never reached.
-    insert.run('e-other', 'c1', 'comment_resolved', JSON.stringify({ documentId: 'd2' }));
-    await Promise.allSettled(pending);
-    const events = () =>
-      (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
-        (r) => r.id,
-      );
-    expect(events()).toHaveLength(4);
-
-    // The reply is not the thread's opening comment: only its own event goes.
-    expect((await call({ method: 'DELETE', path: `/tabs/t1/comments/${reply}` })).status).toBe(204);
-    await Promise.allSettled(pending);
-    expect(events()).toEqual(['e-c1', 'e-other', 'e-res']);
-
-    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(204);
-    await Promise.allSettled(pending);
-    expect(events()).toEqual(['e-other']);
-  });
 });
 
 // docs/specs/013-workspace/timeline.md §4.3: a tab deleted whole takes every comment's words with it,
 // from the document it left only; a document still holding the tab keeps its own events.
-describe('deleting the tab', () => {
-  it('retracts its comments from the document it left, and the last one to hold it', async () => {
-    seed([
-      shape('a', { commentThread: { resolved: true, comments: [comment('c1'), comment('c2')] } }),
-    ]);
-    sql.sql.exec(`
-      INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-        VALUES ('d2', 'owner', 'Linked', 1, 1, 1);
-      INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
-    `);
-    const insert = sql.sql.prepare(
-      `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
-         description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text', 1, ?, 1)`,
-    );
-    const on = (doc: string) => JSON.stringify({ documentId: doc });
-    // A comment's event is pinned to the document whose save recorded it: c1 through d1, c2 through d2.
-    insert.run('d1-c1', 'c1', 'comment_added', on('d1'));
-    insert.run('d1-res', 'd1:a', 'comment_resolved', on('d1'));
-    insert.run('d1-t2', 'c9', 'comment_added', on('d1'));
-    insert.run('d2-c2', 'c2', 'comment_added', on('d2'));
-    insert.run('d2-res', 'd2:a', 'comment_resolved', on('d2'));
-    const events = () =>
-      (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
-        (r) => r.id,
-      );
-
-    // Unlinked from d1: d1's events for it go; the other tab's, and d2's, stay.
-    expect((await call({ method: 'DELETE', path: '/tabs/t1' })).status).toBe(204);
-    await Promise.all(pending);
-    expect(events()).toEqual(['d1-t2', 'd2-c2', 'd2-res']);
-
-    // d2 was the last to hold it: the tab row goes, and d2's events with it.
-    const res = await handleDocuments(
-      makeTestRouteContext('DELETE', '/api/documents/d2/tabs/t1', {
-        env: sql.env,
-        owner: 'owner',
-        waitUntil: (p) => void pending.push(p),
-      }),
-    );
-    expect(res.status).toBe(204);
-    await Promise.all(pending);
-    expect(events()).toEqual(['d1-t2']);
-    expect(sql.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
-  });
-});
-
 describe('a lost race', () => {
   it('re-reads and repeats once, then answers 409 tab_busy', async () => {
     seed([shape('a')]);
@@ -339,7 +274,12 @@ describe('the thread listing', () => {
         shape('a', {
           commentThread: {
             resolved: false,
-            comments: [comment('c1', { authorId: 'owner', tokenId: 'tok_1' })],
+            comments: [
+              comment('c1', {
+                authorId: 'guest_00000000-0000-4000-8000-000000000001',
+                tokenId: 'tok_1',
+              }),
+            ],
           },
         }),
         shape('b', { commentThread: { resolved: true, comments: [comment('c2')] } }),
@@ -349,7 +289,11 @@ describe('the thread listing', () => {
     ),
   );
 
-  const list = async (query = '', owner: string | null = 'owner', code?: string) => {
+  const list = async (
+    query = '',
+    owner: string | null = 'guest_00000000-0000-4000-8000-000000000001',
+    code?: string,
+  ) => {
     const res = await call({
       method: 'GET',
       path: `/comments${query}`,
@@ -370,7 +314,10 @@ describe('the thread listing', () => {
       ['Detail', 'd', 'D'],
     ]);
     expect(body.threads[0]!.ref).toBeTypeOf('string');
-    expect(body.threads[0]!.comments[0]).toMatchObject({ authorId: 'owner', tokenId: 'tok_1' });
+    expect(body.threads[0]!.comments[0]).toMatchObject({
+      authorId: 'guest_00000000-0000-4000-8000-000000000001',
+      tokenId: 'tok_1',
+    });
     expect(body.threads[1]!.comments[0]).not.toHaveProperty('authorId');
   });
 

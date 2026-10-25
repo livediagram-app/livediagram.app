@@ -22,8 +22,8 @@ import {
   type CreateImageSession,
   type HugText,
 } from '@/lib/board-scene-browser';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type BoardSceneSource = BoardScene['source'];
 

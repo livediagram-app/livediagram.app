@@ -9,15 +9,17 @@
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'design',
+  // The guest handoff's way back, /auth/guest (liveworkspace/docs/one-explorer-contracts.md "Guests").
+  'auth',
   'embed',
   'explorer',
   'get-started',
   'join',
   'new',
   'oauth',
+  // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/013-workspace/explorer-structure.md).
+  'offline',
   'sign-in',
-  // The workbench pairing page, /workbench/pair (docs/specs/013-workspace/workbench-embeds.md "Pairing").
-  'workbench',
 ]);
 
 // Named after the apps (`apps/live` is the editor).

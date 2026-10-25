@@ -27,7 +27,7 @@ import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 
 type Reason = {
   icon: ReactNode;
@@ -80,7 +80,7 @@ export function SignInReasonsModal({
   onSignIn: () => void;
 }) {
   // Silence the canvas shortcut/paste listeners behind the modal
-  // (see lib/modal-guard).
+  // (see @liveworkspace/workbench/lib/modal-guard).
   useModalGuard(open);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);

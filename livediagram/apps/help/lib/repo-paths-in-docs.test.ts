@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, posix, resolve } from 'node:path';
+import { dirname, posix, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -40,7 +40,7 @@ const WORKSPACE_ROOTS = [
   'apps/router/',
   'packages/document/',
   'packages/api-schema/',
-  'packages/icons/',
+  '../packages/icons/',
   'packages/ui/',
   'packages/templates/',
   'packages/help-registry/',
@@ -48,13 +48,15 @@ const WORKSPACE_ROOTS = [
   'packages/sticky-vision/',
   'packages/sticky-model/',
   'packages/',
+  // The liveworkspace monorepo this repo sits in: a shared package (`packages/index-app/...`) or a sibling app.
+  '../',
 ];
 
 // Placeholders and globs the specs use on purpose: an elided route segment, a
 // two-files-in-one shorthand.
 //
 // `00NN_` used to sit here too, for a migration filename not yet minted. It
-// outlived its reason: docs/specs/011-theme/custom-themes.md's migration shipped as 0026_custom_themes.sql
+// outlived its reason: one spec's migration shipped as its numbered file
 // and the spec kept quoting the placeholder for the whole of that time,
 // because the exemption is exactly what stops this test noticing. A
 // placeholder is only honest before the file exists, so it does not get a
@@ -103,11 +105,29 @@ function trackedTextFiles(): string[] {
 // What git tracks, files and the directories holding them. The disk is not the
 // answer: a local build leaves outputs there that a fresh CI checkout lacks, so
 // a check against it passes or fails by whatever was last built.
+// The monorepo's own files count too, named from here (`../packages/...`): specs quote the shared packages and the
+// sibling apps.
 function trackedPaths(): Set<string> {
   const paths = new Set<string>();
-  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n')) {
+  const add = (f: string) => {
     const parts = f.split('/');
     for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+  };
+  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n'))
+    add(f);
+  const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  const up = relative(ROOT, top).split(sep).join('/');
+  if (up !== '' && up.split('/').every((part) => part === '..')) {
+    for (const f of execFileSync('git', ['ls-files'], {
+      cwd: top,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    }).split('\n')) {
+      if (f) add(`${up}/${f}`);
+    }
   }
   return paths;
 }
@@ -203,6 +223,9 @@ function repoFilenames(): Set<string> {
     }
   };
   walk(ROOT);
+  // The monorepo's shared packages (`../packages/icons`, `../packages/licences`, ...): the specs name their files too.
+  const shared = `${ROOT}/../packages`;
+  if (existsSync(shared)) walk(shared);
   return names;
 }
 

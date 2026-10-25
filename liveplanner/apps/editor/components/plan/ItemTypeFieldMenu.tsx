@@ -5,14 +5,14 @@
 // as icon-left rows, so a field's row keeps only its handle, name and the menu.
 import { useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, TabsLabelIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideGripVertical } from '@liveplanner/icons/lucide';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { lucideGripVertical } from '@liveworkspace/icons/lucide';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { GroupId } from './item-type-layout';
 
 // A field's drag handle.

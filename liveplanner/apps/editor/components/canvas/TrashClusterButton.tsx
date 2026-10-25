@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { isTrashed } from '@liveplanner/items';
 import { CountBadge, TrashIcon } from '@liveplanner/ui';
 import { usePlan } from '@/components/plan/PlanContext';
-import { ClusterPopoverSegment } from './ClusterPopoverButton';
+import { ClusterPopoverSegment } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // The Trash in Plan mode's bottom-right strip (docs/specs/026-plan/items.md "Trash"): its first, left-hand
 // button, before Find a Card and Card Types, with a count of the cards in it. While a card is dragged it is

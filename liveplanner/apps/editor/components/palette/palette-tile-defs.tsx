@@ -7,10 +7,9 @@ import {
   StopwatchIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
-import { lucideStickyNote, lucideType } from '@liveplanner/icons/lucide';
+import { lucideStickyNote, lucideType } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@liveplanner/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
-import { tileCaption } from './tile-caption';
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
@@ -25,8 +24,8 @@ const pathD = (i: number) => {
 const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
 // The shared palette tile catalogue: every creation tile across the categories as one data
-// entry — label, glyph, tinting flags, and an action descriptor that PaletteTileGrid maps to the
-// editor's add-handlers. Every category body, Popular, the Toolbar strip and the Search panel
+// entry — label, glyph, tinting flags, and an action descriptor the
+// editor's add-handlers act on. Every category body, Popular, the Toolbar strip and the Search panel
 // render from this one catalogue (arranged per mode by palette-layouts.ts), so a tile is defined
 // once and can never drift between the places it shows.
 //
@@ -205,14 +204,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
 
 export function tileById(id: string): PaletteTileDef | undefined {
   return PALETTE_TILES.find((t) => t.id === id);
-}
-
-// The tile's short human name: the explicit caption where one is set,
-// otherwise derived from the action label the same way IconButton derives
-// its tile caption ("Add Web Browser" → "Web Browser", "Pencil (freehand)"
-// → "Pencil"). Used by the Search panel's add-to-canvas entries.
-export function tileDisplayName(def: PaletteTileDef): string {
-  return tileCaption(def.label, def.caption);
 }
 
 /** A Plan category's tiles: the ones of that section, in catalogue order. */

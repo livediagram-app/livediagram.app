@@ -13,8 +13,15 @@ import {
   promptOf,
   type FormQuestion,
 } from '@liveplanner/forms';
-import { ArrowDownIcon, ArrowUpIcon, DuplicateIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideGripVertical } from '@liveplanner/icons/lucide';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DuplicateIcon,
+  TrashIcon,
+  lucideGlyph,
+  SwitchRow,
+} from '@liveplanner/ui';
+import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { Tooltip } from '@liveplanner/ui';
 import {
   deleteQuestion,
@@ -26,7 +33,6 @@ import {
   updateQuestion,
 } from '@liveplanner/forms';
 import { newFormPartId } from '@liveplanner/forms';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { QuestionControl } from '../QuestionControl';
 import { QuestionView } from '../QuestionView';
 import { DraftText, type DraftTextHandle } from './DraftText';
@@ -335,18 +341,16 @@ export function FormQuestionCard({
           </button>
         </Tooltip>
         <span aria-hidden className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
-        <button
-          type="button"
-          role="switch"
-          aria-checked={!!q.required}
-          onClick={() =>
+        <SwitchRow
+          checked={!!q.required}
+          onChange={() =>
             change((f) => updateQuestion(f, q.id, { required: q.required ? undefined : true }))
           }
-          className="flex h-8 cursor-pointer items-center gap-2 rounded-md px-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+          layout="flex h-8 items-center gap-2 rounded-md"
+          className="px-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Required
-          <ToggleSwitch checked={!!q.required} label="" presentational />
-        </button>
+        </SwitchRow>
       </div>
     </div>
   );

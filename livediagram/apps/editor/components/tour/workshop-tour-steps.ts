@@ -5,7 +5,7 @@
 import { ensurePaletteOpen } from './tour-steps';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 import { opensFrom } from './tour-open';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The session elements the tour shows (spec "Tour content"): placed once, in a row in view, with no history, and taken
 // away when the tour ends, however it ends (WorkshopTourHost).

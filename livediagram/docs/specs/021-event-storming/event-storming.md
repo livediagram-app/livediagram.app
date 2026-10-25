@@ -775,7 +775,7 @@ geometry is `packages/document/src/event-storming-lanes.ts` (including
 that lands notes without a drag is `packages/document/src/event-storming-lane-landing.ts`
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
-`lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
+`../packages/workbench/src/lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
 `useElementDuplication`, and the MCP worker and the edit-operations engine in `landWorkshopArrivals`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
@@ -925,7 +925,7 @@ low-threshold capture surface can least afford.
   is never moved, resized, re-kinded or re-worded — if the photo says something
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
-- **The photo is never stored, and never even sent.** Not R2, not D1, not
+- **The photo is never stored, and never even sent.** Not R2, not a Durable Object, not
   IndexedDB — and not the api either. The browser decodes
   it (honouring the EXIF orientation flag), detects on a downscaled working
   copy, cuts each detected sticky out of the full-resolution bitmap and
@@ -933,13 +933,12 @@ low-threshold capture surface can least afford.
   crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
-- **Gated on the model key exactly as [AI Assistance](../007-editor/ai-assistance.md) is.** No model key = no photo
-  UI anywhere, and a deployment without one loses nothing else. It is NOT gated
-  on the AI-panel preference: this is not the assistant. The reader resolves
-  its own provider, preferring `GOOGLE_AI_STUDIO_API_KEY` and falling back to
-  whichever key is set ([AI Assistance](../007-editor/ai-assistance.md), "Each feature has its own
-  provider") — any OpenAI-compatible endpoint, which is
-  Gemini on the hosted site and can be a local llama.cpp on a laptop.
+- **Gated on the model key ([Note reader](note-reader.md)).** No model key = no photo
+  UI anywhere, and a self-host without one loses nothing else. The reader resolves
+  its provider from the key that is set, `GOOGLE_AI_STUDIO_API_KEY` or the generic
+  `AI_API_KEY` ([Note reader](note-reader.md), "Whose model? The key says.") — any
+  OpenAI-compatible endpoint, which is Gemini on the hosted site and can be a local
+  llama.cpp on a laptop.
 
   _(Phase 9 makes the READER pluggable and adds an in-browser OCR reader, so
   this gating is re-ruled there: detection is always in-browser and needs no

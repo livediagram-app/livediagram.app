@@ -9,7 +9,7 @@ import {
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A person node (docs/specs/009-elements/org-chart.md): the initials disc, the name (the node's ordinary label, edited
 // like any mind node's) and the role, edited in place once the node is selected. Placed by the export's

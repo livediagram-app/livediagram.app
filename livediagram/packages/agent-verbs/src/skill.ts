@@ -28,7 +28,7 @@ export function renderSkill(): string {
     '',
     '# livediagram',
     '',
-    'Sign in with LIVEDIAGRAM_TOKEN (an lvd_ API token), or `livediagram auth login`. The CLI never prompts.',
+    'Sign in with LIVEDIAGRAM_TOKEN (an lwt_ API token), or `livediagram auth login`. The CLI never prompts.',
     '',
     'Start:',
     '',

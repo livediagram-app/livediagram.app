@@ -11,8 +11,6 @@ import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
   const target: Record<string, unknown> = {
-    formatSourceId: null,
-    pendingDraw: null,
     editingId: null,
     isReadOnly: false,
     participant: false,
@@ -21,8 +19,6 @@ function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
     zenMode: false,
     canvasCovered: isCanvasCovered,
     readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
-    canGrowMindNode: () => false,
-    onEscapeMindNode: () => false,
     ...overrides,
   };
   // Every other callback in the bag is a harmless no-op.

@@ -3,10 +3,10 @@
 **Status: shipped.** A signed-in user's account surface: their avatar, name,
 email, and join date, plus the two account actions that once had no home of
 their own, **delete my account** and **email notification preferences**.
-Builds on the Resend integration ([Transactional & lifecycle email (Resend)](transactional-email.md)) and the synced preference store
+Builds on the Resend integration ([Transactional email (Resend)](transactional-email.md)) and the synced preference store
 ([User preferences](../007-editor/user-preferences.md)).
 
-Like [Transactional & lifecycle email (Resend)](transactional-email.md) the email half is **entirely gated on `RESEND_API_KEY`**: when
+Like [Transactional email (Resend)](transactional-email.md) the email half is **entirely gated on `RESEND_API_KEY`**: when
 email is off, the notification toggles are absent (they'd do nothing) and no
 notification email is ever sent.
 
@@ -35,7 +35,7 @@ retired and its three parts redistributed:
 The route survives as a client-side redirect to
 `/explorer?settings=notifications`, and **must keep doing so**: every
 notification email ever sent carries that URL both as its "Manage your
-notifications" link and as its `List-Unsubscribe` header ([Transactional & lifecycle email (Resend)](transactional-email.md)). Those
+notifications" link and as its `List-Unsubscribe` header ([Transactional email (Resend)](transactional-email.md)). Those
 messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
 the one dead link a product cannot ship. New mail links at the deep link
 directly.
@@ -51,26 +51,21 @@ directly.
 ### Delete account moves here
 
 Account self-deletion already exists end to end (`DELETE /api/account`,
-[Transactional & lifecycle email (Resend)](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
+[Auth + guest access](auth-and-guest-access.md#deleting-an-account); `DeleteAccountDialog`, the type-your-email confirmation). It used
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
 no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then wipe livedocuments's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
-Account deletion is immediate and total within livedocuments: it removes the account's documents
-**including every one in its [Trash](../013-workspace/trash.md)**, which the
+Account deletion is immediate and total within livedocuments: it deletes the account's own documents for good
+through the index, **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.
 
-**Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
-account's memberships are removed so no ghost member (or dead sole admin)
-lingers. If the user was the **last joined member**, the team is deleted
-outright. Otherwise their **team-library documents transfer to an heir** — the
-longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared documents](../013-workspace/team-shared-documents.md)'s "deleting a team must never destroy
-members' work"), and the heir is **promoted to admin** when the deleted user
-was the only one. The user's own `shared_with` references (rows for OTHER
-people's documents they visited) are wiped too.
+**Teams on deletion.** Teams are the liveworkspace account's: closing the account leaves every team there
+first, a team it ran alone goes, and one where it was the only admin passes to the longest-standing member
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Documents filed in a team's
+library stay with the team. livedocuments itself holds no team rows to clean up.
 
 ## 2. Capabilities gains `emailEnabled`
 
@@ -84,72 +79,81 @@ setting it can't honour.
 
 ## 3. Email notification preferences
 
-Two new per-user flags, stored in the **same `user_preferences` JSON blob**
-as the editor flags ([User preferences](../007-editor/user-preferences.md)) — reusing that synced store rather than minting
-a parallel one (no migration; the blob already round-trips D1 ↔ localStorage
-and survives the sign-up migration). They are account/email settings that
-happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
+Two per-user flags, stored with the editor flags in the **same synced
+preferences** ([User preferences](../007-editor/user-preferences.md)), which the liveworkspace accounts database keeps —
+reusing that store rather than minting a parallel one (it already
+round-trips to localStorage and survives the sign-up migration). Every
+`notify*` switch is a setting all liveworkspace apps share (the `all`
+scope), so it reads the same in every app:
 
 ```ts
 // added to UserPreferences (docs/specs/007-editor/user-preferences.md)
 notifyDocumentJoin?: boolean;     // someone first opens one of my shared documents
 notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
+notifyActionAssigned?: boolean;  // a teammate assigns me an action (docs/specs/012-collaboration/assigned-actions.md)
+notifyMilestones?: boolean;      // my tenth document, and my first share link (transactional-email.md #6)
 ```
 
-Both **default on** (undefined === true): the user asked to be told, so the
+All **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
-a flip persists to D1 immediately and syncs across devices. Each flip emits
+a flip reaches the accounts database within a moment and syncs across devices and apps. Each flip emits
 `UI` / `Toggled` / `NotifyDocumentJoin{On,Off}` /
 `NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
 
 The api worker decides whether to send a notification by reading the
-recipient's preference blob server-side: `getNotificationPrefs(env, ownerId)`
-does a single `SELECT prefs FROM user_preferences` and parses it, returning
-`{}` (→ all defaults → notify) on a missing/corrupt row. A missing key means
+recipient's preferences server-side: `getNotificationPrefs(env, ownerId)`
+(`apps/api/src/person/settings.ts`) does one settings read at the accounts
+Worker and keeps the `notify*` keys, returning `{}` (→ all defaults → notify)
+when nothing is stored or the read fails. A missing key means
 the default (on), so a user who has never touched the toggle still gets
 notified.
 
+The emails that can reach several people at once (a mention, an assignment, someone joining, the milestones)
+read the switch together with the address, for everyone in one go: `notifyRecipients(env, ids, key)`
+(`apps/api/src/person/notify.ts`, on `notificationRecipients` from `@liveworkspace/auth-client`) asks the
+accounts Worker for the verified addresses and for that one key in the scope it lives in (`all`, or
+`livedocuments.app` for `notifyDocumentJoin`), two requests whatever the number of people
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Notification emails"). A switch read
+that fails counts as on; an address read that fails reaches nobody.
+
 ## 4. The two notifications
+
+livedocuments sends the first (§a); the invite answer (§b) is the accounts Worker's.
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional & lifecycle email (Resend)](transactional-email.md) send. Recipients'
-addresses come only from trusted server state (the verified
-`email_lifecycle.email` written at first sighting, or the inviter-typed
-`team_members.email`), never from a client header.
+request's critical path — same contract as every [Transactional email (Resend)](transactional-email.md) send. Recipients'
+addresses come only from trusted server state (the account's verified
+address, looked up at the accounts Worker with `accountEmails`, or the
+inviter-typed `team_members.email`), never from a client header.
 
 ### a. Someone joins my document — `notifyDocumentJoin`
 
 The signal is **a new person opening one of my shared documents for the first
-time**: the share-resolve path (`GET /api/share/<code>`) already records a
-visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
-identifies and isn't the owner. `recordSharedAccess` now reports whether the
-row was **new** (first visit) vs a repeat. On a new visit by a **verified**
-visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDocumentJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
-unproven and free to mint, so every fresh one would be another first visit;
-a guest visit is still recorded in `shared_with` and counted as
-`Document·Joined`, but never emails. `notifyDocumentJoin`:
+time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
+the link's code or by opening the document with it, and when that row is new it tells livedocuments, after the write and
+off its own request's path: `POST /api/internal/items/<id>/notices` with `{ type: 'joined', personId, level }`
+and livedocuments's index key ([One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+"Notices"). livedocuments answers `202` at once and hands it to the document's room, which runs
+`notifyDocumentJoin(env, document, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
+one would be another first visit), and neither is the owner. `notifyDocumentJoin`:
 
-- no-ops unless `emailEnabled(env)`;
-- resolves the owner's email from `email_lifecycle` (so it only fires for a
-  signed-in owner who has a stored verified address — a guest-owned
-  document has no address and is silently skipped);
-- no-ops when the owner's `notifyDocumentJoin` pref is `false`;
-- no-ops unless it wins the per-document throttle: at most one join email per
-  document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `documents.join_notified_at`, the baseline migration; the new-comment email's rule
-  on its own column);
-- otherwise sends the **document-joined** email: "Someone just opened
-  _{document name}_", with a CTA back to the document.
+- no-ops unless `emailEnabled(env)`, and for a guest or the owner;
+- resolves the owner's address and switch at the accounts Worker in one go (so it only fires for an
+  owner with an account and a verified address);
+- no-ops when the owner's `notifyDocumentJoin` switch is `false`;
+- no-ops unless it wins the per-plan throttle: at most one join email per
+  document per 15 minutes (a `join` claim in the document's own `notify_claims`, the new-comment email's rule);
+- otherwise sends the **document-joined** email: "{joiner} opened one of your documents", naming the document, with a
+  CTA to the Explorer.
 
 The document **name** is the recipient owner's _own_ content going back to
-them, so including it does not widen the [Transactional & lifecycle email (Resend)](transactional-email.md) §7 content rule (which is
+them, so including it does not widen the [Transactional email (Resend)](transactional-email.md) §5 content rule (which is
 about not leaking _other_ users' content). The joiner's display name is
 included when known (the owner already sees it in live presence and the
 Shared-with-you list); it's HTML-escaped like the team name.
@@ -164,30 +168,21 @@ Object are deliberately **not** wired (they'd be far too chatty).
 
 ### b. Someone responds to a team invite — `notifyInviteResponse`
 
-When an invitee **accepts** (`POST …/members/<id>/accept`) or **declines**
-(the `DELETE …/members/<id>` on a still-`invited` row), the worker fires
-`notifyInviteResponse(env, team, responderEmail, accepted)` which:
-
-- no-ops unless `emailEnabled(env)`;
-- finds the team's **joined admins** (`listTeamAdminUserIds`), resolves each
-  one's email from `email_lifecycle`;
-- skips any admin whose `notifyInviteResponse` pref is `false`;
-- sends each remaining admin the **invite-response** email: "_{email}_
-  accepted / declined your invitation to _{team name}_".
-
-The responder address and team name are both already known to the inviting
-admin (they typed the address, they named the team), so this stays within
-[Transactional & lifecycle email (Resend)](transactional-email.md) §7. **Leaving** a team (removing a `joined` row) is not an invite
-_response_ and does not notify; only the invited→accepted / invited→declined
-transitions do.
+Sent by liveworkspace, not livedocuments: teams, their invitations and the
+answer emails belong to the liveworkspace account, and the accounts Worker
+tells each joined admin when an invitee accepts or declines, unless they have
+turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
+the app the inviter signed up through. The switch stays in livedocuments'
+Settings because it is a setting every app shares.
 
 ## 5. Privacy / security
 
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
-  `X-Owner-Email` and [Transactional & lifecycle email (Resend)](transactional-email.md) §7).
+  `X-Owner-Email` and [Transactional email (Resend)](transactional-email.md) §5).
 - The only user-influenced strings in a notification body (a document name, a
-  joiner name, a responder email, a team name) are HTML-escaped, and each is
+  joiner name, an assigner's or author's name, an action, a quoted comment) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
   UI), and off per-notification when the recipient opts out. The no-required-SaaS rule
@@ -196,6 +191,6 @@ transitions do.
 ## 6. Out of scope (for now)
 
 A global "all email off" master switch (the lifecycle onboarding series still
-has no unsubscribe, [Transactional & lifecycle email (Resend)](transactional-email.md) §8), notification batching/digests, in-app
+has no unsubscribe, [Transactional email (Resend)](transactional-email.md) §8), notification batching/digests, in-app
 (non-email) notifications, and editing name/avatar from the profile page
 (identity belongs to the liveworkspace account). The page reads identity; it doesn't write it.

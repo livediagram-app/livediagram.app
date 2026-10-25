@@ -55,3 +55,14 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
   }
   return { tabs: out, intent: firstCompiled ? CREATION_INTENT : null };
 }
+
+// The creation intent a create's seeded tabs give when it names none, as compileSeededTabs derives it without
+// compiling: every document's, when its first tab names a template in place of elements. Null otherwise (a first
+// tab the engine refuses refuses the create itself).
+export function seedIntentOf(tabs: unknown): CreationIntent | null {
+  if (!Array.isArray(tabs)) return null;
+  const first: unknown = tabs[0];
+  return isRecord(first) && typeof first.id === 'string' && sourceOf(first)
+    ? CREATION_INTENT
+    : null;
+}

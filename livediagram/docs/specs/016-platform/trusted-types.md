@@ -9,7 +9,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-livediagram-markup livediagram-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
+liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/editor/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, community, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -19,7 +19,11 @@ livediagram-markup livediagram-inert-parse nextjs ProseMirrorClipboard default`,
 
 ## Our policies
 
-All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and nothing else of ours creates a policy.
+All three come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
+re-exported with this app's header by `@livediagram/ui`'s `trusted-types`. Nothing else of ours creates a policy. Every
+app creates the same policies under the same names, so a page that renders another app's UI (liveworkspace.app's
+telemetry dashboard, the Explorer each app's router serves from liveworkspace.app) never needs another app's names
+in its header.
 
 - **`default` is created first**, by an inline script at the top of each layout's `<head>`
   (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
@@ -29,12 +33,12 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
   any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
-- **`livediagram-markup`** turns markup that livediagram's own builders produced into `TrustedHTML`
+- **`liveworkspace-markup`** turns markup that livediagram's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
-  sticker and template SVG builders (`@livediagram/icons`, `@livediagram/templates`), the headless tab renderer's
+  sticker and template SVG builders (`@liveworkspace/icons`, `@livediagram/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
-- **`livediagram-inert-parse`** lets `DOMParser` read a file a person opened (a draw.io diagram or library, a
+- **`liveworkspace-inert-parse`** lets `DOMParser` read a file a person opened (a draw.io diagram or library, a
   draw.io label's HTML) through `parseInert(source, type)`. A parsed document is inert: nothing in it runs, and
   nothing from it is inserted as markup; only its text and attributes are read.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
@@ -45,7 +49,9 @@ Because the prerender passes strings through, a **server component** that hands 
 `dangerouslySetInnerHTML` puts a plain string into the RSC payload. The first load is fine (the markup is already in
 the HTML), but a client navigation to that page makes React write the string through `innerHTML`, the `default`
 policy refuses it, and the page crashes to a blank screen. The help centre's breadcrumb and category links all did
-this through the JSON-LD block. So outside the editor (a client app end to end), a sink lives in one of three places:
+this through the JSON-LD block. A `<Suspense>` boundary the static export leaves to the browser does the same on the
+first load: liveworkspace.app's Explorer rendered its silent sign-in script inside one and blanked every `/explorer`
+page, on every app's address. So outside the editor (a client app end to end), a sink lives in one of three places:
 a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` module (the call mints real `TrustedHTML`
 in the browser), or an app module that only client modules import. A sink in a shared package must be a client
 module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every
@@ -60,10 +66,12 @@ file to this.
 | Next.js's own script helper                                | Its pass-through policy                                                                                                                                            | The `nextjs` policy name                                               |
 | ProseMirror (the article editor)                           | Parsing pasted HTML into an inert template                                                                                                                         | The `ProseMirrorClipboard` policy name                                 |
 | Our web workers                                            | Their script URLs under `/_next/`                                                                                                                                  | `default`                                                              |
-| Clerk (editor, community sign-in)                          | Script URLs on the Clerk frontend API origin                                                                                                                       | `default`, origin from the publishable key                             |
-| Clerk's sign-up bot protection                             | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`                                                                                               | `default`, beside Clerk's origin                                       |
-| Clerk's session timers                                     | A `Worker` from the page's own `blob:` URL (its fixed timer source)                                                                                                | `default`, for the Worker constructor sink alone                       |
+| Nothing today (Clerk's session timers did)                 | A `Worker` from the page's own `blob:` URL; the rule is kept                                                                                                       | `default`, for the Worker constructor sink alone                       |
 | The Drive mirror (editor, a build with a Google client id) | Google Identity Services (`https://accounts.google.com/gsi/client`) and the API loader with the Picker (`https://apis.google.com/js/api.js`, then the same origin) | `default`, those two origins, only with `NEXT_PUBLIC_GOOGLE_CLIENT_ID` |
+
+Sign-in loads no third-party script: it is a full-page hand-off to the liveworkspace accounts site, so its origin
+is not allowed here. When the editor signed in through Clerk, its script origin and Cloudflare Turnstile's (for sign-up
+bot protection) were.
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
 it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
@@ -74,7 +82,7 @@ A third party that needs anything else is a bug to fix with it, never a wider `d
 without one is code asking `trustedTypes.defaultPolicy.createHTML(...)` directly, and the policy throws. ProseMirror
 tries the default policy that way before making its own `ProseMirrorClipboard` policy, and only falls back when it
 throws: when the policy answered `null` instead, ProseMirror kept it and parsed every pasted HTML as empty, so a rich
-paste into an article pasted nothing (`article-paste.spec.ts` locks it).
+paste into an article pasted nothing.
 
 **One third party is refused by design.** Cloudflare's JavaScript Detections (bot management) is injected by the edge
 into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy

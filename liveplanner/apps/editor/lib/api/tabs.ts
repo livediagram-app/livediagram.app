@@ -1,13 +1,13 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// cross-project link, and delete.
+// cross-plan link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
-  PROJECT_OPEN_HEADER,
+  INDEX_GRANT_HEADER,
   type TabResponse,
   type TabSummary,
 } from '@liveplanner/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@liveplanner/project';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
   isOfflineIdSync,
@@ -17,6 +17,8 @@ import {
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
+import { heldPlanGrant } from './plan-grants';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import {
   API_BASE,
   apiDelete,
@@ -36,10 +38,10 @@ import {
 // lazily when the user opens a tab; the project-summary fetch only
 // carries TabSummary rows.
 //
-// `open` declares this read an open of the project, for the reader's
-// Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
+// `open` declares this read an open of the plan, for the reader's Recent
+// (liveworkspace/docs/one-explorer-contracts.md "Items", `POST /items/:id/open`): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
-// Offline or an embed.
+// Offline or an embed. Told to the index beside the read, never waited on.
 //
 // The tab's revision rides beside it (docs/specs/024-agents/agent-changesets.md "The tab revision",
 // CS41), never inside it: the editor's tabs hold content only, and the revision tells the changeset
@@ -58,11 +60,14 @@ async function _apiLoadTabRevisioned(
     const tab = await offlineLoadTab(projectId, tabId);
     return tab ? { tab, rev: 0 } : null;
   }
+  if (opts.open) {
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    void indexClient.recordOpen(projectId, share).catch((err: unknown) => {
+      console.warn('[index] open not recorded', err);
+    });
+  }
   const res = await apiFetch(`${API_BASE}/projects/${projectId}/tabs/${tabId}`, {
-    headers: await apiHeaders(ownerId, {
-      share: shareCode,
-      ...(opts.open ? { extra: { [PROJECT_OPEN_HEADER]: '1' } } : {}),
-    }),
+    headers: await apiHeaders(ownerId, { share: shareCode }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
   if (!body) return null;
@@ -174,13 +179,16 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // path builds headers synchronously and uses `keepalive: true` to let
 // each request outlive the teardown. Identity comes from the sync
 // sources: the Bearer token apiHeaders cached on its last fetch for
-// signed-in sessions, else X-Owner-Id + guest signature. The debounced
+// signed-in sessions, else the guest token. The debounced
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
 // The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
 const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
+
+// The unload flush's requests go at once, with the grant it holds (apiFetch `planGrant: false`).
+const NO_GRANT_WAIT = { planGrant: false } as const;
 
 export function flushProjectSavesBeacon(args: {
   ownerId: string;
@@ -220,11 +228,9 @@ export function flushProjectSavesBeacon(args: {
   // Identity, synchronously (a beforeunload handler can't await):
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
-  // so it's seconds old at teardown. Guests ride X-Owner-Id plus the
-  // guest signature (a sync localStorage read); without the sig these
-  // writes 401 (signature_required) once guest-sig enforcement is on,
-  // silently losing the final debounce window's edits — the exact loss
-  // this flush exists to prevent. The rule is apiHeaders' own
+  // so it's seconds old at teardown. Guests ride their guest token (a sync
+  // localStorage read), and the plan's grant is the one held (plan-grants.ts),
+  // so nothing here waits on the network. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
   let base: Record<string, string>;
@@ -235,6 +241,8 @@ export function flushProjectSavesBeacon(args: {
     return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
+  const grant = heldPlanGrant(args.projectId, args.shareCode ? { code: args.shareCode } : null);
+  if (grant) base[INDEX_GRANT_HEADER] = grant;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
   // project, losing the final debounce window's edits.
@@ -259,31 +267,43 @@ export function flushProjectSavesBeacon(args: {
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
-    void apiFetch(`${API_BASE}/projects/${args.projectId}/tabs/${t.id}`, {
-      method: 'PUT',
-      headers,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/projects/${args.projectId}/tabs/${t.id}`,
+      {
+        method: 'PUT',
+        headers,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(`${API_BASE}/projects/${args.projectId}/tabs/${tabId}`, {
-      method: 'DELETE',
-      headers: base,
-      keepalive: keepaliveFor(undefined),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/projects/${args.projectId}/tabs/${tabId}`,
+      {
+        method: 'DELETE',
+        headers: base,
+        keepalive: keepaliveFor(undefined),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
     const body = JSON.stringify({
       name: args.name,
       tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
     });
-    void apiFetch(`${API_BASE}/projects/${args.projectId}`, {
-      method: 'PUT',
-      headers: jsonHeaders,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/projects/${args.projectId}`,
+      {
+        method: 'PUT',
+        headers: jsonHeaders,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
 }
 
@@ -378,22 +398,21 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Link an existing tab into another of the caller's projects
-// (docs/specs/006-project/tab-project-many-to-many.md). After this returns, the tab body is shared: edits
-// from either project write to the same `tabs.data` row. Returns
-// the target project's summary view of the now-attached tab so
-// the caller can update its TabBar without a full project
-// refetch.
+// Share a tab of `fromProjectId` into another of the caller's plans (docs/specs/006-project/tab-project-many-to-many.md).
+// After this returns both plans hold the tab, and an edit in either reaches the other. Answers the tab as the
+// target plan now holds it, so the caller can show it without a full plan refetch.
 export async function apiLinkTab(
   ownerId: string,
   projectId: string,
   tabId: string,
+  fromProjectId: string,
 ): Promise<TabSummary> {
   const res = await apiFetch(
     `${API_BASE}/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}/link`,
     {
       method: 'POST',
-      headers: await apiHeaders(ownerId),
+      headers: { ...(await apiHeaders(ownerId)), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromProjectId }),
     },
   );
   return expectOk<{ tab: TabSummary }>(res, 'link tab').then((b) => b.tab);

@@ -58,12 +58,7 @@ describe('toastFloor', () => {
   });
 
   it('names the editor and Explorer bottom chrome', () => {
-    for (const hook of [
-      'data-toast-floor',
-      'data-editor-tabbar',
-      'data-zoom-cluster',
-      'data-whiteboard-dock',
-    ]) {
+    for (const hook of ['data-toast-floor', 'data-editor-tabbar', 'data-zoom-cluster']) {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }
   });

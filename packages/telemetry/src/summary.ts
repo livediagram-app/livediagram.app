@@ -2,7 +2,7 @@
 // FIXED windows and a 30-day daily series, for one app or for every app. No custom ranges, so the one
 // query stays simple and the response is cacheable.
 
-import type { TelemetryApp, TelemetryAppFilter } from './apps';
+import type { TelemetryAppFilter, TelemetrySender } from './apps';
 
 export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
 
@@ -31,7 +31,7 @@ export type TelemetryWindow = {
   // Each app's share of `total`. Every app the summary counts is present, zero when it sent nothing.
   // Optional, like `daily` and `previousWindows` below, so a payload or fixture in the shape the apps'
   // dashboards were written against still parses.
-  byApp?: Partial<Record<TelemetryApp, number>>;
+  byApp?: Partial<Record<TelemetrySender, number>>;
 };
 
 // `byMetric` is the per-event version of `byCategory`: one 30-day series per distinct event, keyed by
@@ -41,7 +41,7 @@ export type TelemetryDaily = {
   totals: number[];
   byCategory: Record<string, number[]>;
   byMetric: Record<string, number[]>;
-  byApp?: Partial<Record<TelemetryApp, number[]>>;
+  byApp?: Partial<Record<TelemetrySender, number[]>>;
 };
 
 export type TelemetrySummary = {
@@ -83,7 +83,7 @@ export function telemetryQueryStart(now: number): number {
 // One row of the service's per-day grouped query.
 export type TelemetryDailyRow = {
   day: string;
-  app: TelemetryApp;
+  app: TelemetrySender;
   category: string;
   action: string;
   type: string | null;
@@ -96,7 +96,7 @@ export type TelemetryDailyRow = {
 export function buildTelemetrySummary(
   now: number,
   app: TelemetryAppFilter,
-  apps: readonly TelemetryApp[],
+  apps: readonly TelemetrySender[],
   dailyRows: readonly TelemetryDailyRow[],
 ): TelemetrySummary {
   const since = telemetrySeriesStart(now);
@@ -105,7 +105,10 @@ export function buildTelemetrySummary(
   const totals = zeros();
   const byCategory: Record<string, number[]> = {};
   const byMetric: Record<string, number[]> = {};
-  const byApp = Object.fromEntries(apps.map((a) => [a, zeros()])) as Record<TelemetryApp, number[]>;
+  const byApp = Object.fromEntries(apps.map((a) => [a, zeros()])) as Record<
+    TelemetrySender,
+    number[]
+  >;
   const dayIndex = new Map<string, number>();
   for (let i = 0; i < SERIES_DAYS; i++) {
     const ts = since + i * DAY_MS;
@@ -171,7 +174,7 @@ export function buildTelemetrySummary(
     return {
       total: sorted.reduce((sum, r) => sum + r.count, 0),
       rows: sorted,
-      byApp: bucket.byApp as Record<TelemetryApp, number>,
+      byApp: bucket.byApp as Record<TelemetrySender, number>,
     };
   };
   const windows = (buckets: Record<TelemetryWindowKey, Bucket>) =>

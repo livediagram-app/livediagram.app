@@ -5,14 +5,18 @@
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/project';
-import { fitClearOfPanel, MAP_PANEL_SELECTOR, type FitInsets } from './fit-clear-of-panel';
+import {
+  fitClearOfPanel,
+  MAP_PANEL_SELECTOR,
+  type FitInsets,
+} from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import {
   besideSideInsets,
   computeFitToScreen,
   FIT_TO_SCREEN_PADDING,
   topChromeInset,
-} from './viewport';
-import type { ViewPose } from './viewport-glide';
+} from '@liveworkspace/workbench/lib/viewport';
+import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 
 // A tab with nothing on it: back to the origin at 100%.
 const EMPTY_TAB_VIEW: ViewPose = { zoom: 1, offset: { x: 0, y: 0 } };

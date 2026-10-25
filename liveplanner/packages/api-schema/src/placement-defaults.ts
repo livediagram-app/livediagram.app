@@ -115,7 +115,6 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  // A create from an older client still names a retired mode, read as Plan.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
   const kind = tabKind ?? 'empty';
@@ -124,6 +123,13 @@ export function readCreationIntent(
   if (templateFamily === undefined || templateFamily === null) return { ok: true, intent };
   if (!isTemplateFamily(templateFamily)) return { ok: false };
   return { ok: true, intent: { ...intent, templateFamily } };
+}
+
+/** The intent as the index keeps it, a word for its filters and default folders: `plan:board`,
+ *  `plan:empty:kanban` (its last part the template family the index's defaults key on). Null for none. */
+export function indexIntentOf(intent: CreationIntent | null): string | null {
+  if (!intent) return null;
+  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
 }
 
 /** Every key an intent names, most specific first: template, mode. */

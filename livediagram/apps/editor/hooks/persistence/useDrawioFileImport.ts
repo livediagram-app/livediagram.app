@@ -4,7 +4,7 @@
 // library (docs/specs/013-workspace/shape-libraries.md) through the host's commits, and hand the
 // report on with the files left out listed first.
 import { useRef, useState } from 'react';
-import type { ImportChecklistRow } from '@/components/dialogs/ImportChecklist';
+import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
 import { importingStepOf, type BoardImportingStep } from '@/lib/board-scene-import';
 import type { DrawioFiles, DrawioLibraryFile } from '@/lib/drawio/files';

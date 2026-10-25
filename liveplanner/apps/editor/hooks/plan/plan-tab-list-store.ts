@@ -6,7 +6,7 @@
 // renamed or turned), never an element moved.
 import { useSyncExternalStore } from 'react';
 import { tabKindOf, type DashboardTabOf, type Tab } from '@liveplanner/project';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type PlanTabEntry = { id: string; name: string; of: DashboardTabOf };
 

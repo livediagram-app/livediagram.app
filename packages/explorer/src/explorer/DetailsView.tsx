@@ -1,0 +1,411 @@
+'use client';
+
+// The details layout (liveplanner's Details view): a table of the folders, then the loaded items, with the columns
+// the index knows (type, comments, access, size, created, updated). A header press sorts by a column (folders
+// stay first, dashes last) and the choice is kept on the device. Folder rows carry the folder menu, inline rename,
+// what they hold and their dates; item rows preview their snapshot after a 600 ms rest and ask the host to load it
+// ahead as they come near. Sorting is over what is loaded; the rows are windowed like the list's.
+
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { FOLDER_PREVIEW_IDS_MAX, type Folder } from '@liveworkspace/index-client';
+import type { ShownItem } from '../data/overlay';
+import { useFolderPreviews } from '../data/useFolderPreviews';
+import { elsewhereLabel } from './FolderMosaic';
+import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
+import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
+import { LIST_CARD, RENAME_INPUT } from '../ui/classes';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
+import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
+import { FolderSolidIcon, ItemIcon } from '../ui/icons';
+import { useCascade } from '../ui/useCascade';
+import { kindWords, siteOf } from '../words';
+import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
+import { useExplorer } from './context';
+import {
+  ALIGN_CLASS,
+  AccessCell,
+  CommentsCell,
+  DateCell,
+  FolderTypeCell,
+  NOT_COUNTED,
+  NoValue,
+  SHOWN_FROM_CLASS,
+  SizeCell,
+  TypeCell,
+} from './details/details-cells';
+import {
+  DETAILS_COLUMNS,
+  sortDetailsEntries,
+  typeLabel,
+  type DetailsColumnId,
+} from './details/details-columns';
+import { formatHeld } from './details/details-format';
+import { HoverPreviewCard, useHoverPreview } from './details/HoverPreview';
+import { useDetailsSort } from './details/useDetailsSort';
+import { useExtras } from './extras';
+import { FolderMenu, ItemMenu } from './menus';
+import { ROW_HEIGHT, useFolderBits, useItemBits, type RowOptions } from './rows';
+import { useWindowedRange } from './useWindow';
+
+// Name, Type, Comments, Access, Size, Created, Updated, the menu: each column shows from the list's width up (a
+// container query: the pane, not the window, is what they share), the name taking what is left.
+const GRID =
+  'grid items-center gap-3 grid-cols-[minmax(0,1fr)_6rem_2rem] @xl:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem_6rem_2rem] @3xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6rem_2rem] @5xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6.5rem_6rem_2rem]';
+
+const CELL = 'min-w-0 items-center';
+const cellClass = (id: DetailsColumnId) => {
+  const c = DETAILS_COLUMNS.find((x) => x.id === id)!;
+  return `${CELL} ${SHOWN_FROM_CLASS[c.shownFrom]} ${ALIGN_CLASS[c.align]}`;
+};
+
+/** A header's sort arrow: up or down on the sorted column, a faint pair on the others while pointed at. */
+function SortArrow({ direction }: { direction: 'asc' | 'desc' | null }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className={`size-3 shrink-0 ${direction ? 'text-brand-600 dark:text-brand-300' : 'text-slate-300 opacity-0 group-hover/sort:opacity-100 dark:text-slate-600'}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {direction === 'asc' ? <path d="M8 13V3M4 7l4-4 4 4" /> : null}
+      {direction === 'desc' ? <path d="M8 3v10M4 9l4 4 4-4" /> : null}
+      {direction === null ? <path d="M5 6l3-3 3 3M5 10l3 3 3-3" /> : null}
+    </svg>
+  );
+}
+const CELLS = Object.fromEntries(DETAILS_COLUMNS.map((c) => [c.id, cellClass(c.id)])) as Record<
+  DetailsColumnId,
+  string
+>;
+
+const LOAD_AHEAD = 40;
+
+export function DetailsView({
+  folders,
+  items,
+  options,
+  hasMore,
+  loadingMore,
+  onLoadMore,
+  resetKey = '',
+}: {
+  folders: Folder[];
+  items: ShownItem[];
+  options: RowOptions;
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+  // The list's identity: a new one cascades in.
+  resetKey?: string;
+}) {
+  const { renamingId, client, app, filter, epoch, placedEpoch, words } = useExplorer();
+  const [sort, sortBy] = useDetailsSort();
+  const cascade = useCascade(resetKey);
+  // What each folder holds, for its Size cell and a sort by size (one batched request for this level's folders).
+  const folderIds = useMemo(
+    () => folders.slice(0, FOLDER_PREVIEW_IDS_MAX).map((f) => f.id),
+    [folders],
+  );
+  const previews = useFolderPreviews({
+    client,
+    folderIds,
+    app: filter === 'all' ? null : app,
+    epoch,
+    placedEpoch,
+  });
+  const sorted = useMemo(
+    () =>
+      sortDetailsEntries({
+        folders,
+        items,
+        sort,
+        itemCount: (id) => previews.get(id)?.itemCount,
+        kindOne: (item) => kindWords(item.app).one,
+      }),
+    [folders, items, sort, previews],
+  );
+  const body = useRef<HTMLUListElement>(null);
+  const count = sorted.folders.length + sorted.items.length;
+  const range = useWindowedRange(body, count, ROW_HEIGHT);
+  // The range trails a shrinking list by one render (an item trashed): clamp it to what is there.
+  const end = Math.min(range.end, count);
+  const start = Math.min(range.start, end);
+  useEffect(() => {
+    if (hasMore && !loadingMore && end >= count - LOAD_AHEAD) onLoadMore();
+  }, [end, count, hasMore, loadingMore, onLoadMore]);
+
+  const rows = [];
+  for (let i = start; i < end; i++) {
+    if (i < sorted.folders.length) {
+      const f = sorted.folders[i]!;
+      rows.push(
+        <DetailsFolderRow
+          key={`f:${f.id}`}
+          folder={f}
+          renaming={renamingId === f.id}
+          itemCount={previews.get(f.id)?.itemCount}
+          elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
+          one={words.lowerOne}
+          many={words.lowerMany}
+        />,
+      );
+    } else {
+      const item = sorted.items[i - sorted.folders.length]!;
+      rows.push(
+        <DetailsRow
+          key={item.id}
+          item={item}
+          renaming={renamingId === item.id}
+          options={options}
+        />,
+      );
+    }
+  }
+
+  return (
+    <div className={`@container ${LIST_CARD}`}>
+      <div
+        role="row"
+        className={`${GRID} border-b border-slate-200 bg-slate-50/95 px-4 py-2.5 text-xs font-medium text-slate-500 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400`}
+      >
+        {DETAILS_COLUMNS.map((c) => {
+          const on = sort.column === c.id;
+          return (
+            <span key={c.id} className={CELLS[c.id]}>
+              <button
+                type="button"
+                role="columnheader"
+                data-sort-column={c.id}
+                aria-sort={on ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}
+                title={`Sort by ${c.label}`}
+                onClick={() => sortBy(c.id)}
+                className={`group/sort -mx-1.5 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 transition hover:bg-slate-200/60 hover:text-slate-900 dark:hover:bg-slate-700/60 dark:hover:text-white ${
+                  c.align === 'end' ? 'flex-row-reverse' : ''
+                } ${on ? 'text-slate-900 dark:text-white' : ''}`}
+              >
+                <span className="truncate">{c.label}</span>
+                <SortArrow direction={on ? sort.direction : null} />
+              </button>
+            </span>
+          );
+        })}
+        <span aria-hidden />
+      </div>
+      <ul
+        ref={body}
+        aria-rowcount={count}
+        className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
+      >
+        {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
+        {rows}
+        {end < count ? <li aria-hidden style={{ height: (count - end) * ROW_HEIGHT }} /> : null}
+      </ul>
+      {loadingMore ? (
+        <p className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700/60 dark:text-slate-400">
+          Loading more…
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+const DetailsFolderRow = memo(function DetailsFolderRow({
+  folder: f,
+  renaming,
+  itemCount,
+  elsewhere,
+  one,
+  many,
+}: {
+  folder: Folder;
+  renaming: boolean;
+  itemCount: number | undefined;
+  // With none of this app's, how many other apps' items it holds.
+  elsewhere?: number;
+  one: string;
+  many: string;
+}) {
+  const bits = useFolderBits(f);
+  const menu = useRowMenu({ disabled: renaming });
+  const drop = useDropTarget({ teamId: f.teamId, folderId: f.id });
+  const drag = useFolderDrag(f, renaming);
+  return (
+    <li
+      data-folder-row={f.id}
+      data-drop-over={drop.over || undefined}
+      className={`${GRID} group px-4 hover:bg-slate-50 dark:hover:bg-slate-700 ${drop.over ? DROP_ROW : ''}`}
+      style={{ height: ROW_HEIGHT }}
+      onContextMenu={menu.onContextMenu}
+      {...drop.handlers}
+      {...drag}
+    >
+      <span className="flex min-w-0 items-center gap-2">
+        <span aria-hidden className="inline-flex shrink-0 text-amber-500 [&_svg]:size-4">
+          <FolderSolidIcon />
+        </span>
+        {renaming ? (
+          <InlineRenameInput
+            initial={f.name}
+            ariaLabel={`Rename ${f.name}`}
+            onCommit={bits.commitRename}
+            onCancel={bits.cancelRename}
+            className={`min-w-0 flex-1 ${RENAME_INPUT}`}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={bits.open}
+            onDoubleClick={bits.open}
+            className="truncate text-left text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
+          >
+            {f.name}
+          </button>
+        )}
+        {renaming ? null : <DefaultFolderMarker folderId={f.id} />}
+      </span>
+      <span className={CELLS.type}>
+        <FolderTypeCell />
+      </span>
+      <span className={CELLS.comments} />
+      <span className={CELLS.access} />
+      <span
+        className={`${CELLS.size} truncate whitespace-nowrap text-xs tabular-nums text-slate-600 dark:text-slate-300`}
+      >
+        {itemCount === undefined ? (
+          <NoValue label={NOT_COUNTED} />
+        ) : itemCount === 0 && elsewhere ? (
+          <span data-folder-elsewhere={elsewhere}>{elsewhereLabel(elsewhere)}</span>
+        ) : (
+          <span data-folder-held="">{formatHeld(itemCount, one, many)}</span>
+        )}
+      </span>
+      <span className={CELLS.created}>
+        <DateCell at={f.createdAt} />
+      </span>
+      <span className={CELLS.updated}>
+        <DateCell at={f.updatedAt} ago />
+      </span>
+      {renaming ? (
+        <span />
+      ) : (
+        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for folder ${f.name}`} />
+      )}
+      {menu.open ? (
+        <FolderMenu folder={f} anchor={menu.triggerRef.current} onClose={menu.close} />
+      ) : null}
+    </li>
+  );
+});
+
+const DetailsRow = memo(function DetailsRow({
+  item,
+  renaming,
+  options,
+}: {
+  item: ShownItem;
+  renaming: boolean;
+  options: RowOptions;
+}) {
+  const { Link, renderThumbnail, renderItemMark } = useExplorer();
+  const { leaving, prefetchThumbnail } = useExtras();
+  const bits = useItemBits(item);
+  const menu = useRowMenu({ disabled: renaming });
+  const drag = useItemDrag(item, renaming);
+  const preview = useHoverPreview(Boolean(renderThumbnail) && !renaming && !menu.open);
+  const title = item.title || 'Untitled';
+  // The snapshot loads ahead as the row comes near the screen (rows mount only then).
+  const prefetched = useRef(false);
+  useEffect(() => {
+    if (prefetched.current || !prefetchThumbnail) return;
+    prefetched.current = true;
+    prefetchThumbnail(item);
+    // Once per row.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefetchThumbnail]);
+  const card = preview.spot ? renderThumbnail?.(item, 'card') : null;
+  const kind = typeLabel(item, kindWords(item.app).one);
+  const onContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      preview.handlers.onPointerLeave();
+      menu.onContextMenu?.(e);
+    },
+    [preview.handlers, menu],
+  );
+  return (
+    <li
+      data-item-row={item.id}
+      className={`${GRID} group px-4 transition hover:bg-slate-50 dark:hover:bg-slate-700 ${
+        leaving.has(item.id) ? 'lw-row-out' : ''
+      }`}
+      style={{ height: ROW_HEIGHT }}
+      onContextMenu={onContextMenu}
+      {...preview.handlers}
+      {...drag}
+    >
+      <span className="flex min-w-0 items-center gap-2">
+        {/* Its kind's glyph in its app's colour, so a row reads at a glance, as a folder's does. */}
+        <span
+          aria-hidden
+          className="inline-flex shrink-0 [&_svg]:size-4"
+          style={{ color: siteOf(item.app).accent }}
+        >
+          <ItemIcon />
+        </span>
+        {options.showApp ? <AppMark app={item.app} /> : null}
+        {item.favourite ? <FavouriteMarker /> : null}
+        {renderItemMark?.(item, 'title')}
+        {renaming ? (
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${title}`}
+            onCommit={bits.commitRename}
+            onCancel={bits.cancelRename}
+            className={`min-w-0 flex-1 ${RENAME_INPUT}`}
+          />
+        ) : (
+          <Link
+            href={bits.href}
+            className="truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
+          >
+            {title}
+          </Link>
+        )}
+        <MadeByAiBadge item={item} />
+      </span>
+      <span className={CELLS.type}>
+        <TypeCell app={item.app} label={kind} />
+      </span>
+      <span className={CELLS.comments}>
+        <CommentsCell count={item.summary.comments} />
+      </span>
+      <span className={CELLS.access}>
+        <AccessCell level={item.access} />
+      </span>
+      <span className={CELLS.size}>
+        <SizeCell item={item} />
+      </span>
+      <span className={CELLS.created}>
+        <DateCell at={item.createdAt} />
+      </span>
+      <span className={`${CELLS.updated} justify-between gap-1.5`}>
+        <DateCell at={item.updatedAt} ago />
+        {renderItemMark?.(item, 'time')}
+      </span>
+      {renaming ? (
+        <span />
+      ) : (
+        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${title}`} />
+      )}
+      {menu.open ? (
+        <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
+      ) : null}
+      {preview.spot && card ? (
+        <HoverPreviewCard spot={preview.spot}>{card}</HoverPreviewCard>
+      ) : null}
+    </li>
+  );
+});

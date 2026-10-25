@@ -123,7 +123,6 @@ describe('workbenchRefusal, workspace scope', () => {
     ['PUT', 'documents/any/tabs/t1'],
     ['DELETE', 'documents/any'],
     ['POST', 'folders'],
-    ['GET', 'home'],
     ['GET', 'teams'],
     ['GET', 'share/abc'],
   ])('lets an Explorer route through: %s %s', (method, path) => {

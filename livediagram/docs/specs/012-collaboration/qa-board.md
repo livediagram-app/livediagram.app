@@ -78,7 +78,7 @@ the room, not against someone reading the api's logs.
 
 A voter id is `sha256("livediagram:qa-vote:v1:" + ownerId + ":" + elementId)`,
 truncated to 16 hex characters and computed **by the server** from the
-authenticated caller (`X-Owner-Id` or the Clerk `sub`). So:
+authenticated caller (the guest token's id or the account's `sub`). So:
 
 - **It can't be forged.** A client never says who it is voting as; claiming a
   second vote means holding a second owner id.
@@ -113,7 +113,7 @@ from every role, goes through one endpoint:
 https://room/qa` on the Durable Object).
 - The room runs board writes **one at a time**, through an in-memory promise
   queue (`DocumentRoom.handleQaWrite`). A Durable Object only serialises the
-  synchronous part of a handler: while one write awaits D1, the runtime starts
+  synchronous part of a handler: while one write awaits its storage, the runtime starts
   the next request, so without the queue two read-modify-writes of the same
   row would race. Worker requests run in parallel isolates, so the room is the
   only place every write for one document meets.
@@ -142,9 +142,9 @@ closes each route that could do that:
 - **Board writes can't race each other** (the room queue), and can't be lost
   to an autosave (the CAS re-read).
 - **Stale whole-element copies can't roll the board back** (`qaRev`, below),
-  on peers or in D1.
+  on peers or in the store.
 
-`document-room-qa.test.ts` fires 40 simultaneous votes at a fake D1 that
+`document-room-qa.test.ts` fires 40 simultaneous votes at a fake store that
 yields on every read and write, the worst interleaving there is, and asserts
 all 40 land with revs 1 to 40 broadcast in order. It fails if the queue is
 removed.
@@ -166,10 +166,10 @@ board's notes from **whichever copy has the higher `qaRev`**
 (`preferNewerQa`), and on a tie keeps what it already has. So:
 
 - An editor moving the board while votes land can't erase them, on peers or in
-  D1.
+  the store.
 - An optimistic local change (same rev, extra note) never leaks out through an
   autosave; the server's broadcast is the only thing that raises the rev.
-- If an autosave's read-then-write does interleave with a board write in D1,
+- If an autosave's read-then-write does interleave with a board write in the store,
   the next autosave from any editor carries the higher rev back and heals it.
 
 ## The face

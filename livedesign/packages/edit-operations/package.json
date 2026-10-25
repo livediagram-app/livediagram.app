@@ -19,14 +19,14 @@
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
-    "@livedesign/icons": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
-    "@livedesign/templates": "workspace:*"
+    "@livedesign/templates": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
     "@livedesign/design-views": "workspace:*",
-    "@livedesign/oxlint-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

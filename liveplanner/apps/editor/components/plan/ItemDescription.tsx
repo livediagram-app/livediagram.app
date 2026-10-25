@@ -7,7 +7,7 @@
 // in one write: a moment after typing stops, when focus leaves, and when the panel closes.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PencilIcon } from '@liveplanner/ui';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { runsFromPlainText, type TextRun } from '@liveplanner/project';
 import { DESCRIPTION_RICH_FIELD, type Item, type ItemPatch } from '@liveplanner/items';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';

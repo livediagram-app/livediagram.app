@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import type { OfflineProjectRecord } from './offline-store';
 import {
@@ -18,7 +18,6 @@ import {
   offlineLoadTab,
   offlineSaveProjectMeta,
   offlineSaveTab,
-  offlineSetProjectFolder,
   OFFLINE_OWNER_ID,
   recordToProject,
   removeTab,
@@ -105,21 +104,6 @@ describe('offline store ops (in-memory backend)', () => {
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
   });
 
-  it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    __setOfflineBackend(memBackend());
-    const charcoal = tab('t1', {
-      theme: 'charcoal',
-      backgroundColor: '#2b2b33',
-      patternColor: '#636373',
-    });
-    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
-    expect(await offlineLoadTab('d1', 't1')).toMatchObject({
-      theme: 'brand',
-      backgroundColor: '#0d121a',
-    });
-  });
-
   it('saves + loads + deletes individual tabs', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [] }, 100);
@@ -134,19 +118,15 @@ describe('offline store ops (in-memory backend)', () => {
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
   });
 
-  it('setProjectFolder updates the personal-tree placement', async () => {
+  it('records no creation intent in the browser', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [] }, 100);
-    await offlineSetProjectFolder('d1', 'f1', 200);
-    expect((await offlineListProjects())[0]?.folderId).toBe('f1');
-    // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
+    // docs/specs/013-workspace/default-folders.md
     expect((await offlineListProjects())[0]).toMatchObject({
       opensIn: null,
       tabKind: null,
       templateFamily: null,
     });
-    await offlineSetProjectFolder('d1', null, 300);
-    expect((await offlineListProjects())[0]?.folderId).toBeNull();
   });
 
   it('saveProjectMeta renames without touching tabs', async () => {

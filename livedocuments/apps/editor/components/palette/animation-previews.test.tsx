@@ -19,7 +19,7 @@ import {
   ProgressAnimPreview,
   RatingAnimPreview,
 } from './animation-previews-existing';
-import { useFrozenAnimations } from './useFrozenAnimations';
+import { useFrozenAnimations } from '@liveworkspace/workbench/components/palette/useFrozenAnimations';
 import { renderHook } from '@testing-library/react';
 
 describe('animation tile miniatures', () => {

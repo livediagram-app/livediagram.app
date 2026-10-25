@@ -1,7 +1,7 @@
 'use client';
 
 import type { PendingDraw } from '@/lib/draw-mode';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/ChevronIcon';
 import { PaletteToolRows } from './PaletteToolRows';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';

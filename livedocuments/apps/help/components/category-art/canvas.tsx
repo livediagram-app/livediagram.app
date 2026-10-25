@@ -1,93 +1,141 @@
-import { Arrow, Cursor, Label, SelectionBox, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Cursor, Label, SelectionBox } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
-// Canvas: the infinite canvas itself, mid-flowchart. A decision branching to two outcomes, a sticky note pinned
-// beside it, the palette strip floating above and the zoom and undo controls in their corners.
+// The slide's column chart, tallest last.
+const BARS = [30, 46, 38, 62];
+
+// The Quick Style panel's colour swatches, the first one picked.
+const SWATCHES = [
+  'fill-slate-800',
+  'fill-brand-500',
+  'fill-violet-500',
+  'fill-emerald-500',
+  'fill-rose-500',
+];
+
+// Canvas: a slide being built on the canvas. Its title selected with the Quick Style panel beside it (font, size,
+// bold and italic, colour), the snapping guide lining a callout up with the title's left edge, and the undo and
+// zoom controls in their corners.
 export function CanvasArt() {
   return (
     <Stage>
-      {/* The palette strip. */}
-      <Card x={112} y={14} w={176} h={28} r={9}>
-        <path
-          d="M124 21 v13 l3.5 -3.2 2.3 4.8 2.3 -1 -2.2 -4.6 4.6 -0.3 Z"
-          className="fill-brand-500"
-        />
-        <rect
-          x={146}
-          y={22}
-          width={13}
-          height={12}
-          rx={2.5}
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-        />
-        <ellipse
-          cx={177}
-          cy={28}
-          rx={7}
-          ry={6}
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-        />
-        <path
-          d="M200 21 l7 7 -7 7 -7 -7 Z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-          strokeLinejoin="round"
-        />
-        <path
-          d="M216 34 l12 -12 m-6 0 h6 v6"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Label x={244} y={28.5} anchor="middle" size={13} weight={700} tone="body">
-          T
+      {/* The slide, labelled the way the editor labels a page. */}
+      <Label x={26} y={22} size={8.5} weight={600} tone="muted">
+        Slide (16:9) · Slide
+      </Label>
+      <Card x={26} y={30} w={246} h={138} r={4}>
+        <rect x={26} y={30} width={8} height={138} rx={2} className="fill-brand-500" />
+        <Label x={52} y={64} size={17} weight={800} tone="strong">
+          Q3 results
         </Label>
+        <rect x={52} y={82} width={96} height={5} rx={2.5} className="fill-slate-300" />
+        <rect x={52} y={92} width={74} height={5} rx={2.5} className="fill-slate-300" />
+
+        {/* A callout, snapped to the title's left edge. */}
         <rect
-          x={259}
-          y={21}
-          width={14}
-          height={14}
-          rx={2}
-          className="fill-amber-200 stroke-amber-400"
+          x={52}
+          y={112}
+          width={92}
+          height={40}
+          rx={6}
+          className="fill-amber-50 stroke-amber-300"
           strokeWidth={1.2}
         />
+        <rect x={52} y={112} width={5} height={40} rx={2} className="fill-amber-400" />
+        <Label x={66} y={126} size={11} weight={800} className="fill-amber-700 dark:fill-amber-300">
+          Up 24%
+        </Label>
+        <rect x={66} y={138} width={60} height={4} rx={2} className="fill-amber-200" />
+
+        {/* The chart. */}
+        <line x1={170} y1={152} x2={258} y2={152} className="stroke-slate-200" strokeWidth={1.2} />
+        {BARS.map((h, i) => (
+          <rect
+            key={i}
+            x={176 + i * 21}
+            y={152 - h}
+            width={15}
+            height={h}
+            rx={2}
+            className={i === BARS.length - 1 ? 'fill-brand-500' : 'fill-brand-200'}
+          />
+        ))}
       </Card>
 
-      {/* The flow. */}
-      <Arrow from={[102, 112]} to={[127, 112]} />
-      <Arrow from={[194, 112]} to={[223, 80]} kind="elbow" />
-      <Arrow from={[194, 112]} to={[223, 146]} kind="elbow" />
-      <Shape x={30} y={95} w={72} h={34} kind="stadium" label="Start" />
-      <Shape x={130} y={83} w={64} h={58} kind="diamond" label="Ready?" />
-      <Shape x={226} y={62} w={84} h={36} accent label="Ship it" />
-      <Shape x={226} y={128} w={84} h={36} label="Iterate" />
-      <SelectionBox x={221} y={57} w={94} h={46} />
+      {/* The snapping guide. */}
+      <line
+        x1={50}
+        y1={38}
+        x2={50}
+        y2={162}
+        className="stroke-rose-500"
+        strokeWidth={1.2}
+        strokeDasharray="3 3"
+      />
+      <SelectionBox x={47} y={50} w={110} h={27} />
+      <Cursor x={150} y={70} colour="brand" />
 
-      {/* A sticky note, pinned at a slight angle. */}
-      <g transform="rotate(5 352 132)" className="help-art-as-drawn">
+      {/* The Quick Style panel. */}
+      <Card x={288} y={30} w={98} h={118} r={10}>
+        <Label x={298} y={46} size={8} weight={700} tone="muted">
+          TEXT
+        </Label>
         <rect
-          x={325}
-          y={106}
-          width={56}
-          height={54}
-          rx={3}
-          className="fill-slate-900/[0.06]"
-          transform="translate(2 4)"
+          x={298}
+          y={54}
+          width={78}
+          height={18}
+          rx={5}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1}
         />
-        <rect x={325} y={106} width={56} height={54} rx={3} className="fill-amber-200" />
-        <rect x={325} y={106} width={56} height={9} rx={3} className="fill-amber-300" />
-        <Label x={332} y={127} size={9} weight={600} className="fill-amber-900 help-art-as-drawn">
-          Launch
+        <Label x={305} y={63.5} size={9} weight={600} tone="body">
+          Inter
         </Label>
-        <Label x={332} y={140} size={9} weight={600} className="fill-amber-900 help-art-as-drawn">
-          on Friday!
+        <path
+          d="M364 61 l3 3 3 -3"
+          className="fill-none stroke-slate-400"
+          strokeWidth={1.3}
+          strokeLinecap="round"
+        />
+        <rect
+          x={298}
+          y={78}
+          width={30}
+          height={18}
+          rx={5}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1}
+        />
+        <Label x={313} y={87.5} anchor="middle" size={9} weight={600} tone="body">
+          40
         </Label>
-      </g>
-
-      <Cursor x={300} y={92} colour="brand" />
+        <rect x={334} y={78} width={20} height={18} rx={5} className="fill-brand-500" />
+        <Label x={344} y={87.5} anchor="middle" size={10} weight={800} tone="onAccent">
+          B
+        </Label>
+        <rect
+          x={358}
+          y={78}
+          width={18}
+          height={18}
+          rx={5}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1}
+        />
+        {/* Italic, drawn as its slanted I. */}
+        <path
+          d="M366 82.5 h5 M363 93.5 h5 M368.5 82.5 l-3 11"
+          className="fill-none stroke-slate-600"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        {SWATCHES.map((c, i) => (
+          <circle key={c} cx={305 + i * 16} cy={116} r={5.5} className={c} />
+        ))}
+        <circle cx={305} cy={116} r={8} className="fill-none stroke-brand-500" strokeWidth={1.4} />
+        <rect x={298} y={130} width={78} height={6} rx={3} className="fill-slate-100" />
+      </Card>
 
       {/* Undo and zoom. */}
       <Card x={14} y={184} w={56} h={24} r={8}>

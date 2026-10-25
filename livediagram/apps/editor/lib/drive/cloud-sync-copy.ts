@@ -32,8 +32,8 @@ export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livediagram can't see.
 
 export function driveConnectedText(rootName: string | null): string {
   return rootName
-    ? `Your documents are synced to “${rootName}” in Google Drive.`
-    : 'Your documents are synced to Google Drive.';
+    ? `Your canvases are synced to “${rootName}” in Google Drive.`
+    : 'Your canvases are synced to Google Drive.';
 }
 
 // How long ago the last sync was, without counting seconds: "just now" for

@@ -1,82 +1,83 @@
 // @vitest-environment jsdom
 
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
-const setFolderMock = vi.fn<typeof import('@/lib/api-client').apiSetDesignFolder>();
-vi.mock('@/lib/telemetry', () => ({
-  track: (...a: Parameters<typeof trackMock>) => trackMock(...a),
-}));
-vi.mock('@/lib/api-client', () => ({
-  apiCopyDesign: vi.fn(),
-  apiSetDesignFolder: (...a: Parameters<typeof setFolderMock>) => setFolderMock(...a),
-}));
-vi.mock('@/hooks/persistence/useDesignListActions', () => ({
-  useDesignListActions: () => ({}),
-}));
-vi.mock('@/hooks/ui/useToast', () => ({
-  useToast: () => ({ success: vi.fn(), error: vi.fn() }),
-}));
+const index = vi.hoisted(() => ({ copyItem: vi.fn(), deleteItem: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { useDesignActions } = await import('./useDesignActions');
+const { isDesignDeleted } = await import('@/lib/design-tombstones');
+const { takeDeleteUndo } = await import('@/lib/design-delete-undo');
 
-// The two hooks useDesignActions calls are mocked above; one render gives its actions.
-function actions() {
+const assign = vi.fn();
+
+function actions(over: Partial<Parameters<typeof useDesignActions>[0]> = {}) {
   return renderHook(() =>
     useDesignActions({
-      designId: null,
-      designName: '',
-      designList: [],
-      setDesignList: vi.fn(),
-      confirm: vi.fn() as never,
-      ownerId: 'me',
-      hookDeleteFolder: vi.fn(async () => true),
-      folders: [],
-      sharedDesigns: [],
-      setSharedDesigns: vi.fn(),
+      designId: 'p1',
+      designName: 'Roadmap',
+      confirm: vi.fn(async () => true),
       copying: false,
       setCopying: vi.fn(),
       sessionShareCode: null,
-      refreshTeamLibraries: vi.fn(),
-      refreshDesignList: vi.fn(),
+      ...over,
     }),
   ).result.current;
 }
 
-const flush = () => new Promise((r) => setTimeout(r, 0));
+beforeEach(() => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: { ...window.location, origin: 'http://localhost:3402', assign },
+  });
+});
+afterEach(() => vi.clearAllMocks());
 
-// docs/specs/017-telemetry/telemetry.md: Team·Added·Document counts a design ENTERING a team library,
-// whichever surface filed it; Team·Moved·Document is every other scope move.
-describe('moveDesignTo telemetry', () => {
-  beforeEach(() => {
-    trackMock.mockReset();
-    setFolderMock.mockReset().mockResolvedValue(undefined);
+// Copy and delete are the index's (liveworkspace/docs/one-explorer-contracts.md "Items"): the index makes the copy's
+// row and has this app copy the content; a delete sends the design to the Trash.
+describe('useDesignActions', () => {
+  it('copies through the link a visitor came in on, then opens the copy', async () => {
+    index.copyItem.mockResolvedValue({ item: { id: 'p2' } });
+    await actions({ sessionShareCode: 'code1' }).makeCopy();
+    expect(index.copyItem).toHaveBeenCalledWith('p1', {}, { code: 'code1', password: null });
+    expect(assign).toHaveBeenCalledWith('http://localhost:3402/design/p2');
   });
 
-  it('counts a personal design filed into a team as Added', async () => {
-    actions().moveDesignTo('d1', { teamId: 't1', folderId: null }, null);
-    await flush();
-    expect(trackMock).toHaveBeenCalledExactlyOnceWith('Team', 'Added', 'Design');
+  it('lets the person try a refused copy again', async () => {
+    index.copyItem.mockRejectedValue(new Error('no'));
+    const setCopying = vi.fn();
+    await actions({ setCopying }).makeCopy();
+    expect(setCopying).toHaveBeenLastCalledWith(false);
+    expect(toast.error).toHaveBeenCalled();
   });
 
-  it('counts a move within or out of a team as Moved', async () => {
-    actions().moveDesignTo('d1', { teamId: 't1', folderId: 'f1' }, 't1');
-    actions().moveDesignTo('d1', { teamId: null, folderId: null }, 't1');
-    // A caller that does not say where the design came from (team library rows).
-    actions().moveDesignTo('d1', { teamId: 't2', folderId: null });
-    await flush();
-    expect(trackMock.mock.calls).toEqual([
-      ['Team', 'Moved', 'Design'],
-      ['Team', 'Moved', 'Design'],
-      ['Team', 'Moved', 'Design'],
-    ]);
+  it('stops saving the open design before it goes to the Trash, then hands its Undo to the Explorer', async () => {
+    let tombstonedAtDelete = false;
+    index.deleteItem.mockImplementation(async () => {
+      tombstonedAtDelete = isDesignDeleted('p1');
+    });
+    await actions().deleteDesign('p1');
+    expect(tombstonedAtDelete).toBe(true);
+    expect(isDesignDeleted('p1')).toBe(true);
+    // To the Explorer, the design in the address for its Undo.
+    expect(assign).toHaveBeenCalledWith(expect.stringMatching(/^\/explorer\?trashed=p1/));
+    expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });
 
-  it('counts nothing when the server refused the move', async () => {
-    setFolderMock.mockRejectedValue(new Error('403'));
-    actions().moveDesignTo('d1', { teamId: 't1', folderId: null }, null);
-    await flush();
-    expect(trackMock).not.toHaveBeenCalled();
+  it('lets a refused delete save again and stay open', async () => {
+    index.deleteItem.mockRejectedValue(new Error('no'));
+    await actions({ designId: 'p3' }).deleteDesign('p3');
+    expect(isDesignDeleted('p3')).toBe(false);
+    expect(assign).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalled();
+  });
+
+  it('opens a design, through its link when it has one', () => {
+    actions().openDesign('p9', 's 1');
+    expect(assign).toHaveBeenCalledWith('http://localhost:3402/design/p9?s=s%201');
   });
 });

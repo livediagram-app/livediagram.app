@@ -6,12 +6,16 @@
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';
 import type { EventStormingNoteKind } from './event-storming';
-import type { TextRun } from './rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
-import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
+import type {
+  BorderStroke,
+  BorderStyle,
+  BorderRadius,
+} from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ShapeMarker } from './shape-marker';
+import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -20,7 +24,7 @@ import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from './code-themes';
+import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { MindFlow, MindSpacing } from './mind-flow';
 import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
@@ -35,8 +39,8 @@ import type {
   SankeyValueLabel,
 } from './sankey-model';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
-import type { IconSize } from './icon-size';
-import type { IconWeight } from './icon-weight';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
@@ -103,7 +107,7 @@ export type ShapeElement = {
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
-  // (@livediagram/icons), and an unknown key renders nothing rather than
+  // (@liveworkspace/icons), and an unknown key renders nothing rather than
   // guessing, so a document authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates
@@ -169,7 +173,7 @@ export type ShapeElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -585,7 +589,7 @@ export type TextElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -756,7 +760,7 @@ export type TableElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -856,7 +860,7 @@ export type StickyElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -985,7 +989,7 @@ export type ImageElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the
@@ -1091,7 +1095,7 @@ export type FreehandElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved documents round-trip independent of the

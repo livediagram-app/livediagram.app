@@ -10,8 +10,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./clerk-key": "./src/clerk-key.ts",
-    "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
   },
@@ -27,8 +25,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -42,9 +40,17 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
-    "@livediagram/icons": "workspace:^",
-    "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/account-menu": "workspace:*",
+    "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
+    "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/tailwind-config": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   }
 }

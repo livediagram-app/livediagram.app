@@ -8,8 +8,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./telemetry": "./src/telemetry.ts",
-    "./hrefs": "./src/hrefs.ts"
+    "./telemetry": "./src/telemetry.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -17,8 +16,11 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@liveworkspace/help-registry": "workspace:*"
   }
 }

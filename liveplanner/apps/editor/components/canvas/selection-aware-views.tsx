@@ -11,10 +11,14 @@ import { ArrowView, arrowViewPropsEqual } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { elementGrips } from '@/lib/canvas-selection';
-import { elementSelectionFlags, sameFlags, type Selection } from '@/lib/selection-store';
+import {
+  elementSelectionFlags,
+  sameFlags,
+  type Selection,
+} from '@liveworkspace/workbench/lib/selection-store';
 
 const useFlagsOf = (id: string) =>
   useSelectionOf((s: Selection) => elementSelectionFlags(s, id), sameFlags);
@@ -32,7 +36,6 @@ export const SelectableBoxedView = memo(function SelectableBoxedView({
   const flags = useFlagsOf(props.element.id);
   const grips = elementGrips(props.element, flags.single, {
     editingId,
-    isPaintMode: props.isPaintMode === true,
     tabLocked: props.tabLocked === true,
     readOnly: props.readOnly === true,
     resizable: props.resizable,

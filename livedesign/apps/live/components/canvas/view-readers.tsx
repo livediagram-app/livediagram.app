@@ -6,13 +6,13 @@
 // wrap stay pure renderers.
 
 import type { ComponentProps } from 'react';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
-import { useViewportOf } from '@/hooks/canvas/useViewportStore';
-import type { View } from '@/lib/viewport-store';
+import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 
 const zoomOf = (v: View) => v.zoom;
 const wholeView = (v: View) => v;

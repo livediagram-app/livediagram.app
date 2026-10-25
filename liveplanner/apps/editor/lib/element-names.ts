@@ -31,7 +31,7 @@ export function kindLabel(el: Element): string {
   if (el.type === 'image') return 'Image';
   if (el.type === 'annotation') return 'Annotation';
   if (el.type === 'freehand') {
-    // A highlighter stroke and the polygon tool's outline (docs/specs/008-canvas/polygon-tool.md) are both
+    // A highlighter stroke and the polygon tool's outline (docs/specs/008-canvas/finish.md "Polygons") are both
     // FreehandElements; name them by what was drawn.
     if (el.pen === 'highlighter') return 'Highlight';
     if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';

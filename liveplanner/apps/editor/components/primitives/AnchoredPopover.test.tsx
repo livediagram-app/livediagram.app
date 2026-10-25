@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { AnchoredPopover, placeAnchored } from './AnchoredPopover';
-import { ConfirmPopover } from './ConfirmPopover';
-import { openPopoverCount } from './popover-stack';
+import {
+  AnchoredPopover,
+  placeAnchored,
+} from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
+import { openPopoverCount } from '@liveworkspace/workbench/components/primitives/popover-stack';
 
 // docs/specs/026-plan/item-types.md "Editing a type": Add Field's and Glyph's popovers.
 afterEach(cleanup);
@@ -46,7 +49,8 @@ describe('placeAnchored', () => {
 // it) never squeezes it to nothing; it keeps MIN_ROOM_PX (or its own height, when smaller) and is moved into view.
 describe('placeAnchored with almost no room', () => {
   it('keeps the least room on its side, or the panel’s own height when that is less', async () => {
-    const { MIN_ROOM_PX } = await import('./AnchoredPopover');
+    const { MIN_ROOM_PX } =
+      await import('@liveworkspace/workbench/components/primitives/AnchoredPopover');
     const short = { width: 1000, height: 420 };
     const anchor = { left: 0, top: 380, bottom: 400 };
     expect(placeAnchored(anchor, { width: 300, height: 400 }, short, 'below').maxHeight).toBe(

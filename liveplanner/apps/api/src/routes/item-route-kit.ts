@@ -13,7 +13,8 @@ import {
   type ItemPerson,
   type ItemRejection,
 } from '@liveplanner/items';
-import { getProject, getParticipant, getTab, listItems } from '../db';
+import { getProject, getTab, listItems } from '../db';
+import { getParticipant } from '../person/profiles';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';
 import {
@@ -24,7 +25,7 @@ import {
   gateRead,
   missingProject,
   requireOwner,
-  type RouteContext,
+  type PlanRouteContext,
 } from './context';
 
 type Level = 'read' | 'participate' | 'edit';
@@ -69,7 +70,7 @@ export function retiresItem(before: Item, next: Item): boolean {
   return isTrashed(before) !== isTrashed(next) || isArchived(before) !== isArchived(next);
 }
 
-export async function isItemEditor(ctx: RouteContext, caller: ItemCaller): Promise<boolean> {
+export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): Promise<boolean> {
   if (caller.editor !== undefined) return caller.editor;
   const doc = caller.doc;
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
@@ -99,7 +100,7 @@ export const itemBusy = () => {
 
 // The caller and their reach: the whole project, or (a tab-scoped grant) the items one tab shows.
 export async function itemCaller(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   level: Level,
 ): Promise<ItemCaller | Response> {
@@ -130,7 +131,7 @@ export async function itemCaller(
   };
 }
 
-export async function writer(ctx: RouteContext, owner: string): Promise<ItemPerson> {
+export async function writer(ctx: PlanRouteContext, owner: string): Promise<ItemPerson> {
   const p = await getParticipant(ctx.env, owner);
   return {
     id: await itemPersonId(owner),
@@ -140,7 +141,7 @@ export async function writer(ctx: RouteContext, owner: string): Promise<ItemPers
 }
 
 export function relay(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   upserts: Item[],
   removed: string[],

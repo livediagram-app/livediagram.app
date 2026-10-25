@@ -175,14 +175,14 @@ In order of precedence:
 ## Previews
 
 `tab render` draws with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
-`@liveplanner/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
+`@liveworkspace/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 
 ## One catalogue for the CLI and the MCP
 
 Every command and every MCP tool is a projection of one **verb** in `@liveplanner/agent-verbs`: its id
 (`tab.view`, `element.set`), input and output schemas, a factual description, its behaviour (read, write,
-destructive) and a handler calling the api through `@liveplanner/api-client`. The MCP keeps its tool names and
+destructive) and a handler calling the api through `@liveworkspace/api-client`. The MCP keeps its tool names and
 schemas: each tool is its own verb, a command whose shape differs is another, and the two share handlers. A parity
 test fails when a verb is exposed by neither, or a tool's schema drifts from its verb.
 

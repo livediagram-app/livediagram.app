@@ -17,7 +17,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 
 ## The rule
 
-- **Ids work everywhere.** A pre-hydration script (`RANDOM_UUID_BOOT_SCRIPT`, `packages/ui/src/random-uuid-boot.ts`),
+- **Ids work everywhere.** A pre-hydration script (`RANDOM_UUID_BOOT_SCRIPT`, `../packages/ui/src/random-uuid-boot.ts`),
   inlined straight after the Trusted Types boot and before any app code by each layout whose app mints ids in the
   browser (the editor's), installs
   `crypto.randomUUID` when the browser left it out. It mints RFC 4122 version 4 ids from
@@ -36,7 +36,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 
 ## Testing
 
-`packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
+`../packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
 is kept, and that it never throws without `crypto`. `apps/live/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
 `packages/api-schema/src/sha256-digest.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web

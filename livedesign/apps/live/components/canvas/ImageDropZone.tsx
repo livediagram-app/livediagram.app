@@ -5,11 +5,9 @@ import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livedesign/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
 import { Glyph } from '@livedesign/ui';
 
-// Drop / click target for image uploads. The same dashed-border
-// tile appeared inline in both ImagePicker (editor modal, 192px
-// tall) and GalleryPane (Explorer Image Gallery, 128px tall), with
-// identical drop / drag / click handlers and styling minus the
-// size + gap. The component is controlled: it owns the
+// Drop / click target for image uploads: the dashed-border tile
+// ImagePicker (the editor's modal, 192px tall) draws, its size and
+// gap the caller's. The component is controlled: it owns the
 // drop-active visual state, but the caller drives the actual
 // upload (so paste support, "deduped" toasts, and gallery
 // refreshes can share one state machine per surface).
@@ -25,11 +23,9 @@ type ImageDropZoneProps = {
   uploading: boolean;
   error: string | null;
   // Caption above the size hint. ImagePicker's modal mentions
-  // paste support; GalleryPane drops the paste hint because the
-  // explorer surface doesn't have a modal-scoped paste listener.
+  // paste support, which its modal-scoped paste listener gives it.
   prompt: string;
-  // Tailwind height + gap. ImagePicker uses h-48 / gap-2,
-  // GalleryPane h-32 / gap-1.
+  // Tailwind height + gap. ImagePicker uses h-48 / gap-2.
   heightClass?: string;
   gapClass?: string;
   // What the file input accepts, and the line under the prompt. The photo

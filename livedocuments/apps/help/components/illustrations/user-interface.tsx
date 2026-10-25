@@ -7,7 +7,14 @@
 // primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, SelectionBox, Panel, Label } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  SelectionBox,
+  Panel,
+  Label,
+} from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Glyphs ------------------------------------------------------------------

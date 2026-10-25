@@ -1,16 +1,19 @@
 #!/usr/bin/env node
-// E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the two-process stack the Playwright smoke suite
+// E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the three-process stack the Playwright smoke suite
 // runs against — the real static `apps/live/out` build served with the
-// production router/worker rewrites, plus the api worker on a local D1.
+// production router/worker rewrites, the api worker (its Durable Objects in local storage), and liveworkspace's
+// index (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
 // Boots:
-//   1. api — `wrangler dev --local` (apps/api) after applying the D1
-//      migrations to a fresh local database, so persistence works.
-//   2. live — a static file server for `out/` that reproduces the three
+//   1. index — `wrangler dev --local` (liveworkspace/apps/index) on E2E_INDEX_PORT (8419), its D1 kept apart from
+//      a developer's own local index, trusting this stack's accounts stand-in and calling this api.
+//   2. api — `wrangler dev --local` (apps/api): each design's and each person's Durable Object keeps its own
+//      SQLite in wrangler's local storage, so persistence works.
+//   3. live — a static file server for `out/` that reproduces the four
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/design/*` to the single placeholder, and proxy
-//      `/api/*` (WebSocket upgrades included) to the api worker so the app
+//      rewrite `/design/*` to the single placeholder, forward `/api/index/*` to the index, and proxy
+//      the rest of `/api/*` (WebSocket upgrades included) to the api worker so the app
 //      is same-origin.
 //
 // Foregrounds both and stays alive; Playwright's webServer waits on the
@@ -43,6 +46,7 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
+import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
 import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
@@ -92,72 +96,104 @@ function assetsOutOfCacheFor(req) {
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3402);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
+const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8419);
+// The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEDESIGN). Test-only.
+const INDEX_KEY = 'e2e-index-key';
+const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
+// The index's local D1 for this stack, apart from a developer's `wrangler dev` state.
+const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
-// optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the
-// live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
-const SITES = [
-  { prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') },
-  { prefix: '/telemetry', dir: path.join(ROOT, 'apps', 'telemetry', 'out') },
-];
+// optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
+// router mounts it; marketing owns "/" in production, so it gets its own port. (The telemetry
+// dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3413);
-// Two switches for trying the editor as a DIFFERENT deployment would run it,
-// beside a stack that is already up:
+// A switch for trying the editor beside a stack that is already up:
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
-//   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
-//                    deployment with no AI key does.
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
-const NO_AI = process.env.E2E_NO_AI === '1';
-//   E2E_ACCOUNTS_STUB=1  act as the liveworkspace accounts Worker for the signed-in specs
-//                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
-//                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
-//                    verify against, and /e2e/token?sub=<id> minting an access token for any test
-//                    account, with the issuer and audience the api expects. Test-only: nothing
-//                    outside this stack trusts the key.
+// The stack always acts as the liveworkspace accounts Worker (docs/specs/003-system-architecture/e2e-smoke.md):
+// a key made at boot, its JWKS on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker and the
+// index to verify against, the guest handoff (/e2e/accounts/api/auth/guest, liveworkspace/docs/accounts.md
+// "Guests") answering every visitor a guest token, /e2e/token?sub=<id> minting an access token for any test
+// account and /e2e/guest-token minting a guest token, all with the issuer and audience the api expects.
+// Test-only: nothing outside this stack trusts the key.
 //   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-//                    "Testing"): the stack acts as the accounts Worker as under E2E_ACCOUNTS_STUB,
-//                    for the signed-in pairing page and the api calls the CLI makes, and the api
-//                    builds its workbench and pairing URLs on this live origin (APP_BASE_URL). The
-//                    live build must carry NEXT_PUBLIC_E2E_AUTH=1.
+//                    "Testing"): the api builds its workbench and pairing URLs on this live origin
+//                    (APP_BASE_URL). The live build must carry NEXT_PUBLIC_E2E_AUTH=1.
 const WORKBENCH = process.env.E2E_WORKBENCH === '1';
-const ACCOUNTS_STUB = process.env.E2E_ACCOUNTS_STUB === '1' || WORKBENCH;
-//   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
-//                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
-//                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
-//                    the armed project and its own ports (playwright.config.ts).
-const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE !== '0';
-const accountsKey = ACCOUNTS_STUB ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
+const accountsKey = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
 // audience is its own API_RESOURCE, exactly as against the real accounts Worker.
 const ACCOUNTS_PATH = '/e2e/accounts';
+// The account's API tokens (made on liveworkspace.app): a spec seeds one at /e2e/accounts/__seed/token, and the api
+// checks it through the account API as in production (packages/auth-client e2e-token-stand-in.ts).
+const accountTokens = createTokenStandIn(ACCOUNTS_PATH);
 const API_RESOURCE = 'https://e2e.livedesign.test/api';
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
-// An RS256 access token shaped like the accounts Worker's: sub, email (verified), iss, aud.
-function mintAccessToken(sub, email) {
-  const now = Math.floor(Date.now() / 1000);
+function signToken(claims) {
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));
-  const payload = b64url(
-    JSON.stringify({
-      sub,
-      iss: `http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}/api/auth`,
-      aud: API_RESOURCE,
-      iat: now,
-      nbf: now - 5,
-      exp: now + 3600,
-      ...(email ? { email, email_verified: true } : {}),
-    }),
-  );
+  const payload = b64url(JSON.stringify(claims));
   const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
 }
 
-// Answers the two accounts stand-in routes, or returns false for anything else.
+const ISSUER = `http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}/api/auth`;
+
+// An RS256 access token shaped like the accounts Worker's: sub, email (verified), iss, aud.
+function mintAccessToken(sub, email) {
+  const now = Math.floor(Date.now() / 1000);
+  return signToken({
+    sub,
+    iss: ISSUER,
+    aud: API_RESOURCE,
+    iat: now,
+    nbf: now - 5,
+    exp: now + 3600,
+    ...(email ? { email, email_verified: true } : {}),
+  });
+}
+
+// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): a year long.
+const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
+function mintGuestToken(guestId = `guest_${randomUUID()}`) {
+  const now = Math.floor(Date.now() / 1000);
+  const token = signToken({
+    iss: ISSUER,
+    aud: API_RESOURCE,
+    sub: guestId,
+    kind: 'guest',
+    iat: now,
+    exp: now + GUEST_TOKEN_TTL_SECONDS,
+  });
+  return { token, guestId };
+}
+
+// Answers the accounts stand-in routes, or returns false for anything else.
 function serveAccountsStandIn(pathname, url, res) {
-  if (!ACCOUNTS_STUB) return false;
+  if (pathname === `${ACCOUNTS_PATH}/api/auth/guest`) {
+    // A new guest for every handoff: each browser context is its own visitor, and the app keeps the token.
+    const redirectUri = url.searchParams.get('redirect_uri') ?? '';
+    const state = url.searchParams.get('state') ?? '';
+    if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+\/auth\/guest$/.test(redirectUri)) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('redirect_uri must be this stack');
+      return true;
+    }
+    const fragment = new URLSearchParams({ guest_token: mintGuestToken().token, state });
+    res.writeHead(302, { Location: `${redirectUri}#${fragment}`, 'Cache-Control': 'no-store' });
+    res.end();
+    return true;
+  }
+  if (pathname === '/e2e/guest-token') {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify(mintGuestToken()));
+    return true;
+  }
   if (pathname === `${ACCOUNTS_PATH}/api/auth/jwks`) {
     const jwk = accountsKey.publicKey.export({ format: 'jwk' });
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -203,58 +239,6 @@ function waitForExit(child) {
     child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`exit ${code}`))));
     child.on('error', reject);
   });
-}
-
-// A legacy guest (docs/specs/015-api/public-api-and-tokens.md §6): an unsigned id whose participant
-// row predates GUEST_SIGNING_LIVE_AT, owning one folder, written straight into the stack's local
-// D1. With signatures enforced the api cannot make one (an unsigned id writes nothing), and only
-// such a guest still runs the one-time upgrade onto a signed id, which e2e/guest-upgrade.spec.ts
-// exercises. Ids are server-made UUIDs, so the statement carries no outside input.
-async function seedLegacyGuest() {
-  const ownerId = randomUUID();
-  const folderId = randomUUID();
-  const sql =
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${ownerId}', 'Legacy guest', '#336699', 1);` +
-    `INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES ('${folderId}', '${ownerId}', 'Legacy folder', 1, 1);`;
-  await waitForExit(
-    spawn(
-      'pnpm',
-      [
-        '--filter',
-        '@livedesign/api',
-        'exec',
-        'wrangler',
-        'd1',
-        'execute',
-        'livedesign',
-        '--local',
-        '--command',
-        sql,
-      ],
-      { cwd: ROOT, stdio: 'ignore' },
-    ),
-  );
-  return { ownerId, folderId, folderName: 'Legacy folder' };
-}
-
-// One seed at a time, each retried briefly: parallel workers asking at once would run several
-// `wrangler d1 execute` processes against the one local database file, and SQLite refuses the
-// writers that lose the lock.
-let legacySeedQueue = Promise.resolve();
-function queueLegacyGuestSeed() {
-  const attempt = async () => {
-    for (let tries = 1; ; tries += 1) {
-      try {
-        return await seedLegacyGuest();
-      } catch (err) {
-        if (tries >= 3) throw err;
-        await new Promise((r) => setTimeout(r, 250 * tries));
-      }
-    }
-  };
-  const next = legacySeedQueue.then(attempt, attempt);
-  legacySeedQueue = next.catch(() => {});
-  return next;
 }
 
 async function waitForPort(port, label, timeoutMs = 60_000) {
@@ -432,9 +416,26 @@ function resolveIn(dir, p) {
   return null;
 }
 
+// The router's forward (apps/router/src/index.ts): `/api/index/*` is the index's, the same request at its origin
+// minus this site's cookies.
+const isIndexPath = (pathname) => pathname === '/api/index' || pathname.startsWith('/api/index/');
+
 function proxyApi(req, res) {
+  const pathname = new URL(req.url, 'http://localhost').pathname;
+  const toIndex = isIndexPath(pathname);
+  const headers = { ...req.headers };
+  if (toIndex) {
+    delete headers.cookie;
+    headers.host = `127.0.0.1:${INDEX_PORT}`;
+  }
   const proxyReq = http.request(
-    { host: '127.0.0.1', port: API_PORT, method: req.method, path: req.url, headers: req.headers },
+    {
+      host: '127.0.0.1',
+      port: toIndex ? INDEX_PORT : API_PORT,
+      method: req.method,
+      path: req.url,
+      headers,
+    },
     (proxyRes) => {
       res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
       proxyRes.pipe(res);
@@ -442,7 +443,7 @@ function proxyApi(req, res) {
   );
   proxyReq.on('error', () => {
     res.writeHead(502, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'api_unreachable' }));
+    res.end(JSON.stringify({ error: toIndex ? 'index_unreachable' : 'api_unreachable' }));
   });
   req.pipe(proxyReq);
 }
@@ -476,29 +477,7 @@ function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const liveOut = buildFor(req);
-    if (NO_AI && pathname === '/api/capabilities') {
-      // Everything else about the real answer stands; only the AI is off.
-      http
-        .get({ host: '127.0.0.1', port: API_PORT, path: '/api/capabilities' }, (up) => {
-          let body = '';
-          up.on('data', (c) => (body += c));
-          up.on('end', () => {
-            let caps = {};
-            try {
-              caps = JSON.parse(body);
-            } catch {
-              /* the api answered something else: report AI off regardless */
-            }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ ...caps, aiEnabled: false }));
-          });
-        })
-        .on('error', () => {
-          res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'api_unreachable' }));
-        });
-      return;
-    }
+    if (accountTokens.serve(req, res, pathname)) return;
     if (serveAccountsStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
@@ -506,20 +485,6 @@ function startLiveServer() {
         'Set-Cookie': `${OUT_OF_CACHE_COOKIE}=1; Path=/; SameSite=Lax`,
       });
       res.end();
-      return;
-    }
-    if (pathname === '/__e2e/legacy-guest' && req.method === 'POST') {
-      queueLegacyGuestSeed().then(
-        (body) => {
-          res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-          res.end(JSON.stringify(body));
-        },
-        (err) => {
-          console.error('[e2e] seeding a legacy guest failed', err);
-          res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-          res.end('seeding a legacy guest failed');
-        },
-      );
       return;
     }
     if (pathname === '/__e2e/deploy' && req.method === 'POST') {
@@ -596,15 +561,58 @@ async function main() {
     process.exit(1);
   }
   if (LIVE_ONLY) {
-    console.log(
-      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}`,
-    );
+    console.log(`[e2e] static editor only, proxying to the api on :${API_PORT}`);
     startLiveServer();
     return;
   }
-  console.log('[e2e] applying local D1 migrations…');
+  console.log('[e2e] applying the index local D1 migrations…');
+  rmSync(INDEX_STATE, { recursive: true, force: true });
   await waitForExit(
-    run('pnpm', ['--filter', '@livedesign/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
+    run(
+      'pnpm',
+      [
+        'exec',
+        'wrangler',
+        'd1',
+        'migrations',
+        'apply',
+        'liveworkspace-index',
+        '--local',
+        '--persist-to',
+        INDEX_STATE,
+      ],
+      { cwd: INDEX_DIR },
+    ),
+  );
+  console.log('[e2e] starting the index…');
+  run(
+    'pnpm',
+    [
+      'exec',
+      'wrangler',
+      'dev',
+      '--local',
+      '--port',
+      String(INDEX_PORT),
+      '--inspector-port',
+      String(INDEX_PORT + 1000),
+      '--persist-to',
+      INDEX_STATE,
+      // Everything it trusts and calls is this stack, never what a developer's .dev.vars names.
+      '--var',
+      'ENVIRONMENT:development',
+      '--var',
+      `ACCOUNTS_URL:http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}`,
+      '--var',
+      `INDEX_AUDIENCES:${API_RESOURCE}`,
+      '--var',
+      `INDEX_KEY_LIVEDESIGN:${INDEX_KEY}`,
+      '--var',
+      `APP_ORIGIN_LIVEDESIGN:http://127.0.0.1:${API_PORT}`,
+      '--var',
+      'MERGE_KEY:e2e-merge-key',
+    ],
+    { cwd: INDEX_DIR },
   );
   console.log('[e2e] starting api worker…');
   run(
@@ -618,42 +626,30 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
-      // Production's origin allow-list lives in wrangler.toml [vars], which
-      // `wrangler dev` reads too; it would 403 every AI call from this
-      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
+      // Verify access and guest tokens against the stack's own key, and reach the stack's index, never a real
+      // accounts Worker or index a developer's .dev.vars may name. The client id and secret only turn the guest
+      // handoff on; the stand-in checks neither.
       '--var',
-      'AI_ALLOWED_ORIGINS:',
-      // Guest ids are signed as in production (docs/specs/014-identity/auth-and-guest-access.md), so
-      // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
+      `ACCOUNTS_URL:http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}`,
       '--var',
-      'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
-      // Enforced by default (E2E_GUEST_SIG_ENFORCE above), as production runs once armed
-      // (docs/specs/015-api/public-api-and-tokens.md §4): every entry path must mint a signed id
-      // before its first api call, and the specs seed through signed ids (fixtures.ts
-      // mintSignedGuest / ownerHeaders / pageOwnerHeaders). Explicit, because production's
-      // [vars] value can be blank while it is not armed.
+      `API_RESOURCE:${API_RESOURCE}`,
       '--var',
-      `GUEST_SIG_ENFORCE_AFTER:${GUEST_SIG_ENFORCE ? '1' : ''}`,
-      // Only a participant row older than this counts as a legacy guest: the one
-      // /__e2e/legacy-guest writes (created_at 1), never one the app makes during a run.
+      'ACCOUNTS_CLIENT_ID:livedesign-e2e',
       '--var',
-      'GUEST_SIGNING_LIVE_AT:1000',
-      // Verify access tokens against the stack's own key (E2E_ACCOUNTS_STUB above), never a real
-      // accounts Worker a developer's .dev.vars may name.
-      ...(ACCOUNTS_STUB
-        ? [
-            '--var',
-            `ACCOUNTS_URL:http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}`,
-            '--var',
-            `API_RESOURCE:${API_RESOURCE}`,
-          ]
-        : []),
+      'ACCOUNTS_CLIENT_SECRET:e2e-client-secret',
+      '--var',
+      `AUTH_ORIGIN:http://localhost:${LIVE_PORT}`,
+      '--var',
+      `INDEX_ORIGIN:http://127.0.0.1:${INDEX_PORT}`,
+      '--var',
+      `INDEX_KEY:${INDEX_KEY}`,
       ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${LIVE_PORT}`] : []),
     ],
     {
       cwd: ROOT,
     },
   );
+  await waitForPort(INDEX_PORT, 'index');
   await waitForPort(API_PORT, 'api worker');
   console.log('[e2e] api worker up; starting live static server…');
   startLiveServer();

@@ -12,10 +12,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { db } = vi.hoisted(() => ({
   db: {
     getParticipant: vi.fn(),
-    upsertParticipant: vi.fn(),
+    saveParticipant: vi.fn(),
   },
 }));
-vi.mock('../db', () => db);
+// The profile itself is the accounts Worker's (person/profiles.ts, tested on its own).
+vi.mock('../person/profiles', () => db);
 
 import type { RouteContext } from './context';
 import { handleParticipants } from './participants';
@@ -87,7 +88,7 @@ describe('handleParticipants', () => {
       }),
     );
     expect(res.status).toBe(403);
-    expect(db.upsertParticipant).not.toHaveBeenCalled();
+    expect(db.saveParticipant).not.toHaveBeenCalled();
   });
 
   it('PUT 400 on missing name/color', async () => {
@@ -108,11 +109,17 @@ describe('handleParticipants', () => {
       );
       expect(res.status).toBe(400);
     }
-    expect(db.upsertParticipant).not.toHaveBeenCalled();
+    expect(db.saveParticipant).not.toHaveBeenCalled();
   });
 
   it('PUT 200 when the caller updates their own participant', async () => {
-    db.getParticipant.mockResolvedValue(null);
+    db.saveParticipant.mockImplementation(
+      async (_env: unknown, id: string, patch: { name: string; color: string }) => ({
+        id,
+        ...patch,
+        createdAt: 1,
+      }),
+    );
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/owner-1', {
         owner: 'owner-1',
@@ -120,6 +127,24 @@ describe('handleParticipants', () => {
       }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertParticipant).toHaveBeenCalled();
+    expect(db.saveParticipant).toHaveBeenCalledWith(expect.anything(), 'owner-1', {
+      name: 'Ann',
+      color: '#abc',
+    });
+  });
+
+  it('PUT answers the accounts Worker refusing a name with its code, and 503 when it is down', async () => {
+    const { ProfileError } = await import('@liveworkspace/auth-client');
+    db.saveParticipant.mockRejectedValueOnce(new ProfileError(400, 'invalid_name'));
+    const refused = await handleParticipants(
+      makeCtx('PUT', '/api/participants/owner-1', { body: { name: 'Ann', color: '#abc' } }),
+    );
+    expect(refused.status).toBe(400);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    db.saveParticipant.mockRejectedValueOnce(new Error('down'));
+    const down = await handleParticipants(
+      makeCtx('PUT', '/api/participants/owner-1', { body: { name: 'Ann', color: '#abc' } }),
+    );
+    expect(down.status).toBe(503);
   });
 });

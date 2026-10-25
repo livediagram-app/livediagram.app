@@ -96,7 +96,7 @@ Kept as they are:
 
 The mode also makes, whatever the Minimal chrome option says:
 
-- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md#dense-rows)
+- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md)
   draws its rows at half height.
 
 And it drops, whatever the Minimal chrome option says:
@@ -146,7 +146,8 @@ switches between Light and Dark instead of cycling through System, so the everyd
 - **Its name says both.** The accessible name reads where you are, where a click goes, and that a right-click follows
   the device ("Appearance: Dark. Switch to Light. Right-click to follow your device."). The hover card's description
   says the same.
-- It applies wherever the control reads the mode: the editor's status bar and the Explorer's bottom bar. It is not a
+- It applies wherever the control reads the mode: the editor's status bar (the Explorer page's Appearance control is
+  liveworkspace's own, which keeps the three-step cycle). It is not a
   Minimal chrome behaviour: it holds with Minimal chrome off.
 - The public sites (the home page, help centre and dashboard) have no power user mode, so their control keeps the
   three-step cycle whatever the preference holds.

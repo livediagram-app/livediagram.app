@@ -1,4 +1,4 @@
-import { lucideCircleCheck, lucideSparkles } from '@livedocuments/icons/lucide';
+import { lucideCircleCheck, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import { FONT, at } from '@/components/art-tokens';
 

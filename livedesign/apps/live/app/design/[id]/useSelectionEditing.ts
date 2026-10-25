@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
 import { isUntitledDesignName } from '@livedesign/templates';
 import {
@@ -17,7 +17,7 @@ import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -226,7 +226,7 @@ export function useSelectionEditing(opts: {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {
-        if (trimmed && trimmed !== 'Blank Diagram') {
+        if (trimmed) {
           setDesignName(trimmed);
         }
       }

@@ -6,7 +6,7 @@
 // export, hit-testing, anchors) fits the geometry into this rect, so they cannot disagree.
 
 import { ACTOR_VIEWBOX } from './shape-geometry';
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/model-core/label-font';
 import { LABEL_LINE_HEIGHT } from './svg-render-primitives';
 import { PADDING_PX, type Padding, type TextSize } from './index';
 

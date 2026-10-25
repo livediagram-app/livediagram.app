@@ -3,7 +3,11 @@
 // Freeze's rows (docs/specs/029-sheets/sheet.md "Freeze"): none, 1 or 2 rows, or up to the active cell's row, then
 // the same for columns. In the toolbar's Freeze menu.
 import { columnLetters } from '@liveplanner/sheets';
-import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useSheetController } from './sheet-controller';
 import { CheckMark as Check, FreezeIcon } from './sheet-icons';
 import type { SheetActions } from './useSheetActions';

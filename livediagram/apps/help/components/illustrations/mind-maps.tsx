@@ -4,7 +4,7 @@
 // (apps/editor/components/dialogs/MindOutlineRows.tsx) and the dialog's own copy.
 
 import type { ReactNode } from 'react';
-import { Arrow, Label, Scene, Shape } from './primitives';
+import { Arrow, Label, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 const tb = {
   className: 'stroke-slate-600',

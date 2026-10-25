@@ -1,26 +1,17 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'About livedesign',
   description: 'What livedesign is, who it is for, and why it exists.',
-  path: '/help/about/',
-});
+  lede: 'What livedesign is, who it is for, and why it exists.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'about', COPY);
 
 export default function AboutPage() {
-  const articles = getArticlesByCategory('about');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/about/', articles: articles }}
-      title="About livedesign"
-      lede="What livedesign is, who it is for, and why it exists."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="about" copy={COPY} />;
 }

@@ -3,7 +3,7 @@
 // A dropped socket reconnects with a fresh ticket, backing off from ROOM_RECONNECT_MIN_MS doubling to
 // ROOM_RECONNECT_MAX_MS; a design moved to the Trash ends the stream.
 
-import { ApiError, type ApiClient } from '@livedesign/api-client';
+import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import { DESIGN_TRASHED_CLOSE } from '@livedesign/api-schema';
 import type { CliIo, RoomSocket } from '../io';
 

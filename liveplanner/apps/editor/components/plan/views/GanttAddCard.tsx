@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { newItemId, typeIn, type ItemTypeDef } from '@liveplanner/items';
 import { mayCreateCardType } from '../may-create-card-type';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucidePlus } from '@liveplanner/icons/lucide';
+import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { AddCardPopover } from '../AddCardPopover';
 import { newCardStatus } from '../new-card-status';
 import type { PlanContextValue } from '../PlanContext';

@@ -1,4 +1,4 @@
-import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -13,7 +13,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -25,12 +25,12 @@ import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
+import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
@@ -38,12 +38,12 @@ import { atLeastInset } from '@livedocuments/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -214,7 +214,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const paletteDrag = usePaletteDragGuides({ elements, readZoom, wrapperRef });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
@@ -351,10 +351,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           keyboard order (docs/specs/007-editor/toolbar-layout.md); on a phone it rides in the strip's row instead.
           Zen hides it with the rest of the chrome. */}
       {zenMode || menuInStrip ? null : explorerMenuButton}
-
-      {/* The empty-canvas hint is now a dismissible bottom banner
-          (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
-          theme banners rather than a centre-of-canvas card. */}
 
       {showIdentityPrompt ? (
         <IdentityPrompt

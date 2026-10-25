@@ -2,18 +2,12 @@
 
 // Persistence-model prompt shown inside the Explorer. Present for guest
 // sessions so the user understands their documents are browser-local
-// until they sign in; rendered shape depends on what the deployment
-// supports:
+// until they sign in:
 //
-//   - sign-in disabled, any session
-//        → "No sign-in on this deployment": the documents are saved, but
-//          only this browser's guest id can open them.
+//   - signed out
+//        → "Sign in to keep your content" + CTA to /sign-in/.
 //
-//   - sign-in enabled, signed out
-//        → "Sign in to keep your documents across devices." + CTA to
-//          /live/sign-in/.
-//
-//   - sign-in enabled, signed in
+//   - signed in
 //        → renders nothing (the user already has the account that
 //          syncs everything).
 //
@@ -21,18 +15,16 @@
 // with browser-local storage can reclaim the panel space; the choice
 // persists per-browser in localStorage (same degradation contract as
 // the other persisted toggles — see local-storage-safe).
-//
-// Same module-load enabled/disabled hook-swap pattern as
-// AuthControls and useAccountBootstrap, chosen from a compile-time
-// constant.
 
 import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livedocuments/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { signInEnabled } from '@/lib/auth-config';
-import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
+import {
+  useLocalStorageValue,
+  writeLocalStorageValue,
+} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livedocuments:v2:signin-prompt-dismissed';
 
@@ -63,7 +55,7 @@ function PromptShell({
 }: {
   title: string;
   body: string;
-  action?: React.ReactNode;
+  action: React.ReactNode;
   onDismiss: () => void;
   // One quiet line (the editor's Explorer, under its Current Document card): the title as a lead-in, the action, the
   // dismiss.
@@ -77,8 +69,8 @@ function PromptShell({
       >
         <p className="min-w-0 flex-1 leading-snug text-slate-600 dark:text-slate-300">
           <span className="font-semibold text-slate-800 dark:text-white">{title}.</span>{' '}
-          {/* On a phone a note with an action keeps to its title and the action, so it stays one line. */}
-          <span className={action ? 'max-sm:hidden' : undefined}>{body}</span>
+          {/* On a phone the note keeps to its title and the action, so it stays one line. */}
+          <span className="max-sm:hidden">{body}</span>
         </p>
         {action}
         <button
@@ -104,7 +96,7 @@ function PromptShell({
       {/* pr-5 keeps the title clear of the close button. */}
       <p className="pr-5 font-medium text-slate-800 dark:text-white">{title}</p>
       <p className="mt-1 leading-relaxed text-slate-500 dark:text-slate-200">{body}</p>
-      {action ? <div className="mt-3">{action}</div> : null}
+      <div className="mt-3">{action}</div>
     </div>
   );
 }
@@ -119,7 +111,7 @@ function PromptShell({
 // `bar`: the one-line form (the editor's Explorer, under its Current Document card).
 type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
-function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
+export function SignInPrompt({ fallback, bar = false }: SignInPromptProps) {
   const { authLoaded: isLoaded, isSignedIn } = useDeferredAuth();
   const { dismissed, dismiss } = usePromptDismissed();
   const { signInHref } = useAuthHrefs();
@@ -149,26 +141,3 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
     />
   );
 }
-
-function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
-  const { dismissed, dismiss } = usePromptDismissed();
-  if (dismissed === null) return null;
-  if (dismissed) return <>{fallback ?? null}</>;
-  return (
-    <PromptShell
-      bar={bar}
-      // The documents are saved on the server ("Private" on the card), but without sign-in they belong to this
-      // browser's guest id: what clearing site data loses is the way back to them. Never "Browser only", which is
-      // what a This Browser document is.
-      title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
-      body={
-        bar
-          ? 'Only this browser can open your documents.'
-          : 'Your documents are saved, but only this browser can open them. Clear its site data and you lose them.'
-      }
-      onDismiss={dismiss}
-    />
-  );
-}
-
-export const SignInPrompt = signInEnabled ? SignInPromptEnabled : SignInPromptDisabled;

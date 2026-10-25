@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Anchor } from '@liveplanner/project';
 import type { QuickConnectDirection } from '@/lib/canvas';
@@ -8,9 +8,7 @@ import type { EditorDragApi } from './useEditorDrag.types';
 // EditorCanvasHost. Desktop (mouse / pen): make a pinned→free arrow
 // from the picked side's anchor in click-to-place mode — a plain click
 // then has the endpoint trail the cursor until the next click lands it
-// (a press-drag still works too). Touch: no hover, so arm the
-// click-to-connect gesture (the next shape tap sets the other end),
-// reusing addArrow's connect-from-selection path.
+// (a press-drag still works too). Touch: a real drag from the side's anchor.
 export function useQuickConnectStart({
   readSelection,
   beginAnchorDrag,

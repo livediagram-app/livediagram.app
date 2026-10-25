@@ -1,5 +1,11 @@
-import type { CommentListStatus, DocumentCommentThread } from '@livediagram/api-schema';
 import {
+  MAX_COLOR_LEN,
+  MAX_PARTICIPANT_NAME_LEN,
+  type CommentListStatus,
+  type DocumentCommentThread,
+} from '@livediagram/api-schema';
+import {
+  isSafeColourValue,
   sanitizeMentions,
   type Comment,
   type CommentMention,
@@ -8,7 +14,16 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { buildViewModel, commentHosts } from '@livediagram/document-views';
-import type { ParticipantDTO } from './types';
+
+// Who is saving: their profile, or only their id when no profile could be read (a guest-only
+// self-host keeps none; liveworkspace may be out of reach). Then their own new comments keep the
+// name and colour they were posted under, clamped and checked, and still carry the writer's id, so
+// nobody else's comment can be relabelled either way.
+export type CommentWriter = { id: string; name: string | null; color: string | null };
+
+// The comment author fallbacks, as the comment routes use them.
+export const UNKNOWN_AUTHOR_NAME = 'Anonymous';
+export const UNKNOWN_AUTHOR_COLOR = '#94a3b8';
 
 const threadOf = (el: Element): CommentThread | undefined =>
   (el as { commentThread?: CommentThread }).commentThread;
@@ -20,10 +35,7 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
 }
 
 // The element with its thread mapped; the same element when the thread is unchanged.
-function mapThread(
-  el: Element,
-  fn: (thread: CommentThread) => CommentThread | undefined,
-): Element {
+function mapThread(el: Element, fn: (thread: CommentThread) => CommentThread | undefined): Element {
   const thread = threadOf(el);
   if (!thread) return el;
   const mapped = fn(thread);
@@ -52,7 +64,7 @@ function mapThread(
 export function rewriteCommentAuthors(
   nextElements: Element[],
   prevElements: Element[],
-  writer: ParticipantDTO,
+  writer: CommentWriter,
   roomAuthors: ReadonlyMap<string, { authorName: string; authorColor: string }> = new Map(),
 ): Element[] {
   // Index existing comments by id so the lookup per new comment is
@@ -140,8 +152,8 @@ export function rewriteCommentAuthors(
         // stable id that later authorises delete-own).
         return {
           ...fresh,
-          authorName: writer.name,
-          authorColor: writer.color,
+          authorName: writer.name ?? claimedName(fresh.authorName),
+          authorColor: writer.color ?? claimedColor(fresh.authorColor),
           authorId: writer.id,
           ...withMentions,
         };
@@ -273,4 +285,17 @@ export function threadsOfTab(
       },
     ];
   });
+}
+
+// The name a writer without a profile posted their comment under, clamped as presence clamps it.
+function claimedName(name: unknown): string {
+  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  return trimmed || UNKNOWN_AUTHOR_NAME;
+}
+
+// Their colour, only when it is a safe one: it is painted into every peer's page.
+function claimedColor(color: unknown): string {
+  return typeof color === 'string' && color.length <= MAX_COLOR_LEN && isSafeColourValue(color)
+    ? color
+    : UNKNOWN_AUTHOR_COLOR;
 }

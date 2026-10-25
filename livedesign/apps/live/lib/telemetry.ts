@@ -1,14 +1,18 @@
 // Anonymous, first-party product telemetry emitter (docs/specs/017-telemetry/telemetry.md).
 //
-// The buffering / flush / page-hide engine lives in
-// @livedesign/telemetry-client (shared with the help centre); this
+// The buffering / flush / page-hide engine lives in @liveworkspace/telemetry-client, bound to
+// this product by @livedesign/telemetry-client (shared with the help centre); this
 // wrapper owns the editor's policy: the build-time
 // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached docs/specs/007-editor/user-preferences.md per-user
 // opt-out. See the package for the privacy rules — `type` is always a
 // closed-vocabulary token, never user content.
 
-import { createTelemetryEmitter, type TelemetryEmitter } from '@livedesign/telemetry-client';
-import { API_BASE } from './api-client';
+import { telemetryServiceUrl } from '@liveworkspace/telemetry-client';
+import {
+  createTelemetryEmitter,
+  TELEMETRY_APP,
+  type TelemetryEmitter,
+} from '@livedesign/telemetry-client';
 import {
   PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
@@ -48,15 +52,14 @@ function ensurePreferenceListeners(): void {
   });
 }
 
-// Constructed lazily on the first track(): this module sits inside an
-// import cycle (user-preferences -> api-client barrel), so reading
-// API_BASE at module scope hit the TDZ during Next's build. Deferring
-// to first use restores the old read-at-flush-time semantics.
+// Constructed lazily on the first track(), so a page that never tracks never
+// builds one. Events go to liveworkspace's central service (liveworkspace/docs/telemetry.md).
 let emitter: TelemetryEmitter | null = null;
 
 export const track: TelemetryEmitter['track'] = (category, action, type) => {
   emitter ??= createTelemetryEmitter({
-    apiBase: API_BASE,
+    url: telemetryServiceUrl(),
+    app: TELEMETRY_APP,
     enabled: ENABLED,
     isOptedIn: () => {
       if (cachedOptIn === null) {

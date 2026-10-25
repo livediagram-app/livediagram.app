@@ -4,16 +4,13 @@ import { pv } from './motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
 // Slide Deck, Blank Article and Blank Infographic. Each draws its one empty page in its own proportions
-// (a 16:9 slide, an A4 page) with the dashed edge, faint guides and sky "+" of Blank
+// (a 16:9 slide, an A4 page) with the dashed edge, faint guides and brand "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
 const EDGE = 'rgb(148 163 184)';
 const GUIDE = 'rgb(226 232 240)';
 const LINE = 'rgb(203 213 225)';
-const TINT = 'rgb(240 249 255)';
-const SOFT_SKY = 'rgb(125 211 252)';
-const SKY = 'rgb(14 165 233)';
 
 // The empty page: white paper with a dashed edge.
 function Page(p: { x: number; y: number; width: number; height: number }) {
@@ -26,7 +23,7 @@ function Page(p: { x: number; y: number; width: number; height: number }) {
 function Plus({ cx, cy }: { cx: number; cy: number }) {
   return (
     <>
-      <circle cx={cx} cy={cy} r="2" fill={SKY} />
+      <circle cx={cx} cy={cy} r="2" style={{ fill: 'var(--color-brand-500)' }} />
       <path
         d={`M${cx} ${cy - 1.1} V${cy + 1.1} M${cx - 1.1} ${cy} H${cx + 1.1}`}
         stroke="white"
@@ -79,15 +76,78 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <Page x={25} y={3} width={30} height={44} />
           <g className="pv-pulse" style={pv({ '--pv-at': '500ms' })}>
-            <rect x="29" y="7" width="22" height="5" rx="1.2" fill={TINT} />
-            <rect x="33" y="8.8" width="14" height="1.4" rx="0.7" fill={SOFT_SKY} />
-            <rect x="29" y="14" width="10.5" height="10" rx="1.2" fill={TINT} />
-            <circle cx="34.25" cy="19" r="2.8" fill="none" stroke={SOFT_SKY} strokeWidth="1.4" />
-            <rect x="40.5" y="14" width="10.5" height="10" rx="1.2" fill={TINT} />
-            <rect x="42.5" y="19" width="1.6" height="3.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="45" y="17" width="1.6" height="5.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="47.5" y="18" width="1.6" height="4.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="29" y="26" width="22" height="9" rx="1.2" fill={TINT} />
+            <rect
+              x="29"
+              y="7"
+              width="22"
+              height="5"
+              rx="1.2"
+              style={{ fill: 'var(--color-brand-50)' }}
+            />
+            <rect
+              x="33"
+              y="8.8"
+              width="14"
+              height="1.4"
+              rx="0.7"
+              style={{ fill: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="29"
+              y="14"
+              width="10.5"
+              height="10"
+              rx="1.2"
+              style={{ fill: 'var(--color-brand-50)' }}
+            />
+            <circle
+              cx="34.25"
+              cy="19"
+              r="2.8"
+              fill="none"
+              strokeWidth="1.4"
+              style={{ stroke: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="40.5"
+              y="14"
+              width="10.5"
+              height="10"
+              rx="1.2"
+              style={{ fill: 'var(--color-brand-50)' }}
+            />
+            <rect
+              x="42.5"
+              y="19"
+              width="1.6"
+              height="3.5"
+              rx="0.4"
+              style={{ fill: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="45"
+              y="17"
+              width="1.6"
+              height="5.5"
+              rx="0.4"
+              style={{ fill: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="47.5"
+              y="18"
+              width="1.6"
+              height="4.5"
+              rx="0.4"
+              style={{ fill: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="29"
+              y="26"
+              width="22"
+              height="9"
+              rx="1.2"
+              style={{ fill: 'var(--color-brand-50)' }}
+            />
             {[29, 31.5].map((y, i) => (
               <rect
                 key={y}

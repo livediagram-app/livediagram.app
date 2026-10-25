@@ -94,5 +94,7 @@ rather than reloading. A modified click (new tab or window) keeps the browser's 
 ## One source
 
 Every copy of the mark (the React component, the favicons, the logo files in `marketing/media/logo/`, the PNG icons, the
-email mark, the Apple icon and the social card) is drawn from one geometry and palette module in `@livediagram/ui`. Static files are
-regenerated from it and a test fails if one drifts.
+email mark, the Apple icon and the social card) is drawn from one geometry and palette module, `@liveworkspace/brand`, which draws every app's logo in that app's
+colours; `@livediagram/ui` binds it to livediagram (`packages/ui/src/brand-app.ts`, `Brand.tsx`). Static files are regenerated from it
+and a test fails if one drifts. The One Explorer's rows show the same prism at rest in livediagram's accent as this app's
+mark ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).

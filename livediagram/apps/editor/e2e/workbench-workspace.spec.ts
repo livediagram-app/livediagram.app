@@ -150,7 +150,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
     .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', documentCount: 0 });
 
   // New document makes the document in place, in the folder shown, and opens it in the frame.
-  await frame.getByRole('link', { name: 'New Document' }).first().click();
+  await frame.getByRole('link', { name: 'New Canvas' }).first().click();
   await frame.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('document');
   const made = (await places(page)).at(-1)!.documentId as string;
@@ -194,6 +194,6 @@ test('a workspace ticket on a folder starts the frame there', async ({
     .poll(async () => (await places(page)).at(-1), { timeout: 30_000 })
     .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', documentCount: 0 });
   await expect(
-    page.frameLocator('#frame').getByRole('link', { name: 'New Document' }).first(),
+    page.frameLocator('#frame').getByRole('link', { name: 'New Canvas' }).first(),
   ).toBeVisible();
 });

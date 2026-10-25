@@ -5,10 +5,12 @@ import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickStylePanel, panelFrame } from './QuickStylePanel';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 // Nor a canvas to place it on: a measured spot, so the panel is visible to role queries.
 vi.mock('@/hooks/ui/useQuickStylePlacement', () => ({
   useQuickStylePlacement: () => ({ left: 12, top: 12, width: null }),

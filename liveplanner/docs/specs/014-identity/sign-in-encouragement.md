@@ -24,17 +24,12 @@ hides it everywhere.
 
 Common gate (all must hold):
 
-- Sign-in is configured for the deployment (`signInEnabled`). A
-  deployment without sign-in ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
-  sign-in, so the banner never renders there.
 - The visitor is **not** signed in (no `accountUserId`; a guest owner id
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).
 
-**Explorer** (`app/explorer/ExplorerShell.tsx`): rides every
-`/explorer/<section>` route, shown immediately when the gate holds.
-The pane reserves extra bottom padding while it's up so the last row
-never hides behind it.
+**Explorer**: the Explorer lives on liveworkspace.app, which has no
+banner; its sidebar asks a guest to sign in for Teams instead.
 
 **Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
 the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createPinnedArrow } from './factories';
 import {
   FLOWCHART_STEP_KIND,

@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -51,11 +53,11 @@ beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
   // The room stub records each broadcast body.
-  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
+  (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
-      fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(sentJson(init));
+      fetch: async (url: string, init: RequestInit) => {
+        if (!url.endsWith('/purge')) relayed.push(sentJson(init));
         return new Response(null, { status: 204 });
       },
     }),
@@ -71,21 +73,22 @@ beforeEach(() => {
     planBoard: presetSetup('bug-triage'),
   };
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
   `);
   sql.sql
     .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Board', ?, 1)`)
     .run(JSON.stringify({ elements: [board] }));
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Other', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
   `);
 });
 
@@ -188,12 +191,15 @@ describe('creating items', () => {
   // A seed or sync of many keyed cards reads the store once per attempt: whether a named key is free comes from
   // that read, not a query per card (it was one `item_key` query each).
   it('names keys without a query per card', async () => {
-    const db = sql.env.DB as unknown as { prepare: (q: string) => unknown };
+    // The plan's own statements; the index push the test store runs before D1 calls (test-sqlite-d1.ts) is
+    // the outbox's, counted elsewhere (plan-outbox.test.ts).
+    const db = sql.env.PLAN_DB as unknown as { prepare: (q: string) => unknown };
     const prepare = db.prepare.bind(db);
     const statementsFor = async (n: number, from: number) => {
+      await sql.flush();
       let count = 0;
       db.prepare = (q: string) => {
-        count += 1;
+        if (!/\boutbox\b|plan_cards|plan_board_statuses|collab_/.test(q)) count += 1;
         return prepare(q);
       };
       const items = Array.from({ length: n }, (_, i) => ({
@@ -214,9 +220,9 @@ describe('creating items', () => {
   });
 
   it('caps the store', async () => {
-    sql.sql.exec('UPDATE projects SET items_next_key = 2001');
+    sql.sql.exec('UPDATE plan SET items_next_key = 2001');
     const insert = sql.sql.prepare(
-      `INSERT INTO items (project_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'task', ?, 'i', '{"title":"x"}', 1, 0, 0, '{}', '{}')`,
     );
     for (let i = 1; i <= 2000; i++) insert.run(`seed${String(i).padStart(4, '0')}`, i);
@@ -571,23 +577,24 @@ describe('projects and items', () => {
     expect(await db.listItems(sql.env, 'd2')).toHaveLength(1);
   });
 
-  it('copies items with a project and cascades them on delete', async () => {
+  it('copies items with a project and drops them with its plan', async () => {
     await add({ title: 'A' });
     await call({
       path: '/items',
       body: { type: 'task', fields: { title: 'B', status: 'new', labels: ['bug'] } },
     });
-    await db.copyProject(sql.env, 'd1', 'd3', 'owner', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd3', 'owner', 'Copy');
     const copied = await db.listItems(sql.env, 'd3');
     expect(copied.map((i) => i.key).sort()).toEqual([1, 2]);
     expect((await db.getItemStoreHead(sql.env, 'd3')).nextKey).toBe(3);
-    await db.copyProject(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
+    await testCopyPlan(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
     // The tab has a board, so it shows (and its copy takes) every item.
     expect((await db.listItems(sql.env, 'd4')).map((i) => i.fields['title']).sort()).toEqual([
       'A',
       'B',
     ]);
-    sql.sql.exec("DELETE FROM projects WHERE id = 'd1'");
+    // The plan's purge drops it, its cards with it.
+    await sql.env.PLAN_ROOM.get(sql.env.PLAN_ROOM.idFromName('d1')).purge('d1');
     expect(await db.listItems(sql.env, 'd1')).toEqual([]);
   });
 });
@@ -825,7 +832,7 @@ describe('the type catalogue', () => {
 
   it('travels with a copy', async () => {
     await put(catalogue);
-    await db.copyProject(sql.env, 'd1', 'd5', 'owner', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd5', 'owner', 'Copy');
     expect((await db.getProject(sql.env, 'd5'))?.itemTypes?.types[0]?.id).toBe('customer-call');
   });
 });

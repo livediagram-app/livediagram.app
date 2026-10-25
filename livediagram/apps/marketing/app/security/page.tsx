@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { LegalRedirect } from '@/components/LegalRedirect';
+import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
 
 // The vulnerability disclosure policy lives in the help centre (Policies).
 // /security is the short, guessable URL

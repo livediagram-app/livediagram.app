@@ -7,7 +7,7 @@
 // the active cell, where the formula bar's assist takes over (insertFunction).
 import { useEffect, useRef, useState } from 'react';
 import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@liveplanner/sheets';
-import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 
 // The families as the toolbar names them (Title Case).
 export const FUNCTION_FAMILY_LABELS: Record<FunctionFamily, string> = {

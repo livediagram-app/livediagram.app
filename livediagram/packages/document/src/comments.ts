@@ -7,7 +7,7 @@
 
 import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
-import type { CommentMention } from './comment-mentions';
+import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 import { reconcileRestoredElement } from './undo-live-reconcile';
 
@@ -22,7 +22,7 @@ export type Comment = {
   createdAt: number; // unix ms
   authorName: string;
   authorColor: string;
-  // Stable id of the participant who wrote it (their Clerk sub or guest
+  // Stable id of the participant who wrote it (their account id or guest
   // owner id). Server-stamped and server-trusted, never read from the
   // client. Lets a view-role visitor delete their OWN comments without
   // being able to touch anyone else's. When serving a document to a
@@ -84,7 +84,10 @@ export function withoutCommentAuthorId(comment: Comment): Comment {
 function withoutCommentAuthorIds<E extends Element>(el: E): E {
   const thread = (el as { commentThread?: CommentThread }).commentThread;
   if (!thread?.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)) return el;
-  return { ...el, commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) } };
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
 }
 
 // A room op with every comment author id taken out, whichever kind carries

@@ -24,7 +24,7 @@
 //   - Suppressed in view-role sessions; the consumer also gates on
 //     "is there a typing target focused" upstream.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import {
   isBoxed,

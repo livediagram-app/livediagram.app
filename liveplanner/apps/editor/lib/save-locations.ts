@@ -6,13 +6,9 @@ export type SaveLocationId = 'liveplanner' | 'browser';
 
 // Where a new project goes when nobody picked (docs/specs/006-project/save-locations.md "The default
 // depends on who is creating"): a guest starts This Browser, so a visitor trying things out never
-// leaves an orphan on the server; a signed-in person, or anyone on a deployment without sign-in,
-// starts on liveplanner.
-export function defaultSaveLocationFor(who: {
-  signedIn: boolean;
-  signInEnabled: boolean;
-}): SaveLocationId {
-  return who.signInEnabled && !who.signedIn ? 'browser' : 'liveplanner';
+// leaves an orphan on the server; a signed-in person starts on liveplanner.
+export function defaultSaveLocationFor(who: { signedIn: boolean }): SaveLocationId {
+  return who.signedIn ? 'liveplanner' : 'browser';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,

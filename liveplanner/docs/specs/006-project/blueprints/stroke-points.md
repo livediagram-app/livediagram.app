@@ -1,5 +1,7 @@
 # Stroke points blueprint
 
+The migration of the former `{ nx, ny }` shape (`legacy-stroke-points.ts`, `migrateLegacyStrokePoints`) was removed from liveplanner 2026-10-24: no liveplanner plan was ever stored in it. Where this file still names it, it describes livediagram.
+
 Derived from [Stroke points](../stroke-points.md). Engineering precision only; design lives in the
 spec.
 
@@ -23,15 +25,12 @@ spec.
 
 | File                                                | Responsibility                                                                                                                                           |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/project/src/stroke-points.ts`            | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `packages/project/src/stroke-fit.ts`               | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
-| `packages/project/src/stroke-points-cache.ts`      | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
-| `packages/project/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `packages/project/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `packages/project/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
-| `packages/project/scripts/expand-stroke-points.ts` | The debug script: a tab or project JSON file with every block expanded                                                                                  |
+| `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
+| `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
+| `packages/project/src/freehand-points.ts`           | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `packages/project/scripts/expand-stroke-points.ts`  | The debug script: a tab or project JSON file with every block expanded                                                                                   |
 | `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
-| `scripts/stroke-points-bench.ts`                    | The bench behind `pnpm bench:stroke-points`                                                                                                              |
 
 ## Interfaces and contracts
 
@@ -116,9 +115,6 @@ export function packFreehandPoints(
   pressures?: readonly number[],
 ): Box & Pick<FreehandElement, 'packedPoints'>; // freehandGeometry + encode
 
-// legacy-stroke-points.ts
-export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // identity when none
-
 // stored-tab.ts: the untrusted-input guards
 export function migrateIncomingTab(tab: unknown): unknown; // non-tabs pass through for validation
 export function migrateIncomingElements(elements: readonly unknown[]): Element[]; // non-objects dropped
@@ -130,13 +126,6 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
   throws `RangeError('stroke-pressures-length')`; more than `MAX_FREEHAND_POINTS` throws
   `RangeError('stroke-too-many-points')`. A throw is a programming error in a writer; every
   writer's tests cover its inputs.
-- **Fitting a stroke** (`stroke-fit.ts`): `fitStrokeToLimit(points, pressures?, max =
-MAX_FREEHAND_POINTS)` returns copies unchanged when `points.length <= max`; otherwise it runs
-  `simplifyPolylineSurvival` once (the RDP of `simplifyPolyline` at every tolerance: per point,
-  the squared tolerance it survives below, so `survival[i] > t²` is `simplifyPolylineMask(points,
-t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PASSES` times by
-  counting survivors, and keeps the first result that fits; failing that, `max` evenly spaced samples. First and last points always
-  stay; pressures follow the kept indices.
 - **Base64:** the module's own table codec (the project package cannot depend on
   `@liveplanner/api-schema`, which depends on it): standard alphabet, `=` padding, canonical only
   (a non-zero pad remainder is `not-base64`), no whitespace.
@@ -157,8 +146,7 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
 - **Writers** (each produces a fresh block):
   - `createFreehand(rawPoints, closed, pressures?)` and `freehandGeometry` (factories):
     `freehandGeometry` keeps its box rule and returns normalised points (unpacked);
-    `createFreehand` packs them with the pressures. The Polygon tool (`useCanvasPolygonGesture.ts`)
-    and the templates write through it.
+    `createFreehand` packs them with the pressures. The templates write through it.
   - The style preset that drops pen ink (`style-presets.ts`): re-packs the same points without
     pressures.
 - **Readers** (each decodes through the cache): canvas freehand view (pen outline and the
@@ -183,33 +171,32 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
 Every site that read or wrote `FreehandElement.points` / `pressures`, found by removing both
 fields from the type and compiling every workspace, plus the untyped entry points.
 
-| Area             | Site                                                                     | Change                                                                              |
-| ---------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Element model    | `packages/project/src/element-types.ts`                                 | `packedPoints: string` replaces both fields                                         |
-| Validation       | `packages/project/src/validate.ts`                                      | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
-| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                              | regenerated from the type                                                           |
-| Factories        | `packages/project/src/factories.ts`                                     | `createFreehand` packs; geometry stays unpacked                                     |
-| Pen outline      | `packages/project/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
-| SVG export       | `packages/project/src/svg-render-shapes.ts`                             | decode                                                                              |
-| Stored migration | `packages/project/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
-| Style presets    | `apps/editor/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
+| Area             | Site                                                                      | Change                                                                              |
+| ---------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Element model    | `packages/project/src/element-types.ts`                                   | `packedPoints: string` replaces both fields                                         |
+| Validation       | `packages/project/src/validate.ts`                                        | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
+| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                               | regenerated from the type                                                           |
+| Factories        | `packages/project/src/factories.ts`                                       | `createFreehand` packs; geometry stays unpacked                                     |
+| Pen outline      | `packages/project/src/pen-stroke.ts`                                      | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| SVG export       | `packages/project/src/svg-render-shapes.ts`                               | decode                                                                              |
+| Stored migration | `packages/project/src/stored-elements.ts`                                 | adds `migrateLegacyStrokePoints`                                                    |
+| Style presets    | `apps/editor/lib/style-presets.ts`                                        | re-pack without pressures                                                           |
 | Realtime         | `apps/editor/app/project/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
-| Clipboard        | `apps/editor/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
-| Tab file import  | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
-| Api writes       | `apps/api/src/routes/projects.ts`, `project-subresource-routes.ts`     | `migrateStoredTab` before `isValidTab`                                              |
-| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                | unchanged (already migrate)                                                         |
-| Offline store    | `apps/editor/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
-| MCP server       | `packages/project/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
-| Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
+| Clipboard        | `apps/editor/lib/clipboard-payload.ts`                                    | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
+| Tab file import  | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                     | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
+| Api writes       | `apps/api/src/routes/projects.ts`, `project-subresource-routes.ts`        | `migrateStoredTab` before `isValidTab`                                              |
+| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                 | unchanged (already migrate)                                                         |
+| Offline store    | `apps/editor/lib/offline/offline-store.ts`                                | unchanged (already migrates)                                                        |
+| MCP server       | `packages/project/src/element-normalise.ts`, `tools.ts`                   | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
+| Undo             | `useEditorHistory.ts`                                                     | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence
 
-| Field                          | Class    | Stored | Notes                  |
-| ------------------------------ | -------- | ------ | ---------------------- |
+| Field                          | Class   | Stored | Notes                  |
+| ------------------------------ | ------- | ------ | ---------------------- |
 | `FreehandElement.packedPoints` | project | yes    | Required; base64 block |
-| `FreehandElement.points`       | legacy   | no     | Migration input only   |
-| `FreehandElement.pressures`    | legacy   | no     | Migration input only   |
+| `FreehandElement.points`       | legacy  | no     | Migration input only   |
+| `FreehandElement.pressures`    | legacy  | no     | Migration input only   |
 
 - **Snapshot / restore:** project snapshots and exports render through `svgFreehandShape`,
   which decodes. Undo snapshots hold element references, so the block is shared, not copied.
@@ -255,15 +242,8 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit: linear in the stroke.
-- Fitting runs only past the cap: one full RDP, then one O(n) count per
-  tolerance tried. Measured (vitest on an M-series Mac, median of 5): a 25,000-sample gentle curve
-  6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
-  case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
-  stroke that fits costs one array copy.
-- The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
-  records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
-  draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it
-  checks against the bound (spec, "Measured wins").
+- The bench that measured the wins (scripts/stroke-points-bench.ts) was removed 2026-10-24 with the whiteboard
+  boards it synthesised; the numbers in the spec's "Measured wins" are from it.
 
 ## Observability
 
@@ -277,28 +257,25 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 ## Testing
 
-| Spec rule                                                                           | Test                                                                                |
-| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                                          | `packages/project/src/stroke-points.test.ts`                                       |
-| Round trip and precision bound (tiny, huge, degenerate, single, empty)              | `stroke-points.test.ts`                                                             |
-| Pressure present and absent, pressure precision                                     | `stroke-points.test.ts`                                                             |
-| Re-encoding a decoded block is stable                                               | `stroke-points.test.ts`                                                             |
-| Every named rejection                                                               | `stroke-points.test.ts`                                                             |
-| Encoder throws on non-finite, length mismatch, too many                             | `stroke-points.test.ts`                                                             |
-| A stroke past the cap is fitted, never refused; pressures follow; worst-case budget | `packages/project/src/stroke-fit.test.ts`                                          |
-| Memoised decode: same arrays, bounded, LRU, oversize                                | `packages/project/src/stroke-points-cache.test.ts`                                 |
-| Corrupt block draws nothing and logs once                                           | `stroke-points-cache.test.ts`                                                       |
-| Debug decoder and expansion                                                         | `packages/project/src/stroke-points-debug.test.ts`                                 |
-| Migration: shape, extent widening, pressures, idempotent                            | `packages/project/src/legacy-stroke-points.test.ts`                                |
-| Validation accepts packed, rejects former shape and corrupt                         | `packages/project/src/validate.test.ts`                                            |
-| Pen outline unchanged                                                               | `packages/project/src/pen-stroke.test.ts`                                          |
-| SVG export within the bound                                                         | `packages/project/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
-| Api migrates former shape on create and save                                        | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                                    | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                                        | `apps/editor/app/project/[id]/room-op-migrate.test.ts`                               |
-| Untrusted tabs and elements: migrated or passed through                             | `packages/project/src/legacy-stroke-points.test.ts`                                |
-| MCP packs a model's former-shape stroke; an update's points replace the block       | `packages/project/src/element-normalise.test.ts`                                   |
-| Every template builds a valid tab with packed strokes (MCP and editor)              | `packages/templates/src/template-tab.test.ts`                                       |
+| Spec rule                                                                     | Test                                                                               |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Byte layout, version, flags, little-endian                                    | `../packages/model-core/src/stroke-points.test.ts`                                 |
+| Round trip and precision bound (tiny, huge, degenerate, single, empty)        | `stroke-points.test.ts`                                                            |
+| Pressure present and absent, pressure precision                               | `stroke-points.test.ts`                                                            |
+| Re-encoding a decoded block is stable                                         | `stroke-points.test.ts`                                                            |
+| Every named rejection                                                         | `stroke-points.test.ts`                                                            |
+| Encoder throws on non-finite, length mismatch, too many                       | `stroke-points.test.ts`                                                            |
+| Memoised decode: same arrays, bounded, LRU, oversize                          | `../packages/model-core/src/stroke-points-cache.test.ts`                           |
+| Corrupt block draws nothing and logs once                                     | `stroke-points-cache.test.ts`                                                      |
+| Debug decoder and expansion                                                   | `../packages/model-core/src/stroke-points-debug.test.ts`                           |
+| Validation accepts packed, rejects former shape and corrupt                   | `packages/project/src/validate.test.ts`                                            |
+| Pen outline unchanged                                                         | `packages/project/src/pen-stroke.test.ts`                                          |
+| SVG export within the bound                                                   | `packages/project/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
+| Api migrates former shape on create and save                                  | `apps/api/src/routes/stroke-points-writes.test.ts`                                 |
+| Clipboard and tab import migrate                                              | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                  |
+| Room ops migrated on receipt                                                  | `apps/editor/app/project/[id]/room-op-migrate.test.ts`                             |
+| MCP packs a model's former-shape stroke; an update's points replace the block | `packages/project/src/element-normalise.test.ts`                                   |
+| Every template builds a valid tab with packed strokes (MCP and editor)        | `packages/templates/src/template-tab.test.ts`                                      |
 
 ## Constants and configuration
 

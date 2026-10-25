@@ -5,7 +5,7 @@
 // with Unpair, which asks first. None renders nothing. The tokens themselves are run on liveworkspace.app.
 import { useId, useState } from 'react';
 import type { WorkbenchPairing, WorkbenchScope } from '@liveplanner/api-schema';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { relativeTime } from './relative-time';
 
 const UNNAMED = 'Unnamed workbench';

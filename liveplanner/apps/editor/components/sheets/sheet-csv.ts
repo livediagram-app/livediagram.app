@@ -13,7 +13,7 @@ import {
   type Workbook,
 } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
-import { downloadBlob } from '@/lib/download-blob';
+import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import type { SheetController } from './sheet-controller';
 
 // The file Download CSV saves: made safe for a spreadsheet to open (no field runs as a formula, sheet.md "CSV").

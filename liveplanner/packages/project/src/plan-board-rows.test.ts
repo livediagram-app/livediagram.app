@@ -1,6 +1,6 @@
 import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
-import { ALL_CARDS_STATUS, planBoardRowsFromElements } from './plan-board-rows';
+import { ALL_CARDS_STATUS, cardPlacesOf, planBoardRowsFromElements } from './plan-board-rows';
 
 // The board half of the Inbox's index (docs/specs/013-workspace/inbox.md §2.4).
 
@@ -69,6 +69,45 @@ describe('planBoardRowsFromElements', () => {
     expect(rows.map((r) => [r.elementId, r.boardTitle, r.boardOrder])).toEqual([
       ['first', 'Board', 0],
       ['second', 'Two', 1],
+    ]);
+  });
+});
+
+describe('cardPlacesOf', () => {
+  const tabs = [
+    {
+      id: 't1',
+      name: 'Ideas',
+      elements: [board('all', { title: 'All', allCards: true, columns: columns('x') })],
+    },
+    {
+      id: 't2',
+      name: 'Sprint',
+      elements: [
+        board('b', { title: 'Sprint', columns: columns('todo', 'done'), doneColumnId: 'c-done' }),
+      ],
+    },
+  ];
+
+  it('opens a card on the board holding its status, else an All Cards board, else none', () => {
+    const places = cardPlacesOf(tabs);
+    expect(places.boardFor('todo')).toEqual({
+      tabId: 't2',
+      tabName: 'Sprint',
+      elementId: 'b',
+      title: 'Sprint',
+    });
+    expect(places.boardFor('other')?.elementId).toBe('all');
+    expect(places.boardFor(undefined)?.elementId).toBe('all');
+    expect(cardPlacesOf([]).boardFor('todo')).toBeNull();
+  });
+
+  it('knows which statuses are done', () => {
+    const places = cardPlacesOf(tabs);
+    expect([places.isDone('done'), places.isDone('todo'), places.isDone(undefined)]).toEqual([
+      true,
+      false,
+      false,
     ]);
   });
 });

@@ -9,7 +9,7 @@ import { LOGIN_TIMEOUT_MS } from './oauth';
 
 const HOST = 'https://livedesign.app';
 const ISSUER = 'https://mcp.livedesign.app';
-const NEW = `lvd_${'b'.repeat(43)}`;
+const NEW = `lwt_${'b'.repeat(43)}`;
 
 type Script = {
   tokenAnswers?: Record<string, unknown>[];

@@ -1,22 +1,15 @@
 // The api's half of "access changes end the sessions they affect" (docs/specs/015-api/api.md): ask
-// a project's room to close the sessions an access change no longer admits. Best-effort, like the
-// share-op broadcast: the D1 write before it is the change, and every later API call and room join
-// is gated on it, so a room that can't be reached is logged rather than failing the request.
+// a project's room to close the sessions an access change no longer admits (a workbench pairing ended).
+// Best-effort: every later API call and room join is gated on the change, so a room that can't be reached is
+// logged rather than failing the request. Sharing and team changes are the index's: it tells the room itself
+// (`/api/internal/items/:id/revoke`), and a removed member's grant lapses within ten minutes.
 
-import { listProjectsByTeam } from './db';
-import { personTagFor } from './person-tag';
 import type { AccessCloseMatch } from './room-access';
 import { roomFetch } from './room-client';
 import type { Env } from './types';
 
 // The api never waits on one room longer than this.
 const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
-// A team's projects are closed this many rooms at a time, so a large library is a steady trickle
-// of small calls rather than one burst. Production's largest team holds 20 projects (2026-10-06).
-export const TEAM_ROOM_CLOSE_CONCURRENCY = 10;
-// The most rooms one member's departure touches: the team's most recently saved projects. A
-// session on a project past the cap still ends at its next join, which the gates refuse.
-export const TEAM_ROOM_CLOSE_MAX_PROJECTS = 500;
 
 async function closeRoomSessions(
   env: Env,
@@ -47,11 +40,6 @@ async function closeRoomSessions(
   }
 }
 
-// A share password was set: every session a share code admitted meets the gate again.
-export function closeShareCodeSessions(env: Env, projectId: string): Promise<boolean> {
-  return closeRoomSessions(env, projectId, { match: 'share-code' });
-}
-
 // A workbench pairing ended (unpaired, or its token revoked): close the sockets it opened on one project
 // (docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
 export function closeWorkbenchSessions(
@@ -60,33 +48,4 @@ export function closeWorkbenchSessions(
   pairingId: string,
 ): Promise<boolean> {
   return closeRoomSessions(env, projectId, { match: 'workbench', pairingId });
-}
-
-// A member left or was removed from a team: end their sessions on each of the team's projects.
-// Matched by the per-project person tag their tickets carried, so no account id reaches a room.
-export async function closeMemberTeamSessions(
-  env: Env,
-  teamId: string,
-  userId: string,
-): Promise<{ rooms: number; unreached: number; truncated: boolean }> {
-  const projects = await listProjectsByTeam(env, teamId);
-  const ids = projects.slice(0, TEAM_ROOM_CLOSE_MAX_PROJECTS).map((d) => d.id);
-  const truncated = projects.length > ids.length;
-  let unreached = 0;
-  for (let i = 0; i < ids.length; i += TEAM_ROOM_CLOSE_CONCURRENCY) {
-    const batch = ids.slice(i, i + TEAM_ROOM_CLOSE_CONCURRENCY);
-    const reached = await Promise.all(
-      batch.map(async (id) =>
-        closeRoomSessions(env, id, { match: 'person', personTag: await personTagFor(id, userId) }),
-      ),
-    );
-    unreached += reached.filter((ok) => !ok).length;
-  }
-  console.info('[room-access] team member sessions closed', {
-    teamId,
-    rooms: ids.length,
-    unreached,
-    truncated,
-  });
-  return { rooms: ids.length, unreached, truncated };
 }

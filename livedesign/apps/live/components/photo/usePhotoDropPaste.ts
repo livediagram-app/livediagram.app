@@ -7,7 +7,7 @@
 // With the select pointer on a started photo, a paste stays the canvas's (an image element).
 import { useEffect } from 'react';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { paste } from '@/lib/photo-editor/clipboard';
 import { photoStarted, readPicture } from '@/lib/photo-editor/start-photo';
 import { photoTools } from '@/lib/photo-editor/tool-state';

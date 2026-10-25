@@ -5,7 +5,9 @@ import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { ItemPanel } from './ItemPanel';
 
 const viewport = vi.hoisted(() => ({ mobile: false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.mobile }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => viewport.mobile,
+}));
 
 // docs/specs/026-plan/plan-board.md "Open an item": a project's Linked as Parent sits on its first tab before
 // Comments, and the header's breadcrumb steps back; each says how it opened the next card.

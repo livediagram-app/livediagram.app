@@ -52,7 +52,6 @@ export const HELP_ARTICLES = {
   formatPainter: 'selection-modes/format-painter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
-  aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingDiagrams: 'account-and-data/exporting-diagrams',
@@ -64,16 +63,11 @@ export const HELP_ARTICLES = {
   microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   drawioImport: 'explorer/drawio-import',
   shapeLibraries: 'explorer/shape-libraries',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
-  // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
-  customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
   workshopTour: 'canvas/workshop-mode/workshop-tour',
@@ -99,11 +93,17 @@ export const HELP_ARTICLES = {
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
-  recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
+  // Home and the Timeline share an article.
+  home: 'explorer/timeline',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  recent: 'explorer/recent',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -170,7 +170,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   community: {
     title: 'Learn about the Community',
-    description: 'Sharing a document publicly, and how people find and copy it.',
+    description: 'Sharing a canvas publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
@@ -202,7 +202,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
+    description: 'Tips for pointing things out to the room without touching the canvas.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -218,15 +218,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
-  },
-  aiTools: {
-    title: 'Learn about the AI tools',
-    description: 'What the Ask and Clean modes do, and how to get the most from them.',
+    description: 'Tips for building and presenting slides from your canvas.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your canvases from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -238,7 +234,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted canvases wait, and how to restore one.',
   },
   googleDrive: {
     title: 'Learn about Google Drive sync',
@@ -250,7 +246,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   microsoftWhiteboardImport: {
     title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a document.',
+    description: 'What a board export is and how each board becomes a canvas.',
   },
   shapeLibraries: {
     title: 'Learn about shape libraries',
@@ -258,7 +254,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   drawioImport: {
     title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a document.',
+    description: 'Which files it reads and how each diagram becomes a canvas.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -268,22 +264,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
-  },
-  customThemes: {
-    title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across documents.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -295,11 +282,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
+    description: 'Linking elements to tabs, canvases, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing your work right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -352,7 +339,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
+    description: 'How uploaded images are stored and reused across canvases.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
@@ -362,21 +349,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDocuments: {
-    title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
-  },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related documents across folders and teams.',
-  },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Canvases other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising canvases into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -385,6 +364,26 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerFilters: {
     title: 'Learn about search and filters',
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
+  },
+  home: {
+    title: 'Learn about Home and the Timeline',
+    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+  },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own canvases and folders, in one place.',
+  },
+  recent: {
+    title: 'Learn about Recent',
+    description: 'Your most recently opened canvases, personal and team, in one list.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of canvases and folders.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',
@@ -445,7 +444,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Canvases saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
     title: 'Learn about your first diagram',
@@ -461,7 +460,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the canvas, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -473,7 +472,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   documentNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a canvas will not open.',
   },
 };
 

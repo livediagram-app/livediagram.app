@@ -14,7 +14,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export type BackgroundCopyEdits = {

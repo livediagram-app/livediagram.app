@@ -1,50 +1,35 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { storageEvent } from '@/lib/testing/storage-event';
-import {
-  clearGuestSelfId,
-  ensureGuestSelfId,
-  getGuestSelfId,
-  setGuestIdentity,
-  subscribeGuestSelfId,
-} from './local-identity';
+import { storageEvent } from '@liveworkspace/workbench/lib/testing/storage-event';
+import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
+import { getGuestSelfId, subscribeGuestSelfId } from './local-identity';
 
 // The guest id is an external store that render reads with useSyncExternalStore
-// (docs/specs/003-system-architecture/react-state-and-effects.md): every write notifies subscribers, so a
-// component re-renders the moment the id is minted, adopted or cleared.
-afterEach(() => {
-  clearGuestSelfId();
-  localStorage.clear();
-});
+// (docs/specs/003-system-architecture/react-state-and-effects.md): it is the guest token's id, and a token
+// another tab keeps arrives as a storage event.
+afterEach(() => localStorage.clear());
+
+const b64url = (v: unknown) =>
+  btoa(JSON.stringify(v)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const tokenFor = (id: string) =>
+  `${b64url({ alg: 'EdDSA' })}.${b64url({ sub: id, kind: 'guest', exp: 4_102_444_800 })}.sig`;
 
 describe('guest id store', () => {
-  it('notifies on a mint, an adoption and a clear', () => {
+  it("reads the guest token's id, and none without one", () => {
+    expect(getGuestSelfId()).toBeNull();
+    localStorage.setItem(GUEST_TOKEN_STORAGE_KEY, tokenFor('guest_abc'));
+    expect(getGuestSelfId()).toBe('guest_abc');
+  });
+
+  it('notifies when another tab changes the guest token, and not for other keys', () => {
     const onChange = vi.fn();
     const unsubscribe = subscribeGuestSelfId(onChange);
-    const minted = ensureGuestSelfId();
-    expect(getGuestSelfId()).toBe(minted);
-    expect(onChange).toHaveBeenCalledTimes(1);
-    setGuestIdentity('adopted', null);
-    expect(onChange).toHaveBeenCalledTimes(2);
-    clearGuestSelfId();
-    expect(onChange).toHaveBeenCalledTimes(3);
-    unsubscribe();
-    ensureGuestSelfId();
-    expect(onChange).toHaveBeenCalledTimes(3);
-  });
-
-  it('does not notify when an existing id is read back', () => {
-    ensureGuestSelfId();
-    const onChange = vi.fn();
-    subscribeGuestSelfId(onChange);
-    ensureGuestSelfId();
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('notifies when another tab changes storage', () => {
-    const onChange = vi.fn();
-    subscribeGuestSelfId(onChange);
+    window.dispatchEvent(storageEvent({ key: GUEST_TOKEN_STORAGE_KEY }));
     window.dispatchEvent(storageEvent({ key: null }));
-    expect(onChange).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(storageEvent({ key: 'livediagram:v2:other' }));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    unsubscribe();
+    window.dispatchEvent(storageEvent({ key: null }));
+    expect(onChange).toHaveBeenCalledTimes(2);
   });
 });

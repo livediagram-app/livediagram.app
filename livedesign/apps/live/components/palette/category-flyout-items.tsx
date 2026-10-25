@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { ChevronRightIcon, Tooltip } from '@livedesign/ui';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';

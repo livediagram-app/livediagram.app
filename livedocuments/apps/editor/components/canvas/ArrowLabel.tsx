@@ -11,8 +11,8 @@ import {
   LABEL_PAD_Y_PX,
   type ArrowLabelLayout,
 } from '@livedocuments/document';
-import { BRAND_600 } from './arrow-handle-style';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this
 // much extra width so it never wraps a line the layout kept whole.
@@ -149,7 +149,7 @@ export function ArrowLabel({
             fontStyle: textItalic ? 'italic' : undefined,
             color,
           }}
-          className="block h-full w-full resize-none overflow-hidden whitespace-pre-wrap rounded bg-white text-center shadow-sm outline-none ring-2 ring-sky-400 dark:bg-slate-900"
+          className="block h-full w-full resize-none overflow-hidden whitespace-pre-wrap rounded bg-white text-center shadow-sm outline-none ring-2 ring-brand-400 dark:bg-slate-900"
         />
       </foreignObject>
     );

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@liveplanner/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { announcePanelPresence } from '@/lib/panel-presence';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
@@ -14,12 +14,12 @@ import { announcePanelPresence } from '@/lib/panel-presence';
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
 import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
-import { useDockPopoverKeys } from './useDockPopoverKeys';
+import { useDockPopoverKeys } from '@liveworkspace/workbench/components/primitives/useDockPopoverKeys';
 import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
 
 export type { MovablePanelDockProps };

@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { ClerkProvider } from '@/components/providers/ClerkProvider';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
-import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
+import { StaleBuildBoot } from '@liveworkspace/workbench/components/providers/StaleBuildBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
-import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
-import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
+import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
@@ -26,6 +26,8 @@ import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,
+  SILENT_SIGN_IN_BOOT_SCRIPT,
+  DOCUMENT_GRANT_BOOT_SCRIPT,
 } from './pre-hydration-scripts';
 import { EDITOR_BUILD_ID } from '@/lib/server-release';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from '@/lib/stale-html-guard';
@@ -38,12 +40,11 @@ import './globals.css';
 // `noindex, nofollow` at the root layout cascades through every
 // nested page in the static export. See docs/specs/007-editor/editor-app.md "SEO and indexing".
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, the Clerk origin read from this build's key, and
-// Google's script origins where this build offers the Drive mirror (Next inlines only the literal expression).
+// violation log, this app's own scripts under its asset prefix, and Google's script origins where this build
+// offers the Drive mirror (Next inlines only the literal expression).
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
   '/live',
   trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   }),
 );
@@ -94,22 +95,22 @@ export const metadata: Metadata = {
 };
 
 // Every page can zoom, so a phone can pinch to read it (WCAG 1.4.4). The routes that draw the canvas pin it at 1
-// instead with EDITOR_VIEWPORT (lib/page-viewport.ts), since the canvas owns zoom there. See
+// instead with EDITOR_VIEWPORT (@liveworkspace/workbench/lib/page-viewport.ts), since the canvas owns zoom there. See
 // docs/specs/007-editor/editor-app.md "Mobile / responsive".
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
-// ClerkProvider wraps everything so `useAuth` / `useSignIn` / `useSignUp`
-// work in every page — including the editor. Per docs/specs/014-identity/auth-and-guest-access.md this is NOT a
+// AuthProvider wraps everything so the signed-in session (useDeferredAuth)
+// reaches every page — including the editor. Per docs/specs/014-identity/auth-and-guest-access.md this is NOT a
 // route gate: the editor stays open to guests forever. Auth is purely
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
 // The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-document-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
-// — ClerkProvider doesn't touch the route tree.
+// — AuthProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // suppressHydrationWarning: the pre-paint inline scripts below add the
@@ -121,8 +122,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        {/* Signing in without a click (liveworkspace/docs/accounts.md): before anything else loads,
+            since when it bounces it stops the page. */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_BOOT_SCRIPT) }} />
         {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
+        {/* A canvas's grant, asked for while the code loads (lib/api/document-grants.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(DOCUMENT_GRANT_BOOT_SCRIPT) }} />
         {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}
@@ -168,7 +174,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <TimingTelemetryBoot />
         <TruthArmBoot />
         <KeyboardAvoidanceBoot />
-        <ClerkProvider>
+        <AuthProvider>
           <ToastProvider>
             <ConfirmProvider>
               {/* The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): runs in one
@@ -176,7 +182,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <DriveMirrorProvider>{children}</DriveMirrorProvider>
             </ConfirmProvider>
           </ToastProvider>
-        </ClerkProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 // pressed on the category bar. The sticker badges come from packages/icons/src/sticker-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene } from './primitives';
+import { Label, Panel, Scene } from '@liveworkspace/help-site/art/primitives';
 import { STRIP_W, Strip } from './toolbar-layout';
 
 /** The palette strip with `category` pressed on its bar, and that category's flyout under it, `h` tall from the

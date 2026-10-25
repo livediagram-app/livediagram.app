@@ -1,8 +1,8 @@
-import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
+import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { scrollLeftToReveal } from './tab-strip-scroll';
+import { scrollLeftToReveal } from '@liveworkspace/workbench/components/chrome/tab-strip-scroll';
 import {
   folderNamesInDocument,
   groupTabsIntoRuns,
@@ -13,9 +13,9 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
-import { useTabReorderDrag } from './useTabReorderDrag';
+import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
@@ -394,7 +394,7 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
-          settingsDescription="Your editor preferences. They follow your account, not this document."
+          settingsDescription="Your editor preferences. They follow your account, not this canvas."
           // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
           // titled with its name.
           labelled={labelled}

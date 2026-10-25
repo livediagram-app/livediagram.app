@@ -25,8 +25,8 @@ import {
   inAnimationSet,
   shapeAnimationsFor,
 } from '@livedesign/design';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { PieAnimTiles } from '@/components/palette/context-menu-rows';

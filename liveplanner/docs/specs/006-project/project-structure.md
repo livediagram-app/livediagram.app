@@ -121,7 +121,7 @@ type ElementLink =
   | { kind: 'url'; url: string }; // external address, opens in a new tab
 ```
 
-Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + `projects` rows in D1). The `apps/editor/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
+Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + the `plan` row in each plan's Durable Object). The `apps/editor/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
 
 ### Colours are colours
 
@@ -132,7 +132,7 @@ the stored-element migrations drop it wherever elements enter (a load, a peer's 
 write, the api's own reads and writes), and the element paints with that colour's default. Nothing in liveplanner
 fetches from outside a project, and a colour must not
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
-blanked in a room hello) and a custom theme's colours (refused on save).
+blanked in a room hello).
 
 ### Styles have their types
 

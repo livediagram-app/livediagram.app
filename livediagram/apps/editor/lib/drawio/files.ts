@@ -9,7 +9,7 @@ import { importDrawioLibrary, type ImportedLibraryItem } from './library';
 import type { DrawioDocumentFile } from './new-document';
 import type { DrawioReport } from './notes';
 import type { ImportImageRequest } from '@/lib/import-images';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** The names draw.io files carry, longest first so `.drawio.png` is not read as `.png`. */
 const DRAWIO_EXTENSIONS = [

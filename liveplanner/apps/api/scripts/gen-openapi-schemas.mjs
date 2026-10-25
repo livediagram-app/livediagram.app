@@ -70,8 +70,6 @@ export const ROOT_TYPES = [
   'OverviewView',
   'RefErrorBody',
   'Folder',
-  'CustomTheme',
-  'CustomThemeDefinition',
   'ShareLink',
   'ShareLinkExpiry',
   'ShareRole',
@@ -87,7 +85,6 @@ export const ROOT_TYPES = [
   'WorkbenchPairingRequestView',
   'WorkbenchPairing',
   'WorkbenchPairingsResponse',
-  'TimelineEvent',
   'ActivityAction',
   'ActivityThread',
   'ActivityCard',
@@ -108,7 +105,6 @@ export const ROOT_TYPES = [
   'ProjectCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
-  'UnfurlResult',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

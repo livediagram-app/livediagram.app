@@ -38,13 +38,13 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `palette/` — palette + context-menu tiles/rows.
 - `chrome/` — header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/` — local leaves (`CloseIcon`, `Portal`, chart leaves) not
-  promoted to `@livedocuments/ui`.
+- `primitives/` — local leaves (`PortalMenu`, `BackBar`, chart leaves) not
+  promoted to `@livedocuments/ui` or `@liveworkspace/ui` (which holds `Portal`).
 
 `apps/editor/hooks/`
 
 - `canvas/` — drag, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, custom themes, share links.
+- `persistence/` — folders, teams, capabilities, share links.
 - `ui/` — confirm, toast, panel layout, escape/click-outside.
 - `collab/` — room connection, presence.
 

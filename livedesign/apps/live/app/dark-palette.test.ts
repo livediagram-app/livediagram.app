@@ -13,7 +13,7 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livedesign/source-ast';
+import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from '@livedesign/design';
 
@@ -25,18 +25,27 @@ import { contrastRatio } from '@livedesign/design';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-const THEME_CSS = readFileSync(`${REPO}packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), then this product's palette over it
+// (packages/tailwind-config/theme.css): a later block's declarations win, as they do in the cascade.
+const THEME_CSS = [
+  `${REPO}../packages/tailwind-config/theme.css`,
+  `${REPO}packages/tailwind-config/theme.css`,
+]
+  .map((path) => readFileSync(path, 'utf8'))
+  .join('\n');
 
-/** The declarations of the first top-level rule whose selector is exactly `selector`. */
+/** The declarations of every top-level rule whose selector is exactly `selector`, a later rule's winning. */
 function block(css: string, selector: string): Record<string, string> {
-  const at = css.search(
-    new RegExp(`(^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`),
+  const opener = new RegExp(
+    `(^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`,
+    'g',
   );
-  if (at < 0) return {};
-  const body = css.slice(css.indexOf('{', at) + 1, css.indexOf('}', at));
-  return Object.fromEntries(
-    [...body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]),
-  );
+  const out: Record<string, string> = {};
+  for (const { index } of css.matchAll(opener)) {
+    const body = css.slice(css.indexOf('{', index) + 1, css.indexOf('}', index));
+    for (const m of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) out[m[1]!] = m[2]!.trim();
+  }
+  return out;
 }
 
 const STEEL: Record<string, string> = {
@@ -145,10 +154,13 @@ describe('the Explorer Midnight tokens', () => {
 });
 
 describe('the wordmark', () => {
-  const brand = readFileSync(`${REPO}packages/ui/src/Brand.tsx`, 'utf8');
+  // Every app's wordmark classes live in the shared logo package (packages/brand/src/apps.ts).
+  const brand = readFileSync(`${REPO}../packages/brand/src/apps.ts`, 'utf8');
 
   it('lights its "live" half rose in dark mode, and is brand-700 in light (#74)', () => {
-    expect(brand).toMatch(/'text-brand-700 dark:text-rose-400'/);
+    expect(brand).toMatch(
+      /livedesign: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-rose-400'/,
+    );
   });
 });
 
@@ -168,6 +180,10 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = [
   ...['app', 'components', 'hooks', 'lib'].flatMap((d) => sourceFiles(`${ROOT}${d}`)),
   ...sourceFiles(`${REPO}packages/ui/src`),
+  // The shared design system (@liveworkspace/ui), which this app renders too.
+  ...sourceFiles(`${REPO}../packages/ui/src`),
+  // The editor code every editor shares (@liveworkspace/workbench), which this app renders too.
+  ...sourceFiles(`${REPO}../packages/workbench/src`),
 ];
 
 // Parsed once, here at collection time, and shared by every rule below: re-parsing ~900 files
@@ -227,7 +243,7 @@ describe('brand-coloured text in dark mode', () => {
   });
 });
 
-// The optical utilities and the optical guard live with optical-alignment.md: packages/tailwind-config
+// The optical utilities and the optical guard live with optical-alignment.md: the monorepo's packages/tailwind-config
 // (optical-utilities.test.ts) and each workspace's optical-guard.test.ts.
 
 // White text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules):

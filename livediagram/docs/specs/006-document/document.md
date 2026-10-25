@@ -60,14 +60,12 @@ The container was called a diagram until the domain language settled on document
 that named it moved in one change:
 
 - **Code:** identifiers, files and packages (`@livediagram/document`, `apps/editor/app/document/[id]`).
-- **Database:** migration `0055_documents.sql` renames `diagrams` → `documents`, `diagram_tabs` →
-  `document_tabs` and every `diagram_id` → `document_id`, keeps every foreign key and index, and
-  rewrites the stored values that named the container: timeline source, scope and event types,
-  titles and snapshot keys; element links to another document; the `notifyDiagramJoin`
-  preference; and the telemetry history, so the dashboard's lines continue. The tab kind
+- **Schema:** the document's own schema names the tables and columns `document`, `document_tabs` and
+  `document_id`, and the timeline's source, scope and event types say document. The tab kind
   `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
-- **Realtime:** the Durable Object class `DiagramRoom` is renamed to `DocumentRoom` by a
-  `renamed_classes` migration (tag `v2`), which keeps every room's storage; the room ops are
+- **Realtime and storage:** the Durable Object class is `DocumentRoom` (binding `DOCUMENT_ROOM`), a SQLite-backed
+  class declared new in its first migration (livediagram ships fresh on new infrastructure, so it carries no rename
+  history); it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
   `document-meta` and `document-trashed`.
 - **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
   offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached

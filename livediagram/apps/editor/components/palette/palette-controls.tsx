@@ -1,6 +1,6 @@
 import { type TextAlignX, type TextAlignY } from '@livediagram/document';
 import { AlignIcon } from '@/components/palette/palette-icons';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useState } from 'react';
 import { HoverCard, Tooltip } from '@livediagram/ui';
 import type { StandardTone } from '@livediagram/document';
@@ -163,8 +163,7 @@ export function AlignmentGrid({
 }
 
 // A colour well opening the one colour picker (docs/specs/004-interface-design/colour-picker.md)
-// in a popover under its trigger: the canvas and pattern colours here, the custom theme builder's
-// tiles and dots. Free colours, so it offers both tones of the standard colours (soft first, for
+// in a popover under its trigger: the canvas and pattern colours here. Free colours, so it offers both tones of the standard colours (soft first, for
 // backgrounds), by hex, for the canvas behind; Custom colours; and +. A pick closes it and hands focus
 // back to the trigger.
 export function useColourWell({
@@ -247,62 +246,5 @@ export function ColorSwatch({
       </button>
       {popover}
     </>
-  );
-}
-
-// iOS-style toggle switch. Used by the Shape accordion's Lock-aspect
-// row but generic enough for any future boolean preference that
-// belongs alongside its label rather than as an icon button.
-export function ToggleSwitch({
-  checked,
-  onChange,
-  label,
-  presentational = false,
-}: {
-  checked: boolean;
-  onChange?: () => void;
-  label: string;
-  // Render a non-interactive <span> instead of a <button> — for when an
-  // enclosing row already owns the click (so the whole row toggles without
-  // nesting a button inside a button). Such a switch is PICTURE only: the
-  // row around it already carries role="switch" + aria-checked + the name, so
-  // repeating them here announced one control as two.
-  presentational?: boolean;
-}) {
-  const trackClass = checked
-    ? 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-brand-500 transition'
-    : 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 transition dark:bg-slate-600';
-  if (presentational) {
-    return (
-      <span aria-hidden className={trackClass}>
-        <span
-          aria-hidden
-          className={
-            checked
-              ? 'inline-block h-3.5 w-3.5 translate-x-[18px] rounded-full bg-white shadow-sm transition'
-              : 'inline-block h-3.5 w-3.5 translate-x-[3px] rounded-full bg-white shadow-sm transition'
-          }
-        />
-      </span>
-    );
-  }
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={onChange}
-      className={trackClass}
-    >
-      <span
-        aria-hidden
-        className={
-          checked
-            ? 'inline-block h-3.5 w-3.5 translate-x-[18px] rounded-full bg-white shadow-sm transition'
-            : 'inline-block h-3.5 w-3.5 translate-x-[3px] rounded-full bg-white shadow-sm transition'
-        }
-      />
-    </button>
   );
 }

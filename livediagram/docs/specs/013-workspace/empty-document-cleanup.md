@@ -7,9 +7,9 @@ Status: shipped
 A document that has held nothing for 30 days moves to the
 [Trash](trash.md) on its own. From there the Trash's usual 30 days apply, so it
 can still be restored, and it is removed for good only after both clocks have
-run. An empty document gives its owner nothing, but every one of them is a row
-the database keeps, lists and sweeps; letting them go keeps the Explorer and
-the database clean without anyone having to tidy up.
+run. An empty document gives its owner nothing, but every one of them is an
+item the index keeps and lists and a Durable Object the platform keeps; letting
+them go keeps the Explorer clean without anyone having to tidy up.
 
 ## Which documents
 
@@ -37,11 +37,14 @@ browser, cost the server nothing, and are never touched.
 
 ## The sweep
 
-The api worker's daily `0 3 * * *` cron, the one that already purges the Trash,
-moves every live document that is both empty and stale to the Trash. The check
-and the move are one statement, so a document saved a moment before the sweep
-is not moved. The sweep is capped per run, oldest first, so a backlog drains
-over a few days. It logs how many it moved.
+liveworkspace's index runs it, once for every app, in its daily run (the one that purges the Trash):
+`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`. Each document's Durable Object pushes its summary to the
+index after every save, and the summary carries `hasContent`, whether any tab holds anything (the rule above). The
+sweep moves every live document whose summary says `hasContent: false`, or that never pushed one (its content was
+never written), and that has not changed for 30 days, to the Trash with the reason `empty`. The check and the move
+are one statement, so a document saved a moment before is not moved. A team document goes to its team's Trash. The sweep
+moves at most 1,000 items a run, oldest change first, so a backlog drains over a few days, and it logs how many it
+moved. The app runs no sweep of its own.
 
 The move stamps the document's Trash time with **the moment of the sweep**,
 never its creation or last save. The Trash's purge counts from that time, so an
@@ -60,19 +63,19 @@ An automatically moved document is marked with why it is there, and the Trash
 says so on its row: "Moved here {d MMM} because it was empty" in place of
 "Deleted {d MMM}", followed by the days left as usual. Opening one by URL shows
 the deleted card, worded for what happened: no one deleted it, so someone who
-may restore it reads **In the Trash** and "This document is in the Trash", then
+may restore it reads **In the Trash** and "This canvas is in the Trash", then
 that it was empty for 30 days and so moved there. A share-link visitor, who
-learns no reason, reads the usual "This document was deleted".
+learns no reason, reads the usual "This canvas was deleted".
 
 A person deleting a document leaves it unmarked. The mark is a reason, not an
 author: it records no one, so it adds nothing to erase on account deletion.
 
 ## Restore
 
-Restoring an automatically moved document works like any restore, and counts as
-a save: its 30 stale days start again from the restore, so it is not moved
-straight back by the next sweep. A document a person deleted restores exactly
-as it was, its last-saved time untouched.
+Restoring an automatically moved document works like any restore. The index remembers the change it was moved for
+(`empty_swept_for`), so it is never moved back for that same change: only after it is saved again and then left
+empty for 30 days does it go to the Trash again. A document a person deleted restores exactly as it was, its
+last-saved time untouched.
 
 ## The API
 
@@ -92,8 +95,8 @@ Offline Mode's local Trash rows are always `deleted`.
   30 days ago".
 - **No room broadcast.** A person deleting a document tells its open sessions
   at once. The sweep does not: a document untouched for 30 days rarely has one,
-  and one that does stops at its next save, which answers `document_trashed`,
-  the same fallback the Trash already relies on when the room is unreachable.
+  and one that does loses its grant at the next renewal, since the index grants
+  nothing on an item in the Trash.
 - **No telemetry event.** Telemetry counts what people do; the sweep is not a
   person. Its log line counts it, and the Trash's `Restored` event already
   says whether anyone comes back for what it moved.

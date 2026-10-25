@@ -42,7 +42,7 @@ describe('withThemeApplied', () => {
     expect((out.elements[1] as ArrowElement).strokeColor).not.toBe('#654321');
   });
 
-  it('hard-resets a tab whose previous theme no longer resolves (a deleted custom theme)', () => {
+  it('hard-resets a tab whose previous theme no longer resolves (a theme id no built-in names)', () => {
     const t = {
       id: 't',
       name: 'T',

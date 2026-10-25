@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livedocuments/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncDocumentPrompt } from './SyncDocumentPrompt';
 
 // The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a document in

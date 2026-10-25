@@ -1,7 +1,7 @@
-import { lucidePencilLine } from '@livediagram/icons/lucide';
+import { lucidePencilLine } from '@liveworkspace/icons/lucide';
 import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';

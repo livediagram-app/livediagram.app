@@ -4,8 +4,8 @@
 import type { BarMarks, LineMarks, PieMarks } from './chart-marks';
 import type { LineSeries, PieSlice } from './data-shapes';
 import type { ShapeElement } from './element-types';
-import { glyphWidth } from './graph-authoring';
-import { legendFontPx } from './label-font';
+import { glyphWidth } from './glyph-width';
+import { legendFontPx } from '@liveworkspace/model-core/label-font';
 
 export type ChartValueLabel = {
   x: number;

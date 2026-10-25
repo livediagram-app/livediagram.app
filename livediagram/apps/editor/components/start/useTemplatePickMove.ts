@@ -1,30 +1,43 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
-import { useToast } from '@/hooks/ui/useToast';
 import {
-  handTemplatePick,
+  defaultEntries,
+  kindWords,
+  moveOnTemplatePick,
   readTemplatePick,
+  handTemplatePick,
   takeTemplatePick,
-} from '@/lib/placement-defaults/template-pick-handoff';
+} from '@liveworkspace/explorer';
+import { templateFamilyOf, type TemplateKind } from '@livediagram/templates';
+import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livediagram/api-schema';
+import { buildTemplatedTab } from '@/lib/template-builders';
+import { useToast } from '@/hooks/ui/useToast';
+import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
-// A template picked from a start screen on a document /new just made goes to the template's default folder
-// (docs/specs/013-workspace/default-folders.md "A template picked after creation"). Once per document: the handoff is
-// taken at the first pick, and dropped if the tab gains content any other way first. Cheap until it matters: only a
-// handoff for this document loads the mover (lib/placement-defaults/move-on-template-pick.ts), at the pick.
+// A template picked from a start screen on a canvas /new just made goes to the template's default folder, else the
+// default for new canvases (docs/specs/013-workspace/default-folders.md "A template picked after creation"). Once per
+// canvas: the note /new left is taken at the first pick, and dropped if the tab gains content any other way first.
+// Cheap until it matters: only a pick on a noted canvas asks the index anything.
+const ENTRIES = defaultEntries(
+  'livediagram',
+  kindWords('livediagram'),
+  CANVAS_TEMPLATE_FAMILIES,
+  DEFAULT_FOLDER_OPTIONS,
+);
+const nounOf = (key: string) => ENTRIES.find((e) => e.key === key)?.noun ?? 'canvases';
+
 export function useTemplatePickMove(at: {
-  ownerId: string;
   documentId: string | null;
   tabId: string;
-  signedIn: boolean;
   // The active tab has content: drawn by hand, the template's default no longer applies.
   tabHasContent: boolean;
 }): (kind: TemplateKind) => void {
   const toast = useToast();
-  const { ownerId, documentId, tabId, signedIn, tabHasContent } = at;
+  const { documentId, tabId, tabHasContent } = at;
   useEffect(() => {
-    if (tabHasContent && documentId && readTemplatePick()?.documentId === documentId)
+    if (tabHasContent && documentId && readTemplatePick()?.itemId === documentId)
       handTemplatePick(null);
   }, [tabHasContent, documentId]);
   return useCallback(
@@ -33,17 +46,24 @@ export function useTemplatePickMove(at: {
       // Taken now, before the template's elements land and the effect above would drop it.
       const handoff = takeTemplatePick(documentId, tabId);
       if (!handoff || handoff.placementChosen) return;
-      void import('@/lib/placement-defaults/move-on-template-pick').then(async (m) => {
-        const message = await m.moveOnTemplatePick({
-          ownerId,
-          documentId,
-          handoff,
-          kind,
-          signedIn,
-        });
+      // What the template makes the canvas, as a create would record it: its tab's kind, its family, the mode it
+      // opens in. Their defaults apply in that order, then the default for new canvases.
+      const intent = indexIntentOf(
+        creationIntentOf(
+          buildTemplatedTab(kind, 'brand', 'intent', 'Tab 1'),
+          templateFamilyOf(kind),
+        ),
+      );
+      void moveOnTemplatePick(indexClient, {
+        app: 'livediagram',
+        itemId: documentId,
+        handoff,
+        intent: intent ?? '',
+        noun: nounOf,
+      }).then((message) => {
         if (message) toast.info(message);
       });
     },
-    [ownerId, documentId, tabId, signedIn, toast],
+    [documentId, tabId, toast],
   );
 }

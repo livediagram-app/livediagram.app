@@ -42,12 +42,12 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 | -------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
 | Element-level ops `add / update / remove / reorder`, applied by id   | `packages/document/src/element-ops.ts`                 | The unit an agent changeset is made of; `diffToElementOps` derives them     |
 | Per-field deltas (`comment-add`, `comment-resolve`, `check`, ...)    | `packages/document/src/element-deltas.ts`              | Comments from the agent travel as deltas and merge, never clobber           |
-| Ordered room: `seq` within a persisted `epoch`, bounded op log (256) | `apps/api/src/document-room.ts`                        | Gives every agent change a total order and a cursor                         |
+| Ordered room: `seq` within a persisted `epoch`, bounded op log (256) | `apps/api/src/document-room/document-room.ts`                        | Gives every agent change a total order and a cursor                         |
 | Collaboration ledger merged into tab PUTs after `X-Room-Cursor`      | `room-client.ts` `mergeRoomLedger`, `collab-ledger.ts` | The exact mechanism that can keep an agent's change alive through a race    |
-| Internal `POST /mutation` on the room (worker-originated op)         | `document-room.ts` (accepts only `el-delta` today)     | The seam a REST changeset enters the room through                           |
+| Internal `POST /mutation` on the room (worker-originated op)         | `document-room/document-room.ts` (accepts only `el-delta` today)     | The seam a REST changeset enters the room through                           |
 | One-time room ticket minted over authenticated REST                  | `routes/document-room-routes.ts`                       | How a CLI process with an `lvd_` token can open a socket for `wait`/`watch` |
 | Server-built presence (random presence id, clamped name and colour)  | `helloPresence` in `document-room-rules.ts`            | An agent presence entry slots into the same roster                          |
-| Room remembers per-session state in the socket attachment (`tabId`)  | `document-room.ts` `SessionAttachment`                 | Precedent for remembering each session's selection                          |
+| Room remembers per-session state in the socket attachment (`tabId`)  | `document-room/document-room.ts` `SessionAttachment`                 | Precedent for remembering each session's selection                          |
 | Follow-me viewport, bring focus                                      | `docs/specs/012-collaboration/follow-me-viewport.md`   | "Show me what you changed" for free                                         |
 | Comment endpoints (add, delete-own) that relay to the room           | `routes/document-subresource-routes.ts`                | Agent comments already go live                                              |
 
@@ -318,10 +318,10 @@ mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be as
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------ |
 | `POST /api/documents/:id/changes` (validate, room sequence, D1 apply, result)              | new route beside `document-subresource-routes.ts`              | medium |
 | `changeset` room op (one log slot); `patch` element op                                     | `packages/api-schema/src/room-messages.ts`, `element-ops.ts`   | small  |
-| Room: accept `changeset` on `/mutation`, lock check, authored-change ledger, before-images | `document-room.ts`, `room-ledger-store.ts`, `collab-ledger.ts` | medium |
+| Room: accept `changeset` on `/mutation`, lock check, authored-change ledger, before-images | `document-room/document-room.ts`, `room-ledger-store.ts`, `collab-ledger.ts` | medium |
 | Tab PUT merge re-applies changesets after the saver's cursor                               | `room-client.ts` `mergeRoomLedger`                             | small  |
-| Room remembers each session's selection                                                    | `document-room.ts` attachment                                  | small  |
-| REST presence with ttl; `agent` flag on `ParticipantPresence`; alarm expiry                | `document-room.ts`, `api-schema`                               | medium |
+| Room remembers each session's selection                                                    | `document-room/document-room.ts` attachment                                  | small  |
+| REST presence with ttl; `agent` flag on `ParticipantPresence`; alarm expiry                | `document-room/document-room.ts`, `api-schema`                               | medium |
 | Editor: agent avatar badge, focus rings, reveal outline, changeset toast with Undo         | `apps/editor`                                                  | medium |
 | Room for every document, personal ones included                                            | `useRoomConnection.ts`, `roomStubFor`                          | small  |
 | Comments: resolve/reopen endpoint, agent author fields, agent mentions                     | comment routes, `comments.ts`, `comment-mentions.md`           | medium |
@@ -379,7 +379,7 @@ Webber decided these four forks; specs should record them when this work is spec
   `collab-race-hardening.md`, `resync-without-reload.md`, `comment-mentions.md`;
   `docs/specs/007-editor/editor-app.md` (concurrent-selection lock);
   `docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;
-  `apps/api/src/document-room.ts`, `room-client.ts`, `routes/document-room-routes.ts`,
+  `apps/api/src/document-room/document-room.ts`, `room-client.ts`, `routes/document-room-routes.ts`,
   `routes/document-subresource-routes.ts`; `apps/editor/app/document/[id]/useRoomConnection.ts`;
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `comments.ts`;
   `packages/api-schema/src/room-messages.ts`, `index.ts` (`ParticipantPresence`).

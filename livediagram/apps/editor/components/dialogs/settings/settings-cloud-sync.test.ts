@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { CLOUD_SYNC_SECTION, CLOUD_SYNC_SECTION_ID } from '@/lib/cloud-sync/providers';
 import { settingsSectionId, visibleCategories } from './settings-catalogue';
-import { searchSettings } from './settings-search';
+import { searchSettings } from '@liveworkspace/settings-ui';
 
 // Settings > Account > Cloud Sync (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting").
 
 const account = (cloudProviders: 'googleDrive'[]) =>
-  visibleCategories(false, { emailEnabled: false, signedIn: true, cloudProviders }).find(
+  visibleCategories({ emailEnabled: false, signedIn: true, cloudProviders }).find(
     (c) => c.id === 'account',
   )!;
 

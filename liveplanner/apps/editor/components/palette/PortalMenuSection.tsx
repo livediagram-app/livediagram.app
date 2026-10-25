@@ -13,12 +13,12 @@
 // where a caption over the energy looked like a sticker on a window.
 
 import type { ShapeElement, Tab } from '@liveplanner/project';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
 import { PlusIcon } from '@liveplanner/ui';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 
 function PlusGlyph() {
   return <PlusIcon size={MENU_ICON_PX} />;

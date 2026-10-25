@@ -3,16 +3,13 @@ import type { Env } from '../types';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   AccountsUnavailable,
-  listApiTokensByOwner,
   mintApiToken,
   resolveApiToken,
   revokePresentedToken,
-  sweepRevokedTokens,
 } from './api-tokens';
 
 // API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): these
-// stand liveworkspace up at `fetch` and check what this app does with its answers, and the mirror
-// rows it keeps in api_tokens for the workbench.
+// stand liveworkspace up at `fetch` and check what this app does with its answers. It keeps no copy.
 
 const ACCOUNTS = {
   ACCOUNTS_URL: 'https://accounts.example',
@@ -52,27 +49,21 @@ beforeEach(() => {
   handle = () => new Response(null, { status: 404 });
 });
 
-const mirrorRow = (id: string) =>
-  db.sql.prepare('SELECT owner_id, name, revoked, read_only FROM api_tokens WHERE id = ?').get(id);
-
 describe('resolveApiToken', () => {
-  it('answers the account liveworkspace vouches for, and mirrors the token', async () => {
-    handle = () => Response.json(account('tok-a', { readOnly: true }));
+  it('answers the account liveworkspace vouches for, writing nothing', async () => {
+    handle = () => Response.json(account('tok-a', { readOnly: true, expiresAt: 77 }));
     const token = `lwt_${'a'.repeat(43)}`;
     expect(await resolveApiToken(db.env, token)).toEqual({
       ownerId: 'user_ada',
       tokenId: 'tok-a',
       readOnly: true,
+      name: 'Script',
+      expiresAt: 77,
       teams: [{ id: 'team1', name: 'Design', role: 'admin' }],
     });
-    expect(mirrorRow('tok-a')).toEqual({
-      owner_id: 'user_ada',
-      name: 'Script',
-      revoked: 0,
-      read_only: 1,
-    });
-    // The hash is mirrored, never the secret.
-    expect(JSON.stringify(db.sql.prepare('SELECT * FROM api_tokens').all())).not.toContain(token);
+    expect(
+      db.sql.prepare("SELECT name FROM sqlite_master WHERE name LIKE '%token%'").all(),
+    ).toEqual([]);
   });
 
   it('asks liveworkspace once for a burst of requests', async () => {
@@ -82,7 +73,7 @@ describe('resolveApiToken', () => {
     expect(calls.filter((c) => c === '/tokens/verify')).toHaveLength(1);
   });
 
-  it('refuses a token liveworkspace refuses, and marks its mirror row revoked', async () => {
+  it('refuses a token liveworkspace refuses', async () => {
     handle = () => Response.json(account('tok-c'));
     const token = `lwt_${'c'.repeat(43)}`;
     await resolveApiToken(db.env, token);
@@ -90,7 +81,6 @@ describe('resolveApiToken', () => {
     // A fresh isolate's view: the same secret, refused.
     const { resolveApiToken: fresh } = await reimport();
     expect(await fresh(db.env, token)).toBeNull();
-    expect(mirrorRow('tok-c')).toMatchObject({ revoked: 1 });
   });
 
   it('throws AccountsUnavailable when liveworkspace cannot answer, so the caller can 503', async () => {
@@ -121,6 +111,12 @@ describe('mintApiToken', () => {
     expect(asked).toEqual({ path: '/tokens', accessToken: 'jwt', name: 'Claude', readOnly: false });
   });
 
+  it('is null on a deployment without sign-in', async () => {
+    expect(
+      await mintApiToken(sqliteD1().env, { accessToken: 'jwt', name: 'x', readOnly: false }),
+    ).toBeNull();
+  });
+
   it('is null at the account’s token cap', async () => {
     handle = () => new Response(null, { status: 409 });
     expect(
@@ -129,33 +125,16 @@ describe('mintApiToken', () => {
   });
 });
 
-describe('revokePresentedToken and sweepRevokedTokens', () => {
-  it('revokes a token at liveworkspace and in the mirror', async () => {
-    handle = () => Response.json(account('tok-r'));
-    const token = `lwt_${'r'.repeat(43)}`;
-    await resolveApiToken(db.env, token);
+describe('revokePresentedToken', () => {
+  it('revokes a token at liveworkspace', async () => {
     handle = () => Response.json({ ok: true });
-    await revokePresentedToken(db.env, { id: 'tok-r', secret: token });
+    await revokePresentedToken(db.env, `lwt_${'r'.repeat(43)}`);
     expect(calls).toContain('/tokens/revoke');
-    expect(await listApiTokensByOwner(db.env, 'user_ada')).toEqual([]);
   });
 
-  it('marks the tokens liveworkspace no longer knows, in batches', async () => {
-    const insert = db.sql.prepare(
-      `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
-       VALUES (?, 'user_ada', ?, 'x', 0, ?, ?, 0, 0)`,
-    );
-    for (let i = 0; i < 150; i++) insert.run(`t${i}`, `h${i}`, i, Date.now() + 86_400_000);
-    const asked: number[] = [];
-    handle = (_path, body) => {
-      const ids = body.ids as string[];
-      asked.push(ids.length);
-      return Response.json({ live: ids.filter((id) => id !== 't7' && id !== 't140') });
-    };
-    expect((await sweepRevokedTokens(db.env)).sort()).toEqual(['t140', 't7']);
-    expect(asked).toEqual([100, 50]);
-    expect(mirrorRow('t7')).toMatchObject({ revoked: 1 });
-    expect(mirrorRow('t8')).toMatchObject({ revoked: 0 });
+  it('asks nothing on a deployment without sign-in', async () => {
+    await revokePresentedToken(sqliteD1().env, `lwt_${'s'.repeat(43)}`);
+    expect(calls).toEqual([]);
   });
 });
 

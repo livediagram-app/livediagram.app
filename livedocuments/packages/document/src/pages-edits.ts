@@ -22,6 +22,7 @@ import {
   pageHasOrientation,
   pageKindOf,
   pageSizesFor,
+  tabPageKind,
   withPages,
   type Page,
   type PageBackground,
@@ -39,7 +40,13 @@ import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { sameFill, withBackgroundPatch } from './page-paint';
 
 export type PageEditRefusal =
-  'unknown_page' | 'locked' | 'no_orientation' | 'size_not_offered' | 'page_limit' | 'last_page';
+  | 'unknown_page'
+  | 'locked'
+  | 'no_orientation'
+  | 'size_not_offered'
+  | 'page_limit'
+  | 'last_page'
+  | 'kind_not_offered';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -206,7 +213,7 @@ const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PA
  * and orientation (else A4 portrait; A4 after a Fit to Content page); an article the last page's
  * paper size and orientation when it is a paper size, else A4 portrait, its writing a new Title and
  * paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. All on the
- * plain paper.
+ * plain paper. Only ever of the tab's kind ("One kind a tab"): any other is refused.
  */
 export function pageAdded<T extends PagesTab>(
   tab: T,
@@ -215,6 +222,7 @@ export function pageAdded<T extends PagesTab>(
   flow: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
+  if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
   // The new page wears the background of the page before it (the last), whatever either kind.
   const carried = pages[pages.length - 1]?.background;

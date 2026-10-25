@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, type ReactNode } from 'react';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/ChevronIcon';
 
 // One of the Toolbar strip's Search accordions under this mode's results
 // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): a titled, counted header

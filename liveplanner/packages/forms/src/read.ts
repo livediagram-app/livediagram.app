@@ -2,7 +2,7 @@
 // never refuses a form for one bad part: the part is dropped or capped, so a form from an older or newer editor, an
 // agent or a hand-edited file still opens.
 import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@liveplanner/items';
-import { parseColourBackground } from '@liveplanner/page-background';
+import { parseColourBackground } from '@liveworkspace/page-background';
 import { SHEET_ID_PATTERN } from '@liveplanner/sheets';
 import {
   FORM_DESCRIPTION_MAX,
@@ -136,7 +136,7 @@ function readQuestion(v: unknown): FormQuestion | null {
   return q;
 }
 
-// The cover: a colour background (@liveplanner/page-background), nothing kept when it is not one.
+// The cover: a colour background (@liveworkspace/page-background), nothing kept when it is not one.
 const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
 
 function readDestination(v: unknown): FormDestination | undefined {

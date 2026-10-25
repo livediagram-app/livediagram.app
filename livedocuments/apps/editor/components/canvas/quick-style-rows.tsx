@@ -9,7 +9,7 @@
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip, Glyph } from '@livedocuments/ui';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
-import { colourKeyTarget } from '@/components/colour/useColourKeys';
+import { colourKeyTarget } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { QUICK_TARGET_PX } from './quick-style-metrics';
 
 export type QuickOption<V> = {

@@ -5,8 +5,8 @@
 // that moved drawn above the one it passes, so the eye follows it rather than seeing two cards blink. The moved slot is
 // then brought into view. Measured before the swap (FLIP) and played with the Web Animations API on the frame the
 // swap draws, so it costs two rects and two animations a tap; under reduced motion the swap is instant.
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { SLOT_ENTER_EASING } from './useSlotEnter';
 
 const slotEl = (id: string) =>

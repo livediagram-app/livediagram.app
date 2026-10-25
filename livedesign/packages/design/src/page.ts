@@ -6,13 +6,18 @@
 // never elements. A tab from before multiple pages carries one `pageOrientation` instead, read as
 // a single page.
 import { isBoxed, type Element, type Tab } from './index';
-import { parsePageSides, parseRowAt, type PageSides, type RowAt } from './page-fit';
+import {
+  parsePageSides,
+  parseRowAt,
+  type PageSides,
+  type RowAt,
+} from '@liveworkspace/model-core/page-fit';
 import {
   parseColourFill,
   parsePagePattern,
   type PageColourFill,
   type PagePattern,
-} from '@livedesign/page-background';
+} from '@liveworkspace/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
 import {
   DEFAULT_WIREFRAME_DEVICE,
@@ -146,7 +151,7 @@ function isPageSizeId(v: unknown): v is PageSizeId {
 
 // What a page is painted with (docs/specs/007-editor/pages-mode.md "Backgrounds"): a fill
 // (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it. The colours,
-// patterns and motions live in @livedesign/page-background, which a form's cover shares; re-exported here.
+// patterns and motions live in @liveworkspace/page-background, which a form's cover shares; re-exported here.
 export {
   PAGE_MOTIONS,
   PAGE_MOTION_SPEED_MAX,
@@ -156,7 +161,7 @@ export {
   type PageColourFill,
   type PageMotion,
   type PagePattern,
-} from '@livedesign/page-background';
+} from '@liveworkspace/page-background';
 export type PageFill = PageColourFill | PageImageFill;
 export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 
@@ -327,6 +332,24 @@ export function pageKindOf(page: Pick<Page, 'kind'>): PageKind | null {
   return page.kind === 'logo' || page.kind === 'wireframe' || page.kind === 'photo'
     ? page.kind
     : null;
+}
+
+/** The tab's kind (docs/specs/007-editor/pages-mode.md "One kind a tab"): its first page's, so a
+ *  logo tab holds only logo pages; null while the first page is blank (its kind not chosen), when no
+ *  page of a kind may be added. A page added is of this kind. Reads the first page only. */
+export function tabPageKind(pages: readonly Pick<Page, 'kind'>[]): PageKind | null {
+  return pages[0] ? pageKindOf(pages[0]) : null;
+}
+
+/** The page the + adds another like: the last of the tab's kind (the last page, unless a tab
+ *  stored before one kind a tab mixes kinds), or undefined on a tab with no kind yet. */
+export function lastPageOfTabKind<P extends Pick<Page, 'kind'>>(
+  pages: readonly P[],
+): P | undefined {
+  const kind = tabPageKind(pages);
+  if (!kind) return undefined;
+  for (let i = pages.length - 1; i >= 0; i--) if (pageKindOf(pages[i]!) === kind) return pages[i];
+  return undefined;
 }
 
 /** A photo page's sheet on the canvas for a picture of `width` x `height` px: the picture's shape,

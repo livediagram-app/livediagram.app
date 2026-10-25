@@ -4,7 +4,7 @@
 // ones from apps/cli and apps/live/app/oauth. Composed from the shared primitives so the house style
 // holds; the terminal stays dark in both appearances, like the code windows elsewhere.
 
-import { Scene, Panel, Button, Label } from './primitives';
+import { Scene, Panel, Button, Label } from '@liveworkspace/help-site/art/primitives';
 import { ConsentCard } from './account-settings';
 
 /** One line of terminal text, monospaced. */

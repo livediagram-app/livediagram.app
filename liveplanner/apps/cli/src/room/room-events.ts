@@ -4,7 +4,7 @@
 
 import type { ChangesetCounts } from '@liveplanner/api-schema';
 import { isRecord } from '@liveplanner/project';
-import { oneLine } from '../output/one-line';
+import { oneLine } from '@liveworkspace/cli-kit/one-line';
 
 export type RoomEvent =
   | { kind: 'comment'; tabId: string; elementId: string; authorName: string; text: string }

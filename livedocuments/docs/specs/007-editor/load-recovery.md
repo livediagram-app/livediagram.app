@@ -93,14 +93,14 @@ holding identifiers and states only, never document content:
 - the identity, the same lines on every surface:
   - **Signed in:** yes or no. The editor adds the account id it resolved. The
     help page, which has no session loaded, reads the api's readable
-    `lp_signed_in` hint cookie (`0` signed out, `1` signed in), which says
+    `ldoc_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
-  - **Guest id in this browser:** only its first 8 characters (a full guest id
-    is an `X-Owner-Id` credential) and whether it is signed, or "none".
-  - **Identity upgrade pending:** yes or no.
-  - When signed in with a guest id still present: "Guest documents moved to
-    the account: NOT YET". Signing in moves a guest's documents and then
-    clears the guest id, so one still there means the move has not happened,
+  - **Guest id in this browser:** only the first 8 characters of the id the
+    guest token names (the token itself is a credential), or "none".
+  - When signed in with a guest token still present: "Guest documents moved to
+    the account: NOT YET (guest token still present)". Signing in moves a
+    guest's documents and then clears the guest token, so one still there means
+    the move has not happened,
     the usual cause of "my documents went missing after I signed in";
 - the load: the step it reached (`identity`, `participant`, `document`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;

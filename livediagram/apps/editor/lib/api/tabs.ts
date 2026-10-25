@@ -7,7 +7,7 @@ import {
   type TabSummary,
 } from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
   isOfflineIdSync,
@@ -17,6 +17,8 @@ import {
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
+import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
+import { heldDocumentGrant } from './document-grants';
 import {
   API_BASE,
   apiDelete,
@@ -170,17 +172,20 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // writes for the unload moment.
 //
 // Why it can't reuse those async helpers: a `beforeunload` handler can't
-// await, and the Clerk token provider (apiHeaders) is async — so this
+// await, and the account token provider (apiHeaders) is async — so this
 // path builds headers synchronously and uses `keepalive: true` to let
 // each request outlive the teardown. Identity comes from the sync
 // sources: the Bearer token apiHeaders cached on its last fetch for
-// signed-in sessions, else X-Owner-Id + guest signature. The debounced
+// signed-in sessions, else the guest token (a sync localStorage read). The debounced
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
 // The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
 const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
+
+// The unload flush's requests go at once, with the grant it holds (apiFetch `documentGrant: false`).
+const NO_GRANT_WAIT = { documentGrant: false } as const;
 
 export function flushDocumentSavesBeacon(args: {
   ownerId: string;
@@ -220,11 +225,11 @@ export function flushDocumentSavesBeacon(args: {
   // Identity, synchronously (a beforeunload handler can't await):
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
-  // so it's seconds old at teardown. Guests ride X-Owner-Id plus the
-  // guest signature (a sync localStorage read); without the sig these
-  // writes 401 (signature_required) once guest-sig enforcement is on,
-  // silently losing the final debounce window's edits — the exact loss
-  // this flush exists to prevent. The rule is apiHeaders' own
+  // so it's seconds old at teardown. Guests ride their guest token (a
+  // sync localStorage read), and the canvas's grant is the one held
+  // (document-grants.ts), so nothing here waits on the network; without
+  // them these writes are refused, silently losing the final debounce
+  // window's edits — the exact loss this flush exists to prevent. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
   let base: Record<string, string>;
@@ -235,6 +240,11 @@ export function flushDocumentSavesBeacon(args: {
     return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
+  const grant = heldDocumentGrant(
+    args.documentId,
+    args.shareCode ? { code: args.shareCode } : null,
+  );
+  if (grant) base[ITEM_GRANT_HEADER] = grant;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
   // document, losing the final debounce window's edits.
@@ -259,31 +269,43 @@ export function flushDocumentSavesBeacon(args: {
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
-      method: 'PUT',
-      headers,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}/tabs/${t.id}`,
+      {
+        method: 'PUT',
+        headers,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${tabId}`, {
-      method: 'DELETE',
-      headers: base,
-      keepalive: keepaliveFor(undefined),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}/tabs/${tabId}`,
+      {
+        method: 'DELETE',
+        headers: base,
+        keepalive: keepaliveFor(undefined),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
     const body = JSON.stringify({
       name: args.name,
       tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
     });
-    void apiFetch(`${API_BASE}/documents/${args.documentId}`, {
-      method: 'PUT',
-      headers: jsonHeaders,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}`,
+      {
+        method: 'PUT',
+        headers: jsonHeaders,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
 }
 
@@ -375,22 +397,21 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Link an existing tab into another of the caller's documents
-// (docs/specs/006-document/tab-document-many-to-many.md). After this returns, the tab body is shared: edits
-// from either document write to the same `tabs.data` row. Returns
-// the target document's summary view of the now-attached tab so
-// the caller can update its TabBar without a full document
-// refetch.
+// Share a tab of `fromDocumentId` into another of the caller's documents (docs/specs/006-document/tab-document-many-to-many.md).
+// After this returns both documents hold the tab, and an edit in either reaches the other. Answers the tab as the
+// target document now holds it, so the caller can show it without a full document refetch.
 export async function apiLinkTab(
   ownerId: string,
   documentId: string,
   tabId: string,
+  fromDocumentId: string,
 ): Promise<TabSummary> {
   const res = await apiFetch(
     `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/link`,
     {
       method: 'POST',
-      headers: await apiHeaders(ownerId),
+      headers: { ...(await apiHeaders(ownerId)), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromDocumentId }),
     },
   );
   return expectOk<{ tab: TabSummary }>(res, 'link tab').then((b) => b.tab);

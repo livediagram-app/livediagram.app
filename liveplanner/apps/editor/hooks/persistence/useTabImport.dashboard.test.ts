@@ -52,7 +52,6 @@ function setup(receiving: Tab) {
     commitTabs: vi.fn((f: (ts: Tab[]) => Tab[]) => void (tabs = f(tabs))),
     setSelectedId: vi.fn(),
     setEditingId: vi.fn(),
-    setFormatSourceId: vi.fn(),
     setImportError: vi.fn(),
     requestFit: vi.fn(),
     importPlanItems: vi.fn(async () => ({ added: 0, skipped: 0, failed: 0 })),

@@ -8,11 +8,7 @@ type MotionVars = {
   '--pv-dy'?: string;
   '--pv-from-x'?: string;
   '--pv-from-y'?: string;
-  '--pv-dx2'?: string;
-  '--pv-dy2'?: string;
   '--pv-dur'?: string;
-  '--pv-origin'?: string;
-  '--pv-turn'?: string;
 };
 
 export const pv = (vars: MotionVars): CSSProperties => vars as CSSProperties;
@@ -27,10 +23,5 @@ export const STORY_CLASSES = [
   'pv-grow-x',
   'pv-grow-y',
   'pv-pulse',
-  'pv-token',
-  'pv-route',
-  'pv-leave',
   'pv-draw',
-  'pv-travel',
-  'pv-spin',
 ];

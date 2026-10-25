@@ -47,10 +47,6 @@ export type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
-  //   - `account`: a verified Clerk account holds this session, from X-Verified-Account
-  //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
-  //     roster, and only such a session receives the pictures on it.
-  account?: boolean;
   //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
@@ -73,6 +69,11 @@ export type SessionAttachment = {
   //     row. The room is named after it, so every session carries the same value.
   adderKey?: string | null;
   documentId?: string | null;
+  //   - `grantExp`: when the session's grant lapses (epoch ms), from X-Verified-Grant-Exp
+  //     (liveworkspace/docs/one-explorer-contracts.md "Grants"), moved on by each fresh grant the session sends. The
+  //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
+  grantExp?: number | null;
+  renewAsked?: boolean;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
@@ -90,13 +91,22 @@ type VerifiedSession = {
   isOwner: boolean;
   tabScope: string | null;
   shareCode: string | null;
-  account: boolean;
   personTag: string | null;
   networkTag: string | null;
   workbenchPairing: string | null;
   adderKey: string | null;
   documentId: string | null;
+  grantExp?: number | null;
+  // The canvas's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
+  // session: the room takes them as its own copy (document-room.ts takeHead).
+  head?: { owner: string | null; team: string | null };
 };
+
+// The grant's `exp` (epoch seconds) as epoch ms, or null.
+function grantExpOf(value: string | null): number | null {
+  const seconds = Number(value);
+  return value && Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
+}
 
 /**
  * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
@@ -112,12 +122,13 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     isOwner: request.headers.get('X-Verified-Owner') === '1',
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
-    account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
     networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
+    grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
+    head: { owner: header('X-Verified-Item-Owner'), team: header('X-Verified-Item-Team') },
   };
 }
 
@@ -138,13 +149,13 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
-    account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     networkTag: v.networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
     pollAnsweredAs: null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
+    grantExp: v.grantExp ?? null,
   };
 }
 

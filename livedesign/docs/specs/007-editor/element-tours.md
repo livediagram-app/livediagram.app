@@ -342,7 +342,7 @@ per element, steps, completed, skipped), as Show Me's is one stack.
 A new toured kind adds, in one change: its kind and name to `ELEMENT_TOUR_KINDS` / `ELEMENT_TOUR_NAMES` with its
 edit gate (`apps/live/lib/element-tours.ts`); its entry in `ELEMENT_TOUR_DEFS` (token, eyebrow, help article, steps,
 what Done puts away; `apps/live/components/tour/element-tour-defs.ts`); its steps file; its switch under Element
-Tours in Settings; its token on the dashboard (`apps/telemetry/app/element-tour-kinds.ts`, its steps in
+Tours in Settings; its token on the dashboard (`../liveworkspace/apps/site/app/telemetry/livedesign/element-tour-kinds.ts`, its steps in
 `computed-emitters.ts`, its sentences in `event-explanations.ts`); its kind in the e2e fixture's answered list; its
 help article's tour section; and a section here.
 
@@ -350,7 +350,7 @@ help article's tour section; and a section here.
 
 - `apps/live/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the answered list.
 - `apps/live/lib/element-tour-offer.ts`: the offer the host publishes and the selection toolbar reads.
-- `apps/live/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
+- `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
 - `apps/live/components/tour/ElementTourHost.tsx`: decides the offer, runs the tour, ends it.
 - `apps/live/components/tour/element-tour-defs.ts`: one definition per toured kind.
 - `apps/live/components/tour/element-tour-api.ts`: what a step may do on its element.
@@ -360,8 +360,8 @@ help article's tour section; and a section here.
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`, `timeline-tour-steps.ts`: each kind's own.
 - `apps/live/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`: the Chart and Stack tours' steps;
   `menu-tour-step.ts`: their menu step.
-- `apps/live/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
+- `../packages/workbench/src/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
   it (`sankey-flows-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
-- `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
-- `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
+- `../packages/workbench/src/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
+- `../packages/workbench/src/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
   (a chart's Grow), or a chevron stage's bar held open.

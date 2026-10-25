@@ -6,8 +6,8 @@ The liveplanner brand color is **violet**. Everything below builds on that.
 
 Every live product carries its own accent and shares everything else: the layout, the neutrals, the components and the
 Living Prism mark. livediagram is sky blue; **liveplanner is violet**. The accent lives in one ramp, the `brand-*` tokens
-in `packages/tailwind-config/theme.css`, and in the prism palette the mark and every icon are generated from
-(`PRISM_PALETTES` in `packages/ui/src/brand-prism.ts`, written out by `pnpm icons:brand`). The places that cannot
+in this product's `packages/tailwind-config/theme.css` (its palette over the monorepo's shared theme, `../packages/tailwind-config/theme.css`), and in the prism palette the mark and every icon are generated from
+(the app's `palettes` in `packages/brand/src/apps.ts` (`@liveworkspace/brand`), written out by `pnpm icons:brand`). The places that cannot
 read a CSS token (the email templates, the social card, the web manifest, the unthemed tab accent) name the same
 hexes, and a change of accent changes them together.
 
@@ -101,8 +101,8 @@ Reserved for status — never used decoratively.
 
 ## Dark palette (Steel)
 
-Dark mode is its own palette, not the light one with the lights off. It lives in `packages/tailwind-config/theme.css`
-under `.dark` and **retargets tokens only**: every `slate-*` / `brand-*` utility keeps its name, and light mode keeps
+Dark mode is its own palette, not the light one with the lights off. Its surfaces live in the shared theme, `../packages/tailwind-config/theme.css`, and its muted violet ramp
+in this product's `packages/tailwind-config/theme.css`, both under `.dark`. It **retargets tokens only**: every `slate-*` / `brand-*` utility keeps its name, and light mode keeps
 every colour it has. The canvas half of the palette (backdrop, grid, element ink, arrows, selection) belongs to the
 Default colour scheme's dark half, specified in [Canvas and palette](../008-canvas/canvas-and-palette.md).
 
@@ -120,7 +120,7 @@ The lighter stops (`slate-50`…`slate-700`) keep Tailwind's values: they carry 
 
 **slate-800 is a surface, not an edge.** It sits one step off slate-900, so a slate-900 card outlined in
 slate-800 shows no edge in dark. A card on a slate-900 or slate-950 band takes a **slate-700** border; slate-800 stays
-for hover surfaces, inputs and rules inside a card. On the marketing site `apps/marketing/lib/dark-card-borders.test.ts`
+for hover surfaces, inputs and rules inside a card. On the marketing site `../packages/marketing-site/src/guards/source-guards.test.ts`
 fails on a rounded, bordered slate-900 card outlined in slate-800 (the hero's editor mocks and the feature-card art are
 exempt: they draw the editor's own chrome).
 
@@ -237,7 +237,7 @@ Explorer panel and every other page keep Steel.
 
 ## Tailwind integration
 
-The palette is exposed as a Tailwind v4 theme in `packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
+The palette is exposed as a Tailwind v4 theme: the monorepo's shared `../packages/tailwind-config/theme.css` (`@liveworkspace/tailwind-config`) holds everything but the accent, and this product's `packages/tailwind-config/theme.css` (`@liveplanner/tailwind-config`) imports it and re-declares its brand ramps in violet. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
 
 ```css
 @import 'tailwindcss';

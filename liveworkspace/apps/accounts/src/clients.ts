@@ -1,12 +1,14 @@
 // Registering an app (a confidential OAuth client) with this Worker. Behind ADMIN_TOKEN
 // rather than open dynamic registration: the only clients are our own apps, and each is
-// registered once per environment with scripts/register-client.ts.
+// registered once per environment with scripts/register-client.ts. Each client is one app
+// (oauth_client_app, migrations/0005_client_apps.sql), which decides what of a person's it may reach.
 import { makeSignature } from 'better-auth/crypto';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { RESOURCES } from './resources.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
+import { isSettingsApp, type SettingsApp } from './settings.ts';
 
 // Under the accounts API, like every liveworkspace API.
 export const CLIENTS_PATH = `${AUTH_BASE_PATH}/internal/clients`;
@@ -29,6 +31,16 @@ interface RegisterBody {
   name?: unknown;
   redirectUris?: unknown;
   resource?: unknown;
+  app?: unknown;
+}
+
+// The app a client is, or null for one registered without (scripts/map-clients.ts sets it).
+export async function clientApp(db: D1Database, clientId: string): Promise<SettingsApp | null> {
+  const app = await db
+    .prepare('SELECT app FROM oauth_client_app WHERE clientId = ?')
+    .bind(clientId)
+    .first<string>('app');
+  return isSettingsApp(app) ? app : null;
 }
 
 export async function registerClient(request: Request, env: Env, auth: Auth): Promise<Response> {
@@ -43,11 +55,17 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
     ? body.redirectUris.filter((uri): uri is string => typeof uri === 'string')
     : [];
   const resource = typeof body.resource === 'string' ? body.resource : '';
-  if (!name || redirectUris.length === 0 || !RESOURCES[env.ENVIRONMENT].includes(resource)) {
+  const app = body.app;
+  if (
+    !name ||
+    redirectUris.length === 0 ||
+    !RESOURCES[env.ENVIRONMENT].includes(resource) ||
+    !isSettingsApp(app)
+  ) {
     return Response.json(
       {
         error: 'invalid_request',
-        message: `Needs name, redirectUris and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
+        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app or livedesign.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
       },
       { status: 400 },
     );
@@ -98,11 +116,15 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
         { status: 400 },
       );
     }
+    await env.AUTH_DB.prepare('INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)')
+      .bind(client.client_id, app)
+      .run();
     return Response.json({
       client_id: client.client_id,
       client_secret: client.client_secret,
       redirect_uris: client.redirect_uris,
       resource,
+      app,
     });
   } finally {
     await ctx.internalAdapter.deleteSession(session.token);

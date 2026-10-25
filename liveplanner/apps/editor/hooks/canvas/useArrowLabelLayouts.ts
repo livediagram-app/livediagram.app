@@ -7,7 +7,7 @@
 // (sameLabelRender), so an arrow whose label did not move does not re-render.
 
 import { useMemo, useState } from 'react';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import {
   DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   arrowLabelFontStack,

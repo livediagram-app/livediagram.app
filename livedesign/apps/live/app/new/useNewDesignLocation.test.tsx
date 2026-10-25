@@ -7,15 +7,12 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const config = vi.hoisted(() => ({ signInEnabled: true }));
-vi.mock('@/lib/auth-config', () => config);
-
 import { useNewDesignLocation } from './useNewDesignLocation';
 
 function setHint(signedIn: boolean) {
   document.cookie = signedIn
-    ? 'lp_signed_in=1'
-    : 'lp_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    ? 'ldes_signed_in=1'
+    : 'ldes_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 }
 
 type Props = { authLoaded: boolean; accountUserId: string | null };
@@ -25,7 +22,6 @@ const render = (initial: Props) =>
 describe('useNewDesignLocation', () => {
   afterEach(() => {
     setHint(false);
-    config.signInEnabled = true;
   });
 
   describe('resolveSaveLocation', () => {
@@ -63,12 +59,6 @@ describe('useNewDesignLocation', () => {
     it('keeps a folder or team link on livedesign', async () => {
       const { result } = render({ authLoaded: false, accountUserId: null });
       await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livedesign');
-    });
-
-    it('keeps everyone on livedesign without sign-in', async () => {
-      config.signInEnabled = false;
-      const { result } = render({ authLoaded: false, accountUserId: null });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livedesign');
     });
   });
 });

@@ -258,7 +258,7 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 - WASM encoder, only without canvas WebP: one chunk (~20 KB) plus one `.wasm` (340 KB SIMD, 280 KB
   plain), fetched once per page. Never in the editor's first bundle (verified against the built
   `design/placeholder.html`'s chunk list).
-- Hosted server cost per image: one D1 sha lookup, one totals query, one R2 put (new) or none.
+- Hosted server cost per image: one request to the media service, which does the sha lookup, the cap check and the store (new) or none.
 - Offline budget caps the tab body growth from one import at 8 MB.
 
 ## Observability

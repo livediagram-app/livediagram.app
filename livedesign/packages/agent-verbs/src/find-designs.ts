@@ -11,7 +11,7 @@ import type {
   TeamListItem,
   TeamsResponse,
 } from '@livedesign/api-schema';
-import type { ApiClient } from '@livedesign/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 
 type TeamLibrary = { teamName: string; designs: DesignSummary[] };
 

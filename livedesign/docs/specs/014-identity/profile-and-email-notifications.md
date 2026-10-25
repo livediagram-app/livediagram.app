@@ -3,10 +3,10 @@
 **Status: shipped.** A signed-in user's account surface: their avatar, name,
 email, and join date, plus the two account actions that once had no home of
 their own, **delete my account** and **email notification preferences**.
-Builds on the Resend integration ([Transactional & lifecycle email (Resend)](transactional-email.md)) and the synced preference store
+Builds on the Resend integration ([Transactional email (Resend)](transactional-email.md)) and the synced preference store
 ([User preferences](../007-editor/user-preferences.md)).
 
-Like [Transactional & lifecycle email (Resend)](transactional-email.md) the email half is **entirely gated on `RESEND_API_KEY`**: when
+Like [Transactional email (Resend)](transactional-email.md) the email half is **entirely gated on `RESEND_API_KEY`**: when
 email is off, the notification toggles are absent (they'd do nothing) and no
 notification email is ever sent.
 
@@ -35,7 +35,7 @@ retired and its three parts redistributed:
 The route survives as a client-side redirect to
 `/explorer?settings=notifications`, and **must keep doing so**: every
 notification email ever sent carries that URL both as its "Manage your
-notifications" link and as its `List-Unsubscribe` header ([Transactional & lifecycle email (Resend)](transactional-email.md)). Those
+notifications" link and as its `List-Unsubscribe` header ([Transactional email (Resend)](transactional-email.md)). Those
 messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
 the one dead link a product cannot ship. New mail links at the deep link
 directly.
@@ -51,13 +51,13 @@ directly.
 ### Delete account moves here
 
 Account self-deletion already exists end to end (`DELETE /api/account`,
-[Transactional & lifecycle email (Resend)](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
+[Transactional email (Resend)](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
 no drift). The dialog component itself is unchanged and simply reused — the
-confirmation flow (type your email, then wipe livedesign's data, then end the
-session; the liveworkspace account itself stays) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
+confirmation flow (type your email, then wipe livedesign's data and close the
+liveworkspace account, then end the session) is exactly as [Transactional email (Resend)](transactional-email.md) describes.
 Account deletion is immediate and total within livedesign: it removes the account's designs
 **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.
@@ -84,11 +84,12 @@ setting it can't honour.
 
 ## 3. Email notification preferences
 
-Two new per-user flags, stored in the **same `user_preferences` JSON blob**
-as the editor flags ([User preferences](../007-editor/user-preferences.md)) — reusing that synced store rather than minting
-a parallel one (no migration; the blob already round-trips D1 ↔ localStorage
-and survives the sign-up migration). They are account/email settings that
-happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
+Per-user flags, kept with the **same preferences** as the editor flags
+([User preferences](../007-editor/user-preferences.md)): the person's liveworkspace account settings, synced
+with `localStorage` and moved by the sign-up migration. `notifyInviteResponse`,
+`notifyComments`, `notifyMilestones`, `notifyActionAssigned` and
+`notifyMentions` are shared by every liveworkspace app (the All scope, so the
+Settings dialog marks them **All apps**); `notifyDesignJoin` is livedesign's own:
 
 ```ts
 // added to UserPreferences (docs/specs/007-editor/user-preferences.md)
@@ -101,16 +102,17 @@ Both **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
-a flip persists to D1 immediately and syncs across devices. Each flip emits
+a flip is saved to the account and syncs across devices and apps. Each flip emits
 `UI` / `Toggled` / `NotifyDesignJoin{On,Off}` /
 `NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
 
 The api worker decides whether to send a notification by reading the
-recipient's preference blob server-side: `getNotificationPrefs(env, ownerId)`
-does a single `SELECT prefs FROM user_preferences` and parses it, returning
-`{}` (→ all defaults → notify) on a missing/corrupt row. A missing key means
+recipient's settings server-side: `getNotificationPrefs(env, ownerId)`
+(`apps/api/src/accounts/settings.ts`) makes one accounts settings read and
+answers every flag, all on (notify) when nothing is stored or the accounts
+Worker can't be reached. Only an explicit `false` turns one off. A missing key means
 the default (on), so a user who has never touched the toggle still gets
 notified.
 
@@ -118,10 +120,9 @@ notified.
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional & lifecycle email (Resend)](transactional-email.md) send. Recipients'
-addresses come only from trusted server state (the verified
-`email_lifecycle.email` written at first sighting, or the inviter-typed
-`team_members.email`), never from a client header.
+request's critical path — same contract as every [Transactional email (Resend)](transactional-email.md) send. Recipients'
+addresses come only from trusted server state (the account's verified
+address, asked of the accounts Worker), never from a client header.
 
 ### a. Someone joins my design — `notifyDesignJoin`
 
@@ -131,25 +132,25 @@ visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
 row was **new** (first visit) vs a repeat. On a new visit by a **verified**
 visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDesignJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
-unproven and free to mint, so every fresh one would be another first visit;
+`notifyDesignJoin(env, liveDoc, joinerName)`. A guest token is free to
+get, so every fresh guest would be another first visit;
 a guest visit is still recorded in `shared_with` and counted as
 `Document·Joined`, but never emails. `notifyDesignJoin`:
 
 - no-ops unless `emailEnabled(env)`;
-- resolves the owner's email from `email_lifecycle` (so it only fires for a
-  signed-in owner who has a stored verified address — a guest-owned
-  design has no address and is silently skipped);
+- resolves the owner's verified address from their liveworkspace account (so
+  it only fires for a signed-in owner — a guest-owned design has no address
+  and is silently skipped);
 - no-ops when the owner's `notifyDesignJoin` pref is `false`;
 - no-ops unless it wins the per-design throttle: at most one join email per
-  design per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `designs.join_notified_at`, the baseline migration; the new-comment email's rule
-  on its own column);
+  design per 15 minutes (claimed inside the design's Durable Object, which sends the email,
+  `apps/api/src/email/notifications.ts` `notifyDesignJoin`; the new-comment email's rule
+  on its own claim);
 - otherwise sends the **design-joined** email: "Someone just opened
   _{design name}_", with a CTA back to the design.
 
 The design **name** is the recipient owner's _own_ content going back to
-them, so including it does not widen the [Transactional & lifecycle email (Resend)](transactional-email.md) §7 content rule (which is
+them, so including it does not widen the [Transactional email (Resend)](transactional-email.md) §7 content rule (which is
 about not leaking _other_ users' content). The joiner's display name is
 included when known (the owner already sees it in live presence and the
 Shared-with-you list); it's HTML-escaped like the team name.
@@ -164,30 +165,21 @@ Object are deliberately **not** wired (they'd be far too chatty).
 
 ### b. Someone responds to a team invite — `notifyInviteResponse`
 
-When an invitee **accepts** (`POST …/members/<id>/accept`) or **declines**
-(the `DELETE …/members/<id>` on a still-`invited` row), the worker fires
-`notifyInviteResponse(env, team, responderEmail, accepted)` which:
-
-- no-ops unless `emailEnabled(env)`;
-- finds the team's **joined admins** (`listTeamAdminUserIds`), resolves each
-  one's email from `email_lifecycle`;
-- skips any admin whose `notifyInviteResponse` pref is `false`;
-- sends each remaining admin the **invite-response** email: "_{email}_
-  accepted / declined your invitation to _{team name}_".
-
-The responder address and team name are both already known to the inviting
-admin (they typed the address, they named the team), so this stays within
-[Transactional & lifecycle email (Resend)](transactional-email.md) §7. **Leaving** a team (removing a `joined` row) is not an invite
-_response_ and does not notify; only the invited→accepted / invited→declined
-transitions do.
+Sent by liveworkspace, not livedesign: teams, their invitations and the
+answer emails belong to the liveworkspace account, and the accounts Worker
+tells each joined admin when an invitee accepts or declines, unless they have
+turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
+the app the inviter signed up through. The switch stays in livedesign's
+Settings because it is a setting every app shares.
 
 ## 5. Privacy / security
 
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
-  `X-Owner-Email` and [Transactional & lifecycle email (Resend)](transactional-email.md) §7).
+  `X-Owner-Email` and [Transactional email (Resend)](transactional-email.md) §7).
 - The only user-influenced strings in a notification body (a design name, a
-  joiner name, a responder email, a team name) are HTML-escaped, and each is
+  joiner name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
   UI), and off per-notification when the recipient opts out. The no-required-SaaS rule
@@ -196,6 +188,6 @@ transitions do.
 ## 6. Out of scope (for now)
 
 A global "all email off" master switch (the lifecycle onboarding series still
-has no unsubscribe, [Transactional & lifecycle email (Resend)](transactional-email.md) §8), notification batching/digests, in-app
+has no unsubscribe, [Transactional email (Resend)](transactional-email.md) §8), notification batching/digests, in-app
 (non-email) notifications, and editing name/avatar from the profile page
 (identity belongs to the liveworkspace account). The page reads identity; it doesn't write it.

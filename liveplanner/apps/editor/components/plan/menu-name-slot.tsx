@@ -25,7 +25,7 @@ import {
   type TabRename,
 } from '@/hooks/editor/active-tab-name-store';
 import { NAME_MAX_LENGTH } from '@liveplanner/project';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let slot: HTMLElement | null = null;
 const listeners = createListeners();

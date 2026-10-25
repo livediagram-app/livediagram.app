@@ -17,7 +17,7 @@
 // beginFreehand, commitFreehand) is consumed by the Canvas + keyboard
 // hook. Verbatim relocation — no behaviour change.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, useState } from 'react';
 import { createFreehand, type Element, type Tab, withVariantColours } from '@livedesign/design';
 import { getTheme } from '@/lib/themes';

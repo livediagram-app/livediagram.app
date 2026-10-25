@@ -26,11 +26,15 @@ export const WORKBENCH_NAME_MAX_LENGTH = 40;
 export const WORKBENCH_ORIGIN_MAX_LENGTH = 255;
 export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 
-// A ticket and a pairing code are 16 random bytes, base64url without padding.
+// A pairing code is 16 random bytes, base64url without padding.
 export const WORKBENCH_HANDLE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// `lvw_` and 32 random bytes as base64url without padding.
-const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}$/;
+// A ticket is 16 random bytes, base64url without padding, then a dot and the id of the person's workbench store
+// at liveworkspace (64 hex), so it reaches their store with no one signed in.
+export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
+
+// `lvw_` and 32 random bytes as base64url without padding, then a dot and the store's id, as a ticket.
+const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/;
 
 export function isWorkbenchSessionFormat(value: string): boolean {
   return SESSION_PATTERN.test(value);
@@ -96,24 +100,6 @@ export function parseWorkbenchOrigin(
   if (input !== url.origin) return { ok: false };
   return { ok: true, origin: input as WorkbenchOrigin };
 }
-
-// ---------------------------------------------------------------------
-// Refusal codes
-// ---------------------------------------------------------------------
-
-export const WORKBENCH_ERROR_CODES = [
-  'invalid_origin',
-  'pairing_required',
-  'invalid_ticket',
-  'invalid_session',
-  'workbench_confined',
-  'workbench_read_only',
-  'token_required',
-  'not_a_workbench_session',
-  'pairing_answered',
-  'pairing_expired',
-  'invalid_value',
-] as const;
 
 // ---------------------------------------------------------------------
 // Wire types (blueprint "Wire types")
@@ -243,7 +229,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'schema/:p'),
   shape('GET', 'participants/:owner'),
   shape('GET', 'preferences'),
-  shape('GET', 'custom-themes'),
   shape('POST', 'images'),
   shape('GET', 'images/:p'),
   shape('GET,PUT', 'designs/:doc'),
@@ -276,24 +261,11 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'preferences'),
   shape('GET', 'participants/:owner'),
   shape('GET', 'share/**'),
-  ...[
-    'designs',
-    'folders',
-    'shared',
-    'favourites',
-    'tags',
-    'home',
-    'timeline',
-    'activity',
-    'trash',
-    'placement-defaults',
-    'images',
-    'custom-themes',
-  ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
+  ...['designs', 'folders', 'trash', 'images'].map((resource) =>
+    shape(ALL_METHODS, `${resource}/**`),
+  ),
   shape('GET', 'teams'),
-  shape('GET', 'teams/:p'),
   shape('GET', 'teams/:p/library'),
-  shape('GET', 'teams/:p/members'),
   shape('DELETE', 'workbench/sessions/current'),
 ];
 

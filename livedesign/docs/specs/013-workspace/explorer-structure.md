@@ -2,6 +2,17 @@
 
 Status: shipped
 
+The Explorer page is liveworkspace's shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)),
+served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)
+"The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
+session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
+(`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
+and its This Browser view (`offlinePath`, `/explorer/offline`; the editor at a design's own address runs Take Offline
+and Sync handed over from it, `offlineConversions`). `/offline`, the old This Browser page, only redirects there. Teams are made
+and run over liveworkspace's account API through the router (`/api/workspace/account`). Signed in, the header has a **Settings** button beside Appearance that opens
+livedesign's settings in place, and any `?settings=` address opens them here too. A workbench's
+workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
+
 ## What
 
 The Explorer's sidebar is one navigation tree in three **groups**. It answers two questions at once: where a
@@ -22,7 +33,9 @@ The sidebar holds navigation only. It carries no greeting, no search field, no N
 - **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
   account control, searches and filters the designs of the current view. On Home it sits in the
   [hero](explorer-home.md#the-hero) instead. The bottom bar's Search opens the app-wide search panel.
-- **New folder** and **New Design** live in the page header of the view they create in (Home's hero on Home).
+- **New folder** and **New Design** live in the page header of the view they create in (Home's hero on Home). Home's
+  hero also pictures what livedesign makes (Logo, App Wireframe, Web Wireframe, Photo), each starting its template
+  ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
 - The account is reached from the header's account menu.
 
 ## Look
@@ -59,7 +72,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
 | Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions assigned to the reader, always shown, 0 included                     |
 | Timeline       | `/explorer/timeline` ([Timeline](timeline.md))       | None: the unread count sits on Home                                               |
-| Shared With Me | `/explorer/shared`                                   | Designs shared with the reader                                                  |
+| Shared With Me | `/explorer/shared`                                   | Designs shared with the reader                                                    |
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; the **Timeline** is the
 record of what happened. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
@@ -74,7 +87,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 | My Work   | `/explorer/all`, the My Work root | The root folders        | None                       |
 | Each team | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
 | Invites   | `/explorer/invites`               | None                    | Pending invites            |
-| New Team  | The New Team form (a dialog)      | None                    | None                       |
+| New Team  | The team dialog, then the team    | None                    | None                       |
 
 - **The My Work root** lists its root folders, then its root designs, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
@@ -89,28 +102,27 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
-- **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
-  reader through Home and email.
-- **New Team** is the group's last row, for signed-in readers only.
-- A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
-  group's last item instead of New Team. A deployment without sign-in shows neither.
+- **Invites** shows only while the reader has an invitation waiting (or is on the Invites view), with their count as
+  its badge; each is answered there, Accept or Decline ([Teams](teams.md#invitations)). An invite also reaches the
+  reader by email.
+- **New Team** is the group's last row, for signed-in readers only. Teams are made and run in the Explorer
+  ([Teams](teams.md)): it opens the team dialog (name, optional organisation), and the team made opens.
+- A **guest** sees the sign-in nudge ("Sign in to access Teams") as the group's last item instead of New Team.
 
 ### More
 
-| Row          | Opens                                  | Children                    | Badge                     |
-| ------------ | -------------------------------------- | --------------------------- | ------------------------- |
-| This Browser | `/explorer/offline`                    | None                        | Designs in this browser |
-| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                        | None                      |
+| Row          | Opens                                  | Children                          | Badge                   |
+| ------------ | -------------------------------------- | --------------------------------- | ----------------------- |
+| Library      | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None                    |
+| This Browser | `/explorer/offline`                    | None                              | Designs in this browser |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                              | None                    |
 
 - **This Browser** shows only while this browser holds at least one offline design, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its designs are the reader's own
   ([designs in This Browser](#designs-in-this-browser)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
-  pages is the current view, the Tags pages included.
-- **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
-  expands to one row per tag, each carrying its colour, its design count as its badge and its menu
-  ([Tags: The sidebar](tags.md#the-sidebar)). The editor's Explorer panel keeps Tags as its own rail entry.
+  pages is the current view. Its **Image Gallery** is the person's images, read from livedesign's API
+  (`/api/images`) with the designs each is used in; images are uploaded and deleted there.
 
 The group's title is **More**.
 
@@ -157,23 +169,23 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Image gallery  | `/explorer/images`  | Image gallery  |
 
 Every other row's view already carries its row's label (Inbox, Timeline, a folder or team by its name, Invites,
-Themes, Trash). Views without a row keep their own names (Recent, Favourites, Search results). Recent is reached from
+Trash). Views without a row keep their own names (Recent, Favourites, Search results). Recent is reached from
 Home, and its breadcrumb leads back to it (**Home › Recent**). The Timeline has a row of its own, so its breadcrumb is
 its own (**Timeline**).
 
 ## Visibility at a glance
 
-| Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in                |
-| ------------- | -------------------------- | ----------------------------- | ------------------------ |
-| Overview      | All four                   | All four                      | All four                 |
-| My Work       | Yes                        | Yes                           | Yes                      |
-| Teams         | None                       | None                          | One row per team         |
-| Invites       | No                         | No                            | While one is pending     |
-| New Team      | No                         | No                            | Yes                      |
-| Sign-in nudge | Yes                        | No                            | No                       |
-| This Browser  | While it holds designs   | While it holds designs      | While it holds designs |
-| Library       | Yes                        | Yes                           | Yes                      |
-| Trash         | Yes                        | Yes                           | Yes                      |
+| Row           | Guest                  | Signed in              |
+| ------------- | ---------------------- | ---------------------- |
+| Overview      | All four               | All four               |
+| My Work       | Yes                    | Yes                    |
+| Teams         | None                   | One row per team       |
+| Invites       | No                     | While one is pending   |
+| New Team      | No                     | Yes                    |
+| Sign-in nudge | Yes                    | No                     |
+| This Browser  | While it holds designs | While it holds designs |
+| Library       | Yes                    | Yes                    |
+| Trash         | Yes                    | Yes                    |
 
 ## Expansion
 
@@ -196,7 +208,7 @@ The groups are told apart in one of two ways, following **Minimal chrome**
 
 Below the first group, a title and its hairline occupy the same box, so switching moves nothing below Home's group;
 only the first title's own height comes or goes. Switching happens at render, from the preference, read once the page
-has hydrated (a deployment without sign-in prerenders the sidebar, and the render that hydrates it matches that HTML);
+has hydrated (the render that hydrates the sidebar matches its prerendered HTML);
 nothing moves on its own.
 
 ## Alignment
@@ -223,7 +235,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Right** expands a collapsed row; on an expanded row it moves to the first child.
 - **Left** collapses an expanded row; on a collapsed or plain row it moves to the parent row.
 - **Home / End** move to the first / last visible row.
-- **Enter** and **Space** activate the row: open its view, toggle Library, or open the New Team form.
+- **Enter** and **Space** activate the row: open its view, toggle Library, or open New Team's dialog.
 - **Typing a character** moves to the next row whose label starts with it.
 - **Shift+F10** or the **Menu** key opens a folder row's (or My Work') menu, the same menu as its `⋯` button and a
   right-click.
@@ -269,8 +281,7 @@ Top to bottom:
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Design card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
-   line; on a deployment without sign-in, "No sign-in here. Only this browser can open your designs.": they are saved, but belong to this browser's guest id, so "Browser only" would contradict the card's Private), dismissible as the sign-in
-   notice is. Minimal chrome drops it.
+   line), dismissible as the sign-in notice is. Minimal chrome drops it.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
 aside: the panel reaches under the strip and they would cover its header.
@@ -279,9 +290,11 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Work and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
-their counts (the panel reads no other feed until its section is shown). No
-Invites, New Team or sign-in nudge: those are the Explorer page's.
+Shared With Me; My Work, each team and New Team (signed in); Favourites, This Browser (while this browser holds
+designs, with their count), Library and Trash. Shared With Me carries its count (the panel reads no other feed until
+its section is shown). No
+Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
+team's card in a dialog, where the team is run as on the page.
 
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
   marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
@@ -290,7 +303,8 @@ Invites, New Team or sign-in nudge: those are the Explorer page's.
 
 ### The pane
 
-A header (the section's name, then quiet actions: the section's own, and **Open Page** to its Explorer page) over its
+A header (the section's name in full, wrapping rather than cut short, then quiet glyphs each named by its label and
+tooltip: the section's own, and the app switch with livedesign's logo and, for All, liveworkspace's) over its
 content, which scrolls inside the pane with room round it. Every section is drawn for the pane from the same parts:
 **cards**: rows (a 60 × 44 thumbnail or tile, the name over one quiet line, a trailing slot for pills and the `⋯`
 menu) and two-column preview cards (a picture across the top, the name and a line under it), each a raised surface that
@@ -299,18 +313,17 @@ sky, shared: violet, moved: amber, removed: rose, changed: brand);
 **section headings** (small capitals with an action at the end), the Explorer's **illustrated empty state** at a
 compact size, skeleton rows while loading, and one line with **Try Again** when a read fails.
 
-| Section        | The pane shows                                                                                                                                                                                                                                                                                                                                                                                                     | Action     |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| Section        | The pane shows                                                                                                                                                                                                                                                                                                                                                                                               | Action     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
 | Home           | **Jump Back In**: up to six designs (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No designs yet". **What Happened**, only when someone else did something: each design's summary sentence under its day, with **See Timeline** (the Timeline in the pane) | None       |
-| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                                                                                 | None       |
-| Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                                                                                                                      | None       |
-| Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                      | None       |
-| My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                             | New Folder |
-| A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                                                                                                               | New Folder |
-| Tags           | Each tag as a heading (its chip and count) over its designs as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                                                                                 | None       |
-| This Browser   | The designs saved only in this browser                                                                                                                                                                                                                                                                                                                                                                           | None       |
-| Library        | Two tabs: Image gallery and Themes, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                                                                                                                                         | None       |
-| Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                            | None       |
+| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                                                                           | None       |
+| Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                                                                                                                | None       |
+| Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                  | None       |
+| My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                         | New Folder |
+| This Browser   | The designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                                                                                                                                                       | None       |
+| A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                                                                                                           | New Folder |
+| Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`)                                                                                                                                                                                                                                          | None       |
+| Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                        | None       |
 
 - **Every design the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's design events)
   carries the Explorer page's design menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
@@ -329,7 +342,8 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 - **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
   cascade in as they arrive (the dialogs' view and row motions, a fade alone under reduced motion).
 - The views load only when their section is first shown, so opening the editor costs nothing more. The Timeline's
-  card menus and calendar are the Explorer page's (Open Page).
+  card menus and calendar are the Explorer page's (the footer's Explorer link). There is no Open Page: every
+  section stays in the panel.
 
 ### On a phone
 
@@ -370,7 +384,7 @@ same pill (`ThisBrowserPill`) on the design's thumbnail ([Explorer Home](explore
 
 Each sidebar activation emits `UI / Selected / Sidebar.<Row>`, where `<Row>` is the row kind from a closed set (Home,
 Inbox, Timeline, SharedWithMe, MyDesigns, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser, Library, ImageGallery,
-Themes, Trash), never a name or id
+Trash), never a name or id
 ([Telemetry](../017-telemetry/telemetry.md)). Creating the team is still `Team / Created`. The Inbox row was the Activity row, and
 `Sidebar.Activity` (and `ExplorerPanel.Activity`) stay readable on the dashboard as its history.
 

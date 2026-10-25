@@ -13,9 +13,6 @@ import {
   documentSyncState,
 } from './drive-mirror-context';
 import { DocumentSyncMark } from './DocumentSyncMark';
-import { isMirrorable } from '@/app/explorer/document-badges';
-import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import type { PaneDocument } from '@/app/explorer/views';
 
 afterEach(cleanup);
 
@@ -144,21 +141,5 @@ describe('DocumentSyncMark', () => {
   it('renders nothing for a document that is not mirrored', () => {
     show(status(), 100, false);
     expect(document.querySelector('[data-document-sync]')).toBeNull();
-  });
-});
-
-describe('isMirrorable', () => {
-  const doc = (over: Partial<PaneDocument>) =>
-    ({ id: 'd', name: 'Plan', ownerId: 'me', savedAt: 1, ...over }) as PaneDocument;
-  it("is the user's own document in My Work, saved in the cloud", () => {
-    expect(isMirrorable(doc({}))).toBe(true);
-    expect(isMirrorable(doc({ shareCode: 'abc' }))).toBe(true);
-  });
-  it('is not a team document, one shared with the user, or an offline one', () => {
-    expect(isMirrorable(doc({ team: { id: 't', name: 'Team' } }))).toBe(false);
-    expect(isMirrorable(doc({ shared: { ownerName: 'Ann', role: 'edit', shareCode: 'x' } }))).toBe(
-      false,
-    );
-    expect(isMirrorable(doc({ ownerId: OFFLINE_OWNER_ID }))).toBe(false);
   });
 });

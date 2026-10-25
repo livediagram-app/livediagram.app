@@ -65,9 +65,9 @@ describe('NewDocumentWizard', () => {
     expect(p.onSkip).not.toHaveBeenCalled();
   });
 
-  it('opens the Explorer from Open Existing Document', () => {
+  it('opens the Explorer from Open Existing Canvas', () => {
     const p = wizard();
-    fireEvent.click(screen.getByRole('button', { name: 'Open Existing Document' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open Existing Canvas' }));
     expect(p.onOpenExisting).toHaveBeenCalledTimes(1);
   });
 

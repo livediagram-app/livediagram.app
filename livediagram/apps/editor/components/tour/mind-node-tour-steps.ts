@@ -1,7 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
 import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Mind Map tour (docs/specs/007-editor/element-tours.md "The Mind Map tour"), on a selected mind node: growing a
 // map from the keyboard (Tab, Enter) or the toolbar, a branch carried as one, and the Mind Map menu's shapes, spacing,

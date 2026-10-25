@@ -8,7 +8,10 @@
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { isHexColour } from '@livediagram/document';
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import {
+  onMouseHover,
+  useRevertOnUnmount,
+} from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/document-colours';
 import { CustomColourEditor } from './CustomColourEditor';
@@ -22,7 +25,7 @@ import {
   type ColourGroup,
   type ColourOption,
 } from './colour-options';
-import { onColourKeys } from './useColourKeys';
+import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from './useThemeColours';
 
 const NOOP = () => {};

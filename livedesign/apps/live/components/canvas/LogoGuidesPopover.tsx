@@ -5,11 +5,11 @@
 // the top, then which guides show and how strongly (the person's synced preferences, also in
 // Settings).
 import type { ReactNode } from 'react';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { LOGO_GUIDE_PARTS, LOGO_GUIDE_STRENGTHS } from '@/lib/logo-guide-prefs';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { TitlePopoverButton } from './TitlePopoverButton';
+import { SwitchRow } from '@livedesign/ui';
 
 // The popover's width: the part tiles two across.
 const POPOVER_WIDTH = 248;

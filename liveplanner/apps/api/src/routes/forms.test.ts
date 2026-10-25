@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { FormLinkResponse, PublicFormResponse } from '@liveplanner/api-schema';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import { ITEMS_MAX, presetSetup, type Item } from '@liveplanner/items';
@@ -9,6 +9,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
 import { handleForms } from './forms';
 import { FORM_RESPONSES_PER_HOUR } from '../forms/respond';
+import { stubFormIndex } from '../forms/test-form-index';
 
 // Form links (docs/specs/030-forms/forms.md, blueprint §11): publishing by role, the public read, responses made
 // into cards, every refusal, reports, and a deleted tab taking its link.
@@ -89,10 +90,16 @@ async function publish(): Promise<string> {
 
 const items = () => listItems(sql.env, 'd1');
 
+let index: ReturnType<typeof stubFormIndex>;
+
+afterEach(() => vi.unstubAllGlobals());
+
 beforeEach(() => {
-  sql = sqliteD1();
+  // The index keeps each live link's code and who has seen how many responses (forms/form-inbox.ts).
+  index = stubFormIndex();
+  sql = sqliteD1(index.env);
   relayed = [];
-  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
+  (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -117,9 +124,11 @@ beforeEach(() => {
   };
   sql.sql
     .prepare(
-      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at, item_types) VALUES ('d1', 'owner', 'Ops', 1, 1, 1, ?)`,
+      `INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Ops', 1, 1, 1)`,
     )
-    .run(JSON.stringify(catalogue));
+    .run();
+  // The type catalogue is the plan's own (plan-room/plan-content.ts).
+  sql.sql.prepare(`UPDATE plan SET item_types = ? WHERE id = 'd1'`).run(JSON.stringify(catalogue));
   const board = {
     id: 'b1',
     type: 'shape',
@@ -135,11 +144,11 @@ beforeEach(() => {
     .run(JSON.stringify({ kind: 'board', elements: [board] }));
   sql.sql.exec(`
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('ftab', 'Bug Report', '{}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
   `);
   writeForm(form());
 });
@@ -226,6 +235,42 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect(res.status).toBe(204);
     expect((await pub('GET', code)).status).toBe(404);
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
+    // Off the Inbox, its code with it.
+    expect(index.forms.has('d1/ftab')).toBe(false);
+  });
+
+  it('puts the code on the index before answering, and takes it off when the link goes', async () => {
+    const code = await publish();
+    expect(index.forms.get('d1/ftab')).toMatchObject({ code, responses: 0 });
+    // The publisher has seen every response so far.
+    expect(index.seen.get('d1/ftab/owner')).toBe(0);
+    expect((await owner('DELETE', 'form-link')).status).toBe(200);
+    expect(index.forms.has('d1/ftab')).toBe(false);
+  });
+
+  it('publishes nothing when the index cannot take the code', async () => {
+    vi.stubGlobal('fetch', async () => Response.json({ error: 'down' }, { status: 500 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await owner('POST', 'form-link');
+    expect(res).toEqual({ status: 503, body: { error: 'index_unavailable' } });
+    expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
+    warn.mockRestore();
+  });
+
+  it('answers a public request in the worker by the plan the index names for its code', async () => {
+    const code = await publish();
+    const { PLAN_DB: _inPlan, ...worker } = sql.env;
+    // The worker's env: no plan store (the test context would give a forms path a stand-in one).
+    const ask = async (path: string) => {
+      const ctx = makeTestRouteContext('GET', `/api/forms/${path}`, { env: sql.env, owner: null });
+      return handleForms({ ...ctx, env: worker });
+    };
+    expect((await ask(code)).status).toBe(200);
+    expect((await ask('A'.repeat(22))).status).toBe(404);
+    vi.stubGlobal('fetch', async () => Response.json({ error: 'down' }, { status: 500 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect((await ask('B'.repeat(22))).status).toBe(503);
+    warn.mockRestore();
   });
 
   // The user's call (2026-10-15): deleting the board a form sends to pauses the form, its link kept.
@@ -284,9 +329,6 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
   it('answers every miss with the same 404', async () => {
     expect((await pub('GET', 'short')).status).toBe(404);
     expect((await pub('GET', generateFormCode())).status).toBe(404);
-    const code = await publish();
-    sql.sql.prepare('UPDATE projects SET trashed_at = 1').run();
-    expect((await pub('GET', code)).status).toBe(404);
   });
 
   it('shows a closed form its closed message, past its close time or response limit', async () => {
@@ -404,7 +446,7 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
   it('says the form is full when the project holds as many cards as it can', async () => {
     const code = await publish();
     const insert = sql.sql.prepare(
-      `INSERT INTO items (project_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'bug', ?, 'a', '{}', 1, 1, 1, '{}', '{}')`,
     );
     for (let i = 1; i <= ITEMS_MAX; i += 1) insert.run(`i${i}`, i);
@@ -436,12 +478,12 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
       .run();
     sql.sql
       .prepare(
-        `INSERT OR IGNORE INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
+        `INSERT OR IGNORE INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
       )
       .run();
     sql.sql
       .prepare(
-        `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+        `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
          VALUES ('d1', ?, 'stab', 'Responses', '{"rows":["ra01","ra02","ra03"],"cols":["ca01","ca02"]}', 0, 1, 1, '{}')`,
       )
       .run(SHEET);
@@ -508,7 +550,7 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
     seedSheet();
     writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
     const code = await publish();
-    sql.sql.prepare(`DELETE FROM project_tabs WHERE tab_id = 'stab'`).run();
+    sql.sql.prepare(`DELETE FROM plan_tabs WHERE tab_id = 'stab'`).run();
     expect(
       (await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Try' } } })).status,
     ).toBe(409);

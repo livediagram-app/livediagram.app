@@ -7,23 +7,17 @@ Status: shipped
 A document that has held nothing for 30 days moves to the
 [Trash](trash.md) on its own. From there the Trash's usual 30 days apply, so it
 can still be restored, and it is removed for good only after both clocks have
-run. An empty document gives its owner nothing, but every one of them is a row
-the database keeps, lists and sweeps; letting them go keeps the Explorer and
-the database clean without anyone having to tidy up.
+run. An empty document gives its owner nothing, but every one of them is an
+item the index keeps and lists and a Durable Object the platform keeps; letting
+them go keeps the Explorer clean without anyone having to tidy up.
 
 ## Which documents
 
-A document is **empty** when none of its tabs holds an element or an article. An
-article's writing is stored on its tab beside the elements, not as elements
-([Article pages](../007-editor/article-pages.md)), so a tab with any article, even
-one still blank, keeps its document: someone made it to write in. A document with
-no tabs at all is empty too. Nothing else counts as content: a name, extra
-blank tabs, a tab's settings (background, grid), a share link, a star or a
-folder never keep a document. Comments and actions live on elements, so an
-empty document has none. A tab shared with another document
-([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md))
-counts in every document that holds it: if it has elements or an article,
-none of those documents is empty.
+A document is **empty** when none of its tabs holds an element or a page. A document with no tabs at all is empty
+too. Nothing else counts as content: a name, extra blank tabs, a tab's settings, a share link, a star or a folder
+never keep a document. Comments and actions live on elements, so an empty document has none. A tab shared with
+another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) counts in every
+document that holds it: if it has elements or pages, none of those documents is empty.
 
 A document is **stale** when it was created at least 30 days ago and has not
 been saved for 30 days. Saving an empty document (renaming a tab, changing a
@@ -38,11 +32,14 @@ browser, cost the server nothing, and are never touched.
 
 ## The sweep
 
-The api worker's daily `0 3 * * *` cron, the one that already purges the Trash,
-moves every live document that is both empty and stale to the Trash. The check
-and the move are one statement, so a document saved a moment before the sweep
-is not moved. The sweep is capped per run, oldest first, so a backlog drains
-over a few days. It logs how many it moved.
+liveworkspace's index runs it, once for every app, in its daily run (the one that purges the Trash):
+`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`. Each document's Durable Object pushes its summary to the
+index after every save, and the summary carries `hasContent`, whether any tab holds anything (the rule above). The
+sweep moves every live document whose summary says `hasContent: false`, or that never pushed one (its content was
+never written), and that has not changed for 30 days, to the Trash with the reason `empty`. The check and the move
+are one statement, so a document saved a moment before is not moved. A team document goes to its team's Trash. The sweep
+moves at most 1,000 items a run, oldest change first, so a backlog drains over a few days, and it logs how many it
+moved. The app runs no sweep of its own.
 
 The move stamps the document's Trash time with **the moment of the sweep**,
 never its creation or last save. The Trash's purge counts from that time, so an
@@ -70,10 +67,10 @@ author: it records no one, so it adds nothing to erase on account deletion.
 
 ## Restore
 
-Restoring an automatically moved document works like any restore, and counts as
-a save: its 30 stale days start again from the restore, so it is not moved
-straight back by the next sweep. A document a person deleted restores exactly
-as it was, its last-saved time untouched.
+Restoring an automatically moved document works like any restore. The index remembers the change it was moved for
+(`empty_swept_for`), so it is never moved back for that same change: only after it is saved again and then left
+empty for 30 days does it go to the Trash again. A document a person deleted restores exactly as it was, its
+last-saved time untouched.
 
 ## The API
 
@@ -93,8 +90,8 @@ Offline Mode's local Trash rows are always `deleted`.
   30 days ago".
 - **No room broadcast.** A person deleting a document tells its open sessions
   at once. The sweep does not: a document untouched for 30 days rarely has one,
-  and one that does stops at its next save, which answers `document_trashed`,
-  the same fallback the Trash already relies on when the room is unreachable.
+  and one that does loses its grant at the next renewal, since the index grants
+  nothing on an item in the Trash.
 - **No telemetry event.** Telemetry counts what people do; the sweep is not a
   person. Its log line counts it, and the Trash's `Restored` event already
   says whether anyone comes back for what it moved.

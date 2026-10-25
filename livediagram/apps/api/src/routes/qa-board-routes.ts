@@ -22,7 +22,8 @@ import {
   qaVoterId,
   type QaNote,
 } from '@livediagram/document';
-import { getDocument, getParticipant } from '../db';
+import { getDocument } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { refuseGuestVoteOverCap } from '../vote-integrity';
@@ -32,10 +33,10 @@ import {
   missingDocument,
   readBody,
   requireOwner,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
-export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
+export async function handleQaBoardRoute(ctx: DocumentRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (!(
     segments.length === 6 &&

@@ -6,7 +6,7 @@ description: >-
 
 inputs:
   name:
-    description: The cache's name, one per distinct set of builds (e.g. live, live-clerk-stub, sites).
+    description: The cache's name, one per distinct set of builds (e.g. live, live-signed-in, sites).
     required: true
   paths:
     description: The `.next/cache` directories, one per line.

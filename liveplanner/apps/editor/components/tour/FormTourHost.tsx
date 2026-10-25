@@ -14,14 +14,13 @@ import {
 } from '@liveplanner/forms';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { FormStarterPicture } from '@liveplanner/template-previews';
 import { formTourSteps, formTourStepTelemetryType, type FormTourApi } from './form-tour-steps';
 import { TourStage } from './TourStage';
@@ -142,12 +141,10 @@ export function FormTourHost() {
   }, [active]);
 
   const seen = ctx.userPreferences?.formTourSeen === true;
-  const startPanelOpen = useStartPanelOpen();
   const canWork =
     ctx.hydrated &&
     ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
-    !startPanelOpen &&
     ctx.can.level === 'edit' &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&

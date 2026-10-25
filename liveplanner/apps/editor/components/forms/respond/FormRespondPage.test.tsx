@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
 import { formLook } from '@liveplanner/project';

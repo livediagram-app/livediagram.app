@@ -13,14 +13,14 @@ Scope, by file:
 | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `packages/project/src/element-refs.ts`                                          | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/project/src/containment.ts`                                           | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
-| `packages/project/src/style-keys.ts`                                            | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| `packages/project/src/mermaid-serialise.ts`                                     | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
+| `../packages/model-core/src/style-keys.ts`                                      | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
+| packages/project/src/mermaid-serialise.ts                                       | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/project/src/index.ts`                                                 | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/project-views.ts`                                      | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `packages/api-schema/src/ref-errors.ts`                                         | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                                   | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                              | Re-exports both new files                                                                                                   |
-| `packages/project-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@liveplanner/project-views` (depends on `project`, `api-schema`), shaped like `explorer-lens`              |
+| `packages/project-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@liveplanner/project-views` (depends on `project`, `api-schema`), shaped like `items`                      |
 | `packages/project-views/vitest.config.ts`                                       | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/project-views/src/index.ts`                                           | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/project-views/src/constants.ts`                                       | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
@@ -45,7 +45,7 @@ Scope, by file:
 | `packages/project-views/src/elision.ts`                                         | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
 | `packages/project-views/src/render-view.ts`                                     | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
 | `packages/project-views/src/performance.test.ts`                                | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
-| `packages/project-views/src/__fixtures__/*.ts`                                  | The checkout tab, its "after" twin, the three-tab project, the agent-built tab, the 300-element tab, the edge cases         |
+| `packages/project-views/src/__fixtures__/*.ts`                                  | The checkout tab, its "after" twin, the three-tab project, the 300-element tab, the edge cases                              |
 | `packages/project-views/src/__fixtures__/golden/*`                              | One golden file per view (see [Testing](#testing))                                                                          |
 | `apps/api/package.json`                                                         | Depends on `@liveplanner/project-views`                                                                                     |
 | `apps/api/src/responses.ts`                                                     | `textPlain(body, init)`                                                                                                     |
@@ -676,7 +676,7 @@ types join `ROOT_TYPES`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref and label,
   about a tenth of the element JSON. view picks another (comments, show, find), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
-- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@liveplanner/api-client` client as
+- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@liveworkspace/api-client` client as
   `apiJson` (`clientFor(env, token).text`): Bearer token, `ApiError` on
   non-2xx, a 5xx reported to `Error` telemetry. The revision in the result is the view's `ETag`; a view without one
   is an error, never a revision of 0. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
@@ -772,7 +772,7 @@ the tab and its `rev`.
 - `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
   as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
-  the tab cap) and makes one D1 query per batch.
+  the tab cap) and makes one query per batch.
 - `read_project` makes two service-binding calls (project, view), three with `image: true` (the tab, in parallel).
 - `[views] slow` logs any render over `VIEW_SLOW_MS`.
 
@@ -837,7 +837,6 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
 | `checkout-project.ts`   | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
-| `agent-built-tab.ts`    | The Services frame built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E28 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
 

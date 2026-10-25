@@ -6,8 +6,8 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
-import { fetchCloudTags } from '@/lib/api/tags';
+import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -51,7 +51,7 @@ async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
+// Offline → Cloud ("Sync Canvas"), in ./offline-sync. Returns the (unchanged) document id and the images it
 // re-homed (data URI -> gallery id), for an editor syncing in place.
 export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
   return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
@@ -109,15 +109,11 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The cloud star is a row keyed on the document, so the server delete below
-  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
-  // read aborts here, before anything is written: taken as "not starred" it would drop the star.
-  const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), read the same
-  // way: a failed read aborts rather than dropping them with the server row.
-  const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.documentId === liveDoc.id)
-    .map((l) => l.tagId);
+  // The person's star is the index's, on the canvas's item, which the server delete below takes too; carry it onto
+  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
+  // written: taken as "not starred" it would drop the star.
+  const { item } = await indexClient.getItem(liveDoc.id);
+  const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
@@ -131,7 +127,6 @@ async function downloadAndRemoveCloudCopy(
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
-    ...(tagIds.length ? { tagIds } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
@@ -154,7 +149,7 @@ async function downloadAndRemoveCloudCopy(
   }
 }
 
-// Toast copy for a failed Sync Document, shared by the Explorer menus (via
+// Toast copy for a failed Sync Canvas, shared by the Explorer menus (via
 // useOfflineConversion) and the Share dialog's offline gate. A 413 is the
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't
@@ -163,7 +158,7 @@ async function downloadAndRemoveCloudCopy(
 // SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
 export class SyncStillSavingError extends Error {
   constructor() {
-    super('Still saving this document. Try again in a moment.');
+    super('Still saving this canvas. Try again in a moment.');
     this.name = 'SyncStillSavingError';
   }
 }
@@ -173,10 +168,10 @@ export class SyncStillSavingError extends Error {
 export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
-    return 'This document kept changing while syncing. Your copy is safe: try again soon.';
+    return 'This canvas kept changing while syncing. Your copy is safe: try again soon.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this document. Check your connection and try again.';
+    : 'Could not sync this canvas. Check your connection and try again.';
 }
 
 // Re-exported for callers that only need to create an offline document from

@@ -2,7 +2,7 @@
 // `page set` on the CLI. Each finds the
 // tab ("Which tab"), sends one request to the pages route, and answers what it did or why not,
 // in the same words on both doors.
-import { ApiError, type ApiClient } from '@livedesign/api-client';
+import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import {
   CLIENT_HEADER,
   type DesignResponse,

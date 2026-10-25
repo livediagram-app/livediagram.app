@@ -1,7 +1,7 @@
 // A colour background's paint (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover): fills compared
 // by value, the tone a fill reads as, the ink its pattern takes, and the theme colours its gradients are drawn from.
-// Pure; the colours, patterns and motions themselves are @liveplanner/page-background's.
-import type { ColourBackground, PageColourFill } from '@liveplanner/page-background';
+// Pure; the colours, patterns and motions themselves are @liveworkspace/page-background's.
+import type { ColourBackground, PageColourFill } from '@liveworkspace/page-background';
 import { isLightColor, shade } from './colors';
 import type { ThemeDefinition } from './index';
 
@@ -16,7 +16,7 @@ export {
   type PageColourFill,
   type PageMotion,
   type PagePattern,
-} from '@liveplanner/page-background';
+} from '@liveworkspace/page-background';
 
 // CSS degrees: 180 runs top to bottom, so 160 leans the run toward the bottom right.
 export const PAGE_GRADIENT_ANGLE = 160;

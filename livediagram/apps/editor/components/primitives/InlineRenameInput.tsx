@@ -2,8 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { refocusAfterField } from './refocus-after-field';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { refocusAfterField } from '@liveworkspace/workbench/components/primitives/refocus-after-field';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app

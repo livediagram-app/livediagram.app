@@ -14,12 +14,10 @@ import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourLeftovers } from '@/hooks/plan/usePlanTourLeftovers';
 import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
-import { openSearchWithPrefetch } from '@/lib/open-search';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
-import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
-import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
@@ -32,7 +30,7 @@ import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
 import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
-import { PLAN_LEFT_OUT_TOOLS, usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
+import { usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetChartInertIds } from '@/hooks/sheets/useSheetChartInertIds';
@@ -41,7 +39,7 @@ import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
 import { chainDeleteGuards } from '@/lib/delete-guards';
 import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
-import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
+import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   stampTabKind,
@@ -57,19 +55,15 @@ import {
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { getTheme } from '@/lib/themes';
-import { settleFlowcharts } from '@liveplanner/project';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
-import { lockedElementIds } from '@/lib/tab-cleanup';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
-import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
@@ -81,20 +75,13 @@ import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useProjectHistory } from '@/hooks/canvas/useProjectHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
-import { useBurstCheckpoint } from '@/hooks/canvas/useBurstCheckpoint';
+import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
-import { useFolders } from '@/hooks/persistence/useFolders';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import {
-  commitUserPreferences,
-  readUserPreferences,
-  toggleRecentExcluded,
-  writeUserPreferences,
-} from '@/lib/user-preferences';
+import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
-import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
@@ -104,12 +91,8 @@ import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionAc
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
-import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
-import { useShareLinks } from '@/hooks/persistence/useShareLinks';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
-import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useVoteReview } from '@/hooks/canvas/useVoteReview';
-import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
 import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
@@ -120,6 +103,9 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
+import { usePlanList } from '@/hooks/persistence/usePlanList';
+import { usePlanShareState } from '@/hooks/persistence/usePlanShareState';
+import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
@@ -128,6 +114,7 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
+import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
 import { useAutosave } from './useAutosave';
 import { useProjectTrashed } from './useProjectTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
@@ -147,24 +134,17 @@ import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
-import { useMindGrowth } from './useMindGrowth';
-import { useFlowchartGrowth } from './useFlowchartGrowth';
-import { routeGrowth } from './growth-routing';
-import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
-import { useEntityActions } from '@/hooks/canvas/useEntityActions';
-import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
-import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { activeElementsCommit } from './active-elements-commit';
@@ -253,21 +233,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
       // it look edited to the autosave (docs/specs/006-project/per-tab-storage.md).
       const before = new Set<Tab>(ts);
-      // Flowcharts (docs/specs/009-elements/flowchart.md "The layout"): a chart whose structure this
-      // commit changed (an arrow drawn between steps, a step deleted, a step dragged into another
-      // lane) is laid out again in the same commit, whichever path made the change.
-      const mapped = mapTabs(ts).map((t) => {
-        if (before.has(t)) return t;
-        const prev = ts.find((p) => p.id === t.id);
-        const settled = prev
-          ? settleFlowcharts(prev.elements, t.elements, () =>
-              lockedElementIds(t.elements, t.layers),
-            )
-          : t.elements;
-        return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
-      });
-      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
-      // their hosts.
+      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
+      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
       const next = settleChipsInTabs(ts, mapped);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
@@ -340,37 +307,22 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editingId,
     setEditingId,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,
   } = uiState;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The
-  // hook is invoked further down (after `tick`, `commit`,
-  // `applyFormatFromSource` and the rest of the drag dependencies
-  // exist).
+  // hook is invoked further down (after `tick`, `commit` and the rest
+  // of the drag dependencies exist).
   // Panel layout (positions + open/visible flags) is one
   // cohesive slice — see usePanelLayout. Spread wholesale into the
   // returned view-model (see the return below).
   const panelLayout = usePanelLayout();
   const dialogs = useEditorDialogs();
-  // Canvas tool (Pan / Select / ...). See useCanvasTool: the raw
-  // setter serves internal auto-switches, the tracked selectCanvasTool
-  // serves the user-facing pickers.
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
-  // travel, read by the paint and edited from the Format Panel.
-  const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
+  // Canvas tool (Hand / Select). See useCanvasTool.
+  const { canvasTool, setCanvasTool } = useCanvasTool({
     defaultPan: embedMode,
-  });
-  // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
-  // the exit that restores the pre-Format tool. See useFormatTool.
-  const { formatToolActive, exitFormatTool } = useFormatTool({
-    canvasTool,
-    setCanvasTool,
-    setFormatSourceId,
   });
   // identityPromptOpen (from useEditorUiState) gates the derived
   // `identityOnlyScreenOpen` chrome flag; it closes through useTemplateFlow's
@@ -399,26 +351,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // (no URL params → straight to welcome modal) or once the API call
   // resolves (params → load the project first).
   const [loadingProject, setLoadingProject] = useState(true);
-  // User-facing tool picker. Wraps the tracked selectCanvasTool so every entry
-  // point (palette dropdown, keyboard) routes through it; internal
-  // auto-switches keep using the raw setCanvasTool and are unaffected.
-  // Plan leaves Format out (usePlanDefaultTool).
-  const pickCanvasTool = (tool: CanvasTool) => {
-    if (PLAN_LEFT_OUT_TOOLS.has(tool)) return;
-    // Format / Isometric all act on existing
-    // content, so they're unavailable on an empty canvas — the palette greys
-    // them out, and this guards the keyboard-shortcut path to match. Select +
-    // Hand stay available.
-    const tabForTool = tabs.find((t) => t.id === activeId) ?? tabs[0];
-    if (
-      tabForTool &&
-      tabForTool.elements.length === 0 &&
-      (tool === 'format' || tool === 'isometric')
-    ) {
-      return;
-    }
-    selectCanvasTool(tool);
-  };
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
   // initialiser ran on both server and client and produced different
@@ -454,7 +386,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setProjectShareable,
     projectTeamId,
     setProjectTeamId,
-    projectShareCode,
     setProjectShareCode,
     setIsOwner,
     setProjectOwnerId,
@@ -462,8 +393,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setProjectOwnerColor,
     copying,
     setCopying,
-    setShareLinks,
-    setSharePasswordSet,
     passwordRetry,
     sharePasswordGate,
     setSharePasswordGate,
@@ -521,25 +450,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     passwordGated: sharePasswordGate !== null,
   });
 
-  // Hide / show a project in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
-  // Read-modify-writes from the CACHE, not the React snapshot: the PUT
-  // sends the whole preferences blob, so a stale snapshot would clobber
-  // flags another tab wrote.
-  // Per-user project stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
-  // Not for the pre-hydration placeholder id, like the folders and preferences
-  // hooks: that fetched the stars once for "self" and again for the real id.
-  const { favouriteIds, toggleFavourite } = useFavourites(
-    selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id,
-  );
-
-  const toggleRecentExclusion = (projectId: string) => {
-    const latest = readUserPreferences();
-    setUserPreferences({
-      ...latest,
-      recentExcludedIds: toggleRecentExcluded(latest, projectId),
-    });
-  };
-
   // Per-element note popover (state + open/close/setNote handlers)
   // lives in useEditorNotes. Invoked further down, after `commit`
   // exists.
@@ -552,18 +462,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // handlers live in useElementLinks. Invoked further down, after
   // `openProject` + the selection helpers exist.
 
-  // Folders for the owner — state + the mutation triple
-  // (create / rename / delete) come from the shared useFolders
-  // hook so editor-page, /new, and /explorer all share the same
-  // behaviour. The hook handles its own autoLoad fetch on
-  // mount, so we don't have to manually pull /api/folders here
-  // anymore.
-  const {
-    folders,
-    createFolder,
-    renameFolder,
-    deleteFolder: hookDeleteFolder,
-  } = useFolders(selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id);
   const confirm = useConfirm();
   const toast = useToast();
   // Persistence-facing state: autosave status pill + savedAt, project
@@ -580,13 +478,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setProjectName,
     projectItemTypes,
     setProjectItemTypes,
-    projectList,
-    setProjectList,
-    sharedProjects,
-    setSharedProjects,
     setImportError,
-    refreshProjectList,
-    refreshSharedList,
   } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
   // / tab focus). See usePresenceState; the room writes it
@@ -661,11 +553,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Saves are gated on `hydrated` so we never overwrite stored data
   // with the empty initial render.
   const [projectId, setProjectId] = useState<string | null>(null);
+  // The plan's links are the index's: the badge and the presence stack read them from there.
+  usePlanShareState({
+    projectId,
+    serverStored: realtime.projectServerStored,
+    sessionShareCode,
+    shareDialogOpen: dialogs.shareDialogOpen,
+    setShareable: setProjectShareable,
+  });
   const [hydrated, setHydrated] = useState(false);
+  // The person's plans, for the pickers that name another plan: read from the index once the plan is open and the
+  // browser idle (usePlanList), never inside a workbench, which reaches its one plan only.
+  const { projectList, refreshProjectList } = usePlanList(
+    hydrated && !workbenchMode && !embedMode,
+    selfParticipant.id,
+  );
   // The deleted state (docs/specs/013-workspace/trash.md): the project is in
   // the Trash. Set by the load, the room and the autosave.
   const projectTrashed = useProjectTrashed({
-    ownerId: selfParticipant.id,
     projectId,
     viaShareLink: sessionShareCode !== null,
   });
@@ -775,7 +680,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setProjectList,
     onProjectTrashed: () => projectTrashed.setProjectTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
@@ -787,7 +691,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     hasUnsavedChanges,
     setProjectServerStored: realtime.setProjectServerStored,
-    refreshProjectList,
+    refreshProjectList: () => refreshProjectList(),
+  });
+  // Take Offline in place, for the start screen's switch (docs/specs/006-project/offline-mode.md "Taking offline in place").
+  const takeOfflineInPlace = useTakeOfflineInPlace({
+    projectId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    setProjectServerStored: realtime.setProjectServerStored,
+    refreshProjectList: () => refreshProjectList(),
   });
 
   // Persist self only when name or color actually changed. Without
@@ -810,8 +722,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     workbench,
     activeId,
     selfParticipant,
-    refreshProjectList,
-    refreshSharedList,
     resetTabs,
     refs: {
       lastPersistedSelfRef,
@@ -845,9 +755,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSessionRole,
       setSessionShareCode,
       setSessionTabScope,
-      setSharedProjects,
-      setShareLinks,
-      setSharePasswordSet,
       setSharePasswordGate,
       setIdentityPromptOpen,
     },
@@ -1066,9 +973,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Explorer panel now surfaces teams + their projects (a Teams
   // accordion, team rows in Recent, the current team project —
   // docs/specs/013-workspace/team-shared-projects.md), so the data has to be present whenever the panel is.
-  const { teams } = useTeams(accountUserId ?? null, {
-    enabled: !!accountUserId && !workbenchMode,
-  });
+  const teams = useTokenTeams(!!accountUserId && !workbenchMode);
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the project team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
@@ -1079,17 +984,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     projectId,
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
-  // Their libraries (docs/specs/013-workspace/team-shared-projects.md): one sweep per team. Feeds the search
-  // panel's folder group AND the Explorer popover (team folder
-  // tree + team projects in Recent + the current team project).
-  const {
-    teamFolders,
-    teamProjects,
-    refresh: refreshTeamLibraries,
-  } = useTeamLibrariesSweep(accountUserId ?? null, teams, {
-    enabled: !!accountUserId && !workbenchMode,
-  });
-
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
@@ -1097,17 +991,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // Plan starts on Hand and leaves Format out (docs/specs/026-plan/plan-mode.md "The tools").
   usePlanDefaultTool(canvasTool, setCanvasTool);
-  // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
-  // "The palette"): never a card on the canvas. A miss or a refusal is said.
-  const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
-    const point = boardClientPoint(activeTab.elements, canvasX, canvasY);
-    const result = point
-      ? dropPlanCardAt(itemType ?? 'task', point.x, point.y)
-      : { outcome: 'missed' as const, message: PLAN_CARD_MISSED };
-    if (result.outcome === 'added') return;
-    debugLog('[plan] palette card not placed', { outcome: result.outcome });
-    toast.info(result.message);
-  };
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors are neither sent nor drawn. Derived here so
   // the outbound gate (useEditorBroadcast) and the render gate
@@ -1299,10 +1182,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     notify: (input) => {
       if (!accountUserId || !projectId) return;
-      void apiNotifyActionAssigned(accountUserId, input.teamId, {
+      void apiNotifyActionAssigned(accountUserId, projectId, {
+        teamId: input.teamId,
         assigneeUserId: input.assigneeUserId,
         assigneeMemberId: input.assigneeMemberId,
-        projectId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
       }).catch(() => {});
@@ -1425,11 +1308,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
-    // this `commit` — e.g. the link-card unfurl resolves a few seconds
-    // after the URL is set — and mapping over the stale snapshot would
-    // write the element back as it was BEFORE the in-between edit, silently
-    // dropping it (the bug where a link-card reset to "Add a link" once its
-    // preview fetch landed).
+    // this `commit` — e.g. a fetch that resolves a few seconds later — and
+    // mapping over the stale snapshot would write the element back as it was
+    // BEFORE the in-between edit, silently dropping it.
     // A Participant's edit is checked against the live tab before it lands (guardCommit may refuse it with a
     // notice, so it runs once, here, not inside the update).
     if (participant.participating) {
@@ -1590,7 +1471,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId);
+  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId, teams);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).
@@ -1666,38 +1547,33 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     undoHistory,
     redoHistory,
-    set: { setSelectedId, setEditingId, setFormatSourceId },
+    set: { setSelectedId, setEditingId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
-  // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
-    useElementHelpers({
-      readSelection,
-      activeId,
-      activeTab,
-      // Creation-only helpers: additionally blocked while the active layer
-      // is hidden / locked (docs/specs/006-project/layers.md). Open to a Participant that may add content
-      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
-      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
-      editsBlocked: contentAddBlocked({
-        participating: participant.participating,
-        canAddContent: participant.can.addContent,
-        blocked: createBlocked,
-        structureBlocked: structureCreateBlocked,
-      }),
-      formatSourceId,
-      formatConfig: formatSettings.config,
-      getViewportCenter,
-      commit,
-      commitTabs,
-      setSelectedId,
-      setEditingId,
-      setFormatSourceId,
-    });
+  // Selection + placement helpers. See useElementHelpers.
+  const { addBoxedAt, currentSelectionIds, selectionPrimary } = useElementHelpers({
+    readSelection,
+    activeId,
+    activeTab,
+    // Creation-only helpers: additionally blocked while the active layer
+    // is hidden / locked (docs/specs/006-project/layers.md). Open to a Participant that may add content
+    // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
+    // addBoxedAt, and every commit it makes still passes participant.guardCommit.
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: createBlocked,
+      structureBlocked: structureCreateBlocked,
+    }),
+    getViewportCenter,
+    commitTabs,
+    setSelectedId,
+    setEditingId,
+  });
 
   // --- Tab actions ---------------------------------------------------------
 
@@ -1733,6 +1609,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEditStructure: !isStructureReadOnly,
     projectList,
     ownerId: selfParticipant.id,
+    projectId,
     createTab,
     commit,
     commitTabs,
@@ -1741,10 +1618,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
-    refreshProjectList,
+    refreshProjectList: () => refreshProjectList(),
     confirm,
     toast,
     importPlanItems,
@@ -1770,37 +1646,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // full-page-load helpers). Operates on whole projects + the Explorer
   // list, distinct from per-tab lifecycle in useTabActions. See
   // useProjectActions.
-  const {
-    deleteProject,
-    deleteFolder,
-    moveProjectToFolder,
-    moveProjectTo,
-    duplicateProject,
-    dismissSharedProject,
-    newProject,
-    openProject,
-    makeCopy,
-  } = useProjectActions({
+  const { deleteProject, newProject, openProject, makeCopy } = useProjectActions({
     projectId,
     projectName,
-    projectList,
-    setProjectList,
     confirm,
-    ownerId: selfParticipant.id,
-    hookDeleteFolder,
-    folders,
-    sharedProjects,
-    setSharedProjects,
     copying,
     setCopying,
     sessionShareCode,
-    refreshTeamLibraries,
-    refreshProjectList: () => refreshProjectList(selfParticipant.id),
-    // Keep the header's Private / Team badge honest when the OPEN project
-    // changes scope via the move picker (docs/specs/013-workspace/team-shared-projects.md).
-    onProjectScopeChanged: (id, teamId) => {
-      if (id === projectId) setProjectTeamId(teamId);
-    },
   });
 
   // Mark the participant's name as "confirmed" — they explicitly
@@ -1818,37 +1670,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (wasOpen) track('UI', 'Closed', 'Welcome');
   };
 
-  // Share-dialog actions (create / revoke link, build the visitor URL,
-  // save the participant name). The share-link list + shareable flags
-  // stay as page state since the hydration / save effects also write
-  // them; the hook reconciles via the setters. See useShareLinks.
-  const {
-    updateParticipantName,
-    createShareLink,
-    extendShareLink,
-    rescopeShareLink,
-    revokeShareLink,
-    setProjectSharePassword,
-    shareUrlFor,
-  } = useShareLinks({
-    projectId,
-    selfParticipant,
-    setSelfParticipant,
-    setShareLinks,
-    setSharePasswordSet,
-    setProjectShareable,
-    setProjectShareCode,
-    projectShareCode,
-    confirmName,
-  });
-
   // Name the open project: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
   // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
   // a still-untitled project after itself.
   const nameProject = (name: string) => {
     setProjectName(name);
-    if (name && projectId)
-      setProjectList((prev) => prev.map((d) => (d.id === projectId ? { ...d, name } : d)));
   };
 
   // A Plan start on the first tab names a still-untitled project after what it made (usePlanStartProjectName).
@@ -1863,7 +1689,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
   // The draw slice comes later in this hook, so the template flow reaches its cancel through a ref.
-  const putToolDownRef = useRef<() => void>(() => {});
+  const returnToHandRef = useRef<() => void>(() => {});
   const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
     activeId,
     tabs,
@@ -1878,7 +1704,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelfParticipant,
     setIdentityPromptOpen,
     requestFit,
-    putToolDown: () => putToolDownRef.current(),
+    returnToHand: () => returnToHandRef.current(),
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
     seedCards: (creates) => void plan.context.addItems?.(creates),
@@ -1902,7 +1728,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTabDefaultTextSize,
     setBackgroundPattern,
     setTheme,
-    resetTabsUsingTheme,
     setBackgroundColor,
     setBackgroundOpacity,
     setPatternColor,
@@ -2006,109 +1831,28 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Element CRUD --------------------------------------------------------
 
-  // Draw-to-size + polygon tooling (pendingDraw state machine +
-  // commit handlers). beginDrawIfEnabled short-circuits the palette
-  // adds below into draw mode; the rest is consumed by the Canvas +
-  // keyboard hook. See useShapeDrawing.
-  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
-    useShapeDrawing({
-      editsBlocked: createBlocked,
-      readSelection,
-      canvasTool,
-      setCanvasTool,
-      activeTab,
-      commit,
-      setSelectedId,
-      setMultiSelectedIds,
-      setEditingId,
-      styleNewElement: styleMemory.styleNewElement,
-      onPlanCardPlace: placePaletteCard,
-    });
   useEffect(() => {
-    putToolDownRef.current = () => {
-      cancelDrawShape();
-      setCanvasTool('select');
-    };
+    returnToHandRef.current = () => setCanvasTool('pan');
   });
-  // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
-  // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
-  // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
-  const growthOpts = {
-    // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
-    // and steps are content.
-    editsBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: createBlocked,
-      structureBlocked: structureCreateBlocked,
-    }),
-    participating: participant.participating,
-    activeId,
-    activeTab,
-    commitTabs,
-    setSelectedId,
-    setEditingId,
-    scrollIntoView,
-  };
-  const flowchartGrowth = useFlowchartGrowth(growthOpts);
-  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = routeGrowth(
-    useMindGrowth(growthOpts),
-    flowchartGrowth,
-  );
-
-  // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
-  const mindOutline = useMindOutline({
-    editsBlocked: structureCreateBlocked,
-    activeId,
-    activeTab,
-    commitTabs,
-  });
-
-  // Palette element-creation handlers. See useElementCreation.
-  const {
-    addShape,
-    addIcon,
-    addSticker,
-    addTechIcon,
-    addTable,
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addBanner,
-    addHero,
-    addHeader,
-    addCallout,
-    addStatRow,
-    addProcess,
-    addFlowchart,
-    addAvatar,
-    dropPaletteItem,
-    addText,
-    addSticky,
-    addArrow,
-    handleCanvasDoubleClick,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
-  } = useElementCreation({
+  // Start Planning's placements and the double-click Text box. See useElementCreation.
+  const { dropPaletteItem, handleCanvasDoubleClick } = useElementCreation({
     editsBlocked: createBlocked,
     activeId,
     activeTab,
-    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
-    beginDraw,
     styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlace: placePaletteCard,
   });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
-  const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
+  const { removeIconFromElement, dropIconElementOnShape } = useInlineIconMutators({
+    editsBlocked,
+    commit,
+    tick,
+  });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
@@ -2195,7 +1939,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
-    setFormatSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
@@ -2252,10 +1995,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    tidyMindMapSelected,
-    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2263,7 +2002,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionLine,
     setHeroCaptionSelected,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
@@ -2310,17 +2048,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
-    notify: (tone, message) => toast[tone](message),
-  });
-
-  // The flowchart's step type, direction, lanes and Tidy (docs/specs/009-elements/flowchart.md): one
-  // bundle the step toolbar and the Flowchart menu section read from the editor context.
-  const flowchartActions = useFlowchartSetters({
-    currentSelectionIds,
-    commitActiveTab,
-    elements: () => activeTab.elements,
-    editsBlocked,
-    notify: (tone, message) => toast[tone](message),
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
@@ -2446,7 +2173,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     openProject,
   });
 
@@ -2468,8 +2194,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canWriteText: participant.can.writeText,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
-    formatSourceId,
-    formatToolActive,
     projectName,
     tabs,
     activeTab,
@@ -2477,10 +2201,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     discardLastStep: cancelToCheckpoint,
     tickTabs,
-    applyFormatFromSource,
     lockedByOther,
     set: {
-      setFormatSourceId,
       setSelectedId,
       setEditingId,
       setEditCursorAtEnd,
@@ -2502,7 +2224,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lockedByOther,
     layerInertIds,
     scrollIntoView,
-    ownsTabKey: canGrowMindNode,
   });
 
   // Vote-results review (docs/specs/012-collaboration/session-tools.md): the local walkthrough of revealed top
@@ -2561,7 +2282,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
-    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,
@@ -2582,12 +2302,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     canMove: participant.can.move,
     canResize: participant.can.resize,
-    formatSourceId,
-    applyFormatFromSource,
-    formatToolActive,
-    setFormatSourceId,
-    connectSourceId,
-    connectArrowTo,
     tick,
     commit,
     markCheckpoint,
@@ -2598,19 +2312,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
     isPinchingRef,
-  });
-
-  // The entity's verbs (docs/specs/009-elements/entity.md): fields saved from the canvas, relationships drawn
-  // from a field, the ring's Add Field and Add Related Entity, and the Cardinality presets.
-  const entityActions = useEntityActions({
-    activeTab,
-    readSelection,
-    commit,
-    styleNewElement: styleMemory.styleNewElement,
-    setSelectedId,
-    setEditingId,
-    beginAnchorDrag,
-    editsBlocked,
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image
@@ -2660,8 +2361,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
     canvasCovered: planCover.canvasCovered,
-    formatSourceId,
-    setFormatSourceId,
     readSelection,
     editingId,
     isReadOnly,
@@ -2671,20 +2370,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     undo,
     redo,
     copySelection,
-    setCanvasTool: pickCanvasTool,
-    canvasTool,
-    addShape,
-    addText,
-    addSticky,
-    addArrow,
-    canGrowMindNode,
-    onGrowMindNode: growMindNode,
-    onEscapeMindNode: escapeGrownMindNode,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
-    pendingDraw,
-    onCancelDraw: cancelDrawShape,
     onToggleLock: () => {
       if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
@@ -2797,6 +2485,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
     syncToCloud,
+    takeOfflineInPlace,
+    // Whether sign-in has answered, so the start screen's switch never words a signed-in person as a guest.
+    authLoaded,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,
@@ -2807,11 +2498,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId,
-    // Re-sweep the team libraries after a team-folder mutation made from
-    // the Explorer panel (docs/specs/013-workspace/team-shared-projects.md), and the confirm dialog its delete uses.
-    refreshTeamLibraries,
-    // Refetch the reader's own project list: the Explorer panel's Trash restored or deleted one.
-    refreshOwnProjects: () => refreshProjectList(selfParticipant.id),
     confirm,
     // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
@@ -2855,36 +2541,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
       layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
-    addArrow,
     addComment,
     replaceCommentId,
-    addIcon,
-    addSticker,
-    addTechIcon,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
-    dropIconOnElement,
     removeIconFromElement,
-    addShape,
-    addSticky,
-    addTable,
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addBanner,
-    addHero,
-    addHeader,
-    addCallout,
-    addStatRow,
-    addProcess,
-    addFlowchart,
-    addAvatar,
     dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
     getViewportCenter,
     addTab,
-    addText,
     anyWelcomeOpen,
     autoAlignTab,
     autoLayoutTab,
@@ -2918,22 +2581,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     drag,
     beginArrowTranslate,
     beginDrag,
-    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginPolygon,
     bringSelectedToFront,
     broadcastCursor,
     canvasPointerRef,
     canRedo,
     canUndo,
-    cancelDrawShape,
     cancelEdit,
     canvasMainRef,
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
     skipTabFitRef,
     canvasTool,
-    exitFormatTool,
     chooseTemplate,
     clearTabContent,
     accountDisplayName,
@@ -2944,18 +2603,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commentRows,
     commentThreadOpenId,
     commentThreadOpenCell,
-    commitDraw,
-    commitPolygon,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,
     contextMenu,
-    createFolder,
-    createShareLink,
     deleteComment,
     deleteProject,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     deleteTab: deleteTabWithCards,
@@ -2963,9 +2617,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     projectNotFound,
     loadError,
     projectTrashed,
-    dismissSharedProject,
     spawnConnectSelected,
-    duplicateProject,
     duplicateMultiSelected,
     duplicateSelected,
     // Intra-layer z-order for the selection popover (docs/specs/006-project/layers.md).
@@ -2973,10 +2625,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedBack,
     duplicateTab,
     embedMode,
-    extendShareLink,
-    rescopeShareLink,
     fitToScreen,
-    folders,
     followLink,
     handleCanvasDoubleClick,
     hydrated,
@@ -3006,8 +2655,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     loadedTabIds,
     loadingProject,
     makeCopy,
-    moveProjectToFolder,
-    moveProjectTo,
     nameConfirmed,
     voteReview,
     voteResults,
@@ -3022,11 +2669,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openProject,
     openNote,
     participantsByTab,
-    pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
@@ -3101,11 +2746,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitInlineIcon,
     resolveThread,
     retryActiveTabLoad,
-    revokeShareLink,
     lockedByOther,
     selectElement,
     selectMarquee,
     selfParticipant,
+    // The Share dialog's "Sharing as" renames a guest.
+    setSelfParticipant,
     sendSelectedToBack,
     setArrowEndsSelected,
     setArrowStrokeStyleSelected,
@@ -3140,10 +2786,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    tidyMindMapSelected,
-    tidyMindMap,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
@@ -3151,13 +2793,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setWebRowsSelected,
     setHeroCaptionLine,
     setHeroCaptionSelected,
-    growMindNode,
-    abandonMindNode,
-    flowchartActions,
-    entityActions,
-    mindOutline,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
@@ -3201,12 +2837,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFlowSpeedSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
-    setCanvasTool: pickCanvasTool,
-    formatConfig: formatSettings.config,
-    onToggleFormatGroup: formatSettings.toggleGroup,
-    onSetFormatMode: formatSettings.setMode,
     setContextMenu,
-    setProjectSharePassword,
     setFillColorSelected,
     setLinkPickerOpenForId,
     setLoadingProject,
@@ -3228,11 +2859,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTextColorSelected,
     setTextSizeSelected,
     setTheme,
-    resetTabsUsingTheme,
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    shareUrlFor,
     shortcutsEnabled,
     confirmIdentity,
     cancelIdentity,
@@ -3260,9 +2889,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     wontDoAction,
     linkedActions,
     saveAction,
-    teamFolders,
-    teamProjects,
     teams,
+    projectList,
     toggleActiveTabLock,
     toggleZenMode,
     toggleAspectLockSelected,
@@ -3272,14 +2900,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toggleTextStyleSelected,
     undo,
     unresolveThread,
-    updateParticipantName,
     userPreferences,
     // The server copy merged in (or failed to arrive): a once-ever offer (the tours) waits for it, so a
     // returning user on a new device is not offered what another device already answered.
     prefsSettled,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     viewport,
     writeUserPreferences,
   };

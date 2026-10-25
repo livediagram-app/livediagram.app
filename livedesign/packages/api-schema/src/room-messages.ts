@@ -183,7 +183,8 @@ export type ServerMessage =
   // Harmless for idempotent element ops; an `el-delta` op is a change, so every
   // replayed tick was applied twice.
   | CursorMessage
-  | FormatMessage;
+  | FormatMessage
+  | GrantRenewMessage;
 
 // `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
 // sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
@@ -211,7 +212,21 @@ export type ClientMessage =
   // Sent right after re-connecting (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
-  | { kind: 'sync'; epoch: string | null; lastSeq: number };
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | GrantMessage;
+
+// The session's grant is about to lapse (liveworkspace/docs/one-explorer-contracts.md "Grants"): the room asks
+// for a fresh one ROOM_GRANT_ASK_BEFORE_MS before it does, and drops the socket (GRANT_LAPSED_CLOSE) when none
+// came by then. `expiresAt`: when the session's grant runs out, epoch ms.
+export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };
+
+// A fresh grant for this session, the index's ES256 JWT (or the api's room ticket, for a client that has no
+// grant of its own). The room checks it as it checked the first, and keeps the session to what it now allows.
+export type GrantMessage = { kind: 'grant'; grant: string };
+
+// How long before a session's grant lapses the room asks for a new one. The editor renews on its own a minute
+// before expiry (GRANT_RENEW_BEFORE_S), so the ask is the fallback; 30 s leaves a slow renewal room to land.
+export const ROOM_GRANT_ASK_BEFORE_MS = 30_000;
 
 // ---------------------------------------------------------------------
 // Realtime room — op vocabulary (client view)
@@ -382,7 +397,8 @@ export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
-  | ({ kind: 'facilitator' } & FacilitatorAction);
+  | ({ kind: 'facilitator' } & FacilitatorAction)
+  | GrantMessage;
 
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[]; agents?: AgentPresence[] }
@@ -398,7 +414,8 @@ export type RoomIncoming =
   | { kind: 'selection-released'; elementId: string; by: string }
   | { kind: 'followers'; ids: string[] }
   | CursorMessage
-  | FormatMessage;
+  | FormatMessage
+  | GrantRenewMessage;
 
 // The WebSocket close code the realtime room ends a session with when an access
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
@@ -410,6 +427,15 @@ export const ACCESS_CHANGED_CLOSE = 4005;
 // The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
 // the page turns read-only and does not reconnect.
 export const WORKBENCH_ENDED_CLOSE = 4006;
+
+// The close code for a session whose grant lapsed without a fresh one (GrantRenewMessage): the editor fetches a
+// new grant and reconnects.
+export const GRANT_LAPSED_CLOSE = 4007;
+
+// A request about one design carries the index's grant for it here (liveworkspace/docs/one-explorer-contracts.md
+// "Grants"), so `Authorization` keeps the person's own token. The api checks it offline against the index's keys.
+// A caller with no grant (an API token, a workbench session) has one fetched for it by the api.
+export const INDEX_GRANT_HEADER = 'X-Index-Grant';
 
 // The room's keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"): the client sends
 // the bare text ROOM_PING on an idle socket and the room answers ROOM_PONG without waking from hibernation

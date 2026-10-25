@@ -6,7 +6,7 @@
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import type { CardVote } from './CardVoteContext';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
 import {

@@ -13,11 +13,10 @@ vi.mock('@/app/project/[id]/EditorContext', () => ({
   useOptionalEditorContext: () => ctx.current,
 }));
 const modal = vi.hoisted(() => ({ open: false }));
-vi.mock('@/lib/modal-guard', async (actual) => ({
-  ...(await actual<typeof import('@/lib/modal-guard')>()),
+vi.mock('@liveworkspace/workbench/lib/modal-guard', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/lib/modal-guard')>()),
   useAnyModalOpen: () => modal.open,
 }));
-vi.mock('@/components/start/start-panel-open', () => ({ useStartPanelOpen: () => false }));
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();

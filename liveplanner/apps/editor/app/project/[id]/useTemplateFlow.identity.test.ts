@@ -28,7 +28,7 @@ function flow() {
       setSelfParticipant,
       setIdentityPromptOpen,
       requestFit: vi.fn(),
-      putToolDown: vi.fn(),
+      returnToHand: vi.fn(),
       markTabLoaded: vi.fn(),
       bringCardTypes: vi.fn(),
       seedCards: vi.fn(),

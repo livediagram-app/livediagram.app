@@ -2,9 +2,10 @@ name = "liveworkspace-site"
 # The liveworkspace Cloudflare account, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
-# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). The two APIs have more
-# specific routes, so they win: /api/auth/* (and the two .well-known documents) is the accounts
-# Worker's, /api/telemetry/* the telemetry Worker's.
+# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). The APIs have more
+# specific routes, so they win: accounts (/api/auth/*, /api/account/* and the two .well-known documents),
+# the index, media, telemetry and the Community (/api/index*, /api/media*, /api/previews*, /api/telemetry*,
+# /api/community*).
 routes = [
   { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
   { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },

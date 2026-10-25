@@ -70,7 +70,7 @@ Arrow from 'Travel' to 'Hotel'`, so walking a map's connectors says where each r
   not also spoken as `Selection cleared`, which would land over the verb's word.
 - Implementation: `hooks/canvas/useCanvasA11y.ts` (traversal + announcement
   state, composed in `useEditorState`) + a small
-  `components/canvas/CanvasLiveRegion.tsx`.
+  `../packages/workbench/src/components/canvas/CanvasLiveRegion.tsx`.
 
 ## Telemetry
 

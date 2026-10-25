@@ -1,13 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livediagram/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import { RANDOM_UUID_BOOT_SCRIPT } from '@livediagram/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,
+  SILENT_SIGN_IN_BOOT_SCRIPT,
+  SILENT_SIGN_IN_SKIP_PATHS,
 } from './pre-hydration-scripts';
 
 // The editor's root layout inlines a reduce-motion `<script>` that runs before
@@ -108,5 +110,21 @@ describe('the randomUUID pre-hydration script', () => {
   });
   it('is the shared script', () => {
     expect(RANDOM_UUID_BOOT_SCRIPT).toContain('getRandomValues');
+  });
+});
+
+// The guards themselves are pinned in @liveworkspace/auth-client (silent.test.ts); this pins livediagram's wiring.
+describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
+  it("bounces through this app's own api and reads only this app's cookies", () => {
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain(`"/api"+'/auth/silent?return='`);
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_signed_in','1')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_signed_out','1')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_silent')");
+  });
+
+  it('leaves the sign-in pages, the guest hand-off, consent pages and embeds alone', () => {
+    for (const path of ['/sign-in', '/get-started', '/auth', '/oauth', '/embed', '/workbench']) {
+      expect(SILENT_SIGN_IN_SKIP_PATHS).toContain(path);
+    }
   });
 });

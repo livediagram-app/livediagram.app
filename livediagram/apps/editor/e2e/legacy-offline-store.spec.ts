@@ -38,8 +38,13 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  await page.goto('/explorer/offline');
-  await expect(page.getByText('Kept through the rename').first()).toBeVisible();
+  // Opening the app upgrades the store, and its This Browser list (the Explorer's, in localStorage) names it.
+  await page.goto('/new');
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem('liveworkspace:this-browser:livediagram') ?? ''),
+    )
+    .toContain('Kept through the rename');
   const stores = await page.evaluate(
     () =>
       new Promise<string[]>((resolve) => {

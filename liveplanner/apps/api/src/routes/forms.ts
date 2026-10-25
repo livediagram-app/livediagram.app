@@ -10,14 +10,17 @@ import {
 import { formLook } from '@liveplanner/project';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@liveplanner/forms';
 import { typesOf } from '@liveplanner/items';
-import { clientIp, clientNetwork } from '../client-ip';
+import { clientIp, clientNetwork } from '@liveworkspace/api-kit/client-ip';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
+import { formPlaceOf, pushFormInbox } from '../forms/form-inbox';
+import { planRoom } from '../plan-client';
+import { identityOf } from '../plan-room/plan-route';
 import { notifyFormSuspended } from '../email/notifications';
 import { responsesProblem } from '../forms/form-tab';
 import { reportServerEvent } from '../server-telemetry';
 import { openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
-import { readOptionalBody, type RouteContext } from './context';
+import { readOptionalBody, type PlanRouteContext, type RouteContext } from './context';
 
 const REASON_TYPES: Record<FormReportReason, string> = {
   spam: 'Spam',
@@ -32,7 +35,7 @@ const BROWSER_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 const formNotFound = () => json({ error: 'form_not_found' }, { status: 404 });
 
-async function read(ctx: RouteContext, code: string): Promise<Response> {
+async function read(ctx: PlanRouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const { link, doc, form, tab } = opened;
@@ -57,7 +60,7 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
   return json(body, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
+async function fileReport(ctx: PlanRouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const body = await readOptionalBody(ctx.request);
@@ -95,6 +98,8 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
   if (distinct >= FORM_REPORTS_TO_SUSPEND && (await suspendFormLink(ctx.env, code, now))) {
     const suspensions = await countSuspendedFormLinks(ctx.env, opened.doc.id);
     console.warn('[forms] form.suspended', { projectId: opened.doc.id, suspensions });
+    // Off the Inbox, and its code no longer names the plan.
+    ctx.waitUntil?.(pushFormInbox(ctx.env, opened.doc.id, opened.link.tab_id));
     ctx.waitUntil?.(
       notifyFormSuspended(
         ctx.env,
@@ -106,23 +111,44 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
   return json({ ok: true }, { status: 201 });
 }
 
+type FormAction = 'read' | 'respond' | 'report';
+
+// Which door a request is, or the answer for one that is none.
+function formAction(segments: string[], method: string): FormAction | Response {
+  if (segments.length === 3) return method === 'GET' ? 'read' : methodNotAllowed();
+  if (segments.length === 4 && segments[3] === 'responses') {
+    return method === 'POST' ? 'respond' : methodNotAllowed();
+  }
+  if (segments.length === 4 && segments[3] === 'reports') {
+    return method === 'POST' ? 'report' : methodNotAllowed();
+  }
+  return notFound();
+}
+
 export async function handleForms(ctx: RouteContext): Promise<Response> {
   const { segments, request } = ctx;
   const code = segments[2] ?? '';
   if (!code) return notFound();
+  const action = formAction(segments, request.method);
+  if (action instanceof Response) return action;
   // A code that cannot be one is answered as any missing form is.
-  const known = FORM_CODE_PATTERN.test(code);
-  if (segments.length === 3) {
-    if (request.method !== 'GET') return methodNotAllowed();
-    return known ? read(ctx, code) : formNotFound();
+  if (!FORM_CODE_PATTERN.test(code)) return formNotFound();
+  // In the worker: the index names the plan a live code is on (forms/form-inbox.ts, cached briefly), and the
+  // request is answered inside that plan's Durable Object, where its links, tab and destinations are
+  // (docs/specs/015-api/api.md "Storage"). The plan's own check answers a link deleted or suspended meanwhile.
+  if (!('PLAN_DB' in ctx.env)) {
+    let place;
+    try {
+      place = await formPlaceOf(ctx.env, code);
+    } catch (err) {
+      console.warn('[forms] form.lookup-failed', { err: String(err) });
+      return json({ error: 'index_unavailable' }, { status: 503 });
+    }
+    if (!place) return formNotFound();
+    return planRoom(ctx.env, place.itemId).route(request, identityOf(ctx));
   }
-  if (segments.length === 4 && segments[3] === 'responses') {
-    if (request.method !== 'POST') return methodNotAllowed();
-    return known ? respond(ctx, code) : formNotFound();
-  }
-  if (segments.length === 4 && segments[3] === 'reports') {
-    if (request.method !== 'POST') return methodNotAllowed();
-    return known ? fileReport(ctx, code) : formNotFound();
-  }
-  return notFound();
+  const inPlan = ctx as PlanRouteContext;
+  if (action === 'read') return read(inPlan, code);
+  if (action === 'respond') return respond(inPlan, code);
+  return fileReport(inPlan, code);
 }

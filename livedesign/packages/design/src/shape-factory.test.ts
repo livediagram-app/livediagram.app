@@ -15,7 +15,7 @@ import type { ShapeKind } from './shape-kind';
 //
 // The load-bearing one is the round trip with isValidElement. The factory
 // makes elements; the validator guards untrusted ones arriving from the MCP
-// server and the AI panel. If a branch ever seeds a field the validator
+// server. If a branch ever seeds a field the validator
 // rejects, the editor would create an element that its own API refuses to
 // take back — and nothing else in the suite compares the two.
 

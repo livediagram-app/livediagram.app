@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // The entity field being edited in place (docs/specs/009-elements/entity.md "Editing on the canvas"): which
 // entity and which of its fields. Editor-local and never in the document, like the lane preview: the

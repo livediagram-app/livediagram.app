@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ArrowElement } from '@liveplanner/project';
 import { resetMarkersTakeLineColourForTests } from './arrow-defs';
-import { DrawnArrowPreview } from './DrawnArrowPreview';
+import { ArrowForTests } from '@/lib/testing/render-arrow';
 
 const arrow: ArrowElement = {
   id: 'drawn',
@@ -23,15 +23,7 @@ function draw(supported: boolean) {
   vi.stubGlobal('CSS', {
     supports: (p: string, v: string) => supported || !(p === 'fill' && v === 'context-stroke'),
   });
-  const { container } = render(
-    <DrawnArrowPreview
-      arrow={arrow}
-      elementIndex={new Map()}
-      occluders={[]}
-      draftLayout={() => null}
-      withDefs={false}
-    />,
-  );
+  const { container } = render(<ArrowForTests arrow={arrow} />);
   const line = [...container.querySelectorAll('path')].find(
     (p) => p.getAttribute('stroke') === '#e2e8f0',
   )!;

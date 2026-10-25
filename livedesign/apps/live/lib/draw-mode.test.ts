@@ -54,7 +54,7 @@ const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
   it('asks to drop or drag a shape', () => {
-    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Click to drop');
   });
 
   // docs/specs/008-canvas/canvas-and-palette.md: the banner names a shape as the tile that armed it named it.
@@ -64,45 +64,47 @@ describe('drawBannerMessage', () => {
         { type: 'shape', kind: 'pyramid', variant: 'funnel', name: 'Funnel' },
         false,
       ),
-    ).toBe('Tap to drop or drag to draw Funnel');
+    ).toBe('Click to drop or drag to draw Funnel');
     expect(drawBannerMessage({ type: 'shape', kind: 'hub', name: 'Hub and Spoke' }, false)).toBe(
-      'Tap to drop or drag to draw Hub and Spoke',
+      'Click to drop or drag to draw Hub and Spoke',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
-      'Tap to drop or drag to draw Square',
+      'Click to drop or drag to draw Square',
     );
   });
 
   it('renders the combined tap/drag copy per box intent', () => {
-    expect(drawBannerMessage({ type: 'text' }, false)).toBe('Tap to drop or drag to place text');
+    expect(drawBannerMessage({ type: 'text' }, false)).toBe('Click to drop or drag to place text');
     expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
-      'Tap to drop or drag to draw a sticky note',
+      'Click to drop or drag to draw a sticky note',
     );
     expect(drawBannerMessage({ type: 'image' }, false)).toBe(
-      'Tap to drop or drag to draw image bounds',
+      'Click to drop or drag to draw image bounds',
     );
     expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
-      'Tap to drop or drag to draw an arrow',
+      'Click to drop or drag to draw an arrow',
     );
-    expect(drawBannerMessage({ type: 'table' }, false)).toBe('Tap to drop or drag to draw a table');
+    expect(drawBannerMessage({ type: 'table' }, false)).toBe(
+      'Click to drop or drag to draw a table',
+    );
     expect(drawBannerMessage({ type: 'arrow', ends: 'none' }, false)).toBe(
-      'Tap to drop or drag to draw a line',
+      'Click to drop or drag to draw a line',
     );
     expect(drawBannerMessage({ type: 'link-card' }, false)).toBe(
-      'Tap to drop or drag to draw a link card',
+      'Click to drop or drag to draw a link card',
     );
   });
 
   it('names the embed service rather than saying "video" for all six', () => {
     expect(drawBannerMessage({ type: 'video', provider: 'loom' }, false)).toBe(
-      'Tap to drop or drag to draw Loom (stays 16:9)',
+      'Click to drop or drag to draw Loom (stays 16:9)',
     );
     expect(drawBannerMessage({ type: 'video', provider: 'gdocs' }, false)).toBe(
-      'Tap to drop or drag to draw Google Docs (stays 16:9)',
+      'Click to drop or drag to draw Google Docs (stays 16:9)',
     );
     // No provider = the generic website embed, not a blank.
     expect(drawBannerMessage({ type: 'video' }, false)).toBe(
-      'Tap to drop or drag to draw Website (stays 16:9)',
+      'Click to drop or drag to draw Website (stays 16:9)',
     );
   });
 
@@ -116,32 +118,32 @@ describe('drawBannerMessage', () => {
   // badge's). Its own aliases (Rectangle, Oval) matched neither.
   it('names the shape as the tile that armed it', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
-      'Tap to drop or drag to draw Square',
+      'Click to drop or drag to draw Square',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'circle' }, false)).toBe(
-      'Tap to drop or drag to draw Circle',
+      'Click to drop or drag to draw Circle',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
-      'Tap to drop or drag to draw Diamond',
+      'Click to drop or drag to draw Diamond',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'pie-chart' }, false)).toBe(
-      'Tap to drop or drag to draw Pie chart',
+      'Click to drop or drag to draw Pie chart',
     );
   });
 
   it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
     // 'Code-block' is the capitalise-the-first-letter fallback showing through; it is a two-word name.
     expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
-      'Tap to drop or drag to draw Code block',
+      'Click to drop or drag to draw Code block',
     );
   });
 
   it('capitalises any other shape kind for the banner', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'cylinder' }, false)).toBe(
-      'Tap to drop or drag to draw Cylinder',
+      'Click to drop or drag to draw Cylinder',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'hexagon' }, false)).toBe(
-      'Tap to drop or drag to draw Hexagon',
+      'Click to drop or drag to draw Hexagon',
     );
   });
 
@@ -192,13 +194,13 @@ describe('drawBannerMessage', () => {
     // Components have their own label table rather than the shape
     // capitalise-fallback, so 'stat' reads "Stat row" and not "Stat".
     expect(drawBannerMessage({ type: 'component', kind: 'banner' }, false)).toBe(
-      'Tap to drop or drag to draw Banner',
+      'Click to drop or drag to draw Banner',
     );
     expect(drawBannerMessage({ type: 'component', kind: 'stat' }, false)).toBe(
-      'Tap to drop or drag to draw Stat row',
+      'Click to drop or drag to draw Stat row',
     );
     expect(drawBannerMessage({ type: 'component', kind: 'process' }, false)).toBe(
-      'Tap to drop or drag to draw Process steps',
+      'Click to drop or drag to draw Process steps',
     );
   });
 

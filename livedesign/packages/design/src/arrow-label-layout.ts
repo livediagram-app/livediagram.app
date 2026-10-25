@@ -12,8 +12,12 @@
 
 import { isContainerKind } from './containment';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
-import { arrowLabelFontSize } from './arrow-label';
-import { longestWordWidth, wrapBalanced, type TextMeasure } from './arrow-label-wrap';
+import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
+import {
+  longestWordWidth,
+  wrapBalanced,
+  type TextMeasure,
+} from '@liveworkspace/model-core/arrow-label-wrap';
 import { arrowLabelAnchor, arrowPathPolyline } from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
@@ -26,7 +30,7 @@ import {
 import { isErShape } from './er-heads';
 import { arrowPolyline } from './arrow-path-hits';
 import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
-import { rectsIntersect, type Rect } from './geometry-primitives';
+import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
   isBoxed,
   type ArrowElement,

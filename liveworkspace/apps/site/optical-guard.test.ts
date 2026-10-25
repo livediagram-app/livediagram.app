@@ -1,9 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import {
-  checkOpticalAlignment,
-  formatViolations,
-} from '@livediagram/tailwind-config/optical-guard';
+import { checkOpticalAlignment, formatViolations } from '@liveworkspace/style-guards/optical-guard';
 
 // A glyph in a circle or pill centres its cap band, not its line box
 // (docs/specs/004-interface-design/optical-alignment.md): text goes through text-optical-centre or a primitive.

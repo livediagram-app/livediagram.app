@@ -32,9 +32,9 @@ import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
-import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
-import { toastName } from '@/lib/toast-name';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 type TabActionsDeps = {
   tabs: Tab[];
@@ -45,6 +45,8 @@ type TabActionsDeps = {
   // The owner's project list — read for the destination name when
   // linking a tab into another project.
   projectList: { id: string; name: string }[];
+  // The open plan: the one a tab added elsewhere is shared from.
+  projectId: string | null;
   // The local participant id (owner of the link request).
   ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
@@ -65,7 +67,6 @@ type TabActionsDeps = {
   setActiveId: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  setFormatSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
@@ -88,6 +89,7 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     projectList,
     ownerId,
+    projectId,
     createTab,
     commit,
     commitTabs,
@@ -96,7 +98,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     refreshProjectList,
@@ -119,7 +120,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setActiveId(tab.id);
     setSelectedId(null);
     setEditingId(null);
-    setFormatSourceId(null);
   };
 
   // Import (id re-mint, content replace, JSON parsing) lives in useTabImport;
@@ -130,7 +130,6 @@ export function useTabActions(deps: TabActionsDeps) {
     commitTabs,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     importPlanItems: deps.importPlanItems,
@@ -147,7 +146,6 @@ export function useTabActions(deps: TabActionsDeps) {
       // newly-locked tab.
       setSelectedId(null);
       setEditingId(null);
-      setFormatSourceId(null);
     }
   };
 
@@ -189,21 +187,16 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's projects (docs/specs/006-project/tab-project-many-to-many.md).
-  // Goes through POST /api/projects/<target>/tabs/<tabId>/link so the
-  // server inserts one `project_tabs` row pointing at the existing
-  // tab body. The previous implementation cloned the tab into a fresh
-  // row with a new id; that duplicated the content (edits on either
-  // side stayed siloed) and the menu label promised the linking
-  // behaviour the user actually wanted. After this call, edits to
-  // the tab from either project write to the same `tabs.data` row.
+  // Share the active tab into another of the user's plans (docs/specs/006-project/tab-project-many-to-many.md).
+  // Goes through POST /api/projects/<target>/tabs/<tabId>/link with this plan as `from`: the target then holds
+  // the same tab, and an edit to it in either plan reaches the other.
   const linkActiveTabTo = async (targetProjectId: string) => {
     const source = tabs.find((t) => t.id === activeId);
-    if (!source) return;
+    if (!source || !projectId) return;
     const target =
       toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that plan';
     try {
-      await apiLinkTab(ownerId, targetProjectId, source.id);
+      await apiLinkTab(ownerId, targetProjectId, source.id, projectId);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

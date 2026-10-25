@@ -9,7 +9,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { GlyphDisc } from '@livediagram/ui';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Header (docs/specs/009-elements/web-components-and-no-groups.md): a website header bar — a round logo, the brand (the
 // label) and the nav links right-aligned, each edited in place. The logo is

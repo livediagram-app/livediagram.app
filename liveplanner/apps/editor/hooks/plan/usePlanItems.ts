@@ -1,7 +1,7 @@
 'use client';
 
 import { subscribeOfflineIds } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@liveplanner/api-schema';
 import {
@@ -37,7 +37,7 @@ import {
   type ItemsScope,
 } from '@/lib/api/items';
 import { track } from '@/lib/telemetry';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").

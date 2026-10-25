@@ -99,13 +99,9 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('POST', 'https://livedocuments.app/api/documents/x/tabs/y/comments')).toBe(
       'Post.Documents.Tabs.Comments',
     );
-    expect(apiRouteLabel('GET', 'http://localhost:8987/api/timeline?cursor=abc')).toBe(
-      'Get.Timeline',
-    );
-    expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');
+    expect(apiRouteLabel('GET', 'http://localhost:8987/api/trash?cursor=abc')).toBe('Get.Trash');
+    expect(apiRouteLabel('GET', '/api/images/usage')).toBe('Get.Images.Usage');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
-    // Explorer Home (docs/specs/013-workspace/explorer-home.md): one read.
-    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Home');
   });
 
   it('never echoes a share code or an unknown resource', () => {

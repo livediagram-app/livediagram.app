@@ -1,4 +1,4 @@
-import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES, votesSpentBy } from '@livediagram/document';
 import { participantKey } from '@/lib/identity';
@@ -17,7 +17,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -30,7 +30,7 @@ import {
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
   Fragment,
@@ -42,7 +42,7 @@ import {
 } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
+import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
@@ -51,15 +51,15 @@ import { atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from './AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
@@ -289,7 +289,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     // A stamp is placed by the lanes, not sized against edges: no box guides.
@@ -560,7 +560,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : (
         <>
           {panelEls.collaborate}
-          {panelEls.ai}
           {panelEls.minimap}
           {panelEls.laser}
           {panelEls.spotlight}

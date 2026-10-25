@@ -1,4 +1,5 @@
-import { defineProject } from '@liveplanner/vitest-config';
+import { fileURLToPath } from 'node:url';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
 // coverage vanity number, but because they are the only code in the repo that
@@ -12,14 +13,11 @@ import { defineProject } from '@liveplanner/vitest-config';
 // has no threshold yet (docs/specs/003-system-architecture/testing.md) — this is the first ratchet, not the last.
 const GATE_KEEPERS = [
   'src/auth/**',
-  'src/api-token-row.ts',
   'src/db/api-tokens.ts',
   'src/db/share.ts',
   'src/db/shared.ts',
   'src/db/ws-tickets.ts',
   'src/routes/share.ts',
-  // Link previews name a shared project (docs/specs/013-workspace/share-link-previews.md).
-  'src/routes/share-preview.ts',
   'src/routes/shared.ts',
   'src/routes/tokens.ts',
   'src/routes/project-share-routes.ts',
@@ -27,6 +25,15 @@ const GATE_KEEPERS = [
 ];
 
 export default defineProject({
+  // The Workers runtime's own module, which node has not: the Durable Object base class the plan's room extends
+  // (@liveworkspace/api-kit's testing/cloudflare-workers.ts).
+  resolve: {
+    alias: {
+      'cloudflare:workers': fileURLToPath(
+        new URL('../../../packages/api-kit/src/testing/cloudflare-workers.ts', import.meta.url),
+      ),
+    },
+  },
   test: {
     coverage: {
       thresholds: Object.fromEntries(

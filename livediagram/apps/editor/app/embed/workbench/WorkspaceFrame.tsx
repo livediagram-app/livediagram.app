@@ -1,13 +1,13 @@
 'use client';
 
 // The mounted workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "The workspace
-// frame"): the Explorer as it is at /explorer, without the app's surroundings, or the editor of the document opened
+// frame"): the Explorer (@liveworkspace/explorer) as it is at /explorer, without the app's surroundings, or the editor of the document opened
 // in it, with Back. The place is the frame's own address; every move is the frame's own (useWorkspaceNavigation),
 // told to the workbench as `livediagram:place`, and the workbench may move it with `livediagram:open`. The
 // Explorer unmounts while a document is open, so the editor's shortcuts and panels are the only ones listening.
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { WorkbenchOpenTarget, WorkbenchRole } from '@livediagram/api-schema';
 import { setAppearanceOverride } from '@livediagram/ui';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -18,16 +18,11 @@ import {
   type WorkbenchSession,
 } from '@/components/providers/workbench-session-context';
 import { useToast } from '@/hooks/ui/useToast';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { workspacePlaceOf, type WorkspacePlace } from '@/lib/workbench/workspace-place';
-import { useExplorer } from '../../explorer/ExplorerContext';
-import { ExplorerPane } from '../../explorer/ExplorerPane';
-import { ExplorerShell } from '../../explorer/ExplorerShell';
-import type { SelectedNode } from '../../explorer/views';
-import { VIEW_TITLES } from '../../explorer/view-titles';
-import { teamFolderPath } from '../../explorer/routes';
-import { replaceAppLocation } from '@/lib/app-location';
+import { VIEW_TITLES, type ExplorerView, type FolderShown } from '@liveworkspace/explorer';
+import { ExplorerHost } from './ExplorerHost';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 import {
   explorerPlaceFields,
@@ -41,8 +36,8 @@ const EditorPage = dynamic(() => import('../../document/[id]/editor-page'), {
   loading: () => <WorkbenchStatus phase={{ phase: 'reading' }} scope="workspace" />,
 });
 
-const CREATE_FAILED = 'Couldn’t create the document. Try again.';
-const DOCUMENT_TRASHED = 'That document is in the Trash.';
+const CREATE_FAILED = 'Couldn’t create the canvas. Try again.';
+const DOCUMENT_TRASHED = 'That canvas is in the Trash.';
 
 // The place `livediagram:open` asks for.
 function placeOfOpen(to: WorkbenchOpenTarget): WorkspacePlace {
@@ -64,7 +59,7 @@ function backTitleOf(win: Window): string {
   return titleOfNode(place.node);
 }
 
-function titleOfNode(node: SelectedNode): string {
+function titleOfNode(node: ExplorerView): string {
   if (node.kind === 'folder') return 'the folder';
   if (node.kind === 'team') return 'the team';
   return VIEW_TITLES[node.kind];
@@ -95,6 +90,8 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   });
   const { port, level } = session;
   const report = useWorkspacePlaceMessages(port);
+  // The folder on screen, as the Explorer tells it once its list is in.
+  const [shown, setShown] = useState<FolderShown | null>(null);
 
   // Once, before any child reports its place: the workbench hears the frame is ready, the scheme starts as the
   // system's until the workbench sets it, and the mount is counted.
@@ -146,12 +143,6 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
     };
   }, [place, session, report, back, toast]);
 
-  // A team page reads its folder when it mounts, as each /explorer page does: a move remounts the pane.
-  const paneKey =
-    place.kind === 'explorer'
-      ? `${pathname}?${new URLSearchParams(search).get('id') ?? ''}&${new URLSearchParams(search).get('folder') ?? ''}`
-      : '';
-
   return (
     <div ref={rootRef}>
       {documentSession && place.kind === 'document' ? (
@@ -160,10 +151,14 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
         </WorkbenchSessionContext.Provider>
       ) : (
         <>
-          <ExplorerShell>
-            <ExplorerPane key={paneKey} />
-            <ExplorerPlaceReporter report={report} role={level} />
-          </ExplorerShell>
+          <div className="flex min-h-dvh bg-slate-50 px-4 pb-16 pt-6 dark:bg-slate-900">
+            {place.kind === 'explorer' ? (
+              <ExplorerHost view={place.node} onFolderShown={setShown} />
+            ) : null}
+          </div>
+          {place.kind === 'explorer' ? (
+            <ExplorerPlaceReporter view={place.node} shown={shown} report={report} role={level} />
+          ) : null}
           <WorkbenchReconnectLine workbenchName={session.workbenchName} ended={session.ended} />
         </>
       )}
@@ -171,30 +166,29 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   );
 }
 
-// Tells the workbench which Explorer view the frame shows, once its lists are in: the folder shown and how many
-// documents sit directly in it, so a workbench can offer something of its own beside an empty folder.
+// Tells the workbench which Explorer view the frame shows, and on a folder, once its list is in, its name and how many
+// documents sit directly in it, so a workbench can offer something of its own beside an empty folder. A team's
+// folder is shown on its team's page (WB52): the Explorer moves a frame started on one there, in place.
 function ExplorerPlaceReporter({
+  view,
+  shown,
   report,
   role,
 }: {
+  view: ExplorerView;
+  shown: FolderShown | null;
   report: (fields: PlaceFields) => void;
   role: WorkbenchRole;
 }) {
-  const { selected, loading, folderById, documentsByFolder, teamFolders } = useExplorer();
-  const folderId = selected.kind === 'folder' ? selected.id : null;
-  // A team's folder lives on its team's page (WB52): a frame started on one moves there, in place.
-  const teamFolder =
-    folderId && !loading && !folderById.has(folderId)
-      ? (teamFolders.find((f) => f.id === folderId) ?? null)
-      : null;
+  const folderId =
+    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
+  const known = folderId !== null && shown?.folderId === folderId ? shown : null;
+  const folderName = known?.name ?? null;
+  const documentCount = known?.itemCount ?? null;
   useEffect(() => {
-    if (teamFolder) replaceAppLocation(teamFolderPath(teamFolder.teamId, teamFolder.id));
-  }, [teamFolder]);
-  const folderName = folderId ? (folderById.get(folderId)?.name ?? null) : null;
-  const documentCount = folderId ? (documentsByFolder.get(folderId)?.length ?? 0) : null;
-  useEffect(() => {
-    if (loading || teamFolder) return;
-    report(explorerPlaceFields({ view: selected.kind, folderId, folderName, documentCount, role }));
-  }, [report, loading, teamFolder, selected.kind, folderId, folderName, documentCount, role]);
+    // A folder waits for its list, so the workbench hears its name and count in one place message.
+    if (folderId !== null && !known) return;
+    report(explorerPlaceFields({ view: view.kind, folderId, folderName, documentCount, role }));
+  }, [report, view.kind, folderId, known, folderName, documentCount, role]);
   return null;
 }

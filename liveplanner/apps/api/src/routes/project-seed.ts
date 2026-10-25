@@ -101,3 +101,12 @@ export function compileSeededTabs(tabs: readonly unknown[], projectId: string): 
     templateElements,
   };
 }
+
+// The creation intent a create's seeded tabs give when it names none: its first tab's, as compileSeededTabs derives
+// it (one tab compiled, under half a millisecond for the largest template). Null with no tabs, for a first tab of
+// plain elements, and for one the engine refuses (the create itself refuses it).
+export function seedIntentOf(tabs: unknown, projectId: string): CreationIntent | null {
+  if (!Array.isArray(tabs) || tabs.length === 0) return null;
+  const seed = compileSeededTabs(tabs.slice(0, 1), projectId);
+  return 'refusal' in seed ? null : seed.intent;
+}

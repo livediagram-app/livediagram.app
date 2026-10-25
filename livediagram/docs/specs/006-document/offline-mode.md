@@ -12,7 +12,7 @@ This is a **deliberate, permanent choice for a document**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ document is
 a separate concern — see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) — and out of scope here.)
 
-Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Document would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
+Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Canvas would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
 
 ## Turning it on
 
@@ -20,10 +20,10 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+- The **New Canvas** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
   asks only for a mode and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livediagram** for a signed-in person.
-  Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Document** puts one in This Browser on
+  Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Canvas** puts one in This Browser on
   livediagram.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
@@ -47,14 +47,14 @@ have cloud documents and offline documents side by side.
   to the other tabs on the `livediagram-offline` BroadcastChannel (`{ kind: 'add' |
 'remove', id }`), which apply it at once. Without it, a tab that missed a Take
   Offline kept saving that document to the server (where it no longer is), and a tab
-  that missed a Sync Document or purge kept "saving" into a record that was gone.
+  that missed a Sync Canvas or purge kept "saving" into a record that was gone.
 - **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
   the order, the folder) finds its record missing while the tab still
   lists the id, the id is forgotten (and the other tabs told) and the write fails with
   `OfflineDocumentMissingError`, logged `[offline-store] write-to-missing-record`: the
   autosave shows the failure instead of "Saved", and its retry routes to wherever the
   document now is. A missing record whose id the tab has already forgotten (its own
-  Sync Document, with a save still queued) stays a quiet no-op.
+  Sync Canvas, with a save still queued) stays a quiet no-op.
 - **Each read-modify-write is one transaction.** A write reads the whole record and
   writes it back; the two happen in one IndexedDB `readwrite` transaction
   (`OfflineBackend.update`), so another tab's write cannot land between them and be
@@ -93,10 +93,9 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Live presence / realtime                                                  | N/A — a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
 | Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                   |
 | Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                       |
-| AI assistance                                                             | Works online — it reads the current canvas, not the stored document ([AI Assistance](../007-editor/ai-assistance.md)); only a lost connection stops it.                                                                                                                             |
 | Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
 | Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                        |
-| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                            |
+| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — the server keeps a shared tab's copies in step, and an offline document is not on the server.                                                                                                                                                     |
 | Thumbnails                                                                | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                      |
 | Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                                   |
 
@@ -122,16 +121,16 @@ auth has settled, the path names a document registered in the local index
   `'self'` placeholder participant.
 - **Owner-scoped work waits for the real reader.** Under `'self'`, nothing is
   read or written as an owner: the participant record is not saved, preferences
-  stay local (`writeUserPreferences`), and the custom themes, shape libraries,
+  stay local (`writeUserPreferences`), and the shape libraries,
   recent images and Explorer lists load only once the reader is known. Sync
   Document from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
-  `app/document/[id]/resolve-participant.ts`: the Clerk id or signed guest id,
+  `app/document/[id]/resolve-participant.ts`: the account id or the guest token's id,
   then the participant row), followed by the Explorer lists and the guest naming
   nudge. The document is not reloaded: an offline document is the reader's own
   whoever they turn out to be.
-- **`/new` does not wait either.** For a guest ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers))
+- **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
   creating This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDocument` in `app/new/page.tsx`).
@@ -176,34 +175,27 @@ Explorer lists follow after the paint.
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
-- **Explorer.** Offline documents appear in Recent (and the other lists)
-  alongside cloud documents, each with the **This Browser** pill (below) and the
-  fixed offline thumbnail, so a document in This Browser is recognisable at a glance.
-  The Explorer view merges the API-fetched cloud list with the local index of
-  offline documents; offline rows never trigger a server fetch (list, thumbnail,
-  or otherwise).
-- **The reader's own.** An offline document counts as one of the reader's own
-  documents: Space `mine` and owner "You", like a document in My Work
-  ([Explorer structure: documents in This Browser](../013-workspace/explorer-structure.md#documents-in-this-browser)).
-- **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
-  [Explorer structure](../013-workspace/explorer-structure.md)) opens
-  `/explorer/offline`, the list of every offline document, titled **This
-  browser**; the row shows while this browser holds at least one.
-- **Home.** An offline document's opens are counted in its own local record, never
-  sent anywhere, so Home's Jump Back In places it among the reader's other
-  documents by the same rule, with the **This Browser** pill on its thumbnail
+- **Explorer.** Offline documents never reach liveworkspace's index, so none of the index's lists holds them. They are
+  the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the editor's Explorer panel alike: every
+  one, newest first, read from this browser alone, each opening in the editor, with **Sync Canvas** for a signed-in
+  person and, in the panel, **Delete**, which removes it for good after a confirmation ("Delete this canvas?", "“Roadmap” is kept only in this
+  browser, so deleting it removes it for good."): nothing else holds it, so there is no Trash for it
+  ([Explorer structure: This Browser](../013-workspace/explorer-structure.md#this-browser)).
+- **Sidebar.** The Explorer on livediagram's address reads the small list the offline store keeps for it (id, title
+  and dates, never content) in the shared `localStorage` key (`lib/offline/this-browser.ts`,
+  `@liveworkspace/explorer/this-browser`): its **This Browser** row, with the count, opens the Explorer's own This
+  Browser view (`/explorer/offline`). On liveworkspace.app, which cannot read it, the row links to that view here. The
+  editor's Explorer panel has the same entry on its rail, with the count, opening its pane in place, shown only while
+  this browser holds at least one (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page,
+  only redirects to `/explorer/offline`, its query kept.
+- **Home.** An offline document's opens are counted in this browser only (`lib/offline/offline-opens.ts`), never
+  sent anywhere, and carried in that list, so Home's Jump Back In can place it among the reader's other documents
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
-- **Inbox.** The Inbox reads offline documents in the browser and lists their open actions and comment
-  threads among the cloud ones, each row with the **This Browser** pill
-  ([Inbox §2.6](../013-workspace/inbox.md#26-documents-in-this-browser)).
 
 ### This Browser pill
 
 Every row and card of an offline document carries a **This Browser** pill,
-wherever the document is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
-are pictures, not rows), the search panel's results, the editor's Explorer
-rows and its Current Document card, and the Trash.
+wherever the document is listed: This Browser's page and Home's Jump Back In.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
   "This Browser", in an amber tone whose text meets 4.5:1 on its fill in light and
@@ -214,23 +206,24 @@ rows and its Current Document card, and the Trash.
   so a screen reader hears it without hovering.
 - **The guide is one click away.** The pill is a link to the Offline Mode help
   article (new tab, the editor's help-link telemetry), with its own focus ring.
-  Where the row is itself a single control (a search result, the panel's
-  Current Document row, an Inbox row), the pill is a plain label inside it, carrying the same
-  description: a link cannot sit inside a button. In a tree (the editor's
-  Explorer), the pill is a link out of the tab order, since the tree owns
-  the one tab stop, and the row itself carries the description. The Trash row's
-  pill is a link like any other.
-- **It replaces the "Offline" visibility badge** in the Explorer's lists: an
-  offline document shows the pill beside its name at every width, and its
-  visibility column stays empty. Minimal chrome keeps the words: the pill is a
+  Where the row is itself a single control, the pill is a plain label inside it, carrying the same
+  description: a link cannot sit inside a button. Minimal chrome keeps the words: the pill is a
   warning, not a teaching hint.
 
 ## Converting between Offline and Cloud
 
-Conversion works **both directions**, from the Explorer row menu (in both the
-in-editor panel and the full-page Explorer). In the editor, the offline to cloud
+Conversion works **both directions**, from a canvas's menu in the editor's Explorer panel:
+**Take Offline** on a canvas in the person's library or a team's, **Sync Canvas** on one this browser holds
+(`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on the panel's This
+Browser rows. The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
+store, so it hands each to the editor at the canvas's own address (`/document/<id>?convert=take-offline|sync&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts`), over the shared
+`@liveworkspace/explorer/conversion-handoff`, which checks the canvas is the person's to move and asks the same
+confirmation (Sync with its own). A canvas taken offline on purpose is never offered back by the move prompt after
+signing in. In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
 the move prompt ([Auth + guest access → Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in)).
+
+On a fresh, unshared canvas's start screen the **Sync Canvas to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
 
 ### Sharing a document in This Browser
 
@@ -239,12 +232,12 @@ uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
 - **The gate.** Share on a document in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Document Is in This Browser**, "It is saved only
+  offline gate (`ShareOfflineGate`): **This Canvas Is in This Browser**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livediagram to
   share it: share links, real-time collaboration and the live image all need it
-  on our servers. You can take it offline again any time.", with **Sync Document**
+  on our servers. You can take it offline again any time.", with **Sync Canvas**
   and Cancel.
-- **Sync Document** syncs the open document **in place** (below): the button shows
+- **Sync Canvas** syncs the open document **in place** (below): the button shows
   **Syncing…** with a spinner, then a toast confirms "Synced. Your document is on
   livediagram now." and the same dialog shows the share options. No reload, no
   second press of Share. A guest's upload is owned by the guest id like any guest
@@ -257,14 +250,14 @@ signed-in person alike:
 
 ### Syncing in place
 
-Sync Document from inside the editor (`useSyncInPlace` in
+Sync Canvas from inside the editor (`useSyncInPlace` in
 `app/document/[id]/useSyncInPlace.ts`) converts the open document without a
 reload:
 
 1. **It waits for this browser's last save** to land (`hasUnsavedChanges`), up to
    `SYNC_SAVE_WAIT_MS` (5 s), so the record it uploads is what is on screen and no
    save lands in a record about to be deleted. Past that it refuses with
-   `SyncStillSavingError` ("Still saving this document. Try again in a moment.").
+   `SyncStillSavingError` ("Still saving this canvas. Try again in a moment.").
 2. **It uploads** with `saveOfflineToCloud`, which returns the images it re-homed
    (data URI → gallery id).
 3. **The offline index announces the move** (`subscribeOfflineIds` in
@@ -276,17 +269,35 @@ reload:
 5. **The room opens** (`documentServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer's row menu and the move prompt after signing in still reload after a
-sync: the document there is not the one on screen, or several move at once.
+The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+document open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
+once the move settles. Only the move prompt after signing in still reloads, since several move at once.
+
+### Taking offline in place
+
+Take Offline from the start screen's **Sync Canvas to Server** switch
+([Save Locations → On the start screen](save-locations.md#on-the-start-screen)), `useTakeOfflineInPlace` in
+`app/document/[id]/useTakeOfflineInPlace.ts`, converts the open canvas without a reload and without the confirmation: the
+switch only shows on a fresh canvas nobody else has, so there is nothing to lose.
+
+1. **It waits for this browser's last save**, as a sync in place does (`SYNC_SAVE_WAIT_MS`, then
+   `SyncStillSavingError`).
+2. **It closes the room first** (`documentServerStored` turns false), so the server delete's echo never reaches the open
+   editor as a deletion. A failure opens it again and the canvas stays on the server.
+3. **It takes the canvas offline** with `takeCloudOffline`, exactly as Take Offline below.
+4. **The offline index announces the move**: the header badge and every `useIsOfflineDocument` follow, and every later save
+   goes to IndexedDB by the canvas's id.
+5. **The template-pick note is dropped** (a template picked now has no server folder to go to), the move prompt after
+   signing in is told the canvas stays here, and the Explorer list refreshes.
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Document"** (one name everywhere: the Explorer row menu, the
-Share dialog gate, and the move prompt after signing in).
+Action: **"Sync Canvas"**, on a canvas's menu in the editor's Explorer panel, on This Browser's page, in the Share
+dialog's gate and in the move prompt after signing in.
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest
-  `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  token's guest if not signed in, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Images re-home:** each embedded `data:` URI is uploaded to the gallery
   (SHA-256 dedupe server-side, [Image element + per-owner gallery](../009-elements/images.md)) and the element's reference swaps to
   the returned R2 id, so the cloud copy carries real gallery images instead of
@@ -297,7 +308,7 @@ Share dialog gate, and the move prompt after signing in).
   caller's own personal folders, else the root of My Work) and the star ([Favourite documents](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
-  its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
+  its placement ([Folders → Placement on create](../013-workspace/folders.md)),
   and the server refuses a folder deleted since, or not the caller's, by name rather than
   filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
   document again at the root of My Work and logs `[offline-sync] placement refused reason=<code>, filed at root`;
@@ -307,7 +318,7 @@ Share dialog gate, and the move prompt after signing in).
   document is created under a fresh id, and the document's tab / element links and
   deck slides follow it. So a tab that forked on Take Offline returns as a new
   tab beside the original rather than overwriting it; joining them again is an
-  explicit "Add to Document". A retried create (the tab already in this document)
+  explicit "Add to Another Canvas". A retried create (the tab already in this document)
   keeps its ids.
 - **What went up is what is removed.** The upload takes seconds and the document
   stays editable meanwhile (here or in another tab). The local copy is removed only if
@@ -316,14 +327,14 @@ Share dialog gate, and the move prompt after signing in).
   the Trash) and the newer record is uploaded again, logged
   `[offline-sync] changed-during-upload attempt=<n>`; after three uploads that each
   went stale the sync stops, keeps the local copy and says the document kept changing.
-- **One conversion per document at a time.** A second Sync Document or Take Offline
+- **One conversion per document at a time.** A second Sync Canvas or Take Offline
   of a document while one runs (a second menu, or the Share gate) does nothing; the
   guard lives with the conversion, not with the menu that started it, which closes.
 - On success the **local copy is removed** from IndexedDB so there's one source
-  of truth; the document is now a cloud document (Share / AI / Teams reappear). The
+  of truth; the document is now a cloud document (Share / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
   turns into the cloud document in place ([Syncing in place](#syncing-in-place));
-  from the Explorer it reloads.
+  from the Explorer panel it moves without a reload too.
 
 ### Take offline (Cloud → Offline)
 
@@ -368,7 +379,7 @@ confirmation:
   best-effort, but a rollback that itself fails still reports the original
   delete failure rather than a success.
 - **Take Offline bypasses the [Trash](../013-workspace/trash.md)** for the document's owner: it is a move, not a delete, so the server copy goes at once. A joined teammate taking a team document offline sends the team's copy to the team Trash instead, since from the team's side it is a deletion.
-- **Deleting an offline document moves it to this browser's local Trash** ([Trash](../013-workspace/trash.md), "The local Trash"): the IndexedDB record gains `trashedAt` and keeps everything else, leaves the lists and stars, refuses writes, and is purged 30 days later the next time the app lists documents or opens the Trash. Sync Document removes the local record outright (a move, like Take Offline).
+- **Deleting an offline document removes it for good**, from This Browser's page after a confirmation: the index never held it, so there is no Trash for it. Sync Canvas removes the local record outright (a move, like Take Offline).
 - Because it deletes the cloud copy, taking a _shared_ or _team_ document offline
   first revokes those (a share/team document can't be pulled private silently);
   the confirmation spells this out.
@@ -411,7 +422,7 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Document wizard calls `offlineCreateDocument`
+  to dispatch on yet: the New Canvas wizard calls `offlineCreateDocument`
   directly when the location is This Browser (picked, or a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
@@ -443,15 +454,15 @@ category), and — per the help-registry rule — **register it in
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
 
-- What Offline Mode is and how to create one (the New Document wizard's Save
+- What Offline Mode is and how to create one (the New Canvas wizard's Save
   location chooser, [Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
-- **Converting**: "Sync Document" (Offline → Cloud) and "Take Offline"
+- **Converting**: "Sync Canvas" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
-- What's unavailable offline: sharing, live collaboration, teams, and AI.
+- What's unavailable offline: sharing, live collaboration and teams.
 
-Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Document
+Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Canvas
 wizard's data-loss warning to this article.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
@@ -466,8 +477,7 @@ Track adoption without content, reusing the closed vocabulary:
 - On conversion, a coarse event for each direction, so uptake and the
   destructive take-offline path are visible: `Document`/`Moved` with type
   `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from
-  the shared `useOfflineConversion` handlers before their reload (the telemetry
-  engine's pagehide beacon carries it through), from `useSyncInPlace` for the
+  the shared `useOfflineConversion` handlers, from `useSyncInPlace` for the
   Share dialog, and per document from the move prompt.
 - No document content or ids ever leave (the `type` bound in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) holds).
 
@@ -480,14 +490,14 @@ Track adoption without content, reusing the closed vocabulary:
   a network blip) — that's [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)'s territory.
 - **No automatic promotion** — a document never silently moves between offline and
   cloud; every conversion is an explicit, user-initiated action (pressing Share,
-  Sync Document, or Move on the prompt after signing in).
+  Sync Canvas, or Move on the prompt after signing in).
 
 ## Implementation map
 
 - `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-document
   dispatch via a local index.
-- New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
+- New Canvas wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.
 - `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
@@ -502,7 +512,7 @@ Track adoption without content, reusing the closed vocabulary:
 - The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
   `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
-  "Sync Document" and "Take Offline" (with confirmation + image re-homing).
+  "Sync Canvas" and "Take Offline" (with confirmation + image re-homing).
 - Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
   download-on-take-offline.
 - `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
@@ -517,7 +527,7 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Document structure](document-structure.md) (document model),
 [API app](../015-api/api.md) (api + persistence),
 [Per-tab storage](per-tab-storage.md) (per-tab storage + autosave),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Document),
+[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Canvas),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),

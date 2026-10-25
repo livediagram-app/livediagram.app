@@ -229,17 +229,14 @@ identity otherwise, and into this browser's cache either way.
   and none from other themes.
 - **Per user, not per document.** A palette you build is a working habit that follows you between
   documents and devices. Colours a document should share with everyone who
-  opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
-  shared colours, not two. Keeping overrides per document and per user would fragment them further,
-  so the same person would rebuild the same palette in every document.
+  opens it come from its [theme](../011-theme/README.md). Keeping overrides per document and per user
+  would fragment them further, so the same person would rebuild the same palette in every document.
 - **Multi-colour themes** work the same way: their six slots are the branch colours, and an
   override replaces one of them in the panel only. The theme's branch colouring of the diagram is
   untouched.
 - **Clear override** removes the entry for that slot in that theme; the swatch shows the colour
   the theme derives for the slot again, and a theme left with no overrides is removed from the
   store. Elements already painted with the custom colour keep it.
-- **A deleted custom theme takes its overrides with it**: when it is deleted, and when your list of
-  custom themes loads without it (deleted on another device). Built-in themes are never pruned.
 - **Limits**, because the whole preferences blob shares the api's 4 KB cap: at most 18 overrides
   per theme (six slots in each of the three colour rows, by construction), at most 8 themes, and at most
   800 bytes in all. Past either limit, the theme edited least recently is dropped first. Colours

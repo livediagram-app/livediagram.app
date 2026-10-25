@@ -216,12 +216,6 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
     draws the fill, border and inks (no shadow).
 - **Filling a slot**: from its **Add to Slot** (below). Plan has no palette ([No palette](plan-mode.md#no-palette)),
   so everything a slot holds is picked there.
-- **Something added while a Dashboard is open** (a shortcut such as N for a Note) does not land at a default: it waits
-  for a click (`useArmedPlacement`), every place it could go drawn faintly and the one under the pointer strongly,
-  under a banner "Click where the <name> goes, or press Enter for the first empty slot" (for a row, "the foot"; for a
-  slot, "the last row with room") with **Cancel**. A click places it there; **Enter** or **Space** places it where a
-  press with no pointer does (the first empty slot, a new row when none is; a row at the foot; a slot in the last row
-  with room) and is said aloud ("Note placed in the first empty slot"); Escape or Cancel puts it away. One step.
 - **A new board or Sheet is a tab of its own**: picking one under **New Board** or **New Sheet** makes a Board tab or
   a Sheet tab for it, as Start Planning makes one (its kind, opening in Plan, a board drawing its cards Detailed, a
   board bringing its preset's card types), named as Start Planning names it (the board's title, such as "Kanban"; the

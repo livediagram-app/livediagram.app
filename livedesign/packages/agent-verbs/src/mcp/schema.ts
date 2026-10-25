@@ -260,7 +260,8 @@ tabs in a create_design call.
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livedesign designs.
 A design holds tabs, and each tab holds pages: logo artboards and wireframes. change_pages adds, changes, lays out
 (from a ready-made layout), moves, copies and deletes them and answers each page's rectangle on the canvas, where
-update_design puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe page. A new
+update_design puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe page. Every page
+of a tab is one kind (its first page's): a logo and screens go in tabs of their own (add_tab). A new
 design starts with create_design and one tab whose template is "blank-logo" for a logo (one empty artboard;
 change_pages adds the rest, each change an object such as {"op": "add", "kind": "logo", "layout": ...}),
 "blank-wireframe-phone", "blank-wireframe-browser" or another blank wireframe for screens, or "blank-illustration"
@@ -464,9 +465,7 @@ export const createDesignShape = {
 };
 
 export const addTabShape = {
-  designId: z
-    .string()
-    .describe('The design to add a tab to (from find_designs / read_design).'),
+  designId: z.string().describe('The design to add a tab to (from find_designs / read_design).'),
   name: nameField('Name of the new tab.'),
   elements: elementArray.optional(),
   template: templateField,
@@ -529,12 +528,12 @@ export const updateDesignShape = {
         'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
-        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
+        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame [label=…] [tidy]; unwrap ' +
         '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
         'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
         'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
-        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
+        'beside one inside a frame joins it (the frame grows); to stay outside, place it against the ' +
         'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
         'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // Popular is gone from the palette (docs/specs/007-editor/toolbar-layout.md "The category bar"): the strip shows every
 // category by name, each one press away, so a pick from across them added nothing. This stub keeps the old help URL

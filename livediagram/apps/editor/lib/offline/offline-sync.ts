@@ -1,4 +1,4 @@
-// Offline → Cloud ("Sync Document", docs/specs/006-document/offline-mode.md "Save to server").
+// Offline → Cloud ("Sync Canvas", docs/specs/006-document/offline-mode.md "Save to server").
 // Creates the cloud copy first, then removes the local one, so a network failure leaves the
 // offline document intact. `apiCreateDocument` does not dispatch on the offline index, so it
 // always writes to the server even while the id is still registered offline.
@@ -8,8 +8,8 @@
 // deleted in one transaction; a change in between takes the cloud copy back and uploads again.
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
-import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
-import { apiSetDocumentTag } from '@/lib/api/tags';
+import { apiCreateDocument } from '@/lib/api-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {
@@ -20,7 +20,7 @@ import {
 
 // How many times a sync uploads a document that keeps changing under it before giving up. Each
 // change during the upload costs one more upload; three covers a person still typing for a few
-// seconds after choosing Sync Document, without retrying forever against a busy other tab.
+// seconds after choosing Sync Canvas, without retrying forever against a busy other tab.
 const SYNC_UPLOAD_ATTEMPTS = 3;
 
 // Why a sync stopped with the local copy kept: it changed during every upload.
@@ -112,17 +112,9 @@ export async function syncOfflineDocument(
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id, imageIds };
     if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
-      // on the server AFTER the delete: while the id is still registered offline,
-      // apiSetFavourite would route the star straight back to the local store.
-      if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
-      // the document is synced either way.
-      await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) =>
-          apiSetDocumentTag(ownerId, tagId, done.rec.id, true),
-        ),
-      );
+      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
+      // the canvas's index item, which the upload made. A failed star leaves the canvas synced without it.
+      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
       return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

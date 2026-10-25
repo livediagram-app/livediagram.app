@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedesign/design';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -40,10 +40,12 @@ function show({
 }: { canEdit?: boolean; side?: 'left' | 'right' } = {}) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
+  const addPageLike = vi.fn();
   const onMinimise = vi.fn();
   const onMoveToSide = vi.fn();
   const edit = {
     addPage,
+    addPageLike,
     movePageTo: vi.fn(),
     duplicatePage: vi.fn(),
     canDuplicate: () => true,
@@ -69,10 +71,10 @@ function show({
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
+  return { focusPage, addPage, addPageLike, onMinimise, onMoveToSide, edit, deck, store };
 }
 
-// The view centred on a page (the centred transform, lib/viewport.ts), in jsdom's 0 x 0 canvas.
+// The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
 const centredOn = (i: number) => {
   const r = laid[i]!.rect;
   return { zoom: 1, offset: { x: -(r.x + r.width / 2), y: -(r.y + r.height / 2) } };
@@ -164,16 +166,15 @@ describe('PageContentsSidebar', () => {
 
   it('offers Add Page to an Editor alone', () => {
     const h = show();
-    // Add a Page of Any Kind opens the chooser.
-    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(
-      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="logo"]')!,
-    );
-    expect(h.addPage).toHaveBeenCalledWith('logo');
+    // One kind a tab: no chooser of another kind, and a logo tab has no device chooser either.
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add a Screen of Another Device' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    expect(h.addPageLike).toHaveBeenCalledWith('p3');
+    expect(h.addPage).not.toHaveBeenCalled();
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

@@ -8,7 +8,7 @@
 
 import { useRef } from 'react';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry, type WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import { dropIndicatorX, PINNED_SHAPES_MAX, type SlotSource } from '@/lib/whiteboard-shape-slots';

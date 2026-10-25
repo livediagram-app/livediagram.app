@@ -28,7 +28,7 @@ import {
 } from '@liveplanner/project';
 import type { PlanVisualisation } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { placedSheetTitle } from '@/lib/sheet-seeds';
 import { insertTabsAfter } from '@/app/project/[id]/template-tab-set';
 import {

@@ -18,8 +18,7 @@ Derived from [Plan views](../plan-views.md).
 ```
 packages/items/src/plan-views.ts        ids, sizes, liveCards, statusPhasesOf, phaseOf, metricBoard
 packages/items/src/plan-view-dates.ts   dayNumber, todayNumber, dayParts, dayKey, monthStart, shiftMonth,
-                                        daysInMonth, DAY_MS, month and weekday names (also the timeline's
-                                        month grid, packages/ui/src/timeline/monthCells.ts)
+                                        daysInMonth, DAY_MS, month and weekday names
 packages/items/src/plan-view-gantt.ts   ganttModel, ganttAt, GANTT_* constants
 packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixModel,
                                         priorityMatrixModel

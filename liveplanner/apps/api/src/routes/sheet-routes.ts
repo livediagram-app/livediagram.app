@@ -32,7 +32,7 @@ import {
 } from '../db';
 import { sheetDeleteWhenUnreferencedStatements, sheetKeepStatement } from '../db/sheet-refs';
 import { json, methodNotAllowed, noContent } from '../responses';
-import { readBody, type RouteContext } from './context';
+import { readBody, type PlanRouteContext } from './context';
 import { writer } from './item-route-kit';
 import {
   relaySheet,
@@ -45,7 +45,7 @@ import { writeSheet } from './sheet-write-route';
 
 const IDS_PER_GET_MAX = 50;
 
-async function list(ctx: RouteContext, projectId: string): Promise<Response> {
+async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await sheetCaller(ctx, projectId, 'read');
   if (caller instanceof Response) return caller;
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
@@ -103,7 +103,7 @@ function readCreate(raw: unknown, maxCells = SHEET_WRITE_CELLS_MAX): ReadCreate 
 
 // Make a sheet (the route, and a new project's seed). Returns the stored sheet, or a refusal.
 async function makeSheet(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   caller: SheetCaller,
   create: SheetCreateRequest,
   by: SheetPerson,
@@ -126,7 +126,7 @@ async function makeSheet(
     if (!source || (caller.scopeTab && source.tabId !== caller.scopeTab)) return sheetNotFound();
     if (totals.cells + source.cellCount > PROJECT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
-    await ctx.env.DB.batch(
+    await ctx.env.PLAN_DB.batch(
       copySheetStatements(
         ctx.env,
         projectId,
@@ -157,7 +157,7 @@ async function makeSheet(
       return sheetRejected(check.error, check.error === 'sheet_full' ? 413 : 400, check.at);
     if (totals.cells + sheet.cells.length > PROJECT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
-    await ctx.env.DB.batch(insertSheetStatements(ctx.env, projectId, sheet, now));
+    await ctx.env.PLAN_DB.batch(insertSheetStatements(ctx.env, projectId, sheet, now));
   }
   const [stored] = await listSheets(ctx.env, projectId, { ids: [id] });
   relaySheet(ctx, projectId, {
@@ -175,7 +175,7 @@ async function makeSheet(
   return stored!;
 }
 
-async function create(ctx: RouteContext, projectId: string): Promise<Response> {
+async function create(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await sheetCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const read = readCreate(await readBody(ctx));
@@ -191,20 +191,20 @@ async function create(ctx: RouteContext, projectId: string): Promise<Response> {
 // A restore of a sheet still stored on its tab: kept, its waiting delete cancelled (sheet-store.md "Deleting a
 // sheet"). Null when it is not stored there, and the restore makes it.
 async function keepRestored(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   caller: SheetCaller,
   create: SheetCreateRequest,
 ): Promise<SheetResponse | null> {
   if (!create.id || (caller.scopeTab && create.tabId !== caller.scopeTab)) return null;
   const head = await readSheetHead(ctx.env, caller.projectId, create.id);
   if (!head || head.tabId !== create.tabId) return null;
-  await ctx.env.DB.batch([sheetKeepStatement(ctx.env, caller.projectId, create.id)]);
+  await ctx.env.PLAN_DB.batch([sheetKeepStatement(ctx.env, caller.projectId, create.id)]);
   const [stored] = await listSheets(ctx.env, caller.projectId, { ids: [create.id] });
   console.info('[sheets] sheets.restored', { projectId: caller.projectId, kept: true });
   return stored ? { sheet: stored } : null;
 }
 
-async function remove(ctx: RouteContext, projectId: string, sheetId: string): Promise<Response> {
+async function remove(ctx: PlanRouteContext, projectId: string, sheetId: string): Promise<Response> {
   const caller = await sheetCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const head = await readSheetHead(ctx.env, projectId, sheetId);
@@ -212,7 +212,7 @@ async function remove(ctx: RouteContext, projectId: string, sheetId: string): Pr
   if (ctx.url.searchParams.get('whenUnreferenced') === 'true') {
     // Deleted with its element: now if nothing references it, else by the tab write that removes the last reference
     // (sheet-refs.ts), which needs no relay: nothing in the project shows it then.
-    const results = await ctx.env.DB.batch(
+    const results = await ctx.env.PLAN_DB.batch(
       sheetDeleteWhenUnreferencedStatements(ctx.env, projectId, sheetId),
     );
     const deleted = ((results[1] as { results?: unknown[] } | undefined)?.results?.length ?? 0) > 0;
@@ -221,7 +221,7 @@ async function remove(ctx: RouteContext, projectId: string, sheetId: string): Pr
       return noContent();
     }
   } else {
-    await ctx.env.DB.batch([deleteSheetStatement(ctx.env, projectId, sheetId)]);
+    await ctx.env.PLAN_DB.batch([deleteSheetStatement(ctx.env, projectId, sheetId)]);
   }
   relaySheet(ctx, projectId, {
     kind: 'sheets',
@@ -235,7 +235,7 @@ async function remove(ctx: RouteContext, projectId: string, sheetId: string): Pr
 }
 
 // The sheet routes, or null for a path that is not theirs.
-export async function handleSheetRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleSheetRoutes(ctx: PlanRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   if (segments[3] !== 'sheets') return null;
   const projectId = segments[2]!;
@@ -271,7 +271,7 @@ export function readSeedSheets(raw: unknown): SheetCreateRequest[] | Response {
 // Writes a new project's seed sheets. Their tab ids are the new project's (the client made them); no room is
 // open yet, so the relay reaches nobody.
 export async function seedSheets(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   owner: string,
   creates: SheetCreateRequest[],

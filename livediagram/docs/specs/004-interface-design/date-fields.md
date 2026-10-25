@@ -16,7 +16,7 @@ field grid on an iPad) the field ran past the panel's edge and pushed the page s
 
 ## The rule
 
-- **Default, everywhere.** The shared theme (`@livediagram/tailwind-config`) gives every date and
+- **Default, everywhere.** The shared theme (`@liveworkspace/tailwind-config`) gives every date and
   time field no minimum width and a maximum of its container, so a field does nothing to fit.
 - **On touch WebKit** (iOS and iPadOS) the native pill is dropped: the field draws with its own
   border, padding and type like any text field, the value sits left-aligned, and an empty field keeps

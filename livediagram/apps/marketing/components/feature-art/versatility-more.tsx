@@ -1,4 +1,4 @@
-// The rest of the versatility feature illustrations: the AI assistant, rotation and size, Zen mode
+// The rest of the versatility feature illustrations: rotation and size, Zen mode
 // and fonts (Markdown and Mermaid coming in are in ./diagram-text). Split from ./versatility (which re-exports them) to
 // keep each file a readable size; built from the same parts, on the same 300 by 96 stage, with the
 // same fa-c-* loops.
@@ -19,121 +19,7 @@ import {
   delay,
 } from './versatility-parts';
 
-/* ──────────────── AI, rotation and size ──────────────── */
-
-// The optional AI assistant on Clean: three shapes dropped in a hurry, uneven and askew, and the
-// same three tidied to one size, one row and straight arrows, beside the panel that does it.
-export function AiAssistArt() {
-  const labels = ['Sign in', 'Verify', 'Home'];
-  return (
-    <Frame canvas>
-      <svg viewBox={STAGE} className="absolute inset-0 h-full w-full">
-        <defs>
-          <ArrowHead id="fac-ai-head" />
-        </defs>
-        {/* Before: uneven, askew. */}
-        <g className="fa-c-before">
-          <Node x={12} y={12} w={46} h={20} label="Sign in" tone="sky" size={6.5} />
-          <Node x={58} y={54} w={38} h={30} label="Verify" tone="sky" size={6.5} />
-          <Node x={118} y={24} w={40} h={16} label="Home" tone="sky" size={6.5} />
-          <path
-            className={LINK}
-            d="M38 32 L66 53"
-            strokeWidth="1.3"
-            markerEnd="url(#fac-ai-head)"
-          />
-          <path
-            className={LINK}
-            d="M96 60 L124 41"
-            strokeWidth="1.3"
-            markerEnd="url(#fac-ai-head)"
-          />
-        </g>
-        {/* After: one size, one row. */}
-        <g className="fa-c-after">
-          {labels.map((label, i) => (
-            <Node
-              key={label}
-              x={12 + i * 56}
-              y={38}
-              w={40}
-              h={20}
-              label={label}
-              tone="sky"
-              size={6.5}
-            />
-          ))}
-          <path className={LINK} d="M52 48 H67" strokeWidth="1.3" markerEnd="url(#fac-ai-head)" />
-          <path className={LINK} d="M108 48 H123" strokeWidth="1.3" markerEnd="url(#fac-ai-head)" />
-        </g>
-
-        {/* The panel. */}
-        <rect className={PANEL} x="186" y="6" width="104" height="84" rx="6" strokeWidth="1" />
-        <path
-          className="fill-brand-500 dark:fill-brand-300"
-          transform="translate(192 11)"
-          d="M4.5 0.5 l0.9 2.6 2.6 0.9 -2.6 0.9 -0.9 2.6 -0.9-2.6 -2.6-0.9 2.6-0.9 z"
-        />
-        <text className={PANEL_TEXT} x="202" y="17.5" fontSize="6.8" fontWeight="700">
-          AI Assistant
-        </text>
-        <rect
-          className="fill-slate-100 dark:fill-slate-800"
-          x="192"
-          y="24"
-          width="92"
-          height="12"
-          rx="3"
-        />
-        <text
-          className={MUTED_TEXT}
-          x="215"
-          y="32"
-          fontSize="6"
-          fontWeight="600"
-          textAnchor="middle"
-        >
-          Ask
-        </text>
-        <rect
-          className="fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600"
-          x="238.5"
-          y="25.5"
-          width="44"
-          height="9"
-          rx="2.2"
-          strokeWidth="0.6"
-        />
-        <text
-          className="fill-brand-700 dark:fill-brand-200"
-          x="260.5"
-          y="32"
-          fontSize="6"
-          fontWeight="700"
-          textAnchor="middle"
-        >
-          Clean
-        </text>
-        <text className={PANEL_TEXT} fontSize="6.3">
-          <tspan x="193" y="47">
-            Tidy the sizes, labels and
-          </tspan>
-          <tspan x="193" y="55.5">
-            layout of 3 shapes.
-          </tspan>
-        </text>
-        <rect className="fa-pulse fill-brand-400/30" x="191" y="62" width="94" height="16" rx="5" />
-        <rect className="fill-brand-500" x="192" y="63" width="92" height="14" rx="4" />
-        <text x="238" y="72.3" fontSize="6.5" fontWeight="700" fill="#fff" textAnchor="middle">
-          Apply
-        </text>
-        <text className={MUTED_TEXT} x="238" y="86" fontSize="5.4" textAnchor="middle">
-          One undo takes it back
-        </text>
-      </svg>
-    </Frame>
-  );
-}
+/* ──────────────── Rotation and size ──────────────── */
 
 // Rotation and size: a selected shape turning to a preset 45 degrees and back, beside the panel
 // where its width, height and angle are typed rather than dragged, the aspect ratio locked.

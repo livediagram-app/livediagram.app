@@ -16,7 +16,7 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type {
   SearchPanelDocument,
   SearchPanelFolder,
@@ -301,8 +301,8 @@ export function SearchPanel({
             aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search documents, folders, teams, tabs, elements, help...'
-                : 'Search documents, folders, teams, help...'
+                ? 'Search canvases, folders, teams, tabs, elements, help...'
+                : 'Search canvases, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
@@ -337,8 +337,8 @@ export function SearchPanel({
                 className="py-6"
                 things={
                   tabs
-                    ? 'documents, tabs, elements or help articles'
-                    : 'documents, folders or help articles'
+                    ? 'canvases, tabs, elements or help articles'
+                    : 'canvases, folders or help articles'
                 }
                 query={query}
                 onClear={() => setQuery('')}

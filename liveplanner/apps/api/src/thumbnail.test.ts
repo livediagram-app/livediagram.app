@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PEN_INK, penColourHex } from '@liveplanner/project';
 import { defaultCatalogue, presetSetup, type Item } from '@liveplanner/items';
-import type { ProjectDTO, Env } from './types';
+import type { PlanEnv, ProjectDTO } from './types';
 
-// The render-cache reads/writes the snapshot freshness + first-tab body
-// through the db layer; mock it so the test pins the cache decision tree
-// (fresh → stream R2, stale → render+put+stamp, empty → null) without a
-// live D1. renderElementsToSvg stays real — it's pure.
+// A plan drawn for liveworkspace's previews (liveworkspace/docs/previews.md): the platform stores and serves it, so
+// these pin only the drawing. The tab body, cards, sheets and count stamp come through the db layer, mocked here;
+// renderElementsToSvg stays real, it's pure.
 const db = vi.hoisted(() => ({
   getTabBody: vi.fn(),
   getProjectItemTypes: vi.fn(),
@@ -14,16 +13,21 @@ const db = vi.hoisted(() => ({
   listSheets: vi.fn(),
   dashboardSourceTabs: vi.fn(),
   stampTabElementCount: vi.fn(),
-  getThumbRenderedAt: vi.fn(),
-  markThumbRendered: vi.fn(),
-  thumbnailKey: (id: string) => `thumb/${id}`,
 }));
 vi.mock('./db', () => db);
+vi.mock('./plan-room/plan-content', () => ({
+  getPlanItemTypes: db.getProjectItemTypes,
+}));
 
-import { getProjectThumbnailSvg } from './thumbnail';
+import { drawPlan } from './thumbnail';
 
-function r2() {
-  return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
+const ENV = {} as unknown as PlanEnv;
+
+function draw(
+  doc: ProjectDTO,
+  opts: { tabId?: string | null; defer?: (p: Promise<unknown>) => void } = {},
+): Promise<string | null> {
+  return drawPlan(ENV, doc, opts.tabId ?? null, opts.defer ? { defer: opts.defer } : {});
 }
 
 function liveDoc(over: Partial<ProjectDTO> = {}): ProjectDTO {
@@ -67,121 +71,34 @@ beforeEach(() => {
   db.stampTabElementCount.mockResolvedValue(undefined);
 });
 
-describe('getProjectThumbnailSvg', () => {
-  it('returns null without an R2 binding (a deployment without storage)', async () => {
-    const out = await getProjectThumbnailSvg({} as Env, liveDoc());
-    expect(out).toBeNull();
-    expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
-  });
-
-  it('streams the cached object when fresh, without re-rendering', async () => {
-    const images = r2();
-    images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
-    db.getThumbRenderedAt.mockResolvedValue(2000); // >= savedAt 1000 → fresh
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-
-    expect(out).toBe('<svg>cached</svg>');
-    expect(db.getTabBody).not.toHaveBeenCalled();
-    expect(images.put).not.toHaveBeenCalled();
-    expect(db.markThumbRendered).not.toHaveBeenCalled();
-  });
-
-  it('renders, caches, and stamps fresh when stale', async () => {
-    const images = r2();
-    images.get.mockResolvedValue(null);
-    db.getThumbRenderedAt.mockResolvedValue(null); // never rendered → stale
+describe('drawPlan', () => {
+  it('draws the first tab, or the one asked for', async () => {
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-
-    expect(out).toContain('<svg');
-    expect(images.put).toHaveBeenCalledOnce();
-    expect(images.put.mock.calls[0]![0]).toBe('thumb/d1');
-    expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
+    expect(await draw(liveDoc())).toContain('<svg');
+    expect(db.getTabBody).toHaveBeenLastCalledWith(ENV, 'd1');
+    await draw(liveDoc(), { tabId: 't2' });
+    expect(db.getTabBody).toHaveBeenLastCalledWith(ENV, 'd1', 't2');
   });
 
-  it('trusts a freshness stamp the caller already read, saving the query', async () => {
-    const images = r2();
-    images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, { ...liveDoc(), thumbRenderedAt: 2000 });
-
-    expect(out).toBe('<svg>cached</svg>');
-    expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
-  });
-
-  it('hands the cache write to `defer` instead of awaiting it', async () => {
-    const images = r2();
-    let finishPut!: () => void;
-    images.put.mockReturnValue(new Promise<void>((resolve) => (finishPut = resolve)));
-    db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { SNAPSHOTS: images } as unknown as Env;
-    const deferred: Promise<unknown>[] = [];
-
-    // Resolves while the put is still pending: the response is not held
-    // behind the R2 write + D1 stamp.
-    const out = await getProjectThumbnailSvg(
-      env,
-      { ...liveDoc(), thumbRenderedAt: null },
-      { defer: (p) => deferred.push(p) },
-    );
-    expect(out).toContain('<svg');
-    expect(deferred).toHaveLength(1);
-    expect(db.markThumbRendered).not.toHaveBeenCalled();
-
-    finishPut();
-    await deferred[0];
-    expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
-  });
-
-  it('re-renders when the freshness stamp is set but the object is gone', async () => {
-    const images = r2();
-    images.get.mockResolvedValue(null); // evicted despite a fresh stamp
-    db.getThumbRenderedAt.mockResolvedValue(5000);
-    db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-
-    expect(out).toContain('<svg');
-    expect(images.put).toHaveBeenCalledOnce();
-  });
-
-  it('returns null for an empty project and never caches it', async () => {
-    const images = r2();
-    db.getThumbRenderedAt.mockResolvedValue(null);
+  it('draws nothing for an empty project', async () => {
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-
-    expect(out).toBeNull();
-    expect(images.put).not.toHaveBeenCalled();
-    expect(db.markThumbRendered).not.toHaveBeenCalled();
+    expect(await draw(liveDoc())).toBeNull();
   });
 
   // The lazy backfill of tabs.element_count: a tab whose count is still unknown gets it from this parse,
   // so an empty project is asked for at most once.
   it('records an unknown count from the body it parsed, empty or drawn', async () => {
-    const env = { SNAPSHOTS: r2() } as unknown as Env;
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), null));
-    expect(await getProjectThumbnailSvg(env, liveDoc())).toBeNull();
-    expect(db.stampTabElementCount).toHaveBeenCalledWith(env, 't1', 0);
+    expect(await draw(liveDoc())).toBeNull();
+    expect(db.stampTabElementCount).toHaveBeenCalledWith(ENV, 't1', 0);
     db.getTabBody.mockResolvedValue(stored(TAB_DATA, null));
-    expect(await getProjectThumbnailSvg(env, liveDoc())).toContain('<svg');
-    expect(db.stampTabElementCount).toHaveBeenLastCalledWith(env, 't1', 1);
+    expect(await draw(liveDoc())).toContain('<svg');
+    expect(db.stampTabElementCount).toHaveBeenLastCalledWith(ENV, 't1', 1);
   });
 
-  // docs/specs/030-forms/forms.md: a Form tab's form is not an element, so its canvas is empty; the snapshot is the
+  // docs/specs/030-forms/forms.md: a Form tab's form is not an element, so its canvas is empty; the drawing is the
   // form as respondents see it, and its count takes the form in.
   it('draws a Form tab as its form, and counts the form', async () => {
-    const images = r2();
-    db.getThumbRenderedAt.mockResolvedValue(null);
     const form = {
       v: 1,
       heading: 'Contact Us',
@@ -192,23 +109,21 @@ describe('getProjectThumbnailSvg', () => {
     db.getTabBody.mockResolvedValue(
       stored(JSON.stringify({ kind: 'form', theme: 'forest', elements: [], form }), null),
     );
-    const env = { SNAPSHOTS: images } as unknown as Env;
 
-    const out = await getProjectThumbnailSvg(env, liveDoc());
+    const out = await draw(liveDoc());
 
     expect(out).toContain('<svg');
     expect(out).toContain('Contact Us');
     expect(out).toContain('Your name');
-    expect(images.put).toHaveBeenCalledOnce();
-    expect(db.stampTabElementCount).toHaveBeenCalledWith(env, 't1', 1);
+    expect(db.stampTabElementCount).toHaveBeenCalledWith(ENV, 't1', 1);
     // A form that cannot be read leaves the tab as its canvas: empty, nothing drawn.
     db.getTabBody.mockResolvedValue(
       stored(JSON.stringify({ kind: 'form', elements: [], form: 'not a form' }), 0),
     );
-    expect(await getProjectThumbnailSvg(env, liveDoc())).toBeNull();
+    expect(await draw(liveDoc())).toBeNull();
   });
 
-  // The Explorer route's one read leaves the card types out; a board draws only the types it takes, so the snapshot
+  // The Explorer route's one read leaves the card types out; a board draws only the types it takes, so the drawing
   // reads them before drawing its cards (it drew an empty board before).
   it('draws a board’s cards, reading the card types the route left out', async () => {
     const board = {
@@ -234,18 +149,16 @@ describe('getProjectThumbnailSvg', () => {
       createdBy: { id: 'p', name: 'P', color: '#000000' },
       updatedBy: { id: 'p', name: 'P', color: '#000000' },
     } as unknown as Item;
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ kind: 'board', elements: [board] })));
     db.listItems.mockResolvedValue([card]);
     db.getProjectItemTypes.mockResolvedValue(defaultCatalogue());
-    const env = { SNAPSHOTS: r2() } as unknown as Env;
 
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-    expect(db.getProjectItemTypes).toHaveBeenCalledWith(env, 'd1');
+    const out = await draw(liveDoc());
+    expect(db.getProjectItemTypes).toHaveBeenCalledWith(ENV, 'd1');
     expect(out).toContain('Ship the fix');
     // A caller that read them passes them: no second read.
     db.getProjectItemTypes.mockClear();
-    await getProjectThumbnailSvg(env, liveDoc({ itemTypes: defaultCatalogue() }));
+    await draw(liveDoc({ itemTypes: defaultCatalogue() }));
     expect(db.getProjectItemTypes).not.toHaveBeenCalled();
   });
 
@@ -309,16 +222,14 @@ describe('getProjectThumbnailSvg', () => {
         ],
       },
     };
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue({ ...stored(JSON.stringify(dashboard)), id: 'dash' });
     db.dashboardSourceTabs.mockResolvedValue([boardTab]);
     db.listItems.mockResolvedValue([card(1), card(2), card(3)]);
     db.listSheets.mockResolvedValue([]);
-    const env = { SNAPSHOTS: r2() } as unknown as Env;
 
-    const out = (await getProjectThumbnailSvg(env, liveDoc({ itemTypes: defaultCatalogue() })))!;
+    const out = (await draw(liveDoc({ itemTypes: defaultCatalogue() })))!;
     // One query for the tabs it draws from: the slot's tab (and every board, for the status names).
-    expect(db.dashboardSourceTabs).toHaveBeenCalledWith(env, 'd1', ['bt'], 60);
+    expect(db.dashboardSourceTabs).toHaveBeenCalledWith(ENV, 'd1', ['bt'], 60);
     // The metric's own picture: its name, its figure and its line.
     expect(out).toContain('>Item Count<');
     expect(out).toContain('>Across every board<');
@@ -327,25 +238,19 @@ describe('getProjectThumbnailSvg', () => {
   });
 
   it('writes nothing for a count already known, or a body it cannot count', async () => {
-    const env = { SNAPSHOTS: r2() } as unknown as Env;
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
-    await getProjectThumbnailSvg(env, liveDoc());
+    await draw(liveDoc());
     db.getTabBody.mockResolvedValue(stored('not json', null));
-    expect(await getProjectThumbnailSvg(env, liveDoc())).toBeNull();
+    expect(await draw(liveDoc())).toBeNull();
     expect(db.stampTabElementCount).not.toHaveBeenCalled();
   });
 
   it('hands the count stamp to `defer`, and a failed stamp never fails the read', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const env = { SNAPSHOTS: r2() } as unknown as Env;
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), null));
     db.stampTabElementCount.mockRejectedValue(new Error('d1 busy'));
     const deferred: Promise<unknown>[] = [];
-    expect(
-      await getProjectThumbnailSvg(env, liveDoc(), { defer: (p) => deferred.push(p) }),
-    ).toBeNull();
+    expect(await draw(liveDoc(), { defer: (p) => deferred.push(p) })).toBeNull();
     expect(deferred).toHaveLength(1);
     await deferred[0];
     expect(warn).toHaveBeenCalledWith(
@@ -355,88 +260,27 @@ describe('getProjectThumbnailSvg', () => {
   });
 
   it('returns null when the project has no tabs', async () => {
-    const images = r2();
-    db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(null);
-    const env = { SNAPSHOTS: images } as unknown as Env;
 
-    expect(await getProjectThumbnailSvg(env, liveDoc())).toBeNull();
-    expect(images.put).not.toHaveBeenCalled();
+    expect(await draw(liveDoc())).toBeNull();
   });
 
-  it('draws an image element as its placeholder, reading nothing but the snapshot from R2', async () => {
-    const images = r2();
+  it('draws an image element as its placeholder', async () => {
     const tabData = JSON.stringify({
       elements: [{ id: 'e1', type: 'image', x: 0, y: 0, width: 100, height: 80, imageId: 'img-1' }],
     });
-    db.getThumbRenderedAt.mockResolvedValue(null); // stale → render
     db.getTabBody.mockResolvedValue(stored(tabData));
-    images.get.mockResolvedValue(null);
-    const env = { SNAPSHOTS: images } as unknown as Env;
 
-    const out = (await getProjectThumbnailSvg(env, liveDoc()))!;
+    const out = (await draw(liveDoc()))!;
 
     expect(out).not.toContain('<image');
-    expect(images.get).not.toHaveBeenCalled();
-  });
-
-  it('still returns the SVG when the R2 write fails (no stamp)', async () => {
-    const images = r2();
-    images.get.mockResolvedValue(null);
-    images.put.mockRejectedValue(new Error('r2 down'));
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { SNAPSHOTS: images } as unknown as Env;
-
-    const out = await getProjectThumbnailSvg(env, liveDoc());
-
-    expect(out).toContain('<svg');
-    expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 });
 
 // Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
 // so it runs the same stored-tab migration as every other read.
-describe('a thumbnail of a Charcoal tab', () => {
-  it('renders the migrated tab, not the colours Charcoal baked', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const images = r2();
-    images.get.mockResolvedValue(null);
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    db.getTabBody.mockResolvedValue(
-      stored(
-        JSON.stringify({
-          theme: 'charcoal',
-          backgroundColor: '#2b2b33',
-          patternColor: '#636373',
-          elements: [
-            {
-              id: 'e1',
-              type: 'shape',
-              shape: 'square',
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 80,
-              fillColor: '#2c2c33',
-            },
-          ],
-        }),
-      ),
-    );
-    const out = await getProjectThumbnailSvg({ SNAPSHOTS: images } as unknown as Env, liveDoc());
-    expect(out).not.toContain('#2c2c33');
-    expect(out).toContain('#0d121a');
-  });
-});
-
-// Stock colours are first-class (docs/specs/007-editor/editor-modes.md "One look"): a thumbnail
-// draws a colour stored by name in its version for the page, on any tab, whatever mode drew it.
 describe('a thumbnail of named stock colours', () => {
   it('draws Blue and Ink by name in the light page version', async () => {
-    const images = r2();
-    images.get.mockResolvedValue(null);
-    db.getThumbRenderedAt.mockResolvedValue(null);
     const shape = { type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 };
     db.getTabBody.mockResolvedValue(
       stored(
@@ -449,7 +293,7 @@ describe('a thumbnail of named stock colours', () => {
         2,
       ),
     );
-    const out = await getProjectThumbnailSvg({ SNAPSHOTS: images } as unknown as Env, liveDoc());
+    const out = await draw(liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
   });

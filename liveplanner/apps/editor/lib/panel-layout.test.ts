@@ -32,9 +32,9 @@ describe('panel-layout', () => {
     // Left its old corner...
     expect(next.corners['bottom-left']).toEqual([]);
     // ...and joined below whatever is in the target corner.
-    expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual([
+    expect(dockPanel(next, 'collaborate', 'top-right').corners['top-right']).toEqual([
       'minimap',
-      'format',
+      'collaborate',
     ]);
   });
 
@@ -60,22 +60,18 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'format']);
+    const stacked = dockPanel(defaultPanelLayout(), 'minimap', 'bottom-right');
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'minimap']);
     const next = dockPanel(stacked, 'collaborate', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['format']);
+    expect(next.corners['bottom-right']).toEqual(['minimap']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
-    expect(resolvePlacement(layout, 'format')).toEqual({
+    expect(resolvePlacement(layout, 'minimap')).toEqual({
       mode: 'corner',
-      corner: 'bottom-right',
+      corner: 'bottom-left',
     });
-  });
-
-  it('homes every tool panel bottom-right', () => {
-    expect(DEFAULT_PANEL_CORNER.format).toBe('bottom-right');
   });
 
   describe('normalize', () => {
@@ -83,22 +79,22 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['minimap', 'bogus', 'minimap'],
-          'top-right': ['minimap', 'format'],
+          'top-right': ['minimap', 'collaborate'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['minimap']);
-      // minimap already seen in top-left, so top-right keeps only format.
-      expect(layout.corners['top-right']).toEqual(['format']);
+      // minimap already seen in top-left, so top-right keeps only collaborate.
+      expect(layout.corners['top-right']).toEqual(['collaborate']);
     });
 
     // Panels a stored layout may still name, which are corner panels no longer.
     it('ignores retired panels in a stored layout', () => {
       const layout = normalizePanelLayout({
-        corners: { 'top-right': ['vote', 'poll', 'ai', 'format'] },
-        free: { poll: { x: 1, y: 2 }, ai: { x: 3, y: 4 } },
+        corners: { 'top-right': ['vote', 'poll', 'ai', 'format', 'minimap'] },
+        free: { poll: { x: 1, y: 2 }, ai: { x: 3, y: 4 }, format: { x: 5, y: 6 } },
       });
-      expect(layout.corners['top-right']).toEqual(['format']);
+      expect(layout.corners['top-right']).toEqual(['minimap']);
       expect(layout.free).toEqual({});
     });
 
@@ -107,13 +103,13 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['explorer'],
-          'top-right': ['palette', 'format'],
+          'top-right': ['palette', 'minimap'],
           'bottom-right': ['layers'],
         },
         free: { palette: { x: 1, y: 2 } },
       });
       expect(layout.corners['top-left']).toEqual([]);
-      expect(layout.corners['top-right']).toEqual(['format']);
+      expect(layout.corners['top-right']).toEqual(['minimap']);
       expect(layout.corners['bottom-right']).toEqual([]);
       expect(layout.free).toEqual({});
     });
@@ -121,9 +117,9 @@ describe('panel-layout', () => {
     it('keeps a valid free position but ignores a malformed one', () => {
       const layout = normalizePanelLayout({
         corners: {},
-        free: { format: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
+        free: { minimap: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
       });
-      expect(layout.free.format).toEqual({ x: 5, y: 6 });
+      expect(layout.free.minimap).toEqual({ x: 5, y: 6 });
       expect(layout.free.collaborate).toBeUndefined();
     });
 

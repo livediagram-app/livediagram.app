@@ -8,11 +8,11 @@ import {
   type ApplySuccess,
 } from '@liveplanner/edit-operations';
 import { rewriteCommentAuthors } from '../comments';
-import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
+import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
-import type { ProjectDTO, Env } from '../types';
+import type { ProjectDTO, PlanEnv } from '../types';
 import { makeTemplateSheets } from './template-sheets';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
@@ -32,7 +32,7 @@ export const SUBMIT_ATTEMPTS = 2;
 const TAB_ID_MAX = 128;
 
 type SubmitArgs = {
-  env: Env;
+  env: PlanEnv;
   project: ProjectDTO;
   tabId: string;
   request: ParsedChangeset;
@@ -61,9 +61,6 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     ]);
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
-      if ((await tabIdsHeldElsewhere(env, project.id, [tabId])).size > 0) {
-        return refusal(409, 'tab_id_taken', 'another plan holds a tab with this id');
-      }
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);
@@ -181,7 +178,7 @@ export function writtenFooter(written: ChangesetWritten, projectId: string): str
 
 // The selections on the tab, the agent owner's own marked by their person tag.
 async function readSelections(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
   ownerId: string,

@@ -1,35 +1,18 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TeamDetailResponse, TeamListItem } from '@/lib/api-client';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
+
+const api = vi.hoisted(() => ({ apiTeamMembers: vi.fn() }));
+vi.mock('@/lib/api-client', () => api);
+
 import { useAssigneeOptions } from './useAssigneeOptions';
 
-const apiGetTeam = vi.fn<typeof import('@/lib/api-client').apiGetTeam>();
-const apiCheckAssigneeAccess = vi.fn<typeof import('@/lib/api-client').apiCheckAssigneeAccess>();
-vi.mock('@/lib/api-client', () => ({
-  apiGetTeam: (...a: Parameters<typeof apiGetTeam>) => apiGetTeam(...a),
-  apiCheckAssigneeAccess: (...a: Parameters<typeof apiCheckAssigneeAccess>) =>
-    apiCheckAssigneeAccess(...a),
-}));
-
-afterEach(() => vi.clearAllMocks());
-
 type Args = Parameters<typeof useAssigneeOptions>[0];
-const TEAMS = [{ id: 't1', name: 'Team' }] as TeamListItem[];
-const mate: PickableMember = {
-  userId: 'u2',
-  memberId: 'm2',
-  pending: false,
-  name: 'Mate',
-  email: 'mate@x.io',
-  teamId: 't1',
-  teamName: 'Team',
-};
 const base: Args = {
   open: true,
   existing: null,
-  teams: TEAMS,
+  teams: [{ id: 't1', name: 'Team' }],
   ownerId: 'u1',
   selfUserId: 'u1',
   selfName: 'Me',
@@ -38,79 +21,81 @@ const base: Args = {
   assignee: null,
   setAssignee: vi.fn(),
 };
-// The team's answer, as far as the hook reads it: its members.
-const teamDetail = {
-  members: [
-    { id: 'm1', userId: 'u1', status: 'joined', name: 'Me', email: 'me@x.io' },
-    { id: 'm2', userId: 'u2', status: 'joined', name: 'Mate', email: 'mate@x.io' },
-  ],
-} as TeamDetailResponse;
 
-// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
-describe('useAssigneeOptions members', () => {
-  it('loads the project team, without the assigner', async () => {
-    apiGetTeam.mockResolvedValue(teamDetail);
-    const { result } = renderHook((a: Args) => useAssigneeOptions(a), { initialProps: base });
-    expect(result.current.members).toBeNull();
-    await waitFor(() => expect(result.current.members).toEqual([mate]));
-    expect(result.current.grouped).toEqual([['t1', { teamName: 'Team', members: [mate] }]]);
-  });
-
-  it('is empty for a guest', () => {
-    const { result } = renderHook((a: Args) => useAssigneeOptions(a), {
-      initialProps: { ...base, ownerId: null },
-    });
-    expect(result.current.members).toEqual([]);
-    expect(apiGetTeam).not.toHaveBeenCalled();
-  });
-
-  it('reloads on every open', async () => {
-    apiGetTeam.mockResolvedValue(teamDetail);
-    const { result, rerender } = renderHook((a: Args) => useAssigneeOptions(a), {
-      initialProps: base,
-    });
-    await waitFor(() => expect(result.current.members).toEqual([mate]));
-    rerender({ ...base, open: false });
-    rerender({ ...base, open: true });
-    expect(result.current.members).toBeNull();
-    await waitFor(() => expect(result.current.members).toEqual([mate]));
-    expect(apiGetTeam).toHaveBeenCalledTimes(2);
-  });
+const member = (id: string, userId: string | null, status: string) => ({
+  id,
+  teamId: 't1',
+  userId,
+  email: `${id}@x.test`,
+  role: 'member',
+  status,
+  name: null,
+  createdAt: 0,
+  updatedAt: 0,
 });
 
-describe('useAssigneeOptions access', () => {
-  const access = (assignee: PickableMember, extra: Partial<Args> = {}) => {
-    apiGetTeam.mockResolvedValue(teamDetail);
-    return renderHook((a: Args) => useAssigneeOptions(a), {
-      initialProps: { ...base, ...extra, assignee },
+beforeEach(() => {
+  vi.clearAllMocks();
+  api.apiTeamMembers.mockResolvedValue([
+    member('m1', 'u1', 'joined'),
+    member('m2', 'u2', 'joined'),
+    member('m3', null, 'invited'),
+    member('m4', 'u4', 'declined'),
+  ]);
+});
+
+// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
+describe('useAssigneeOptions', () => {
+  it("offers Myself and the plan team's people, joined and invited, grouped by team", async () => {
+    const { result } = renderHook(() => useAssigneeOptions(base));
+    expect(result.current.selfRow).toMatchObject({ userId: 'u1', name: 'Me' });
+    expect(result.current.memberOfProjectTeam).toBe(true);
+    await waitFor(() => expect(result.current.members).toHaveLength(2));
+    expect(result.current.members!.map((m) => [m.memberId, m.pending])).toEqual([
+      ['m2', false],
+      ['m3', true],
+    ]);
+    expect(result.current.grouped.map(([id, g]) => [id, g.members.length])).toEqual([['t1', 2]]);
+  });
+
+  it('is Myself alone on a personal plan, or for a guest', () => {
+    const personal = renderHook(() => useAssigneeOptions({ ...base, projectTeamId: null }));
+    expect(personal.result.current.members).toEqual([]);
+    expect(personal.result.current.memberOfProjectTeam).toBe(false);
+    const guest = renderHook(() => useAssigneeOptions({ ...base, ownerId: null }));
+    expect(guest.result.current.members).toEqual([]);
+    expect(api.apiTeamMembers).not.toHaveBeenCalled();
+  });
+
+  it("knows who can open the plan: Myself and a joined teammate yes, an invitation on accepting", () => {
+    const pick = (p: Partial<PickableMember>): PickableMember => ({
+      userId: 'u2',
+      name: 'X',
+      email: null,
+      teamId: 't1',
+      teamName: 'Team',
+      ...p,
     });
-  };
-
-  it('is yes for Myself, without asking', () => {
-    const { result } = access({ ...mate, userId: 'u1' });
-    expect(result.current.assigneeAccess).toBe('yes');
-    expect(apiCheckAssigneeAccess).not.toHaveBeenCalled();
+    const access = (assignee: PickableMember) =>
+      renderHook(() => useAssigneeOptions({ ...base, assignee })).result.current.assigneeAccess;
+    expect(access(pick({ userId: 'u1', teamId: null }))).toBe('yes');
+    expect(access(pick({}))).toBe('yes');
+    expect(access(pick({ userId: null, memberId: 'm3', pending: true }))).toBe('invited');
+    expect(access(pick({ teamId: 'other' }))).toBe('unknown');
   });
 
-  it('is invited for a pending member', () => {
-    expect(access({ ...mate, pending: true }).result.current.assigneeAccess).toBe('invited');
-  });
+  it('preselects Myself when editing a self-assigned action, and a teammate once loaded', async () => {
+    const setAssignee = vi.fn();
+    const mine = { assignee: { userId: 'u1' } } as unknown as Args['existing'];
+    renderHook(() => useAssigneeOptions({ ...base, existing: mine, setAssignee }));
+    const first = setAssignee.mock.calls[0]![0] as (cur: PickableMember | null) => PickableMember;
+    expect(first(null)).toMatchObject({ userId: 'u1' });
 
-  it('is error when it cannot be asked', () => {
-    expect(access(mate, { projectId: null }).result.current.assigneeAccess).toBe('error');
-  });
-
-  it('asks the server, unknown until it answers, and again for another pick', async () => {
-    apiCheckAssigneeAccess.mockResolvedValueOnce(false).mockResolvedValueOnce(null);
-    const { result, rerender } = access(mate);
-    expect(result.current.assigneeAccess).toBe('unknown');
-    await waitFor(() => expect(result.current.assigneeAccess).toBe('no'));
-    expect(apiCheckAssigneeAccess).toHaveBeenCalledWith('u1', 't1', {
-      assigneeUserId: 'u2',
-      projectId: 'd1',
-    });
-    rerender({ ...base, assignee: { ...mate, userId: 'u3' } });
-    expect(result.current.assigneeAccess).toBe('unknown');
-    await waitFor(() => expect(result.current.assigneeAccess).toBe('error'));
+    const theirs = { assignee: { userId: null, memberId: 'm3' } } as unknown as Args['existing'];
+    const set2 = vi.fn();
+    renderHook(() => useAssigneeOptions({ ...base, existing: theirs, setAssignee: set2 }));
+    await waitFor(() => expect(set2).toHaveBeenCalled());
+    const chosen = set2.mock.calls.at(-1)![0] as (cur: PickableMember | null) => PickableMember;
+    expect(chosen(null)).toMatchObject({ memberId: 'm3' });
   });
 });

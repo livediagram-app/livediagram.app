@@ -1,6 +1,5 @@
-import { lucidePenTool, lucideSparkles, lucideVote } from '@livedesign/icons/lucide';
-import { Glyph } from '../icons/Glyph';
-import { Prims } from '../icons/Prims';
+import { lucideSparkles, lucideVote } from '@liveworkspace/icons/lucide';
+import { Glyph, Prims } from '@liveworkspace/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
 // palette and the marketing site's mock of it draw the same ones; lifted out of
 // the palette's category definitions so the palette file reads as wiring
@@ -12,15 +11,6 @@ export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
       <Prims prims={lucideSparkles} />
-    </Glyph>
-  );
-}
-
-// Logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): a pen nib, what a mark is drawn with.
-export function LogoTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <Prims prims={lucidePenTool} />
     </Glyph>
   );
 }
@@ -80,17 +70,6 @@ export function DataTabIcon() {
   return (
     <Glyph size={18} units={24} strokeLinejoin="miter">
       <path d="M5 20V10M12 20V4M19 20v-8" />
-    </Glyph>
-  );
-}
-
-// The Behaviour category's glyph (docs/specs/010-palette/palette-top-level-categories.md): a cursor over a target, for the
-// elements that DO something when somebody interacts with them.
-export function BehaviourTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <path d="M4 4l6.5 16 2.3-6.6 6.7-2.4z" />
-      <path d="M14.5 14.5 20 20" />
     </Glyph>
   );
 }

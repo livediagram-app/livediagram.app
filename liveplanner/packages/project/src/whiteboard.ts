@@ -3,8 +3,11 @@
 // editor owns the dock and the device-local pens. There is one look in both editor modes
 // (docs/specs/007-editor/editor-modes.md "One look"): Draw mode writes its colours onto what it
 // makes, and every renderer resolves stock colours by name (./stock-colours).
-import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
+import { BORDER_STROKE_PX, type BorderStroke } from '@liveworkspace/model-core/border-style';
+import {
+  DARK_CANVAS_BACKGROUND_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+} from '@liveworkspace/model-core/canvas-colors';
 import { PEN_INK } from './pen-colours';
 import type { Appearance } from './themes';
 import type { BackgroundPattern } from './index';
@@ -43,15 +46,6 @@ export function whiteboardBackgroundOf(
 ): WhiteboardBackground {
   return WHITEBOARD_BACKGROUNDS.find((b) => b.pattern === pattern)?.id ?? 'plain';
 }
-
-// The shapes a whiteboard once drew as marker outlines on display; ./legacy-whiteboard-tab writes
-// that look onto them when a stored whiteboard tab is read.
-export const WHITEBOARD_INKED_SHAPES: ReadonlySet<string> = new Set([
-  'square',
-  'circle',
-  'triangle',
-  'diamond',
-]);
 
 const BORDER_STROKES = Object.entries(BORDER_STROKE_PX) as [BorderStroke, number][];
 

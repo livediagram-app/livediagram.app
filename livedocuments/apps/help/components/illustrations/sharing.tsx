@@ -5,7 +5,7 @@
 // passes. Labels are the real UI strings.
 
 import type { ReactNode } from 'react';
-import { Button, Label, Scene } from './primitives';
+import { Button, Label, Scene } from '@liveworkspace/help-site/art/primitives';
 
 type Role = 'edit' | 'participate' | 'view';
 
@@ -746,7 +746,7 @@ export function ShareOpensRow() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {['All tabs', 'Roadmap', 'Pricing', 'Risks'].map((t, i) => (
+      {['Every tab', 'Roadmap', 'Pricing', 'Risks'].map((t, i) => (
         <g key={t}>
           {i === 1 ? (
             <rect

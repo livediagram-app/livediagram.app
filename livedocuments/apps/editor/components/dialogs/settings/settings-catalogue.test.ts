@@ -301,12 +301,12 @@ describe('settings catalogue', () => {
   });
 
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account, documents and tokens, and the Appearance choice, out of a workbench', () => {
-    const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
+  it('leaves the account and tokens, and the Appearance choice, out of a workbench', () => {
+    const ctx = { emailEnabled: true, signedIn: true, workbench: true };
     const categories = visibleCategories(ctx);
     const ids = categories.map((c) => c.id);
 
-    for (const hidden of ['documents', 'account', 'notifications', 'tokens']) {
+    for (const hidden of ['account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
     expect(ids).toContain('editor');
@@ -314,7 +314,7 @@ describe('settings catalogue', () => {
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
     const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['documents', 'account', 'tokens']));
+    expect(app).toEqual(expect.arrayContaining(['account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -327,13 +327,10 @@ describe('settings catalogue', () => {
     expect(topLevel.slice(-2)).toEqual(['account', 'privacy']);
   });
 
-  it('offers API Tokens only where sign-in exists', () => {
-    const ids = (authEnabled: boolean) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, authEnabled }).map((c) => c.id);
-    // A guest on a deployment WITH sign-in still sees the category: its row
-    // says why it is empty and links to sign in.
-    expect(ids(true)).toContain('tokens');
-    expect(ids(false)).not.toContain('tokens');
+  it('offers API Tokens to a guest too', () => {
+    // Its row says why it is empty and links to sign in.
+    const ids = visibleCategories({ emailEnabled: false, signedIn: false }).map((c) => c.id);
+    expect(ids).toContain('tokens');
   });
 
   it('points every link row at a category that exists', () => {

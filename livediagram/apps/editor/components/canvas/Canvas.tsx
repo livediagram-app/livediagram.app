@@ -1,22 +1,25 @@
 import dynamic from 'next/dynamic';
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from './CanvasFinishContext';
-import { LongPressRing } from '@/components/primitives/LongPressRing';
-import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
+import {
+  useViewportOf,
+  useViewportStore,
+} from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
-import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
+import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@/hooks/canvas/useQuickRing';
-import { useZoomControls } from '@/hooks/canvas/useZoomControls';
+import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
+import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isEventStormingTab } from '@livediagram/document';
@@ -28,19 +31,19 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
-import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import type { Selection } from '@/lib/selection-store';
-import { withStableEventProps } from '@/components/primitives/withStableEventProps';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
-import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
-import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
+import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
@@ -67,7 +70,7 @@ const AVATAR_BURST_PX = 120;
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
-import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
+import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
@@ -76,7 +79,7 @@ import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@/components/canvas/useFontEpoch';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
@@ -465,7 +468,7 @@ function CanvasView(props: CanvasProps) {
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
           // here so the peel's CSS can respond without knowing about themes.
           data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-          // The Tab Style colour ease scopes to the canvas (lib/tab-style-ease.ts).
+          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
           data-canvas-root=""
           onContextMenuCapture={surface.onContextMenuCapture}
           onContextMenu={surface.onContextMenu}

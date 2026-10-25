@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { outlineOfBox, outlineOfPath, sketchHatching, sketchSeed, sketchStrokes } from './sketch';
 
 // docs/specs/008-canvas/finish.md "Performance": one element's strokes and hatching under 0.2 ms at an

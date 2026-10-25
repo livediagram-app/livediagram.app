@@ -5,15 +5,15 @@ import { budgetTable, evaluateBudget, medianOfRuns, type Measurement } from './b
 // probe measured.
 
 const m = (over: Partial<Measurement> & Pick<Measurement, 'gesture'>): Measurement => ({
-  tab: 'whiteboard',
+  tab: 'plan',
   zoom: 'fit',
   longestTaskMs: 0,
   ...over,
 });
 
 describe('evaluateBudget', () => {
-  it('passes a pan, a zoom, a marquee, a stroke and a hover with no task over 50 ms', () => {
-    for (const gesture of ['pan', 'zoom', 'marquee', 'stroke', 'hover'] as const) {
+  it('passes a pan, a zoom, a marquee and a hover with no task over 50 ms', () => {
+    for (const gesture of ['pan', 'zoom', 'marquee', 'hover'] as const) {
       expect(evaluateBudget([m({ gesture, longestTaskMs: 50 })])[0]!.pass).toBe(true);
       expect(evaluateBudget([m({ gesture, longestTaskMs: 51 })])[0]!.pass).toBe(false);
     }
@@ -71,14 +71,14 @@ describe('budgetTable', () => {
     const table = budgetTable(
       evaluateBudget([
         m({ gesture: 'pan', longestTaskMs: 12.4 }),
-        m({ tab: 'diagram', zoom: '100%', gesture: 'drag', longestTaskMs: 80, medianFrameMs: 20 }),
+        m({ tab: 'plan', zoom: '100%', gesture: 'drag', longestTaskMs: 80, medianFrameMs: 20 }),
       ]),
     );
     expect(table.split('\n')).toEqual([
       '| Tab | Zoom | Gesture | Rule | Measured | Verdict |',
       '| --- | --- | --- | --- | --- | --- |',
-      '| whiteboard | fit | pan | longest task ≤ 50 ms | 13 ms | pass |',
-      '| diagram | 100% | drag | longest task ≤ 50 ms, median frame ≤ 33 ms | 80 ms, 20 ms | **fail** |',
+      '| plan | fit | pan | longest task ≤ 50 ms | 13 ms | pass |',
+      '| plan | 100% | drag | longest task ≤ 50 ms, median frame ≤ 33 ms | 80 ms, 20 ms | **fail** |',
     ]);
   });
 });

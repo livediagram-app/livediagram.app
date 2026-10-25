@@ -48,7 +48,7 @@ const library: Route = (_, url) => {
 
 const tokens: Route = (request, url) => {
   if (url.pathname !== '/api/tokens/current') return undefined;
-  if (request.headers.get('Authorization') === 'Bearer lvd_revoked_00000000000000000000')
+  if (request.headers.get('Authorization') === 'Bearer lwt_revoked_00000000000000000000')
     return Response.json({ error: 'token_revoked' }, { status: 401 });
   return request.method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json(current);
 };
@@ -110,9 +110,9 @@ describe('run', () => {
         ? Response.json({ design: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
-    expect(
-      (await cli(['tab', 'ls', 'https://livedesign.app/design/shared?s=abc'], io)).code,
-    ).toBe(0);
+    expect((await cli(['tab', 'ls', 'https://livedesign.app/design/shared?s=abc'], io)).code).toBe(
+      0,
+    );
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
@@ -141,7 +141,7 @@ describe('run', () => {
     });
     const guestOnly = fakeIo({
       env: { LIVEDESIGN_TOKEN: TOKEN },
-      routes: [() => Response.json({ aiEnabled: false })],
+      routes: [() => Response.json({})],
     });
     expect(await cli(['design', 'ls'], guestOnly)).toMatchObject({
       code: 4,
@@ -167,19 +167,15 @@ describe('run', () => {
   it("refuses writes below the host's version floor, but not reads", async () => {
     const floor: Route = (_, url) =>
       url.pathname === '/api/capabilities'
-        ? Response.json({ aiEnabled: false, authEnabled: true, cli: { minVersion: '99.0.0' } })
+        ? Response.json({ authEnabled: true, cli: { minVersion: '99.0.0' } })
         : undefined;
     const routes = [floor, library, tokens];
     const io = fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes });
     expect((await cli(['api', 'POST', '/designs'], io)).code).toBe(1);
     expect(io.err()).toContain('accepts writes from livedesign 99.0.0 or later');
     expect(
-      (
-        await cli(
-          ['api', 'GET', '/designs'],
-          fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes }),
-        )
-      ).code,
+      (await cli(['api', 'GET', '/designs'], fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes })))
+        .code,
     ).toBe(0);
     expect(
       (await cli(['design', 'ls'], fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes }))).code,
@@ -215,7 +211,7 @@ describe('a profile for another host', () => {
       if (url.origin !== SELF) return undefined;
       const path = url.pathname;
       if (path === '/api/capabilities')
-        return Response.json({ aiEnabled: false, apiBase: `${SELF}/api`, authEnabled: true });
+        return Response.json({ apiBase: `${SELF}/api`, authEnabled: true });
       return (
         library(request, new URL(`https://livedesign.app${path}${url.search}`)) ??
         tokens(request, url)
@@ -330,7 +326,7 @@ describe('auth', () => {
           return Response.json({ error: 'invalid_token' }, { status: 401 });
         },
       ],
-      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+      files: { [CREDENTIALS]: storedAs('lwt_old_0000000000000000000000', 't0') },
     });
 
     const { code } = await cli(['auth', 'status'], io);
@@ -342,10 +338,10 @@ describe('auth', () => {
   });
 
   it('reads the stored credential again when the api refuses the one it started with', async () => {
-    const rotated = 'lvd_rotated_000000000000000000000';
+    const rotated = 'lwt_rotated_000000000000000000000';
     const io = fakeIo({
       routes: [capabilities, (request, url) => rotating(request, url)],
-      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+      files: { [CREDENTIALS]: storedAs('lwt_old_0000000000000000000000', 't0') },
     });
     const rotating: Route = (request, url) => {
       if (url.pathname !== '/api/tokens/current') return undefined;
@@ -361,7 +357,7 @@ describe('auth', () => {
     expect(code).toBe(0);
     expect(out).toContain('account  Ada');
     expect(io.requests.map((r) => r.headers.get('Authorization')).slice(-2)).toEqual([
-      'Bearer lvd_old_0000000000000000000000',
+      'Bearer lwt_old_0000000000000000000000',
       `Bearer ${rotated}`,
     ]);
   });
@@ -370,7 +366,7 @@ describe('auth', () => {
     const io = fakeIo({
       routes: [capabilities, tokens],
       stdin: `${TOKEN}\n`,
-      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+      files: { [CREDENTIALS]: storedAs('lwt_old_0000000000000000000000', 't0') },
     });
     expect(await cli(['auth', 'login', '--with-token'], io)).toMatchObject({
       code: 0,
@@ -382,7 +378,7 @@ describe('auth', () => {
     );
     expect(io.requests.at(-1)).toMatchObject({ method: 'DELETE' });
     expect(io.requests.at(-1)!.headers.get('Authorization')).toBe(
-      'Bearer lvd_old_0000000000000000000000',
+      'Bearer lwt_old_0000000000000000000000',
     );
   });
 
@@ -390,7 +386,7 @@ describe('auth', () => {
     const revoked = fakeIo({
       routes: [capabilities, tokens],
       stdin: TOKEN,
-      files: { [CREDENTIALS]: storedAs('lvd_revoked_00000000000000000000', 't0') },
+      files: { [CREDENTIALS]: storedAs('lwt_revoked_00000000000000000000', 't0') },
     });
     await cli(['auth', 'login', '--with-token'], revoked);
     expect(revoked.err()).toContain('the previous token could not be revoked');
@@ -402,7 +398,7 @@ describe('auth', () => {
     const offline = fakeIo({
       routes: [capabilities, down],
       stdin: TOKEN,
-      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+      files: { [CREDENTIALS]: storedAs('lwt_old_0000000000000000000000', 't0') },
     });
     await cli(['auth', 'login', '--with-token'], offline);
     expect(offline.err()).toContain('could not be revoked');
@@ -453,12 +449,12 @@ describe('auth', () => {
         ['auth', 'login', '--with-token'],
         fakeIo({ routes: [capabilities], stdin: 'hello' }),
       ),
-    ).toMatchObject({ code: 1, err: 'error: that is not an API token (lvd_…)\n' });
+    ).toMatchObject({ code: 1, err: 'error: that is not an API token (lwt_…)\n' });
     expect(
       (
         await cli(
           ['auth', 'login', '--with-token'],
-          fakeIo({ routes: [capabilities, tokens], stdin: 'lvd_revoked_00000000000000000000' }),
+          fakeIo({ routes: [capabilities, tokens], stdin: 'lwt_revoked_00000000000000000000' }),
         )
       ).code,
     ).toBe(4);
@@ -500,7 +496,7 @@ describe('auth', () => {
     expect((await cli(['auth', 'logout'])).code).toBe(2);
     const gone = fakeIo({
       routes: [capabilities, tokens],
-      files: { [CREDENTIALS]: storedAs('lvd_revoked_00000000000000000000', 't1') },
+      files: { [CREDENTIALS]: storedAs('lwt_revoked_00000000000000000000', 't1') },
     });
     expect((await cli(['auth', 'logout'], gone)).code).toBe(0);
     const failing: Route = (_, url) =>

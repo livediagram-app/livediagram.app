@@ -4,12 +4,13 @@
 // token is stored, so the user normally consents once.
 
 import { DRIVE_SCOPES } from '@livediagram/api-schema';
-import { sameOriginPath } from '../same-origin-path';
+import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
+import { explorerHref } from '../explorer-href';
 
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const RETURN_KEY = 'livediagram:v2:drive-return';
 const STATE_KEY = 'livediagram:v2:drive-state';
-const DEFAULT_RETURN = '/explorer';
+const DEFAULT_RETURN = explorerHref();
 
 export function driveRedirectUri(origin: string): string {
   return `${origin}/drive/connected`;

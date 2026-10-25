@@ -1,66 +1,59 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SharePasswordSwitch, SharePasswordGate } from '@/components/illustrations/sharing';
+import { SharePasswordGate } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Share Passwords',
   description:
-    'Add an optional password to a plan so anyone opening a share link must enter it first.',
+    'Add an optional password to a plan so anyone opening one of its share links must enter it first.',
   path: '/help/collaboration/sharing/share-passwords/',
 });
 
-<ArticleLayout title="Share Passwords" description="Gate every share link to a plan behind a single password." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-passwords")}>
+<ArticleLayout title="Share Passwords" description="Guard every share link to a plan with a single password." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-passwords")}>
 
 A share password is an optional password on a plan. When it is set, anyone opening any share link for that plan must enter the password before they can see it. It is there to stop people guessing or stumbling onto a share URL, not to provide strong encryption.
 
 ## How it works
 
-The password belongs to the **plan**, not to a single link. One password covers every share link you create for that plan, [embeds](/help/collaboration/sharing/embeds/) included. Once a visitor enters it correctly, it stays in effect for their whole visit, so their reads, edits, images, and realtime all stay authorised.
+The password belongs to the **plan**, not to a single link. One password covers every share link to it, [embeds](/help/collaboration/sharing/embeds/) included.
 
-As the owner you always bypass the password. So do members of the [team](/help/collaboration/teams/) whose library holds the plan, since they don't come in through a link. The prompt only ever appears for people coming in through a share link.
+As the owner you never need it. Neither do members of the [team](/help/collaboration/teams/) whose library holds the plan, since they don't come in through a link. The prompt only ever appears for people coming in through a share link.
 
 ## Setting a password
 
 <Step n={1}>Open the **Share** dialog on your plan.</Step>
-<Step n={2}>Switch on **Password Protection** beneath the list of passes.</Step>
-<Step n={3}>
-  Type a password in the field that appears and choose **Save** (or press **Enter**). The field
-  shows what you type, so you can check it.
-</Step>
+<Step n={2}>At the foot of the dialog, turn on the **Password Protection** switch.</Step>
+<Step n={3}>Type a password in the field that appears and press **Save**.</Step>
 
-Once saved, the row shows **Password Set** with **Replace** and **Remove**, and every pass gains a small **Password** tag. liveplanner keeps only a scrambled form of the password, so nobody can read it back afterwards, you included: note it down before you save, and use **Replace** to choose a new one if you lose it.
-
-<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
-  <SharePasswordSwitch />
-</Figure>
+Once saved, the row reads "Password Set" with **Replace** and **Remove**. Spaces before and after the password are left out. liveworkspace keeps only a scrambled form of the password, so nobody can read it back afterwards, you included: note it down before you save, and use **Replace** to choose a new one if you lose it.
 
 ## Changing or removing it
 
-- **Replace** brings back an empty field. Type the new password and choose **Save**, or **Cancel** (or **Esc**) to keep the old one.
-- **Remove**, or switching **Password Protection** off, takes the password away at once. Every link then opens without one again.
+- **Replace** brings back the field. Type the new password and press **Save**.
+- **Remove**, or turning the switch off, takes the password away. Every link then opens without one again.
 
-Setting or replacing a password sends everyone currently in the plan through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
+People already in the plan through a link are asked for the new password within a few minutes of a change.
 
 ## What visitors see
 
-When someone opens a protected share link, they get a full-screen card headed **This plan is password-protected**, with a single password box and an **Open plan** button, instead of the plan. A wrong password shows "That password didn't match. Try again." and lets them try again. Guesses are rate-limited per network, so a password can't be found by trying thousands of them.
+When someone opens a protected share link, they get a card headed **This plan is password-protected**, with a single password box and an **Open plan** button, instead of the plan. A wrong password shows "That password didn't match. Try again." and lets them try again.
 
 <Figure caption="A visitor on a protected link sees the password card instead of the plan.">
   <SharePasswordGate />
 </Figure>
 
-The browser remembers a password that worked, for that link, so a visitor isn't asked again next time. They are asked again only if you replace the password (or remove it and later set a new one), or they clear their browser's site data.
+The browser remembers a password that worked, for that link, so a visitor isn't asked again next time unless you change the password or they clear their browser's site data.
 
-Embedded plans behave the same way: the password prompt appears inside the embed frame. Because browsers keep each site's storage separate, a visitor enters the password once per site where the plan is embedded.
+Embedded plans behave the same way: the password prompt appears inside the embed frame.
 
 ## What a password turns off
 
-- **Live images.** An image tag can't supply a password, so the **Live image** menu disappears from every pass while a password is set. See [Live Image](/help/collaboration/sharing/live-image/).
+- **Live images.** An image tag can't supply a password, so a [live image](/help/collaboration/sharing/live-image/) of a plan with a password shows nothing.
 
 <Tip>
-  Pair a password with a [share link expiry](/help/collaboration/sharing/share-link-expiry/) for a
-  link that both needs a secret and stops working after a set time.
+  Pair a password with a [link lifetime](/help/collaboration/sharing/share-link-expiry/) for a link
+  that both needs a secret and stops working after a set time.
 </Tip>
 
 </ArticleLayout>

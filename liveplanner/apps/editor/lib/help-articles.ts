@@ -30,13 +30,8 @@ export const HELP_ARTICLES = {
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
   embedElements: 'tabs/using-tabs',
-  mindMapOutline: 'plan/visualisations',
   panelOpacity: 'user-interface/settings',
   isometricMode: 'tabs/export-tabs',
-  // One key per tool panel, so every mode's panel can point at the article
-  // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
-  // pointing at nothing is a bug, the same way an unregistered article is.
-  formatPainter: 'user-interface/themes',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -44,16 +39,12 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/using-tabs',
   // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'user-interface/themes/changing-theme',
-  themes: 'user-interface/themes',
   changingTheme: 'user-interface/themes/changing-theme',
   choosingAFinish: 'user-interface/themes/changing-theme',
-  customThemes: 'user-interface/themes/custom-themes',
   choosingFonts: 'user-interface/themes/changing-theme',
   // Links / activity / comments
   // Plan mode's card types (docs/specs/026-plan/item-types.md).
@@ -77,12 +68,15 @@ export const HELP_ARTICLES = {
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
-  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
-  inbox: 'explorer/activity',
-  recentProjects: 'explorer/recent',
-  sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
-  defaultFolders: 'explorer/folders/default-folders',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  recent: 'explorer/recent',
+  sharedWithYou: 'explorer/shared-with-you',
+  inbox: 'explorer/activity',
+  timeline: 'explorer/timeline',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   explorerFilters: 'explorer/filters',
   dataElements: 'plan/visualisations',
   sankeyDiagram: 'plan/visualisations',
@@ -149,7 +143,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sharePasswords: {
     title: 'Learn about share passwords',
-    description: 'How the optional password gate protects every link.',
+    description: 'One password that guards every link to a plan, embeds included.',
   },
   embedElements: {
     title: 'Learn about embeds',
@@ -162,10 +156,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   isometricMode: {
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
-  },
-  formatPainter: {
-    title: 'Learn about the Format Painter',
-    description: "Tips for copying one element's look onto others.",
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
@@ -191,22 +181,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
-  },
-  customThemes: {
-    title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across plans.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -236,10 +217,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
-  mindMapOutline: {
-    title: 'Learn about editing an outline',
-    description: 'Rewrite a mind map as an indented list and save it back in one go.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
@@ -254,35 +231,43 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   home: {
     title: 'Learn about Home',
-    description: 'Jump Back In, and what others did while you were away.',
-  },
-  inbox: {
-    title: 'Learn about the Inbox',
-    description: 'Open actions assigned to you or by you, and comment threads you are in.',
-  },
-  recentProjects: {
-    title: 'Learn about Recent',
-    description: 'Your most recently opened plans, personal and team, in one list.',
-  },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related plans across folders and teams.',
-  },
-  sharedWithYou: {
-    title: 'Learn about Shared With Me',
-    description: 'Plans other people have shared with you, collected here.',
+    description: 'Jump back in, and what was shared with you recently.',
   },
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising plans into a nestable tree of folders.',
   },
-  defaultFolders: {
-    title: 'Learn about default folders',
-    description: 'Where new plans land when you pick no place.',
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own plans and folders, in one place.',
+  },
+  recent: {
+    title: 'Learn about Recent',
+    description: 'Everything you opened, newest first.',
+  },
+  sharedWithYou: {
+    title: 'Learn about Shared With Me',
+    description: 'The plans other people shared with you through a link.',
+  },
+  inbox: {
+    title: 'Learn about the Inbox',
+    description: 'Comments and actions that wait on you, from every app.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
+  },
+  timeline: {
+    title: 'Learn about the Timeline',
+    description: 'What happened to your plans and your teams’, day by day.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of plans and folders.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

@@ -7,7 +7,7 @@ import { DevelopersArt } from './developers';
 import { ExplorerArt } from './explorer';
 import { GettingStartedArt } from './getting-started';
 import { PaletteArt } from './palette';
-import { PoliciesArt } from './policies';
+import { PoliciesArt } from '@liveworkspace/help-site/art/scenes/policies';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
 import { SearchPanelArt } from './search-panel';
 import { SelectionModesArt } from './selection-modes';
@@ -40,9 +40,3 @@ export const CATEGORY_ART: Record<string, ComponentType> = {
   troubleshooting: TroubleshootingArt,
   'user-interface': UserInterfaceArt,
 };
-
-/** The category's scene, or nothing for a slug without one. */
-export function CategoryArt({ slug }: { slug: string }) {
-  const Scene = CATEGORY_ART[slug];
-  return Scene ? <Scene /> : null;
-}

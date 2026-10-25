@@ -14,11 +14,11 @@ You own your documents, and removing one is straightforward. It helps to know ho
 
 ## Deleting a document
 
-You can delete a document from the [Explorer](/explorer/recent) or from the editor. Open the document's **⋯** menu (on its row or card, or in the Current Document section of the Explorer panel) and choose **Delete**. It goes straight away, without a question, because nothing is lost yet: a notification naming the document ("“Roadmap” deleted") appears with **Undo**, which puts it back where it was. It stays for about ten seconds, longer while your pointer is over it; after that the document is still in the Trash. Deleting the document you have open takes you to the Explorer, where the same **Undo** appears.
+You can delete a document from the [Explorer](/explorer/all) or from the editor. Open the document's **⋯** menu (on its row or card, a right-click, or the current document's menu in the Explorer panel) and choose **Delete Document**. It goes straight away, without a question, because nothing is lost yet: a note appears with **Undo**, which puts it back where it was, and after that the document is still in the Trash, where **Restore** puts it back.
 
 Deleting a document moves it to the [Trash](/help/account-and-data/trash/), where it waits for 30 days before it is removed for good, along with the content that belongs only to it, such as its tabs and comments. While it waits, its share links stop working and it disappears from your lists, and you can restore it with everything it had. To remove it straight away, delete it permanently from the Trash.
 
-A tab the document shares with another document is not deleted with it: it stays in the other document. [Documents in This Browser](/help/privacy-and-security/offline-mode/) have their own Trash in this browser.
+A tab the document shares with another document is not deleted with it: it stays in the other document.
 
 If you have organised documents into [folders](/help/explorer/folders/), you can also tidy up by moving documents between folders or removing folders, separately from deleting the documents themselves.
 
@@ -29,12 +29,12 @@ When you are signed in, open **Settings**, go to **Account**, and choose **Delet
 Deleting your account removes from the server, straight away:
 
 - every document you own, including anything already in the Trash, with its tabs, comments and share links;
-- your folders, images, saved themes and preferences;
-- your stars, your history and activity;
+- your folders and favourites, images (every image you uploaded, in any liveworkspace app) and preferences;
+- your [workbench](/help/developers/workbenches/) pairings and sessions, which closes any workbench you had open;
 - your [API tokens](/help/account-and-data/api-tokens/), which stops any script or [connected AI tool](/help/account-and-data/connect-ai-mcp/) at once;
 - your liveworkspace account itself, which also closes it for livediagram and the other liveworkspace apps.
 
-Documents in a [team's](/help/collaboration/teams/) shared library are not deleted with you: they pass to a remaining member, so the team keeps its work. A team you were the last member of is deleted, and its documents, which are all yours by then, are deleted with your account. If email is set up, you get a short confirmation once it is done.
+Closing the account also takes you out of every [team](/help/collaboration/teams/) you were in. If email is set up, you get a short confirmation once it is done.
 
 Your livedocuments data goes first, then the account. If closing the account fails, livedocuments says so and you stay signed in, so choosing **Delete Account** again finishes it. [Documents in This Browser](/help/privacy-and-security/offline-mode/) were never on the server, so they stay in this browser until you clear its storage.
 
@@ -42,10 +42,10 @@ Your livedocuments data goes first, then the account. If closing the account fai
 
 Where your data lives depends on how you are identified:
 
-- **As a guest**, new documents start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, and any you share or sync are owned on the server by your [per-browser id](/help/account-and-data/guest-identity/), stored in that one browser. Your data is scoped to that browser, so clearing the browser's storage removes the app's link to your guest content, and using a different browser or device shows a fresh, empty workspace.
+- **As a guest**, your new documents are kept in this browser until you sync them; the ones on the server are owned by your [guest identity](/help/account-and-data/guest-identity/), which liveworkspace gives this one browser. Clearing the browser's site data for liveworkspace.app and livedocuments.app removes the browser's link to your guest content, and using a different browser or device shows a fresh, empty workspace.
 - **When signed in**, your documents are owned by your account and synced across every device where you sign in. Deleting a document removes it everywhere, because the account is the single source of truth.
 
-A guest has no account to delete. To remove what you created as a guest, delete the documents you no longer want and empty the Trash. Clearing the browser's storage deletes your documents in This Browser, but only removes this browser's record of your guest identity: documents you shared or synced stay on the server, out of reach from a fresh browser, so delete them first if you want them gone.
+A guest has no account to delete. To remove what you created as a guest, delete the documents you no longer want and empty the Trash. Clearing the browser's storage deletes your documents in This Browser, but only removes this browser's record of your guest identity: documents saved to livedocuments stay on the server, out of reach from a fresh browser, so delete them first if you want them gone.
 
 <Tip>
   If you plan to clear your browser, sign in first if you want to keep anything. Your guest

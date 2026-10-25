@@ -1,0 +1,61 @@
+{
+  "name": "@liveworkspace/help-site",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./site": "./src/site.ts",
+    "./client": "./src/client.tsx",
+    "./mdx-components": "./src/mdx-components.tsx",
+    "./next-config": {
+      "types": "./next-config.d.ts",
+      "default": "./next-config.js"
+    },
+    "./help.css": "./src/help.css",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./art/*": "./src/art/*.tsx",
+    "./testing": "./src/testing.tsx"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/help-registry": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "@next/mdx": "^16.4.1",
+    "next": "^16.4.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@liveworkspace/next-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@next/mdx": "^16.4.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "jsdom": "^30.1.2",
+    "next": "^16.4.1",
+    "oxlint": "^1.88.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

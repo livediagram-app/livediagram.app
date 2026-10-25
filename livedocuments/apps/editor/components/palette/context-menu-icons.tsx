@@ -39,7 +39,7 @@ import {
   lucideWandSparkles,
   lucideWrench,
   lucidePencil,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 /** Size step of every menu row and section icon. */
 export const MENU_ICON_PX = 14;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CheckIcon, Glyph, HoverCard, useMenu, type MenuInitialFocus } from '@livedesign/ui';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // The zoom-percentage button in the middle of the ZoomControls dock

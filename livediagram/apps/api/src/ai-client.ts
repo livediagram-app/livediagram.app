@@ -1,16 +1,11 @@
-import {
-  resolveAiProvider,
-  trimTrailingSlashes,
-  type AiFeature,
-  type ResolvedAiProvider,
-} from './ai-provider';
+import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
 import type { Env } from './types';
 
-// The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md).
+// The one place the worker talks to a model (docs/specs/021-event-storming/note-reader.md).
 //
 // It does not know which company is on the other end. Every provider worth
 // using speaks the OpenAI chat-completions wire — Google Gemini through its
-// compatible endpoint, OpenAI itself, Mistral, OpenRouter, and a llama.cpp or
+// compatible endpoint, Mistral, OpenRouter, and a llama.cpp or
 // Ollama server on somebody's laptop — so "which provider" is a key and a base
 // URL (see ai-provider.ts), not a code path.
 
@@ -87,9 +82,9 @@ export async function chatCompletions(
   return send();
 }
 
-// Convenience for the routes: they have an Env and a feature, and they want that
-// feature's provider or nothing. The gate has already refused the "nothing" case by the time a route
+// Convenience for the routes: they have an Env, and they want its provider or
+// nothing. The gate has already refused the "nothing" case by the time a route
 // asks, so this never returns null in practice — but it is typed honestly.
-export function providerOf(env: Env, feature: AiFeature): ResolvedAiProvider | null {
-  return resolveAiProvider(env, feature);
+export function providerOf(env: Env): ResolvedAiProvider | null {
+  return resolveAiProvider(env);
 }

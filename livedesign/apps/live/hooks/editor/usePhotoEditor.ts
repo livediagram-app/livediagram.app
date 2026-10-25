@@ -10,9 +10,9 @@ import { photoOfPage, photosOf, withPhoto, type LaidOutPage, type Tab } from '@l
 import { PHOTO_PREVIEW_DELAY_MS, type Photo } from '@livedesign/photo-engine';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { useToast } from '@/hooks/ui/useToast';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PhotoBlobScope } from '@/lib/photo-editor/blob-client';
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { photoFocusOf } from '@/lib/photo-editor/photo-focus';
 import { PhotoHistory } from '@/lib/photo-editor/photo-history';
 import type { PixelsStore } from '@/lib/photo-editor/pixels-store';

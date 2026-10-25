@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isLocalhostPair } from './origin-check';
 
 // isLocalhostPair widens the telemetry endpoint's same-origin filter
-// to admit cross-port localhost dev (the live editor on :3102 / the
+// to admit cross-port localhost dev (the live editor on :3202 / the
 // telemetry dashboard on :3103 posting to the api worker on :8887),
 // while keeping the filter strict in production where no Origin
 // header should ever be a loopback. Three failure modes matter:
@@ -35,9 +35,9 @@ describe('isLocalhostPair', () => {
       // IPv6 literals, and URL.hostname round-trips the brackets, so
       // the helper compares the bracketed form. Without this branch a
       // dev machine that resolved localhost to ::1 would lose telemetry.
-      expect(isLocalhostPair('http://[::1]:3102', 'http://localhost:8887')).toBe(true);
+      expect(isLocalhostPair('http://[::1]:3202', 'http://localhost:8887')).toBe(true);
       expect(isLocalhostPair('http://localhost:3202', 'http://[::1]:8887')).toBe(true);
-      expect(isLocalhostPair('http://[::1]:3102', 'http://[::1]:8887')).toBe(true);
+      expect(isLocalhostPair('http://[::1]:3202', 'http://[::1]:8887')).toBe(true);
     });
 
     it('https loopback URLs (scheme is irrelevant)', () => {

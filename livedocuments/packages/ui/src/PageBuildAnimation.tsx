@@ -10,7 +10,7 @@ import {
   r1,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is writing a document" loop, livedocuments' loader: a page whose heading and paragraphs write
 // themselves line by line behind a caret, while the "You" cursor drags a picture in between them; then the work fans

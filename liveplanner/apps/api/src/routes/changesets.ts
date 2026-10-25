@@ -13,7 +13,8 @@ import {
   type ResultLine,
 } from '@liveplanner/api-schema';
 import { redactCommentAuthorIds } from '../comments';
-import { getChangeset, getChangesetPart, getProject, getParticipant, listChangesets } from '../db';
+import { getChangeset, getChangesetPart, getProject, listChangesets } from '../db';
+import { getParticipant } from '../person/profiles';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
@@ -32,14 +33,14 @@ import {
   missingProject,
   requireOwner,
   shareCodeOf,
-  type RouteContext,
+  type PlanRouteContext,
 } from './context';
 
 // The author's name and colour when they have no participant row (CS16).
 const FALLBACK_AUTHOR = { name: 'Someone', color: '#0ea5e9' };
 
 // Null when the path is not a changeset route.
-export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleChangesetRoutes(ctx: PlanRouteContext): Promise<Response | null> {
   const { request, segments } = ctx;
   const id = segments[2];
   if (!id || segments[1] !== 'projects') return null;
@@ -70,7 +71,7 @@ export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response
 }
 
 async function handleSubmit(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   project: ProjectDTO,
   tabId: string,
   owner: string,
@@ -97,7 +98,7 @@ async function handleSubmit(
 }
 
 async function handleList(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   project: ProjectDTO,
   owner: string,
 ): Promise<Response> {
@@ -124,7 +125,7 @@ async function handleList(
 }
 
 async function handleOne(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   project: ProjectDTO,
   record: ChangesetRecord,
   owner: string,
@@ -140,7 +141,7 @@ async function handleOne(
 }
 
 async function handleRevert(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   project: ProjectDTO,
   record: ChangesetRecord,
   owner: string,
@@ -165,7 +166,7 @@ async function handleRevert(
 // A token's written changeset or revert keeps its presence on the tab (docs/specs/024-agents/agent-presence.md
 // "Presence"); a dry run, a refusal and a session's write leave presence alone. Off the response path.
 export function refreshAfterWrite(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   tabId: string,
   author: Author,
@@ -193,7 +194,7 @@ export function refreshAfterWrite(
 
 // The resolved owner of the request: the token's owner for an agent. Nothing in the body names an
 // author.
-export async function authorOf(ctx: RouteContext, owner: string): Promise<Author> {
+export async function authorOf(ctx: PlanRouteContext, owner: string): Promise<Author> {
   const participant = await getParticipant(ctx.env, owner);
   return {
     id: owner,

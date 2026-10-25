@@ -8,16 +8,17 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 
 ## Routing table
 
-| Path                                                                                                                                                       | Forwards to                                                                                           |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/api`, `/api/*`                                                                                                                                           | api worker (`apps/api`)                                                                               |
-| `/telemetry`, `/telemetry/*`                                                                                                                               | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md)) |
-| `/help`, `/help/*`                                                                                                                                         | help app (`apps/help`), stripped                                                                      |
-| `/community`, `/community/*`                                                                                                                               | Community (`apps/community`), stripped                                                                |
-| `/live/*` (the editor app's `_next` assets only)                                                                                                           | editor app (`apps/editor`), stripped                                                                  |
-| live page routes: `/document/*`, `/explorer/*`, `/form/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                     |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                           | 308 redirect to `/help/<path>`                                                                        |
-| everything else                                                                                                                                            | marketing app (`apps/marketing`)                                                                      |
+| Path                                                                                                                                                                                                           | Forwards to                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `/api`, `/api/*`                                                                                                                                                                                               | api worker (`apps/api`)                                                                               |
+| `/telemetry`, `/telemetry/*`                                                                                                                                                                                   | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md)) |
+| `/help`, `/help/*`                                                                                                                                                                                             | help app (`apps/help`), stripped                                                                      |
+| `/community`, `/community/*`                                                                                                                                                                                   | Community (`apps/community`), stripped                                                                |
+| `/live/*` (the editor app's `_next` assets only)                                                                                                                                                               | editor app (`apps/editor`), stripped                                                                  |
+| `/explorer/*`                                                                                                                                                                                                  | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)             |
+| live page routes: `/auth/*`, `/document/*`, `/drive/*`, `/embed/*`, `/form/*`, `/get-started`, `/import`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                     |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                                               | 308 redirect to `/help/<path>`                                                                        |
+| everything else                                                                                                                                                                                                | marketing app (`apps/marketing`)                                                                      |
 
 The editor app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the editor worker's `out/` files are already prefix-free).
 
@@ -33,13 +34,42 @@ The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` 
 have a typo.", with a way back to the site's home (marketing: **Go to the Home Page**; the help centre: **Browse Help
 Centre** and **Troubleshooting**; Community: **Back to Community**), then **Help Centre**. It is still a 404, so search
 engines drop it. The editor answers an unknown address with its own card instead
-([New document route](../007-editor/new-document-route.md) "Unknown addresses").
+([New document route](../007-editor/new-document-route.md) "Unknown addresses"). That includes a retired form link, `/form/<code>`: forms are liveplanner's now, and the
+editor keeps the segment only so those visits still count as its page views.
 
-Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the editor app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+Two properties keep it safe. It sits **after** the live-route check, and `/explorer/*` (a segment the help centre uses too) is answered by liveworkspace's Explorer before either — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+
+## Signing in on livediagram.app
+
+Signing in and creating an account stay on livediagram.app's address: the router serves liveworkspace's
+sign-in pages ahead of everything above, through the shared helper
+(`routeToWorkspace` and `workspaceRoutes` in `@liveworkspace/sites/workspace-proxy`;
+[liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#signing-in-on-the-apps-own-address)):
+
+| Path                                                                   | Forwards to                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `/sign-in`, `/sign-up`, `/consent` with a signed OAuth request (`sig`) | liveworkspace.app's page, no cookies either way                                |
+| `/api/workspace/auth/*`                                                | liveworkspace's accounts API at `/api/auth/*`, with the sign-in's cookies only |
+| `/_liveworkspace/*`                                                    | liveworkspace.app's build assets                                               |
+
+Without a signed request, `/sign-in` stays the app's own page (its sign-in hand-off). On the
+accounts route the app's own cookies never leave; liveworkspace's cookies land here renamed
+`lw_flow.<name>`, on `/api/workspace/auth` alone, for at most 15 minutes, and the hand-off to
+liveworkspace.app clears them. The router names the visitor's address in
+`X-Liveworkspace-Client-IP`. Once signed in, one top-level hop to liveworkspace.app sets its
+session (so the other apps sign in without a click) and comes straight back to `/auth/callback`.
+
+## The Explorer on livediagram.app
+
+The router asks liveworkspace's shared helper first (`routeToWorkspace`,
+[liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+livediagram's switch (`EXPLORER_ON_APP_ORIGIN`) is off, so `/explorer/*` reaches the editor's own Explorer as above.
+Turned on, `/explorer/*` and `/api/workspace/account/*` are liveworkspace's, served at this address with
+`WORKSPACE_ORIGIN` naming liveworkspace.app (already set for staging and local development).
 
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help + community) when forwarding to a binding:
+In production the Worker has five **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help + community) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
@@ -52,7 +82,6 @@ const LIVE_ROUTE_SEGMENTS = new Set([
   'new',
   'oauth',
   'sign-in',
-  'sso-callback',
 ]);
 export default {
   async fetch(request, env) {

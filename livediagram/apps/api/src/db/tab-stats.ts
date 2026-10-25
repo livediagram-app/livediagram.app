@@ -3,7 +3,7 @@
 // (migration 0084) beside each tab so a document list reads them without reading any tab body.
 import type { DocumentStats } from '@livediagram/api-schema';
 import { parseEditorMode, tabStatsOf, type TabStats } from '@livediagram/document';
-import type { Env } from '../types';
+import type { DocumentEnv } from '../types';
 
 // The counting itself is the document model's, shared with the browser's own documents.
 export { tabStatsOf, type TabStats };
@@ -24,7 +24,7 @@ export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolea
 // `ifStoredData`: only when the tab now stores exactly that body, for a conditional write (a swap)
 // whose stats must land only if the write did.
 export function tabStatsStatement(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   stats: TabStats,
   writtenAt: number,
@@ -34,7 +34,7 @@ export function tabStatsStatement(
     ifStoredData === undefined
       ? 'WHERE true'
       : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?7)';
-  return env.DB.prepare(
+  return env.DOCUMENT_DB.prepare(
     `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at)
      SELECT ?1, ?2, ?3, ?4, ?5, ?6 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET

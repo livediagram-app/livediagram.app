@@ -1,6 +1,6 @@
 'use client';
 
-import { createHeldKeyStore, useHeldKey } from './held-key-store';
+import { createHeldKeyStore, useHeldKey } from '@liveworkspace/workbench/hooks/ui/held-key-store';
 
 // Singleton subscription that exposes "is the user currently holding
 // Cmd or Ctrl". The store machinery is shared (see held-key-store);

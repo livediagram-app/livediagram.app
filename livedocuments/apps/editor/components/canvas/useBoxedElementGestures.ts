@@ -1,12 +1,12 @@
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { isSelfDrawingShape } from '@livedocuments/document';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
-import { useLongPress } from '@/hooks/ui/useLongPress';
-import { pressLedger } from '@/lib/double-press';
-import { armPlainClick } from '@/lib/selection-click';
-import { fitsOnCanvas } from '@/lib/fits-on-screen';
-import { markPanThrough } from '@/hooks/canvas/pan-through';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
+import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
+import { armPlainClick } from '@liveworkspace/workbench/lib/selection-click';
+import { fitsOnCanvas } from '@liveworkspace/workbench/lib/fits-on-screen';
+import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,

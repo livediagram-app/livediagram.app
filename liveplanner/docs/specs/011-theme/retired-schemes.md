@@ -1,5 +1,7 @@
 # Retired colour schemes
 
+**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
+
 A colour scheme leaves the catalogue by being **migrated away on load**, not by lingering as a scheme nobody can pick.
 A project saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
 next save persists the rewrite. There is no list of retired schemes that still resolve.
@@ -47,6 +49,16 @@ still holding the retired theme's value for that role (its fill, outline, text, 
 theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
 
+## Custom themes
+
+People could once build and save their own themes. They are gone, and nothing of them is kept: the `custom_themes`
+table, its routes, the builder and the Themes library were deleted, not exported. A tab saved on one still names it as
+`custom:<uuid>`, and so can a file exported while they were here. On read the tab moves to Default (`dropCustomTheme`
+in packages/project/src/retired-custom-themes.ts): `theme` becomes Default and the canvas takes Default's backdrop
+and grid. Element colours are kept as they are: with the theme's definition gone nothing can tell a colour it painted
+from one somebody picked, so each reads as picked, which is how it already looked. Swatch overrides stored for a
+`custom:` id are dropped as the preferences are read, and telemetry never reports one as a theme.
+
 ## Where it runs
 
 One pure function in `@liveplanner/project`, `migrateStoredTab`, composes every tab-level migration (this one and the
@@ -57,8 +69,8 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 - the offline store's tab load, for projects kept only in this browser;
 - a file import, since an exported file is a stored tab like any other.
 
-It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline projects and files never reach D1.
+It runs at read time rather than as a SQL migration because the rewrite needs the element model (per-kind colour
+fields), which SQL over a JSON blob cannot express safely, and because offline projects and files never reach the api's storage.
 
 ## Properties
 

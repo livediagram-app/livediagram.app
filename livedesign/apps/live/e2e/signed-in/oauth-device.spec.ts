@@ -41,7 +41,7 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'You’re connected' })).toBeVisible();
   expect(completed).toEqual([
-    { userCode: 'BCDF-GHJK', token: expect.stringMatching(/^lvd_/), expiresAt: expect.any(Number) },
+    { userCode: 'BCDF-GHJK', token: expect.stringMatching(/^lwt_/), expiresAt: expect.any(Number) },
   ]);
   expect(pageErrors).toEqual([]);
 });

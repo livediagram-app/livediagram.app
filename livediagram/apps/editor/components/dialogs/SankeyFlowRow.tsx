@@ -7,7 +7,7 @@
 import type { InputHTMLAttributes, Ref } from 'react';
 import { SANKEY_NAME_MAX } from '@livediagram/document';
 import { lucideGlyph, Tooltip } from '@livediagram/ui';
-import { lucideArrowRight, lucidePlus, lucideX } from '@livediagram/icons/lucide';
+import { lucideArrowRight, lucidePlus, lucideX } from '@liveworkspace/icons/lucide';
 
 const ArrowIcon = lucideGlyph(lucideArrowRight, 15);
 const PlusIcon = lucideGlyph(lucidePlus, 15);

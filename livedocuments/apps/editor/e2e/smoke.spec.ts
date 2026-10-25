@@ -16,11 +16,29 @@ import {
 // (the `pageErrors` fixture).
 
 // `/new` asks nothing: it makes a document as it mounts and opens it on its start, where the templates are
-// (docs/specs/007-editor/new-document-route.md, start-diagramming.md).
-test('/new makes a document and opens it on its start', async ({ page, pageErrors }) => {
-  await createDocument(page);
+// (docs/specs/007-editor/new-document-route.md, start-diagramming.md). A guest's lives in This Browser
+// (docs/specs/006-document/save-locations.md "The default depends on who is creating"): listed in this browser's
+// list for the Explorer, and badged so in the header.
+test('/new makes a guest’s document in This Browser and opens it on its start', async ({
+  page,
+  pageErrors,
+}) => {
+  const id = await createDocument(page);
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
   await expect(page.getByRole('region', { name: /^Start / })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) =>
+          (
+            (JSON.parse(localStorage.getItem(key) ?? '{}') as { items?: { id: string }[] }).items ??
+            []
+          ).map((i) => i.id),
+        'liveworkspace:this-browser:livedocuments',
+      ),
+    )
+    .toContain(id);
+  await expect(page.getByLabel('This Browser', { exact: true }).first()).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -37,15 +55,6 @@ test('the editor header switches sites from its logo, with no apps menu', async 
   await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(1);
   // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.
   await expect(header.getByRole('navigation', { name: 'Go to' })).toHaveCount(0);
-  expectNoPageErrors(pageErrors);
-});
-
-test('the explorer renders for a guest', async ({ page, pageErrors }) => {
-  await page.goto('/explorer');
-  // The sidebar's Overview rows are always present for a guest
-  // (docs/specs/013-workspace/explorer-structure.md).
-  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
-  await expect(page.getByRole('treeitem', { name: /^Shared With Me/ })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

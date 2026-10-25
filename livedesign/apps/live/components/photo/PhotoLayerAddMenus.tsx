@@ -10,7 +10,7 @@ import {
   lucidePaintBucket,
   lucideSquare,
   lucideSun,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { LAYER_ADJUSTMENT_IDS, adjustmentName, setLayer } from '@livedesign/photo-engine';
 import {
@@ -18,7 +18,7 @@ import {
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { ADJUST_SECTIONS } from '@/lib/photo-editor/adjust-showcase';
 import { newAdjustmentLayer, newFillLayer } from '@/lib/photo-editor/layer-ops';

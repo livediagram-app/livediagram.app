@@ -11,7 +11,7 @@ Scope, by file:
 | File                                                                              | Role                                                                                                                                                        |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}`             | The package `@livediagram/diagram-lint`; depends on `@livediagram/document` and `@livediagram/api-schema` (tests also on `templates` and `edit-operations`) |
-| `packages/diagram-lint/vitest.config.ts`                                          | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                                                                            |
+| `packages/diagram-lint/vitest.config.ts`                                          | `defineProject`, node environment, 100% coverage thresholds (as the former explorer-lens package did)                                                                            |
 | `packages/diagram-lint/src/index.ts`                                              | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                                                                    |
 | `packages/diagram-lint/src/constants.ts`                                          | Every `LINT_*` constant (see Constants)                                                                                                                     |
 | `packages/diagram-lint/src/context.ts`                                            | `prepareLintContext`: visible elements, index, refs, boxes, containment, arrows, routes, the connected boxes, grid, labels                                  |
@@ -143,7 +143,7 @@ source's `direction` (`down`, `right`) is used as given.
 holds the theme's `elementFill` (or `elementStroke`), or where the theme leaves it null the element type's own default on
 either surface (`defaultFillColor`, `defaultStrokeColor`, `defaultArrowStrokeColor`), every `palette` entry's and `rootColor`'s `fill` (or `stroke`),
 and every `shapeColors` entry's. For `brand` both `DEFAULT_SCHEME_LIGHT` and `DEFAULT_SCHEME_DARK` contribute, as
-`backdropVariants` treats the backdrop. Any other id (a custom theme) returns null: the check is skipped and logged.
+`backdropVariants` treats the backdrop. Any other id (one no catalogue entry names) returns null: the check is skipped and logged.
 
 ### Where it runs
 
@@ -306,7 +306,7 @@ is a usage error (exit 2).
 | `LintFinding.message`, `fix` | derived | May quote a label (`quoteLabel`); the reader already holds the tab |
 | Compare rows                 | derived | Local to the CLI; nothing leaves the machine                       |
 
-No migration, no D1 column, no R2 object, no room op. `agent_changesets` rows do not carry the report; a reader
+Nothing stored: no column, no R2 object, no room op. `agent_changesets` rows do not carry the report; a reader
 re-lints the tab through the view.
 
 ## Errors and edge cases
@@ -336,7 +336,7 @@ re-lints the tab through the view.
   frame's member; membership for `group-split-edges` is transitive, so an outer frame counts an inner frame's members.
   Lanes alone are never judged by the group codes.
 - **N14** A frame with no members, or with fewer than `LINT_GROUP_SPLIT_MIN_ARROWS` arrows, is never reported.
-- **N15** A custom tab theme: `colour-on-themed` is skipped and `[lint] theme unresolved` logs at debug.
+- **N15** A tab theme no catalogue entry names: `colour-on-themed` is skipped and `[lint] theme unresolved` logs at debug.
 - **N16** A graph edge to an unknown node is dropped by `graphToElements`, so a graph source never yields
   `arrow-dangling`; an empty graph lints as N1.
 - **N17** A Mermaid dialect `parseMermaid` cannot read: `resolveGraphInput`'s error, printed by the CLI; no lint.
@@ -465,7 +465,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | A box wholly inside another is not an overlap                                                           | `packages/diagram-lint/src/checks/box-overlap.test.ts` › "one holds the other wholly"                                                                   |
 | `node-isolated` judges shapes only, when most boxes are connected                                       | `packages/diagram-lint/src/checks/node-isolated.test.ts`                                                                                                |
 | Group codes judge frames, not lanes; centre containment                                                 | `packages/diagram-lint/src/checks/group-escape.test.ts`, `packages/diagram-lint/src/checks/group-split-edges.test.ts`                                   |
-| A themed element: theme colours, presets, swatches and type defaults are not reported                   | `packages/diagram-lint/src/checks/colour-on-themed.test.ts` (every built-in theme, Default, custom)                                                     |
+| A themed element: theme colours, presets, swatches and type defaults are not reported                   | `packages/diagram-lint/src/checks/colour-on-themed.test.ts` (every built-in theme, Default, an unknown id)                                                     |
 | Severity per code is the spec's                                                                         | `packages/api-schema/src/lint.test.ts`                                                                                                                  |
 | Refs are the views' refs                                                                                | `packages/diagram-lint/src/lint.test.ts` › "prints the refs the views print"                                                                            |
 | Deterministic: same tab, same report, same order                                                        | `packages/diagram-lint/src/lint.test.ts` › "is deterministic", `packages/diagram-lint/src/order.test.ts`                                                |

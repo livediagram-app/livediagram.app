@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
-import { haptic } from '@/lib/haptics';
+import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
@@ -9,7 +9,7 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';
 
 // How long a finger rests on a node before it is a long-press (the canvas long-press's own).
@@ -35,8 +35,8 @@ import {
 } from '@/lib/path-edit';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { pathEditKey } from '@/lib/path-edit-keys';
-import { debugLog } from '@/lib/debug-log';
-import { isTypingTarget } from '@/lib/typing-target';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 type Point = { x: number; y: number };
 

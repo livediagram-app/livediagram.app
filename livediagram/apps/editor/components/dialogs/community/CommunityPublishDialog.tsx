@@ -12,10 +12,16 @@ import {
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
-import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import {
+  Button,
+  TextInput,
+  DialogHeader,
+  DialogCloseButton,
+  TextArea,
+  SwitchRow,
+} from '@livediagram/ui';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiCommunityPopularTags } from '@/lib/api-client';
 import { ApiError } from '@/lib/api/core';
@@ -32,7 +38,7 @@ import { usePublishForm } from './usePublishForm';
 // The plain-words consequences of publishing (docs/specs/025-community/community.md "Publishing";
 // final copy in the blueprint §9).
 const CONSEQUENCES = [
-  'Anyone can view this document and make their own copy.',
+  'Anyone can view this canvas and make their own copy.',
   'Your later edits show in the Community too.',
   'Comments stay private.',
   'You can remove it at any time.',

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList } from './CanvasElementList';
 import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
-import { useFontEpoch } from './useFontEpoch';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
   elementFontId,
   resolveFontStack,
@@ -17,13 +17,11 @@ import {
   layerOpacityOf,
   type CommentMention,
   createElementGridTracker,
-  type ElementIndex,
 } from '@liveplanner/project';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import {
   SelectionGripsContext,
   SelectionGripsLayer,
@@ -43,20 +41,14 @@ import {
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds } from '@liveplanner/project';
 
-// What a drawn arrow resolves its ends against on a board with no arrows yet.
-const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
-
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
 type ElementsExtras = {
-  // The draw gesture in flight (canvas coords), for the line or arrow it would land.
-  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
   // What the selection chrome derives the selection from (it reads the selection from the store).
   selectionInput: CanvasSelectionInput;
-  isPaintMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   handleElementClick: (id: string) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
@@ -86,8 +78,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
-    drawDrag,
-    isPaintMode,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
     onBeginArrowBend,
@@ -97,7 +87,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowLabelDrag,
     onBeginArrowTranslate,
     onBeginDrag,
-    onPressArmedAction,
     onBeginEdit,
     onBeginEndpointDrag,
     onCancelEdit,
@@ -105,7 +94,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign,
     onAddTableRow,
     onAddTableColumn,
-    entityActions,
     onSetPageHeading,
     onAppendWebRow,
     chartPalette,
@@ -183,14 +171,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
     onBeginDrag,
-    onPressArmedAction,
     onShiftSelect,
     // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
     onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
-    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onFollowLink,
     onPressSessionButton,
@@ -317,12 +302,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const boxedShared = useMemo<BoxedShared>(
     () => ({
       onPlainClick: h.handleElementClick,
-      isPaintMode,
       tabLocked,
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
-      onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
       vote: tabVote,
       selfId,
@@ -357,7 +340,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }),
     [
       h,
-      isPaintMode,
       tabLocked,
       tabSummaries,
       readOnly,
@@ -490,7 +472,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             editingId={editingId}
             editCursorAtEnd={editCursorAtEnd}
             reshapingArrowId={props.reshapingArrowId}
-            isPaintMode={isPaintMode}
             tabLocked={tabLocked}
             readOnly={readOnly}
             shiftDupGhostIds={shiftDupGhostIds}
@@ -507,25 +488,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             fontEpoch={fontEpoch}
           />
 
-          {/* The line or arrow being drawn (docs/specs/007-editor/editor-modes.md): the
-          element the release lands, after every element, where it will land. */}
-          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-            <DrawnArrowPreview
-              arrow={props.previewDrawnArrow(
-                props.pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )}
-              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-              occluders={drawnElements}
-              draftLayout={arrowLabels.draftLayout}
-              fontFamily={tabFontStack}
-              withDefs={!hasArrows}
-            />
-          ) : null}
-
           {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
           <AgentFocusOverlay elements={elements} />
@@ -540,7 +502,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-          <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+          <SelectionGripsLayer onHosts={setGripHosts}>
             <LayerSelectionChrome
               selectionInput={props.selectionInput}
               tabId={props.activeTabId ?? ''}
@@ -554,8 +516,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAddTableRow,
                 onAddTableColumn,
                 onAppendWebRow,
-                onAddEntityField: h.onAddEntityField,
-                onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
             />

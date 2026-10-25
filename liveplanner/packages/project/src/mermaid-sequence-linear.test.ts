@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { afterWord, parseSequenceDiagram } from './mermaid-sequence';
-import { resolveGraphInput } from './graph-input';
 
 // Lines are read by prefixes and indexOf, so a long run of spaces costs its length (CodeQL "polynomial regular
 // expression"): each worst case CodeQL named finishes well inside a budget.
@@ -42,7 +41,5 @@ describe('reading Mermaid in linear time', () => {
         text.slice(0, 30),
       ).toBeLessThan(BUDGET_MS);
     }
-    const front = `---\ntitle:${SPACES}x\n---\nflowchart TD\nA-->B`;
-    expect(timed(() => resolveGraphInput({ mermaid: front }))).toBeLessThan(BUDGET_MS);
   });
 });

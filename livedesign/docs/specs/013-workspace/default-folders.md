@@ -119,7 +119,7 @@ A create's place is decided in this order; the first that answers wins:
 
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
   membership is checked against the verified account id (a signed-in session or an API token) only,
-  never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
+  never a guest token, as for [Placement on create](folders.md#placement-on-create).
 - Not a space's root: the root of My Work is where a design lands with no default, and a
   team's root is reached by creating inside the team.
 - Setting a default checks the folder then: a folder that is missing, someone else's, or in a team
@@ -139,38 +139,25 @@ A create's place is decided in this order; the first that answers wins:
 
 - **Guests have defaults too**, keyed on their owner id, limited to their personal folders (a team
   needs a verified account).
-- **Signing up carries them into the account** with the guest's folders (`POST /api/migrate`). When
-  the account already has a default for the same key, the account's stays and the guest's goes.
-- **Account deletion removes them** ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
+- **Signing up carries them into the account** with the guest's folders, when accounts merges the
+  guest into the account. When the account already has a default for the same key, the account's
+  stays and the guest's goes.
+- **Closing an account removes them**, in the index.
 
 ## Storage and limits
 
-- Defaults live in their **own D1 table** (`placement_defaults`), one row per person and key, not
-  in the 4 KB preferences blob ([User preferences](../007-editor/user-preferences.md)).
-- A person holds at most one default per key, so their rows are bounded by the length of the key
-  list (one today).
-- Writes ride the per-owner write rate limit (`WRITE_RATE_LIMITER`, [Rate limiting](../015-api/api.md#rate-limiting)).
+- Defaults are liveworkspace's index's (`placement_defaults`), one row per person and key, per app
+  ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
+  defaults"), not in the 4 KB preferences blob ([User preferences](../007-editor/user-preferences.md)).
+- A person holds at most one default per key, so their rows are bounded by the length of the key list.
 
 ## API
 
-| Method | Path                           | Body           | Answer                              |
-| ------ | ------------------------------ | -------------- | ----------------------------------- |
-| GET    | `/api/placement-defaults`      |                | `{ defaults: [{ key, folderId }] }` |
-| PUT    | `/api/placement-defaults/:key` | `{ folderId }` | 204, the default set                |
-| DELETE | `/api/placement-defaults/:key` |                | 204, the default cleared            |
-
-- Owner-scoped: the signed-in account, an API token's owner, or a guest's `X-Owner-Id`.
-- `GET` answers every stored default whose key is in the list, in list order, dangling ones
-  included: a surface shows a dangling default as such.
-- `DELETE` of a key with no default is a 204 as well.
-
-| Rejection                | Status | When                                                                |
-| ------------------------ | ------ | ------------------------------------------------------------------- |
-| `default_key_invalid`    | 400    | `:key` is not one of the keys                                       |
-| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string    |
-| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined      |
-| `rate_limited`           | 429    | The per-owner write rate limit is spent                             |
-| `intent_invalid`         | 400    | (on `POST /api/designs`) `intent` is present but not a valid intent |
+The index's `GET /placement-defaults` and `PUT/DELETE /placement-defaults/:key`, called by the shared Explorer and
+the editor; livedesign's api has no routes for them. The index names a key with its app
+(`livedesign:mode:pages` for `mode:pages`). A dangling default is listed as such, and is skipped when
+a design is made. `POST /api/designs` refuses an `intent` that is present but not a valid one with
+`400 intent_invalid`.
 
 ## Surfaces
 

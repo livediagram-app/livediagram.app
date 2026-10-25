@@ -1,46 +1,34 @@
 import { apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has
-// settled: the Clerk userId when signed in, else the guest's SERVER-SIGNED id (minting one on a first
-// visit, upgrading a legacy unsigned id) so the eventual sign-up migrate can prove possession; then
-// the stored participant row, seeded or re-synced as needed. Lifted out of useIdentityBootstrap so a
+// settled: the account id when signed in, else the guest token's id (fetching one from the accounts site on a first
+// visit); then
+// the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so a
 // document in This Browser can open first and resolve this in the background
 // (docs/specs/006-document/offline-mode.md "Instant open").
 export async function resolveParticipant(opts: {
-  clerkUserId: string | null | undefined;
-  clerkDisplayName: string | null | undefined;
+  accountUserId: string | null | undefined;
+  accountDisplayName: string | null | undefined;
   // Called once the id is known and the row is being fetched (the load watchdog's step).
   onParticipantStep?: () => void;
 }): Promise<Participant> {
-  const { clerkUserId, clerkDisplayName } = opts;
-  const selfId = clerkUserId ?? (await ensureSignedGuestIdentity()).id;
+  const { accountUserId, accountDisplayName } = opts;
+  const selfId = accountUserId ?? (await ensureGuestIdentity()).id;
   opts.onParticipantStep?.();
   const storedSelf = await apiLoadSelf(selfId).catch(() => null);
-  // Signed-in users always use their Clerk-known name on the
-  // participant record. For a brand-new participant (no storedSelf)
-  // this seeds the row; for an existing one we overwrite so it stays
-  // in sync with the user's Clerk profile. Guests keep the existing
-  // random placeholder so their chosen identity isn't blown away.
-  const baseSelf: Participant = storedSelf ?? {
+  // The profile is liveworkspace's, one per person across every app: an account with no name of
+  // its own already answers with its account name, and a name set here or in another app wins
+  // over it. So a stored profile is used as it is; only a first visit with none seeds one, with
+  // the account name when signed in and a random placeholder for a guest.
+  if (storedSelf) return { ...storedSelf, status: 'online' };
+  const self: Participant = {
     id: selfId,
-    name: randomName(),
+    name: (accountUserId && accountDisplayName) || randomName(),
     color: randomColor(),
     status: 'online',
   };
-  const self: Participant =
-    clerkUserId && clerkDisplayName
-      ? { ...baseSelf, name: clerkDisplayName, status: 'online' }
-      : { ...baseSelf, status: 'online' };
-  // Persist on first load, or when a signed-in user's Clerk display
-  // name has drifted from what we have on the server.
-  const nameDrifted = !!(
-    storedSelf &&
-    clerkUserId &&
-    clerkDisplayName &&
-    storedSelf.name !== clerkDisplayName
-  );
-  if (!storedSelf || nameDrifted) await apiSaveSelf(self).catch(() => {});
+  await apiSaveSelf(self).catch(() => {});
   return self;
 }

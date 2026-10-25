@@ -9,7 +9,7 @@ stored with a streamline or pressure is stored data, rendered as drawn.
 
 - Pen strokes are the bulk of an imported board. Stored as `{ nx, ny }` objects with full doubles, a
   point costs about 29 to 46 bytes, and a large board's tab outgrows what one database row holds.
-- A tab is saved as one row in Cloudflare D1, which caps a row at 2,000,000 bytes, so a tab must fit
+- A tab is saved as one row in its plan's Durable Object SQLite, which caps a row at 2,000,000 bytes, so a tab must fit
   within it ([API](../015-api/api.md)). Compact points keep large boards well inside
   it without thinning strokes visibly.
 - Every point as an object also means a large board becomes tens of thousands of small objects
@@ -68,6 +68,8 @@ pen's pressure at each point when it reported one. It replaces the former `point
 
 ## Migration of stored strokes
 
+**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
+
 - A stroke stored in the former shape (`points` as `{ nx, ny }` objects, optional `pressures`)
   is converted to `packedPoints` by the stored-tab migration (`migrateStoredTab`) that every
   stored-tab entry point already runs: the api's tab read and thumbnail, the offline store, and
@@ -116,16 +118,14 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 - At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
   133,336 base64 characters.
-- The codec fits a stroke with more samples than that (`fitStrokeToLimit`) rather than losing
-  it: it is simplified just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
-  under the cap, else evenly thinned), its pressures following the samples it keeps. A stroke
-  that fits is stored exactly as written.
+- A stroke that fits is stored exactly as written; a writer keeps its strokes under the cap. (A fitter that
+  simplified a longer stroke to fit, `fitStrokeToLimit`, was never called by a writer and was removed 2026-10-24.)
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 
 ## Measured wins
 
-Measured by the stroke-points bench (`pnpm bench:stroke-points`, `scripts/stroke-points-bench.ts`)
+Measured by the stroke-points bench (scripts/stroke-points-bench.ts, removed 2026-10-24)
 on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
 66,000 points, a pressure on every point. Before is the former shape as the pen wrote it (full
 doubles); timings are medians on a developer machine and move with it, the ratios hold.
@@ -133,7 +133,7 @@ doubles); timings are medians on a developer machine and move with it, the ratio
 | Measure                                   | Before (`{ nx, ny }`) | After (packed) |
 | ----------------------------------------- | --------------------- | -------------- |
 | Tab bytes                                 | 5,129 KB              | 1,066 KB       |
-| Share of one D1 row (2,000,000 bytes)     | 263%                  | 55%            |
+| Share of one SQLite row (2,000,000 bytes) | 263%                  | 55%            |
 | Bytes per point, pressure included        | 70.8                  | 7.8            |
 | Objects `JSON.parse` allocates            | 75,902                | 3,302          |
 | Heap held after parsing                   | 6,674 KB              | 1,148 KB       |

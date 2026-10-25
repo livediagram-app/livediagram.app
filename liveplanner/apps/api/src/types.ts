@@ -12,9 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  CustomTheme as CustomThemeDTO,
-  CustomThemeDefinition,
-  ApiToken as ApiTokenDTO,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
   ShareRole,
@@ -23,11 +20,22 @@ export type {
   ClientMessage,
 } from '@liveplanner/api-schema';
 
+import type { PlanRoom } from './plan-room/plan-room';
+
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  DB: D1Database;
-  PROJECT_ROOM: DurableObjectNamespace;
+  // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
+  // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
+  PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
+  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
+  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
+  // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
+  // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
+  // and this app presents it to push a plan's summary and to act for an API token's account. Unset, the plan
+  // doors answer as missing and the internal endpoints 404.
+  INDEX_ORIGIN?: string;
+  INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
@@ -50,30 +58,14 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
-  // owner-signature.ts). When set, POST /api/guest-id mints a signed id
-  // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to an account — closing the "observe a guest id,
-  // claim its data" hole. Unset → migrate keeps its legacy unsigned
-  // behaviour (a deployment that hasn't configured it).
-  GUEST_ID_HMAC_SECRET?: string;
-  // Guest REST signature enforcement cutoff (docs/specs/015-api/public-api-and-tokens.md §4), epoch ms. While
-  // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
-  // legacy unsigned behaviour — the grace window that lets pre-signing guests
-  // self-heal to a signed id. Set to a past timestamp (once active guests have
-  // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
-  // without GUEST_ID_HMAC_SECRET.
-  GUEST_SIG_ENFORCE_AFTER?: string;
-  // When this deployment started signing guest ids, epoch ms (docs/specs/015-api/public-api-and-tokens.md §4).
-  // Once enforcement is armed, an id whose participant row is older than this
-  // is a legacy (pre-signing) guest and may still run the one-time upgrade onto
-  // a signed id unsigned; every newer id must prove possession. Unset = no
-  // legacy exception.
-  GUEST_SIGNING_LIVE_AT?: string;
-  // R2 bucket caching each project's SVG snapshot (`thumb/<id>`) and share card
-  // (docs/specs/006-project/project-snapshots.md). Optional so a deploy without R2 still runs:
-  // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
-  SNAPSHOTS?: R2Bucket;
+  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which serves every plan's previews
+  // (liveworkspace/docs/previews.md): its API's base URL (`https://liveworkspace.app/api/media`; locally
+  // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
+  // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
+  // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge
+  // leaves the plan's previews to lapse.
+  MEDIA_URL?: string;
+  MEDIA_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the
@@ -91,16 +83,8 @@ export type Env = {
   // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
   // absent (a deployment without it) → "allow".
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md) — an unauthenticated
-  // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
-  // absent (a deployment without it) → "allow".
-  UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-  // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
-  // Optional: absent (a deployment without it) → "allow".
-  TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the unconfigured
@@ -112,9 +96,8 @@ export type Env = {
   // liveplanner's Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
-  // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
-  // the whole email feature is inert: no sends, and the email_lifecycle table
-  // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;
+  // Resend API key for transactional email (docs/specs/014-identity/transactional-email.md). When absent
+  // the whole email feature is inert: no sends. Set via `wrangler secret put RESEND_API_KEY` for prod;
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;
   // From identity for outbound email (optional). Defaults to
@@ -123,14 +106,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://liveplanner.app".
   APP_BASE_URL?: string;
-  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // (a deployment without it) allows every read.
-  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
-  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a deployment without it) allows every mint.
-  WORKBENCH_TICKET_RATE_LIMITER?: {
-    limit: (input: { key: string }) => Promise<{ success: boolean }>;
-  };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
@@ -139,3 +114,9 @@ export type Env = {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
 };
+
+// The env a plan's own code runs with, inside its Durable Object (src/plan-room/plan-room.ts): the
+// worker's bindings plus `PLAN_DB`, the plan's own SQLite behind the D1 surface (plan-room/plan-db.ts).
+// Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
+// the worker reaches content through the plan's Durable Object instead.
+export type PlanEnv = Env & { PLAN_DB: D1Database };

@@ -11,8 +11,12 @@ import {
   type Element,
   type ThemeDefinition,
 } from '@liveplanner/project';
-import { safeJson } from './local-storage-safe';
-import { isQuickStyleTarget } from './quick-style';
+import { safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
+
+// An unlocked shape, arrow or text element: the kinds memory records.
+function isRememberedTarget(el: Element): boolean {
+  return (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') && el.locked !== true;
+}
 
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
 // text element.
@@ -102,7 +106,7 @@ export function recordStyleEdit(
   let next: StyleMemory | null = null;
   for (const el of after) {
     const was = previous.get(el.id);
-    if (!was || !isQuickStyleTarget(el)) continue;
+    if (!was || !isRememberedTarget(el)) continue;
     const kind = styleKindOf(el)!;
     for (const field of Object.keys(fieldsFor(kind))) {
       const value = (el as unknown as Record<string, unknown>)[field];

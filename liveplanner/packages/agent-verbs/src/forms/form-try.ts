@@ -3,8 +3,8 @@
 // editor's Submit in Preview does: a published form, or one whose responses go to a sheet, takes it through the api's
 // form-preview route (a published form counts it, numbered); an unpublished board form's card is made here through
 // the items route, uncounted, as the editor makes it itself. Nothing is sent when an answer is wrong.
-import type { ApiClient } from '@liveplanner/api-client';
-import { ApiError } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { FormResponseAccepted, ItemResponse } from '@liveplanner/api-schema';
 import {
   OTHER_ANSWER,

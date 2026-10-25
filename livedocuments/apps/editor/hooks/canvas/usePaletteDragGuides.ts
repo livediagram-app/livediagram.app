@@ -1,6 +1,6 @@
 'use client';
 
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AlignmentGuide, DistributionGuide, Element } from '@livedocuments/document';
 import { pointerToCanvas } from '@/lib/canvas';

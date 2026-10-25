@@ -8,8 +8,8 @@ import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { explorerPathFor } from '@/app/explorer/routes';
-import { assignAppLocation } from '@/lib/app-location';
+import { explorerPath } from '@liveworkspace/explorer';
+import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { cardTabResolver, type CardSearchSource } from '@/lib/search-plan';
 
 const SearchPanel = dynamic(
@@ -27,11 +27,7 @@ export function EditorSearchPanel() {
   const {
     searchOpen,
     projectList,
-    folders,
-    sharedProjects,
     teams,
-    teamFolders,
-    teamProjects,
     tabs,
     activeId,
     openProject,
@@ -57,12 +53,12 @@ export function EditorSearchPanel() {
     <SearchPanel
       {...searchPanelSources({
         projects: projectList,
-        folders,
-        shared: sharedProjects,
+        // Folders, links and team plans are the Explorer's (the index's), opened there.
+        folders: [],
+        shared: [],
         teams,
-        teamProjects,
+        teamProjects: [],
       })}
-      teamFolders={teamFolders}
       tabs={tabs}
       currentTabId={activeId}
       onSelectProject={(id) => {
@@ -73,14 +69,14 @@ export function EditorSearchPanel() {
       }}
       onSelectFolder={(id) => {
         // A personal folder opens on the Explorer page, as picking it there does.
-        assignAppLocation(`${window.location.origin}${explorerPathFor({ kind: 'folder', id })}`);
+        assignAppLocation(`${window.location.origin}${explorerPath({ kind: 'folder', id })}`);
       }}
       onSelectTeam={(id) => {
-        assignAppLocation(`${window.location.origin}/explorer/team?id=${encodeURIComponent(id)}`);
+        assignAppLocation(`${window.location.origin}${explorerPath({ kind: 'team', id })}`);
       }}
       onSelectTeamFolder={(teamId, folderId) => {
         assignAppLocation(
-          `${window.location.origin}/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
+          `${window.location.origin}${explorerPath({ kind: 'team', id: teamId, folderId })}`,
         );
       }}
       onSelectTab={(tabId) => {

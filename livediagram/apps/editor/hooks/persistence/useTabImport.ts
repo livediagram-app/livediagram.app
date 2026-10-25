@@ -15,7 +15,7 @@ import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
 // the document, with the old-to-new map of the element ids. Shared with remintTabElements, which a Duplicate goes

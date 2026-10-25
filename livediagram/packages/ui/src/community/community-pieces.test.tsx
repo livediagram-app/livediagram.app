@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { communityPostFixture } from '@livediagram/api-schema/testing';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { clerkPublishableKeyOrNull } from '../clerk-key';
 import { CommunityAuthorBadge, communityAuthorInitial } from './CommunityAuthorBadge';
 import { CommunityCopyCount, CommunityLikeCount } from './CommunityCounts';
 import { CommunityPostTile } from './CommunityPostTile';
@@ -86,27 +85,23 @@ describe('CommunityPostTile', () => {
 });
 
 describe('CommunityAuthorBadge', () => {
-  it("shows the author's initial in their colour, or their picture, falling back when it fails", () => {
+  it("shows the author's initial in their colour, never a picture", () => {
     expect(communityAuthorInitial(' ada')).toBe('A');
     expect(communityAuthorInitial('  ')).toBe('?');
     const { container, rerender } = render(<CommunityAuthorBadge author={post.author} />);
     expect(screen.getByText('A')).toBeTruthy();
     expect(screen.getByText('ada lovelace')).toBeTruthy();
 
+    // A post an older author published with a picture still draws the initial.
     rerender(
       <CommunityAuthorBadge
         author={{ ...post.author, picture: 'https://img.clerk.com/a.png' }}
         showName={false}
       />,
     );
-    const img = container.querySelector('img')!;
-    // Asked for at the disc's size, as every profile picture is; the initial holds the box meanwhile.
-    expect(img.getAttribute('src')).toBe('https://img.clerk.com/a.png?width=96&height=96');
-    expect(screen.getByText('A')).toBeTruthy();
-    expect(screen.queryByText('ada lovelace')).toBeNull();
-    fireEvent.error(img);
     expect(container.querySelector('img')).toBeNull();
     expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.queryByText('ada lovelace')).toBeNull();
   });
 });
 
@@ -127,15 +122,5 @@ describe('counts', () => {
   it('hold a placeholder card hidden from screen readers', () => {
     const { container } = render(<CommunityPostTileSkeleton />);
     expect(container.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
-  });
-});
-
-describe('clerkPublishableKeyOrNull', () => {
-  it('turns sign-in on only for a real publishable key', () => {
-    expect(clerkPublishableKeyOrNull('pk_test_abc')).toBe('pk_test_abc');
-    expect(clerkPublishableKeyOrNull('pk_live_abc')).toBe('pk_live_abc');
-    expect(clerkPublishableKeyOrNull('sk_test_abc')).toBeNull();
-    expect(clerkPublishableKeyOrNull('')).toBeNull();
-    expect(clerkPublishableKeyOrNull(undefined)).toBeNull();
   });
 });

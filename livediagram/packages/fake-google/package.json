@@ -17,8 +17,8 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

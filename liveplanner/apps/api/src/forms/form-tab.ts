@@ -8,15 +8,15 @@ import {
   type FormDefinition,
 } from '@liveplanner/forms';
 import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@liveplanner/items';
-import { projectLinksTab, getTab, liveFormLinksOf, readSheetHead, setFormLinkOpen } from '../db';
+import { planHasTab, getTab, liveFormLinksOf, readSheetHead, setFormLinkOpen } from '../db';
 import type { FormSheetDestination } from '@liveplanner/forms';
-import type { Env, TabDTO } from '../types';
+import type { PlanEnv, TabDTO } from '../types';
 
 type FormTab = { tab: TabDTO; form: FormDefinition };
 
 // The project's Form tab and its form; null when the tab is gone, is no Form tab, or holds no form.
 export async function readFormTab(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
 ): Promise<FormTab | null> {
@@ -28,7 +28,7 @@ export async function readFormTab(
 
 // The boards on a tab of the project (none when it is gone or holds none).
 export async function boardsOnTab(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
 ): Promise<PlanBoardSetup[]> {
@@ -46,20 +46,20 @@ export async function boardsOnTab(
 // Whether a Sheet destination still holds: its sheet on its tab, and that tab still in the project (a deleted Sheet
 // tab can leave its sheet behind until it is swept, and a row written there is never seen).
 export async function sheetOnItsTab(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheet: FormSheetDestination,
 ): Promise<boolean> {
   const head = await readSheetHead(env, projectId, sheet.sheetId);
   return (
-    !!head && head.tabId === sheet.tabId && (await projectLinksTab(env, projectId, sheet.tabId))
+    !!head && head.tabId === sheet.tabId && (await planHasTab(env, projectId, sheet.tabId))
   );
 }
 
 // Why responses could not land now, or null when they can (docs/specs/030-forms/forms.md "Responses to a Sheet",
 // "Publishing and the form link"): the sheet gone from its tab, or the board destination's problem.
 export async function responsesProblem(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   form: FormDefinition,
   types: readonly ItemTypeDef[],
@@ -75,7 +75,7 @@ export async function responsesProblem(
 // responses went there stops taking responses (its link closed, never deleted), as they would have nowhere to go. It
 // opens again only once it has somewhere to send them. Answers how many.
 export async function pauseFormsFeeding(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
 ): Promise<number> {

@@ -6,13 +6,18 @@
 // never elements. A tab from before multiple pages carries one `pageOrientation` instead, read as
 // a single page.
 import { isBoxed, type Element, type Tab } from './index';
-import { parsePageSides, parseRowAt, type PageSides, type RowAt } from './page-fit';
+import {
+  parsePageSides,
+  parseRowAt,
+  type PageSides,
+  type RowAt,
+} from '@liveworkspace/model-core/page-fit';
 import {
   parseColourFill,
   parsePagePattern,
   type PageColourFill,
   type PagePattern,
-} from '@livedocuments/page-background';
+} from '@liveworkspace/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
 
 export type PageOrientation = 'portrait' | 'landscape';
@@ -130,7 +135,7 @@ function isPageSizeId(v: unknown): v is PageSizeId {
 
 // What a page is painted with (docs/specs/007-editor/pages-mode.md "Backgrounds"): a fill
 // (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it. The colours,
-// patterns and motions live in @livedocuments/page-background, which a form's cover shares; re-exported here.
+// patterns and motions live in @liveworkspace/page-background, which a form's cover shares; re-exported here.
 export {
   PAGE_MOTIONS,
   PAGE_MOTION_SPEED_MAX,
@@ -140,7 +145,7 @@ export {
   type PageColourFill,
   type PageMotion,
   type PagePattern,
-} from '@livedocuments/page-background';
+} from '@liveworkspace/page-background';
 export type PageFill = PageColourFill | PageImageFill;
 export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 
@@ -263,6 +268,12 @@ function parsePageFields(v: unknown): Page | undefined {
 /** The page's kind: an article or a slide page, or else an infographic page. */
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
   return page.kind === 'article' || page.kind === 'slide' ? page.kind : 'infographic';
+}
+
+/** The tab's kind (docs/specs/007-editor/pages-mode.md "One kind a tab"): its first page's, so a
+ *  deck holds only slides; infographic for a tab with no pages. A page added is of this kind. */
+export function tabPageKind(pages: readonly Pick<Page, 'kind'>[]): PageKind {
+  return pages[0] ? pageKindOf(pages[0]) : 'infographic';
 }
 
 /** A new slide page (docs/specs/007-editor/pages-mode.md "Page kinds"): landscape, in the

@@ -11,7 +11,7 @@ import type {
   ImportImageRequest,
   ImportImageSession,
 } from './types';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export async function attachImportImages(
   elements: Element[],

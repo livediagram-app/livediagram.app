@@ -2,7 +2,10 @@
 // own choice, kept in this browser. A page with none follows the Logo Guides setting. Not a synced
 // preference: those are capped at 4 KB, and page ids would fill it. The most recent choices are
 // kept, the oldest dropped past LOGO_PAGE_GUIDES_MAX.
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 const STORAGE_KEY = 'livedesign:v2:logo-page-guides';
 /** How many pages' choices are kept (about 10 KB of local storage at most). */

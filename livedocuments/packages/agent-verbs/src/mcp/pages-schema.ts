@@ -77,7 +77,9 @@ const pageChange = z
         op: z.literal('add').describe('Add a page.'),
         kind: z
           .enum(['infographic', 'slide'])
-          .describe('What the page is for. Article pages are made by write_article.'),
+          .describe(
+            "What the page is for: the tab's own kind (its first page's), as every page of a tab is one kind. Article pages are made by write_article.",
+          ),
         size: size.optional(),
         orientation: orientation.optional(),
         name: name.optional(),

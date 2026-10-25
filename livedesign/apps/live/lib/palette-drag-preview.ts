@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import type { ShapeKind } from '@livedesign/design';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A
 // palette tile publishes what it's dragging on `dragstart` so the canvas's

@@ -8,8 +8,8 @@ Scope, by file:
 
 | File                                                     | Role                                                                                            |
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `packages/design/src/arrow-bend.ts`                    | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
-| `apps/live/lib/double-press.ts`                          | The press ledger: double-press pairing and echo detection                                       |
+| `packages/design/src/arrow-bend.ts`                      | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
+| `../packages/workbench/src/lib/double-press.ts`          | The press ledger: double-press pairing and echo detection                                       |
 | `apps/live/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                                  |
 | `apps/live/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
 | `apps/live/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
@@ -17,7 +17,7 @@ Scope, by file:
 | `apps/live/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
 | `apps/live/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
 | `apps/live/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
-| `packages/design/src/arrow-scale.ts`                   | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
+| `packages/design/src/arrow-scale.ts`                     | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
 | `apps/live/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |
@@ -112,10 +112,10 @@ scales a free arrow.
 
 | Name                   | Value | Provenance / safe range                               |
 | ---------------------- | ----- | ----------------------------------------------------- |
-| `BEND_T_MIN`           | 0.2   | Keeps a grab beside a head from exploding; 0.1 to 0.3 |
+| `BEND_T_MIN`           | 0.05  | A cubic has no leverage at its very ends; 0.02 to 0.2 |
 | `DOUBLE_PRESS_MS`      | 450   | Existing, moved to double-press                       |
 | `DOUBLE_PRESS_SLOP_PX` | 8     | Screen px between the two presses; 4 to 16            |
-| `MOVE_FRAME_PAD_PX`    | 12    | Frame clearance round the route; 8 to 24              |
+| `MOVE_FRAME_PAD_PX`    | 20    | Edge handles clear of the endpoint grips; 12 to 32    |
 | `MOVE_FRAME_HIT_PX`    | 10    | Grab band width of the frame edge; 8 to 16            |
 | `MAX_CURVE_POINTS`     | 5000  | A path's node limit (MAX_PATH_NODES); 1000 to 5000    |
 

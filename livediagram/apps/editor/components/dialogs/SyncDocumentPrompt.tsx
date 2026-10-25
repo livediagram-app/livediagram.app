@@ -37,7 +37,7 @@ export function SyncDocumentPrompt({
       await onSyncToCloud();
       // The document is a cloud document now: the dialog shows what it was opened for in place of this prompt.
       // The spinner stays until it does, so the button never flashes back.
-      toast.success('Synced. Your document is on livediagram now.');
+      toast.success('Synced. Your canvas is on livediagram now.');
     } catch (e) {
       setBusy(false);
       toast.error(syncFailureMessage(e));
@@ -54,7 +54,7 @@ export function SyncDocumentPrompt({
       </span>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-          This Document Is in This Browser
+          This Canvas Is in This Browser
         </p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {message}
@@ -72,7 +72,7 @@ export function SyncDocumentPrompt({
             Syncing…
           </span>
         ) : (
-          'Sync Document'
+          'Sync Canvas'
         )}
       </Button>
     </div>

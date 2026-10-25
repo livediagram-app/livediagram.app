@@ -1,11 +1,11 @@
 'use client';
 
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@liveplanner/project';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isCanvasCovered, isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 

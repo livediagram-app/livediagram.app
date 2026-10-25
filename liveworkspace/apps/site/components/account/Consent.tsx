@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { call, nextUrl, signedOAuthQuery } from '@/lib/accounts';
+import { afterSignIn, call, nextUrl, signedOAuthQuery } from '@/lib/accounts';
 import { useLocationSearch } from '@/lib/location-search';
 import {
   AccountCard,
@@ -27,7 +27,8 @@ export function Consent() {
         oauth_query: signedOAuthQuery(window.location.search),
       }),
     );
-    if (next) return window.location.assign(next);
+    // Under an app's address, by way of liveworkspace.app (lib/accounts.ts afterSignIn).
+    if (next) return window.location.assign(await afterSignIn(next, window.location.search));
     setBusy(false);
     setError('That request has expired. Go back to the app and try again.');
   }

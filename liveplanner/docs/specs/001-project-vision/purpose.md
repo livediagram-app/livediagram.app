@@ -85,7 +85,7 @@ never arrives.
   the default posture ([Offline Mode](../006-project/offline-mode.md)).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the planner
   ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
-- **Not open source.** The code is proprietary and private; the product is free to use.
+- **Not a public codebase (yet).** The code is MIT licensed but its repository is private; the product is free to use.
 
 ## Boundaries that have moved
 
@@ -113,7 +113,7 @@ not "is this good?" but "does a team running this plan need it in the project?".
 
 ## How it ships
 
-liveplanner is **proprietary** and runs as one **hosted product**, free for
+liveplanner is **MIT licensed** and runs as one **hosted product**, free for
 everyone, no paid tier, with no trackers and no ads. See
 [Business model + licence](../002-project-scope/business-model-and-licence.md). It has not been deployed yet
 ([Build phase](../005-project-roadmap/prototype-scope.md)).

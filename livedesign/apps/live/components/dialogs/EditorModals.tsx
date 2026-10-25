@@ -30,7 +30,6 @@ export function EditorModals() {
     userPreferences,
     setUserPreferences,
     selfParticipant,
-    aiCapable,
     canvasThemeTab,
     isReadOnly,
     activeTab,
@@ -65,12 +64,10 @@ export function EditorModals() {
               commitUserPreferences(userPreferences, next, selfParticipant?.id ?? null),
             );
           }}
-          ownerId={selfParticipant?.id ?? null}
           onClose={closeSettings}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
           initialSectionId={settingsSection}
-          aiCapable={aiCapable}
         />
       ) : null}
       {canvasThemeTab !== null && !isReadOnly ? (

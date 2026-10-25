@@ -12,20 +12,22 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
-    "@clerk/react": "^6.17.8",
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/icons": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
+    "@liveworkspace/ui": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livediagram/next-config": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/tailwind-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/next-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/tailwind-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.4",

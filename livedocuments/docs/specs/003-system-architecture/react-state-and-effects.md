@@ -27,14 +27,14 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
 - **A value an event handler or effect needs at its newest** is read through:
   - `useEffectEvent`, when it is read from inside an effect (including the timers, listeners and
     frames the effect sets up): the effect keeps only its true triggers;
-  - `useLatest(value)` (`apps/editor/hooks/ui/useLatest.ts`: a ref updated in an insertion effect,
+  - `useLatest(value)` (`../packages/workbench/src/hooks/ui/useLatest.ts`: a ref updated in an insertion effect,
     before any other effect of the commit runs), when it is read from event handlers or code outside
     React. `useAssignRef(ref, value)` does the same into a ref that must be declared earlier, to break
     a cycle between hooks.
 - **Derived state is computed during render**, not mirrored in an effect. State that resets when an
   input changes is adjusted during render (comparing against the previous input kept in state) or reset
   with a `key`. A local draft of a value that also changes from outside uses `useFollowingDraft`
-  (`apps/editor/hooks/ui/useFollowingDraft.ts`).
+  (`../packages/workbench/src/hooks/ui/useFollowingDraft.ts`).
 - **Effects synchronise with the outside world** (subscriptions, timers, the DOM, storage, the network)
   and set state only from their callbacks. External stores are read with `useSyncExternalStore`: the
   guest id (`subscribeGuestSelfId`), the guest-data migration (`subscribeGuestMigration`), the URL,
@@ -49,7 +49,7 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   once. A reading by the day (due and overdue counts, the calendar's month, the Gantt's today line) uses
   `useToday()`, a store that moves on at local midnight and when the page is shown again. Nothing reads
   the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is the build's,
-  inlined at build (`@livedocuments/next-config`).
+  inlined at build (`@liveworkspace/next-config`).
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
 - **A handler decides before it commits.** A state updater (the function a commit or a `setX` takes) may
@@ -65,7 +65,7 @@ recompute(t))`. `apps/editor/commit-updater-flags.test.ts` fails a new one.
 The editor (`apps/editor`) builds with the React Compiler, which memoises components and hooks at build time, so a
 re-render re-runs only what its inputs changed. The three static sites (marketing, help, telemetry) do not:
 their pages rarely re-render, and the compiler's memoisation added 6 to 44 KiB of first-load JavaScript to them.
-The editor asks for it through `@livedocuments/next-config` (`reactCompiler: true`). The rules above are its precondition: it compiles code
+The editor asks for it through `@liveworkspace/next-config` (`reactCompiler: true`). The rules above are its precondition: it compiles code
 that keeps them and leaves the rest as plain React.
 
 - **The native Rust port runs it**, inside Turbopack (`reactCompiler: true` with

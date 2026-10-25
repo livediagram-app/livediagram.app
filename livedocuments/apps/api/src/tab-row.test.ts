@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 
-// rowToTab + rowToTabSummary translate every D1 tab row into the
+// rowToTab + rowToTabSummary translate every stored tab row into the
 // wire-format DTOs the editor consumes. Every tab read in the
 // product (open a document, switch tabs, copy a tab, share-link
 // resolve) flows through one or the other; a regression that

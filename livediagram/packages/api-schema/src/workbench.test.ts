@@ -55,10 +55,18 @@ describe('parseWorkbenchOrigin', () => {
 
 describe('isWorkbenchSessionFormat', () => {
   it('tells an lvw_ session from a token and from a malformed one', () => {
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(true);
-    expect(isWorkbenchSessionFormat(`lvd_${'a'.repeat(43)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!`)).toBe(false);
+    const store = `.${'0f'.repeat(32)}`;
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}${store}`)).toBe(
+      true,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}${store}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}${store}`)).toBe(
+      false,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!${store}`)).toBe(
+      false,
+    );
   });
 });
 
@@ -91,7 +99,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'schema/square'],
     ['GET', 'participants/user_1'],
     ['GET', 'preferences'],
-    ['GET', 'custom-themes'],
     ['GET', 'shape-libraries'],
     ['POST', 'images'],
     ['GET', 'images/img1'],
@@ -107,7 +114,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'documents/doc1/changesets/cs_1'],
     ['GET', 'documents/doc1/comments'],
     ['GET', 'documents/doc1/tabs/t1/render.svg'],
-    ['GET', 'documents/doc1/tabs/t1/comment-pictures'],
     ['POST', 'documents/doc1/tabs/t1/comments'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/reply'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/resolve'],
@@ -146,15 +152,12 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'tokens'],
     ['GET', 'teams'],
     ['DELETE', 'account'],
-    ['POST', 'migrate'],
-    ['POST', 'guest-id'],
     ['POST', 'ai'],
     ['GET', 'drive'],
     ['POST', 'oauth'],
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
-    ['POST', 'custom-themes'],
     ['POST', 'shape-libraries'],
     ['DELETE', 'images/img1'],
     ['GET', 'images/usage'],
@@ -244,7 +247,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'shared'],
     ['DELETE', 'shared/doc1'],
     ['PUT', 'favourites/doc1'],
-    ['GET', 'tags'],
     ['GET', 'home'],
     ['GET', 'timeline'],
     ['GET', 'activity'],
@@ -254,7 +256,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'images'],
     ['GET', 'images/usage'],
     ['DELETE', 'images/img1'],
-    ['POST', 'custom-themes'],
     ['DELETE', 'shape-libraries/lib1'],
     ['GET', 'teams'],
     ['GET', 'teams/team1'],
@@ -268,8 +269,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
   it.each([
     ['DELETE', 'account'],
     ['GET', 'account'],
-    ['POST', 'migrate'],
-    ['POST', 'guest-id'],
     ['GET', 'tokens'],
     ['DELETE', 'tokens/current'],
     ['GET', 'workbench/pairings'],

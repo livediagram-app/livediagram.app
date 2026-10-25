@@ -8,7 +8,6 @@ import type { ThemeId } from './themes';
 // the picker's theme cards (docs/specs/007-editor/new-document-route.md). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
-// Custom themes have no entry (their card shows just the saved name).
 const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   // The one scheme whose blurb describes a BEHAVIOUR rather than a palette:
   // Default is the same entry in both halves, and which you see is your own
@@ -45,7 +44,7 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   evergreen: 'Berry red on deep fir green.',
 };
 
-// The blurb for a theme id, or undefined for an unknown / custom id.
+// The blurb for a theme id, or undefined for an unknown id.
 export function themeDescription(id: string): string | undefined {
   return (THEME_DESCRIPTIONS as Record<string, string>)[id];
 }

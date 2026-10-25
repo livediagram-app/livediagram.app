@@ -7,15 +7,12 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const config = vi.hoisted(() => ({ signInEnabled: true }));
-vi.mock('@/lib/auth-config', () => config);
-
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 
 function setHint(signedIn: boolean) {
   document.cookie = signedIn
-    ? 'lp_signed_in=1'
-    : 'lp_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    ? 'ldoc_signed_in=1'
+    : 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 }
 
 type Props = { authLoaded: boolean; accountUserId: string | null };
@@ -25,13 +22,14 @@ const render = (initial: Props) =>
 describe('useNewDocumentLocation', () => {
   afterEach(() => {
     setHint(false);
-    config.signInEnabled = true;
   });
 
   describe('resolveSaveLocation', () => {
     it('keeps a signed-in person on livedocuments', async () => {
       const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livedocuments');
+      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe(
+        'livedocuments',
+      );
     });
 
     it('answers a guest at once, without waiting for identity', async () => {
@@ -62,13 +60,9 @@ describe('useNewDocumentLocation', () => {
 
     it('keeps a folder or team link on livedocuments', async () => {
       const { result } = render({ authLoaded: false, accountUserId: null });
-      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livedocuments');
-    });
-
-    it('keeps everyone on livedocuments without sign-in', async () => {
-      config.signInEnabled = false;
-      const { result } = render({ authLoaded: false, accountUserId: null });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livedocuments');
+      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe(
+        'livedocuments',
+      );
     });
   });
 });

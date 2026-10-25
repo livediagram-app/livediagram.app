@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { labImageOf, rgbToLab } from './lab';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // CIELAB (D65, sRGB), the space where "how different is this paper from the
 // wall" is a distance a person would agree with. Reference values from the

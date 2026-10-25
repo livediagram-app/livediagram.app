@@ -1,4 +1,3 @@
-import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
@@ -25,7 +24,7 @@ describe('palette layouts', () => {
       for (const e of layout.categories) {
         expect(known.has(e.id), `${kind}: ${e.id}`).toBe(true);
         for (const t of e.tiles ?? [])
-          if (t !== DIVIDE) expect(tileById(t) ?? openerById(t), `${kind}: ${t}`).toBeDefined();
+          if (t !== DIVIDE) expect(tileById(t), `${kind}: ${t}`).toBeDefined();
         if (CATALOGUE_CATEGORIES.has(e.id)) expect(e.tiles, `${kind}: ${e.id}`).toBeUndefined();
       }
     }

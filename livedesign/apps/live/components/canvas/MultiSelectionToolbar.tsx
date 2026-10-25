@@ -3,9 +3,15 @@ import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard, Glyph } fr
 import type { CombineOp } from '@/lib/combine/combine';
 import { CombineMenuButton } from '@/components/canvas/CombineMenu';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
-import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
+import {
+  TOOLBAR_BTN,
+  TOOLBAR_BTN_ON,
+} from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import {
+  useMinimalChrome,
+  usePowerUser,
+} from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 type MultiSelectionToolbarProps = {
   // True when EVERY member is locked. The Lock button reads as Unlock only then, since a click unlocks only a

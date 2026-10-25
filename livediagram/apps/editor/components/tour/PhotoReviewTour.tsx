@@ -5,7 +5,7 @@
 // offered: only the button runs it.
 import { useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import type { PhotoReviewTourApi } from './photo-review-tour-steps';
 import type { TourStepOf } from './tour-step';

@@ -30,7 +30,7 @@ import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 
 type CanvasAvatarInput = {

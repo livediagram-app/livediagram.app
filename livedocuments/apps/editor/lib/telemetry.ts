@@ -1,16 +1,16 @@
 // Anonymous, first-party product telemetry emitter (docs/specs/017-telemetry/telemetry.md).
 //
-// The buffering / flush / page-hide engine lives in
-// @livedocuments/telemetry-client (shared with the help centre); this
+// The buffering / flush / page-hide engine lives in @liveworkspace/telemetry-client, bound to
+// this product by @livedocuments/telemetry-client (shared with the help centre); this
 // wrapper owns the editor's policy: the build-time
 // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached docs/specs/007-editor/user-preferences.md per-user
 // opt-out. See the package for the privacy rules — `type` is always a
 // closed-vocabulary token, never user content.
 
+import { telemetryServiceUrl } from '@liveworkspace/telemetry-client';
 import {
   createTelemetryEmitter,
   TELEMETRY_APP,
-  telemetryServiceUrl,
   type TelemetryEmitter,
 } from '@livedocuments/telemetry-client';
 import {

@@ -136,13 +136,13 @@ that FAILS — network down, 5xx, share link unresolvable — means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
-raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
+raises `loadError`, which renders `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`
 instead. That card leads with **Retry** (a reload), because unlike a
 missing project the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Use the default place** instead.
 On `/new`, **Retry** re-runs the same create under the same project and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -231,9 +231,9 @@ Mode's second effect off):
   workspace frame's create in place reads too. A template link fires `UI / Used / TemplateLink`. The marketing site's
   template gallery links every card here ([Marketing site](../019-marketing/marketing-site.md)).
 - **Stored** where [Save Locations → The default depends on who is creating](../006-project/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), liveplanner for everyone else. Decided at the create by
+  says: This Browser for a guest, liveplanner for a signed-in person. Decided at the create by
   `resolveSaveLocation` (`app/new/useNewProjectLocation.ts`): a guest never waits, and is created without waiting
-  for identity at all ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)); a browser that
+  for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)); a browser that
   looks signed in waits for identity, so a signed-in person is never handed a project in This Browser.
 - **Filed** (liveplanner) in the `/new?folder=` / `?team=` context when there is one, an explicit placement that makes
   the create a cloud one whoever is creating; otherwise the create carries no placement and the server files it in
@@ -254,7 +254,7 @@ Mode's second effect off):
 
 `/new` creates as it mounts, so a back/forward-cache restore of it (before its handoff) backs out instead of creating
 again or stranding the person on a frozen screen: to the page of ours that opened it (`history.back()`), else to the
-home page (`backOutTarget`, `apps/editor/lib/back-out.ts`), logging `[new] restored, back out <target>`.
+home page (`backOutTarget`, `../packages/workbench/src/lib/back-out.ts`), logging `[new] restored, back out <target>`.
 
 ### In-place handoff to the editor
 
@@ -290,8 +290,8 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from arrival to the editor: `/new`'s
 creating stage and the editor's own load (`ProjectLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your project"** to **"Opening your
-project"**; everything else stays put.
+Its label moves from **"Creating your plan"** to **"Opening your
+plan"**; everything else stays put.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
@@ -329,7 +329,7 @@ project"**; everything else stays put.
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the project in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a project asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -350,18 +350,16 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 - **Telemetry:** `Team / Added / Project` fires once a create into a team has succeeded,
   never on a refused one.
 
-## Custom themes
+## Themes
 
-`/new` shows no themes. Custom themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
-the Tab Style dialog. The create path still carries a theme id (`commitNewProject`, `buildTemplatedTab` take a
-`string`, so a `custom:<uuid>` passes through), always the caller's: `brand` on `/new`, the source tab's theme for a
-new tab.
+`/new` shows no themes; themes are chosen from the Tab Style dialog. The create path carries a theme id
+(`commitNewProject`, `buildTemplatedTab`), always the caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
 
 - No new endpoints. `POST /api/projects` already accepts an
   optional `tabs` array per [Per-tab storage](../006-project/per-tab-storage.md) — the route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 

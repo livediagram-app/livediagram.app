@@ -107,12 +107,20 @@ describe('adding', () => {
       ['p1', 'Cover'],
       ['pg-1', 'Problem'],
     ]);
-    // Of another kind, named or holding anything, the one page stays and the new one follows it.
-    for (const kept of [
-      tabOf({ pages: [page('p1', { kind: 'wireframe', size: 'device', device: 'iphone' })] }),
-      tabOf({ pages: [page('p1', { kind: 'logo', name: 'Title' })] }),
-    ])
-      expect(pagesOf(run(kept, [{ op: 'add', kind: 'logo' }]).tab)).toHaveLength(2);
+    // Of another device, named or holding anything, the one page stays and the new one follows it.
+    const screen = page('p1', {
+      kind: 'wireframe',
+      size: 'device',
+      device: 'iphone',
+      name: 'Home',
+    });
+    expect(
+      pagesOf(
+        run(tabOf({ pages: [screen] }), [{ op: 'add', kind: 'wireframe', device: 'ipad' }]).tab,
+      ),
+    ).toHaveLength(2);
+    const named = tabOf({ pages: [page('p1', { kind: 'logo', name: 'Title' })] });
+    expect(pagesOf(run(named, [{ op: 'add', kind: 'logo' }]).tab)).toHaveLength(2);
   });
 
   it('never takes a page the same call added as a blank', () => {
@@ -124,7 +132,7 @@ describe('adding', () => {
   });
 
   it('adds after the last page, with its fields, a layout and a place', () => {
-    const tab = tabOf({ pages: [page('p1'), page('p2')] });
+    const tab = tabOf({ pages: [mark('p1'), mark('p2')] });
     const slide = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(tab, [
       {
@@ -145,14 +153,42 @@ describe('adding', () => {
     );
   });
 
-  it('adds logo and wireframe pages', () => {
-    const tab = tabOf({ pages: [mark('p1')] });
-    const out = run(tab, [
-      { op: 'add', kind: 'logo' },
+  it('adds logo pages to a logo tab, and screens of any device to a wireframe tab', () => {
+    const logos = run(tabOf({ pages: [mark('p1')] }), [{ op: 'add', kind: 'logo' }]);
+    expect(kinds(logos.tab)).toEqual(['logo', 'logo']);
+    const screen = page('w1', {
+      kind: 'wireframe',
+      size: 'device',
+      device: 'iphone',
+      name: 'Home',
+    });
+    const out = run(tabOf({ pages: [screen] }), [
+      { op: 'add', kind: 'wireframe' },
       { op: 'add', kind: 'wireframe', device: 'ipad' },
     ]);
-    expect(kinds(out.tab)).toEqual(['logo', 'logo', 'wireframe']);
+    expect(kinds(out.tab)).toEqual(['wireframe', 'wireframe', 'wireframe']);
     expect(out.lines[1]).toBe('Added page 3 (wireframe, iPad): device ipad.');
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('one kind a tab: refuses a page of a kind other than the first page’s', () => {
+    const r = refusal(tabOf({ pages: [mark('p1')] }), [{ op: 'add', kind: 'wireframe' }]);
+    expect(r).toMatchObject({ code: 'kind_not_offered', change: 0 });
+    expect(r.message).toBe(
+      'This tab holds logo pages: every page of a tab is one kind. Put wireframe pages in a tab of their own (add_tab).',
+    );
+    const photos = tabOf({ pages: [page('ph', { kind: 'photo', name: 'Shot' })] });
+    expect(refusal(photos, [{ op: 'add', kind: 'logo' }]).code).toBe('kind_not_offered');
+    // A blank first page holding something has no kind yet: it takes no add.
+    const blank = tabOf({
+      pages: [page('p1')],
+      elements: [onPage([page('p1')], 0, 'b')],
+    });
+    expect(refusal(blank, [{ op: 'add', kind: 'logo' }]).message).toBe(
+      'This tab holds blank pages: every page of a tab is one kind. Put logo pages in a tab of their own (add_tab).',
+    );
+    // The fresh tab's unchosen, empty first page still takes any kind.
+    expect(kinds(run(tabOf(), [{ op: 'add', kind: 'photo' }]).tab)).toEqual(['photo']);
   });
 
   it('refuses a size the kind lacks', () => {
@@ -171,7 +207,7 @@ describe('adding', () => {
 
   it('refuses past the page limit', () => {
     const full = tabOf({
-      pages: Array.from({ length: MAX_PAGES }, (_, i) => page(`p${i}`)),
+      pages: Array.from({ length: MAX_PAGES }, (_, i) => mark(`p${i}`)),
     });
     expect(refusal(full, [{ op: 'add', kind: 'logo' }]).code).toBe('page_limit');
   });
@@ -481,7 +517,8 @@ describe('giving every page of a kind one background', () => {
 // frame look and system bars.
 describe('wireframe pages', () => {
   it('adds a page in its device, saying the device, the frame look and the bars', () => {
-    const out = run(tabOf({ pages: [mark('p1')] }), [
+    const home = page('p1', { kind: 'wireframe', size: 'device', device: 'iphone', name: 'Home' });
+    const out = run(tabOf({ pages: [home] }), [
       { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
     ]);
     const added = pagesOf(out.tab)[1]!;
@@ -541,12 +578,15 @@ describe('wireframe pages', () => {
 });
 
 describe('photo pages (docs/specs/031-photo/photo-pages.md "Agents")', () => {
+  // A named photo page: a photo tab (every page of a tab is one kind), kept when another is added.
+  const shot = (id: string): Page => page(id, { kind: 'photo', name: 'Cover' });
+
   it('adds an empty photo of the default size, or of the size given', () => {
-    const out = run(tabOf({ pages: [mark('p1')] }), [
+    const out = run(tabOf({ pages: [shot('p1')] }), [
       { op: 'add', kind: 'photo' },
       { op: 'add', kind: 'photo', width: 4000, height: 3000, name: 'Shot' },
     ]);
-    expect(kinds(out.tab)).toEqual(['logo', 'photo', 'photo']);
+    expect(kinds(out.tab)).toEqual(['photo', 'photo', 'photo']);
     const photos = out.tab.photos!;
     const [a, b] = out.tab.pages!.slice(1);
     expect(photos[a!.id]).toEqual({ width: 1920, height: 1080, layers: [] });
@@ -563,7 +603,7 @@ describe('photo pages (docs/specs/031-photo/photo-pages.md "Agents")', () => {
   });
 
   it('refuses a layout on a photo page, and an eleventh photo page', () => {
-    const one = run(tabOf({ pages: [mark('p1')] }), [{ op: 'add', kind: 'photo' }]).tab;
+    const one = run(tabOf({ pages: [shot('p1')] }), [{ op: 'add', kind: 'photo' }]).tab;
     expect(refusal(one, [{ op: 'layout', page: 2, layout: 'hero' }]).code).toBe('layout_unknown');
     expect(refusal(one, [{ op: 'layout', page: 2, layout: 'hero' }]).message).toMatch(
       /photo page takes no layout/,
@@ -571,7 +611,7 @@ describe('photo pages (docs/specs/031-photo/photo-pages.md "Agents")', () => {
     // Fresh page ids each run (the test's counters start again per run).
     const more = applyPageChanges(
       one,
-      Array.from({ length: 9 }, () => ({ op: 'add' as const, kind: 'photo' as const })),
+      Array.from({ length: 8 }, () => ({ op: 'add' as const, kind: 'photo' as const })),
     );
     if ('refusal' in more) throw new Error(more.refusal.message);
     const over = applyPageChanges(more.tab, [{ op: 'add', kind: 'photo' }]);

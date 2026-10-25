@@ -6,7 +6,7 @@
 // half strength, the way the editor draws it at rest.
 
 import type { ReactNode } from 'react';
-import { Cursor, Label, Scene, Shape } from './primitives';
+import { Cursor, Label, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 type GlyphKind = 'link' | 'note' | 'action' | 'comment' | 'outline' | 'tidy';
 

@@ -9,7 +9,7 @@ import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
 import { relayRoomOps } from '../room-client';
-import type { Env } from '../types';
+import type { PlanEnv } from '../types';
 import { readStoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
 
@@ -24,7 +24,7 @@ const refused = (status: number, error: string, message: string, extra = {}): Ag
 });
 
 export async function writeAgentForm(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
   body: Record<string, unknown>,

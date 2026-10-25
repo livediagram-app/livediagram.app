@@ -31,17 +31,6 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@liveplanner/template-previews');
     expect(imports).not.toContain('@/components/start/template-card');
     expect(imports).not.toContain('./template-card');
-    expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
-      '@liveplanner/template-previews',
-    );
-  });
-
-  // docs/specs/013-workspace/default-folders.md "A template picked after creation": the mover reads the template
-  // builders and the folder lists, so it loads only at a start screen's pick.
-  it('loads the move to a template default folder only at the pick', () => {
-    expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
-      '@/lib/placement-defaults/move-on-template-pick',
-    );
   });
 
   // docs/specs/026-plan/plan-templates.md "Example cards": the cards' data loads only when a Plan template is made.

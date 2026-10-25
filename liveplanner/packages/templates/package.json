@@ -2,7 +2,7 @@
   "name": "@liveplanner/templates",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -10,7 +10,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./template-sheets": "./src/template-sheets.ts",
-    "./plan-template-seeds": "./src/plan-template-seeds.ts"
+    "./plan-template-seeds": "./src/plan-template-seeds.ts",
+    "./welcome.json": "./welcome.json"
   },
   "scripts": {
     "lint": "oxlint",
@@ -26,8 +27,8 @@
     "@liveplanner/sheets": "workspace:*"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

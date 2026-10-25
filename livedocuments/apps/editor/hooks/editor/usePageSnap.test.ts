@@ -9,14 +9,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@livedocuments/document';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { track } from '@/lib/telemetry';
-import { computeFitBelow } from '@/lib/viewport';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
+import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
 import { usePagesMode } from './usePagesMode';
 import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity } from './usePageSnap';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Glides land at once, so a test reads where the view ends.
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => true }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => true,
+}));
 
 const SIZE = { width: 1200, height: 800 };
 const tab = {

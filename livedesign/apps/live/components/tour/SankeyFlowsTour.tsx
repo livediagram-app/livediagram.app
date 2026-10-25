@@ -4,7 +4,7 @@
 // the tour of writing flows, drawn over the dialog. Never offered: only the button runs it. The dialog is loaded on
 // demand, so its steps are imported with it rather than at the press.
 import { useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import {
   sankeyFlowsTourSteps,

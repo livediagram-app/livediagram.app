@@ -5,7 +5,7 @@ import {
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
   parseStrokePoints,
-} from './stroke-points';
+} from '@liveworkspace/model-core/stroke-points';
 import type { Element, FreehandElement } from './index';
 
 type Legacy = Record<string, unknown>;

@@ -7,7 +7,7 @@
 // Layers / Map / Collaborate / Quick Style under Panels) stay folded, as the dialog opens them.
 
 import type { ReactNode } from 'react';
-import { Label, Scene } from './primitives';
+import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 
 /** An on/off switch, brand when on. `sm` sits in a Settings row; `md` in a roomier card. */
 export function Switch({
@@ -45,7 +45,6 @@ const CATEGORIES = [
   'Panels',
   'Accessibility',
   'Tours',
-  'AI Tools',
   'Designs',
   'Account',
   'Privacy',

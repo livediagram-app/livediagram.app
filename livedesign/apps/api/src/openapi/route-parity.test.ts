@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs } from '@liveworkspace/vitest-config/cpu-time';
 import { ROUTE_MANIFEST } from './manifest';
 import {
   candidatePaths,
@@ -21,7 +21,23 @@ import {
 // Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
 // OAuth exchange) route instead of answering 401 for every path under them.
 vi.mock('../auth/accounts', () => ({
-  getAccountIdentity: async () => ({ userId: 'user_probe', email: null }),
+  getPersonIdentity: async () => ({
+    kind: 'account',
+    userId: 'user_probe',
+    email: null,
+    teams: [{ id: 'probe-param', name: 'Probe', role: 'owner' }],
+  }),
+  accountCredentials: () => null,
+}));
+// Every participant id names someone, so GET /participants/{id} answers rather than 404ing.
+vi.mock('../accounts/profiles', async () => ({
+  ...(await import('../test-profiles')),
+  getParticipant: async (_env: unknown, id: string) => ({
+    id,
+    name: 'Probe',
+    color: '#000',
+    createdAt: 1,
+  }),
 }));
 
 const vocabulary = routeVocabulary();
@@ -63,10 +79,11 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
   it('probes enough of the dispatch to mean something', () => {
     // Vacuity guard: a broken source walk or an env that routes nothing would
     // pass every case below without checking anything.
-    expect(vocabulary.size).toBeGreaterThan(20);
+    expect(vocabulary.size).toBeGreaterThan(15);
     expect(results.length).toBeGreaterThan(1000);
     expect(results.filter((r) => r.outcome === 'routed').length).toBeGreaterThan(10);
-    expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(40);
+    // Fewer since folders, sharing and filing moved to the index: what is left reaches a design or a workbench.
+    expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(30);
   });
 
   it('serves every documented (method, path)', async () => {

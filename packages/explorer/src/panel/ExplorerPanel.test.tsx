@@ -1,0 +1,249 @@
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { ExplorerPanel, type ExplorerPanelProps } from './ExplorerPanel';
+import { panelSectionStorageKey } from './sections';
+import type { ThisBrowserHost } from '../explorer/ThisBrowser';
+import type { ThisBrowserItem } from '../this-browser';
+
+const itemHref: ExplorerPanelProps['itemHref'] = (item) => `/project/${item.id}`;
+
+function renderPanel(
+  index: ReturnType<typeof createFakeIndex>,
+  over: Partial<ExplorerPanelProps> = {},
+) {
+  const onOpenExplorer = vi.fn();
+  render(
+    <ExplorerPanel
+      app="liveplanner"
+      client={index.client}
+      itemHref={itemHref}
+      onCreate={vi.fn()}
+      onOpenExplorer={onOpenExplorer}
+      {...over}
+    />,
+  );
+  return { onOpenExplorer };
+}
+
+const rail = () => screen.getByRole('navigation', { name: 'Explorer sections' });
+
+describe('<ExplorerPanel>', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('draws the rail as it always was: New, then Overview, Spaces and More under their titles', () => {
+    renderPanel(createFakeIndex({ items: [] }), { teams: [{ id: 't1', name: 'Design' }] });
+    const nav = within(rail());
+    expect(nav.getByRole('button', { name: /New Plan/ })).toBeTruthy();
+    expect(nav.getAllByRole('heading').map((h) => h.textContent)).toEqual([
+      'Overview',
+      'Spaces',
+      'More',
+    ]);
+    for (const name of ['Home', 'Inbox', 'Shared With Me', 'My Work', 'Design', 'Trash'])
+      expect(nav.getByRole('button', { name })).toBeTruthy();
+  });
+
+  it('draws group lines instead of titles in Minimal chrome', () => {
+    renderPanel(createFakeIndex({ items: [] }), { divider: 'lines' });
+    expect(within(rail()).queryAllByRole('heading')).toHaveLength(0);
+  });
+
+  it("leaves the open item out of Home's Jump Back In, from one request", async () => {
+    const items = [1, 2, 3].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+    const index = createFakeIndex({ items });
+    renderPanel(index, { current: items[0], currentId: items[0]!.id });
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const names = within(grid)
+      .getAllByRole('button')
+      .map((b) => b.textContent);
+    expect(names.some((n) => n?.includes(items[0]!.title))).toBe(false);
+    expect(index.count('listItems')).toBe(1);
+  });
+
+  it('says Nothing else yet when the open item is the only one', async () => {
+    const only = makeItem(1, { lastOpenedAt: 5_000_000 });
+    renderPanel(createFakeIndex({ items: [only] }), { current: only, currentId: only.id });
+    expect(await screen.findByText('Nothing else yet')).toBeTruthy();
+  });
+
+  it('shows the current item on top, with the notice under it', () => {
+    const item = makeItem(1);
+    renderPanel(createFakeIndex({ items: [item] }), {
+      current: item,
+      notice: <p>Sign in note</p>,
+    });
+    const card = screen.getByRole('region', { name: 'Current plan' });
+    expect(card.compareDocumentPosition(screen.getByText('Sign in note'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('remembers the section picked, per app', async () => {
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index);
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Trash' }));
+    expect(localStorage.getItem(panelSectionStorageKey('liveplanner'))).toBe('trash');
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { level: 3, name: 'Trash' })).toBeTruthy(),
+    );
+  });
+
+  it("opens a phone's sheet on Home and remembers nothing", () => {
+    localStorage.setItem(panelSectionStorageKey('liveplanner'), 'trash');
+    renderPanel(createFakeIndex({ items: [] }), { layout: 'sheet', open: true });
+    expect(screen.getByRole('heading', { level: 3, name: 'Home' })).toBeTruthy();
+  });
+
+  it("hands the open item's Delete to the host, and trashes any other itself", async () => {
+    const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+    const index = createFakeIndex({ items });
+    const onTrashCurrent = vi.fn(async () => true);
+    renderPanel(index, { current: items[0], currentId: items[0]!.id, onTrashCurrent });
+    fireEvent.click(screen.getByRole('button', { name: 'Plan menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete/ }));
+    await waitFor(() => expect(onTrashCurrent).toHaveBeenCalledWith(items[0]));
+    expect(index.count('deleteItem')).toBe(0);
+  });
+
+  it('has no Open Page: every section stays in the panel', () => {
+    renderPanel(createFakeIndex({ items: [] }), { teams: [{ id: 't1', name: 'Design' }] });
+    for (const name of ['Home', 'Timeline', 'My Work', 'Design', 'Trash']) {
+      fireEvent.click(within(rail()).getByRole('button', { name }));
+      expect(screen.queryByRole('link', { name: /Open Page/ })).toBeNull();
+      expect(screen.queryByText('Open Page')).toBeNull();
+    }
+  });
+
+  it('offers New Folder as a named glyph, beside the name of the view in full', async () => {
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index);
+    fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));
+    const heading = screen.getByRole('heading', { level: 3, name: 'My Work' });
+    // Wraps rather than truncates: the name is never cut to "M…".
+    expect(heading.className).not.toMatch(/\btruncate\b/);
+    const button = screen.getByRole('button', { name: 'New Folder' });
+    // A glyph alone: the name is its label (and its tooltip), never words beside it.
+    expect(button.textContent).toBe('');
+    expect(button.querySelector('svg')).toBeTruthy();
+    fireEvent.click(button);
+    await waitFor(() => expect(index.count('createFolder')).toBe(1));
+  });
+
+  it("names New Folder New Subfolder inside a folder, and the team's Members is a glyph too", () => {
+    renderPanel(createFakeIndex({ items: [] }), {
+      teams: [{ id: 't1', name: 'A team with a long name of its own' }],
+      teamsHost: {} as never,
+    });
+    fireEvent.click(
+      within(rail()).getByRole('button', { name: 'A team with a long name of its own' }),
+    );
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'A team with a long name of its own' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Folder' }).textContent).toBe('');
+    expect(screen.getByRole('button', { name: 'Members' }).textContent).toBe('');
+  });
+
+  it("offers My Work's own menu, the sidebar's, with Use as Default for…", async () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for My Work' }));
+    const menu = await screen.findByRole('menu', { name: 'Actions for My Work' });
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((m) => m.textContent),
+    ).toEqual(['Open', 'New Folder', 'Use as Default for…']);
+    fireEvent.click(within(menu).getByRole('menuitem', { name: /Use as Default for/ }));
+    expect(await screen.findByRole('dialog', { name: /Default/ })).toBeTruthy();
+  });
+
+  it("opens the same menu from a right-click on the rail's My Work", async () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    fireEvent.contextMenu(within(rail()).getByRole('button', { name: 'My Work' }));
+    expect(await screen.findByRole('menu', { name: 'Actions for My Work' })).toBeTruthy();
+    fireEvent.contextMenu(within(rail()).getByRole('button', { name: 'Trash' }));
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+  });
+});
+
+describe("the panel's This Browser", () => {
+  beforeEach(() => localStorage.clear());
+
+  const local = (
+    id: string,
+    title: string,
+    extra: Partial<ThisBrowserItem> = {},
+  ): ThisBrowserItem => ({
+    id,
+    title,
+    createdAt: 1,
+    updatedAt: 2,
+    lastOpenedAt: null,
+    trashedAt: null,
+    favourite: false,
+    ...extra,
+  });
+
+  const host = (over: Partial<ThisBrowserHost> = {}): ThisBrowserHost => ({
+    items: [
+      local('l1', 'Kept here'),
+      local('l2', 'Also here'),
+      local('l3', 'Gone', { trashedAt: 5 }),
+    ],
+    itemHref: (item) => `/project/${item.id}`,
+    ...over,
+  });
+
+  it('is on the rail with its count while this browser keeps any, and not otherwise', () => {
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
+    const entry = within(rail()).getByRole('button', { name: 'This Browser (2)' });
+    expect(entry.textContent).toContain('2');
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ items: [] }) });
+    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }));
+    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+  });
+
+  it('opens its pane in place, listing the live ones, each opening in the editor', () => {
+    const open = vi.fn();
+    const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ open }),
+    });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'This Browser' })).toBeTruthy();
+    const list = screen.getByRole('list', { name: 'This Browser' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).queryByText('Gone')).toBeNull();
+    fireEvent.click(within(list).getByRole('button', { name: 'Kept here' }));
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    // Never a link out of the editor: the Explorer page is not asked for.
+    expect(onOpenExplorer).not.toHaveBeenCalled();
+    // This Browser holds only this app's items: no app filter.
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+  });
+
+  it('syncs one in place for a person signed in, and deletes one after asking', async () => {
+    const sync = vi.fn();
+    const remove = vi.fn();
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ sync, remove }) });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Plan: Kept here' }));
+    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Also here' }));
+    expect(remove).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', { name: /Delete this plan/ });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l2' }));
+  });
+
+  it('offers neither Sync nor Delete where the host gives none (a guest)', () => {
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+  });
+});

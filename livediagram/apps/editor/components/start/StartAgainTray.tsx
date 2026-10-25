@@ -6,7 +6,7 @@
 // it. Without a strip on screen (Draw's dock) it is the same message as a top-centre pill, as a mode banner falls
 // back to (ModeBanner). Either way it steps aside while a mode's message is up, which takes the same place.
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideSparkles } from '@livediagram/icons/lucide';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import {
   PaletteTray,
   PaletteTrayAction,
@@ -14,7 +14,7 @@ import {
   useToolbarBox,
 } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
+import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';

@@ -9,6 +9,11 @@
 
 const AUTH_PATH = '/api/auth/oauth2';
 
+// A route of the accounts service, kept under any path its URL carries (a stand-in served at /e2e/accounts, say):
+// `new URL('/api/…', base)` would drop that path.
+const accountsRoute = (accountsUrl: string, route: string): URL =>
+  new URL(`${accountsUrl.replace(/\/+$/, '')}${route}`);
+
 export interface PkcePair {
   verifier: string;
   challenge: string;
@@ -30,8 +35,9 @@ export interface AuthorizeUrlOptions {
   // The app's API resource; it becomes the access token's audience.
   resource: string;
   scope?: string;
-  // `create` opens the accounts site's registration page instead of sign-in.
-  prompt?: 'create' | 'login';
+  // `create` opens the accounts site's registration page instead of sign-in. `none` never shows a page: a code
+  // when there is a session, `error=login_required` when not (silent.ts).
+  prompt?: 'create' | 'login' | 'none';
 }
 
 export interface TokenSet {
@@ -64,7 +70,7 @@ export async function createPkcePair(): Promise<PkcePair> {
 }
 
 export function authorizeUrl(options: AuthorizeUrlOptions): string {
-  const url = new URL(`${AUTH_PATH}/authorize`, options.accountsUrl);
+  const url = accountsRoute(options.accountsUrl, `${AUTH_PATH}/authorize`);
   url.search = new URLSearchParams({
     response_type: 'code',
     client_id: options.clientId,
@@ -79,7 +85,38 @@ export function authorizeUrl(options: AuthorizeUrlOptions): string {
   return url.toString();
 }
 
-function basicAuthorization(credentials: ClientCredentials): string {
+// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// site with the app's client and comes back to `redirectUri` with a year-long guest token in the fragment
+// (`#guest_token=…&state=…`). The editor makes and checks `state` itself (@liveworkspace/index-client/browser
+// createGuestTokens); the app's Worker only names its client, so a state it forwards must look like one.
+export const GUEST_STATE_PATTERN = /^[A-Za-z0-9_-]{8,200}$/;
+
+export interface GuestHandoffOptions {
+  accountsUrl: string;
+  clientId: string;
+  redirectUri: string;
+  state: string;
+  // The app's API resource; it becomes the guest token's audience.
+  resource: string;
+}
+
+export function isGuestHandoffState(state: string | null | undefined): state is string {
+  return typeof state === 'string' && GUEST_STATE_PATTERN.test(state);
+}
+
+export function guestHandoffUrl(options: GuestHandoffOptions): string {
+  const url = accountsRoute(options.accountsUrl, '/api/auth/guest');
+  url.search = new URLSearchParams({
+    client_id: options.clientId,
+    redirect_uri: options.redirectUri,
+    state: options.state,
+    resource: options.resource,
+  }).toString();
+  return url.toString();
+}
+
+// The app's client credentials as HTTP Basic, each part URL-encoded as OAuth asks (and the accounts Worker reads).
+export function basicAuthorization(credentials: ClientCredentials): string {
   return `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`;
 }
 
@@ -88,7 +125,7 @@ async function requestTokens(
   params: Record<string, string>,
   fetchImpl: typeof fetch,
 ): Promise<TokenSet> {
-  const response = await fetchImpl(new URL(`${AUTH_PATH}/token`, credentials.accountsUrl), {
+  const response = await fetchImpl(accountsRoute(credentials.accountsUrl, `${AUTH_PATH}/token`), {
     method: 'POST',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
@@ -151,15 +188,18 @@ export async function closeAccount(
   accessToken: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<void> {
-  const response = await fetchImpl(new URL('/api/auth/delete-account', credentials.accountsUrl), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      accept: 'application/json',
-      authorization: basicAuthorization(credentials),
+  const response = await fetchImpl(
+    accountsRoute(credentials.accountsUrl, '/api/auth/delete-account'),
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json',
+        authorization: basicAuthorization(credentials),
+      },
+      body: JSON.stringify({ token: accessToken }),
     },
-    body: JSON.stringify({ token: accessToken }),
-  });
+  );
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
     throw new Error(`closing the account failed (${response.status}): ${detail.slice(0, 200)}`);

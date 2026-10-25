@@ -1,9 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import { signInEnabled } from '@/lib/auth-config';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
 import { readSignedInHint } from '@/lib/signed-in-hint';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 const subscribeNever = () => () => {};
 // The prerender has no cookies: it reads as a guest, and the client snapshot follows at hydration.
@@ -26,12 +25,11 @@ export function useNewProjectLocation(opts: {
     hasPlacementParams: boolean,
     settle: () => Promise<unknown>,
   ): Promise<SaveLocationId> => {
-    if (hasPlacementParams || !signInEnabled) return 'liveplanner';
+    if (hasPlacementParams) return 'liveplanner';
     if (!latest.current.authLoaded && latest.current.signedInHint) await settle();
     const now = latest.current;
     const location = defaultSaveLocationFor({
       signedIn: now.authLoaded ? !!now.accountUserId : now.signedInHint,
-      signInEnabled,
     });
     debugLog(`[new] save location=${location} settled=${now.authLoaded}`);
     return location;

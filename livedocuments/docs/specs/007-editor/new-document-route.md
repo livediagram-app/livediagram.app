@@ -142,13 +142,13 @@ that FAILS — network down, 5xx, share link unresolvable — means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
-raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
+raises `loadError`, which renders `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`
 instead. That card leads with **Retry** (a reload), because unlike a
 missing document the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -191,7 +191,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees Start Making Pages in the middle of the canvas ([Template start](start-diagramming.md));
-   a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
+   a Participant or Viewer sees the empty page ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
 
@@ -199,7 +199,7 @@ knowing about when adding another.
 2. NotFound surface renders as today, but its "Create new document"
    CTA now navigates to `/new`.
 
-## State changes in `/live`
+## State changes in the editor route
 
 Removed from the editor route at the split (history, see Motivation):
 
@@ -245,12 +245,12 @@ page), logging `[new] restored, back out <target>`.
   empty tab that opens on its start (Start Making Pages). An unknown template kind is ignored rather than guessed,
   so a stale link makes a document, not a 404; a retired kind opens its replacement.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), livedocuments for everyone else. Decided at commit by
-  `resolveSaveLocation` (`app/new/useNewDocumentLocation.ts`): a guest never waits, a browser that looks signed in
-  waits for identity, so a signed-in person is never handed a document in This Browser. A guest's This Browser
-  document is created without waiting for identity at all ([Offline Mode → Instant
-  open](../006-document/offline-mode.md#instant-open)). A placement param (`folder` / `team`) names a server place,
-  so it makes the create a cloud one whoever is creating.
+  says: This Browser for a guest, livedocuments for a signed-in person (`defaultSaveLocationFor`). Decided at commit by
+  `resolveSaveLocation` (`app/new/useNewDocumentLocation.ts`): a guest never waits, and is created without waiting
+  for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
+  a browser that looks signed in waits for identity, so a signed-in person is never handed a document in This
+  Browser. A placement param (`folder` / `team`) names a server place, so it makes the create a cloud one whoever is
+  creating.
 - **Filed** (livedocuments) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
   otherwise the create carries no placement and the server files it in the person's
   [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
@@ -263,23 +263,9 @@ page), logging `[new] restored, back out <target>`.
 
 ### The empty-canvas hint
 
-The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
-active tab has no elements to someone who cannot edit it: an Editor gets the tab's start instead ([Template
-start](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant**, who adds nothing, reads the same line. It offers no action of its own, and
-**Help** on a desktop. It goes once the canvas has content, and a **Close** (×) in its top right corner closes it
-for good on that tab for this person in this browser (a per-browser list of the last 200 closed keys,
-`livedocuments:v2:empty-card-dismissed` in localStorage, shared with the start's own close). It takes presses only on
-itself: the canvas around it still pans. The card: a small picture in the brand's tints on a soft panel
-(`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), then its one line, in full. **On a phone** it is the same
-card, narrower (18rem). On a **short screen** (480px tall or less, a phone on its side) the card drops its picture,
-so it clears the toolbars above and below instead of sliding under the Palette strip.
-
-A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
-the card: thick multi-colour curved lines that slowly flow along their paths via
-animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
-`pointer-events-none` / `aria-hidden`, and stands down under
-`prefers-reduced-motion`.
+Removed with the Pages-only cut (October 2026): there is no empty-canvas card or backdrop any more. An Editor gets the
+tab's start ([Template start](start-diagramming.md)), and an empty page offers its layouts ([Pages
+mode](pages-mode.md) "An empty page offers its layouts"); a Viewer or Participant sees the empty page.
 
 ## Start Blank
 
@@ -348,8 +334,10 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your document"** to **"Opening your
-document"**; everything else stays put.
+Its label moves from **"Creating your document"** (over "Setting up its first
+page") to **"Opening your document"** (over "Getting everything in place");
+everything else stays put. A document is pages (articles, slides and
+infographics), never a canvas, so the copy says page.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
@@ -385,7 +373,7 @@ Every create from `/new` honours the URL placement context (the `?folder` /
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the document in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -410,19 +398,17 @@ Telemetry: Start Blank (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so its adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Custom themes
+## Themes
 
-`/new` shows no themes. Custom themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built
-from the Tab Style dialog (`CustomThemePicker`). The create path still carries a theme id (`onPick`,
-`commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
-passes through), now always the caller's: `brand` on `/new`, the source tab's
-theme for a new tab.
+`/new` shows no themes. Themes are picked from the Tab Style dialog (`ThemeBrowser`). The create path still
+carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `string`), always the caller's:
+`brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
-  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the route uses it,
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 
@@ -432,7 +418,7 @@ theme for a new tab.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Document" from Explorer → goes to `/new`.
-- `/new` → created at once, This Browser for a guest, filed in the signed-in person's default folder for it.
+- `/new` → created at once on livedocuments, filed in the person's default folder for it.
 - `/new?blank=1` → blank document created, its start closed.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.
 - `/new?template=slide-deck` → a slide deck created and the editor loads on `/document/<id>`.

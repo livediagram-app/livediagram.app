@@ -1,7 +1,7 @@
 // Making the animated GIF (docs/specs/020-import-export/blueprints/animated-gif-export.md "The hook"): every page
 // snapshotted once, the timeline's frames drawn one per task on a reused canvas and handed to the encoder, with
 // progress after each and a stop between any two. A page's snapshot is dropped once no frame needs it.
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { GifEncoderSession } from './gif-encoder';
 import { GifExportError } from './gif-export-error';
 import { gifTimeline, type GifFrame, type GifTimelineInput } from './gif-timeline';

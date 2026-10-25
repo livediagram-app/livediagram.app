@@ -3,8 +3,8 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createSticky } from '@liveplanner/project';
-import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
-import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
+import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
+import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a finger on an element that runs off the screen pans the
@@ -19,17 +19,7 @@ let clock = 5_000_000;
 
 afterEach(() => vi.useRealTimers());
 
-function harness({
-  fits,
-  isSelected = false,
-  isPaintMode = false,
-  armed = false,
-}: {
-  fits: boolean;
-  isSelected?: boolean;
-  isPaintMode?: boolean;
-  armed?: boolean;
-}) {
+function harness({ fits, isSelected = false }: { fits: boolean; isSelected?: boolean }) {
   const surface = document.createElement('main');
   surface.setAttribute('data-canvas-root', '');
   const node = document.createElement('div');
@@ -40,7 +30,6 @@ function harness({
   const onBeginDrag = vi.fn();
   const onPlainClick = vi.fn();
   const onContextSelect = vi.fn();
-  const onPressArmedAction = vi.fn(() => armed);
   const { result } = renderHook(() =>
     useBoxedElementGestures({
       element: { ...createSticky(0, 0), id: 's' },
@@ -50,11 +39,9 @@ function harness({
       isAnnotation: false,
       isMultiSelected: false,
       isSelected,
-      isPaintMode,
       onBeginDrag,
       onBeginEdit: vi.fn(),
       onPlainClick,
-      onPressArmedAction,
       onContextSelect,
     }),
   );
@@ -78,7 +65,7 @@ function harness({
     });
     return { e, stopPropagation };
   };
-  return { press, onBeginDrag, onPlainClick, onContextSelect, onPressArmedAction };
+  return { press, onBeginDrag, onPlainClick, onContextSelect };
 }
 
 describe('a finger on an element too big for the screen', () => {
@@ -95,14 +82,6 @@ describe('a finger on an element too big for the screen', () => {
     const { e } = h.press();
     panThroughTap(e)?.();
     expect(h.onPlainClick).toHaveBeenCalledWith('s');
-  });
-
-  it('lets an armed action (connect an arrow) take the tap instead of selecting', () => {
-    const h = harness({ fits: false, armed: true });
-    const { e } = h.press();
-    panThroughTap(e)?.();
-    expect(h.onPressArmedAction).toHaveBeenCalledWith('s');
-    expect(h.onPlainClick).not.toHaveBeenCalled();
   });
 
   it('opens the long-press menu, and its release is not also a tap', () => {
@@ -134,12 +113,5 @@ describe('an element that is not panned through', () => {
       expect(isPanThrough(e)).toBe(false);
       expect(h.onBeginDrag).toHaveBeenCalled();
     }
-  });
-
-  it('keeps every press for the format painter', () => {
-    const h = harness({ fits: false, isPaintMode: true });
-    const { e } = h.press();
-    expect(isPanThrough(e)).toBe(false);
-    expect(h.onBeginDrag).toHaveBeenCalled();
   });
 });

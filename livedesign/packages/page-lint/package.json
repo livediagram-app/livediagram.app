@@ -22,9 +22,9 @@
   },
   "devDependencies": {
     "@livedesign/edit-operations": "workspace:*",
-    "@livedesign/oxlint-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
     "@livedesign/templates": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

@@ -7,12 +7,13 @@
 
 import type { ItemTypesResponse, ItemTypesStale } from '@liveplanner/api-schema';
 import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@liveplanner/items';
-import { getProject, setProjectItemTypes } from '../db';
+import { getProject } from '../db';
+import { setPlanItemTypes } from '../plan-room/plan-content';
 import { badRequest, forbidden, json, methodNotAllowed } from '../responses';
 import { relayItemTypes } from '../room-client';
-import { gateEdit, missingProject, readBody, requireOwner, type RouteContext } from './context';
+import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
-async function put(ctx: RouteContext, projectId: string): Promise<Response> {
+async function put(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const doc = await getProject(ctx.env, projectId);
@@ -38,7 +39,7 @@ async function put(ctx: RouteContext, projectId: string): Promise<Response> {
     }
     itemTypes = result.catalogue;
   }
-  const itemTypesRev = await setProjectItemTypes(ctx.env, projectId, itemTypes, expectedRev);
+  const itemTypesRev = await setPlanItemTypes(ctx.env, projectId, itemTypes, expectedRev);
   if (itemTypesRev === null) {
     // Someone else's change landed since the caller read the catalogue: answer with what is stored.
     const stored = await getProject(ctx.env, projectId);
@@ -61,7 +62,7 @@ async function put(ctx: RouteContext, projectId: string): Promise<Response> {
   return json(answer);
 }
 
-export async function handleItemTypeRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleItemTypeRoutes(ctx: PlanRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   if (segments.length !== 4 || segments[3] !== 'item-types') return null;
   const projectId = segments[2]!;

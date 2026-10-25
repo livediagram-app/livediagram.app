@@ -10,9 +10,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@livedesign/icons": "workspace:*",
-    "@livedesign/page-background": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {
@@ -24,8 +25,8 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

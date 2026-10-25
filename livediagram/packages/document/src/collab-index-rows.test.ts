@@ -123,6 +123,7 @@ describe('collabIndexRowsFromElements', () => {
         mentionedIds: [],
         latestText: 'newest',
         latestAuthorName: 'Author 2',
+        latestAuthorId: 'user_b',
         latestAuthorColor: '#2',
         firstAt: 5,
         latestAt: 30,

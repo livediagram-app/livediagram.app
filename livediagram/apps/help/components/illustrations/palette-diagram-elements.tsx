@@ -2,7 +2,7 @@
 // Boundary, and the concept graphics. Each is drawn the way the element draws on the canvas: the same slots, the same
 // ramp from the accent, the same places for a chip to sit.
 
-import { Arrow, Label, Scene, Shape, TextBar } from './primitives';
+import { Arrow, Label, Scene, Shape, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 // --- Card ----------------------------------------------------------------------
 

@@ -131,7 +131,7 @@ export function elementTelemetryType(element: Element): string {
     case 'freehand':
       // Three tools share this element kind and the draw paths report them
       // separately, so a copy must too. `pen` marks the highlighter and
-      // `straightEdges` the polygon tool (docs/specs/008-canvas/polygon-tool.md); a plain pencil stroke
+      // `straightEdges` the polygon tool (docs/specs/008-canvas/finish.md "Polygons"); a plain pencil stroke
       // has neither.
       if (element.pen === 'highlighter') return 'Highlighter';
       if (element.straightEdges) return element.closed ? 'Polygon' : 'Polyline';
@@ -164,7 +164,3 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   avatar: 'Avatar',
   flowchart: 'Flowchart',
 };
-
-export function componentTelemetryType(kind: ComponentKind): string {
-  return COMPONENT_TELEMETRY[kind];
-}

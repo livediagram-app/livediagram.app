@@ -4,7 +4,8 @@
 // for that name/colour generation plus presence-status semantics.
 
 import { fnv1aString } from '@livedesign/design';
-import { randomPick } from './random';
+import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { randomPick } from '@liveworkspace/workbench/lib/random';
 import type { AccessLevel } from '@livedesign/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
@@ -109,22 +110,12 @@ const ANIMALS = [
   'Wolf',
 ];
 
-// Curated palette of distinguishable colours. White initials fall below AA on
-// every one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
-export const PARTICIPANT_COLORS = [
-  '#0ea5e9', // sky-500
-  '#10b981', // emerald-500
-  '#f59e0b', // amber-500
-  '#ef4444', // red-500
-  '#8b5cf6', // violet-500
-  '#ec4899', // pink-500
-  '#14b8a6', // teal-500
-  '#f97316', // orange-500
-  '#6366f1', // indigo-500
-  '#84cc16', // lime-500
-];
+// The presence palette every liveworkspace app offers (liveworkspace/docs/accounts.md "Profiles"), so
+// a colour picked in one app is a named swatch in all of them. White initials fall below AA on every
+// one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
+export const PARTICIPANT_COLORS = PRESENCE_COLOUR_VALUES;
 
-function pick<T>(arr: T[]): T {
+function pick<T>(arr: readonly T[]): T {
   // Non-empty by construction (the catalogues above), so the bang is safe.
   return randomPick(arr)!;
 }

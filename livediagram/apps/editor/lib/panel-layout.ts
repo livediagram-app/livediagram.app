@@ -10,7 +10,10 @@
 // the editor reacts to its own write, plus the browser's native
 // `storage` event for cross-tab), but there is no network step.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -20,10 +23,10 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // Explorer and Layers are not corner panels (the strip, and popovers off
 // their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Poll and Vote (popovers off the
 // Session strip, docs/specs/012-collaboration/session-tools.md), nor the Avatar panel (a popover off its button,
-// docs/specs/008-canvas/avatar-mode.md): a stored layout naming them is read like any unknown id.
+// docs/specs/008-canvas/avatar-mode.md), nor the retired AI assistant panel: a stored layout naming them is
+// read like any unknown id.
 export type PanelId =
   | 'collaborate'
-  | 'ai'
   | 'minimap'
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
   // tool is.
@@ -46,7 +49,6 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
 
 export const PANEL_IDS: readonly PanelId[] = [
   'collaborate',
-  'ai',
   'minimap',
   'laser',
   'spotlight',
@@ -75,7 +77,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): a popover over its cluster
   // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
-  ai: 'bottom-right',
   minimap: 'bottom-left',
   // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
   // leaves its corner stack.
@@ -100,7 +101,7 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['bottom-left'] = ['minimap'];
-  corners['bottom-right'] = ['collaborate', 'ai'];
+  corners['bottom-right'] = ['collaborate'];
   return { corners, free: {} };
 }
 

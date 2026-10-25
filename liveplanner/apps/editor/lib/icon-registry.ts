@@ -1,6 +1,6 @@
 // Async loader + tiny subscription store for the two icon catalogues: the
 // line-art glyphs (docs/specs/008-canvas/canvas-and-palette.md "Icons") and the Technology brand marks (docs/specs/010-palette/technology-icons.md),
-// both living as data modules in @liveplanner/icons (shared with the Workers'
+// both living as data modules in @liveworkspace/icons (shared with the Workers'
 // headless renders). Together they are ~60 kB of pure data that almost no
 // first paint needs — a project with no icon elements never touches them — so
 // they are dynamic-imported here into an async chunk instead of riding the
@@ -27,8 +27,8 @@ import {
   type StickerArt,
   type StickerDef,
   type TechIconDef,
-} from '@liveplanner/icons';
-import { createListeners } from '@/lib/listeners';
+} from '@liveworkspace/icons';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Everything derived from the loaded chunks, assembled once. Kept in one
 // object (not four nullable module vars) so "loaded" is a single state flip —
@@ -61,11 +61,11 @@ const listeners = createListeners();
 export function ensureIconCatalogs(): Promise<void> {
   if (!loadPromise) {
     loadPromise = Promise.all([
-      import('@liveplanner/icons/icon-catalog-1'),
-      import('@liveplanner/icons/icon-catalog-2'),
-      import('@liveplanner/icons/icon-catalog-3'),
-      import('@liveplanner/icons/tech-icon-catalog'),
-      import('@liveplanner/icons/sticker-catalog'),
+      import('@liveworkspace/icons/icon-catalog-1'),
+      import('@liveworkspace/icons/icon-catalog-2'),
+      import('@liveworkspace/icons/icon-catalog-3'),
+      import('@liveworkspace/icons/tech-icon-catalog'),
+      import('@liveworkspace/icons/sticker-catalog'),
     ])
       .then(([part1, part2, part3, tech, stickers]) => {
         // Order matters for the line-art catalogue: part 1, part 2, then part 3, so
@@ -107,37 +107,8 @@ export function getIconLoaded(id: string | undefined): IconDef | undefined {
   return id ? loaded?.iconById.get(id) : undefined;
 }
 
-// Sync tech-icon lookup: undefined until the chunk lands (or for an unknown
-// id). Note `isTechIconId` (tech-icons.ts) stays truthful BEFORE load via its
-// lightweight id set — only the heavy colour/glyph data waits on the chunk.
-export function getTechIconLoaded(id: string | undefined): TechIconDef | undefined {
-  return id ? loaded?.techIconById.get(id) : undefined;
-}
-
-// Whole-catalogue views for the pickers / search. Empty until loaded — the
-// callers subscribe (useIconCatalogs) and re-run when the data lands, so an
-// empty array only ever paints a brief loading state, not a dead end.
-export function getLoadedIconCatalog(): IconDef[] {
-  return loaded?.icons ?? [];
-}
-
-export function getLoadedTechIconCatalog(): TechIconDef[] {
-  return loaded?.techIcons ?? [];
-}
-
-export function getLoadedStickerCatalog(): StickerDef[] {
-  return loaded?.stickers ?? [];
-}
-
-// Sync sticker lookup: undefined until the chunk lands (or for an unknown
-// id), at which point the canvas draws nothing for that element rather than
-// guessing at art it doesn't have.
-export function getStickerLoaded(id: string | undefined): StickerDef | undefined {
-  return id ? loaded?.stickerById.get(id) : undefined;
-}
-
 // Export-art resolver over the loaded catalogues (the editor-side
-// counterpart of @liveplanner/icons/resolve, which static-imports the data
+// counterpart of @liveworkspace/icons/resolve, which static-imports the data
 // for the Workers). Passed to the shared SVG renderer / export pipeline so
 // icon elements export their real glyph. Undefined until the chunk lands
 // (or for an unknown id) — the renderer then falls back to its historical

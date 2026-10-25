@@ -22,7 +22,7 @@ import type { Env } from './types';
 // Every server-stored project has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
 // personal projects"): an agent is a second writer even on a project nobody else can open.
 function roomStubFor(env: Env, projectId: string): DurableObjectStub {
-  return env.PROJECT_ROOM.get(env.PROJECT_ROOM.idFromName(projectId));
+  return env.PLAN_ROOM.get(env.PLAN_ROOM.idFromName(projectId));
 }
 
 // A room call that gives up after `ms`: the api never waits on a room longer than that.
@@ -57,7 +57,7 @@ function mutationInit(op: unknown, ordered = false): RequestInit {
   };
 }
 
-// Send one op to every socket in a project's room. Best-effort: the D1 write before it is the
+// Send one op to every socket in a project's room. Best-effort: the stored write before it is the
 // authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
 // not reach the room` rather than failing the request.
 async function broadcastOp(
@@ -77,9 +77,9 @@ async function broadcastOp(
 // Merge the room's collaboration ledger into a tab a client is saving
 // (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
 //
-// Every client PUTs whole tabs and D1 keeps the last one, so a save
+// Every client PUTs whole tabs and storage keeps the last one, so a save
 // snapshotted before somebody's answer, idea, tick or dot reached that client
-// erased it from D1. The room saw every one of them in order and keeps the
+// erased it from storage. The room saw every one of them in order and keeps the
 // latest state of each; folding that into the save means the write holds what
 // the room holds.
 //
@@ -93,7 +93,7 @@ async function broadcastOp(
 // the client sent it.
 //
 // Also returns who posted each comment the room has seen, so the save can
-// credit a comment that is new to D1 to its author rather than to the saver.
+// credit a comment that is new to storage to its author rather than to the saver.
 type RoomMerge = {
   tab: Tab;
   commentAuthors: Map<string, { authorName: string; authorColor: string }>;
@@ -147,12 +147,12 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 //
 // The one case today is a view-role visitor's comment. The room refuses
 // mutations from a view-role socket, so the visitor writes through the
-// comment endpoints instead; before this, the comment reached D1 but no
+// comment endpoints instead; before this, the comment was stored but no
 // editor's screen, and the next editor save (built from a thread without it)
 // erased it. Relayed as the same `el-delta` an editor's own comment sends, so
 // receivers need nothing new.
 //
-// Best-effort, like the share-revoked broadcast: the D1 write is the record,
+// Best-effort, like the share-revoked broadcast: the stored write is the record,
 // this is the live copy; a relay the room refused or never received is logged.
 export async function relayElementDelta(
   env: Env,
@@ -187,7 +187,7 @@ export async function relayElementDelta(
 
 // One changeset into the room's ordered stream (docs/specs/024-agents/agent-changesets.md "The
 // write path" step 7): sequenced in one log slot and sent to everyone. It never fails the write:
-// D1 already holds the changeset and the merge on save keeps it there, so a room that refuses or
+// The plan already holds the changeset and the merge on save keeps it there, so a room that refuses or
 // cannot be reached within ROOM_RELAY_TIMEOUT_MS is logged and answers false.
 export async function relayChangeset(
   env: Env,
@@ -359,7 +359,7 @@ export async function readRoomSelections(
 // Tell every socket in a project's room that a share link changed: revoked
 // (its holders leave the editor) or rescoped (they reload into the new scope,
 // docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
-// D1 write before it is the authoritative change, so a room that can't be
+// stored write before it is the authoritative change, so a room that can't be
 // reached is logged rather than failing the request.
 export async function broadcastShareOp(
   env: Env,
@@ -367,15 +367,6 @@ export async function broadcastShareOp(
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
   await broadcastOp(env, projectId, op, op.kind);
-}
-
-// Tell a project's realtime room that the project was moved to the Trash
-// (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Best-effort like the share-op
-// broadcast: the D1 write is the change, and a session the room misses still
-// has every save refused with project_trashed.
-export async function broadcastProjectTrashed(env: Env, projectId: string): Promise<void> {
-  await broadcastOp(env, projectId, { kind: 'project-trashed' }, 'project-trashed');
 }
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
@@ -480,7 +471,7 @@ export async function relayItemTypes(
 
 // Tell a project's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
 // ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
-// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
+// broadcasts: the stored write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, projectId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, projectId, op, 'items', true);
 }

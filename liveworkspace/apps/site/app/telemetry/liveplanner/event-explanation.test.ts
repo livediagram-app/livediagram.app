@@ -1,10 +1,13 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COMPUTED, scanEmitters } from './emitter-scan';
-import { eventExplanation } from './event-explanation';
-import { articleTitle } from './event-vocab';
+import { COMPUTED, scanEmitters } from '../emitter-scan';
+import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
+import { LIVEPLANNER as APP } from './config';
+
+const eventExplanation = APP.explain;
 
 // Every metric on the dashboard carries a sentence saying what someone did
 // (docs/specs/017-telemetry/telemetry.md). These guard that no event the code can send falls through to the
@@ -12,7 +15,12 @@ import * as CATALOGUE from './metric-catalogue';
 // the code.
 
 const REPO = resolve(__dirname, '../../../../../../liveplanner');
-const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
+const EMITS = [
+  ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
+  ...sharedClientEmitters(),
+  // Every app's help-centre views, votes and searches, sent by the shared help site.
+  ...sharedSiteEmitters(),
+];
 const LAST_RESORT = /^Someone did /;
 
 // Words a reader shouldn't meet: spec numbers, infra and vendor names, code
@@ -88,23 +96,7 @@ describe('eventExplanation', () => {
     );
   });
 
-  it('names the Explorer sidebar row someone picked', () => {
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Inbox')).toBe(
-      "Someone picked the inbox row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Trash')).toBe(
-      "Someone picked the trash row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Activity')).toBe(
-      EXACT['UI|Selected|Sidebar.Activity'],
-    );
-    expect(EXACT['UI|Selected|Sidebar.Activity']).toMatch(/renamed Inbox. No longer recorded/);
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.SharedWithMe')).toBe(
-      "Someone picked the shared with me row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'ExplorerPanel.MyProjects')).toBe(
-      "Someone picked the my projects row in the editor's Explorer panel.",
-    );
+  it('names the sign-in banner the Explorer showed', () => {
     expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
       EXACT['UI|Selected|SignInBannerExplorer'],
     );

@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
-import { modalClosed, modalOpened } from '@/lib/modal-guard';
+import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
@@ -23,8 +23,6 @@ function deps(overrides: Overrides = {}) {
     setCanvasTool: vi.fn(),
   };
   const target: Record<string, unknown> = {
-    formatSourceId: null,
-    pendingDraw: null,
     selectedId: 'a',
     multiSelectedIds: new Set<string>(),
     editingId: null,
@@ -33,8 +31,6 @@ function deps(overrides: Overrides = {}) {
     canvasTool: 'select',
     enabled: true,
     zenMode: false,
-    canGrowMindNode: () => false,
-    onEscapeMindNode: () => false,
     // An ordinary diagram tab unless a test says otherwise.
     ...spies,
     ...overrides,
@@ -126,16 +122,10 @@ describe('plain letter and digit keys', () => {
       { isReadOnly: true, participant: true },
       { isReadOnly: true, participant: false },
     ]) {
-      const addSticky = vi.fn();
-      const addText = vi.fn();
-      const addShape = vi.fn();
-      const { bag } = deps({ selectedId: null, ...role, addSticky, addText, addShape });
+      const { bag } = deps({ selectedId: null, ...role });
       const { unmount } = renderHook(() => useEditorKeyboardShortcuts(bag));
       for (const key of ['n', 't', 'r', '2', 'v', 'h', 'i'])
         expect(press(key).defaultPrevented, key).toBe(false);
-      expect(addSticky).not.toHaveBeenCalled();
-      expect(addText).not.toHaveBeenCalled();
-      expect(addShape).not.toHaveBeenCalled();
       unmount();
     }
   });
@@ -287,34 +277,6 @@ describe('Space tap', () => {
       modalClosed();
     }
     expect(onBeginEditSelected).not.toHaveBeenCalled();
-  });
-});
-
-describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md)', () => {
-  it('drops the empty node instead of deselecting', () => {
-    const onEscapeMindNode = vi.fn(() => true);
-    const onDeselect = vi.fn();
-    const { bag } = deps({ onEscapeMindNode, onDeselect });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('Escape').defaultPrevented).toBe(true);
-    expect(onEscapeMindNode).toHaveBeenCalledWith('a');
-    expect(onDeselect).not.toHaveBeenCalled();
-  });
-
-  it('deselects as usual when the node is not one to drop', () => {
-    const onDeselect = vi.fn();
-    const { bag } = deps({ onDeselect });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Escape');
-    expect(onDeselect).toHaveBeenCalledTimes(1);
-  });
-
-  it('leaves an open label editor its own Escape', () => {
-    const onEscapeMindNode = vi.fn(() => true);
-    const { bag } = deps({ onEscapeMindNode, editingId: 'a' });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Escape');
-    expect(onEscapeMindNode).not.toHaveBeenCalled();
   });
 });
 

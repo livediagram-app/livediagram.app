@@ -4,10 +4,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, newSlidePage, type LaidOutPage } from '@livedocuments/document';
-import { createViewportStore } from '@/lib/viewport-store';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import type { ReactNode } from 'react';
-import { ViewportStoreProvider } from './useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useCurrentPageFollow } from './useCurrentPageFollow';
 
 beforeEach(() => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { themeColourMap, themeHalf, viewElementInTheme } from './theme-halves';
 import { THEMES } from './themes';
 import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';

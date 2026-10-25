@@ -1,7 +1,7 @@
 // A photo page's editor view for component tests: the test harness's session (photo-test-utils.ts) in
 // the shape the photo components read, every callback recorded.
 import { vi } from 'vitest';
-import type { Photo, PhotoLayer } from '@livedesign/photo-engine';
+import type { Photo } from '@livedesign/photo-engine';
 import { OverlayStore, type PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { PhotoHistory } from '@/lib/photo-editor/photo-history';
 import { harness, photoOf, pixelLayer, solid } from '@/lib/photo-editor/photo-test-utils';
@@ -46,6 +46,3 @@ export function photoView(
   };
   return { ...h, view, toasts };
 }
-
-export const layerNamed = (photo: Photo, name: string): PhotoLayer | undefined =>
-  photo.layers.find((l) => l.name === name);

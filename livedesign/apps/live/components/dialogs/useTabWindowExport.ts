@@ -4,7 +4,7 @@
 // arrives only when opened or fetched) with its photos, then drawn once and fitted inside the window, as on screen.
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
   tabWindowMayShow,
   tabWindowNames,
@@ -16,7 +16,7 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg, tabDrawingFontIdsOf } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
-import { svgFrameOf } from '@/lib/svg-frame';
+import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 
 type ImageContext = { ownerId: string; designId: string; shareCode: string | null };
 

@@ -3,7 +3,7 @@
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
-import { logRefusal } from './refusal-log';
+import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
   COMMENT_TEXT_MAX,
   isCommentListStatus,
@@ -18,16 +18,10 @@ import {
   type ElementDelta,
 } from '@livedocuments/document';
 import { commentThreadOf, findCommentHost, removeComment, threadsOfTab } from '../comments';
-import {
-  getDocument,
-  getParticipant,
-  getTab,
-  isTabRevStale,
-  tabIdsWithComments,
-  upsertTabAtRev,
-} from '../db';
+import { getDocument, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { storeTab } from '../limits';
 import {
   badRequest,
@@ -39,7 +33,6 @@ import {
   payloadTooLarge,
 } from '../responses';
 import { relayElementDelta } from '../room-client';
-import { recordCommentAdded, recordCommentResolved, retractComments } from '../timeline';
 import type { TabDTO } from '../types';
 import {
   deniedOnTab,
@@ -49,7 +42,7 @@ import {
   missingDocument,
   readBody,
   requireOwner,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
@@ -60,7 +53,7 @@ type Caller = CommentCaller;
 
 // The caller and the document, when the caller may take part on the tab.
 async function participant(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
 ): Promise<Caller | Response> {
@@ -81,7 +74,7 @@ type Mutation = Change | 'unchanged' | Response;
 // Reads the tab, applies `mutate` and writes at the revision read; a lost race re-reads and repeats once, then
 // answers 409 `tab_busy` (PR22). The delta is relayed after the write lands.
 async function writeTab(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   mutate: (tab: TabDTO) => Mutation,
@@ -109,7 +102,7 @@ async function writeTab(
 
 // A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23).
 async function newComment(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   owner: string,
   body: Record<string, unknown>,
 ): Promise<Comment | Response> {
@@ -146,29 +139,17 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   };
 }
 
-// The timeline and the owner's email for a posted comment (add and reply alike).
-function afterCommentPosted(
-  ctx: RouteContext,
+// The emails a posted comment sends (add and reply alike): the owner's new-comment email, and on a team document
+// one to each teammate it @-mentions (docs/specs/012-collaboration/comment-mentions.md), for a signed-in person's
+// comment (never an API token's).
+export function afterCommentPosted(
+  ctx: DocumentRouteContext,
   caller: Caller,
   comment: Comment,
-  reply: boolean,
 ): void {
   const { doc, owner } = caller;
-  ctx.waitUntil?.(
-    recordCommentAdded(
-      ctx.env,
-      doc,
-      {
-        id: comment.id,
-        text: comment.text,
-        authorName: comment.authorName,
-        authorColor: comment.authorColor,
-        reply,
-      },
-      owner,
-    ),
-  );
-  if (emailEnabled(ctx.env) && owner !== doc.ownerId)
+  if (!emailEnabled(ctx.env)) return;
+  if (owner !== doc.ownerId)
     ctx.waitUntil?.(
       notifyNewComment(
         ctx.env,
@@ -176,9 +157,18 @@ function afterCommentPosted(
         comment.authorName,
       ),
     );
+  if (doc.teamId && comment.mentions?.length && !ctx.token)
+    ctx.waitUntil?.(
+      notifyMentions(ctx.env, {
+        document: { id: doc.id, name: doc.name, teamId: doc.teamId },
+        authorId: owner,
+        authorFallbackName: ctx.accountEmail,
+        comments: [comment],
+      }),
+    );
 }
 
-async function addComment(ctx: RouteContext, id: string, tabId: string): Promise<Response> {
+async function addComment(ctx: DocumentRouteContext, id: string, tabId: string): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
@@ -187,14 +177,9 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
   if (!elementId) return badRequest('missing elementId');
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
-  let reply = false;
-  const written = await writeTab(ctx, id, tabId, (tab) => {
-    const target = tab.elements.find((el) => el.id === elementId);
-    reply = (target ? (commentThreadOf(target)?.comments.length ?? 0) : 0) > 0;
-    return appended(tab, elementId, comment);
-  });
+  const written = await writeTab(ctx, id, tabId, (tab) => appended(tab, elementId, comment));
   if (written instanceof Response) return written;
-  afterCommentPosted(ctx, caller, comment, reply);
+  afterCommentPosted(ctx, caller, comment);
   console.info('[comments] added', {
     documentId: id,
     tabId,
@@ -205,22 +190,17 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
 
 // Delete-own only: removing someone else's comment goes through the edit-gated tab save.
 async function deleteOwn(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   commentId: string,
 ): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
-  let threadKey: string | null = null;
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     if (host.comment.authorId !== caller.owner) return forbidden();
-    const el = tab.elements.find((e) => e.id === host.elementId)!;
-    // The opening comment's text is what the thread's resolved event says.
-    threadKey =
-      commentThreadOf(el)?.comments[0]?.id === commentId ? `${id}:${host.elementId}` : null;
     return {
       elements: removeComment(tab.elements, commentId),
       elementId: host.elementId,
@@ -228,13 +208,12 @@ async function deleteOwn(
     };
   });
   if (written instanceof Response) return written;
-  ctx.waitUntil?.(retractComments(ctx.env, id, [{ id: commentId, threadKey }]));
   console.info('[comments] deleted', { documentId: id, tabId, agent: ctx.token !== null });
   return noContent();
 }
 
 async function threadVerb(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   commentId: string,
@@ -252,20 +231,16 @@ async function threadVerb(
       return host ? appended(tab, host.elementId, comment) : notFound();
     });
     if (written instanceof Response) return written;
-    afterCommentPosted(ctx, caller, comment, true);
+    afterCommentPosted(ctx, caller, comment);
     console.info('[comments] replied', { documentId: id, tabId, agent: ctx.token !== null });
     return json({ comment }, { status: 201 });
   }
   const resolved = verb === 'resolve';
-  let opening: string | null = null;
-  let threadKey = '';
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     const el = tab.elements.find((e) => e.id === host.elementId)!;
     const thread = commentThreadOf(el)!;
-    opening = thread.comments[0]?.text ?? null;
-    threadKey = el.id;
     // Resolving a resolved thread, or reopening an open one, writes and relays nothing (PR17).
     if (thread.resolved === resolved) return 'unchanged';
     const delta: ElementDelta = { kind: 'comment-resolve', resolved };
@@ -276,10 +251,6 @@ async function threadVerb(
     };
   });
   if (written instanceof Response) return written;
-  if (written.change && resolved)
-    ctx.waitUntil?.(
-      recordCommentResolved(ctx.env, caller.doc, `${id}:${threadKey}`, opening, caller.owner),
-    );
   console.info(
     `[comments] ${written.change ? (resolved ? 'resolved' : 'reopened') : `${verb} unchanged`}`,
     {
@@ -293,7 +264,7 @@ async function threadVerb(
 
 // GET /api/documents/:id/comments?status=: the threads across the document, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
-async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
+async function listThreads(ctx: DocumentRouteContext, id: string): Promise<Response> {
   const status = ctx.url.searchParams.get('status') ?? 'open';
   if (!isCommentListStatus(status)) return json({ error: 'invalid_status' }, { status: 400 });
   const doc = await getDocument(ctx.env, id);
@@ -322,7 +293,7 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
 }
 
 // The comment routes, or null for a path that is not theirs. Every refusal is logged here, once, with its code.
-export async function handleCommentRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleCommentRoutes(ctx: DocumentRouteContext): Promise<Response | null> {
   const res = await commentRoute(ctx);
   if (res && res.status >= 400)
     await logRefusal('[comments] refused', res, {
@@ -334,7 +305,7 @@ export async function handleCommentRoutes(ctx: RouteContext): Promise<Response |
   return res;
 }
 
-async function commentRoute(ctx: RouteContext): Promise<Response | null> {
+async function commentRoute(ctx: DocumentRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   const id = segments[2]!;
   if (segments.length === 4 && segments[3] === 'comments')

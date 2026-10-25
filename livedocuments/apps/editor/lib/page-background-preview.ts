@@ -8,7 +8,7 @@
 import { useSyncExternalStore } from 'react';
 import type { LaidOutPage, PageBackground } from '@livedocuments/document';
 import { withBackgroundPatch } from './page-paint';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
 

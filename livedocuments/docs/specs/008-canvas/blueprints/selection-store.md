@@ -7,23 +7,23 @@ who re-renders when it changes.
 
 ## Files
 
-| File                                                         | Role                                                                                |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `apps/editor/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `apps/editor/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
-| `apps/editor/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
-| `apps/editor/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
-| `apps/editor/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
-| `apps/editor/app/document/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                              |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`         | Provides the store; passes the canvas stable event props                            |
-| `apps/editor/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                                   |
-| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                                     |
-| `apps/editor/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
-| `apps/editor/components/canvas/LayerSelectionChrome.tsx`     | Quick-connect pluses, union resize box                                              |
-| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/editor/components/panels/SlideDeckPanel.tsx`           | Reads the selection it slides from the store                                        |
-| `apps/editor/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
+| File                                                                       | Role                                                                                |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
+| `apps/editor/hooks/canvas/useSelectionStore.tsx`                           | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
+| `apps/editor/hooks/ui/useStableObject.ts`                                  | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
+| `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
+| `apps/editor/app/document/[id]/editor-ui-state.ts`                         | Creates the store; `selectedId` / setters come from it                              |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`                       | Provides the store; passes the canvas stable event props                            |
+| `apps/editor/components/canvas/Canvas.tsx`                                 | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`                    | No selection props; each view reads its own flags                                   |
+| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`                | Subscribes; runs `deriveCanvasSelection` itself                                     |
+| `apps/editor/components/canvas/selection-aware-views.tsx`                  | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
+| `apps/editor/components/canvas/LayerSelectionChrome.tsx`                   | Quick-connect pluses, union resize box                                              |
+| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`                       | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
+| `apps/editor/components/panels/SlideDeckPanel.tsx`                         | Reads the selection it slides from the store                                        |
+| `apps/editor/lib/canvas-selection.ts`                                      | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
 
@@ -140,7 +140,7 @@ Selection` instead and reads it where it acts. By kind:
 ## Interfaces and contracts
 
 ```ts
-// apps/editor/lib/selection-store.ts
+// ../packages/workbench/src/lib/selection-store.ts
 export type Selection = {
   readonly selectedId: string | null;
   readonly multiSelectedIds: ReadonlySet<string>;
@@ -179,13 +179,13 @@ export function SelectionStoreProvider(props: {
 export function useSelectionStore(): SelectionStore; // throws outside a provider
 export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b: T) => boolean): T;
 
-// apps/editor/hooks/ui/useStableEventProps.ts
+// ../packages/workbench/src/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
 
 // apps/editor/hooks/ui/useStableObject.ts
 export function useStableObject<T extends object>(value: T): T;
 
-// apps/editor/components/primitives/withStableEventProps.tsx
+// ../packages/workbench/src/components/primitives/withStableEventProps.tsx
 export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P>;
 ```
 

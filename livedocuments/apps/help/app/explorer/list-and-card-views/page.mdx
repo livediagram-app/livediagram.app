@@ -1,75 +1,53 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CardViewGrid } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'List, Card and Details Views',
   description:
-    'Browse the Explorer as compact list rows, a card grid with live document previews or a sortable details table, and learn how snapshot thumbnails behave.',
+    'Browse the Explorer as cards with document previews, compact list rows or a sortable details table, switched with one toggle that remembers your choice.',
   path: '/help/explorer/list-and-card-views/',
 });
 
 <ArticleLayout
   title="List, Card and Details Views"
-  description="Browse your library as dense rows, as preview cards, or as a sortable table, with a toggle that remembers your choice on this device."
+  description="Browse your library as preview cards, as dense rows, or as a sortable table, with a toggle that remembers your choice on this device."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-The Explorer's browse views can render the same folders and documents three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the document's canvas, or a **details** table you can sort by any column. Recognising a document by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
+The Explorer can show the same folders and items three ways: a grid of **cards**, each with a picture of the document, a compact **list** of rows, or a **details** table you can sort by any column. Recognising a document by its picture is often faster than reading near-identical names; the list packs more onto the screen when you know exactly what you're looking for.
 
 ## Switching views
 
-Look for the three-button toggle at the right of the header on the [Explorer page](/help/explorer/explorer-page/)'s browse views (Recent, Favourites, Search results, My Work, folders, and This Browser). Click **List view** (the rows icon) for the list, **Card view** (the grid icon) for cards, or **Details view** (the table icon) for the table. The choice applies immediately and to all of those views at once.
+Look for the three-button toggle at the top right of any page that lists items: My Work, a folder, a team's library, Recent, Favourites and search results. Click **List view** for rows, **Card view** for cards, or **Details view** for the table. The choice applies at once, to every one of those pages, and is remembered on this device.
 
-<Figure caption="Card view inside a folder: the toggle set to cards, a subfolder previewing what it holds, and a starred document.">
-  <CardViewGrid />
-</Figure>
+Cards are what you get until you choose otherwise. On a phone the Explorer always shows cards and the toggle is hidden; the choice you made on a wider screen comes back when the window is wide enough again. [Shared With Me](/help/explorer/shared-with-you/) and the [Trash](/help/account-and-data/trash/) keep a fixed list of their own, so they have no toggle.
 
-The same toggle appears on a [team's shared library](/help/explorer/team-spaces/), and it shares the same preference, so a card-view person gets cards there too.
+## What each view shows
 
-Cards are what you get until you choose otherwise: a document is easiest to recognise by its picture, and the grid is the view that shows you one. Your choice is then remembered **per device** (it's a layout preference, not account data), so your phone and your desktop can each keep the view that suits their screen.
+- **Card** shows each item as a tile with a snapshot of its first tab, its name, a star if you favourited it, its visibility badge (**Shared** or **Team**) and when it was last updated, with its **⋯** menu. Folders appear as cards in the same grid, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the items it holds first, then its subfolders, with a **+N** tile when there is more. An empty folder keeps the plain folder glyph.
+- **List** packs the same details into compact rows, each with the item's picture or icon, and its **⋯** menu at the end.
+- **Details** lays everything out as a table, much like the details pane of a desktop file manager.
 
-## What a card shows
-
-Each card carries everything its list row does, arranged around the preview:
-
-- A **live snapshot** of the document's first tab, rendered from the actual canvas and refreshed when the document changes. The preview keeps the document's own background colour, so the card reads like a window onto the canvas.
-- The **name**, the **last-updated** time, the owner where relevant, the **Made by AI** or **This Browser** pill where one applies, and the same visibility badge and **⋯** menu as the list row: **Rename**, **Duplicate**, **Change Folder**, **Favourite**, **Hide from Recent** and **Delete**, among others.
-- A **star** on anything you have favourited: before the name in the list view, so a column of rows lines its stars up in one scannable vertical, and in the meta row on a card. It is amber rather than brand-coloured because it is a personal mark sitting beside badges that describe the document itself.
-- Folders appear as folder cards in the same grid, so navigation doesn't change between views, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the document snapshots it holds first, then its subfolders. When there are more than four, the last tile becomes a muted **+N** counting the rest. An empty folder keeps the plain folder glyph. This is the card grid only; the list view keeps its count badge, and the editor's [Explorer panel](/help/explorer/explorer-panel/) is unchanged.
-
-The grid is responsive: one column on a phone, two on a tablet, three on a wide screen.
+With **All Apps** chosen at the top of the page, each item also names the app it comes from.
 
 ## The details view
 
-The details view is a table, one row per folder or document, much like the details pane of a desktop file manager:
+The table has a column for each of:
 
-- **Name**: open a document or folder from it. Rest the pointer on a document's row for a moment (or tab to its name) and a **preview** of its canvas appears beside it; move down the rows and each next preview appears at once.
-- **Type**: whether the row is a document or a folder, as an icon.
-- **Comments**: how many comments the document holds, resolved ones included. Empty when there are none.
-- **Access**: what you may do with it, as the Share dialog's role icon: **Editor** for your own, team and this-browser documents, or the role a shared link gives you.
-- **Size**: how many objects the document holds across its tabs, and how much space it takes, for example **12 objects (34 KB)**. A folder shows how many items it holds.
+- **Name**: open an item or folder from it. Rest the pointer on a document's row for a moment and a **preview** of it appears beside it.
+- **Type**: the kind of thing it is, such as **Document** or **Canvas**, or a folder.
+- **Comments**: how many comments it holds.
+- **Access**: what you may do with it.
+- **Size**: how much it holds.
 - **Created** and **Updated**: the date and time.
 
-Press any column heading to sort by it; press it again to reverse. Folders always stay above documents. The sort is remembered on this device, like the view.
+Press any column heading to sort by it; press it again to reverse. Folders always stay above items, and the sort is remembered on this device, like the view. A sort orders what has loaded so far. Narrow windows keep fewer columns.
 
-A document's numbers can show **–** for a short while after an update to livedocuments, while older documents are counted; they fill in on their own. Documents shared with you always show **–** for Type, Comments, Size and Created, since they sit in someone else's library. On a phone the table keeps just the name and the last update.
+You can drag any of your own or your team's documents onto a folder, in any of the three views or in the sidebar, to move it there.
 
-You can drag any of your own or your team's document rows onto a folder, here or in the sidebar, to move it there.
+## Long lists
 
-## About the previews
-
-Snapshot thumbnails also appear in list rows and other Explorer surfaces; the card view just shows them large. A few behaviours worth knowing:
-
-- Previews load **lazily** as you scroll, so a long library doesn't fetch dozens of images up front.
-- A document with an **empty first tab** shows a dashed sketch captioned "Nothing drawn yet" instead of a snapshot, and while a snapshot loads a placeholder fades into it, so the card never jumps in size.
-- Previews are rendered fresh after the document is edited, so what you see stays current without you doing anything.
-- A preview is **vector, not a photo of the canvas**, which is why it is crisp at any size. It is also the very same picture a [live image link](/help/collaboration/sharing/live-image/) serves: one snapshot per document, drawn once and used as a 36px row thumbnail, as this card, and in your README.
-
-<Tip>
-  The [Shared With Me](/help/explorer/shared-with-you/) page keeps its own fixed layout, previews
-  included, so incoming shares always look the same regardless of the toggle.
-</Tip>
+Lists load a page at a time as you scroll towards the end, so a large library opens quickly.
 
 </ArticleLayout>

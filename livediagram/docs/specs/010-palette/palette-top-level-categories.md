@@ -97,8 +97,7 @@ row-rendered section, so a new one can't ship as a bare row.
 ## The User element was deleted
 
 The actor / stick-figure tile is gone from the palette and from the "Add to
-canvas" search catalogue, and the AI prompt no longer offers `actor` as a shape
-to emit. Nothing can create one any more.
+canvas" search catalogue. Nothing can create one any more.
 
 The `actor` **shape kind itself is kept** in the model, the renderer and the
 wire schema. Removing it would coerce every existing actor element to a square

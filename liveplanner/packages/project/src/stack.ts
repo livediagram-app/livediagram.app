@@ -240,16 +240,3 @@ export function withStackSettings<T extends Element>(
     );
   return next;
 }
-
-const NONE: ReadonlySet<ElementId> = new Set();
-
-/** The ids a stack directly holds (the elements that glide to their slots on the canvas); an empty set when the
- *  board has no stack. */
-export function stackedElementIds(elements: readonly Element[]): ReadonlySet<ElementId> {
-  if (!elements.some(isStack)) return NONE;
-  const holders = deriveContainers(elements);
-  const stacks = new Set(elements.filter(isStack).map((el) => el.id));
-  const out = new Set<ElementId>();
-  for (const [id, holder] of holders) if (holder && stacks.has(holder)) out.add(id);
-  return out;
-}

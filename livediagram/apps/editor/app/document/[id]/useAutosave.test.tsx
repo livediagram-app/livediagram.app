@@ -65,7 +65,7 @@ function setup() {
   };
   // Stable, as the real state setters are: a fresh function each render would re-run the save
   // effect on every render and hide whether it re-runs for the right reason.
-  const setters = { setSaveStatus: vi.fn(), setSavedAt: vi.fn(), setDocumentList: vi.fn() };
+  const setters = { setSaveStatus: vi.fn(), setSavedAt: vi.fn() };
   const noneSeen: ReadonlyMap<string, number> = new Map();
   const useSubject = (
     tabs: Tab[],

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livediagram/api-schema';
 import {
@@ -40,28 +40,31 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(useAddress().split('?')[1] ?? ''),
 }));
 
-type FakeExplorer = {
-  selected: { kind: string; id?: string };
-  loading: boolean;
-  folderById: Map<string, { id: string; name: string }>;
-  documentsByFolder: Map<string | null, unknown[]>;
-  teamFolders: { id: string; teamId: string }[];
-};
-const explorer = vi.hoisted(() => {
-  const state: FakeExplorer = {
-    selected: { kind: 'home' },
-    loading: false,
-    folderById: new Map([['f1', { id: 'f1', name: 'Minigames' }]]),
-    documentsByFolder: new Map([['f1', []]]),
-    teamFolders: [{ id: 'tf1', teamId: 'team1' }],
-  };
-  return { state };
-});
-vi.mock('../../explorer/ExplorerContext', () => ({ useExplorer: () => explorer.state }));
-vi.mock('../../explorer/ExplorerShell', () => ({
-  ExplorerShell: ({ children }: { children: ReactNode }) => <div>explorer {children}</div>,
+vi.mock('./ExplorerHost', () => ({
+  ExplorerHost: ({
+    view,
+    onFolderShown,
+  }: {
+    view: { kind: string; id?: string };
+    onFolderShown?: (shown: {
+      folderId: string;
+      name: string | null;
+      itemCount: number | null;
+    }) => void;
+  }) => (
+    <div>
+      <p>
+        explorer {view.kind} {view.id ?? ''}
+      </p>
+      <button
+        type="button"
+        onClick={() => onFolderShown?.({ folderId: view.id ?? '', name: 'Specs', itemCount: 0 })}
+      >
+        list in
+      </button>
+    </div>
+  ),
 }));
-vi.mock('../../explorer/ExplorerPane', () => ({ ExplorerPane: () => <p>pane</p> }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('next/dynamic', () => ({
   default: () =>
@@ -108,14 +111,14 @@ let end: Mock<WorkbenchSession['end']>;
 function sessionOf(): WorkbenchSession {
   return {
     scope: 'workspace',
-    secret: `lvw_${'a'.repeat(43)}`,
+    secret: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
     documentId: null,
     tabId: null,
     shareCode: null,
     origin: 'https://127.0.0.1:5175',
     level: 'edit',
     expiresAt: Date.now() + 60_000,
-    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
     workbenchName: 'Acme Editor',
     port,
     ended: null,
@@ -148,8 +151,6 @@ beforeEach(() => {
     close: () => {},
   };
   end = vi.fn<WorkbenchSession['end']>();
-  explorer.state.selected = { kind: 'home' };
-  explorer.state.loading = false;
 });
 
 afterEach(() => {
@@ -186,21 +187,15 @@ describe('WorkspaceFrame', () => {
     expect(track).toHaveBeenCalledWith('Session', 'Opened', 'WorkbenchWorkspace');
   });
 
-  it('names the folder shown and its own documents, once the lists are in', () => {
-    explorer.state.selected = { kind: 'folder', id: 'f1' };
-    explorer.state.loading = true;
-    const { rerender } = mount();
+  it('names the folder shown and its documents once the Explorer has its list in, in one place message', () => {
+    window.history.replaceState(null, '', '/embed/workbench/explorer/folder/f1');
+    mount();
+
+    expect(screen.getByText('explorer folder f1')).toBeTruthy();
     expect(sent('livediagram:place')).toEqual([]);
-
-    explorer.state.loading = false;
-    rerender(
-      <WorkbenchSessionContext.Provider value={sessionOf()}>
-        <WorkspaceFrame />
-      </WorkbenchSessionContext.Provider>,
-    );
-
+    fireEvent.click(screen.getByRole('button', { name: 'list in' }));
     expect(sent('livediagram:place')).toMatchObject([
-      { view: 'folder', folderId: 'f1', folderName: 'Minigames', documentCount: 0 },
+      { view: 'folder', folderId: 'f1', folderName: 'Specs', documentCount: 0 },
     ]);
   });
 
@@ -254,16 +249,5 @@ describe('WorkspaceFrame', () => {
       listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { view: 'home' } })),
     );
     expect(window.location.pathname).toBe('/embed/workbench/explorer');
-  });
-
-  it('moves a frame started on a team’s folder to that team’s page, in place', () => {
-    window.history.replaceState(null, '', '/embed/workbench/explorer/folder/tf1');
-    explorer.state.selected = { kind: 'folder', id: 'tf1' };
-    mount();
-
-    expect(`${window.location.pathname}${window.location.search}`).toBe(
-      '/embed/workbench/explorer/team?id=team1&folder=tf1',
-    );
-    expect(sent('livediagram:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
   });
 });

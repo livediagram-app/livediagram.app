@@ -7,7 +7,7 @@ import {
   MOBILE_BREAKPOINT_PX,
   PHONE_MAX_HEIGHT_PX,
   PHONE_MEDIA_QUERY,
-} from './responsive';
+} from '@liveworkspace/workbench/lib/responsive';
 
 afterEach(() => {
   vi.unstubAllGlobals();

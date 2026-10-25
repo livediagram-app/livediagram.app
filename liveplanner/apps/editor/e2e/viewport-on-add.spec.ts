@@ -1,15 +1,8 @@
-import {
-  expect,
-  test,
-  expectNoPageErrors,
-  openStartBlank,
-  pageOwnerHeaders,
-  paletteTile,
-} from './fixtures';
+import { expect, test, expectNoPageErrors, startBlankProject, seedTab } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
-// once, when its content has loaded; what the user then adds, the first element on an empty tab
-// included, never moves the view.
+// once, when its content has loaded. (The first element dropped on an empty tab came from the diagram palette,
+// which Plan does not have; that half is gone with it.)
 
 const CANVAS = '[data-canvas-a11y-root]';
 
@@ -19,49 +12,12 @@ const centre = (b: { x: number; y: number; width: number; height: number }) => (
 });
 
 test.describe('Viewport on add', () => {
-  test('the first element dropped on an empty tab stays where it was dropped', async ({
-    page,
-    pageErrors,
-  }) => {
-    await openStartBlank(page);
-    const canvas = page.locator(CANVAS);
-    const box = (await canvas.boundingBox())!;
-    const drop = { x: 200, y: 260 };
-    await (await paletteTile(page, 'Add Square')).dragTo(canvas, { targetPosition: drop });
-    const square = canvas.getByRole('img', { name: 'Square', exact: true });
-    await expect(square).toHaveCount(1);
-    // Past the frame the entry fit used to land on.
-    await page.waitForTimeout(300);
-    const at = centre((await square.boundingBox())!);
-    expect(Math.abs(at.x - (box.x + drop.x))).toBeLessThan(4);
-    expect(Math.abs(at.y - (box.y + drop.y))).toBeLessThan(4);
-    expectNoPageErrors(pageErrors);
-  });
-
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    await openStartBlank(page);
-    const canvas = page.locator(CANVAS);
-    // Dropped at the far corner, so only a fit would bring it back to the middle.
-    const box = (await canvas.boundingBox())!;
-    await (
-      await paletteTile(page, 'Add Square')
-    ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
-    await page.keyboard.press('Escape');
-    // Let the autosave land before reloading.
-    await expect
-      .poll(async () => {
-        const headers = await pageOwnerHeaders(page);
-        return page.evaluate(async (headers) => {
-          const id = location.pathname.split('/').filter(Boolean).pop();
-          const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
-          const res = await fetch(`/api/projects/${id}/tabs/${tabId}`, { headers });
-          if (!res.ok) return 0;
-          const got = (await res.json()) as { tab?: { elements?: unknown[] } };
-          return got.tab?.elements?.length ?? 0;
-        }, headers);
-      })
-      .toBe(1);
-    await page.reload();
+    await startBlankProject(page);
+    // Far from the origin, so only a fit brings it to the middle. seedTab saves it and reloads.
+    await seedTab(page, [
+      { id: 'sq', type: 'shape', shape: 'square', x: 2400, y: 1800, width: 120, height: 120 },
+    ]);
     const square = page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);
     await expect(async () => {

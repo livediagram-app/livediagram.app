@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { isRecovery, isServerCrash } from './ExceptionsView';
-import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
-import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './PaletteView';
-import { isHelpArticleType, isSettingsCategory } from './opened-types';
-import { aliasedSeries, foldAliases, rank } from './rank';
+import { isRecovery, isServerCrash } from '../_shared/ExceptionsView';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
+import { isHelpArticleType, isSettingsCategory } from '../_shared/opened-types';
+import { aliasedSeries, foldAliases, rank } from '../_shared/rank';
 import { TOUR_STEP_TYPES, tourStepRows } from './tour-steps';
+import { LIVEDIAGRAM as APP } from './config';
+
+const PALETTE_TYPE_ALIASES = APP.palette.aliases;
+const SELECTION_MODES = APP.modes!.selection;
 
 // The read-time rules the rankings apply to stored rows (docs/specs/017-telemetry/telemetry.md): folding old
 // spellings into today's token, and keeping events that aren't the thing a

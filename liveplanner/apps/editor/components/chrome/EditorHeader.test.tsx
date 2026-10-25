@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -21,7 +20,8 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
-const { HEADER_ICON_SLOT_PX } = await import('./header-action');
+const { HEADER_ICON_SLOT_PX } =
+  await import('@liveworkspace/workbench/components/chrome/header-action');
 
 afterEach(cleanup);
 
@@ -158,10 +158,10 @@ describe('EditorHeader title on a touch screen', () => {
 });
 
 describe('EditorHeader logo', () => {
-  it('links the logo to the Explorer home, not the homepage', () => {
+  it('links the logo to the Explorer on this address, not the homepage', () => {
     renderHeader();
     expect(screen.getByRole('link', { name: 'liveplanner' }).getAttribute('href')).toBe(
-      '/explorer/home',
+      '/explorer',
     );
   });
 });

@@ -1,11 +1,11 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import { isSelfDrawingShape } from '@livedocuments/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
@@ -71,12 +71,12 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke="rgb(14, 165, 233)"
+                  stroke="var(--color-brand-500)"
                   strokeWidth={1.5}
                   strokeLinejoin="round"
                 />
                 {pts.map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r={3} fill="rgb(14, 165, 233)" />
+                  <circle key={i} cx={p.x} cy={p.y} r={3} fill="var(--color-brand-500)" />
                 ))}
                 {nearStart ? (
                   <circle
@@ -84,7 +84,7 @@ export function CanvasDrawPreview({
                     cy={pts[0]!.y}
                     r={8}
                     fill="none"
-                    stroke="rgb(14, 165, 233)"
+                    stroke="var(--color-brand-500)"
                     strokeWidth={2}
                   />
                 ) : null}
@@ -151,8 +151,8 @@ export function CanvasDrawPreview({
                 {usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
-                    fill="rgba(14, 165, 233, 0.10)"
-                    stroke="rgb(14, 165, 233)"
+                    fill="color-mix(in srgb, var(--color-brand-500) 10%, transparent)"
+                    stroke="var(--color-brand-500)"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     aspect={heightPx > 0 ? widthPx / heightPx : 1}

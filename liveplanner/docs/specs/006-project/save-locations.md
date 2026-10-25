@@ -18,34 +18,71 @@ anything on the canvas. A project in This Browser still says what it is on the p
 
 ## The default depends on who is creating
 
-| Who                               | Default          |
-| --------------------------------- | ---------------- |
-| A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **liveplanner**  |
-| Anyone on a guest-only deployment | **liveplanner**  |
+| Who                | Default          |
+| ------------------ | ---------------- |
+| A guest            | **This Browser** |
+| A signed-in person | **liveplanner**  |
 
 Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
+A project in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
+browser's projects beside the index's ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md),
+[Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
 
-- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
+- One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewProjectLocation` (`apps/editor/app/new/useNewProjectLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
+  `resolveSaveLocation` in `useNewProjectLocation` (`apps/editor/app/new/useNewProjectLocation.ts`): the create on
+  mount, its Retry, and the wizard-less links (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   liveplanner whoever is creating.
 - Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
   a project in This Browser; a guest never waits.
-- There is no per-person override: no setting chooses the store. Where a project is **filed** on liveplanner is the
-  person's to set, in Settings > Projects > Default Folders ([Default folders](../013-workspace/default-folders.md)).
-  A preference that once did both, "Always save new projects in <place> and skip this step" (`skipLocationStep`),
-  is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
+- There is no per-person override: no setting chooses the store ([User preferences](../007-editor/user-preferences.md)).
+
+## On the start screen
+
+Nobody is asked, but the start screen offers one switch, **Sync Plan to Server**, in a quiet strip under its choices
+(Start Planning), so a new plan can change place while it is still empty without a trip to the Explorer. It reflects
+where the plan is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+person (liveplanner).
+
+- **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
+  it, and it tints on hover. Screen readers still hear one switch, named by the label and described by the line.
+- **Turned on** it syncs the plan in place ([Offline Mode → Syncing in place](offline-mode.md#syncing-in-place)), a
+  guest's as their guest id; **turned off** it takes it offline in place
+  ([Offline Mode → Taking offline in place](offline-mode.md#taking-offline-in-place)). No confirmation: the plan is
+  empty and nobody else has it, so nothing can be lost. No reload: the person stays on the start screen.
+- **While it moves** the switch is busy (a spinner in its knob, `aria-busy`) and its line reads "Syncing to the
+  server…" or "Moving to this browser…"; a polite status says the same, then "Synced to the server." or "Moved to
+  this browser.". **A failure** shows the conversion's toast (`syncFailureMessage`, or "Couldn’t move this to this
+  browser. It stays safe on the server.") and the switch returns to where the plan still is.
+- **The line under the label** follows the state, with a small cloud or browser-window icon beside it:
+
+  | State          | Line                                                                        |
+  | -------------- | --------------------------------------------------------------------------- |
+  | Off, signed in | Saved in this browser only. Turn on to open it anywhere and share it.       |
+  | Off, guest     | Saved in this browser only. Turn on to save it to our servers and share it. |
+  | On, signed in  | Saved to your account, on every device.                                     |
+  | On, guest      | Saved on liveworkspace servers. Sign in to open it on any device.           |
+
+- **When it shows** (`showsSaveSwitch`): the plan has loaded and the reader and their sign-in are known; the reader
+  owns it and can edit it; it has one tab with nothing on it; it has no live share link, is not open through one and
+  is not in a team; nobody else is in it; and the editor is not embedded or in another app's workbench. Anywhere else
+  the row is hidden, and the Explorer's Sync Project and Take Offline stay the way to move it. Once a move has started the
+  row stays until it lands.
+- **Built once.** The switch (`Switch`) and the row (`SaveSwitch`, `SaveSwitchRow`, its words and `showsSaveSwitch`)
+  are `@liveworkspace/ui`'s (`packages/ui/src/Switch.tsx`, `packages/ui/src/save-switch/`), shared by every app. This
+  app hands in only its kind's word, what it knows of the open plan and its two in-place moves
+  (`apps/editor/components/start/StartSaveSwitch.tsx`). It reads only state the editor already holds and loads with the
+  start's own chunk, so the start screen's first paint makes no request for it.
 
 ## The folder browser
 
-Where a project goes within liveplanner is chosen with the shared `PlacementBrowser`, in the Explorer's Move dialog
-([Folders](../013-workspace/folders.md)) and the default folder picker ([Default folders](../013-workspace/default-folders.md)).
-Both render it in its **`list` layout**: stacked
+Where a plan goes within liveplanner is chosen with the shared Explorer's `PlacementBrowser`
+(in `@liveworkspace/explorer`), in its Move dialog
+([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+It renders in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New
 Folder row last. Same browse, same placement strings, same double-click
@@ -132,7 +169,7 @@ its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-The Offline Mode article says a guest's new projects start in this browser and a signed-in person's on liveplanner,
+The Offline Mode article says a guest's new plans start in this browser and a signed-in person's on liveplanner,
 and how to move one either way. No article of its own: each location's article (offline today) is where the substance
 is.
 
@@ -140,9 +177,9 @@ is.
 
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewProjectLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
+- `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Plan to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/editor/components/placement/PlacementBrowser.tsx`: the `layout` prop
-  (`tiles` | `list`) on the browser, its `PlacementCard`, and `NewFolderTile`.
+- `@liveworkspace/explorer`: the `PlacementBrowser` the Move dialog uses.
 
 ## References
 

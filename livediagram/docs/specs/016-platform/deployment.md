@@ -2,23 +2,23 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livediagram.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own D1 / R2 / KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livediagram.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects, R2 and KV and liveworkspace's staging services. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
 | App              | Cloudflare Worker       | Type                                                                                                                                |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/marketing` | `livediagram-marketing` | Static assets only (Next.js `output: 'export'`).                                                                                    |
-| `apps/editor`      | `livediagram-editor`      | Static assets + a tiny path-rewrite worker.                                                                                         |
+| `apps/editor`    | `livediagram-editor`    | Static assets + a tiny path-rewrite worker.                                                                                         |
 | `apps/help`      | `livediagram-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                                              |
 | `apps/community` | `livediagram-community` | Static assets plus a small worker for post metadata and the sitemap, bound to the api ([Community](../025-community/community.md)). |
-| `apps/api`       | `livediagram-api`       | Worker (D1 binding + Durable Object).                                                                                               |
+| `apps/api`       | `livediagram-api`       | Worker (Durable Objects + R2; no database of its own).                                                                              |
 | `apps/mcp`       | `livediagram-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                       |
 | `apps/router`    | `livediagram-router`    | Worker (service bindings to the other six).                                                                                         |
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The community worker serves its static export under `/community` with a small script (`apps/community/worker/index.ts`) that runs first for only the post page and the sitemap, reading from the api through an `API` service binding ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livediagram.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP`, `COMMUNITY`, and `API` service bindings that forward requests to the right downstream worker.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 
@@ -75,7 +75,6 @@ Jobs:
 3. **deploy-editor** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/editor/`.
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
-   - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
    - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livediagram.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others). **deploy-community** does the same for `community-out` from `apps/community/`, after **deploy-api** (its worker has a service binding to the api, so api must exist first).
 6. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livediagram.app` is its own host, not a path under the main hostname.
@@ -85,25 +84,17 @@ Jobs:
 
 All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
 
-### Renaming migrations
+### Old and new versions overlap
 
-Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** (`0055_documents.sql`, [Document](../006-document/document.md#renaming-from-diagram))
-is different: from the moment it applies until the new api worker is live, the old worker's queries
-name tables that no longer exist, and the other apps' workers deploy separately, so old and new
-versions briefly serve side by side. The deploy keeps that window short and recoverable:
+There is no database migration step: each Durable Object makes its own schema the first time it is used. The
+apps' workers deploy separately, so old and new versions
+briefly serve side by side. The deploy keeps that window short and recoverable:
 
-- **deploy-api** syncs its secrets first and applies the migration straight before `wrangler deploy`,
-  so the window is the deploy itself.
 - **deploy-editor** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
 - The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)),
   and a save that fails in the window is retried on its own
   ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
-- Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
-  so, api calls from open editors can fail and are retried.
-
-There is no down migration; a problem after a renaming migration is fixed forward.
 
 ## Hosted profile
 
@@ -120,22 +111,21 @@ Some configuration is what **livediagram.app** runs with, not what the software 
 
 Set in the repo under **Settings → Secrets and variables → Actions**:
 
-| Secret          | What it is                                                                      |
-| --------------- | ------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers and apply migrations. |
-| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.                                |
+| Secret          | What it is                                                 |
+| --------------- | ---------------------------------------------------------- |
+| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers. |
+| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.           |
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
 
-| Secret                 | Synced to       | See                                                                                                                                                       |
-| ---------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`       | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                            |
-| `GUEST_ID_HMAC_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                            |
-| `TELEMETRY_KEY`        | api **and** mcp | [Telemetry](../017-telemetry/telemetry.md) — livediagram's key on the liveworkspace telemetry service; one GitHub secret drives both, so they can't drift |
+| Secret                                                                         | Synced to       | See                                                                                                                                                       |
+| ------------------------------------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md); `ACCOUNTS_CLIENT_ID` also turns sign-in on in the build                                                   |
+| `TELEMETRY_KEY`                                                                | api **and** mcp | [Telemetry](../017-telemetry/telemetry.md) — livediagram's key on the liveworkspace telemetry service; one GitHub secret drives both, so they can't drift |
 
 Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
 
-Staging has a `_STAGING`-suffixed twin of each optional secret plus its own Clerk publishable key, listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
+Staging has a `_STAGING`-suffixed twin of each optional secret (its own accounts client registration among them), listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
 
 ### Creating the API token
 
@@ -144,12 +134,11 @@ Cloudflare dashboard → **My Profile → API Tokens → Create Token → Custom
 Permissions (all on the account that owns the workers):
 
 - **Workers Scripts → Edit** — deploy & update workers.
-- **D1 → Edit** — apply migrations during deploy.
 - **Workers Routes → Edit** — wire / update custom domain routes.
 - **Account Settings → Read** — required by wrangler.
 - **User → User Details → Read** — `wrangler whoami` introspection.
 
-Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing D1 Edit (or was minted for a different account than `CF_ACCOUNT_ID`).
+Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing a scope above (or was minted for a different account than `CF_ACCOUNT_ID`).
 
 ### Getting the account ID
 
@@ -177,4 +166,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 
 - Preview deploys for PRs (one environment tracking `main` is all there is — see [Staging environment](staging-environment.md) "What staging is not").
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above (e.g. the model key (`GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY`), `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.
+- Per-worker secrets that are **not** in the optional sync table above (e.g. the model key (`GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`), `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.

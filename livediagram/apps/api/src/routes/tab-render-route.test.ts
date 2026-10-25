@@ -15,7 +15,7 @@ const call = (path: string, owner = 'owner', method = 'GET') =>
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
+    INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[{"id":"a","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":60,"label":"Web app"}]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Empty', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t3', 'Broken', '{"elements":', 1);

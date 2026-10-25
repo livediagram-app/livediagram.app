@@ -8,7 +8,7 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livediagram/source-ast';
+import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
@@ -19,7 +19,8 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-const THEME_CSS = readFileSync(`${REPO}packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
+const THEME_CSS = readFileSync(`${REPO}../packages/tailwind-config/theme.css`, 'utf8');
 
 /** The `--color-brand-*` declarations of the light `@theme` block. */
 function lightBrand(): Record<string, string> {
@@ -105,6 +106,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = ['apps', 'packages']
   .flatMap((top) => readdirSync(`${REPO}${top}`).map((name) => `${REPO}${top}/${name}`))
   .filter((dir) => statSync(dir).isDirectory())
+  // The editor code every editor shares (@liveworkspace/workbench), which this product's editor renders too.
+  .concat(`${REPO}../packages/workbench/src`)
   .flatMap((dir) => sourceFiles(dir))
   .map((path) => ({ path, text: readFileSync(path, 'utf8') }));
 
@@ -157,7 +160,7 @@ describe('solid brand fills in light mode', () => {
 // Brand-coloured ink that carries no meaning a reader needs, so the contrast minimum does not apply
 // (WCAG 1.4.3 and 1.4.11 exempt pure decoration). Everything else in light brand ink is brand-700.
 const DECORATIVE_INK = new Set([
-  'apps/editor/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
+  '../packages/workbench/src/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
   'apps/editor/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
 ]);
 

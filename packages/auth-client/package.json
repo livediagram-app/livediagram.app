@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./silent": "./src/silent.ts",
+    "./account-name": "./src/account-name.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -12,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/sites": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

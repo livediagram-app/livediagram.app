@@ -13,8 +13,15 @@ import {
   type ArticleLookId,
   type ArticleStyle,
 } from '@livedocuments/document';
-import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livedocuments/ui';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import {
+  ACTIVE_SEGMENT,
+  CheckIcon,
+  SEGMENT_TRACK,
+  Select,
+  Switch,
+  Tooltip,
+} from '@livedocuments/ui';
+import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
@@ -296,22 +303,7 @@ function Toggle({
   return (
     <label className="mt-2 flex cursor-pointer items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200">
       {label}
-      <button
-        type="button"
-        role="switch"
-        aria-checked={on}
-        aria-label={label}
-        onClick={() => onChange(!on)}
-        className={`relative h-5 w-9 rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
-          on ? 'bg-brand-600 dark:bg-brand-600' : 'bg-slate-300 dark:bg-slate-600'
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-[left] motion-reduce:transition-none ${
-            on ? 'left-[18px]' : 'left-0.5'
-          }`}
-        />
-      </button>
+      <Switch size="sm" checked={on} label={label} onChange={onChange} />
     </label>
   );
 }

@@ -1,4 +1,4 @@
-import type { RevealBlock } from './tour-reveal';
+import type { RevealBlock } from '@liveworkspace/workbench/components/tour/tour-reveal';
 
 // The shape of a guided-tour step, shared by every tour: the Pages tour, Show Me and the element tours
 // (docs/specs/007-editor/pages-tour.md "How a tour runs"). `Api` is the facade each tour's host builds, so a

@@ -1,52 +1,42 @@
-// Shared arrangement for the image reference index readers' tests
-// (db/image-retention.test.ts, db/images.test.ts): a real SQLite with every
-// migration, an R2 stub, and row builders. Not a `.test.ts` file, so vitest
-// doesn't collect it as a suite.
+// Shared arrangement for the image tests (db/image-grants.test.ts, media.test.ts, routes/images.test.ts): a started
+// canvas (its own `document` row, as a create writes it), the media service's images, and tab builders. Not a
+// `.test.ts` file, so vitest doesn't collect it as a suite.
 
-import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { insertDocumentRow } from './legacy-test-schema';
-import type { Env } from '../types';
+import type { TestMediaService } from '../test-media-service';
 
-export const DAY = 86_400_000;
-export const NOW = 1_800_000_000_000;
-export const CUTOFF = NOW - 30 * DAY;
-export const OLD = CUTOFF - DAY;
-export const YOUNG = CUTOFF + DAY;
-
-type Bucket = { delete: ReturnType<typeof vi.fn> };
-
-export function setup(opts: { before0050?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
-  const bucket: Bucket = { delete: vi.fn(async () => {}) };
-  const db = sqliteD1(
-    { IMAGES: bucket } as unknown as Partial<Env>,
-    opts.before0050 ? { before: '0050' } : {},
-  );
-  return { ...db, bucket };
+// A started canvas, as its create writes it (test-sqlite-d1.ts `test_documents`).
+export function liveDoc(
+  sql: DatabaseSync,
+  id: string,
+  ownerId = 'owner',
+  name = id,
+  teamId: string | null = null,
+) {
+  sql
+    .prepare(
+      'INSERT INTO test_documents (id, owner_id, name, team_id, saved_at, created_at) VALUES (?, ?, ?, ?, 0, 1)',
+    )
+    .run(id, ownerId, name, teamId);
 }
 
-export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
-  insertDocumentRow(sql, id, ownerId, name);
-}
-
-export function images(sql: DatabaseSync, createdAt: number, ...ids: string[]) {
-  const stmt = sql.prepare(
-    "INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, created_at) VALUES (?, 'owner', 'image/png', 1, 1, 1, ?, ?)",
+// Images in the media service, owned by `owner` as the service names owners (an account's id, a guest's hash:
+// src/media.ts mediaOwner), with bytes to serve.
+export function mediaImages(
+  media: TestMediaService,
+  owner: string,
+  ids: string[],
+  app = 'livediagram.app',
+) {
+  const stmt = media.sql.prepare(
+    `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+     VALUES (?, ?, ?, 'image/png', 4, 1, 1, ?, 1)`,
   );
-  // And whose they are, as the media service's images are known here (src/media.ts), once 0101 has run.
-  const owned = hasTable(sql, 'media_images')
-    ? sql.prepare("INSERT INTO media_images (id, owner_id) VALUES (?, 'owner')")
-    : null;
   for (const id of ids) {
-    stmt.run(id, id, createdAt);
-    owned?.run(id);
+    stmt.run(id, owner, app, `sha-${id}`);
+    media.objects.set(id, { bytes: new Uint8Array([1, 2, 3, 4]), contentType: 'image/png' });
   }
-}
-
-export function hasTable(sql: DatabaseSync, name: string): boolean {
-  return sql.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(name) !== undefined;
 }
 
 export const tabWith = (id: string, ...imageIds: string[]): Tab =>
@@ -55,19 +45,3 @@ export const tabWith = (id: string, ...imageIds: string[]): Tab =>
     name: id,
     elements: imageIds.map((imageId, i) => ({ id: `e${i}`, type: 'image', imageId })),
   }) as unknown as Tab;
-
-export function imageIds(sql: DatabaseSync): string[] {
-  return sql
-    .prepare('SELECT id FROM images ORDER BY id')
-    .all()
-    .map((r) => r.id as string);
-}
-
-export function refsFor(sql: DatabaseSync, imageId: string): number {
-  return Number(
-    sql.prepare('SELECT COUNT(*) AS n FROM image_refs WHERE image_id = ?').get(imageId)!.n,
-  );
-}
-
-export const ids = (prefix: string, n: number) =>
-  Array.from({ length: n }, (_, i) => `${prefix}-${String(i).padStart(5, '0')}`);

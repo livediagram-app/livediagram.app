@@ -259,21 +259,6 @@ export type RevertResponse = {
   lint: LintReport | null;
 };
 
-// The route's refusal codes beside the engine's.
-export const CHANGESET_ERROR_CODES = [
-  'invalid_body',
-  'invalid_base',
-  'strict_needs_base',
-  'changeset_conflict',
-  'elements_held',
-  'tab_busy',
-  'tab_id_taken',
-  'stale_tab',
-  'too_large',
-  'use_changesets',
-  'invalid_name',
-] as const;
-
 // ---------------------------------------------------------------------
 // The room op
 // ---------------------------------------------------------------------

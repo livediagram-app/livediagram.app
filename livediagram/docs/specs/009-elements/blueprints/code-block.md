@@ -6,15 +6,15 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                         | Role                                                                                          |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                       | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
-| `packages/document/src/code-themes.ts`                       | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
-| `packages/document/src/element-types.ts`                     | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
-| `packages/document/src/shape-factory.ts`                     | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
-| `packages/document/src/colors.ts`                            | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
-| `packages/document/src/validate.ts`                          | Snippet length, closed language set, closed scheme ids                                        |
-| `packages/document/src/svg-render-shapes.ts`                 | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
+| File                                                           | Role                                                                                          |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `packages/document/src/data-shapes.ts`                         | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
+| `../packages/model-core/src/code-themes.ts`                    | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
+| `packages/document/src/element-types.ts`                       | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
+| `packages/document/src/shape-factory.ts`                       | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
+| `packages/document/src/colors.ts`                              | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
+| `packages/document/src/validate.ts`                            | Snippet length, closed language set, closed scheme ids                                        |
+| `packages/document/src/svg-render-shapes.ts`                   | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
 | `apps/editor/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
 | `apps/editor/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
 | `apps/editor/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
@@ -28,7 +28,6 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
 | `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
 | `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
-| `apps/api/src/ai-prompt.ts`                                  | The AI vocabulary, which omits `code-block`                                                   |
 
 ## Domain and naming
 
@@ -206,19 +205,19 @@ The tokenizer and dialog are separate chunks (LCP unaffected). The canvas card i
 
 ## Testing
 
-| Rule                                            | Test                                                                       | File                                         |
-| ----------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------- |
-| Guard matches only `code-block`                 | code block matches only its own kind                                       | `packages/document/src/data-shapes.test.ts`  |
-| Bounded snippet, closed language set            | bounds the code block + checklist fields                                   | `packages/document/src/validate.test.ts`     |
-| Every scheme complete, unique, default midnight | code themes cases                                                          | `packages/document/src/code-themes.test.ts`  |
-| Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/document/src/code-themes.test.ts`  |
-| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/document/src/svg-render.test.ts`   |
-| Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/document/src/code-themes.test.ts`  |
+| Rule                                            | Test                                                                       | File                                           |
+| ----------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| Guard matches only `code-block`                 | code block matches only its own kind                                       | `packages/document/src/data-shapes.test.ts`    |
+| Bounded snippet, closed language set            | bounds the code block + checklist fields                                   | `packages/document/src/validate.test.ts`       |
+| Every scheme complete, unique, default midnight | code themes cases                                                          | `packages/document/src/code-themes.test.ts`    |
+| Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/document/src/code-themes.test.ts`    |
+| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/document/src/svg-render.test.ts`     |
+| Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/document/src/code-themes.test.ts`    |
 | Preset writes only the scheme                   | sets the scheme on a code block and nothing else                           | `apps/editor/lib/style-presets.test.ts`        |
-| Tokenizer classes per language                  | none [GE11]                                                                |                                              |
-| Degrades to plain until loaded                  | none [GE11]                                                                |                                              |
-| Tab inserts two spaces; Save is one undo step   | none [GE11]                                                                |                                              |
-| Double-click opens the dialog                   | none [GE11]                                                                |                                              |
+| Tokenizer classes per language                  | none [GE11]                                                                |                                                |
+| Degrades to plain until loaded                  | none [GE11]                                                                |                                                |
+| Tab inserts two spaces; Save is one undo step   | none [GE11]                                                                |                                                |
+| Double-click opens the dialog                   | none [GE11]                                                                |                                                |
 | Dialog suspends at its own boundary             | each carry their own Suspense boundary (ssr: false or a loading component) | `apps/editor/lib/dynamic-has-boundary.test.ts` |
 
 ## Constants and configuration

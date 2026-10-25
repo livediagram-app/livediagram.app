@@ -13,7 +13,7 @@ import {
 } from '@/lib/power-user-offer';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ToastOffer } from './useToast';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type PowerUserOfferDeps = {
   prefs: UserPreferences;

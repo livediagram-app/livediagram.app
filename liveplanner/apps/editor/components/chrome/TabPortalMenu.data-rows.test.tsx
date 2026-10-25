@@ -6,7 +6,9 @@ import { PortalMenu } from './TabPortalMenu';
 
 // jsdom lays nothing out, so the keep-on-screen clamp would chase a box that
 // never moves. Where the menu sits is not what this file is about.
-vi.mock('@/lib/clamp-to-viewport', () => ({ clampToViewport: () => ({ x: 0, y: 0 }) }));
+vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', () => ({
+  clampToViewport: () => ({ x: 0, y: 0 }),
+}));
 
 // A Board or Sheet tab's Import and Export rows (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab"):
 // Import CSV…, then Export (the Export dialog, as on every tab), then Download CSV.

@@ -14,7 +14,7 @@ import {
   type Endpoint,
   type TextSize,
 } from '@livediagram/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { exitSide, nearestAnchor, routeShape, simplifyRoute, snapRouteEnds } from './arrow-route';
 import type { DrawioCell, Pt } from './cells';
 import { readInk } from './colour';

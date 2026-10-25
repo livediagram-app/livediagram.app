@@ -19,7 +19,7 @@ function arrange() {
   const doc = (id: string) =>
     db.sql
       .prepare(
-        'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        'INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
       )
       .run(id, 'owner', id, T0, T0);
   const tab = (docId: string, tabId: string, order: number) => {
@@ -28,7 +28,7 @@ function arrange() {
       .run(tabId, tabId, '{}', T0);
     db.sql
       .prepare(
-        'INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
       )
       .run(docId, tabId, order, T0);
   };
@@ -43,7 +43,13 @@ function arrange() {
     tabStatsStatement(
       db.env,
       tabId,
-      { mode: mode as 'plan', elementCount: elements, commentCount: comments, dataBytes: bytes },
+      {
+        mode: mode as 'plan',
+        elementCount: elements,
+        commentCount: comments,
+        dataBytes: bytes,
+        kind: 'diagram',
+      },
       at,
     ).run();
   return { db, doc, tab, stats };
@@ -51,7 +57,7 @@ function arrange() {
 
 function docStats(sql: DatabaseSync, id: string) {
   const row = sql
-    .prepare(`SELECT ${projectStatsSql('projects.id')} FROM projects WHERE id = ?`)
+    .prepare(`SELECT ${projectStatsSql('?1')}`)
     .get(id) as { doc_stats: string | null };
   return readProjectStats(row.doc_stats);
 }
@@ -67,12 +73,12 @@ describe('projectStatsSql', () => {
     expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 10, comments: 3, bytes: 1500 });
   });
 
-  it('reads a tab row stored under a retired mode as Plan', async () => {
+  it('reads a tab row under a mode it does not know as not counted', async () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
     tab('D', 't1', 0);
     await stats('t1', 'draw', 4, 1, 1000, T0);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 4, comments: 1, bytes: 1000 });
+    expect(docStats(db.sql, 'D')).toBeNull();
   });
 
   it('is null while a tab is not counted yet', async () => {
@@ -112,16 +118,22 @@ describe('readProjectStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ kind: 'board', elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
-      stats: { mode: 'plan', elementCount: 1, commentCount: 0, dataBytes: data.length },
+      stats: {
+        mode: 'plan',
+        kind: 'board',
+        elementCount: 1,
+        commentCount: 0,
+        dataBytes: data.length,
+      },
       corrupt: false,
     });
   });
 
   it('counts a corrupt body as an empty tab, its bytes measured', () => {
     expect(tabStatsOfData('{not json')).toEqual({
-      stats: { mode: 'plan', elementCount: 0, commentCount: 0, dataBytes: 9 },
+      stats: { mode: 'plan', kind: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 9 },
       corrupt: true,
     });
     expect(tabStatsOfData('null').corrupt).toBe(true);

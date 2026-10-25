@@ -4,7 +4,7 @@
 // is the cell draw.io draws it to (mxGraphView.getVisibleTerminal), an edge terminal is routed
 // first, and a cycle of edges on edges routes its later member as if that end were free.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { absoluteRect, originOf, type DrawioCell, type DrawioGraph } from '../cells';
 import type { Pt } from './geometry';
 import { drawnPoints, edgeState, vertexState, type CellState } from './state';

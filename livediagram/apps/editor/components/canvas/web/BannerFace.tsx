@@ -7,7 +7,7 @@ import {
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Banner (docs/specs/009-elements/web-components-and-no-groups.md): an accent bar with the title (the label, edited like any
 // label) over a subtitle line edited in place. The bar paints in the fill

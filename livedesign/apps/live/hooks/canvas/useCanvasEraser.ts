@@ -29,7 +29,7 @@
 import { useEffect, useRef } from 'react';
 import { arrowReferencesAny, type Element, type Tab } from '@livedesign/design';
 
-import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,
@@ -38,7 +38,7 @@ import {
   type EraserConfig,
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 type EraserDeps = {

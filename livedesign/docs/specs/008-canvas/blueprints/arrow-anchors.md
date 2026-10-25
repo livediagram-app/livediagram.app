@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/design/src/arrow-types.ts`                          | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
 | `packages/design/src/anchors.ts`                              | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/design/src/shape-outline.ts`                        | Anchoring outlines, outline projection, point-inside test                                          |
-| `packages/design/src/svg-path-outline.ts`                     | `sampleSvgPath`: an outline polygon from a drawn path (cloud, design)                              |
+| `../packages/model-core/src/svg-path-outline.ts`              | `sampleSvgPath`: an outline polygon from a drawn path (cloud, design)                              |
 | `packages/design/src/anchor-layouts.ts`                       | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
 | `packages/design/src/geometry.ts`                             | `anchorPosition`                                                                                   |
 | `packages/design/src/anchor-choice.ts`                        | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
@@ -32,7 +32,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
 | `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
-| `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
 | `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                                               |
 
 ## Domain and naming
@@ -385,7 +384,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 
 ## Data and persistence
 
-- **Persisted.** `Endpoint.anchor` in element JSON: D1 tab storage, IndexedDB offline designs,
+- **Persisted.** `Endpoint.anchor` in element JSON: the design's stored tabs, IndexedDB offline designs,
   JSON export, templates. The eight old ids keep their meaning; the eight new ones are additive.
   No migration.
 - **`manual`.** Removed from the type. No code writes it. Stored `manual: true` flags are inert,

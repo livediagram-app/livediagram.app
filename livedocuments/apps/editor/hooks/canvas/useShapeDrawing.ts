@@ -14,7 +14,7 @@
 // draw mode; everything else (pendingDraw, commitDraw, cancelDrawShape,
 // beginPolygon, commitPolygon) is consumed by the Canvas + keyboard hook.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, useState } from 'react';
 import {
   createFreehand,

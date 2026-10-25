@@ -64,18 +64,3 @@ export function buildTemplateTab(
     ...templateCanvasOverrides(kind),
   });
 }
-
-// The name a template's tab takes where an agent or the api makes it: the name given, else Tab 1.
-export function templateTabName(given: string | undefined, _kind: TemplateKind): string {
-  return given === undefined || !given.trim() ? 'Tab 1' : given;
-}
-
-// Every tab a template makes: one, buildTemplateTab's, taking `first`'s id and name.
-export function buildTemplateTabs(
-  first: { id: string; name: string },
-  kind: TemplateKind,
-  _newId: () => string,
-  themeId?: string,
-): Tab[] {
-  return [buildTemplateTab(first.id, first.name, kind, themeId)];
-}

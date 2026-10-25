@@ -44,9 +44,8 @@ export function pointerToCanvas(
 // boxed element's width / height (so adding elements one after another
 // keeps a consistent size), falling back to the factory default when
 // nothing boxed is selected. Circles + diamonds are forced square — a
-// non-square inherited size would squash them. Shared by the palette
-// tap-to-drop (addBoxed) and the combined add gesture's tap branch
-// (useShapeDrawing.commitDraw) so both paths size new elements the same.
+// non-square inherited size would squash them. Used by addBoxed, so every
+// boxed add sizes the same way.
 export function inheritedSizeFor(
   base: BoxedElement,
   selected: Element | null | undefined,
@@ -160,7 +159,7 @@ export type ArrowEnd = 'from' | 'to';
 // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; 'text' drops a label to the side.
-export type QuickConnectDirection = 'right' | 'below' | 'left' | 'above';
+export type { QuickConnectDirection } from '@liveworkspace/workbench/lib/quick-connect';
 export type QuickConnectKind = 'duplicate' | 'text';
 
 export const SNAP_THRESHOLD = 24;
@@ -176,10 +175,9 @@ export const ALIGN_SNAP_THRESHOLD = 6;
 export const ARROW_SNAP_REVEAL_PX = 36;
 export const ARROW_SNAP_THRESHOLD_PX = 12;
 
-// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel
-// zoom so the two can never drift apart. 0.1 = 10%, 5 = 500%.
-export const ZOOM_MIN = 0.1;
-export const ZOOM_MAX = 5;
+// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
+// (@liveworkspace/workbench/lib/zoom-range.ts).
+export { ZOOM_MAX, ZOOM_MIN } from '@liveworkspace/workbench/lib/zoom-range';
 
 // Discriminated union covering every in-flight drag the canvas can be
 // holding. Each variant carries the start-of-gesture state the

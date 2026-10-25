@@ -1,9 +1,9 @@
 // Headless SVG -> PNG rasterisation for inline MCP image content (docs/specs/015-api/mcp-server.md §5), through
-// the shared Worker renderer (@livedesign/render-png/worker, which bundles the wasm and the Inter fonts). The SVG
+// the shared Worker renderer (@liveworkspace/render-png/worker, which bundles the wasm and the Inter fonts). The SVG
 // comes from the shared renderElementsToSvg in packages/design, so the MCP, the CLI and the in-app export draw the
 // canvas identically.
 import { bytesToBase64 } from '@livedesign/api-schema';
-import { workerPngRenderer as renderer } from '@livedesign/render-png/worker';
+import { workerPngRenderer as renderer } from '@liveworkspace/render-png/worker';
 import { PREVIEW_MAX_SIDE_PX } from './preview-budget';
 
 export async function svgToPngBase64(

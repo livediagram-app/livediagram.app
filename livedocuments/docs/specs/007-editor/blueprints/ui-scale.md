@@ -5,19 +5,19 @@ owns every design decision.
 
 ## Domain and naming
 
-| Term                      | Identifier                                                                |
-| ------------------------- | ------------------------------------------------------------------------- |
-| The master preference     | `UserPreferences.uiScale` (`apps/editor/lib/user-preferences.ts`)         |
-| A part                    | `UiScalePart`: `'panels'`, `'toolbar'`, `'cornerButtons'`                 |
-| A part's preference       | `uiScalePanels`, `uiScaleToolbar`, `uiScaleCornerButtons`                 |
-| The parts, in order       | `UI_SCALE_PARTS` (`{ id, key }`) in `apps/editor/lib/ui-scale.ts`         |
-| The factor in force       | "UI scale", `scale` in code; always the RESOLVED value                    |
-| Every part's factor       | `UiScales`, from `resolveUiScales(prefs, { mobile })`                     |
-| A slider's shown value    | `resolveUiScale(prefs)` (master), `resolveUiScalePart(prefs, part)`       |
-| Writing                   | `withUiScalePatch(prefs, patch)` with `uiScalePatch` / `uiScalePartPatch` |
-| Reading it in a component | `useUiScale(part)` (`apps/editor/components/providers/ui-scale.tsx`)      |
-| A scaled surface's style  | `uiScaleStyle(scale)` → `{ zoom }`, or `undefined` at 1                   |
-| Screen px → surface px    | `toSurfacePx(px, scale)` = `px / scale`                                   |
+| Term                      | Identifier                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| The master preference     | `UserPreferences.uiScale` (`apps/editor/lib/user-preferences.ts`)                  |
+| A part                    | `UiScalePart`: `'panels'`, `'toolbar'`, `'cornerButtons'`                          |
+| A part's preference       | `uiScalePanels`, `uiScaleToolbar`, `uiScaleCornerButtons`                          |
+| The parts, in order       | `UI_SCALE_PARTS` (`{ id, key }`) in `../packages/workbench/src/lib/ui-scale.ts`    |
+| The factor in force       | "UI scale", `scale` in code; always the RESOLVED value                             |
+| Every part's factor       | `UiScales`, from `resolveUiScales(prefs, { mobile })`                              |
+| A slider's shown value    | `resolveUiScale(prefs)` (master), `resolveUiScalePart(prefs, part)`                |
+| Writing                   | `withUiScalePatch(prefs, patch)` with `uiScalePatch` / `uiScalePartPatch`          |
+| Reading it in a component | `useUiScale(part)` (`../packages/workbench/src/components/providers/ui-scale.tsx`) |
+| A scaled surface's style  | `uiScaleStyle(scale)` → `{ zoom }`, or `undefined` at 1                            |
+| Screen px → surface px    | `toSurfacePx(px, scale)` = `px / scale`                                            |
 
 "Screen px" are viewport pixels (`getBoundingClientRect`, `clientX`). "Surface
 px" are the CSS pixels inside a zoomed surface, where every length (including
@@ -27,7 +27,7 @@ report surface px.
 
 ## Constants and configuration
 
-In `apps/editor/lib/ui-scale.ts`:
+In `../packages/workbench/src/lib/ui-scale.ts`:
 
 | Constant                | Value  | Provenance                                  |
 | ----------------------- | ------ | ------------------------------------------- |
@@ -142,13 +142,13 @@ What makes room for a scaled surface:
     `parent: 'uiScale'`, `max: uiScaleMax(part)`, `read: resolveUiScalePart(p, part)`,
     `write: withUiScalePatch(p, uiScalePartPatch(part, v))`.
   - The default `1` is written as `1`, not a delete, matching `panelOpacity`.
-- `SettingsSliderRow` gains `disabled` and `notice`, honoured from the row's
+- The slider row (`packages/settings-ui/src/rows/SliderRow.tsx` at the root) gains `disabled` and `notice`, honoured from the row's
   `desktopOnly` like the toggle row.
 - Live preview: `SettingsSliderRowSpec.preview?(value | null)`. The row calls
   it on every `change`, then commits and calls `preview(null)` on release
   (pointer-up or key-up), and calls `preview(null)` on unmount. Each UI scale
   row's `preview` hands its write patch to `setUiScalePreview`
-  (`apps/editor/lib/ui-scale-preview.ts`, a module store read through
+  (`../packages/workbench/src/lib/ui-scale-preview.ts`, a module store read through
   `useUiScalePreview()`); `EditorView` spreads it over the stored preferences
   while it is non-null.
 
@@ -207,19 +207,19 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 
 ## Testing
 
-| Spec rule                            | Test                                                     |
-| ------------------------------------ | -------------------------------------------------------- |
-| Default 100%, range, step, junk      | `apps/editor/lib/ui-scale.test.ts` `resolveUiScale`      |
-| A part follows or overrides master   | `apps/editor/lib/ui-scale.test.ts` `resolveUiScales`     |
-| Master clears parts; part writes own | `apps/editor/lib/ui-scale.test.ts` writing               |
-| Phone always 100%                    | `apps/editor/lib/ui-scale.test.ts`                       |
-| Slider row offers its default        | existing `settings-catalogue.test.ts` slider round-trips |
-| Rows commit, preview, grey out       | `SettingsCategoryPane.ui-scale.test.tsx`                 |
-| Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
-| A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
-| Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |
-| Strip popovers stay unscaled         | `apps/editor/lib/ui-scale.test.ts` `uiUnscaleStyle`      |
-| Bottom-right clearance scales        | `apps/editor/lib/panel-layout.test.ts`                   |
+| Spec rule                            | Test                                                               |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| Default 100%, range, step, junk      | `../packages/workbench/src/lib/ui-scale.test.ts` `resolveUiScale`  |
+| A part follows or overrides master   | `../packages/workbench/src/lib/ui-scale.test.ts` `resolveUiScales` |
+| Master clears parts; part writes own | `../packages/workbench/src/lib/ui-scale.test.ts` writing           |
+| Phone always 100%                    | `../packages/workbench/src/lib/ui-scale.test.ts`                   |
+| Slider row offers its default        | existing `settings-catalogue.test.ts` slider round-trips           |
+| Rows commit, preview, grey out       | `SettingsCategoryPane.ui-scale.test.tsx`                           |
+| Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set              |
+| A panel reads only the panels part   | `MovablePanel` test, provider with differing parts                 |
+| Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                           |
+| Strip popovers stay unscaled         | `../packages/workbench/src/lib/ui-scale.test.ts` `uiUnscaleStyle`  |
+| Bottom-right clearance scales        | `apps/editor/lib/panel-layout.test.ts`                             |
 
 Verified in a real browser across the range: drag, corner snap, the strip's
 popovers, cluster popovers, live preview, and one part scaled alone.

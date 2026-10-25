@@ -7,10 +7,9 @@ name: Deploy Staging
 #
 #   1. A red `main` must not reach staging. If staging can hold code that
 #      doesn't compile, its state stops telling you anything.
-#   2. The api job applies D1 migrations against a real remote database. That
-#      deserves a green test suite in front of it, and it is the whole reason
-#      this environment exists: the migration is rehearsed here one deploy
-#      before it runs against the database holding real diagrams.
+#   2. A new plan schema step first runs here, in real remote Durable Objects,
+#      one deploy before it runs in the ones holding real plans. That deserves
+#      a green test suite in front of it.
 #
 # The trade-off of `workflow_run` is that it checks out the default branch by
 # default rather than the commit CI actually verified, so the exact SHA is
@@ -91,12 +90,12 @@ jobs:
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       # Every value below is staging's OWN. The ACCOUNTS_* client is staging's
       # own registration with its own resource (an audience production refuses),
-      # so a staging token cannot reach production, and the
-      # HMAC secret must differ or a guest id minted on staging would be
-      # claimable on production.
+      # so a staging token cannot reach production, and the index key is
+      # staging's index's.
       ACCOUNTS_URL: ${{ secrets.ACCOUNTS_URL_STAGING }}
       API_RESOURCE: ${{ secrets.API_RESOURCE_STAGING }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID_STAGING }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET_STAGING }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET_STAGING }}
+      INDEX_KEY: ${{ secrets.INDEX_KEY_STAGING }}
+      MEDIA_KEY: ${{ secrets.MEDIA_KEY_STAGING }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY_STAGING }}

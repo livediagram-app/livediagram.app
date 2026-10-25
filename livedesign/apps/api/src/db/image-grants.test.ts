@@ -1,279 +1,211 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import type { DatabaseSync } from 'node:sqlite';
-import { sqliteD1 } from '../test-sqlite-d1';
-import { copyDesign, setDesignFolder } from './designs';
-import { handTeamWorkToHeir } from './teams';
-import { migrateOwnerId } from './account';
-import { designRemovalStatements } from './design-removal';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TeamPerson } from '@liveworkspace/auth-client';
+import { recordItemEditor } from '@liveworkspace/index-app';
+import { sqliteD1, testCopyDesign, type SqliteD1 } from '../test-sqlite-d1';
+import { mediaServiceFor, type TestMediaService } from '../test-media-service';
+import { ACCOUNTS_ENV, fakeAccounts, type FakeAccounts } from '../test-accounts';
+import { DESIGN_OUTBOX, drainOutbox } from '../design-room/design-outbox';
+import { mediaOwner } from '../media';
+import { upsertTab } from './tabs';
+import { liveDesign, mediaImages, tabWith } from './test-image-fixtures';
 import {
+  clearImageGrantCachesForTests,
   designServesImage,
-  imageGrantCopyStatements,
-  imageGrantPlacementStatements,
+  grantPlacedImages,
+  imageOwners,
   servableImageIds,
 } from './image-grants';
-import { resetImageRefIndexMemo } from './image-refs';
-import { linkTabToDesign, upsertTab } from './tabs';
-import { hasTable, tabWith } from './test-image-fixtures';
-import { insert, liveDoc, team } from './test-trash-fixtures';
 
-// Placement grants (docs/specs/009-elements/images.md, "Placement grants"): a
-// design serves an image only when the image's owner owns it, or it holds a
-// grant earned when the owner placed the image there or carried in by a copy.
+// Which images a design may serve (docs/specs/009-elements/images.md, "Placement grants"), in the design's own
+// SQLite, against the real media service and the accounts stand-in for a team's people.
 
-afterEach(() => resetImageRefIndexMemo());
+let db: SqliteD1;
+let media: TestMediaService;
+let accounts: FakeAccounts;
 
-// Whose an image is, as the media service's images are known here (src/media.ts); before 0101, a gallery row.
-function image(sql: DatabaseSync, id: string, ownerId: string) {
-  if (hasTable(sql, 'media_images')) {
-    insert(sql, 'media_images', { id, owner_id: ownerId });
-    return;
-  }
-  insert(sql, 'images', {
-    id,
-    owner_id: ownerId,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256: id,
-    created_at: 0,
-  });
-}
+const member = (userId: string, status: TeamPerson['status'] = 'joined'): TeamPerson => ({
+  id: `m-${userId}`,
+  userId,
+  email: `${userId}@x.test`,
+  name: null,
+  role: 'member',
+  status,
+});
 
-function grants(sql: DatabaseSync): string[] {
-  const rows = sql
-    .prepare('SELECT design_id, image_id FROM image_grants ORDER BY design_id, image_id')
-    .all() as { design_id: string; image_id: string }[];
-  return rows.map((r) => `${r.design_id}:${r.image_id}`);
-}
+beforeEach(() => {
+  db = sqliteD1(ACCOUNTS_ENV);
+  media = mediaServiceFor(db.env);
+  accounts = fakeAccounts(globalThis.fetch);
+  vi.stubGlobal('fetch', accounts.fetch);
+  clearImageGrantCachesForTests();
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+const grants = () =>
+  (
+    db.sql.prepare('SELECT image_id FROM image_grants ORDER BY image_id').all() as {
+      image_id: string;
+    }[]
+  ).map((r) => r.image_id);
+
+const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+const lookups = () => media.calls.filter((c) => c.startsWith('GET /app/images/')).length;
 
 describe('designServesImage', () => {
-  it("serves the design owner's own image", async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    image(db.sql, 'mine', 'alice');
-    await upsertTab(db.env, 'D', tabWith('t1', 'mine'), 0);
+  it("serves the design owner's own image it places, and no one else's", async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['mine']);
+    mediaImages(media, 'user_bob', ['bobs']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'mine', 'bobs', 'unknown'), 0);
     expect(await designServesImage(db.env, 'D', 'mine')).toBe(true);
-    expect([...(await servableImageIds(db.env, 'D', ['mine', 'missing']))]).toEqual(['mine']);
-    expect(grants(db.sql)).toEqual([]);
+    expect(await designServesImage(db.env, 'D', 'bobs')).toBe(false);
+    expect(await designServesImage(db.env, 'D', 'unknown')).toBe(false);
   });
 
-  // The paste-the-id case: a reader of Alice's design copies an image id
-  // into a design of their own that Alice has no tie to.
-  it("refuses another owner's image placed in a design that owner has no tie to", async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'theirs', { owner: 'mallory' });
-    image(db.sql, 'alice-img', 'alice');
-    await upsertTab(db.env, 'theirs', tabWith('t1', 'alice-img'), 0);
-    expect(await designServesImage(db.env, 'theirs', 'alice-img')).toBe(false);
-    expect(grants(db.sql)).toEqual([]);
-    expect([...(await servableImageIds(db.env, 'theirs', ['alice-img']))]).toEqual([]);
-  });
-
-  it('refuses an image the design does not place, even its owner’s', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    image(db.sql, 'elsewhere', 'alice');
+  it('refuses an image the design does not place, even its owner’s, asking the service nothing', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['elsewhere']);
     expect(await designServesImage(db.env, 'D', 'elsewhere')).toBe(false);
-  });
-
-  it("grants a teammate's image placed in a team design, and keeps it after they leave", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'joined']]);
-    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
-    image(db.sql, 'bob-img', 'user_bob');
-    await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
-    expect(grants(db.sql)).toEqual(['D:bob-img']);
-    db.sql.exec("DELETE FROM team_members WHERE user_id = 'user_bob'");
-    expect(await designServesImage(db.env, 'D', 'bob-img')).toBe(true);
-  });
-
-  it('grants nothing for a member who has only been invited', async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'pending']]);
-    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
-    image(db.sql, 'bob-img', 'user_bob');
-    await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
-    expect(await designServesImage(db.env, 'D', 'bob-img')).toBe(false);
-  });
-
-  it("grants an edit collaborator's and a Participant's image, and not a view-only visitor's", async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    db.sql.exec("UPDATE designs SET shareable = 1 WHERE id = 'D'");
-    image(db.sql, 'editor-img', 'guest-editor');
-    image(db.sql, 'participant-img', 'guest-participant');
-    image(db.sql, 'viewer-img', 'guest-viewer');
-    // A Participant's row keeps the two-valued role at 'view' (the baseline migration); its level says participate.
-    for (const [owner, role, level] of [
-      ['guest-editor', 'edit', null],
-      ['guest-participant', 'view', 'participate'],
-      ['guest-viewer', 'view', null],
-    ] as const) {
-      insert(db.sql, 'share_links', {
-        code: `CODE-${owner}`,
-        design_id: 'D',
-        role,
-        level,
-        created_at: 0,
-      });
-      insert(db.sql, 'shared_with', {
-        owner_id: owner,
-        design_id: 'D',
-        role,
-        level,
-        last_seen: 0,
-        share_code: `CODE-${owner}`,
-      });
-    }
-    await upsertTab(db.env, 'D', tabWith('t1', 'editor-img', 'participant-img', 'viewer-img'), 0);
-    expect(await designServesImage(db.env, 'D', 'editor-img')).toBe(true);
-    expect(await designServesImage(db.env, 'D', 'participant-img')).toBe(true);
-    expect(await designServesImage(db.env, 'D', 'viewer-img')).toBe(false);
-  });
-
-  it('earns nothing through an edit visit whose link was revoked (a pasted id)', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'mallory' });
-    db.sql.exec("UPDATE designs SET shareable = 1 WHERE id = 'D'");
-    image(db.sql, 'victim-img', 'victim');
-    // Victim once opened Mallory's edit link; the link has since gone.
-    insert(db.sql, 'shared_with', {
-      owner_id: 'victim',
-      design_id: 'D',
-      role: 'edit',
-      last_seen: 0,
-      share_code: 'GONE',
-    });
-    await upsertTab(db.env, 'D', tabWith('t1', 'victim-img'), 0);
-    expect(await designServesImage(db.env, 'D', 'victim-img')).toBe(false);
+    expect(lookups()).toBe(0);
   });
 
   it('confines a tab-scoped visitor to their own tab', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    image(db.sql, 'i1', 'alice');
-    image(db.sql, 'i2', 'alice');
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['i1', 'i2']);
     await upsertTab(db.env, 'D', tabWith('t1', 'i1'), 0);
     await upsertTab(db.env, 'D', tabWith('t2', 'i2'), 1);
     expect(await designServesImage(db.env, 'D', 'i1', 't1')).toBe(true);
     expect(await designServesImage(db.env, 'D', 'i2', 't1')).toBe(false);
   });
-});
 
-describe('copies', () => {
-  async function source() {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'src', { owner: 'alice' });
-    image(db.sql, 'alice-img', 'alice');
-    image(db.sql, 'planted', 'carol');
-    await upsertTab(db.env, 'src', tabWith('t1', 'alice-img', 'planted'), 0);
-    return db;
-  }
-
-  it("serves the source's images in a visitor's copy, and nothing the source could not serve", async () => {
-    const db = await source();
-    await copyDesign(db.env, 'src', 'copy', 'visitor', 'Copy');
-    expect(await designServesImage(db.env, 'copy', 'alice-img')).toBe(true);
-    expect(await designServesImage(db.env, 'copy', 'planted')).toBe(false);
-  });
-
-  it('carries grants through a copy and a copy of a copy', async () => {
-    const db = await source();
-    await copyDesign(db.env, 'src', 'c1', 'visitor', 'Copy');
-    await copyDesign(db.env, 'c1', 'c2', 'someone', 'Copy of copy');
-    expect(await designServesImage(db.env, 'c1', 'alice-img')).toBe(true);
-    expect(await designServesImage(db.env, 'c2', 'alice-img')).toBe(true);
+  it("names a guest owner as the service does: by the hash of the guest's id", async () => {
+    liveDesign(db.sql, 'D', 'guest-1');
+    mediaImages(media, await mediaOwner('guest-1'), ['g']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'g'), 0);
+    expect(await designServesImage(db.env, 'D', 'g')).toBe(true);
   });
 });
 
-// "Add a Tab to Another Design": the new holder serves what the tab already showed.
-describe('linked tabs', () => {
-  it("carries a teammate's image into a design the tab is linked into, and nothing planted", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'joined']]);
-    liveDoc(db.sql, 'teamDoc', { owner: 'user_alice', team: 'T' });
-    liveDoc(db.sql, 'personal', { owner: 'user_alice' });
-    image(db.sql, 'bob-img', 'user_bob');
-    image(db.sql, 'planted', 'carol');
-    await upsertTab(db.env, 'teamDoc', tabWith('t1', 'bob-img', 'planted'), 0);
-    expect(await linkTabToDesign(db.env, 'personal', 't1')).toBe(true);
-    expect(await designServesImage(db.env, 'personal', 'bob-img')).toBe(true);
-    expect(await designServesImage(db.env, 'personal', 'planted')).toBe(false);
+describe('servableImageIds', () => {
+  it('serves the images of someone who wrote to it since its last push', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_bob', ['bobs']);
+    expect([...(await servableImageIds(db.env, 'D', ['bobs']))]).toEqual([]);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'D', 'user_bob', 1);
+    expect([...(await servableImageIds(db.env, 'D', ['bobs']))]).toEqual(['bobs']);
   });
-});
 
-describe('empty id lists', () => {
-  it('write and read nothing for a body that places no image', async () => {
-    const db = sqliteD1();
-    expect(imageGrantPlacementStatements(db.env, 't1', [], 0)).toEqual([]);
-    expect(imageGrantCopyStatements(db.env, 'a', 'b', [], 0)).toEqual([]);
-    expect((await servableImageIds(db.env, 'a', [])).size).toBe(0);
-  });
-});
-
-describe('removal', () => {
-  it("deletes a removed design's grants", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'joined']]);
-    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
-    image(db.sql, 'bob-img', 'user_bob');
-    await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
-    await db.env.DB.batch(designRemovalStatements(db.env, { column: 'id', value: 'D' }));
-    expect(grants(db.sql)).toEqual([]);
-  });
-});
-
-// A design changing owner keeps serving the images its previous owner placed (docs/specs/009-elements/images.md
-// "Placement grants": a grant outlives the membership).
-describe('an owner change', () => {
-  it("keeps a team design's images serving once its maker leaves the team", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [
-      ['user_alice', 'joined'],
-      ['user_bob', 'joined'],
+  it("serves a joined teammate's images on a team's design, not an invited person's", async () => {
+    liveDesign(db.sql, 'D', 'user_ada', 'team_1');
+    accounts.teamPeople.set('team_1', [
+      member('user_ada'),
+      member('user_bob'),
+      member('user_cy', 'invited'),
     ]);
-    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
-    image(db.sql, 'alice-img', 'user_alice');
-    await upsertTab(db.env, 'D', tabWith('t1', 'alice-img'), 0);
-    await handTeamWorkToHeir(db.env, 'T', 'user_alice');
-    expect(db.sql.prepare("SELECT owner_id FROM designs WHERE id = 'D'").get()?.owner_id).toBe(
-      'user_bob',
+    mediaImages(media, 'user_bob', ['bobs']);
+    mediaImages(media, 'user_cy', ['cys']);
+    expect([...(await servableImageIds(db.env, 'D', ['bobs', 'cys']))]).toEqual(['bobs']);
+  });
+
+  it('asks the service once per image, then answers from the design, an unknown id as no one’s', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['a', 'b']);
+    await servableImageIds(db.env, 'D', ['a', 'b', 'nope']);
+    await servableImageIds(db.env, 'D', ['a', 'b', 'nope']);
+    expect(lookups()).toBe(3);
+    expect(await imageOwners(db.env, ['a', 'b', 'nope'])).toEqual(
+      new Map([
+        ['a', 'user_ada'],
+        ['b', 'user_ada'],
+        ['nope', ''],
+      ]),
     );
-    expect(await designServesImage(db.env, 'D', 'alice-img')).toBe(true);
   });
 
-  it("keeps them serving when a team design moves into someone else's library", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'joined']]);
-    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
-    image(db.sql, 'alice-img', 'user_alice');
-    await upsertTab(db.env, 'D', tabWith('t1', 'alice-img'), 0);
-    await setDesignFolder(db.env, 'D', null, null, 'user_bob');
-    expect(await designServesImage(db.env, 'D', 'alice-img')).toBe(true);
+  it('answers 200 placed images within budget', async () => {
+    liveDesign(db.sql, 'D', 'user_ada', 'team_1');
+    accounts.teamPeople.set('team_1', [member('user_ada'), member('user_bob')]);
+    const ids = Array.from({ length: 200 }, (_, i) => `img-${i}`);
+    mediaImages(media, 'user_bob', ids);
+    const cold = performance.now();
+    expect((await servableImageIds(db.env, 'D', ids)).size).toBe(200);
+    const coldMs = performance.now() - cold;
+    const warm = performance.now();
+    expect((await servableImageIds(db.env, 'D', ids)).size).toBe(200);
+    const warmMs = performance.now() - warm;
+    // Cold asks the service for each image (in process here); warm is two reads of the design's own tables.
+    expect(coldMs).toBeLessThan(2_000);
+    expect(warmMs).toBeLessThan(100);
+  });
+});
+
+describe('placement grants', () => {
+  it("grants an editor's placed images as the design pushes them, and keeps serving them after", async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_bob', ['bobs']);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'D', 'user_bob', 1);
+    await upsertTab(db.env, 'D', tabWith('t1', 'bobs'), 0);
+    await drainOutbox(db.env, 'D', null);
+    expect(grants()).toEqual(['bobs']);
+    expect(db.sql.prepare(`SELECT 1 FROM outbox WHERE kind = 'edit'`).all()).toEqual([]);
+    expect(await designServesImage(db.env, 'D', 'bobs')).toBe(true);
   });
 
-  // Sign-up (docs/specs/015-api/api.md "Owner-keyed data"): the guest's images become the account's here, even
-  // one the media service keeps on the guest because the account already holds its bytes.
-  it("keeps a guest's images serving after sign-up", async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'D', { owner: 'guest-1' });
-    image(db.sql, 'guest-img', 'guest-1');
-    image(db.sql, 'account-img', 'user_ada');
-    image(db.sql, 'guest-only', 'guest-1');
-    await upsertTab(db.env, 'D', tabWith('t1', 'guest-img'), 0);
-    await upsertTab(db.env, 'D', tabWith('t2', 'guest-only'), 1);
-    await migrateOwnerId(db.env, 'guest-1', 'user_ada');
-    const owners = db.sql.prepare('SELECT id, owner_id FROM media_images ORDER BY id').all() as {
-      id: string;
-      owner_id: string;
-    }[];
-    expect(owners.map((r) => `${r.id}:${r.owner_id}`)).toEqual([
-      'account-img:user_ada',
-      'guest-img:user_ada',
-      'guest-only:user_ada',
-    ]);
-    expect(await designServesImage(db.env, 'D', 'guest-img')).toBe(true);
-    expect(await designServesImage(db.env, 'D', 'guest-only')).toBe(true);
+  it('grants nothing for an image its owner may not place here', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['mine']);
+    mediaImages(media, 'user_mallory', ['pasted']);
+    expect(await grantPlacedImages(db.env, 'D', ['mine', 'pasted'], ['user_bob@1'], 1)).toBe(0);
+    expect(grants()).toEqual([]);
+  });
+
+  it("a copy serves the source's images, nothing the source could not, and needs no service to know whose", async () => {
+    liveDesign(db.sql, 'src', 'user_ada');
+    mediaImages(media, 'user_ada', ['adas']);
+    mediaImages(media, 'user_carol', ['planted']);
+    await upsertTab(db.env, 'src', tabWith('t1', 'adas', 'planted'), 0);
+    await testCopyDesign(db.env, 'src', 'copy', 'user_visitor', 'Copy');
+    expect(grants()).toEqual(['adas']);
+    const asked = lookups();
+    expect([...(await servableImageIds(db.env, 'copy', ['adas', 'planted']))]).toEqual(['adas']);
+    expect(lookups()).toBe(asked);
+  });
+});
+
+describe('edges', () => {
+  it('answers nothing for no images, or for a design it does not hold', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    expect(await servableImageIds(db.env, 'D', [])).toEqual(new Set());
+    expect(await servableImageIds(db.env, 'missing', ['a'])).toEqual(new Set());
+    expect(await grantPlacedImages(db.env, 'D', [], [], 1)).toBe(0);
+    expect(await grantPlacedImages(db.env, 'missing', ['a'], [], 1)).toBe(0);
+    expect(media.calls).toEqual([]);
+  });
+
+  it("serves no teammate's image while the team's people cannot be read", async () => {
+    liveDesign(db.sql, 'D', 'user_ada', 'team_1');
+    accounts.failing.set('teams/members', 500);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    mediaImages(media, 'user_bob', ['bobs']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'bobs'), 0);
+    expect(await designServesImage(db.env, 'D', 'bobs')).toBe(false);
+  });
+
+  it('serves no one as owner on a design whose owner was anonymised away', async () => {
+    liveDesign(db.sql, 'D', '');
+    mediaImages(media, 'user_ada', ['adas']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'adas'), 0);
+    expect(await designServesImage(db.env, 'D', 'adas')).toBe(false);
+  });
+
+  it('serves no image when the media service is not set up', async () => {
+    liveDesign(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['mine']);
+    await upsertTab(db.env, 'D', tabWith('t1', 'mine'), 0);
+    const env = { ...db.env, MEDIA_KEY: undefined };
+    expect(await designServesImage(env, 'D', 'mine')).toBe(false);
   });
 });

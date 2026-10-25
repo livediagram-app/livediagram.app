@@ -14,7 +14,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
-import { overFloatingPanel } from '@/lib/canvas-pointer';
+import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 type PaletteDropDeps = {
   // 'sticky' rides beside the shape kinds: a sticky is its own

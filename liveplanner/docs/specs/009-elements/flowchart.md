@@ -1,5 +1,7 @@
 # The flowchart
 
+**Status in liveplanner: editing removed (2026-10-24).** No Plan tab holds flowcharts ([Plan mode](../026-plan/plan-mode.md)), so growth (Add Step / Add Branch), the step toolbar, the Flowchart menu, lanes and the re-layout on every commit are gone, with their wiring in `useEditorState`. The element kind stays in `packages/project` for the file format; this spec describes livediagram's behaviour.
+
 ## What
 
 A **Flowchart**: a chart of **steps** joined by connectors, grown one step at a time and **laid out

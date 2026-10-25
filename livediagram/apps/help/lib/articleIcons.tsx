@@ -5,15 +5,15 @@ import {
   lucideKey,
   lucideMail,
   lucideUsers,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { Prims } from '@livediagram/ui';
 import { Glyph } from './featureIcons';
 
 /**
  * Article slug → icon (full <svg>) for the **support** categories (About,
- * Getting Started, Tips, Account, Privacy, Troubleshooting),
- * whose cards render through {@link ../components/ArticleCard}. Feature
+ * Getting Started, Tips, Account, Privacy, Self-Hosting, Troubleshooting),
+ * whose cards render through ArticleCard (@liveworkspace/help-site). Feature
  * landings get their icons from {@link ./featureIcons} (FEATURE_ICONS); this
  * map covers the standalone support articles so every card carries a glyph.
  *

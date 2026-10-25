@@ -2,7 +2,17 @@
 // selecting elements, grouping, themes, templates, links, and annotations.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label, Tile } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  SelectionBox,
+  Cursor,
+  Panel,
+  Tabs,
+  Label,
+  Tile,
+} from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip, stripCategory } from './toolbar-layout';
 
 /** The canvas with the menu button and the palette strip across the top and a small flow on

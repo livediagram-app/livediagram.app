@@ -20,7 +20,7 @@ import type { Layer } from './layers';
 
 // Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
-// this type are re-exported lower down via `export * from './rich-text'`.
+// this type are re-exported lower down via `export * from '@liveworkspace/model-core/rich-text'`.
 // Only the BoxedElement union members are imported for local use; the full set
 // (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
 import type { ArrowElement } from './arrow-types';
@@ -76,214 +76,50 @@ export type {
 // Border preset types used by the boxed-element + arrow field definitions
 // below. The px / dasharray maps + defaults that go with them live in
 // border-style.ts; type-only import (erasable), and the whole module is
-// re-exported lower down via `export * from './border-style'`.
+// re-exported lower down via `export * from '@liveworkspace/model-core/border-style'`.
 
 // Comment-thread type used by the boxed-element `commentThread` fields below.
 // The Comment shape + createComment / activeCommentCount helpers live in
 // comments.ts; type-only import (erasable), and the whole module is re-exported
 // lower down via `export * from './comments'`.
 
-// Designary type aliases for ids that internal helpers thread
-// around. Not exported because no caller outside this package
-// imports them by name (they all just use plain `string`); keeping
-// them internal lets the public surface stay focused on the rich
-// element + tab types below without trailing along three trivial
-// `string` aliases.
-export type DesignId = string;
-export type TabId = string;
-export type ElementId = string;
-
-// --- Shared boxed-element fields ------------------------------------------
-
-// A label's size (docs/specs/004-interface-design/fonts.md "Text size"): one of the named
-// presets ('scale' fits a note's text to its box), or an exact whole px from the Size slider,
-// TEXT_PX_MIN to TEXT_PX_MAX (label-font.ts).
-export type TextSizePreset = 'scale' | 'sm' | 'md' | 'lg';
-export type TextSize = TextSizePreset | number;
-
-// Padding between the element's box and its label. Stored as a t-shirt
-// size for round-trip simplicity; the renderer converts to px.
-export type Padding = 'none' | 'sm' | 'md' | 'lg';
-
-export const PADDING_PX: Record<Padding, number> = {
-  none: 0,
-  sm: 6,
-  md: 14,
-  lg: 24,
-};
-
-export type TextAlignX = 'left' | 'center' | 'right';
-export type TextAlignY = 'top' | 'middle' | 'bottom';
-
-// Where an inline icon sits relative to its shape's text label (the
-// drag-an-icon-onto-a-shape feature, docs/specs/008-canvas/canvas-and-palette.md). The drop-side detection, the
-// context-menu placement picker, and the data-model field all speak this.
-export type IconPosition = 'left' | 'right' | 'above' | 'below';
-
-// The animation vocabulary (element / icon / progress animations, their
-// speed, and the animLoops rule) lives in './animation' — a LEAF module,
-// re-exported below, so the public surface is unchanged.
-
-// The self-drawing data-shape family (progress / rail / rating / charts:
-// kind predicates, bounds, default data, anim sets, clamps) lives in
-// './data-shapes' — a LEAF module so factories.ts can read the defaults
-// at module-init time without a runtime cycle through this barrel. It is
-// re-exported below, so the public surface is unchanged.
-
-// Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): 'dashes' marches the dash pattern along
-// the connector (CSS stroke-dashoffset), 'dots' sends a dot travelling the
-// path (CSS offset-path), 'beads' marches a row of round dots, 'pulse' breathes
-// the line's opacity, 'grow' breathes its thickness, 'glow' pulses a soft halo
-// around it, 'draw' repeatedly draws the line on from start to end (a
-// pathLength-normalised stroke-dashoffset reveal), 'comet' sends a glowing dot
-// with a fading tail along the path (a staggered fleet of offset-path dots),
-// 'rainbow' cycles the stroke colour through the spectrum, 'strobe' blinks the
-// line hard on/off (stepped stroke-opacity), 'wind' marches fast sparse long
-// dashes like speed lines. The emphasis set draws the eye without busy
-// motion: 'heartbeat' is a lub-dub thickness double-pump (vs grow's smooth
-// breathe), 'breathe' a slow gentle width + opacity swell, 'shimmer' an
-// occasional quick glint of brightness + halo, 'signal' a single discrete
-// packet (one long dash) travelling the path (vs wind's stream of speed
-// lines). All show / emphasise the direction of data / process flow.
-export type ArrowFlow =
-  | 'dashes'
-  | 'dots'
-  | 'beads'
-  | 'pulse'
-  | 'grow'
-  | 'glow'
-  | 'heartbeat'
-  | 'breathe'
-  | 'shimmer'
-  | 'signal'
-  | 'draw'
-  | 'comet'
-  | 'rainbow'
-  | 'strobe'
-  | 'wind';
-export const ARROW_FLOWS: readonly ArrowFlow[] = [
-  'dashes',
-  'dots',
-  'beads',
-  'pulse',
-  'grow',
-  'glow',
-  'heartbeat',
-  'breathe',
-  'shimmer',
-  'signal',
-  'draw',
-  'comet',
-  'rainbow',
-  'strobe',
-  'wind',
-];
-
-export type BackgroundPattern =
-  | 'grid'
-  | 'blank'
-  | 'lines'
-  | 'crosshatch'
-  | 'graph'
-  | 'confetti'
-  | 'stripes'
-  | 'diagonal'
-  | 'waves'
-  | 'bricks'
-  | 'isometric'
-  | 'hexagonal'
-  | 'engineering'
-  | 'checkerboard'
-  // Seasonal patterns (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): static motif tiles worn
-  // by the seasonal looks only, never listed in a pattern picker.
-  | 'sparkles'
-  | 'eggs'
-  | 'cobwebs'
-  | 'snowflakes'
-  | 'candy-stripes'
-  // Animated patterns (docs/specs/008-canvas/canvas-and-palette.md): soft ambient motion rendered as an
-  // overlay layer rather than a CSS background image. They theme off the
-  // pattern colour like the static ones. Kept last so the static catalogue
-  // ordering is undisturbed.
-  | 'flow'
-  | 'drift'
-  | 'aurora'
-  | 'ripple'
-  | 'ribbons';
-
-// The animated members of BackgroundPattern. These render via the
-// AnimatedCanvasBackground overlay (CSS / SVG motion) instead of a static
-// `background-image`, so callers that paint or export a still frame can
-// branch on this. Order mirrors the picker.
-export const ANIMATED_BACKGROUND_PATTERNS = [
-  'flow',
-  'drift',
-  'aurora',
-  'ripple',
-  'ribbons',
-] as const;
-
-export type AnimatedBackgroundPattern = (typeof ANIMATED_BACKGROUND_PATTERNS)[number];
-
-// The seasonal members of BackgroundPattern: static tiles the seasonal looks wear, kept out of the pattern pickers.
-export const SEASONAL_BACKGROUND_PATTERNS = [
-  'sparkles',
-  'eggs',
-  'cobwebs',
-  'snowflakes',
-  'candy-stripes',
-] as const satisfies readonly BackgroundPattern[];
-
-export type SeasonalBackgroundPattern = (typeof SEASONAL_BACKGROUND_PATTERNS)[number];
-
-export function isSeasonalPattern(pattern: BackgroundPattern): boolean {
-  return (SEASONAL_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
-}
-
-// Every BackgroundPattern, so a pattern read from stored or sent data can be checked (the Record keeps it whole).
-const BACKGROUND_PATTERN_SET: Readonly<Record<BackgroundPattern, true>> = {
-  grid: true,
-  blank: true,
-  lines: true,
-  crosshatch: true,
-  graph: true,
-  confetti: true,
-  stripes: true,
-  diagonal: true,
-  waves: true,
-  bricks: true,
-  isometric: true,
-  hexagonal: true,
-  engineering: true,
-  checkerboard: true,
-  sparkles: true,
-  eggs: true,
-  cobwebs: true,
-  snowflakes: true,
-  'candy-stripes': true,
-  flow: true,
-  drift: true,
-  aurora: true,
-  ripple: true,
-  ribbons: true,
-};
-
-export function isBackgroundPattern(value: unknown): value is BackgroundPattern {
-  return typeof value === 'string' && Object.hasOwn(BACKGROUND_PATTERN_SET, value);
-}
-
-export function isAnimatedPattern(
-  pattern: BackgroundPattern,
-): pattern is AnimatedBackgroundPattern {
-  return (ANIMATED_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
-}
+// Plain `string` aliases for the ids the package's own helpers thread
+// around; callers outside it use plain `string`.
+// The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
+// background patterns) is shared by every product: @liveworkspace/model-core/basics.
+import type {
+  TabId,
+  ElementId,
+  TextSize,
+  BackgroundPattern,
+} from '@liveworkspace/model-core/basics';
+export {
+  PADDING_PX,
+  ARROW_FLOWS,
+  ANIMATED_BACKGROUND_PATTERNS,
+  SEASONAL_BACKGROUND_PATTERNS,
+  isSeasonalPattern,
+  isAnimatedPattern,
+  type TabId,
+  type ElementId,
+  type TextSizePreset,
+  type TextSize,
+  type Padding,
+  type TextAlignX,
+  type TextAlignY,
+  type IconPosition,
+  type ArrowFlow,
+  type BackgroundPattern,
+  type AnimatedBackgroundPattern,
+  type SeasonalBackgroundPattern,
+} from '@liveworkspace/model-core/basics';
 
 export {
   DARK_CANVAS_BACKGROUND_COLOR,
   DARK_CANVAS_PATTERN_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-} from './canvas-colors';
+} from '@liveworkspace/model-core/canvas-colors';
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
 // design; `design` navigates to a different design entirely (with
@@ -370,7 +206,7 @@ export type Tab = {
   // elements inherit the same theme colours by default. Unset = brand
   // defaults.
   theme?: string;
-  // Default font-family id for this tab (see packages/design/src/fonts.ts).
+  // Default font-family id for this tab (see ../packages/model-core/src/fonts.ts).
   // Every text-bearing element without its own `font` renders in this
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
@@ -421,7 +257,7 @@ export * from './concept';
 export * from './concept-timeline';
 export * from './concept-ramp';
 export * from './shape-variants';
-export * from './title-caption';
+export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './page';
@@ -433,7 +269,7 @@ export {
   wireframeFrameUnderSvg,
   type WireframeFrameTheme,
 } from './wireframe-device-svg';
-export * from './page-fit';
+export * from '@liveworkspace/model-core/page-fit';
 export * from './page-image';
 export * from './page-lock';
 export * from './page-of';
@@ -456,7 +292,6 @@ export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
 export * from './tab-window';
-export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -510,21 +345,21 @@ export function elementSupportsText(element: Element): boolean {
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';
 export * from './animation-membership';
-export * from './arrow-avoidance';
+export * from '@liveworkspace/model-core/arrow-avoidance';
 export * from './nearest-towards';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-dash';
-export * from './arrow-label';
+export * from '@liveworkspace/model-core/arrow-label';
 export * from './arrow-label-layout';
-export * from './arrow-label-wrap';
+export * from '@liveworkspace/model-core/arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
-export * from './label-font';
-export * from './table-cell-font';
+export * from '@liveworkspace/model-core/label-font';
+export * from '@liveworkspace/model-core/table-cell-font';
 export * from './arrow-style';
 export * from './er-heads';
-export * from './border-style';
+export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
 export * from './finish';
@@ -534,13 +369,13 @@ export * from './sketch-backdrop';
 export * from './marker';
 export * from './marker-element';
 // A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
-export * from './face-finish';
+export * from '@liveworkspace/model-core/face-finish';
 export * from './marker-face';
 export * from './hand-drawn';
 export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
-export * from './shape-marker';
+export * from '@liveworkspace/model-core/shape-marker';
 // Fixed-size elements.
 export * from './selection-mode';
 export * from './comments';
@@ -550,15 +385,15 @@ export * from './comment-thread';
 // CLI's pull files).
 export * from './design-envelope';
 export * from './export-tab-text';
-export * from './comment-mentions';
+export * from '@liveworkspace/model-core/comment-mentions';
 // The shared plain-object guard for untrusted JSON.
-export * from './is-record';
+export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
-export * from './string-hash';
+export * from '@liveworkspace/model-core/string-hash';
 // The shared seeded PRNG for deterministic randomness.
-export * from './seeded-random';
+export * from '@liveworkspace/model-core/seeded-random';
 // The shared count-with-noun wording.
-export * from './plural';
+export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
@@ -566,7 +401,7 @@ export * from './sankey-model';
 export * from './sankey-layout';
 export * from './sankey-frame';
 export * from './sankey-text';
-export * from './code-themes';
+export * from '@liveworkspace/model-core/code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
 export * from './chart-ink';
@@ -575,7 +410,7 @@ export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
 export * from './shape-geometry';
-export * from './color-wash';
+export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
@@ -584,12 +419,12 @@ export * from './colors';
 export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
-export * from './icon-size';
-export * from './icon-weight';
+export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
-export * from './rich-text';
+export * from '@liveworkspace/model-core/rich-text';
 
 export * from './factories';
 export * from './whiteboard';
@@ -597,11 +432,11 @@ export * from './segment-geometry';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
-export * from './stroke-points';
+export * from '@liveworkspace/model-core/stroke-points';
 export * from './stroke-fit';
-export * from './stroke-points-cache';
+export * from '@liveworkspace/model-core/stroke-points-cache';
 export * from './freehand-points';
-export * from './stroke-points-debug';
+export * from '@liveworkspace/model-core/stroke-points-debug';
 export * from './pen-colours';
 export * from './standard-colours';
 export * from './custom-colours';
@@ -619,7 +454,7 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
+// Deterministic auto-layout for agent-built diagrams and the editor's Auto Layout.
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
@@ -642,11 +477,11 @@ export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
-export { mixHex } from './color-wash';
+export { mixHex } from '@liveworkspace/model-core/color-wash';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/live/lib/themes.ts.
+// MCP worker (docs/specs/015-api/mcp-server.md). Resolution in the viewer's appearance stays in apps/live/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
@@ -666,7 +501,7 @@ export * from './element-display-label';
 export * from './anchors';
 export * from './anchor-layouts';
 export * from './shape-outline';
-export * from './svg-path-outline';
+export * from '@liveworkspace/model-core/svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
@@ -684,7 +519,7 @@ export * from './arrow-reciprocal';
 export * from './arrow-behind';
 export * from './element-grid';
 // Tab + design name length cap (docs/specs/006-design/name-length.md).
-export * from './names';
+export * from '@liveworkspace/model-core/names';
 export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
@@ -710,7 +545,7 @@ export * from './layer-operations';
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
 export * from './participant-content';
-export * from './adder';
+export * from '@liveworkspace/model-core/adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
@@ -731,14 +566,18 @@ export * from './tab-folders';
 // subsection's recognise mode). Re-exported so callers import
 // from the package root the same way they do every other helper
 // here.
-export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
+export {
+  recogniseShape,
+  type RecognisedShape,
+  type RecognisedShapeKind,
+} from '@liveworkspace/model-core/recognise-shape';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/live because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
-export * from './fonts';
+export * from '@liveworkspace/model-core/fonts';
 
 // Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
 // helpers a presentation is built from. Kept here rather than in apps/live
@@ -749,10 +588,10 @@ export * from './slide-deck-pages';
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
 export * from './containment';
-export * from './style-keys';
-export * from './tab-names';
+export * from '@liveworkspace/model-core/style-keys';
+export * from '@liveworkspace/model-core/tab-names';
 export * from './svg-render-pages';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
-export { indefiniteArticle, withArticle } from './indefinite-article';
+export { indefiniteArticle, withArticle } from '@liveworkspace/model-core/indefinite-article';

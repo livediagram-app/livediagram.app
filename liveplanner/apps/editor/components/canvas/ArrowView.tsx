@@ -16,8 +16,8 @@ import {
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view-frame';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
 import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
@@ -25,10 +25,10 @@ import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { useArrowFinish } from './arrow-finish';
-import { BRAND_600 } from './arrow-handle-style';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { pressLedger } from '@/lib/double-press';
+import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
 // knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast
@@ -52,7 +52,6 @@ type ArrowViewProps = {
   // where the label will land.
   draftLayout: (arrow: ArrowElement, text: string) => ArrowLabelLayout | null;
   isSelected: boolean;
-  isPaintMode: boolean;
   isEditing: boolean;
   // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): caret at end instead of select-all when the
   // label was seeded by the first typed character.
@@ -117,7 +116,6 @@ function ArrowViewImpl({
   labelRender,
   draftLayout,
   isSelected,
-  isPaintMode,
   isEditing,
   editCursorAtEnd = false,
   tabLocked,
@@ -198,7 +196,7 @@ function ArrowViewImpl({
     useArrowFlow(arrow);
   // The label box is draggable (and shows its dashed selection box)
   // when the arrow is selected and editable.
-  const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
+  const labelDraggable = isSelected && !readOnly && !isLocked && !isEditing;
 
   // Per-arrow stroke colour overrides the default; selection ring sits
   // on top in brand-600 regardless so the user can still tell what's
@@ -232,9 +230,9 @@ function ArrowViewImpl({
   const headMarker = sketchedHeads ? undefined : markerUrl;
   const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
-  const hitCursor = isPaintMode ? 'copy' : 'pointer';
+  const hitCursor = 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
-  const bendCursor = isPaintMode || isLocked || readOnly ? hitCursor : 'grab';
+  const bendCursor = isLocked || readOnly ? hitCursor : 'grab';
   // Every press on this arrow (line, label, handles, move frame) passes the
   // double-press rule (docs/specs/008-canvas/arrow-bending.md): a press that pairs with the one
   // before never drags, and opens the label editor instead.
@@ -250,7 +248,7 @@ function ArrowViewImpl({
   // browser moves focus as that press's default action, which would blur (and
   // so commit) an editor opened a moment earlier.
   const openEditor = () => {
-    if (isLocked || isPaintMode) return;
+    if (isLocked) return;
     const done = () => {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', done);
@@ -437,7 +435,7 @@ function ArrowViewImpl({
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM
-        // hit-testing (elementsFromPoint, lib/dom-hit-test) resolves an
+        // hit-testing (elementsFromPoint, @liveworkspace/workbench/lib/dom-hit-test) resolves an
         // arrow the same way it resolves a boxed element's wrapper.
         data-element-id={arrow.id}
         ref={hitBandRef}
@@ -464,7 +462,7 @@ function ArrowViewImpl({
           // Pressing the line bends it once the pointer travels
           // (docs/specs/008-canvas/arrow-bending.md); a plain click only selects, and the second
           // press of a double-click never drags.
-          if (!doubled && !isLocked && !isPaintMode && onBeginArrowBend) {
+          if (!doubled && !isLocked && onBeginArrowBend) {
             onBeginArrowBend(arrow.id, e);
           }
         }}
@@ -509,7 +507,7 @@ function ArrowViewImpl({
 
       {/* The grips draw in the canvas grips layer, above every element (docs/specs/008-canvas/canvas-and-palette.md
           "Resize"), while their presses keep this view's React event path. */}
-      {isSelected && !isPaintMode && !readOnly ? (
+      {isSelected && !readOnly ? (
         <ArrowGripsPortal>
           <SelectedArrowHandles
             arrow={arrow}

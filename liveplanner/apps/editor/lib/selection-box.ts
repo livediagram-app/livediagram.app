@@ -1,4 +1,5 @@
 import type { CanvasSurface } from '@liveplanner/project';
+import { BRAND_RAMP } from '@liveplanner/ui';
 
 // The colours of the two "selection box" rectangles the editor draws: the
 // drag-select marquee on the canvas and the Map's current-view window
@@ -13,10 +14,10 @@ import type { CanvasSurface } from '@liveplanner/project';
 // Appearance: a Midnight-schemed tab is dark paper in light chrome.
 
 // A theme that sets no stroke (Default, unthemed tabs) falls back per paper:
-// the brand violet on light, and on dark the blue-500 of the dark selection ring,
-// which reads calmer on near-black than sky's cyan.
+// the app's brand-500 on light (as hex: the paper decides, not the chrome), and on
+// dark the blue-500 of the dark selection ring, which reads calmer on near-black.
 export const SELECTION_BOX_FALLBACK: Record<CanvasSurface, string> = {
-  light: '#8b5cf6', // violet-500
+  light: BRAND_RAMP[500],
   dark: '#3b82f6', // blue-500
 };
 

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { isLocalhostPair } from './origin-check';
 
 // isLocalhostPair widens the telemetry endpoint's same-origin filter
-// to admit cross-port localhost dev (the live editor on :3002 / the
-// telemetry dashboard on :3003 posting to the api worker on :8787),
+// to admit cross-port localhost dev (the live editor on :3402 posting
+// to the api worker on :8989),
 // while keeping the filter strict in production where no Origin
 // header should ever be a loopback. Three failure modes matter:
 //

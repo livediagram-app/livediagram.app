@@ -5,7 +5,7 @@
 // the Pattern tiles below them read. A sheet shows the cover's own fill when it is of that kind, so the
 // chosen tile pictures the cover, and otherwise the theme's colour.
 import type { CSSProperties } from 'react';
-import { lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import type { PageColourFill } from '@liveplanner/project';
 import { fillCss, type BackgroundCategory } from '@/lib/page-paint';

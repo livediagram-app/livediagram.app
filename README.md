@@ -24,19 +24,22 @@ One pnpm workspace and one lockfile, at the root. Node 22+, pnpm via corepack.
 corepack pnpm install
 corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
-corepack pnpm dev:documents      # livedocuments' apps, on the 32xx ports
+corepack pnpm dev:documents      # livedocuments' apps, on the 33xx ports
 corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
-corepack pnpm dev:workspace      # liveworkspace.app on :3300, with its four APIs behind it
-corepack pnpm dev:site           # liveworkspace.app's pages alone on :3300
+corepack pnpm dev:workspace      # liveworkspace.app on :3000, with its five APIs behind it
+corepack pnpm dev:site           # liveworkspace.app's pages alone on :3000
 corepack pnpm dev:accounts       # the accounts API alone on :8787
 corepack pnpm dev:telemetry      # the telemetry API alone on :8790
 corepack pnpm dev:community      # the Community API alone on :8791
 corepack pnpm dev:media          # the media API alone on :8792
+corepack pnpm dev:index          # the index API (One Explorer) alone on :8793
 corepack pnpm typecheck          # everything; or inside a product folder, just that product
 ```
 
 Each product folder keeps its own scripts (`cd livediagram && corepack pnpm test` runs only
-livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules.
+livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules. The lint,
+format, test and Next.js settings are shared (`packages/oxlint-config`, `prettier-config`,
+`vitest-config`, `next-config`), so a rule changes once for every product.
 
 ## Deploys
 

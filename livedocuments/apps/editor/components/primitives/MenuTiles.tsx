@@ -3,7 +3,7 @@
 import type { CSSProperties, PointerEventHandler, ReactNode } from 'react';
 import { HoverCard } from '@livedocuments/ui';
 import { CountBadge } from '@livedocuments/ui';
-import { useMenuItemProps } from './menu-item-props';
+import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 
 // The tile family of the menu rows (PortalMenu.tsx holds the menu and its list rows): a toolbar of
 // icon buttons, and icon-over-label tiles in a grid. Each takes its role from the menu it sits in

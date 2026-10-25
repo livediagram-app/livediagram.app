@@ -11,7 +11,7 @@ import { PlanViewMenuSection } from './PlanViewMenuSection';
 // element edit.
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/components/primitives/MenuFlyoutSection', () => ({
+vi.mock('@liveworkspace/workbench/components/primitives/MenuFlyoutSection', () => ({
   MenuFlyoutSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

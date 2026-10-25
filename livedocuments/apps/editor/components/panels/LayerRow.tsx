@@ -1,7 +1,7 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livedocuments/document';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   EllipsisIcon,
   GripIcon,

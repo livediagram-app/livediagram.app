@@ -10,11 +10,10 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { buttonClassName, ButtonContent } from '@livedocuments/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
-import { API_BASE } from '@/lib/api/base';
-import { sameOriginPath } from '@/lib/same-origin-path';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
 import { AUTH_TITLE, AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 
@@ -24,41 +23,25 @@ import { AccountPitch } from './auth-pitches';
 
 // The card both auth pages render inside, on the Night Band frame
 // (docs/specs/014-identity/auth-and-guest-access.md "The look: Night
-// Band"): the page's title, an optional line under it, an optional
-// inline error or notice, and an optional footer link slot, beside the
+// Band"): the page's title and an optional inline error, beside the
 // account pitch. Keeps the two pages from drifting in spacing / colour /
-// shadow tokens. `pitch={false}` drops the pitch for the interstitials
-// and the guest-only notice, where "what an account adds" would mislead.
+// shadow tokens.
 export function AuthCard({
   title,
-  subtitle,
   error,
-  notice,
   children,
-  footer,
   guestHref,
-  pitch = true,
 }: {
   title: string;
-  subtitle?: string;
   error: string;
-  // Good news (a code was resent): a status, never the error box; an error wins over it.
-  notice?: string;
   children: ReactNode;
-  footer?: ReactNode;
   // The header's "keep going as a guest" link (guestReturnHref); none hides it.
   guestHref?: string | null;
-  pitch?: boolean;
 }) {
   return (
-    <AuthStage aside={pitch ? <AccountPitch /> : undefined} guestHref={guestHref}>
+    <AuthStage aside={<AccountPitch />} guestHref={guestHref}>
       <div className="mb-6">
         <h1 className={AUTH_TITLE}>{title}</h1>
-        {subtitle ? (
-          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            {subtitle}
-          </p>
-        ) : null}
       </div>
 
       {error ? (
@@ -68,20 +51,9 @@ export function AuthCard({
         >
           {error}
         </div>
-      ) : notice ? (
-        <div
-          role="status"
-          className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-        >
-          {notice}
-        </div>
       ) : null}
 
       {children}
-
-      {footer ? (
-        <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">{footer}</p>
-      ) : null}
     </AuthStage>
   );
 }
@@ -97,38 +69,6 @@ export function RedirectingCard() {
     <AuthStage>
       <p className="text-center text-sm text-slate-600 dark:text-slate-400">Redirecting…</p>
     </AuthStage>
-  );
-}
-
-// ---------------------------------------------------------------------
-// Notice shown on the auth routes when sign-in isn't configured for the
-// deployment (NEXT_PUBLIC_SIGN_IN_ENABLED unset).
-// The editor still works — only sign-up / sign-in are off — so the
-// CTA points back to the editor's welcome flow.
-// ---------------------------------------------------------------------
-
-export function AuthDisabledNotice() {
-  return (
-    <AuthCard
-      title="Sign-in is off here"
-      subtitle="Sign-in isn't enabled on this deployment"
-      error=""
-      pitch={false}
-    >
-      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        This livedocuments instance is running in <strong>guest-only</strong> mode: the canvas works
-        without an account. To enable sign-in, set{' '}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-900 dark:text-slate-200">
-          NEXT_PUBLIC_SIGN_IN_ENABLED=true
-        </code>{' '}
-        at build time, configure the api&apos;s accounts settings, and redeploy.
-      </p>
-      <div className="mt-6 flex justify-center">
-        <a href="/" className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
-          <ButtonContent>Continue as guest</ButtonContent>
-        </a>
-      </div>
-    </AuthCard>
   );
 }
 

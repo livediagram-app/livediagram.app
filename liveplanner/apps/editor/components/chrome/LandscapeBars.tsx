@@ -23,11 +23,6 @@ export function LandscapeBarFold({ shown, children }: { shown: boolean; children
   );
 }
 
-/** The room the handle takes from the strip's row on a phone held sideways: its card (a 36px button,
- *  4px of padding and a 1px border each side: 46px) and the row's 8px gap, so 54px (3.375rem). Set as
- *  `--landscape-handle-room` on the row, which adds it to its right gutter. */
-export const LANDSCAPE_HANDLE_ROOM = 'landscape-phone:[--landscape-handle-room:3.375rem]';
-
 export const SHOW_BARS_LABEL = 'Show Header and Tabs';
 export const HIDE_BARS_LABEL = 'Hide Header and Tabs';
 

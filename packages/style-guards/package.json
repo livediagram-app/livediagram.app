@@ -1,0 +1,30 @@
+{
+  "name": "@liveworkspace/style-guards",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./motion": "./src/motion.ts",
+    "./motion-budget": "./src/motion-budget.ts",
+    "./optical-guard": "./src/optical-guard.ts",
+    "./touch-target-guard": "./src/touch-target-guard.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/source-ast": "workspace:*",
+    "typescript": "^7.0.2"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "oxlint": "^1.88.0",
+    "vitest": "^5.0.3"
+  }
+}

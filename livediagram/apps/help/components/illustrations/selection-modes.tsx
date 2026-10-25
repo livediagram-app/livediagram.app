@@ -11,7 +11,7 @@
 // TopCenterChrome.tsx (the Format banner).
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label, Cursor } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
 import {
   AvatarGlyph,
   EraserGlyph,

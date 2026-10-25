@@ -20,7 +20,7 @@ import {
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

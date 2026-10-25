@@ -1,11 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  pagesOf,
-  layOutPages,
-  newWireframePage,
-  type Element,
-  type Tab,
-} from '@livedesign/design';
+import { pagesOf, layOutPages, newWireframePage, type Element, type Tab } from '@livedesign/design';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -111,7 +105,7 @@ describe('Page edits', () => {
       id: 't',
       name: 'T',
       elements: [box('a', 0)],
-      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'infographic' }],
+      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'wireframe' }],
     } as unknown as Tab);
     h.edits().removePage!('page-1');
     expect(h.tab().elements).toEqual([]);
@@ -236,15 +230,38 @@ describe('logo page edits', () => {
       ],
     }) as unknown as Tab;
 
-  it("adds the artboard, and a wireframe page on the last wireframe page's device", async () => {
+  const logos = (): Tab =>
+    ({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'l1', orientation: 'portrait', size: 'logo', kind: 'logo' }],
+    }) as unknown as Tab;
+
+  it('adds the artboard to a logo tab, and no page of another kind', async () => {
     const { track } = await import('@/lib/telemetry');
-    const h = harness(logoTab());
+    const h = harness(logos());
     h.edits().addPage!('logo');
     expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'LogoPageAdded');
     h.edits().addPage!('wireframe');
-    const [, , logo, page] = pagesOf(h.tab());
-    expect(logo).toMatchObject({ size: 'logo', kind: 'logo' });
-    expect(page).toMatchObject({ kind: 'wireframe', device: 'ipad' });
+    h.edits().addPage!('photo');
+    const pages = pagesOf(h.tab());
+    expect(pages).toHaveLength(2);
+    expect(pages[1]).toMatchObject({ size: 'logo', kind: 'logo' });
+    // Edit as Photo adds a photo page: only a photo tab offers it.
+    expect(h.edits().addPhotoPage).toBeUndefined();
+  });
+
+  // A tab stored before one kind a tab (docs/specs/007-editor/pages-mode.md): its first page's
+  // kind is the one it takes.
+  it('one kind a tab: a stored mixed tab adds its first page’s kind, on the last one’s device', () => {
+    const h = harness(logoTab());
+    h.edits().addPage!('logo');
+    expect(pagesOf(h.tab())).toHaveLength(2);
+    h.edits().addPage!('wireframe');
+    const pages = pagesOf(h.tab());
+    expect(pages).toHaveLength(3);
+    expect(pages[2]).toMatchObject({ kind: 'wireframe', device: 'ipad' });
   });
 
   it('keeps the artboard: no other size, no turn, no pattern', () => {
@@ -446,12 +463,11 @@ describe('Fit to Content page edits', () => {
     expect(h.onGoTo).not.toHaveBeenCalled();
   });
 
-  it('adds a page after a Fit to Content page, its sides being that page alone', () => {
+  it('adds nothing after a Fit to Content page, a blank page with no kind (one kind a tab)', () => {
     const h = harness(fitTab([box('a', 0)]));
     h.edits().addPage!('logo');
-    const added = pagesOf(h.tab())[1]!;
-    expect(added.size).toBe('logo');
-    expect('fit' in added).toBe(false);
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(pagesOf(h.tab())).toHaveLength(1);
   });
 
   it('says so at the page limit rather than splitting into one page', () => {

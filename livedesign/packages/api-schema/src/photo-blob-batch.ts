@@ -85,10 +85,7 @@ export function sniffsAs(bytes: Uint8Array, type: PhotoBlobType): boolean {
   );
 }
 
-// The routes' answers.
-export type PhotoBlobsHasResponse = { has: string[] };
-export type PhotoBlobsStoredResponse = { stored: string[] };
-export type PhotoBlobsAdoptResponse = { adopted: string[] };
+// The routes' refusals.
 export type PhotoBlobsError =
   | 'bad_batch'
   | 'blob_mismatch'

@@ -29,16 +29,7 @@ const SECURITY_SCHEMES: Record<string, JsonSchema> = {
     type: 'http',
     scheme: 'bearer',
     description:
-      'A account access token or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
-  },
-  // The guest path: an unsigned per-browser owner id (docs/specs/014-identity/auth-and-guest-access.md). First-party
-  // app use; an `X-Owner-Sig` HMAC is also required once enforcement is on.
-  GuestId: {
-    type: 'apiKey',
-    in: 'header',
-    name: 'X-Owner-Id',
-    description:
-      'Per-browser guest owner id. First-party app path; external callers use a Bearer token.',
+      'An account access token, a guest token, or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
   },
 };
 
@@ -51,7 +42,8 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
     case 'clerk':
       return [{ Bearer: [] }];
     case 'guest-or-clerk':
-      return [{ Bearer: [] }, { GuestId: [] }];
+      // A guest is a Bearer too: the guest token liveworkspace mints (liveworkspace/docs/accounts.md "Guests").
+      return [{ Bearer: [] }];
   }
 }
 
@@ -192,7 +184,6 @@ const TAGS = [
     description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
-  { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
     name: 'Workbench',

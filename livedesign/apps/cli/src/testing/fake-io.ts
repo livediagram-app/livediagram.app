@@ -9,8 +9,8 @@ import type { CliAsset, CliIo, LoopbackRequest, RoomSocket } from '../io';
 const requireHere = createRequire(import.meta.url);
 const ASSET_PATHS: Record<CliAsset, string> = {
   'resvg.wasm': requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'),
-  'Inter-Regular.ttf': requireHere.resolve('@livedesign/render-png/fonts/Inter-Regular.ttf'),
-  'Inter-Bold.otf': requireHere.resolve('@livedesign/render-png/fonts/Inter-Bold.otf'),
+  'Inter-Regular.ttf': requireHere.resolve('@liveworkspace/render-png/fonts/Inter-Regular.ttf'),
+  'Inter-Bold.otf': requireHere.resolve('@liveworkspace/render-png/fonts/Inter-Bold.otf'),
 };
 
 // A room socket the suite drives: it opens, delivers frames and closes when told to.
@@ -234,11 +234,10 @@ export function fakeIo(
 export const capabilities: Route = (_, url) =>
   url.pathname === '/api/capabilities'
     ? Response.json({
-        aiEnabled: false,
         apiBase: 'https://livedesign.app/api',
         authEnabled: true,
         designFormat: 2,
       })
     : undefined;
 
-export const TOKEN = `lvd_${'a'.repeat(43)}`;
+export const TOKEN = `lwt_${'a'.repeat(43)}`;

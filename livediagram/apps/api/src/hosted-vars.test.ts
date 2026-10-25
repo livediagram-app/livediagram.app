@@ -65,6 +65,8 @@ describe('hosted profile', () => {
     expect(shared.TELEMETRY_ENABLED).toBe('true');
     expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
     expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
+    expect(environments.production.INDEX_ORIGIN).toBe('https://liveworkspace.app');
+    expect(environments.staging.INDEX_ORIGIN).toBe('https://staging.liveworkspace.app');
   });
 
   it('names only vars the worker reads', async () => {
@@ -171,7 +173,7 @@ describe('hosted-vars script', () => {
       bindings: [
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
-        { type: 'secret_text', name: 'CLERK_JWKS_URL' },
+        { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
         { type: 'd1', name: 'DB' },
       ],
     },

@@ -88,7 +88,7 @@ letterboxing handled for free.
 
 ## Implementation
 
-- `lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
+- `../packages/workbench/src/lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
   (above), used by `lib/tab-fit-view.ts`.
 
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
@@ -101,7 +101,7 @@ letterboxing handled for free.
   inside `<main>`, and a child's layout effect runs before its parent's ref
   attaches, so a map mounted with the canvas never measures and loses the
   viewport rectangle.
-- `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
+- `../packages/workbench/src/hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { getProject, getTab, listProjectsByOwner, listItems } from '../db';
+import { getProject, getTab, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
-import { asUser } from './placement-test-support';
+import { asUser } from './test-route-context';
 import { compileSeededTabs } from './project-seed';
 
 // A create's seeded tabs given as a template (docs/specs/015-api/api.md): compiled by
@@ -11,11 +11,15 @@ import { compileSeededTabs } from './project-seed';
 
 let db: SqliteD1;
 
-function create(tabs: unknown[], extra: Record<string, unknown> = {}) {
+function create(
+  tabs: unknown[],
+  extra: Record<string, unknown> = {},
+  identity: Parameters<typeof makeTestRouteContext>[2] = asUser('user_alice'),
+) {
   return handleProjects(
     makeTestRouteContext('POST', '/api/projects', {
       env: db.env,
-      ...asUser('user_alice'),
+      ...identity,
       body: { id: 'd1', name: 'Shop', tabs, ...extra },
     }),
   );
@@ -43,7 +47,7 @@ describe('seeded tabs compiled on create', () => {
   it('builds a template tab and derives the intent from it when none is given, a retro opening in Plan', async () => {
     expect((await create([{ id: 't1', name: 'Retro', template: 'team-retro' }])).status).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
-    const summary = (await listProjectsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
+    const summary = await getProject(db.env, 'd1');
     expect(summary).toMatchObject({
       opensIn: 'plan',
       tabKind: 'board',
@@ -54,7 +58,7 @@ describe('seeded tabs compiled on create', () => {
   it('makes a Plan template tab with no cards, opening in Plan', async () => {
     expect((await create([{ id: 't1', name: 'Board', template: 'kanban' }])).status).toBe(201);
     expect(await listItems(db.env, 'd1')).toEqual([]);
-    const summary = (await listProjectsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
+    const summary = await getProject(db.env, 'd1');
     expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: 'kanban' });
   });
 
@@ -131,7 +135,7 @@ describe('seeded tabs compiled on create', () => {
     await create([{ id: 't1', name: 'Budget', template: 'blank-spreadsheet' }], {
       intent: { mode: 'plan' },
     });
-    const summary = (await listProjectsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
+    const summary = await getProject(db.env, 'd1');
     expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: null });
   });
 
@@ -180,5 +184,33 @@ describe('compileSeededTabs', () => {
       tabs: [{ id: 't1', background: 'dots', theme: 'ocean' }],
       intent: { mode: 'plan' },
     });
+  });
+});
+
+// docs/specs/015-api/api.md, POST /api/projects: an API token seeds Plan elements only, refused with the MCP's
+// sentence before anything is written; the editor's own creates keep the canvas elements a Plan tab holds.
+describe('an API token seeds Plan elements only', () => {
+  const square = { id: 's1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
+  const asToken = { ...asUser('user_alice'), token: { id: 'tok_1' } };
+
+  it('refuses a shape no liveplanner tab holds, naming the tab and the element, and writes nothing', async () => {
+    const res = await create([{ id: 't1', name: 'Board', elements: [square] }], {}, asToken);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: 'bad_request',
+      message:
+        'Tab "Board": element "s1": shape "square" is not an element a liveplanner tab holds; read liveplanner://schema/elements.',
+    });
+    expect(await getProject(db.env, 'd1')).toBeNull();
+  });
+
+  it('still compiles a template it names', async () => {
+    const res = await create([{ id: 't1', name: 'Board', template: 'kanban' }], {}, asToken);
+    expect(res.status).toBe(201);
+  });
+
+  it("keeps a signed-in editor's canvas elements", async () => {
+    expect((await create([{ id: 't1', name: 'Notes', elements: [square] }])).status).toBe(201);
+    expect((await getTab(db.env, 'd1', 't1'))?.elements).toHaveLength(1);
   });
 });

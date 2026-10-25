@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { WebsiteEmbedCards } from '@/components/illustrations/embeds';
+import { WebsiteEmbedCards } from '@liveworkspace/help-site/art/illustrations/embeds';
 
 export const metadata = helpMetadata({
   title: 'Website embeds',
@@ -22,7 +22,7 @@ The palette leaves embeds out, so search for "website" in the editor's [Search p
 
 ## The named services still win
 
-Adding a website embed does not stop YouTube being YouTube. Every named service is checked first, so a `youtube.com` link is still a player and a `docs.google.com` link is still a document, however you added the card. Only addresses on hosts the editor has no opinion about are framed as plain websites.
+Adding a website embed does not stop YouTube being YouTube. Every named service is checked first, so a `youtube.com` link is still a player and a `docs.google.com` link is still a canvas, however you added the card. Only addresses on hosts the editor has no opinion about are framed as plain websites.
 
 One case is worth knowing because it looks like a bug and is not. A **broken** link for a service we _do_ know is refused rather than framed: `vimeo.com/nonsense` says it can't embed that link instead of quietly showing you Vimeo's 404 page. "That is not a Vimeo video" is the more useful answer, and you would not have wanted the 404 anyway.
 
@@ -65,7 +65,7 @@ Like every other embed, a website card fetches nothing until you press **Load em
 
 A framed website runs in a **sandbox**. Scripts, forms and pop-ups are allowed, because a page without them is not really a page.
 
-The permission deliberately left out is the one that lets a framed page **navigate the tab it sits in**. Without it, a page inside an embed cannot replace your editor with itself, which is the single thing a "frame any address" feature must not allow. Your document stays where it is no matter what the framed page tries.
+The permission deliberately left out is the one that lets a framed page **navigate the tab it sits in**. Without it, a page inside an embed cannot replace your editor with itself, which is the single thing a "frame any address" feature must not allow. Your canvas stays where it is no matter what the framed page tries.
 
 The named services carry no sandbox at all, because those hosts were each chosen on purpose and several of them break under one.
 

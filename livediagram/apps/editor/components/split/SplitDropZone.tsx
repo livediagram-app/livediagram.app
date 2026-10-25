@@ -10,7 +10,7 @@ import {
   dropZoneWidth,
   inDropZone,
 } from '@/lib/split-view';
-import { setDraggedTab, useDraggedTab } from '@/lib/tab-drag-store';
+import { setDraggedTab, useDraggedTab } from '@liveworkspace/workbench/lib/tab-drag-store';
 import type { SplitView } from '@/hooks/ui/useSplitView';
 
 const SplitTabPreview = dynamic(() => import('./SplitStaticPane').then((m) => m.SplitTabPreview), {

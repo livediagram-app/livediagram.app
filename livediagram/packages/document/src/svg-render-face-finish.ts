@@ -1,7 +1,7 @@
 // A face's own parts in its element's finish, in the export (docs/specs/008-canvas/finish.md "Faces"): what the
 // canvas does with app/face-finish.css and MarkerFace, done to the face's markup. Markup is rewritten by tag, never
 // parsed, as svgSketchFace does: a face is our own renderers' output, its attributes always double-quoted.
-import { faceAttrs, isPillRect } from './face-finish';
+import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import {
   MARKER_FACE_MAX_PARTS,
   MARKER_FACE_RULE_MIN_PX,
@@ -12,7 +12,7 @@ import {
   type FacePartPaint,
   type FacePartShape,
 } from './marker-face';
-import { mapTags, markedGroup, replaceBlocks } from './svg-markup-blocks';
+import { mapTags, markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
 
 const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'line', 'polyline', 'polygon']);
 const RECT_TAG = new Set(['rect']);

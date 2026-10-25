@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Participant's writes (docs/specs/013-workspace/share-roles.md "Integrity"): the participant rules (text only)
-// applied to what D1 holds, and a compare-and-swap that re-reads when another writer got to the row first.
+// applied to what the document holds, and a compare-and-swap that re-reads when another writer got to the row first.
 
 const { db } = vi.hoisted(() => ({ db: { getTabData: vi.fn(), swapTabData: vi.fn() } }));
 vi.mock('./db', () => db);

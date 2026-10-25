@@ -2,8 +2,8 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { COMMUNITY_CATEGORY_TYPES } from '@livediagram/api-schema';
-import type { MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 
 // Publishing, from the editor's Share dialog.
 export const COMMUNITY_POSTS_SHARED = chart(

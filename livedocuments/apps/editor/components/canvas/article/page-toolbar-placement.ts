@@ -7,7 +7,7 @@
 // have moved it, never on idle frames (docs/specs/008-canvas/canvas-performance.md "At rest").
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;

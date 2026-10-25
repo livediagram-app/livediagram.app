@@ -5,7 +5,7 @@
 // right-click on the board opens: its Board and Cards sections, Style, Collaborate and the rest); pressed again it
 // closes it.
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideSettings } from '@liveplanner/icons/lucide';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
 import type { ShapeElement } from '@liveplanner/project';
 import { openElementMenu } from '@/hooks/canvas/element-menu-opener';
 import type { PlanPalette } from './plan-palette';

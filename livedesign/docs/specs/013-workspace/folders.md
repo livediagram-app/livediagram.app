@@ -1,5 +1,11 @@
 # Folders
 
+> **Where folders live.** Folders, and which folder each design is in, are liveworkspace's index's: one tree per
+> person and one per team, shared by every app, managed through the index's folder routes
+> ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
+> defaults") from the shared Explorer. livedesign's api lists them and makes one for API clients (`GET` / `POST /api/folders`)
+> and files a new design where its create asks. The index's contract is the source of truth for the storage, routes and refusals below.
+
 Designs in the Explorer are organised into a tree of folders. Every
 design belongs to exactly one folder (or none); folders themselves
 can nest under other folders. Designs without an explicit folder
@@ -22,11 +28,10 @@ My Work. Expand-on-demand so the Explorer stays compact.
 
 In scope:
 
-- A new `folders` table in D1 with a self-referential `parent_id`
-  for nesting.
-- A nullable `folder_id` column on `designs`.
-- REST endpoints to create / rename / delete / move folders, plus a
-  move-design-to-folder endpoint.
+- Folders in the index, each with an optional parent for nesting.
+- Each design's folder, on its index item (`folderId`).
+- The index's routes to create / rename / delete / move folders and to move
+  a design into one.
 - Explorer UI: recursive accordion tree under each space. Designs
   without a folder are listed at the space's root, beside its root
   folders, so a freshly created design is in plain sight.
@@ -84,7 +89,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
 | This Browser ([Offline Mode](../006-design/offline-mode.md))   | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
-| Themes                                                         | `/explorer/themes`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
 A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/design/<id>` placeholder-rewrite workaround ([Dedicated route for new-design creation](../007-editor/new-design-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
@@ -100,28 +104,15 @@ Out of scope (V1):
 
 ## Data model
 
-```
-folders
-  id          TEXT PRIMARY KEY        -- UUID
-  owner_id    TEXT NOT NULL           -- matches designs.owner_id
-  parent_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
-  name        TEXT NOT NULL
-  created_at  INTEGER NOT NULL
-  updated_at  INTEGER NOT NULL
-
-designs
-  ...
-  folder_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
-  source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI; 'cli' = the CLI
-```
+A folder is `{ id, name, parentId, teamId, ownerId, createdAt, updatedAt }` in the index; a design's place is its
+item's `folderId` and `teamId`, and how it came to exist its `source`.
 
 - `folder_id IS NULL` means the design sits at the root of its space
   (My Work, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
-- `source` records how the design came to exist (the baseline migration): NULL
+- `source` records how the design came to exist: NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
-  created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
-  in-editor AI assistant (no producer today); `'cli'` for one the [CLI](../015-api/cli.md) created, which
+  created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'cli'` for one the [CLI](../015-api/cli.md) created, which
   is a front door for scripts as much as for agents and so does not count as Made by AI
   (`isMadeByAiSource`). Set once on create and never
   rewritten by the metadata upsert (rename / autosave / move can't clear
@@ -150,7 +141,7 @@ designs wherever they are filed.
   disambiguates them in the move picker.
 - The API rejects cycles when moving a folder (a folder can't
   become its own ancestor) with `409 cycle`. Cycle check happens server-side because
-  D1 can't enforce it declaratively. It runs **inside the move's own
+  SQLite can't enforce it declaratively. It runs **inside the move's own
   UPDATE** (a recursive walk over the new parent's ancestors), so two
   crossing moves (A into B while B moves into A) can never both pass a
   check made before either wrote. A new parent deleted meanwhile is
@@ -158,13 +149,10 @@ designs wherever they are filed.
 - Folder names are non-empty strings of at most `MAX_NAME_LEN`
   characters; a missing, empty or non-string `name` (or a non-string
   `id` / `parentId` / `teamId`) is `400` before anything is written.
-- Filing a design (`PUT /api/designs/:id/folder`) checks the
+- Filing a design (the index's item move) checks the
   folder's existence and scope inside the same UPDATE that files it, so
   a folder deleted after the route's own read files nothing and the
   move answers `404`.
-
-The baseline migration, `0001_livedesign_baseline.sql`, creates the `folders` table and adds
-the `folder_id` column.
 
 ### Deleting a folder
 
@@ -174,9 +162,9 @@ the `folder_id` column.
   keep their own contents, so a whole branch moves up one level intact.
 - Designs in the [Trash](trash.md) that were in the folder move with
   the rest, so a later restore lands in the parent.
-- **One transaction.** `DELETE /api/folders/:id` re-parents the
+- **One transaction.** The index's `DELETE /folders/:id` re-parents the
   subfolders, re-files the designs and deletes
-  the folder in one D1 batch: either all of it happens or none of it.
+  the folder in one batch: either all of it happens or none of it.
   The parent is read inside the batch, so a concurrent move of the
   folder cannot strand its contents under a parent it has left.
 - The same rule holds for personal and team folders.
@@ -188,24 +176,14 @@ the `folder_id` column.
   folder](default-folders.md#deleting-a-default-folder)).
 - A dangling [default folder](default-folders.md#dangling-defaults) is
   kept; designs created afterwards skip it.
-- The api logs `folders: deleted scope=<personal|team> moved_up=<parent|root>`
-  for every delete.
 
 ## API
 
-All endpoints continue the existing `X-Owner-Id` convention.
-
-| Method | Path                      | Body                                 | Returns                 |
-| ------ | ------------------------- | ------------------------------------ | ----------------------- |
-| GET    | `/api/folders`            |                                      | `{ folders: Folder[] }` |
-| POST   | `/api/folders`            | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
-| PUT    | `/api/folders/:id`        | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
-| DELETE | `/api/folders/:id`        |                                      | 204                     |
-| PUT    | `/api/designs/:id/folder` | `{ folderId \| null }`               | 204                     |
-
-`Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
-
-`GET /api/designs` is extended to include `folderId` on each row (camelCase DTO; null for the root). No new endpoint needed for "designs in folder X": the Explorer already has the full list client-side.
+livedesign's api serves the folder routes API clients need: `GET /api/folders`, the caller's personal tree,
+`{ folders: Folder[] }`, read from the index, and `POST /api/folders` (`{ name, id?, parentId?, teamId? }`), a new
+folder made at the index as the caller (the CLI's `folder create`). Renaming, moving and deleting folders, and
+moving a design between them, are the index's routes, which the shared Explorer calls directly. `GET /api/designs` includes
+`folderId` on each row (null for the root).
 
 ### Placement on create
 
@@ -224,15 +202,14 @@ for.
 
 - **Resolution order.** The space first, then the folder: a chosen placement (a folder, or a
   space's root chosen on purpose), else the person's [default folder](default-folders.md) for the
-  create's `intent`, else the root of My Work. The resolver (`apps/api/src/placement/`) is an
-  ordered list of folder steps (`explicitFolder`, `defaultFolder`), the root answering when none
-  does.
+  create's `intent`, else the root of My Work. The index resolves it (`POST /items`,
+  `placementDefaultKeysFor`).
 - **Defaults.** Only a create that carries an `intent` and whose placement is no choice consults
   the defaults. A dangling default is skipped, never a rejection
   ([Default folders](default-folders.md#dangling-defaults)).
 - **Team space.** Only a **verified account id** (a signed-in session or an API token) may place
-  into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
-  header never counts. A guest, an invited-but-not-joined member, or an unknown team is
+  into a team, and only when it is a **joined** member of that team. A guest token
+  never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
 - **Folder.** The folder must exist and belong to the resolved space: in My Work the
   caller's own personal folder, in a team a folder of that team.
@@ -253,11 +230,11 @@ for.
   | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space        |
   | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind? }` of known values |
 
-- **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
-  row; the caller is the owner, in a team as in My Work.
+- **One write.** The folder and team are written by the same index write that files the
+  design; the caller is the owner, in a team as in My Work.
 - **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
   re-committing it: the stored placement stands and the body's placement is not applied
-  (moving is `PUT /api/designs/:id/folder`'s job). A malformed placement is still
+  (moving is the index's item move). A malformed placement is still
   `placement_invalid`.
 - **One feed event.** A create into a team records one `design_created` event whose
   audience is the team ([Timeline](timeline.md)); there is no separate "Shared with a Team"
@@ -303,8 +280,7 @@ empty takes its separator with it (the Explorer behind an error screen
 has no design, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1, and took GitHub off the
 editor's bottom bar, which keeps Search, Settings and the appearance
-toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
-link.
+toggle ([Live app](../007-editor/live-app.md)).
 
 - A "Current Design" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
@@ -333,7 +309,7 @@ link.
 - Design-row ellipsis menu gains a "Change Folder" sub-action that
   opens the shared placement browser (personal folders + the root,
   and teams with their folders — see the move-picker note above).
-  Picking one calls `PUT /api/designs/:id/folder`.
+  Picking one moves the design in the index.
 - **Drag-and-drop**: design rows are HTML5-draggable. Drop targets
   are personal folder rows (any nested depth) and the My Work
   row, which files the design at the root. Drag-over highlights the target with a brand-blue ring so
@@ -362,9 +338,9 @@ link.
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (the account userId when signed in, the `livedesign:v2:self-id`
-localStorage UUID otherwise), so a guest sees the designs + folders +
-Image Gallery their per-browser id owns. AuthControls in the page header
+live app does (the account userId when signed in, the guest token's `guest_…` id
+otherwise), so a guest sees the designs + folders + Image Gallery their
+guest id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's
@@ -420,8 +396,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   for every drop.
 - **Move:** designs and folders share the move-to-folder picker.
   For a folder move, the target folder's own subtree is filtered
-  out client-side so cycle-creating choices don't appear (the server
-  still rejects them via the cycle check on `PUT /api/folders/:id`).
+  out client-side so cycle-creating choices don't appear (the index
+  still rejects them via its cycle check).
 - **A move that fails says so.** Every move the picker or a drop starts
   either lands or ends in an error toast; none fails silently. A move that
   took the row away first puts it back.

@@ -45,7 +45,7 @@ describe('BrowserRepairPanel', () => {
   });
 
   it('asks before repairing, then clears and reports the count', () => {
-    window.localStorage.setItem('livedesign:v2:self-id', 'guest');
+    window.localStorage.setItem('livedesign:v2:guest-token', 'guest');
     window.localStorage.setItem('livedesign:v2:ui-mode', 'x');
     const order: string[] = [];
     const onRepairStart = vi.fn(() => order.push('start'));
@@ -68,7 +68,7 @@ describe('BrowserRepairPanel', () => {
     expect(order).toEqual(['start', 'done']);
     expect(onRepaired).toHaveBeenCalledWith(1);
     expect(window.localStorage.getItem('livedesign:v2:ui-mode')).toBeNull();
-    expect(window.localStorage.getItem('livedesign:v2:self-id')).toBe('guest');
+    expect(window.localStorage.getItem('livedesign:v2:guest-token')).toBe('guest');
   });
 
   it('cancels without clearing', () => {

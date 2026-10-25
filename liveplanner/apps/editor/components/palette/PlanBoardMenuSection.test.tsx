@@ -14,7 +14,7 @@ import {
 // docs/specs/026-plan/plan-board.md "The board set-up": five sections in one Board flyout.
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/components/primitives/MenuFlyoutSection', () => ({
+vi.mock('@liveworkspace/workbench/components/primitives/MenuFlyoutSection', () => ({
   MenuFlyoutSection: ({
     title,
     panel,

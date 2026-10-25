@@ -1,12 +1,7 @@
-import {
-  BORDER_RADIUS_PX,
-  cornerRadiusPx,
-  statRowLayout,
-  WEB_TEXT_MAX,
-} from '@livedesign/design';
+import { BORDER_RADIUS_PX, cornerRadiusPx, statRowLayout, WEB_TEXT_MAX } from '@livedesign/design';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Stat row (docs/specs/009-elements/web-components-and-no-groups.md): KPI cards sharing the width, each a big value in the
 // accent over a muted caption. The value's size follows the card height (see

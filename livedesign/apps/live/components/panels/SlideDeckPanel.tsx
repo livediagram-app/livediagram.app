@@ -19,7 +19,11 @@
 // generated deck is one you have to read and prune before you can trust it.
 
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
+import {
+  sameMembers,
+  selectionIds,
+  type Selection,
+} from '@liveworkspace/workbench/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
 import { slideName } from '@livedesign/design';
@@ -30,7 +34,7 @@ import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/design/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';

@@ -1,78 +1,30 @@
 export { Brand, BrandMark } from './Brand';
-export { brandMarkSvg, BRAND_MARK_VIEWBOX, type BrandMarkVariant } from './brand-mark-geometry';
+export {
+  BRAND_ACCENT,
+  BRAND_RAMP,
+  brandLogoSvg,
+  brandMarkSvg,
+  BRAND_MARK_VIEWBOX,
+  type BrandMarkVariant,
+  type PrismPalette,
+  type PrismScheme,
+} from './brand-app';
 export {
   CARD_SUBTITLE_MAX,
   cardSubtitle,
   renderSocialCard,
   type SocialCardOptions,
 } from './social-card';
-export { brandLogoSvg } from './brand-logo-svg';
-export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
-export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
-export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
-export { BuildWithAiLink } from './BuildWithAiLink';
-export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
-export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
-export {
-  Button,
-  ButtonContent,
-  buttonClassName,
-  type ButtonProps,
-  type ButtonVariant,
-  type ButtonSize,
-} from './Button';
-export {
-  FIELD_INVALID,
-  TextArea,
-  TextInput,
-  type TextAreaProps,
-  type TextInputProps,
-} from './TextInput';
-export {
-  DATE_YEAR_MIN,
-  DateInput,
-  dateCommit,
-  isWholeDay,
-  openDatePicker,
-  type DateCommit,
-  type DateInputProps,
-} from './DateInput';
-export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
-export { Tooltip, type TooltipProps } from './Tooltip';
-export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
-export { HoverCard, type HoverCardProps } from './HoverCard';
-export { useRowPreview, type RowPreview } from './useRowPreview';
-export { SnapCarousel } from './SnapCarousel';
 export { DesignBuildAnimation } from './DesignBuildAnimation';
-export { LoadingSweep } from './LoadingSweep';
-export { EmptyState, EmptyStateArt } from './EmptyState';
-export { PageNotFound } from './PageNotFound';
-export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
-export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
-export { JsonLd } from './JsonLd';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
-export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
-export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
-export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
-export { useCopiedFlash } from './useCopiedFlash';
-export { useClickOutside } from './useClickOutside';
-export { useEscape } from './useEscape';
-export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
-export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
-export {
-  ACTIVE_SEGMENT,
-  SEGMENT_TRACK,
-  SOLID_BRAND_DARK,
-  SOLID_BRAND_DARK_CONTROL,
-} from './brand-classes';
-export * from './timeline';
-export * from './icons';
+export { EDITOR_MODE_ICONS } from './icons';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
@@ -81,6 +33,7 @@ export {
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
+  SITE_ID,
   SITE_URL,
   SITE_NAME,
   REPO_URL,
@@ -93,35 +46,47 @@ export {
   PUBLIC_VIEWPORT,
   DARK_READER_LOCK,
 } from './site';
+export { pageMetadata, BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE, type PageMetadataInput } from './seo';
+// This product's Appearance key, boot script, store, hook and toggle; the cycle, icon and types are
+// @liveworkspace/ui's.
 export {
-  pageMetadata,
-  breadcrumbJsonLd,
-  BRAND_OG_IMAGE,
-  BRAND_TWITTER_IMAGE,
-  type PageMetadataInput,
-  type BreadcrumbCrumb,
-} from './seo';
-export * from './appearance';
-export * from './random-uuid-boot';
+  APPEARANCE_BOOT_SCRIPT,
+  APPEARANCE_STORAGE_KEY,
+  APPEARANCE_STORE,
+  getAppearanceSetting,
+  getResolvedAppearance,
+  readAppearanceSetting,
+  resetAppearanceForTests,
+  resolveAppearance,
+  setAppearance,
+  setAppearanceOverride,
+  subscribeAppearance,
+  useAppearance,
+  SiteAppearanceToggle,
+} from './appearance';
 export { indefiniteArticle, withArticle } from '@livedesign/design';
-export * from './optical';
-export * from './menu';
-export { Dialog, type DialogProps } from './dialog/Dialog';
-export { DialogHeader } from './dialog/DialogHeader';
-export { DialogCloseButton } from './dialog/DialogCloseButton';
-export { Portal } from './Portal';
+// This product's browser repair (its keys, repair, panel, probe and identity report); the checks' shapes and
+// formatting are @liveworkspace/ui's.
 export {
-  useSheetDrag,
-  sheetRelease,
-  SHEET_DISMISS_PX,
-  SHEET_SNAP_PX,
-  SHEET_FULL_HEIGHT,
-  type SheetDrag,
-} from './useSheetDrag';
-export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
-export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
-export * from './browser-repair';
+  GUEST_IDENTITY_KEYS,
+  REPAIR_KEPT_KEYS,
+  REPAIR_SCOPE_PREFIXES,
+  isRepairClearable,
+  repairBrowserStorage,
+  BROWSER_CHECK_PROBE,
+  runBrowserChecks,
+  BrowserRepairPanel,
+  type BrowserRepairPanelProps,
+  GUEST_ID_PREFIX_LENGTH,
+  formatBrowserIdentity,
+  readBrowserIdentity,
+  signedInFromCookie,
+  type BrowserIdentity,
+} from './browser-repair';
 // The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
 // icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
 export * from './palette-icons/palette-tab-icons';
 export * from './palette-icons/palette-group-icons';
+// Everything above is this product's own. The design system every liveworkspace app shares (buttons,
+// fields, dialogs, menus, hints, the optical primitives and the hooks they use) is @liveworkspace/ui.
+export * from '@liveworkspace/ui';

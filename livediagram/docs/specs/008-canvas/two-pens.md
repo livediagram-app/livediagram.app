@@ -40,7 +40,7 @@ used to be.
 `useCanvasDrawGesture` reads the armed intent on release —
 `pendingDraw?.variant === 'shape-pen'` — rather than a lifted preference, and
 passes that to `onCommitFreehand`. The recognition code itself
-(`packages/document/src/recognise-shape.ts`) is untouched; only what decides to
+(`../packages/model-core/src/recognise-shape.ts`) is untouched; only what decides to
 call it changed.
 
 Each pen gets its own cursor and banner. The shape pen's cursor is the nib
@@ -63,6 +63,6 @@ where that is shown, at the user's request; it stays Select everywhere else.)
 - the `UI·Toggled·RecogniseShapesOn/Off` telemetry pair
 
 `recogniseShapes` stays in the `UserPreferences` type as an accepted-but-ignored
-field: it is already persisted in D1 for existing users, and dropping it from
+field: it is already persisted in existing users' stored preferences, and dropping it from
 the type would make a stored preference fail to parse rather than simply do
 nothing.

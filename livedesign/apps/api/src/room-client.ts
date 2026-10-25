@@ -57,12 +57,7 @@ function mutationInit(op: unknown): RequestInit {
 // Send one op to every socket in a design's room. Best-effort: the D1 write before it is the
 // authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
 // not reach the room` rather than failing the request.
-async function broadcastOp(
-  env: Env,
-  designId: string,
-  op: unknown,
-  label: string,
-): Promise<void> {
+async function broadcastOp(env: Env, designId: string, op: unknown, label: string): Promise<void> {
   try {
     await roomStubFor(env, designId).fetch('https://room/broadcast', mutationInit(op));
   } catch (err) {
@@ -363,15 +358,6 @@ export async function broadcastShareOp(
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
   await broadcastOp(env, designId, op, op.kind);
-}
-
-// Tell a design's realtime room that the design was moved to the Trash
-// (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Best-effort like the share-op
-// broadcast: the D1 write is the change, and a session the room misses still
-// has every save refused with design_trashed.
-export async function broadcastDesignTrashed(env: Env, designId: string): Promise<void> {
-  await broadcastOp(env, designId, { kind: 'design-trashed' }, 'design-trashed');
 }
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,

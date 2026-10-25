@@ -13,10 +13,10 @@
 //   with what entering it brings (withEditorModeSwitched). One undo puts the tab back in the mode
 //   it was in, for everyone. A no-op when the switch is not offered or `next` is already the mode.
 import { useCallback } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { withEditorModeSwitched, type EditorMode, type Tab } from '@livediagram/document';
 import { resolveEditorMode } from '@/lib/editor-mode-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {

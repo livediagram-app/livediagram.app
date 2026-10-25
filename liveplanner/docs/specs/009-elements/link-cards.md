@@ -1,5 +1,7 @@
 # Link cards
 
+**Status in liveplanner: no preview fetch (2026-10-24).** No Plan tab holds a link card ([Plan mode](../026-plan/plan-mode.md)) and no palette tool makes one, so the `GET /api/unfurl` route, its `UNFURL_RATE_LIMITER` and the editor's fetch are gone. A link card in an old file still draws its cached `meta`, or the bare URL and host. This spec describes livediagram's behaviour.
+
 A **link tool**: a rectangular bookmark element that turns a URL into a rich
 preview card — favicon, page title, site name, and (when available) the page's
 OG image. The URL is edited the same way every other element's link is.
@@ -29,31 +31,12 @@ marker) and recolour / move / lock / layer / delete like any element.
   keeps its neutral look across themes (like sticky / image); the user can
   still recolour per-card.
 
-## Fetching the preview — `GET /api/unfurl`
+## Fetching the preview
 
-The static client can't read cross-origin page HTML, so a Worker route
-(`apps/api/src/routes/unfurl.ts`) does it. When `applyElementLink` sets a URL
-on a link card, the editor that set it calls `apiUnfurl(url)` **once** and
-commits the result into `meta`; peers receive it via the tab op. It fails
-soft (null → the card shows the bare URL).
-
-The endpoint is **SSRF-safe** (it fetches any URL a caller names):
-
-- Accepts only `http:` / `https:`; rejects everything else.
-- Blocks non-public hosts before fetching: `localhost` / `*.local`, loopback,
-  private ranges (10/8, 172.16/12, 192.168/16, 127/8, CGNAT 100.64/10), and
-  link-local / cloud-metadata (`169.254.0.0/16`, incl. `169.254.169.254`), plus
-  IPv6 ULA / link-local. Re-validates the **final** post-redirect URL.
-- 8s `AbortController` timeout, ~512 KB read cap, HTML-only `Accept`, a
-  descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming — there's
-  no DOMParser in Workers): `<title>`, `og:title|image|site_name|description`,
-  `name="description"`, and the favicon `<link rel="…icon…">` (relative URLs
-  resolved against the final URL, `/favicon.ico` fallback).
-- Per-IP `UNFURL_RATE_LIMITER` (60/60s; absent binding → allowed, for
-  a deployment without it). Always returns 200 with at least the resolved `url`.
-
-The pure helpers (`isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`)
-are unit-tested. `UnfurlResult` is a shared `@liveplanner/api-schema` DTO.
+In livediagram a Worker route fetched the page (the static client can't read cross-origin page HTML), behind an SSRF
+guard (http(s) only, non-public hosts refused, the final post-redirect URL re-checked, an 8s timeout and a read cap)
+and a per-IP rate limit, and the editor that set the URL committed the result into `meta` once. liveplanner has no
+such route: a card keeps whatever `meta` it was saved with.
 
 ## Images
 
@@ -64,8 +47,8 @@ neutral chip).
 
 ## Telemetry
 
-`track('Element', 'Added', 'LinkCard')` on create; `track('Element',
-'Changed', 'LinkUnfurled')` on a successful fetch (reuses existing actions).
+`track('Element', 'Added', 'LinkCard')` on create (reuses an existing action). `Changed·LinkUnfurled` is no
+longer sent: liveplanner fetches no preview.
 
 ## Out of scope
 

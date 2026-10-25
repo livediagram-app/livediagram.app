@@ -8,8 +8,11 @@
 import type { ComponentProps } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import { PlanIcon } from '@liveplanner/ui';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import {
+  MenuAccordionSection,
+  MenuActionRow,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { usePlan } from '@/components/plan/PlanContext';
 import { InfoNote, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';

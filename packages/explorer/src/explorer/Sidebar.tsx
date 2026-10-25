@@ -1,0 +1,668 @@
+'use client';
+
+// The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Timeline, Shared With Me), Spaces
+// (My Work and its folders, each team and its folders), and More (the Library's Recent and Favourites, then
+// the Trash). Rows carry toned tiles and the current row is a raised pill, in the
+// host app's brand colour. The tree reads the folder store, so it costs no request of its own.
+//
+// It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
+// open, type-ahead. Folder rows and My Work carry a menu (⋯, right-click, Shift+F10) and rename in place.
+
+import {
+  useId,
+  useMemo,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type DragEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
+import { TIMELINE_NEW_CAP, type Folder } from '@liveworkspace/index-client';
+import {
+  TRASH_BIN,
+  TRASH_OVER,
+  TRASH_WAITING,
+  useDropTarget,
+  useFolderDrag,
+  useTrashTarget,
+  type DropPlace,
+} from '../drag/drag';
+import { CountBadge } from '@liveworkspace/ui';
+import { DROP_TARGET_RING } from '../ui/classes';
+import {
+  ClockIcon,
+  FolderSolidIcon,
+  HomeIcon,
+  InboxIcon,
+  LibraryIcon,
+  MyWorkIcon,
+  PlusIcon,
+  ShareIcon,
+  StarIcon,
+  TeamIcon,
+  TimelineIcon,
+  TrashIcon,
+  TreeChevronIcon,
+} from '../ui/icons';
+import { inboxCount } from '../data/useInbox';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
+import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
+import { useExplorer } from './context';
+import { BrowserIcon, useHostExtras } from './host';
+import { useThisBrowserItems } from './ThisBrowser';
+import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
+import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
+import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
+import { useTreeNavigation } from './sidebar/useTreeNavigation';
+import { useExtras } from './extras';
+import { useTeams } from '../teams/context';
+import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
+import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
+import { useLibraryHost } from '../library/context';
+
+type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
+
+const TONES: Record<Tone, string> = {
+  sky: 'bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
+  violet: 'bg-violet-100 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300',
+  amber: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
+  indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300',
+  rose: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
+};
+// liveplanner's current row and tile are violet, its brand; here they are each app's brand.
+const TILE_CURRENT = 'bg-brand-600 text-white dark:bg-brand-500';
+const TILE = 'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-3.5';
+const CURRENT =
+  'border-brand-200 bg-white shadow-[0_6px_18px_-8px_color-mix(in_srgb,var(--color-brand-600)_35%,transparent)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-brand-400/[0.18] dark:to-brand-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-brand-400/35';
+const RESTING = 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800';
+const INDENT_STEP = 16;
+
+// The Library's pages: opening one unfolds the Library, so the current row is never hidden.
+const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
+  'recent',
+  'favourites',
+  'gallery',
+  'shape-libraries',
+]);
+
+const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
+const startFolds = () => START_FOLDS;
+
+/** The open rows, from the Explorer's expansion store: read as the sidebar first renders, so it paints open where it
+ *  was left. The Library opens before paint when one of its pages is current, so the current row is never hidden. */
+function useExpanded(view: ExplorerView) {
+  const { expansion } = useExplorer();
+  const expanded = useSyncExternalStore(expansion.subscribe, expansion.get, startFolds);
+  const inLibrary = LIBRARY_VIEWS.has(view.kind);
+  useLayoutEffect(() => {
+    if (inLibrary) expansion.expand(LIBRARY);
+  }, [inLibrary, expansion]);
+  return { expanded, toggle: expansion.toggle };
+}
+
+/** Which sidebar row is being renamed in place (only one, and only here: the pane's rows rename their own). */
+type SidebarRename = { renamingId: string | null; setRenamingId: (id: string | null) => void };
+
+export function SidebarRow({
+  icon,
+  tone,
+  label,
+  selected,
+  onActivate,
+  depth,
+  badge,
+  badgeLabel,
+  badgeTone = 'neutral',
+  expandable = false,
+  expanded = false,
+  onToggleExpand,
+  dropTo = null,
+  dragFolder = null,
+  shownLabel,
+  marker,
+  rowClassName = '',
+  rowHandlers,
+  trailing,
+  onContextMenu,
+  renaming = null,
+  children,
+}: {
+  icon: ReactNode;
+  tone?: Tone;
+  label: string;
+  selected: boolean;
+  onActivate: () => void;
+  depth: number;
+  // A count, or its capped words ("99+").
+  badge?: number | string;
+  // What the count means, for a screen reader ("3 new"); the count alone when unset.
+  badgeLabel?: string;
+  badgeTone?: 'neutral' | 'brand';
+  expandable?: boolean;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+  // The place a dragged item dropped here lands in (a folder, My Work, a team); a closed row opens under a resting
+  // drag.
+  dropTo?: DropPlace | null;
+  // The folder this row is, which drags to the Trash.
+  dragFolder?: Folder | null;
+  // What the row says, when it says more than its name (the Trash mid-drag); the name stays its accessible name.
+  shownLabel?: ReactNode;
+  // Drawn after the name (a default folder's marker).
+  marker?: ReactNode;
+  rowClassName?: string;
+  rowHandlers?: Partial<
+    Record<'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop', (e: DragEvent) => void>
+  >;
+  // After the label: the row's ⋯.
+  trailing?: ReactNode;
+  // The row's menu, from a right-click or Shift+F10 on the row.
+  onContextMenu?: (e: MouseEvent) => void;
+  // The rename field in place of the label; the row neither drags nor goes anywhere while it shows.
+  renaming?: ReactNode;
+  children?: ReactNode;
+}) {
+  const drop = useDropTarget(renaming ? null : dropTo, {
+    onLongHover: expandable && !expanded ? onToggleExpand : undefined,
+  });
+  const drag = useFolderDrag(renaming ? null : dragFolder);
+  return (
+    <li
+      role="treeitem"
+      aria-label={badge !== undefined ? `${label} (${badgeLabel ?? badge})` : label}
+      aria-level={depth + 1}
+      aria-selected={selected}
+      aria-expanded={expandable ? expanded : undefined}
+      aria-current={selected ? 'page' : undefined}
+      data-tree-label={label}
+      // The tree keeps one row tabbable (useTreeNavigation); every other is reached with the arrows.
+      tabIndex={-1}
+      className="outline-none"
+      onContextMenu={
+        onContextMenu
+          ? (e) => {
+              // The nearest row's menu only, never an ancestor folder's too.
+              e.stopPropagation();
+              onContextMenu(e);
+            }
+          : undefined
+      }
+    >
+      <div
+        data-tree-row
+        data-drop-over={drop.over || undefined}
+        className={`group flex items-center gap-1 rounded-xl border px-1 transition [li:focus-visible>&]:ring-2 [li:focus-visible>&]:ring-brand-500 ${selected ? CURRENT : RESTING} ${
+          drop.over ? DROP_TARGET_RING : ''
+        } ${rowClassName}`}
+        style={{ paddingLeft: depth * INDENT_STEP + 4 }}
+        {...drop.handlers}
+        {...rowHandlers}
+        {...drag}
+      >
+        {expandable ? (
+          // A real control: a click (or Enter on it once focused) folds or opens the row; the tree's Left and
+          // Right do the same from the keyboard.
+          <button
+            type="button"
+            tabIndex={-1}
+            data-tree-toggle
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
+            aria-expanded={expanded}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand?.();
+            }}
+            // On a touch screen the chevron is a 44 px disclosure at the row's end, the row's full height.
+            className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-slate-400 outline-none transition hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-brand-500 pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch dark:hover:text-slate-200"
+          >
+            <TreeChevronIcon open={expanded} />
+          </button>
+        ) : (
+          <span aria-hidden className="h-5 w-5 shrink-0 pointer-coarse:hidden" />
+        )}
+        {renaming ? (
+          <span
+            className={`flex min-w-0 flex-1 items-center gap-2.5 text-sm leading-5 pointer-coarse:text-[15px] ${
+              tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
+            }`}
+          >
+            <span className="shrink-0 text-slate-400 pointer-coarse:[&_svg]:size-[17px]">
+              {icon}
+            </span>
+            {renaming}
+          </span>
+        ) : (
+          <button
+            type="button"
+            tabIndex={-1}
+            data-tree-activate
+            onClick={onActivate}
+            className={`flex min-w-0 flex-1 items-center gap-2.5 rounded text-left text-sm leading-5 outline-none pointer-coarse:text-[15px] ${
+              tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
+            } ${
+              selected
+                ? 'font-semibold text-brand-900 dark:text-white'
+                : 'font-medium text-slate-700 dark:text-slate-200'
+            }`}
+          >
+            {tone ? (
+              <span className={`${TILE} ${selected ? TILE_CURRENT : TONES[tone]}`}>{icon}</span>
+            ) : (
+              <span
+                className={`shrink-0 pointer-coarse:[&_svg]:size-[17px] ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
+              >
+                {icon}
+              </span>
+            )}
+            <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
+            {marker}
+            {badge !== undefined ? (
+              <CountBadge tone={badgeTone} className="ml-1">
+                {badge}
+              </CountBadge>
+            ) : null}
+          </button>
+        )}
+        {trailing}
+      </div>
+      {expandable && expanded && children ? <ul role="group">{children}</ul> : null}
+    </li>
+  );
+}
+
+function SidebarGroup({
+  title,
+  first = false,
+  children,
+}: {
+  title: string;
+  first?: boolean;
+  children: ReactNode;
+}) {
+  const id = useId();
+  return (
+    <section>
+      <h2
+        id={id}
+        className={`box-content h-4 px-2.5 pb-2 text-[11px] font-semibold uppercase leading-4 tracking-[0.1em] text-slate-500 dark:text-slate-400 ${
+          first ? '' : 'mt-6 pt-1'
+        }`}
+      >
+        {title}
+      </h2>
+      <ul role="tree" aria-labelledby={id}>
+        {children}
+      </ul>
+    </section>
+  );
+}
+
+function FolderSubtree({
+  folder,
+  depth,
+  expanded,
+  toggle,
+  rename,
+}: {
+  folder: Folder;
+  depth: number;
+  expanded: ReadonlySet<string>;
+  toggle: (key: string) => void;
+  rename: SidebarRename;
+}) {
+  const { folders, view, navigate } = useExplorer();
+  const kids = folders.childrenOf(folder.id, folder.teamId);
+  const target: ExplorerView = folder.teamId
+    ? { kind: 'team', id: folder.teamId, folderId: folder.id }
+    : { kind: 'folder', id: folder.id };
+  const renaming = rename.renamingId === folder.id;
+  const menu = useFolderRowMenu(folder, { renaming, onRename: rename.setRenamingId });
+  return (
+    <SidebarRow
+      icon={<FolderSolidIcon open={expanded.has(folder.id)} />}
+      label={folder.name}
+      onContextMenu={menu.onContextMenu}
+      trailing={menu.trailing}
+      renaming={
+        renaming ? (
+          <InlineRenameInput
+            initial={folder.name}
+            ariaLabel={`Rename ${folder.name}`}
+            onCommit={(name) => {
+              rename.setRenamingId(null);
+              const next = name.trim();
+              if (next && next !== folder.name) void folders.rename(folder.id, next);
+            }}
+            onCancel={() => rename.setRenamingId(null)}
+            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+          />
+        ) : null
+      }
+      selected={sameView(view, target)}
+      onActivate={() => navigate(target)}
+      depth={depth}
+      dropTo={{ teamId: folder.teamId, folderId: folder.id }}
+      dragFolder={folder}
+      marker={<DefaultFolderMarker folderId={folder.id} />}
+      expandable={kids.length > 0}
+      expanded={expanded.has(folder.id)}
+      onToggleExpand={() => toggle(folder.id)}
+    >
+      {kids.map((f) => (
+        <FolderSubtree
+          key={f.id}
+          folder={f}
+          depth={depth + 1}
+          expanded={expanded}
+          toggle={toggle}
+          rename={rename}
+        />
+      ))}
+    </SidebarRow>
+  );
+}
+
+const MY_WORK_ROOT: DropPlace = { teamId: null, folderId: null };
+
+/**
+ * The Trash row: it opens the Trash, and while anything drags in the Explorer it wakes as a target (dashed, "Drop to
+ * Trash"), fills with the brand colour with its bin's lid tipped while the drag is over it ("Let go to trash it"),
+ * and bounces once as it swallows an item. Under reduced motion only the colours and words change.
+ */
+function TrashRow() {
+  const { view, navigate } = useExplorer();
+  const trash = useTrashTarget();
+  return (
+    <SidebarRow
+      icon={
+        <span
+          data-trash-bin={trash.state}
+          className={`flex transition-transform duration-short ease-out ${TRASH_BIN[trash.state]}`}
+        >
+          <TrashIcon />
+        </span>
+      }
+      label={SIDEBAR_LABELS.trash}
+      shownLabel={
+        <>
+          <span
+            className={
+              trash.state === 'over'
+                ? 'font-semibold text-white'
+                : trash.state === 'waiting'
+                  ? 'text-brand-800 dark:text-brand-200'
+                  : ''
+            }
+          >
+            {trash.words ?? SIDEBAR_LABELS.trash}
+          </span>
+          {/* The target's words for assistive technology, as they change; the row keeps its name, Trash. */}
+          <span role="status" aria-live="polite" className="sr-only">
+            {trash.words ?? ''}
+          </span>
+        </>
+      }
+      selected={view.kind === 'trash'}
+      onActivate={() => navigate({ kind: 'trash' })}
+      depth={0}
+      rowClassName={
+        trash.state === 'over' ? TRASH_OVER : trash.state === 'waiting' ? TRASH_WAITING : ''
+      }
+      rowHandlers={trash.handlers}
+    />
+  );
+}
+
+/** The Timeline row's count: what others did since the person last looked, capped by the index at 99. */
+export function timelineBadge(count: number | undefined): {
+  badge?: string;
+  badgeLabel?: string;
+  badgeTone?: 'brand';
+} {
+  if (!count) return {};
+  const shown = count > TIMELINE_NEW_CAP ? `${TIMELINE_NEW_CAP}+` : String(count);
+  return { badge: shown, badgeLabel: `${shown} new`, badgeTone: 'brand' };
+}
+
+export function Sidebar() {
+  const { view, navigate, folders, teams, inbox, viewerId } = useExplorer();
+  const { sidebarLinks } = useHostExtras();
+  const library = useLibraryHost();
+  const { expanded, toggle } = useExpanded(view);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const rename: SidebarRename = { renamingId, setRenamingId };
+  const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
+  const navRef = useRef<HTMLElement>(null);
+  const tree = useTreeNavigation(navRef);
+  const { sharedCount, signedIn, signInHref } = useExtras();
+  const { myTeams, canRun } = useTeams();
+  const [newTeam, setNewTeam] = useState(false);
+  const memberCounts = useMemo(
+    () => new Map(myTeams?.teams.map((t) => [t.id, t.memberCount])),
+    [myTeams],
+  );
+  const invites = myTeams?.invitations.length ?? 0;
+  const is = (v: ExplorerView) => sameView(view, v);
+  const myRoots = folders.childrenOf(null, null);
+  return (
+    <nav
+      ref={navRef}
+      aria-label="Sections"
+      className="text-sm"
+      onKeyDown={tree.onKeyDown}
+      onFocus={tree.onFocus}
+      onBlur={tree.onBlur}
+    >
+      <SidebarGroup title="Overview" first>
+        <SidebarRow
+          icon={<HomeIcon />}
+          tone="sky"
+          label={SIDEBAR_LABELS.home}
+          selected={view.kind === 'home'}
+          onActivate={() => navigate({ kind: 'home' })}
+          depth={0}
+        />
+        <SidebarRow
+          icon={<InboxIcon />}
+          tone="violet"
+          label={SIDEBAR_LABELS.inbox}
+          selected={view.kind === 'inbox'}
+          onActivate={() => navigate({ kind: 'inbox' })}
+          depth={0}
+          badge={inboxCount(inbox.data, viewerId)}
+        />
+        <SidebarRow
+          icon={<TimelineIcon />}
+          tone="amber"
+          label={SIDEBAR_LABELS.timeline}
+          selected={view.kind === 'timeline'}
+          onActivate={() => navigate({ kind: 'timeline' })}
+          depth={0}
+          {...timelineBadge(inbox.data?.timelineNew)}
+        />
+        <SidebarRow
+          icon={<ShareIcon />}
+          tone="emerald"
+          label={SIDEBAR_LABELS.shared}
+          selected={view.kind === 'shared'}
+          onActivate={() => navigate({ kind: 'shared' })}
+          depth={0}
+          badge={sharedCount}
+          badgeLabel={sharedCount === undefined ? undefined : `${sharedCount} shared with you`}
+        />
+      </SidebarGroup>
+      <SidebarGroup title="Spaces">
+        <SidebarRow
+          icon={<MyWorkIcon />}
+          tone="sky"
+          label={SIDEBAR_LABELS.myWork}
+          selected={view.kind === 'all'}
+          onActivate={() => navigate({ kind: 'all' })}
+          depth={0}
+          dropTo={MY_WORK_ROOT}
+          expandable={myRoots.length > 0}
+          expanded={expanded.has(MY_WORK)}
+          onToggleExpand={() => toggle(MY_WORK)}
+          onContextMenu={myWorkMenu.onContextMenu}
+          trailing={myWorkMenu.trailing}
+        >
+          {myRoots.map((f) => (
+            <FolderSubtree
+              key={f.id}
+              folder={f}
+              depth={1}
+              expanded={expanded}
+              toggle={toggle}
+              rename={rename}
+            />
+          ))}
+        </SidebarRow>
+        {teams.map((t) => {
+          const roots = folders.childrenOf(null, t.id);
+          const key = teamKey(t.id);
+          return (
+            <SidebarRow
+              key={t.id}
+              icon={<TeamIcon />}
+              tone="indigo"
+              label={t.name}
+              selected={view.kind === 'team' && view.id === t.id && !view.folderId}
+              onActivate={() => navigate({ kind: 'team', id: t.id })}
+              depth={0}
+              dropTo={{ teamId: t.id, folderId: null }}
+              expandable={roots.length > 0}
+              expanded={expanded.has(key)}
+              onToggleExpand={() => toggle(key)}
+              {...teamMemberBadge(memberCounts.get(t.id))}
+            >
+              {roots.map((f) => (
+                <FolderSubtree
+                  key={f.id}
+                  folder={f}
+                  depth={1}
+                  expanded={expanded}
+                  toggle={toggle}
+                  rename={rename}
+                />
+              ))}
+            </SidebarRow>
+          );
+        })}
+        {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
+        {signedIn && (invites > 0 || view.kind === 'invites') ? (
+          <SidebarRow
+            icon={<MailIcon />}
+            tone="violet"
+            label={SIDEBAR_LABELS.invites}
+            selected={view.kind === 'invites'}
+            onActivate={() => navigate({ kind: 'invites' })}
+            depth={0}
+            badge={invites || undefined}
+            badgeLabel={`${invites} waiting`}
+            badgeTone="brand"
+          />
+        ) : null}
+        {!signedIn && signInHref ? (
+          <SidebarSignInNudge href={signInHref} />
+        ) : canRun ? (
+          <SidebarRow
+            icon={<PlusIcon />}
+            label={SIDEBAR_LABELS.newTeam}
+            selected={false}
+            onActivate={() => setNewTeam(true)}
+            depth={0}
+          />
+        ) : null}
+        {newTeam ? (
+          <NewTeamDialog
+            onClose={() => setNewTeam(false)}
+            onMade={(team) => navigate({ kind: 'team', id: team.id })}
+          />
+        ) : null}
+      </SidebarGroup>
+      <SidebarGroup title="More">
+        <SidebarRow
+          icon={<LibraryIcon />}
+          label={SIDEBAR_LABELS.library}
+          selected={false}
+          onActivate={() => toggle(LIBRARY)}
+          depth={0}
+          expandable
+          expanded={expanded.has(LIBRARY)}
+          onToggleExpand={() => toggle(LIBRARY)}
+        >
+          <SidebarRow
+            icon={<ClockIcon />}
+            label="Recent"
+            selected={is({ kind: 'recent' })}
+            onActivate={() => navigate({ kind: 'recent' })}
+            depth={1}
+          />
+          <SidebarRow
+            icon={<StarIcon />}
+            label="Favourites"
+            selected={is({ kind: 'favourites' })}
+            onActivate={() => navigate({ kind: 'favourites' })}
+            depth={1}
+          />
+          {/* The host's Library pages (livediagram's), where it has them. */}
+          {library.gallery ? (
+            <SidebarRow
+              icon={<ImageIcon />}
+              label={SIDEBAR_LABELS.gallery}
+              selected={view.kind === 'gallery'}
+              onActivate={() => navigate({ kind: 'gallery' })}
+              depth={1}
+            />
+          ) : null}
+          {library.shapeLibraries ? (
+            <SidebarRow
+              icon={<ShapesIcon />}
+              label={SIDEBAR_LABELS.shapeLibraries}
+              selected={view.kind === 'shape-libraries'}
+              onActivate={() => navigate({ kind: 'shape-libraries' })}
+              depth={1}
+            />
+          ) : null}
+        </SidebarRow>
+        <ThisBrowserRow />
+        {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
+        {sidebarLinks.map((link) => (
+          <SidebarRow
+            key={link.id}
+            icon={link.icon === 'browser' ? <BrowserIcon /> : <LibraryIcon />}
+            label={link.label}
+            selected={false}
+            onActivate={() => window.location.assign(link.href)}
+            depth={0}
+          />
+        ))}
+        <TrashRow />
+      </SidebarGroup>
+    </nav>
+  );
+}
+
+/** This Browser, where the host can read the app's items kept only here: shown while there is one, or while its view
+ *  is open, with their count. */
+function ThisBrowserRow() {
+  const { view, navigate } = useExplorer();
+  const { host, live } = useThisBrowserItems();
+  if (!host || (live.length === 0 && view.kind !== 'offline')) return null;
+  return (
+    <SidebarRow
+      icon={<BrowserIcon />}
+      tone="amber"
+      label={SIDEBAR_LABELS.thisBrowser}
+      selected={view.kind === 'offline'}
+      onActivate={() => navigate({ kind: 'offline' })}
+      depth={0}
+      badge={live.length || undefined}
+      badgeLabel={`${live.length} in this browser`}
+    />
+  );
+}

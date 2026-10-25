@@ -42,7 +42,7 @@ export function useTemplateFlow(opts: {
   requestFit: () => void;
   // Puts down whatever tool is in hand, for Select (docs/specs/007-editor/editor-modes.md): a
   // template's content makes the tab one with content, and such a tab opens on Select.
-  putToolDown: () => void;
+  returnToHand: () => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
   markTabLoaded: (id: string) => void;
   // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
@@ -66,7 +66,7 @@ export function useTemplateFlow(opts: {
     setSelfParticipant,
     setIdentityPromptOpen,
     requestFit,
-    putToolDown,
+    returnToHand,
     markTabLoaded,
     bringCardTypes,
     seedCards,
@@ -95,12 +95,8 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing project never download it.
-    const {
-      templateTabs,
-      templateCanvasOverrides,
-      isDefaultProjectName,
-      untitledNameForTemplate,
-    } = await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides, isDefaultProjectName, untitledNameForTemplate } =
+      await import('@/lib/template-builders');
     // The first tab's template names a project still on a default name ("Untitled Flowchart",
     // docs/specs/007-editor/templates-by-mode.md "The project's name"); a name someone gave it stays.
     if (tabs[0]?.id === activeId && isDefaultProjectName(projectName)) {
@@ -171,12 +167,11 @@ export function useTemplateFlow(opts: {
       const seeds = planTemplateSeedItems(kind, seedToday());
       if (seeds.length) seedCards(seeds);
     }
-    // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
-    // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
-    // put down, so its style panel doesn't sit over the board and the first click selects.
+    // The scaffold replaced the tab's content, so frame it and return to the Hand tool Plan starts on
+    // (docs/specs/026-plan/plan-mode.md "Tools"). Blank leaves the view and the tool where they are.
     if (elements.length > 0) {
       requestFit();
-      putToolDown();
+      returnToHand();
     }
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now

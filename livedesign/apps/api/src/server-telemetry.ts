@@ -1,28 +1,25 @@
-// Server-side telemetry self-reports (docs/specs/017-telemetry/telemetry.md).
-//
-// A few events can only be counted honestly by the api worker, because the
-// browser either never sees them (an email sent from a cron) or cannot tell
-// whether they are the first of their kind (a new account, a first visit to a
-// shared design). Those rows are written straight to the events table rather
-// than through POST /api/events.
-//
-// Gated on TELEMETRY_ENABLED like every other emit, and its own failure is
-// swallowed: telemetry must never turn a successful request into a thrown one.
+// The api Worker's own telemetry (docs/specs/017-telemetry/telemetry.md), sent to liveworkspace's central service
+// (liveworkspace/docs/telemetry.md) as livedesign.app. The send itself, its gate and its key are the shared
+// `postServerEvents` (@liveworkspace/telemetry); this file only fixes the app and its event vocabulary.
 
 import type { TelemetryAction, TelemetryCategory } from '@livedesign/api-schema';
-import { insertTelemetryEvents } from './db/telemetry';
+import {
+  postServerEvents,
+  serverTelemetryEnabled,
+  type TelemetryWireEvent,
+} from '@liveworkspace/telemetry';
 import type { Env } from './types';
 
-export function telemetryEnabled(env: Env): boolean {
-  return env.TELEMETRY_ENABLED === 'true';
-}
+export const telemetryEnabled = (env: Env): boolean => serverTelemetryEnabled(env);
 
-export async function reportServerEvent(
+export const reportServerEvents = (env: Env, events: readonly TelemetryWireEvent[]): Promise<void> =>
+  postServerEvents(env, 'livedesign.app', events);
+
+export function reportServerEvent(
   env: Env,
   category: TelemetryCategory,
   action: TelemetryAction,
   type: string | null = null,
 ): Promise<void> {
-  if (!telemetryEnabled(env)) return;
-  await insertTelemetryEvents(env, [{ category, action, type }], Date.now()).catch(() => {});
+  return reportServerEvents(env, [{ category, action, type }]);
 }

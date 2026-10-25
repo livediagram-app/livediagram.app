@@ -4,7 +4,11 @@
 // 4 KB, and tab ids would fill it. The most recent tabs are kept, the oldest dropped past
 // LAST_PAGE_MAX.
 import type { LaidOutPage } from '@livedesign/design';
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import {
+  readLocalStorageSafe,
+  safeJson,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // Kept under the mode's old name (Illustrate), so nobody loses the page they were on.
 const STORAGE_KEY = 'livedesign:v2:last-illustrate-page';

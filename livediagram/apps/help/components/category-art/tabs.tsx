@@ -1,5 +1,5 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Overview', x: 52, w: 72 },

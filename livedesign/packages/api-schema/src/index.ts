@@ -14,7 +14,7 @@
 
 import type { AccessLevel } from './access-levels';
 import type { DesignSource } from './design-source';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livedesign/design';
+import type { EditorMode, Tab } from '@livedesign/design';
 import type { CreationTabKind } from './placement-defaults';
 
 // ---------------------------------------------------------------------
@@ -115,36 +115,6 @@ export type SharedTabsSummary = {
   designs: number;
 };
 
-// One row of the "Shared with you" list (shared_with, migration 0010):
-// a design a non-owner has previously opened via a share link. The api
-// worker (`listSharedWith` in db/shared.ts) builds this by joining
-// shared_with → designs → participants; the live editor's Explorer
-// renders it. Canonical home here so the worker's emit and the client's
-// read can't drift apart (consistency review #7) — both import this one
-// type instead of redeclaring the shape on each side.
-export type SharedWithItem = {
-  id: string;
-  name: string;
-  savedAt: number;
-  // The role the visitor was granted on the share link they used.
-  role: ShareRole;
-  // Still-live share code for that same role, so the client can rebuild
-  // the openable `/design/<id>?s=<code>` URL — without it the link
-  // lands on the owner-only path and 404s. The worker filters out rows
-  // whose share was revoked (no code left), so this is never null here.
-  shareCode: string;
-  // The scope the visitor was granted (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  // `shareCode` always carries this same scope, never a broader one.
-  tabId: string | null;
-  // Owner's display name + avatar colour, joined from participants.
-  // Nullable: signed-in owners may have no participant row yet, so
-  // the UI shows an "Unknown owner" placeholder.
-  ownerName: string | null;
-  ownerColor: string | null;
-  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DesignSummary.empty.
-  empty: boolean;
-};
-
 // ---------------------------------------------------------------------
 // Tabs
 // ---------------------------------------------------------------------
@@ -199,46 +169,6 @@ export type Folder = {
   parentId: string | null;
   teamId: string | null;
   name: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// ---------------------------------------------------------------------
-// Custom themes (docs/specs/011-theme/custom-themes.md)
-// ---------------------------------------------------------------------
-
-// The themable payload of a custom theme — the same fields a built-in
-// `ThemeDefinition` carries MINUS its `id` / `label` (which live on the
-// row) and the `extra` "show more" flag (custom themes are never
-// gated). Stored as a JSON string in the `custom_themes.definition`
-// column; this is the parsed shape the api emits and the live editor
-// materialises into a full ThemeDefinition. Kept structurally in step
-// with `apps/live/lib/themes.ts` ThemeDefinition by the editor's
-// `materialiseCustomTheme` helper.
-export type CustomThemeDefinition = {
-  backgroundColor: string;
-  backgroundPattern: BackgroundPattern;
-  patternColor: string;
-  // Pattern opacity 0..1 (the canvas pattern-opacity slider). Optional;
-  // absent / undefined means fully opaque.
-  backgroundOpacity?: number;
-  elementFill: string | null;
-  elementStroke: string | null;
-  elementText: string | null;
-  palette?: { fill: string; stroke: string; text: string }[];
-  rootColor?: { fill: string; stroke: string; text: string };
-  shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string; text?: string }>>;
-};
-
-// A saved custom theme. `id` is `custom:<uuid>` so it can never collide
-// with a built-in ThemeId and is a cheap "is this custom?" check. It is
-// stored on `Tab.theme` like any other theme id. Owner-scoped (docs/specs/014-identity/auth-and-guest-access.md
-// hybrid identity), guests included.
-export type CustomTheme = {
-  id: string;
-  ownerId: string;
-  name: string;
-  definition: CustomThemeDefinition;
   createdAt: number;
   updatedAt: number;
 };
@@ -324,43 +254,16 @@ export type TeamMember = {
   updatedAt: number;
 };
 
-// One row of `GET /api/teams/invites`: the caller's own pending
-// member row plus enough of the team to decide (name, organisation,
-// how many people have actually joined).
+// One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
+// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
+// its name and organisation, how many people have joined, the role offered, who invited them and when.
 export type TeamInvite = {
   memberId: string;
   team: Team;
   memberCount: number;
   invitedAt: number;
-};
-
-// The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it
-// expires after a week, and anyone signed in who opens it can join.
-// Null in the team detail when off / expired. Admin-only.
-export type TeamInviteLink = {
-  token: string;
-  expiresAt: number;
-};
-
-// What a join token resolves to (the /join landing reads this to show
-// "Join <team>?"), plus whether the caller is already a member.
-export type TeamInviteLinkInfo = {
-  team: Team;
-  memberCount: number;
-  alreadyMember: boolean;
-};
-
-// Result of joining via an invite link.
-export type TeamInviteLinkJoin = {
-  teamId: string;
-  alreadyMember: boolean;
-};
-
-// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
-// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
-export type TeamInviteDecline = {
-  teamName: string;
-  status: TeamMemberStatus;
+  role: TeamRole;
+  invitedByName: string | null;
 };
 
 // ---------------------------------------------------------------------
@@ -477,13 +380,19 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 // The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
 export { sha256 } from './sha256-digest';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
@@ -496,52 +405,23 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The design format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DESIGN_FORMAT, DESIGN_FORMAT_HEADER, parseDesignFormat } from './design-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
   isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
-
-export type AiMode = 'clean' | 'ask';
-
-export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
-
-// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
-// keep within them rather than meet a bare 400.
-export const AI_MAX_PROMPT_CHARS = 1000;
-export const AI_MAX_ELEMENTS = 200;
-
-// Request body for POST /api/ai.
-export type AiRequest = {
-  mode: AiMode;
-  // Free-text instruction from the user (max 1 000 chars, enforced server-side).
-  prompt: string;
-  // All elements on the active tab (full context). Server uses focusIds
-  // to tell the model which subset to act on; the rest is read-only context.
-  elements: unknown[];
-  // Name of the active tab, included in the system prompt for context.
-  tabName: string;
-  // IDs of the currently selected elements. When non-empty the model is
-  // asked to focus its changes on these elements while treating the rest
-  // as context only. Empty / absent = act on all elements.
-  focusIds?: string[];
-  // Last N conversation turns for multi-turn context. Kept short (≤ 6
-  // turns) so the token cost stays bounded.
-  history?: AiConversationTurn[];
-};
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
   // where the api answers, whether sign-in exists, the OAuth server, the stored design format, and the
   // oldest CLI accepted for writes.
@@ -563,14 +443,8 @@ export type CapabilitiesResponse = {
 // count on the same day. Pre-aggregated server-side so the dashboard
 // can render the sparkline + stacked-area without any client work.
 //
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
+// A link card's unfurl (GET /api/unfurl), every product's (@liveworkspace/api-kit/unfurl).
+export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
 export * from './access-levels';
 export * from './image-limits';
@@ -592,7 +466,6 @@ export * from './design-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
-export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -618,7 +491,8 @@ export * from './design-views';
 export * from './lint';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
-export * from './recent-diagrams';
+export * from './recent-designs';
+export * from './snapshot-svg';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
 // presented, for `livedesign auth status`. `role` is `full` or `read-only`.
@@ -630,14 +504,12 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './design-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
 export * from './design-paths';
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
-export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

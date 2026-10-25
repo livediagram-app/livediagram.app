@@ -1,27 +1,34 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, apiFetch, apiJson, apiText, postTelemetry } from './api';
 import type { Env } from './env';
 import { runInTool } from './tool-scope';
 
+// The api's binding and the central telemetry service (plain fetch) both record into `calls`.
 function envWith(handler: (req: Request) => Response): { env: Env; calls: Request[] } {
   const calls: Request[] = [];
+  const record = vi.fn(async (input: Request | string, init?: RequestInit) => {
+    const req = typeof input === 'string' ? new Request(input, init) : input;
+    calls.push(req);
+    return handler(req);
+  });
+  vi.stubGlobal('fetch', record);
   const env = {
-    API: {
-      fetch: vi.fn(async (req: Request) => {
-        calls.push(req);
-        return handler(req);
-      }),
-    } as unknown as Fetcher,
+    API: { fetch: record } as unknown as Fetcher,
     OAUTH_KV: {} as KVNamespace,
+    TELEMETRY_KEY: 'k',
   };
   return { env, calls };
 }
 
+afterEach(() => vi.unstubAllGlobals());
+
+const isEventsPost = (req: Request) => req.url === 'https://liveworkspace.app/api/telemetry/events';
+
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 'lvd_abc', '/designs');
-    expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lvd_abc');
+    await apiFetch(env, 'lwt_abc', '/designs');
+    expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lwt_abc');
     expect(new URL(calls[0]!.url).pathname).toBe('/api/designs');
   });
 
@@ -51,12 +58,12 @@ describe('apiJson', () => {
 
 describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', () => {
   function eventsPosted(calls: Request[]): boolean {
-    return calls.some((r) => new URL(r.url).pathname === '/api/events');
+    return calls.some(isEventsPost);
   }
 
   it('reports a 5xx to the Error telemetry category, then throws', async () => {
     const { env, calls } = envWith((req) =>
-      new URL(req.url).pathname === '/api/events'
+      isEventsPost(req)
         ? new Response(null, { status: 204 })
         : new Response('boom', { status: 503 }),
     );
@@ -74,64 +81,53 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
   // from the tool scope registerTool sets up, not from each call site.
   it('labels the failure with the running tool', async () => {
     const { env, calls } = envWith((req) =>
-      new URL(req.url).pathname === '/api/events'
+      isEventsPost(req)
         ? new Response(null, { status: 204 })
         : new Response('boom', { status: 503 }),
     );
     await expect(
       runInTool('update_design', () => apiJson(env, 't', '/designs/x/tabs/y')),
     ).rejects.toBeInstanceOf(ApiError);
-    const event = calls.find((r) => new URL(r.url).pathname === '/api/events')!;
+    const event = calls.find(isEventsPost)!;
     const body = (await event.json()) as { events: Array<{ type: string }> };
     expect(body.events[0]!.type).toBe('Http503.UpdateDesign');
   });
 
   it('reports a network failure (binding threw) as Internal, then rethrows', async () => {
-    const calls: Request[] = [];
-    const env = {
-      API: {
-        fetch: vi.fn(async (req: Request) => {
-          calls.push(req);
-          if (new URL(req.url).pathname === '/api/events')
-            return new Response(null, { status: 204 });
-          throw new Error('network down');
-        }),
-      } as unknown as Fetcher,
-      OAUTH_KV: {} as KVNamespace,
-    };
+    const { env, calls } = envWith((req) => {
+      if (isEventsPost(req)) return new Response(null, { status: 204 });
+      throw new Error('network down');
+    });
     await expect(apiJson(env, 't', '/designs')).rejects.toThrow('network down');
-    expect(calls.some((r) => new URL(r.url).pathname === '/api/events')).toBe(true);
+    expect(calls.some(isEventsPost)).toBe(true);
   });
 });
 
 describe('postTelemetry', () => {
-  it('never throws into the tool, even when the binding throws at once', () => {
-    const env = {
-      API: {
-        fetch: () => {
-          throw new Error('binding gone');
-        },
-      } as unknown as Fetcher,
-      OAUTH_KV: {} as KVNamespace,
-    };
+  it('never throws into the tool, even when fetch throws at once', () => {
+    const { env } = envWith(() => {
+      throw new Error('fetch gone');
+    });
     expect(() => postTelemetry(env, 'Mcp', 'Used', 'ReadDesign')).not.toThrow();
   });
 
-  it('names itself as internal when the key is set, and swallows a failed post', async () => {
-    const calls: Request[] = [];
-    const env = {
-      API: {
-        fetch: async (req: Request) => {
-          calls.push(req);
-          throw new Error('post failed');
-        },
-      } as unknown as Fetcher,
-      OAUTH_KV: {} as KVNamespace,
-      INTERNAL_EVENTS_KEY: 'k',
-    };
+  it('speaks for livedesign.app with its Worker key, and swallows a failed post', async () => {
+    const { env, calls } = envWith(() => {
+      throw new Error('post failed');
+    });
     postTelemetry(env, 'Mcp', 'Used', 'ReadDesign');
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(calls[0]!.headers.get('X-Internal-Events-Key')).toBe('k');
+    expect(calls[0]!.headers.get('X-Telemetry-Key')).toBe('k');
+    expect(await calls[0]!.json()).toEqual({
+      app: 'livedesign.app',
+      events: [{ category: 'Mcp', action: 'Used', type: 'ReadDesign' }],
+    });
+  });
+
+  it('sends nothing without a Worker key', () => {
+    const { env, calls } = envWith(() => new Response(null, { status: 204 }));
+    postTelemetry({ ...env, TELEMETRY_KEY: undefined }, 'Mcp', 'Used', 'ReadDesign');
+    expect(calls).toHaveLength(0);
   });
 });
 

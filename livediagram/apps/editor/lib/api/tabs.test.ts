@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentText } from '@livediagram/vitest-config/sent-request';
+import { sentText } from '@liveworkspace/vitest-config/sent-request';
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
 import { SAVE_TIMEOUT_BASE_MS, saveTimeoutMs } from './core';
+
+vi.mock('../guest-token', () => ({
+  readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
+}));
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../offline/offline-store')>()),
@@ -75,7 +79,7 @@ describe('flushDocumentSavesBeacon', () => {
     expect(calls).toHaveLength(0);
   });
 
-  it('PUTs each changed tab with keepalive and the owner header', () => {
+  it("PUTs each changed tab with keepalive and the guest's Bearer", () => {
     flushDocumentSavesBeacon({
       ...base,
       changedTabs: [makeTab('t1')],
@@ -86,7 +90,9 @@ describe('flushDocumentSavesBeacon', () => {
     expect(calls[0]!.url).toBe('/api/documents/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
-    expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
+    expect((calls[0]!.init.headers as Record<string, string>)['Authorization']).toBe(
+      'Bearer guest-jwt',
+    );
   });
 
   it('keeps writes alive only while they fit the browser keepalive budget, sending the rest plainly', () => {

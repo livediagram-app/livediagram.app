@@ -18,11 +18,10 @@ export type Gesture =
   | 'drag'
   | 'deselect'
   | 'marquee'
-  | 'stroke'
   | 'hover';
 
 export type Measurement = {
-  tab: 'whiteboard' | 'diagram';
+  tab: 'plan';
   zoom: 'fit' | '100%';
   gesture: Gesture;
   longestTaskMs: number;
@@ -43,7 +42,6 @@ const RULES: Record<Gesture, Limit[]> = {
   pan: [task(LONG_TASK_MS)],
   zoom: [task(LONG_TASK_MS)],
   marquee: [task(LONG_TASK_MS)],
-  stroke: [task(LONG_TASK_MS)],
   hover: [task(LONG_TASK_MS)],
   drag: [
     task(LONG_TASK_MS),

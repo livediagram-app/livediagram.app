@@ -10,13 +10,13 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
 
 ## How
 
-- **The tap area grows, not the control.** `touch-target` (shared theme, `packages/tailwind-config`)
+- **The tap area grows, not the control.** `touch-target` (shared theme, `../packages/tailwind-config`)
   draws an invisible `::before` that reaches past a smaller box to 44px each way, only under
   `(pointer: coarse)`; a box already 44px or more is left alone. The control keeps its drawn size,
   so a dense desktop layout and a phone share one design. The host is positioned (`relative`, or
   its own `absolute`): a static host's pad fills its nearest positioned ancestor and takes every tap
   there (a popover's remove button once took every tap in its popover). A static guard
-  (`touch-target-guard` in `packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
+  (`touch-target-guard` in `../packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`, and for the marketing sites by `../packages/marketing-site/src/guards/source-guards.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's category buttons, side by side) the pad reaches vertically only, so two pads never compete for one tap.
@@ -53,6 +53,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
 - **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the
   landing page's template search).
+- **A switch is 44px to the finger at every size.** `@liveworkspace/ui`'s `Switch` at `md` is a 44px box round its track; at `sm` and `xs` the box is the track itself and carries `touch-target` (so `relative`), and with `coversRow` the whole row is the target instead.
 - **The public sites follow the same rules** (marketing, help, telemetry): the shared header's
   brand, site switcher chevron and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
   and its arrows padded; the template carousel arrows and the telemetry window pills are padded.

@@ -13,7 +13,7 @@ import {
   Label,
   Tabs,
   TextBar,
-} from './primitives';
+} from '@liveworkspace/help-site/art/primitives';
 
 // --- Comments ----------------------------------------------------------------
 
@@ -427,61 +427,12 @@ export function TeamMembers() {
   );
 }
 
-/** An Admin's view of the members: the only Admin's fixed badge, a role picker on every other
- *  row, a pending invite, and the invite-by-email row at the foot of the list. */
-export function RolesAndInvites() {
-  return (
-    <Scene w={420} h={236} bg="plain">
-      <Panel x={46} y={12} w={328} h={214}>
-        <Label x={62} y={32} size={10} tone="muted">
-          Acme · 2 members · 1 invited
-        </Label>
-        <MemberRow
-          y={64}
-          left={60}
-          right={358}
-          m={{ initial: 'A', name: 'Aria', role: 'Admin', colour: 'brand' }}
-          email="aria@acme.com"
-        />
-        <line x1={62} y1={86} x2={358} y2={86} className="stroke-slate-100" strokeWidth={1.5} />
-        <MemberRow
-          y={108}
-          left={60}
-          right={358}
-          m={{ initial: 'J', name: 'Jae', role: 'Member', colour: 'violet' }}
-          email="jae@acme.com"
-          select
-        />
-        <line x1={62} y1={130} x2={358} y2={130} className="stroke-slate-100" strokeWidth={1.5} />
-        <MemberRow
-          y={152}
-          left={60}
-          right={358}
-          m={{ initial: 'M', name: 'Mara', role: 'Member', colour: 'amber' }}
-          email="mara@acme.com"
-          invited
-          select
-        />
-        {/* Invite-by-email row */}
-        <line x1={46} y1={178} x2={374} y2={178} className="stroke-slate-200" strokeWidth={1.5} />
-        <Label x={66} y={201} anchor="middle" size={14} weight={600} tone="muted">
-          +
-        </Label>
-        <Label x={80} y={201} size={10} tone="muted">
-          Add your team by email address…
-        </Label>
-        <Button x={298} y={188} w={62} h={26} label="Invite" variant="primary" />
-      </Panel>
-    </Scene>
-  );
-}
-
 /** A team's shared library: the Team documents breadcrumb with the view toggle and Create, above
  *  the folders and documents of the level you are in. */
 export function TeamSharedTree() {
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: '4 documents' },
-    { label: 'Onboarding', folder: true, meta: '2 documents' },
+    { label: 'Architecture', folder: true, meta: '4 canvases' },
+    { label: 'Onboarding', folder: true, meta: '2 canvases' },
     { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
     { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
   ];
@@ -491,7 +442,7 @@ export function TeamSharedTree() {
         <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
         <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
         <Label x={66} y={34} size={9.5} weight={700} tone="muted">
-          TEAM DOCUMENTS
+          TEAM CANVASES
         </Label>
         {/* View toggle: list and grid. */}
         <rect

@@ -2,7 +2,7 @@
 // has them: a bold heading and a muted caption above the drawing, left aligned, and on request a key beside it
 // naming what each shape kind the graph uses means, drawn in the diagram's own tones.
 
-import { unionRects } from './geometry-primitives';
+import { unionRects } from '@liveworkspace/model-core/geometry-primitives';
 import { glyphWidth } from './graph-authoring';
 import { TONE_PRESET } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type ShapeElement } from './index';

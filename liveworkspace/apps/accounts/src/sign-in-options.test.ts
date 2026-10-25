@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from './env.ts';
 import { signInOptions } from './sign-in-options.ts';
 
-const env = (extra: Partial<Env> = {}) => ({ TURNSTILE_SITE_KEY: 'site-key', ...extra }) as Env;
+const env = (extra: Partial<Env> = {}) =>
+  ({ TURNSTILE_SITE_KEY: 'site-key', BASE_URL: 'https://liveworkspace.app', ...extra }) as Env;
 
 describe('sign-in options', () => {
   it('gives the pages the Turnstile key and the name limit, and caches briefly', async () => {
@@ -11,6 +12,8 @@ describe('sign-in options', () => {
       turnstileSiteKey: 'site-key',
       google: false,
       nameMaxLength: 80,
+      accountsUrl: 'https://liveworkspace.app',
+      googleOnApps: false,
     });
     expect(response.headers.get('cache-control')).toBe('public, max-age=300');
   });
@@ -21,6 +24,12 @@ describe('sign-in options', () => {
     const both = await signInOptions(
       env({ GOOGLE_CLIENT_ID: 'id', GOOGLE_CLIENT_SECRET: 's' }),
     ).json();
-    expect(both).toMatchObject({ google: true });
+    expect(both).toMatchObject({ google: true, googleOnApps: false });
+  });
+
+  it("says when Google can come back to an app's own address", async () => {
+    expect(await signInOptions(env({ GOOGLE_ON_APP_ORIGINS: 'true' })).json()).toMatchObject({
+      googleOnApps: true,
+    });
   });
 });

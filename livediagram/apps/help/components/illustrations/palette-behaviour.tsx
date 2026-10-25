@@ -10,7 +10,15 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Label, TextBar, Avatar, Button, Panel, Cursor } from './primitives';
+import {
+  Scene,
+  Label,
+  TextBar,
+  Avatar,
+  Button,
+  Panel,
+  Cursor,
+} from '@liveworkspace/help-site/art/primitives';
 
 // --- Small motifs the primitive kit does not carry -------------------------
 

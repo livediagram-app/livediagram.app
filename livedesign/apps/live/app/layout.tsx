@@ -4,9 +4,9 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
-import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
-import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
-import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { StaleBuildBoot } from '@liveworkspace/workbench/components/providers/StaleBuildBoot';
+import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
+import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livedesign/design';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livedesign/ui/seo';
@@ -20,9 +20,11 @@ import {
   trustedTypesBootScript,
 } from '@livedesign/ui';
 import {
+  DESIGN_GRANT_BOOT_SCRIPT,
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,
+  SILENT_SIGN_IN_BOOT_SCRIPT,
 } from './pre-hydration-scripts';
 import { EDITOR_BUILD_ID } from '@/lib/server-release';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from '@/lib/stale-html-guard';
@@ -39,7 +41,7 @@ import './globals.css';
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'livedesign';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and designs. Multiplayer canvas.';
+const DESCRIPTION = 'Logos, wireframes and photos, designed together. Multiplayer canvas.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -84,7 +86,7 @@ export const metadata: Metadata = {
 };
 
 // Every page can zoom, so a phone can pinch to read it (WCAG 1.4.4). The routes that draw the canvas pin it at 1
-// instead with EDITOR_VIEWPORT (lib/page-viewport.ts), since the canvas owns zoom there. See
+// instead with EDITOR_VIEWPORT (@liveworkspace/workbench/lib/page-viewport.ts), since the canvas owns zoom there. See
 // docs/specs/007-editor/live-app.md "Mobile / responsive".
 export const viewport: Viewport = {
   width: 'device-width',
@@ -111,8 +113,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        {/* Signing in without a click (liveworkspace/docs/accounts.md): before anything else loads,
+            since when it bounces it stops the page. */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_BOOT_SCRIPT) }} />
         {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
+        {/* A design's grant, asked for while the code loads (lib/api/design-grants.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(DESIGN_GRANT_BOOT_SCRIPT) }} />
         {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}

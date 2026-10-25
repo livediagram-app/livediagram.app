@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 import { FINISHES, isFinish, type Finish } from '@livedesign/design';
 import { Glyph, LinkIcon } from '@livedesign/ui';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows, type OptionRow } from '@/components/primitives/OptionRows';
 import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
 

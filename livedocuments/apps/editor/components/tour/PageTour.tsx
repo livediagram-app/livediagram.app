@@ -5,7 +5,7 @@
 // dashboard's emitter scan reads every event.
 import { useEffect, useState } from 'react';
 import type { PageKind } from '@livedocuments/document';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { requestPagePanel } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';

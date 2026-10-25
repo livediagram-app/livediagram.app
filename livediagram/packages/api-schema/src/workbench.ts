@@ -26,11 +26,15 @@ export const WORKBENCH_NAME_MAX_LENGTH = 40;
 export const WORKBENCH_ORIGIN_MAX_LENGTH = 255;
 export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 
-// A ticket and a pairing code are 16 random bytes, base64url without padding.
+// A pairing code is 16 random bytes, base64url without padding.
 export const WORKBENCH_HANDLE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// `lvw_` and 32 random bytes as base64url without padding.
-const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}$/;
+// A ticket is 16 random bytes, base64url without padding, then a dot and the id of the person's workbench store
+// at liveworkspace (64 hex), so it reaches their store with no one signed in.
+export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
+
+// `lvw_` and 32 random bytes as base64url without padding, then a dot and the store's id, as a ticket.
+const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/;
 
 export function isWorkbenchSessionFormat(value: string): boolean {
   return SESSION_PATTERN.test(value);
@@ -145,7 +149,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;
@@ -247,7 +250,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'schema/:p'),
   shape('GET', 'participants/:owner'),
   shape('GET', 'preferences'),
-  shape('GET', 'custom-themes'),
   shape('GET', 'shape-libraries'),
   shape('POST', 'images'),
   shape('GET', 'images/:p'),
@@ -260,7 +262,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'documents/:doc/changesets/:p'),
   shape('GET', 'documents/:doc/comments'),
   shape('GET', 'documents/:doc/tabs/:p/render.svg'),
-  shape('GET', 'documents/:doc/tabs/:p/comment-pictures'),
   shape('POST', 'documents/:doc/tabs/:p/comments'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reply'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
@@ -273,7 +274,7 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
 
 // The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
 // (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
-// assistant), and never a route the minting token could not call (Community publishing, Drive: Clerk only, WB51).
+// assistant), and never a route the minting token could not call (Community publishing, Drive: a signed-in session only, WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),
@@ -288,14 +289,12 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
     'folders',
     'shared',
     'favourites',
-    'tags',
     'home',
     'timeline',
     'activity',
     'trash',
     'placement-defaults',
     'images',
-    'custom-themes',
     'shape-libraries',
   ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
   shape('GET', 'teams'),

@@ -33,7 +33,6 @@ import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-par
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -43,7 +42,7 @@ import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay
 import { SketchFace } from '@/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
@@ -59,7 +58,7 @@ import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { clearingInset } from '@/components/canvas/InsetContent';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { isPanThrough } from '@/hooks/canvas/pan-through';
+import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -80,10 +79,8 @@ function BoxedElementViewImpl({
   isSelected,
   isMultiSelected = false,
   onPlainClick,
-  onPressArmedAction,
   isEditing,
   editCursorAtEnd = false,
-  isPaintMode,
   showHandles,
   showAnchors,
   onBeginDrag,
@@ -94,7 +91,6 @@ function BoxedElementViewImpl({
   onCommitLabel,
   onSetTextAlign,
   onSetPageHeading,
-  isoDepth,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -218,13 +214,11 @@ function BoxedElementViewImpl({
       isAnnotation,
       isMultiSelected,
       isSelected,
-      isPaintMode,
       vote,
       votableInVote,
       onCastVote,
       onShiftSelect,
       onPlainClick,
-      onPressArmedAction,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -235,13 +229,11 @@ function BoxedElementViewImpl({
 
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
-    : isPaintMode
-      ? 'cursor-copy'
-      : isEditing
-        ? 'cursor-text'
-        : isLocked || !movable
-          ? 'cursor-default'
-          : 'cursor-move';
+    : isEditing
+      ? 'cursor-text'
+      : isLocked || !movable
+        ? 'cursor-default'
+        : 'cursor-move';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -288,8 +280,6 @@ function BoxedElementViewImpl({
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
-  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
-  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
   const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
   // The element's indicators, placed before the label so the content can move out of their way.
@@ -322,7 +312,6 @@ function BoxedElementViewImpl({
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
     textHug.label,
-    mindFit.onLiveText,
   );
 
   return (
@@ -337,7 +326,7 @@ function BoxedElementViewImpl({
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
-        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        // A finger on a board's empty space pans the canvas instead (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);
@@ -355,12 +344,10 @@ function BoxedElementViewImpl({
         popInClass
       } ${variant.className} ${cursor}`}
       style={{
-        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
-        ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? mindFit.height ?? element.height,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
         // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).

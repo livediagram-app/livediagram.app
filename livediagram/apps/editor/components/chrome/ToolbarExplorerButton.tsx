@@ -2,7 +2,7 @@
 
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { TabNameInBox } from './TabNameInBox';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
@@ -52,7 +52,7 @@ export function ToolbarExplorerButton({
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
       {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
           button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
+      <HoverCard title="Explorer" description="Your canvases, folders and teams." disabled={open}>
         {button}
       </HoverCard>
       {/* The open tab's name, in every mode (not on a phone). */}

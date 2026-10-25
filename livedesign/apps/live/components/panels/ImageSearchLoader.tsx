@@ -21,7 +21,7 @@ const PICK_STAGE_COPY: Record<PickStage, { short: string; long: string }> = {
 
 // The placeholder photo's tints, cycled across the grid so it reads as a mix of pictures.
 const TINTS = [
-  'from-sky-100 to-indigo-100 dark:from-sky-500/15 dark:to-indigo-500/15',
+  'from-brand-100 to-indigo-100 dark:from-brand-500/15 dark:to-indigo-500/15',
   'from-amber-100 to-rose-100 dark:from-amber-500/15 dark:to-rose-500/15',
   'from-emerald-100 to-teal-100 dark:from-emerald-500/15 dark:to-teal-500/15',
   'from-violet-100 to-pink-100 dark:from-violet-500/15 dark:to-pink-500/15',

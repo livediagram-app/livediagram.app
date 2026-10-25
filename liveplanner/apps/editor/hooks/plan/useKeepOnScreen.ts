@@ -6,7 +6,7 @@
 // on every pan or zoom (the viewport store) and canvas resize, one frame at a time, and writes the shift straight
 // onto the element (no re-render). `data-shifted` is set while it is moved, so the host can give it a backdrop.
 import { useEffect, type RefObject } from 'react';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 
 // The gap kept between the group and the canvas's edge, in screen px.
 const KEEP_ON_SCREEN_MARGIN_PX = 8;

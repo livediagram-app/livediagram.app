@@ -102,7 +102,10 @@ const CATALOGUE = join(APP_ROOT, 'components/dialogs/settings/settings-catalogue
 
 const emitted = (() => {
   const pairs = new Set<string>();
-  for (const file of sourceFiles(APP_ROOT)) {
+  // With the editor code every editor shares (@liveworkspace/workbench).
+  for (const file of [APP_ROOT, join(APP_ROOT, '../../../packages/workbench/src')].flatMap(
+    sourceFiles,
+  )) {
     for (const pair of pairsIn(readFileSync(file, 'utf8'))) pairs.add(pair);
   }
   for (const pair of cataloguePairs(readFileSync(CATALOGUE, 'utf8'))) pairs.add(pair);

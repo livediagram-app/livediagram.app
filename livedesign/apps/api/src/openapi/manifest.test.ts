@@ -21,6 +21,10 @@ function dispatchedSegments(): Set<string> {
   const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
+  // Forwarded to liveworkspace unchanged ahead of the switch (liveworkspace/docs/workbench.md), and still part of
+  // this api's published surface.
+  if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
+    segments.add('workbench');
   return segments;
 }
 
@@ -104,7 +108,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
     // Vacuity guard: if the source walk stops finding verbs, every assertion
     // below passes without checking anything.
-    expect(handled.size).toBeGreaterThan(15);
+    expect(handled.size).toBeGreaterThan(12);
     for (const [segment, methods] of handled) {
       expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);
     }
@@ -148,7 +152,7 @@ describe('rate-limited operations declare 429', () => {
     // Paths are keyed unprefixed; `/api` lives on the servers entry.
     doc.paths[route.path]?.[route.method.toLowerCase()]?.responses ?? {};
 
-  it('covers every write except the telemetry ingest and the room-ticket mint', () => {
+  it('covers every write except the telemetry relay and the room-ticket mint', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {
@@ -249,16 +253,12 @@ describe('buildOpenApiDesign', () => {
     expect(doc.components.schemas.Error).toBeDefined();
   });
 
-  it('advertises the SVG endpoints (snapshots and the tab render) as image/svg+xml, the rest as JSON', () => {
+  it('advertises the SVG endpoint (the tab render) as image/svg+xml, the rest as JSON', () => {
     const doc = buildOpenApiDesign() as {
       paths: Record<string, Record<string, { responses: Record<string, { content?: object }> }>>;
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
-    expect(svg.map((r) => r.path).sort()).toEqual([
-      '/designs/{id}/tabs/{tabId}/render.svg',
-      '/designs/{id}/thumbnail',
-      '/share/{code}/image.svg',
-    ]);
+    expect(svg.map((r) => r.path).sort()).toEqual(['/designs/{id}/tabs/{tabId}/render.svg']);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
@@ -320,6 +320,6 @@ describe('OpenAPI teams surface', () => {
   it('marks the team reads token-usable and no team write', () => {
     const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
     const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
-    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}', 'GET /teams/{id}/library']);
+    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
   });
 });

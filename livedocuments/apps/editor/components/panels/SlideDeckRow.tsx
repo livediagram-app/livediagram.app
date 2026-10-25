@@ -7,7 +7,7 @@
 // beside its number.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livedocuments/document';
-import { lucideFileText } from '@livedocuments/icons/lucide';
+import { lucideFileText } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { PlayIcon } from '@/components/primitives/PlayIcon';

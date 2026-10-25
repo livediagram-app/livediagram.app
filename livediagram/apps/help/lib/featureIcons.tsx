@@ -15,7 +15,6 @@ import {
   lucideLocateFixed,
   lucideMagnet,
   lucideMessagesSquare,
-  lucidePalette,
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
@@ -23,15 +22,13 @@ import {
   lucideScanEye,
   lucideSearch,
   lucideSpade,
-  lucideSparkles,
   lucideSquarePlus,
   lucideStarHalf,
   lucideTimer,
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-} from '@livediagram/icons/lucide';
-import { topCategorySlug } from '@livediagram/help-registry';
+} from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 
@@ -499,12 +496,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'zen-mode': (
     <Glyph>
       <path d="M3 12h4l2 5 4-12 2 7h6" />
-    </Glyph>
-  ),
-  ai: (
-    <Glyph>
-      <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z" />
-      <path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z" />
     </Glyph>
   ),
   'markdown-import': (
@@ -1110,8 +1101,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 9h6M12 16h6" />
     </Glyph>
   ),
-  // The last ten cards: the slide-deck trio, Locking a Tab, the two Tools
-  // cleanups, Ask and Clean, and the three User Interface guides. With these the
+  // The last cards: the slide-deck trio, Locking a Tab, the two Tools
+  // cleanups, and the three User Interface guides. With these the
   // catalogue is fully drawn, and the category fallback becomes a safety net for
   // cards not yet written rather than something a reader actually sees.
   'building-a-deck': (
@@ -1155,12 +1146,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 6h4a2 2 0 012 2v2" />
       <rect x="13" y="14" width="8" height="6" rx="1.5" />
       <path d="M15 14v-1.5a2 2 0 014 0V14" />
-    </Glyph>
-  ),
-  // Two helpers, not one: a question asked, and a sweep that tidies.
-  'ai-tools': (
-    <Glyph>
-      <Prims prims={lucideSparkles} />
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
@@ -1247,8 +1232,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The dialog's list, with one theme picked. A wheel of hues was the obvious
   // drawing and it rendered as the `pie-chart` glyph exactly; `themes` already
-  // owns the paint palette, and `custom-themes` owns swatches-with-a-plus, so
-  // what is left to draw is the browsing itself.
+  // owns the paint palette, so what is left to draw is the browsing itself.
   'changing-theme': (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -1267,15 +1251,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7.2v3.3M6 13.5v-1.5h12v1.5" />
       <circle cx="6" cy="17" r="2.5" fill="currentColor" stroke="none" />
       <circle cx="18" cy="17" r="2.5" />
-    </Glyph>
-  ),
-  // Swatches with a plus: building one rather than picking one.
-  'custom-themes': (
-    <Glyph>
-      <rect x="3" y="5" width="6" height="6" rx="1.5" />
-      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <path d="M14 14v6M11 17h6" />
     </Glyph>
   ),
   // Two elements, both with handles on them: many things selected at once.
@@ -1610,11 +1585,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 16l-5-5-7 7" />
     </Glyph>
   ),
-  'themes-library': (
-    <Glyph>
-      <Prims prims={lucidePalette} />
-    </Glyph>
-  ),
   // Tabs guides.
   'tab-folders': (
     <Glyph>
@@ -1646,13 +1616,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
       <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
       <circle cx="10" cy="14" r="3" />
-    </Glyph>
-  ),
-  // A luggage tag with its eyelet: a label you put on a document.
-  tags: (
-    <Glyph>
-      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
-      <circle cx="8" cy="8" r="1.5" />
     </Glyph>
   ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.
@@ -1846,14 +1809,3 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
 };
-
-/** The glyph for a feature card: the feature's own icon, else its top-level
- *  category's, else the canvas frame. One resolver so the card, the category
- *  index, and the MDX `<Feature>` tile can't disagree about the order. */
-export function featureIcon(slug: string, categorySlug?: string): ReactNode {
-  return (
-    FEATURE_ICONS[slug] ??
-    FEATURE_CATEGORY_ICONS[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_ICONS['the-canvas']
-  );
-}

@@ -4,7 +4,7 @@
 // pointer (mouse, pen or touch) on the window and steps the container once per animation frame while the pointer is in
 // an edge zone. Nothing runs while `active` is false, so a plain hover never scrolls.
 import { useEffect, type RefObject } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { clampScrollStep, edgeScrollStep } from './edge-auto-scroll';
 
 export function useEdgeAutoScroll(scroller: RefObject<HTMLElement | null>, active: boolean): void {

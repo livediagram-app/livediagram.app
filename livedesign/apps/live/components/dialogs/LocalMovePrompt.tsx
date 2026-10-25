@@ -1,9 +1,9 @@
 'use client';
 
 import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { ImportChecklist } from '@/components/dialogs/ImportChecklist';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Spinner } from '@/components/palette/template-picker-icons';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
@@ -27,7 +27,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
           role="status"
           className="flex items-center justify-center gap-2 px-6 py-8 text-sm text-slate-600 dark:text-slate-300"
         >
-          <span className="text-sky-600 dark:text-sky-400">
+          <span className="text-brand-700 dark:text-brand-400">
             <Spinner />
           </span>
           Moving {phase.done + 1} of {phase.total}…

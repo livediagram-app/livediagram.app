@@ -4,9 +4,9 @@
 // Goes To from a question's badge, Responses Go To and Settings from the status bar's cog. Anchored under (or over)
 // its control on a wide screen; a bottom sheet on a phone, as the app's menus are.
 import type { ReactNode } from 'react';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 
 export function FormSheet({
   anchor,

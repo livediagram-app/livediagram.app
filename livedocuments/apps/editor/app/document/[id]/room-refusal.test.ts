@@ -33,7 +33,7 @@ describe('joinRefusedBecauseTrashed', () => {
     await expect(
       joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: 'abc' }),
     ).resolves.toBe(true);
-    expect(apiLoadShared).toHaveBeenCalledWith('abc', 'me');
+    expect(apiLoadShared).toHaveBeenCalledWith('abc', 'me', 'd1');
   });
 
   it('is not trashed when the document still loads, or the load fails for another reason', async () => {

@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { FONTS, type Finish, type TextSize } from '@livedesign/design';
-import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TabStylePreview } from './TabStylePreview';
 
@@ -56,7 +56,7 @@ export function TextTab({
         themeId={themeId}
         font={font}
         textSize={previewSize ?? size}
-        label={`A sample diagram lettered in ${fontLabel}`}
+        label={`A sample design lettered in ${fontLabel}`}
       />
 
       <PagedCarousel

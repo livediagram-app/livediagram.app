@@ -1,7 +1,7 @@
 # Marketing assets
 
 Text and media assets for promoting livedesign: directory listings, launch
-posts, social copy, screenshots, and logos. This folder is for outbound
+posts, social copy, screenshots (none yet), and logos. This folder is for outbound
 material only. The product source of truth stays in [`docs/specs/`](../docs/specs/), and
 developer docs stay in [`docs/`](../docs/).
 
@@ -28,11 +28,13 @@ marketing/
 - **Voice**: plain, concrete, a little understated. Describe what the product
   does, not how amazing it is.
 - **No em dashes.** Use commas, colons, or parentheses.
-- **The hook is "no sign-in wall"**: open a link, draw, share. Lead with it.
-- **Don't overclaim.** Team workspaces, transactional email, and CRDT editing
-  are not shipped yet (see "What's still ahead" in the fact sheet). Never imply
-  they are.
-- **Free means free.** MIT-licensed, no paid tier, no plan for
+- **The hook is "no sign-in wall"**: open a link, design together, show it.
+  Lead with it.
+- **Say what it makes**: logos, wireframes and photos (the site pitch,
+  `SITE_PITCH` in `packages/ui/src/site.ts`). It is not a diagram, whiteboard or
+  slide tool; never describe it as one.
+- **Don't overclaim.** Only what the fact sheet lists as shipped.
+- **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
   one. Say so where the format allows.
 - **Brand color** is rose, `#f43f5e` ("livedesign rose"); text and fills in it use `#be123c`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

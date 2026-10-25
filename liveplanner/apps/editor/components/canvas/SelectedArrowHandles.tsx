@@ -1,7 +1,10 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { ArrowElement } from '@liveplanner/project';
 import type { ArrowEnd } from '@/lib/canvas';
-import { CurveHandle, EndpointHandle } from './arrow-handles';
+import {
+  CurveHandle,
+  EndpointHandle,
+} from '@liveworkspace/workbench/components/canvas/arrow-handles';
 
 // The selected arrow's handle layer (docs/specs/008-canvas/canvas-and-palette.md), lifted out of ArrowView:
 // the two endpoint grips, the single-bow curve handle, the multi-bend

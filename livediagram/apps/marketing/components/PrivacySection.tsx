@@ -3,8 +3,13 @@
 // set apart from the story beats. Each card leads with an animated illustration in the
 // FeatureArt vocabulary (Frame + SVG + fa-* keyframes), drawn for both appearances.
 
-import { BAND_CARD, BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import {
+  BAND_CARD,
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import {
   DataIsYoursArt,
   EncryptedArt,
@@ -24,7 +29,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Your data is yours',
     description:
-      "Every document lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+      "Every canvas lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
     art: <DataIsYoursArt />,
   },
   {
@@ -36,13 +41,13 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Encrypted at rest and in transit',
     description:
-      'All persistence runs on Cloudflare D1 + R2, which encrypt every row and blob at rest with AES-256. Every request is TLS, end to end. The same protections protect telemetry, share links, and uploaded images.',
+      'All persistence runs on Cloudflare Durable Objects and R2, which encrypt every row and blob at rest with AES-256. Every request is TLS, end to end. The same protections protect telemetry, share links, and uploaded images.',
     art: <EncryptedArt />,
   },
   {
     title: 'Private by default',
     description:
-      'A new document is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
+      'A new canvas is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
     art: <PrivateByDefaultArt />,
   },
   {

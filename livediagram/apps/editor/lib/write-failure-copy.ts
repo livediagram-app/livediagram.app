@@ -1,7 +1,7 @@
 // What a failed folder or document write says (docs/specs/013-workspace/folders.md "A write that fails says so"):
 // one wording per verb, shared by the Explorer page, the editor's Explorer panel and a team's library, so the same
 // failure reads the same wherever it happened. Each names what it failed on when the caller knows it (toast-name.ts).
-import { toastName } from './toast-name';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 type FailureCopy = (name?: string | null) => string;
 
@@ -18,8 +18,8 @@ export const FOLDER_FAILURE = {
 } as const satisfies Record<string, FailureCopy>;
 
 export const DOCUMENT_FAILURE = {
-  rename: failure('rename', 'the document'),
-  move: failure('move', 'the document'),
-  delete: failure('delete', 'the document'),
-  duplicate: failure('duplicate', 'the document'),
+  rename: failure('rename', 'the canvas'),
+  move: failure('move', 'the canvas'),
+  delete: failure('delete', 'the canvas'),
+  duplicate: failure('duplicate', 'the canvas'),
 } as const satisfies Record<string, FailureCopy>;

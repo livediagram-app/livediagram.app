@@ -4,7 +4,7 @@
 // segmented control on the shared sliding pill, and the kind chips under it.
 
 import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon, Tooltip } from '@livediagram/ui';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import type { CollaborateKind, CollaborateSide } from './collaborate-model';
 
 const SIDES: { id: CollaborateSide; label: string }[] = [

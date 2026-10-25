@@ -2,15 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { isValidTab, parseStrokePoints } from '@livediagram/document';
 import {
   buildTemplateTab,
-  buildTemplateTabs,
   resolveTemplate,
   closestTemplateKinds,
   closestTemplatesHint,
   CLOSEST_TEMPLATES_MAX,
-  templateTabName,
   validTemplateKinds,
 } from './template-tab';
-import { templateTabs } from './build-template';
 import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
@@ -57,31 +54,6 @@ describe('resolveTemplate', () => {
     expect(validTemplateKinds().split(', ')).toEqual(
       templateCatalogue().templates.map((t) => t.kind),
     );
-  });
-});
-
-describe('buildTemplateTabs', () => {
-  it('makes exactly buildTemplateTab’s one tab', () => {
-    const newId = () => 'never';
-    // Element ids are fresh each build: compare everything else.
-    const shape = (tab: ReturnType<typeof buildTemplateTab>) => ({
-      ...tab,
-      elements: tab.elements.map(({ id: _id, ...rest }) => rest.type),
-    });
-    const tabs = buildTemplateTabs({ id: 's', name: 'SWOT' }, 'swot', newId);
-    expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'SWOT', 'swot'))]);
-  });
-
-  it('makes one tab for every template', () => {
-    for (const { kind } of TEMPLATES) expect(templateTabs(kind), kind).toHaveLength(1);
-  });
-});
-
-describe('templateTabName', () => {
-  it('takes the name given, else Tab 1', () => {
-    expect(templateTabName('Hiring', 'flowchart')).toBe('Hiring');
-    expect(templateTabName(undefined, 'flowchart')).toBe('Tab 1');
-    expect(templateTabName('  ', 'flowchart')).toBe('Tab 1');
   });
 });
 

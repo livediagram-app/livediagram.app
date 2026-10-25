@@ -6,25 +6,25 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                   | Role                                                                    |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                                 | `EntityField`, `EntityKey`, `ENTITY_KEYS`, `ENTITY_MAX_FIELDS`, `_TEXT` |
-| `packages/document/src/element-types.ts`                               | `ShapeElement.entityFields`                                             |
-| `packages/document/src/arrow-types.ts`                                 | `Endpoint` pinned `field?: number`                                      |
-| `packages/document/src/shape-factory.ts`                               | `createShape('entity', …)` defaults                                     |
-| `packages/document/src/validate-shape.ts`                              | The `entityFields` bounds and `key` check                               |
-| `packages/document/src/validate.ts`                                    | A pinned end's `field` check                                            |
-| `packages/document/src/entity-geometry.ts`                             | Band, rows, gutter metrics; `entityFieldPoint`, `entityPartAt`, snap    |
-| `packages/document/src/entity-fields.ts`                               | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
-| `packages/document/src/entity-related.ts`                              | `buildRelatedEntity`: Add Related Entity's entity and relationship      |
-| `packages/document/src/entity-look.ts`                                 | Tints, type face, key glyph paths and inks                              |
-| `packages/document/src/geometry.ts`                                    | `endpointPosition` / `fieldEndPosition`: a field end's point            |
-| `packages/document/src/arrow-rebind.ts`, `arrow-rebind-swap.ts`        | A field end keeps its field on a move                                   |
-| `packages/document/src/svg-render-entity.ts`                           | `svgEntityRows`: the export body                                        |
-| `packages/document/src/label-font.ts`                                  | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |
-| `packages/document/src/graph-authoring.ts`                             | `entityNode`: a graph node with fields is an entity                     |
-| `packages/document/src/mermaid-er.ts`                                  | Attribute markers become the field's key                                |
-| `packages/document/src/element-normalise.ts`                           | `normaliseEntity`: an authored box fits its rows                        |
+| File                                                                     | Role                                                                    |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `packages/document/src/data-shapes.ts`                                   | `EntityField`, `EntityKey`, `ENTITY_KEYS`, `ENTITY_MAX_FIELDS`, `_TEXT` |
+| `packages/document/src/element-types.ts`                                 | `ShapeElement.entityFields`                                             |
+| `packages/document/src/arrow-types.ts`                                   | `Endpoint` pinned `field?: number`                                      |
+| `packages/document/src/shape-factory.ts`                                 | `createShape('entity', …)` defaults                                     |
+| `packages/document/src/validate-shape.ts`                                | The `entityFields` bounds and `key` check                               |
+| `packages/document/src/validate.ts`                                      | A pinned end's `field` check                                            |
+| `packages/document/src/entity-geometry.ts`                               | Band, rows, gutter metrics; `entityFieldPoint`, `entityPartAt`, snap    |
+| `packages/document/src/entity-fields.ts`                                 | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
+| `packages/document/src/entity-related.ts`                                | `buildRelatedEntity`: Add Related Entity's entity and relationship      |
+| `packages/document/src/entity-look.ts`                                   | Tints, type face, key glyph paths and inks                              |
+| `packages/document/src/geometry.ts`                                      | `endpointPosition` / `fieldEndPosition`: a field end's point            |
+| `packages/document/src/arrow-rebind.ts`, `arrow-rebind-swap.ts`          | A field end keeps its field on a move                                   |
+| `packages/document/src/svg-render-entity.ts`                             | `svgEntityRows`: the export body                                        |
+| `../packages/model-core/src/label-font.ts`                               | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |
+| `packages/document/src/graph-authoring.ts`                               | `entityNode`: a graph node with fields is an entity                     |
+| `packages/document/src/mermaid-er.ts`                                    | Attribute markers become the field's key                                |
+| `packages/document/src/element-normalise.ts`                             | `normaliseEntity`: an authored box fits its rows                        |
 | `apps/editor/components/canvas/entity/EntityView.tsx`                    | `EntityView`: band, stripes, gutter, rows                               |
 | `apps/editor/components/canvas/entity/EntityFieldControls.tsx`           | Double-click to edit, field ports, hover light                          |
 | `apps/editor/components/canvas/entity/EntityFieldEditor.tsx`             | One field edited in place                                               |
@@ -40,9 +40,9 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                        | `setEntityFieldsSelected` (the menu)                                    |
 | `apps/editor/components/palette/EntityFieldsEditor.tsx`                  | The Fields menu section                                                 |
 | `apps/editor/components/palette/palette-tile-defs.tsx`                   | Tile `tools:entity`, section `components`                               |
-| `packages/templates/src/template-builders-uml.ts`                      | UML class template built from entities                                  |
-| `packages/templates/src/template-builders-er.ts`                       | Database schema template: keys and ER ends                              |
-| `packages/document-views/src/content-summary.ts`                       | A field's key in the text views                                         |
+| `packages/templates/src/template-builders-uml.ts`                        | UML class template built from entities                                  |
+| `packages/templates/src/template-builders-er.ts`                         | Database schema template: keys and ER ends                              |
+| `packages/document-views/src/content-summary.ts`                         | A field's key in the text views                                         |
 
 ## Domain and naming
 
@@ -250,25 +250,25 @@ None in code today [GA1]; telemetry: `Element·Changed·Entity`, `Added·EntityF
 
 ## Testing
 
-| Rule                                               | Test                                              | File                                                              |
-| -------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------- |
-| Band follows text size, 30 floor                   | entityHeaderHeight (two cases)                    | `packages/document/src/entity-geometry.test.ts`                   |
-| Authored height shows every row                    | entityHeight (two cases)                          | `packages/document/src/entity-geometry.test.ts`                   |
-| Key cycle, markers, legacy reading (B3, B4)        | keys                                              | `packages/document/src/entity-fields.test.ts`                     |
-| Bounds 40 / 80, blank type and key absent (I1, I2) | cleanEntityFields                                 | `packages/document/src/entity-fields.test.ts`                     |
-| Fit, slack, remap (B5, I5, E10)                    | withEntityFields                                  | `packages/document/src/entity-fields.test.ts`                     |
-| Field end point and fallbacks (B9, I4)             | field-to-field geometry                           | `packages/document/src/entity-fields.test.ts`                     |
-| Rebind keeps the field (B10)                       | keeps a field end on its field when a move swaps… | `packages/document/src/entity-fields.test.ts`                     |
-| Relationship heads (B11)                           | relationships                                     | `packages/document/src/entity-fields.test.ts`                     |
-| Cardinality labels (B12)                           | labels the pair each preset sets                  | `packages/document/src/entity-fields.test.ts`                     |
-| Related entity names and types (B14)               | Add Related Entity                                | `packages/document/src/entity-fields.test.ts`                     |
-| Related entity layout and wiring (B14)             | buildRelatedEntity                                | `packages/document/src/entity-related.test.ts`                    |
-| Field snap (B8)                                    | snapToEntityField                                 | `packages/document/src/entity-related.test.ts`                    |
-| Validation of key and field                        | validation                                        | `packages/document/src/entity-fields.test.ts`                     |
-| Export band, stripe, glyphs (I3)                   | export                                            | `packages/document/src/entity-fields.test.ts`                     |
+| Rule                                               | Test                                              | File                                                                |
+| -------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| Band follows text size, 30 floor                   | entityHeaderHeight (two cases)                    | `packages/document/src/entity-geometry.test.ts`                     |
+| Authored height shows every row                    | entityHeight (two cases)                          | `packages/document/src/entity-geometry.test.ts`                     |
+| Key cycle, markers, legacy reading (B3, B4)        | keys                                              | `packages/document/src/entity-fields.test.ts`                       |
+| Bounds 40 / 80, blank type and key absent (I1, I2) | cleanEntityFields                                 | `packages/document/src/entity-fields.test.ts`                       |
+| Fit, slack, remap (B5, I5, E10)                    | withEntityFields                                  | `packages/document/src/entity-fields.test.ts`                       |
+| Field end point and fallbacks (B9, I4)             | field-to-field geometry                           | `packages/document/src/entity-fields.test.ts`                       |
+| Rebind keeps the field (B10)                       | keeps a field end on its field when a move swaps… | `packages/document/src/entity-fields.test.ts`                       |
+| Relationship heads (B11)                           | relationships                                     | `packages/document/src/entity-fields.test.ts`                       |
+| Cardinality labels (B12)                           | labels the pair each preset sets                  | `packages/document/src/entity-fields.test.ts`                       |
+| Related entity names and types (B14)               | Add Related Entity                                | `packages/document/src/entity-fields.test.ts`                       |
+| Related entity layout and wiring (B14)             | buildRelatedEntity                                | `packages/document/src/entity-related.test.ts`                      |
+| Field snap (B8)                                    | snapToEntityField                                 | `packages/document/src/entity-related.test.ts`                      |
+| Validation of key and field                        | validation                                        | `packages/document/src/entity-fields.test.ts`                       |
+| Export band, stripe, glyphs (I3)                   | export                                            | `packages/document/src/entity-fields.test.ts`                       |
 | In-place edit, ports (B6, B7)                      | EntityFieldControls                               | `apps/editor/components/canvas/entity/EntityFieldControls.test.tsx` |
 | Menu key button and remove remap                   | EntityFieldsEditor                                | `apps/editor/components/palette/EntityFieldsEditor.test.tsx`        |
-| Mermaid keys                                       | parseMermaid: ER diagrams                         | `packages/document/src/mermaid-er.test.ts`                        |
+| Mermaid keys                                       | parseMermaid: ER diagrams                         | `packages/document/src/mermaid-er.test.ts`                          |
 | Schema template keys and ER ends                   | database schema (er-diagram)                      | `apps/editor/lib/template-technical.test.ts`                        |
 | Class template uses entities, fields as rows       | class diagram drops four entity classes           | `apps/editor/lib/templates.test.ts`                                 |
 

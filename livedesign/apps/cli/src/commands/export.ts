@@ -10,12 +10,12 @@ import {
   tabPath,
   type VerbContext,
 } from '@livedesign/agent-verbs';
-import { ApiError } from '@livedesign/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DesignResponse } from '@livedesign/api-schema';
 import { designToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/design';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
 

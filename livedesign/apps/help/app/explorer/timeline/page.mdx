@@ -22,13 +22,13 @@ export const metadata = helpMetadata({
 
 **Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/) and the **Timeline**. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
-Home opens with a greeting across the top of the page. Under it, two pills say how many designs you have and whether anything waits in your **Inbox**; click one to go there. The search field sits right there in the greeting, with **New Design** inside it, so the first screen always offers a way to find something or start something. On a wide screen your three newest designs fan out beside it.
+Home opens with a greeting across the top of the page. Under it, two pills say how many designs you have and whether anything waits in your **Inbox**; click one to go there. The search field sits right there in the greeting, with **New Design** inside it, so the first screen always offers a way to find something or start something. On a wide screen a Mobile App Wireframe, a Website Wireframe and a Logo Design fan out beside it: a glimpse of what a design can be.
 
 Prefer a plainer Home? Press the **×** beside **Help** in the greeting's corner to hide it. Home then opens with its title and the search field in the header, like every other page, and stays that way on your other devices. Turn it back on in **Settings > Designs** with **Show Home Banner**.
 
-Your first visit looks different. With nothing made yet, Home welcomes you and offers ways to start instead: the search field looks through the templates, **Start Blank** offers the blank Pages templates, and below it sit the most popular templates, each one click from a new design. If you have used livedesign before and see nothing, **Sign In** brings your designs back. Once you have a design, Home shows your work instead.
+Your first visit looks different. With nothing made yet, Home welcomes you and offers ways to start instead: the search field looks through the templates, **Start Blank** offers the blanks (an illustration, a logo, and phone, tablet and website wireframes), and below it sit the most popular templates, each one click from a new design. If you have used livedesign before and see nothing, **Sign In** brings your designs back. Once you have a design, Home shows your work instead.
 
-Below the greeting, Home is one column: **Jump Back In**, then **What Happened**, each with its link at the right of its heading.
+Below the greeting, Home is one column: **Jump Back In**, then **Shared With You Recently**, then **What Happened**, each with its link at the right of its heading.
 
 <Figure caption="Home: the designs you use most and last, then what other people did, grouped by day.">
   <HomeOverview />
@@ -49,7 +49,11 @@ Each design shows a picture of what is drawn on it, with its name underneath; cl
 
 Opening a design is private: it counts towards your own Jump Back In, and nobody else ever sees that you opened it.
 
-**See More** opens [Recent](/help/explorer/recent/): the 12 most recently changed designs you can open, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
+**See More** opens [Recent](/help/explorer/recent/): the 12 designs you opened most recently, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
+
+## Shared With You Recently
+
+Under Jump Back In sit the four items most recently [shared with you](/help/explorer/shared-with-you/) through a link. **See All** opens Shared With Me.
 
 ## What Happened
 
@@ -65,7 +69,7 @@ What Happened has no filters, on purpose. Whether someone simply looked at a des
 
 **See Timeline**, at the end of the heading, opens the **Timeline**: everything that has happened, your own doings included, with filters and a calendar (below).
 
-Visiting Home counts as having caught up: the count on the sidebar's Home row clears, just as reading the Timeline clears it.
+Visiting Home does not count as having caught up: what is marked New here is still new on the Timeline, and the count on the sidebar's Timeline row clears when you read the Timeline.
 
 ## The Timeline
 
@@ -81,20 +85,22 @@ Every event on the feed comes from something that actually happened in your acco
 
 - **Your designs:** created, duplicated, moved to a folder, taken offline or synced back to the cloud, shared into or removed from a team, and one "Design Updated" card per person per day for the edits. On a design you own, a visitor opening or copying it through a share link shows too.
 - **Collaboration:** comments, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned or completed, share links created, and a share link about to expire.
-- **Teams:** teams created, renamed or deleted, invites you receive, members joining, leaving or being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to. Admins also see declined invites and the team's invite link being turned on or off.
-- **Your account:** [API tokens](/help/account-and-data/api-tokens/) created, revoked or about to expire, custom themes saved or deleted, folders created or deleted, and images uploaded.
+- **Teams:** invitations sent and answered, members joining, leaving or removed, role changes, and a team renamed or deleted. [Teams](/help/explorer/team-spaces/) are run on liveworkspace.app, and these cards come from there.
+- **Your account:** [API tokens](/help/account-and-data/api-tokens/) made, revoked or about to expire, and images uploaded.
 
 Renaming a design is not an event of its own: every card names a design as it is called now, so a rename updates all the older cards about it. (Renaming a team does get a card.)
 
 If a design lives in a team's shared library, everyone in that team sees its events. A personal design's events are yours alone.
+
+With **Designs** chosen at the top of the page, the Timeline leaves out other apps' items; with **All Apps**, it shows what happened to every liveworkspace app's items too, and clicking one opens it in its own app.
 
 ### What is new since you were last here
 
 That is the question the Timeline exists to answer, so it keeps a watermark of when you last read it.
 
 - **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's has its own.
-- **The sidebar's Home row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ moved a design is not news.
-- The watermark moves forward when you visit Home or read the feed, and only from the top of it, so paging back through last month never marks the month as read.
+- **The sidebar's Timeline row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ moved a design is not news.
+- The watermark moves forward when you read the feed, and only from the top of it, so paging back through last month never marks the month as read.
 
 ### Reading a day
 
@@ -102,15 +108,15 @@ Events are grouped by the day they happened, newest day first, with a dot and a 
 
 Days and times are **your local ones**, so an evening's work in Sydney sits under that evening rather than under yesterday.
 
-A card leads with a preview of the design, then its name, then **why it is on the timeline**: "Design Created", "Design Updated", "Comment Added", with the time and, where it matters, who did it. Events with nothing to picture (a team, a folder, an API token) show their glyph in the preview space instead, so every card in a row is the same shape.
+A card leads with a preview of the design, then its name, then **why it is on the timeline**: "Design Created", "Design Updated", "Comment Added", with the time and, where it matters, who did it. Events with nothing to picture (a team, an API token, images uploaded) show their glyph in the preview space instead, so every card in a row is the same shape.
 
-Click a card to go to whatever it is about: the design, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
+Click a card to go to whatever it is about: the design, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted team is the usual case: there is nothing left to open.
 
-**A design card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team design), Take Offline or Sync Design, Remove from Timeline, Delete: if you spot yesterday's design on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Use as Default for, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
+**A design card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team design), Take Offline or Sync Design, Remove from Timeline, Delete: if you spot yesterday's design on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
-**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A design card also has **Share**, which opens the design with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over the Timeline.
+**Other cards take you where that thing is managed.** A team's card opens the team's library; an invitation to you opens your teams on liveworkspace.app, where you answer it; an API token's card opens your API tokens on liveworkspace.app, where tokens are made and revoked. Their menu holds **Remove from Timeline**.
 
-**Deleting a design takes it off the Timeline.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Design Deleted" card. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+**Deleting a design takes it off the Timeline.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Design Deleted" card. A deleted team keeps one "Team Deleted" card, since other people may have relied on it.
 
 **Every card's menu has "Remove from Timeline"**, just above Delete or any other destructive verb. If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
@@ -120,7 +126,7 @@ A design you created and then worked on the same day shows **one card, "Design C
 
 The colour of a row is about **what happened**, not which part of the product it happened in:
 
-- **Red:** something was destroyed or someone lost access: a team, folder or theme deleted, a member removed from a team, a token revoked.
+- **Red:** something was destroyed or someone lost access: a design moved to the Trash, a team deleted, a member removed from a team, a token revoked.
 - **Amber:** the shape of things changed: renames, moves, team membership, roles, sharing, and anything about to expire.
 - **Green:** the ordinary business of building: created, edited, commented, completed.
 
@@ -128,7 +134,7 @@ Three colours rather than one per feature, because the question you are asking a
 
 #### Busy days collapse
 
-A day where you duplicated six designs should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Designs Duplicated**, reading "6 events · click to expand", with the count in its corner.
+A day where you made six designs should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Designs Created**, reading "6 events · click to expand", with the count in its corner.
 
 <Figure caption="Several events of one kind become one stacked card; a comment always keeps a card of its own.">
   <TimelineStack />
@@ -136,10 +142,7 @@ A day where you duplicated six designs should not be six cards. When several eve
 
 Click it to open the run in place. The stacked card stays at the front of the run, now reading "click to collapse"; click it again to fold the run back up. A stack wears a **New** pill if any event inside it is new.
 
-Two kinds never collapse, because collapsing them would hide the thing you came to read:
-
-- **New comments** stay separate, so you can always read what was actually said.
-- **Team invites** stay separate, because each one is waiting for your answer.
+**New comments** never collapse, so you can always read what was actually said.
 
 ### What is coming up
 
@@ -160,11 +163,11 @@ The arrows page one month at a time, empty or not, because the gaps are part of 
 
 The **Filter** button opens three things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
 
-Below it, under **Show**, sits a chip per kind of event: Comments, Actions, New designs, Edits, Renames, Deletions, Sharing, Teams, Organisation and Account. Only the kinds your feed holds get a chip. Turn a chip off and those events drop out of the feed; **Reset** turns everything back on, and a dot on the Filter button tells you a filter is on.
+Below it, under **Show**, sits a chip per kind of event: Comments, Actions, Created, Edits, Renames, Trash, Sharing, Teams, Organisation, Favourites and Account. Only the kinds your feed holds get a chip. Turn a chip off and those events drop out of the feed; **Reset** turns everything back on, and a dot on the Filter button tells you a filter is on.
 
 Last comes a small calendar for jumping to a particular day: pick a date and the Cards view scrolls to it, or the Calendar view moves to its month.
 
-The feed shows 50 events at a time; **Show More** at the bottom loads the next page. Filters only look at what has loaded, so if nothing matches yet, load more before concluding there is nothing.
+The feed shows 30 events at a time; **Show More** at the bottom loads the next page. Filters only look at what has loaded, so if nothing matches yet, load more before concluding there is nothing.
 
 The Timeline is not live: nothing slides in while you are reading. It loads when you open it, and it checks again when you come back to the browser tab and shortly after you change something yourself (deleting a design from a card, say, takes its cards away straight away).
 
@@ -172,16 +175,13 @@ Filters and the calendar view are per visit. Come back tomorrow and the Timeline
 
 ### Guests and signing in
 
-Home and the Timeline work without an account, like the rest of the canvas. A guest sees their own design activity and comments on their designs; team, invite, and token events need an account, so they simply do not appear.
+Home and the Timeline work without an account, like the rest of livedesign. A guest sees their own design activity and comments on their designs; team, invite, and token events need an account, so they simply do not appear.
 
 **Your history follows you.** Signing up moves your history, and what you open, to your new account alongside your designs, so a week of work as a guest is still there afterwards.
 
-### Team and design histories
+### A design's history
 
-The same feed appears in two other places:
-
-- **A team's own activity**, on the team page. Unlike your own Timeline, it includes what happened before you joined, so if you joined last month you can still read what the team did before you arrived.
-- **One design's history**, from the **History** item in a design's menu. Everything that has happened to that design: created, commented on, shared, filed.
+The same feed appears for **one design's history**, from the **History** item in a design's menu: everything that has happened to that design, created, commented on, shared, filed.
 
 <Tip>
   The Timeline keeps a year (365 days) of history. To step back your own recent edits on a design,

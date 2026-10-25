@@ -27,7 +27,6 @@ const board = {
 const input = {
   elements: [board],
   editingId: null,
-  isPaintMode: false,
   tabLocked: false,
   readOnly: false,
 };

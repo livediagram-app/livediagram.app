@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Working with Designs',
   description:
-    'Worked livedesign API examples: list, read, create, and update designs, tabs, and folders, and create a share link, all with curl.',
+    'Worked livedesign API examples: list, read, create, and update designs and tabs, list folders, and create a share link, all with curl.',
   path: '/help/developers/working-with-designs/',
 });
 
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 These examples use `curl` against the hosted service. Each request carries your [API token](/help/developers/authentication/); the examples assume you have put it in a shell variable:
 
 ```bash
-export TOKEN=lvd_your_token_here
+export TOKEN=lwt_your_token_here
 ```
 
 Paths are relative to `https://livedesign.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
@@ -105,10 +105,10 @@ Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view 
 
 ## Create a design
 
-`POST /designs` creates a design. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livedesign, not just your account, so use a fresh UUID for the design, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
+`POST /designs` creates a design. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livedesign, not just your account, so use a fresh UUID for the design and each tab; an id someone else already holds is refused or swapped for a new one:
 
 ```bash
-DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
+DOC=$(uuidgen) TAB=$(uuidgen)
 
 curl -X POST https://livedesign.app/api/designs \
   -H "Authorization: Bearer $TOKEN" \
@@ -187,16 +187,15 @@ Images and pages have endpoints of their own: see [Images, Pages and More](/help
 
 ## Organise into folders
 
-Create a folder, then move a design into it:
+List your folders, or make one with `POST /api/folders` (`{ "name": "Screens" }`, plus `"parentId"` to make it inside another), then create a design straight into one by naming its id (`$FOLDER` below) as `folderId` (or a team's library with `teamId`). Renaming and moving folders, and moving a design you already have, happens in the Explorer.
 
 ```bash
-curl -X POST https://livedesign.app/api/folders \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "'"$FOLDER"'", "name": "Infrastructure" }'
+curl https://livedesign.app/api/folders \
+  -H "Authorization: Bearer $TOKEN"
 
-curl -X PUT https://livedesign.app/api/designs/$DOC/folder \
+curl -X POST https://livedesign.app/api/designs \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "folderId": "'"$FOLDER"'" }'
+  -d '{ "id": "'"$(uuidgen)"'", "name": "Infrastructure", "folderId": "'"$FOLDER"'" }'
 ```
 
 ## Delete and restore
@@ -215,7 +214,7 @@ curl -X POST https://livedesign.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/$DOC` deletes one trashed design for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed design for good, and **Empty Trash** in the Explorer empties a whole Trash at once. A read-only token can list the Trash but not restore or purge.
 
 ## Share a design
 

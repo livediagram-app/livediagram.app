@@ -1,5 +1,5 @@
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
-import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -14,7 +14,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -27,12 +27,12 @@ import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
+import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
@@ -40,14 +40,14 @@ import { atLeastInset } from '@livedesign/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadPhotoChrome } from '@/lib/editor-deferred-code';
 import { usePhotoStripTools } from './usePhotoStripTools';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // A photo page's chrome shows only while one is in focus, so its code loads on demand
@@ -234,7 +234,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const paletteDrag = usePaletteDragGuides({ elements, readZoom, wrapperRef });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
@@ -480,7 +480,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : (
         <>
           {panelEls.collaborate}
-          {panelEls.ai}
           {panelEls.minimap}
           {panelEls.laser}
           {panelEls.spotlight}

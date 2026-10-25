@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { useCommentBadges } from './CommentBadgesContext';
-import { useViewportOf } from '@/hooks/canvas/useViewportStore';
-import type { View } from '@/lib/viewport-store';
+import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
+import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   elementHasText,
   elementKindLabel,
@@ -11,13 +11,13 @@ import {
   type CommentThread,
   type Element,
 } from '@livedesign/design';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
   useCanvasSelectionView,
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
@@ -25,7 +25,7 @@ import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper

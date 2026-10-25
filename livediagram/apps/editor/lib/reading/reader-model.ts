@@ -2,7 +2,7 @@ import type { NoteCrop } from '@livediagram/api-schema';
 import { downloadProgress, type ModelDownload, type ModelProgressEvent } from './download-progress';
 import { tooSmallToRead } from './floor';
 import type { ReaderBackend } from './reader-protocol';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Reading the handwriting with a model that runs HERE (docs/specs/021-event-storming/event-storming.md Phase 9).
 //

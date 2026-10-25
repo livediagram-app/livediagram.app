@@ -1,14 +1,15 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+import { MiniSlide } from '@liveworkspace/help-site/art/work';
 
 const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Overview', x: 52, w: 72 },
-  { label: 'Architecture', x: 130, w: 92, active: true },
+  { label: 'Pitch deck', x: 130, w: 92, active: true },
   { label: 'Roadmap', x: 228, w: 70 },
 ];
 
 // Tabs: one document holding several tabs of pages, stacked behind each other, each with its own content: a roadmap
-// at the back, an article in the middle, an architecture page in front, and the tab bar to move between them.
+// at the back, an article in the middle, a deck of slides in front, and the tab bar to move between them.
 export function TabsArt() {
   return (
     <Stage>
@@ -32,25 +33,14 @@ export function TabsArt() {
           />
         ))}
       </Card>
-      {/* Front: the architecture diagram. */}
+      {/* Front: the pitch deck's slides. */}
       <Card x={30} y={40} w={250} h={124} r={12}>
-        <Shape x={46} y={96} w={58} h={38} label="Web" />
-        <Shape x={128} y={96} w={58} h={38} accent label="API" />
-        <Shape
-          x={208}
-          y={90}
-          w={56}
-          h={50}
-          kind="cylinder"
-          label="DB"
-          fill="fill-emerald-100"
-          stroke="stroke-emerald-400"
-        />
-        <Arrow from={[104, 115]} to={[125, 115]} />
-        <Arrow from={[186, 115]} to={[205, 115]} />
-        <Label x={46} y={64} size={10.5} weight={700} tone="strong">
-          System Architecture
+        <Label x={46} y={60} size={10.5} weight={700} tone="strong">
+          Pitch deck
         </Label>
+        <MiniSlide x={46} y={74} w={132} h={74} />
+        <MiniSlide x={190} y={74} w={74} h={42} />
+        <MiniSlide x={190} y={118} w={74} h={42} />
       </Card>
 
       {/* The tab bar. */}

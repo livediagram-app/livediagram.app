@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import type { IconSearchResponse, TemplateCatalogueResponse } from '@livediagram/api-schema';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { columns } from './shared';
 

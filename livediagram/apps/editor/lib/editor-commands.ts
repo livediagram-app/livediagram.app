@@ -313,15 +313,15 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'rename-document',
-    name: 'Rename Document',
-    keywords: 'rename document diagram title name relabel',
+    name: 'Rename Canvas',
+    keywords: 'rename canvas document diagram title name relabel',
     run: h.renameDocument,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
-      name: 'Delete Document',
-      keywords: 'delete document diagram remove trash destroy',
+      name: 'Delete Canvas',
+      keywords: 'delete canvas document diagram remove trash destroy',
       run: h.deleteDocument,
     });
   }
@@ -340,8 +340,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Document',
-      keywords: 'share document diagram link invite collaborate publish embed export',
+      name: 'Share Canvas',
+      keywords: 'share canvas document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });
   }

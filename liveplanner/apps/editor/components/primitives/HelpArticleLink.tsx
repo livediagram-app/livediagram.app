@@ -87,7 +87,7 @@ export function HelpArticleLink({
         <a
           {...common}
           // touch-target: a 16px line of text, padded to a finger's 44px on a touch screen.
-          className={`relative touch-target inline-flex items-center gap-1 text-xs font-medium text-blue-600 underline-offset-2 transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300${
+          className={`relative touch-target inline-flex items-center gap-1 text-xs font-medium text-brand-700 underline-offset-2 transition hover:text-brand-800 hover:underline dark:text-brand-400 dark:hover:text-brand-300${
             className ? ` ${className}` : ''
           }`}
         >

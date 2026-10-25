@@ -11,7 +11,7 @@ import type {
   TeamListItem,
   TeamsResponse,
 } from '@livediagram/api-schema';
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 
 type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 

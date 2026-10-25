@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';

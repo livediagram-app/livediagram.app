@@ -1,10 +1,11 @@
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  mintGuest,
   test,
+  adoptGuest,
+  planHeaders,
+  seedPlan,
 } from './fixtures';
 
 // A Sheet on a Plan tab (docs/specs/029-sheets/sheet.md): typed into in Plan mode, its formula worked out on
@@ -25,66 +26,61 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
   page,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const sheetId = 'e2esheet01';
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const now = Date.now();
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: {
-      id,
-      name: 'Budget room',
-      tabs: [
-        {
-          id: tabId,
-          name: 'Budget',
-          kind: 'sheet',
-          elements: [
-            {
-              id: 'sheet',
-              type: 'shape',
-              shape: 'plan-sheet',
-              // Clear of the toolbar along the top.
-              x: 120,
-              y: 260,
-              width: 960,
-              height: 560,
-              planSheet: { sheetId },
-            },
-          ],
-        },
-      ],
-      sheets: [
-        {
-          id: sheetId,
-          tabId,
-          title: 'Budget',
-          layout: { rows: ids('r', 20), cols: ids('c', 6) },
-          cells: [],
-          rev: 0,
-          createdAt: now,
-          updatedAt: now,
-          updatedBy: { id: owner, name: 'Owner', color: '#0ea5e9' },
-        },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Budget room',
+    tabs: [
+      {
+        id: tabId,
+        name: 'Budget',
+        kind: 'sheet',
+        elements: [
+          {
+            id: 'sheet',
+            type: 'shape',
+            shape: 'plan-sheet',
+            // Clear of the toolbar along the top.
+            x: 120,
+            y: 260,
+            width: 960,
+            height: 560,
+            planSheet: { sheetId },
+          },
+        ],
+      },
+    ],
+    sheets: [
+      {
+        id: sheetId,
+        tabId,
+        title: 'Budget',
+        layout: { rows: ids('r', 20), cols: ids('c', 6) },
+        cells: [],
+        rev: 0,
+        createdAt: now,
+        updatedAt: now,
+        updatedBy: { id: owner, name: 'Owner', color: '#0ea5e9' },
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await planHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
 
-  await page.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('liveplanner:v2:self-id', o);
-      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
-      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-      localStorage.setItem(
-        'liveplanner:user-preferences:v1',
-        JSON.stringify({ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }),
-      );
-    },
-    { o: owner, sig: guestSigFor(owner) },
-  );
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => {
+    localStorage.setItem('liveplanner:v2:name-confirmed', '1');
+    localStorage.setItem(
+      'liveplanner:user-preferences:v1',
+      JSON.stringify({ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }),
+    );
+  });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`/project/${id}`);
   await page.locator(CANVAS).waitFor();

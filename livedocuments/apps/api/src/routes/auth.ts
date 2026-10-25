@@ -13,7 +13,13 @@ import { SIGNED_IN_HINT_COOKIE } from '@livedocuments/api-schema';
 //   GET  /api/auth/sign-in?return_to=/path  → the accounts site
 //   GET  /api/auth/callback?code&state       → back in the app, signed in
 //   POST /api/auth/token                     → { accessToken, expiresAt, user }
-//   POST /api/auth/sign-out                  → drops the refresh cookie
+//   GET  /api/auth/silent?return=/path       → the accounts site with prompt=none, and straight back:
+//                                              signed in, or a guest (liveworkspace/docs/accounts.md
+//                                              "Signing in without a click")
+//   POST /api/auth/sign-out                  → drops the refresh cookie, and remembers the sign-out
+//   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
+//                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/
+//                                              one-explorer-contracts.md "Guests")
 //
 // Handled before the caller's identity is resolved (src/index.ts): none of
 // these carry a Bearer, so they would otherwise all share one 'anonymous'
@@ -23,18 +29,27 @@ import {
   authorizeUrl,
   createPkcePair,
   exchangeCode,
+  guestHandoffUrl,
+  isGuestHandoffState,
   randomState,
   refreshTokens,
   type TokenSet,
 } from '@liveworkspace/auth-client';
-import { clientRateKey } from '../client-ip';
+import {
+  finishSilentSignIn,
+  signedOutCookie,
+  silentCookiesForHint,
+  startSilentSignIn,
+} from '@liveworkspace/auth-client/silent';
+import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
 import type { Env } from '../types';
 
 const COOKIE_PATH = '/api/auth';
-const PKCE_COOKIE = 'lp_pkce';
-const REFRESH_COOKIE = 'lp_refresh';
+const PKCE_COOKIE = 'ldoc_pkce';
+const REFRESH_COOKIE = 'ldoc_refresh';
 // The readable hint (not HttpOnly, the whole site), and no secret: only whether this browser has a
 // session, `1` or `0` (packages/api-schema/src/signed-in-hint.ts). Every request still authenticates
 // with the access token.
@@ -42,13 +57,22 @@ const REFRESH_COOKIE = 'lp_refresh';
 const PKCE_MAX_AGE_SECONDS = 600;
 // The refresh token's own lifetime is set by the accounts Worker; the cookie only needs to outlast it.
 const REFRESH_MAX_AGE_SECONDS = 30 * 24 * 3600;
+// Signing in without a click: the signed-out mark, the loop guard and the bounce's own PKCE cookie.
+const SILENT_COOKIES = silentCookiesForHint(SIGNED_IN_HINT_COOKIE);
+// The readable account name beside the hint (`<prefix>account`, liveworkspace/docs/accounts.md "An app's
+// signed-in cookies"): who is signed in, for the marketing header's account menu.
+const ACCOUNT_NAME_COOKIE = accountNameCookieFor(SIGNED_IN_HINT_COOKIE);
 const DEFAULT_RETURN = '/explorer/home';
 
 // What the page renders for the signed-in account (AuthControls, Settings, the editor's name).
 export type AuthUser = {
   id: string;
   email: string | null;
+  // The header's name first, as liveworkspace.app's (accountNameOf).
+  givenName: string | null;
   name: string | null;
+  // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
+  color: string | null;
 };
 
 type Configured = {
@@ -72,7 +96,7 @@ export function configured(env: Env): Configured | null {
 
 // Where the browser comes back to. The page's own origin in production (the router hands this
 // worker the request as the browser sent it); AUTH_ORIGIN for local dev, where the router proxies
-// to localhost:8887 and the request no longer carries the address the browser is on.
+// to localhost:8987 and the request no longer carries the address the browser is on.
 function appOrigin(env: Env, request: Request): string {
   return env.AUTH_ORIGIN?.replace(/\/+$/, '') || new URL(request.url).origin;
 }
@@ -110,12 +134,21 @@ const clearCookie = (name: string) => cookie(name, '', 0, 'Lax');
 const hintCookie = (signedIn: boolean) =>
   `${SIGNED_IN_HINT_COOKIE}=${signedIn ? '1' : '0'}; Path=/; Secure; SameSite=Lax; Max-Age=${REFRESH_MAX_AGE_SECONDS}`;
 
-// The refresh token and the hint, set together.
-const sessionCookies = (refreshToken: string) => [
+// The account's readable name and full name, kept as long as the hint; cleared with no account.
+const nameCookies = (user: AuthUser | null) =>
+  accountNameCookies(ACCOUNT_NAME_COOKIE, user, REFRESH_MAX_AGE_SECONDS);
+
+// The refresh token, the hint and the name, set together.
+const sessionCookies = (refreshToken: string, user: AuthUser | null) => [
   cookie(REFRESH_COOKIE, refreshToken, REFRESH_MAX_AGE_SECONDS, 'Strict'),
   hintCookie(true),
+  ...nameCookies(user),
 ];
-export const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
+export const signedOutCookies = () => [
+  clearCookie(REFRESH_COOKIE),
+  hintCookie(false),
+  ...nameCookies(null),
+];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
 // signature: only this browser can present it, and `state` must match what came back.
@@ -149,7 +182,9 @@ function userOf(tokens: TokenSet): AuthUser | null {
   return {
     id: payload.sub,
     email: text(payload.email),
+    givenName: text(payload.given_name),
     name: text(payload.name),
+    color: text(payload.presence_color),
   };
 }
 
@@ -177,6 +212,9 @@ async function signIn(request: Request, env: Env, config: Configured): Promise<R
   const { verifier, challenge } = await createPkcePair();
   const state = randomState();
   const returnTo = safeReturnPath(url.searchParams.get('return_to'));
+  // Create account (the Guest menu, /get-started) asks for the accounts site's registration page rather than its
+  // sign-in.
+  const prompt = url.searchParams.get('screen') === 'sign-up' ? 'create' : undefined;
   const to = authorizeUrl({
     accountsUrl: config.accountsUrl,
     clientId: config.clientId,
@@ -184,6 +222,7 @@ async function signIn(request: Request, env: Env, config: Configured): Promise<R
     state,
     codeChallenge: challenge,
     resource: config.resource,
+    prompt,
   });
   return redirect(to, [
     cookie(PKCE_COOKIE, encodePkce({ state, verifier, returnTo }), PKCE_MAX_AGE_SECONDS, 'Lax'),
@@ -197,6 +236,29 @@ async function callback(
   waitUntil: (p: Promise<unknown>) => void,
 ): Promise<Response> {
   const url = new URL(request.url);
+  // Back from a silent bounce (its own cookie, so a clicked sign-in in another tab is left alone): signed in
+  // when the accounts site had a session, a guest when not, and either way back where the page was.
+  const silent = await finishSilentSignIn({
+    request,
+    credentials: {
+      accountsUrl: config.accountsUrl,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    },
+    resource: config.resource,
+    callbackUrl: callbackUrl(env, request),
+    cookies: SILENT_COOKIES,
+    cookiePath: COOKIE_PATH,
+  });
+  if (silent) {
+    if (!silent.tokens?.refreshToken) return redirect(silent.returnTo, silent.cookies);
+    const silentUser = userOf(silent.tokens);
+    if (silentUser) waitUntil(reportSignIn(env, silentUser.id));
+    return redirect(silent.returnTo, [
+      ...silent.cookies,
+      ...sessionCookies(silent.tokens.refreshToken, silentUser),
+    ]);
+  }
   const pkce = decodePkce(readCookie(request, PKCE_COOKIE));
   const code = url.searchParams.get('code');
   // A missing or mismatched state is a stale tab, a second sign-in started elsewhere, or a forged
@@ -233,7 +295,9 @@ async function callback(
   if (user) waitUntil(reportSignIn(env, user.id));
   return redirect(pkce.returnTo, [
     clearCookie(PKCE_COOKIE),
-    ...sessionCookies(tokens.refreshToken),
+    ...sessionCookies(tokens.refreshToken, user),
+    // Signed in again: silent sign-in may run here again.
+    signedOutCookie(SILENT_COOKIES, false),
   ]);
 }
 
@@ -259,7 +323,9 @@ async function token(request: Request, config: Configured): Promise<Response> {
     return json({ signedIn: false }, { status: 401, headers: noStore(signedOutCookies()) });
   }
   const user = userOf(tokens);
-  const cookies = tokens.refreshToken ? sessionCookies(tokens.refreshToken) : [];
+  const cookies = tokens.refreshToken
+    ? sessionCookies(tokens.refreshToken, user)
+    : nameCookies(user);
   return json(
     { signedIn: true, accessToken: tokens.accessToken, expiresAt: tokens.expiresAt, user },
     { headers: noStore(cookies) },
@@ -272,10 +338,57 @@ function noStore(cookies: string[] = []): Headers {
   return headers;
 }
 
+// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// site with this app's client (@liveworkspace/auth-client guestHandoffUrl), which answers with a year-long guest
+// token in the fragment of /auth/guest. Routed through here so the client id and resource live in one place; the
+// editor makes and checks `state` itself.
+function guest(request: Request, env: Env, config: Configured | null): Response {
+  const state = new URL(request.url).searchParams.get('state');
+  if (!isGuestHandoffState(state)) return json({ error: 'invalid_state' }, { status: 400 });
+  // No accounts site to ask: straight back, saying so, and the page carries on without a guest identity.
+  if (!config) {
+    const back = new URLSearchParams({ error: 'guest_not_configured', state });
+    return redirect(`${appOrigin(env, request)}/auth/guest#${back.toString()}`, []);
+  }
+  const to = guestHandoffUrl({
+    accountsUrl: config.accountsUrl,
+    clientId: config.clientId,
+    redirectUri: `${appOrigin(env, request)}/auth/guest`,
+    state,
+    resource: config.resource,
+  });
+  return redirect(to, []);
+}
+
 // Signing out of livedocuments only: the accounts site keeps its own session, so signing in again
 // is one click with no code, as it is for every other liveworkspace app.
+// It is remembered (the signed-out mark) until the next sign-in here, so signing in without a click
+// never undoes it.
 function signOut(): Response {
-  return json({ signedIn: false }, { headers: noStore(signedOutCookies()) });
+  return json(
+    { signedIn: false },
+    { headers: noStore([...signedOutCookies(), signedOutCookie(SILENT_COOKIES, true)]) },
+  );
+}
+
+// GET /api/auth/silent?return=: the page's boot script sends a browser here once per browser session when it has
+// no session in this app (liveworkspace/docs/accounts.md "Signing in without a click"). Handled before the
+// configuration check and the rate limit, because the page is waiting on it: whatever happens it goes back to
+// where it came from, never to an error page.
+async function silent(request: Request, env: Env, config: Configured | null): Promise<Response> {
+  const returnTo = safeReturnPath(new URL(request.url).searchParams.get('return'));
+  if (config && env.WRITE_RATE_LIMITER) {
+    const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
+    if (!ok.success) return redirect(returnTo, []);
+  }
+  return startSilentSignIn({
+    request,
+    config,
+    callbackUrl: callbackUrl(env, request),
+    fallbackReturn: DEFAULT_RETURN,
+    cookies: SILENT_COOKIES,
+    cookiePath: COOKIE_PATH,
+  });
 }
 
 export async function handleAuth(
@@ -286,6 +399,10 @@ export async function handleAuth(
 ): Promise<Response> {
   if (segments.length !== 3) return notFound();
   const config = configured(env);
+  const route = `${request.method} ${segments[2]}`;
+  // Never a page: with no sign-in configured, it goes straight back (startSilentSignIn).
+  if (route === 'GET silent') return silent(request, env, config);
+  if (route === 'GET guest') return guest(request, env, config);
   // A guest-only deployment: nothing to sign in to.
   if (!config) return json({ error: 'sign_in_not_configured' }, { status: 404 });
   // Each step is one network's worth of requests, apart from everyone's document writes.
@@ -293,7 +410,6 @@ export async function handleAuth(
     const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
     if (!ok.success) return rateLimited();
   }
-  const route = `${request.method} ${segments[2]}`;
   switch (route) {
     case 'GET sign-in':
       return signIn(request, env, config);

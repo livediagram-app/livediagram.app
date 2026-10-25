@@ -124,9 +124,9 @@ flows**, then show the result and report its faults in words.
 | Absolute coordinates        | raw `elements`, draw.io XML, Excalidraw JSON                                                                                    | x, y, width, height                | Total control (rings, grids, posters)             | The model's weakest skill; overlaps and drift               |
 | Relative placement verbs    | tldraw agent `place` (side, align, offsets), `align`, `distribute`, `stack`; TikZ `right=of a`                                  | "B below A, centred"               | Local, intuitive, cheap to apply                  | Accumulates; no global optimum; still needs a look          |
 | Constraint systems          | Penrose (Domain, Substance, Style, solved by numeric optimisation), Cassowary (Apple Auto Layout), D2 `near` and `grid-rows`    | Relations and objectives           | Declarative, composable                           | Solver complexity; unsatisfiable sets need explaining       |
-| Graph plus layout engine    | Graphviz `dot`, ELK layered, dagre, D2 (dagre, ELK, TALA), Mermaid, PlantUML, **livedocuments `graph` / `mermaid` input**           | Nodes, edges, groups, direction    | Matches how models think; globally tidy           | Little control; groups and long edges can go wrong (see §1) |
+| Graph plus layout engine    | Graphviz `dot`, ELK layered, dagre, D2 (dagre, ELK, TALA), Mermaid, PlantUML, **livedocuments `graph` / `mermaid` input**       | Nodes, edges, groups, direction    | Matches how models think; globally tidy           | Little control; groups and long edges can go wrong (see §1) |
 | Graph plus layout **hints** | Graphviz `rank=same`, `constraint=false`, edge `weight`; ELK layer constraints (first, last) and partitions; PlantUML `-down->` | The graph, plus a few named nudges | Fixes the common faults without leaving the graph | Each hint must be honoured by our own engine                |
-| Templates and scaffolds     | livedocuments's 68 templates, Miro, Lucid and Whimsical starters                                                                    | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
+| Templates and scaffolds     | livedocuments's 68 templates, Miro, Lucid and Whimsical starters                                                                | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
 
 What livedocuments has, by file:
 
@@ -146,7 +146,7 @@ What livedocuments has, by file:
 
 What is missing for the CLI: layout hints (same rank, order within a rank, an edge that does
 not constrain ranking), placement of new nodes that keeps existing ones still, an `icon` on
-graph nodes (77 Technology icons exist, `packages/icons/src/tech-icon-ids.ts`, but a graph
+graph nodes (77 Technology icons exist, `../packages/icons/src/tech-icon-ids.ts`, but a graph
 node cannot name one), and stable edge ids.
 
 **Recommendation**: keep the graph as the primary authoring language and grow it with a
@@ -535,5 +535,5 @@ These are product decisions, not research conclusions:
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
 - In-repo: `graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
   `apps/mcp/src/prompts.ts`, `graph-authoring.ts`, `auto-layout*.ts`,
-  `arrow-path-hits.ts`, `mermaid-serialise.ts`, `packages/icons/src/tech-icon-ids.ts`,
+  `arrow-path-hits.ts`, `mermaid-serialise.ts`, `../packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

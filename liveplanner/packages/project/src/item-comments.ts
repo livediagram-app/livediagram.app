@@ -10,7 +10,7 @@ import {
   type Item,
   type WriteContext,
 } from '@liveplanner/items';
-import { sanitizeMentions } from './comment-mentions';
+import { sanitizeMentions } from '@liveworkspace/model-core/comment-mentions';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import { withoutCommentAuthorId, type Comment, type CommentThread } from './comments';
 import { isComment } from './element-deltas';

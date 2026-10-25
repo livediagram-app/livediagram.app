@@ -9,7 +9,7 @@ import { PlanCardMenuSection } from './PlanCardMenuSection';
 // docs/specs/026-plan/plan-board.md "The Plan card": a card on the canvas sets its own Card Size, one element edit.
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/components/primitives/MenuFlyoutSection', () => ({
+vi.mock('@liveworkspace/workbench/components/primitives/MenuFlyoutSection', () => ({
   MenuFlyoutSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

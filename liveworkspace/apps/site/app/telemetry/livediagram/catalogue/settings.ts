@@ -1,12 +1,12 @@
 // The editor Settings dialog, one stack per category, one chart per row (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 
 // ---- Settings tab ------------------------------------------------------------
 // One chart per row of the editor's Settings dialog, one stack per Settings
 // category (apps/editor settings-catalogue.ts, in its order). Every row emits
-// generically from SettingsCategoryPane: a toggle `Toggled·<X>On` / `<X>Off`,
+// generically from settings-model.tsx (bindRow): a toggle `Toggled·<X>On` / `<X>Off`,
 // a choice `Changed·<X><Option>`, a slider `Changed·<X>`. Each chart counts
 // every change to its setting, both directions, so whether a setting is
 // flipped at all reads at a glance; which way it went is in Search. Neutral:
@@ -234,13 +234,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'ShowProfilePictureOn',
-      'ShowProfilePictureOff',
-      'Show My Profile Picture',
-      'Whether signed-in collaborators see your profile picture.',
-    ),
-    toggle(
-      'UI',
       'NotifyMentionsOn',
       'NotifyMentionsOff',
       'Someone Mentions Me in a Comment',
@@ -304,27 +297,6 @@ export const TOURS_SETTINGS = settingsStack(
   ],
 );
 
-export const AI_SETTINGS = settingsStack(
-  'AI Tools Settings',
-  'The AI assistant opt-in and its suggestions.',
-  [
-    toggle(
-      'AI',
-      'AiOn',
-      'AiOff',
-      'AI Assistant',
-      'The AI assistant opt-in, switched on or off. AI is off until someone turns it on, so every AI request comes from people who did.',
-    ),
-    toggle(
-      'AI',
-      'AiSuggestedPromptsOn',
-      'AiSuggestedPromptsOff',
-      'Suggested Prompts',
-      'Prompt suggestions in the AI panel.',
-    ),
-  ],
-);
-
 export const PRIVACY_SETTINGS = settingsStack(
   'Privacy Settings',
   'Anonymous usage events, the thing this dashboard counts.',
@@ -348,7 +320,6 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,
-  AI_SETTINGS,
   PRIVACY_SETTINGS,
 ];
 

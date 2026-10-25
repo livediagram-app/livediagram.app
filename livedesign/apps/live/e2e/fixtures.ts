@@ -6,7 +6,7 @@ import {
   type Page,
 } from '@playwright/test';
 import type { StoredDesign, StoredTab } from './stored';
-import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
+import { DEBUG_STORAGE_KEY } from '../lib/workbench-keys';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -56,28 +56,21 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 }
 
 // The Pages and element tours (docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into a tab and their
-// overlays would take the presses of every spec there; they have their own unit tests. Marked seen (with the old
-// Draw and Forms tour flags) for every page of the context.
+// overlays would take the presses of every spec there; they have their own unit tests. Marked seen for every page of
+// the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livedesign:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
-      if (
-        prefs.drawTourSeen !== true ||
-        prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.pagesTourKinds) ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (!Array.isArray(prefs.pagesTourKinds) || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
-            drawTourSeen: true,
-            formTourSeen: true,
             pagesTourSeen: true,
-            pagesTourKinds: ['infographic', 'logo'],
+            pagesTourKinds: ['wireframe', 'logo', 'photo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',
@@ -129,6 +122,17 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
+/**
+ * Opens a focused control's context menu from the keyboard. Chromium turns Shift+F10 into a `contextmenu` event on
+ * Windows and Linux only: macOS has no such key (VoiceOver's VO+Shift+M sends the event itself), so there the test
+ * sends the event the platform would.
+ */
+export async function openContextMenuFromKeyboard(target: Locator): Promise<void> {
+  await target.focus();
+  if (process.platform === 'darwin') await target.dispatchEvent('contextmenu');
+  else await target.page().keyboard.press('Shift+F10');
+}
+
 // The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
 // card clicked in that gap is kept and acted on at hydration (new-design-route.md "A choice before
 // hydration"), but every other control's click in that gap does nothing, more often the busier the
@@ -140,41 +144,6 @@ export async function untilHydrated(locator: Locator): Promise<void> {
       locator.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps$'))),
     )
     .toBe(true);
-}
-
-// The wizard asks only for a mode (docs/specs/007-editor/new-design-route.md "One-step wizard"): choosing one
-// creates the design there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new design's id; `url` carries a `/new?folder=` / `?team=` context.
-export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
-  await page.goto(url);
-  await page.getByText('New Design', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  return new URL(page.url()).pathname.split('/').pop()!;
-}
-
-// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-const startScreen = (page: Page, title: RegExp = /^Start /) =>
-  page.getByRole('region', { name: title });
-
-// Start a design from a named TEMPLATE in a named group of Start Diagramming: a Diagram design from the
-// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
-// canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateDesign(
-  page: Page,
-  group: string,
-  template: RegExp,
-): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
-  await untilHydrated(rail);
-  await rail.click();
-  await start.getByRole('button', { name: template }).first().click();
-  await start.waitFor({ state: 'detached' });
 }
 
 // Skip the Pages tour when it offers itself. It lands a BEAT AFTER the canvas does, and its card swallows pointer
@@ -199,32 +168,10 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank session tab straight away: /new?template=blank-session creates it with no wizard.
-export async function openBlankSession(page: Page): Promise<void> {
-  // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
-  // overlay would take these specs' presses; it has its own unit tests.
-  await page.addInitScript(() => {
-    const key = 'livedesign:user-preferences:v1';
-    try {
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.workshopTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
-    } catch {
-      // No storage: nothing to mark.
-    }
-  });
-  await page.goto('/new?template=blank-session');
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
-}
-
-// A blank Diagram design through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
+// A blank design with its start closed: the same /new?blank=1 (kept as its own name for the specs that read as
+// "start a blank design"). livedesign has one mode, Pages, so there is no Mode step to pass.
 export async function startBlankDesign(page: Page): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  await start.getByRole('button', { name: 'Close' }).click();
-  await start.waitFor({ state: 'detached' });
+  await openStartBlank(page);
 }
 
 export type Seed = Record<string, unknown>[];
@@ -232,7 +179,8 @@ export type Seed = Record<string, unknown>[];
 // Write the seed into the new design's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  const designId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, designId);
   await page.evaluate(
     async ({ base, elements, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -270,48 +218,104 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
-// A guest as production makes one: minted and signed by the api worker
-// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
-// unsigned id would be upgraded (and its data moved) the moment the app opens.
-const guestSigs = new Map<string, string>();
+// A guest as production makes one: a guest token from liveworkspace (liveworkspace/docs/accounts.md "Guests"), here
+// from the e2e stack's accounts stand-in (scripts/e2e-stack.mjs, /e2e/guest-token). Answers the guest id
+// (`guest_<uuid>`); ownerHeaders sends its token.
+const guestTokens = new Map<string, string>();
 
-export async function mintSignedGuest(
+export async function mintGuest(
   request: import('@playwright/test').APIRequestContext,
 ): Promise<string> {
-  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
-    data: {},
-  });
+  const res = await request.get('/e2e/guest-token');
   expect(res.ok()).toBe(true);
-  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
-  if (ownerSig) guestSigs.set(ownerId, ownerSig);
-  return ownerId;
+  const { token, guestId } = (await res.json()) as { token: string; guestId: string };
+  guestTokens.set(guestId, token);
+  return guestId;
 }
 
-export function guestSigFor(owner: string): string | null {
-  return guestSigs.get(owner) ?? null;
+export function guestTokenFor(owner: string): string | null {
+  return guestTokens.get(owner) ?? null;
+}
+
+// The page (or every page of a context) opens as this guest: its token is where the app keeps it.
+export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
+  const token = guestTokens.get(owner);
+  if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  await target.addInitScript((t) => {
+    try {
+      localStorage.setItem('livedesign:v2:guest-token', t);
+    } catch {
+      // A page with no storage keeps none.
+    }
+  }, token);
 }
 
 export function ownerHeaders(
   owner: string,
   extra: Record<string, string> = {},
 ): Record<string, string> {
-  const sig = guestSigs.get(owner);
-  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = guestTokens.get(owner);
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+}
+
+// The index's grant on a design for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// every api request about one design carries it as X-Index-Grant.
+export async function designGrant(
+  request: import('@playwright/test').APIRequestContext,
+  headers: Record<string, string>,
+  designId: string,
+): Promise<string> {
+  const res = await request.post(`/api/index/items/${encodeURIComponent(designId)}/grant`, {
+    headers,
+  });
+  expect(res.ok(), `grant on ${designId}: ${res.status()}`).toBe(true);
+  return ((await res.json()) as { grant: string }).grant;
+}
+
+// ownerHeaders plus the grant on one design.
+export async function designHeaders(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string,
+  designId: string,
+  extra: Record<string, string> = {},
+): Promise<Record<string, string>> {
+  const headers = ownerHeaders(owner);
+  return { ...headers, 'X-Index-Grant': await designGrant(request, headers, designId), ...extra };
+}
+
+// A design made as the app makes one: the item at the index first, then its content with the grant the create
+// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// tabs, ... }). Answers the content create's response.
+export async function seedDesign(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string | Record<string, string>,
+  data: { id: string; name: string } & Record<string, unknown>,
+): Promise<import('@playwright/test').APIResponse> {
+  const headers = typeof owner === 'string' ? ownerHeaders(owner) : owner;
+  const made = await request.post('/api/index/items', {
+    headers,
+    data: { id: data.id, app: 'livedesign', title: data.name },
+  });
+  expect(made.ok(), `index create: ${made.status()}`).toBe(true);
+  const { grant } = (await made.json()) as { grant: { grant: string } };
+  return request.post('/api/designs', {
+    headers: { ...headers, 'X-Index-Grant': grant.grant, 'Content-Type': 'application/json' },
+    data,
+  });
 }
 
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module). The stack enforces guest signatures as
-// production does, so the id travels with the signature the app stored beside it. Read once, before
-// the evaluate, and passed in as an argument.
+// (`page.evaluate`, which cannot import this module): its guest token, and with `designId` the grant on that design.
+// Read once, before the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,
   extra: Record<string, string> = {},
+  designId?: string,
 ): Promise<Record<string, string>> {
-  const { id, sig } = await page.evaluate(() => ({
-    id: localStorage.getItem('livedesign:v2:self-id') ?? '',
-    sig: localStorage.getItem('livedesign:v2:self-sig'),
-  }));
-  return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = await page.evaluate(() => localStorage.getItem('livedesign:v2:guest-token') ?? '');
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  if (designId) headers['X-Index-Grant'] = await designGrant(page.request, headers, designId);
+  return { ...headers, ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a

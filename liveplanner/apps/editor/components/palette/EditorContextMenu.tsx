@@ -13,7 +13,10 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import {
+  onMouseHover,
+  useRevertOnUnmount,
+} from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   isFixedSizeElement,
   arrowheadShapeOf,
@@ -28,7 +31,10 @@ import {
   takesAttachments,
 } from '@liveplanner/project';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
-import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   LayerDownIcon,
@@ -41,7 +47,10 @@ import {
   SizeMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
@@ -58,7 +67,7 @@ import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
-import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
+import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so

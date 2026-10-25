@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { IconPrim } from '@livediagram/icons';
+import type { IconPrim } from '@liveworkspace/icons';
 import { Prims } from '@livediagram/ui';
 import { cursorRide, type Point } from '@/lib/hero-motion';
 import { FONT, at } from '@/components/art-tokens';

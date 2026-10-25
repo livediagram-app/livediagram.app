@@ -1,21 +1,23 @@
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
-import { LongPressRing } from '@/components/primitives/LongPressRing';
-import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
+import {
+  useViewportOf,
+  useViewportStore,
+} from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
-import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
+import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useEffect, useMemo, useRef } from 'react';
 import { isAnimatedPattern } from '@liveplanner/project';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
-import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@/hooks/canvas/useQuickRing';
-import { useZoomControls } from '@/hooks/canvas/useZoomControls';
+import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
+import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -26,29 +28,23 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
-import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { withStableEventProps } from '@/components/primitives/withStableEventProps';
-import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
-import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
-import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
-import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
-import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
-import { useIsometricView } from '@/hooks/canvas/useIsometricView';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
+import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { useCanvasPointer } from './useCanvasPointer';
-import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
-import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
-import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
+import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@/components/canvas/useFontEpoch';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
@@ -78,9 +74,6 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     onCanvasPointerMove,
     editingId,
-    pendingDraw,
-    onCommitDraw,
-    onCommitPolygon,
     onDeselect,
     onSelect,
     onCanvasContextMenu,
@@ -96,10 +89,6 @@ function CanvasView(props: CanvasProps) {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Paint mode is the Format canvas tool: it reads as paint mode from its
-  // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
-  // elements AND arrows), not only once a source is armed.
-  const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -144,11 +133,10 @@ function CanvasView(props: CanvasProps) {
     isPinchingRef,
   });
 
-  // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
+  // A file dropped on the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropFile: props.onDropFile,
-    onDropPalette: props.onDropPalette,
     viewportZoom,
     wrapperRef,
   });
@@ -185,13 +173,12 @@ function CanvasView(props: CanvasProps) {
     () => ({
       elements,
       editingId,
-      isPaintMode,
       tabLocked,
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
     }),
-    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
+    [elements, editingId, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
   );
   const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
     onCanvasPointerMove,
@@ -199,19 +186,11 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
   });
 
-  // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
-  // transform fragment, pivoted on the content centre — see
-  // useIsometricView. Shift-drag on the canvas spins / tilts it (see
-  // the <main> pointerdown handler).
-  const { isoCamera, isoFragment } = useIsometricView({ canvasTool, elements, mainRef });
-
   const cursorClass = canvasCursorClass({
-    pendingDraw: !!pendingDraw,
     pan: !!pan,
     marquee: !!marquee,
     canvasTool,
     spaceHeld,
-    isPaintMode,
   });
 
   // Stable selection-routing wrappers for the memo'd element / arrow
@@ -219,7 +198,6 @@ function CanvasView(props: CanvasProps) {
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
     useCanvasSelectHandlers({
       inertIds: props.layerInertIds,
-      isPaintMode,
       readSelection: selectionStore.get,
       onSelect,
       onDeselect,
@@ -227,23 +205,6 @@ function CanvasView(props: CanvasProps) {
       onElementContextMenu,
       onMultiContextMenu,
     });
-
-  const {
-    drawDrag,
-    drawHover,
-    polygonVertices,
-    polygonCursor,
-    handlePolygonDoubleClick,
-    beginPendingDrawOrPolygon,
-  } = useCanvasDrawTools({
-    pendingDraw,
-    elements,
-    viewportZoom,
-    wrapperRef,
-    isPinchingRef,
-    onCommitDraw,
-    onCommitPolygon,
-  });
 
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
@@ -254,7 +215,6 @@ function CanvasView(props: CanvasProps) {
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
-    pendingDraw,
     viewportOffset,
     viewportZoom,
     mainRef,
@@ -262,8 +222,6 @@ function CanvasView(props: CanvasProps) {
     spaceHeldRef,
     setPan,
     setMarquee,
-    isoCamera,
-    beginPendingDrawGesture: beginPendingDrawOrPolygon,
     onCanvasContextMenu,
     onDeselect,
     // A finger's double-tap on the bare canvas zooms in on the spot, a mouse's double-click drops text
@@ -283,19 +241,6 @@ function CanvasView(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
-  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
-  const { onGrowMindNode, onAbandonMindNode } = props;
-  const mindGrow = useMemo(
-    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
-    [onGrowMindNode, onAbandonMindNode],
-  );
-  // The Edit Outline badge on each map root (MindOutlineContext).
-  const mindOutlineBadges = useMindOutlineBadges(
-    elements,
-    props.canEditMindOutline,
-    props.onEditMindOutline,
-    props.onTidyMindMap,
-  );
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
@@ -324,14 +269,13 @@ function CanvasView(props: CanvasProps) {
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
           // here so the peel's CSS can respond without knowing about themes.
           data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-          // The Tab Style colour ease scopes to the canvas (lib/tab-style-ease.ts).
+          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
           data-canvas-root=""
           onContextMenu={surface.onContextMenu}
           onPointerUp={surface.onContextMenuPointerUp}
           onPointerDown={surface.onPointerDown}
           onDoubleClick={(e) => {
             if (e.target !== e.currentTarget) return;
-            if (handlePolygonDoubleClick()) return;
             surface.onSurfaceDoubleClick(e);
           }}
           // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
@@ -342,9 +286,7 @@ function CanvasView(props: CanvasProps) {
           // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
           // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
           // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
-          className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-            pendingDraw ? '' : cursorClass
-          }`}
+          className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${cursorClass}`}
           style={{
             // The paper hollow arrowheads fill with (arrow-defs.tsx).
             ['--lvd-canvas-paper' as string]: tabBackgroundColor,
@@ -363,13 +305,6 @@ function CanvasView(props: CanvasProps) {
               tabBackgroundOpacity,
               tabBackgroundPatternScale * viewportZoom,
             ),
-            // Mirror the inner-wrapper cursor on <main>. The inner div is
-            // `absolute inset-0` but its CSS transform scales it (zoom),
-            // so when zoom is below 1 the hit area shrinks and the
-            // surrounding "letterbox" gap falls through to <main>. Without
-            // setting cursor here too, the user would see the OS default
-            // arrow in that gap while a draw-to-size intent is pending.
-            ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
           }}
         >
           {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
@@ -393,50 +328,14 @@ function CanvasView(props: CanvasProps) {
             // The elements, as against the chrome over them (useDoubleTapZoom).
             data-canvas-content=""
             onPointerDown={surface.onWrapperPointerDown}
-            onDoubleClick={(e) => {
-              // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
-              // add-text double-click while the intent is armed.
-              if (handlePolygonDoubleClick()) return;
-              surface.onWrapperDoubleClick(e);
-            }}
-            // Isometric view (docs/specs/008-canvas/isometric-view.md): the layer goes pointer-events-none so NO
-            // element kind can be selected / dragged (a per-element capture guard can't catch every select path
-            // — boxed elements, arrow hit-bands, labels, click vs pointerdown) — it's a read-only view tool.
-            // Clicks fall through to <main>, where a drag pans (canvasTool === 'isometric' is added to
-            // `wantsPan`).
-            className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'isometric' ? 'pointer-events-none' : ''
-            } ${pendingDraw ? '' : cursorClass}`}
-            // Scopes the [data-iso] CSS (globals.css): frames settle just under
-            // the base plane while the camera orbits so they can't z-fight
-            // (flicker) with the coplanar contents above them.
-            data-iso={canvasTool === 'isometric' ? '' : undefined}
+            onDoubleClick={surface.onWrapperDoubleClick}
+            className={`absolute inset-0 origin-center touch-none ${cursorClass}`}
             style={{
               // Translate is in canvas-coords (applied first); scale is centred
               // on the wrapper so zooming keeps the viewport centre stable.
-              // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
-              // so it transforms the content first): that keeps the pan translate
-              // in screen space, so a drag moves the scene the way the cursor
-              // moves at any camera angle. The fragment (built above as
-              // isoFragment) pivots the tilt around the content centre so the
-              // canvas tilts in place / stays centred while orbiting rather than
-              // swinging off-screen. preserve-3d lets the depth layer's
-              // translateZ stack read as real extruded height.
-              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-              ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
-              // Draw-mode cursor: every intent gets a custom inline-SVG
-              // cursor (crosshair at the pointer tip plus a small glyph
-              // hinting at what's about to land). Without this, tool
-              // intents inherited the default arrow cursor because the
-              // wrapper drops its Tailwind cursor- class above when
-              // pendingDraw is set, leaving no cursor specified at all.
-              ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
             }}
           >
-            {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
-              behind the real element layer, which caps each column at z=0.
-              Only mounted while the tool is active. */}
-            {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
             <CanvasArrivalProvider
               tabId={props.activeTabId ?? ''}
               loaded={props.activeTabLoaded ?? true}
@@ -444,27 +343,19 @@ function CanvasView(props: CanvasProps) {
               {/* The zoom reaches only the counter-scaled parts of each element
                 (docs/specs/008-canvas/canvas-performance.md). */}
               <CanvasZoomProvider zoom={viewportZoom}>
-                <MindGrowProvider value={mindGrow}>
-                  <MindOutlineProvider value={mindOutlineBadges}>
-                    <ElementIndicatorStyleProvider
-                      style={readElementIndicatorStyle(props.settings)}
-                    >
-                      <CanvasElementsLayer
-                        {...props}
-                        hasArrows={hasArrows}
-                        arrowLabels={arrowLabels}
-                        selectionInput={selectionInput}
-                        isPaintMode={isPaintMode}
-                        handleArrowSelect={handleArrowSelect}
-                        handleElementClick={handleElementClick}
-                        handleElementContextSelect={handleElementContextSelect}
-                        quickRingOpen={quickRingOpen}
-                        setQuickRingOpen={setQuickRingOpen}
-                        drawDrag={drawDrag}
-                      />
-                    </ElementIndicatorStyleProvider>
-                  </MindOutlineProvider>
-                </MindGrowProvider>
+                <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                  <CanvasElementsLayer
+                    {...props}
+                    hasArrows={hasArrows}
+                    arrowLabels={arrowLabels}
+                    selectionInput={selectionInput}
+                    handleArrowSelect={handleArrowSelect}
+                    handleElementClick={handleElementClick}
+                    handleElementContextSelect={handleElementContextSelect}
+                    quickRingOpen={quickRingOpen}
+                    setQuickRingOpen={setQuickRingOpen}
+                  />
+                </ElementIndicatorStyleProvider>
               </CanvasZoomProvider>
             </CanvasArrivalProvider>
           </div>
@@ -477,19 +368,8 @@ function CanvasView(props: CanvasProps) {
           <CanvasChrome
             {...props}
             mainSize={mainSize}
-            formatConfig={props.formatConfig}
-            onToggleFormatGroup={props.onToggleFormatGroup}
-            onSetFormatMode={props.onSetFormatMode}
-            formatBrushSource={props.formatBrushSource}
-            formatPanelPosition={props.formatPanelPosition}
-            onMoveFormatPanel={props.onMoveFormatPanel}
-            onResetFormatPanel={props.onResetFormatPanel}
             offscreenContent={offscreenContent}
             marquee={marquee}
-            drawDrag={drawDrag}
-            drawHover={drawHover}
-            polygonVertices={polygonVertices}
-            polygonCursor={polygonCursor}
             wrapperRef={wrapperRef}
             activeDockPanel={activeDockPanel}
             setActiveDockPanel={setActiveDockPanel}
@@ -499,8 +379,6 @@ function CanvasView(props: CanvasProps) {
             handleZoomIn={handleZoomIn}
             handleZoomOut={handleZoomOut}
             handleSetZoom={handleSetZoom}
-            onIsoOrbit={isoCamera.startOrbit}
-            onIsoReset={isoCamera.reset}
           />
           {/* Lazy per-tab load (docs/specs/006-project/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
             canvas AND the floating palette, blocking any edit that would
@@ -508,9 +386,6 @@ function CanvasView(props: CanvasProps) {
           {tabLoadState && tabLoadState !== 'ready' ? (
             <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
           ) : null}
-          {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
-            will land, following the cursor over the canvas. */}
-          <PaletteDragGhost zoom={viewportZoom} />
           {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
             (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
           {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md

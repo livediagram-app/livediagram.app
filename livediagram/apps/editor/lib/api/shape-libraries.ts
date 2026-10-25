@@ -1,13 +1,13 @@
 // Shape library calls (docs/specs/013-workspace/shape-libraries.md "API"): list / create / update /
-// delete. Owner-scoped like custom themes; guests included (apiHeaders attaches the Clerk token when
-// signed in, else the X-Owner-Id header).
+// delete. Owner-scoped like folders; guests included (apiHeaders attaches the access token when
+// signed in, else the guest token).
 import {
   MAX_SHAPE_LIBRARIES_PER_OWNER,
   type ShapeLibrary,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { API_BASE, ApiError, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 type LibraryResponse = { library: ShapeLibrary };

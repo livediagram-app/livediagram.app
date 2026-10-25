@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { fakeIo, NOW } from '../testing/fake-io';
 import { CAPABILITIES_CACHE_TTL_MS, loadCapabilities } from './capabilities';
-import { parseConfig } from './config-file';
+import { parseConfig } from '@liveworkspace/cli-kit/config-file';
 import { cacheDir, configDir } from './paths';
 import { DEFAULT_HOST, readConfig, resolveProfile } from './profiles';
 import { CLI_VERSION, isBelow } from './version';
@@ -124,7 +124,6 @@ describe('loadCapabilities', () => {
   const profile = { name: 'default', host: DEFAULT_HOST, source: 'default' as const };
   const cache = '/home/agent/.cache/livedesign/capabilities/default.json';
   const answer = {
-    aiEnabled: false,
     apiBase: `${DEFAULT_HOST}/api`,
     authEnabled: true,
     oauthIssuer: 'https://mcp.livedesign.app',
@@ -174,7 +173,7 @@ describe('loadCapabilities', () => {
   });
 
   it("reads an older worker's answer with the defaults", async () => {
-    const io = fakeIo({ routes: [() => Response.json({ aiEnabled: false })] });
+    const io = fakeIo({ routes: [() => Response.json({})] });
     expect(await loadCapabilities(io, profile, () => {})).toEqual({
       apiBase: `${DEFAULT_HOST}/api`,
       authEnabled: false,

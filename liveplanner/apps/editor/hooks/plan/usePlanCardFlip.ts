@@ -10,7 +10,7 @@
 // a reshuffle of more than FLIP_CARDS_MAX cards (a filter, a swimlane change) snaps, as gliding them all is noise,
 // not news. Reduced motion snaps.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // The most cards that glide in one change; past it the board snaps.
 export const FLIP_CARDS_MAX = 40;

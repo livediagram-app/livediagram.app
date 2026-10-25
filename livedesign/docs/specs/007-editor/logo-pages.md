@@ -25,9 +25,9 @@ of a page applies to a logo page except where this spec says otherwise.
 
 ## A logo page
 
-- **Adding one**: the **Add a Page** list offers a **Logo** row ("A square artboard for a mark."), and the first
-  page's choice a **Logo** card ("A square artboard for a logo, with guides and drawing tools."). A new logo page
-  is the artboard on plain paper.
+- **Adding one**: the first page's choice offers a **Logo** card ("A square artboard for a logo, with guides and
+  drawing tools."), which makes the tab a logo tab; on it the **+** adds another logo page ([Pages](pages-mode.md)
+  "One kind a tab"). A new logo page is the artboard on plain paper.
 - **Size**: the artboard is the `logo` size, **1024 x 1024**, labelled `1024 x 1024`. It offers no
   other size and no orientation; a stored logo page in any other size is read as the artboard.
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.

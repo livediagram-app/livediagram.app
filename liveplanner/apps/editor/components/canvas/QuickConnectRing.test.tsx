@@ -2,7 +2,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { QuickConnectRing } from './QuickConnectRing';
 
 // The ring's menu (docs/specs/008-canvas/canvas-and-palette.md) unfolds out of the plus on open and folds
@@ -77,14 +77,6 @@ describe('QuickConnectRing menu', () => {
       vi.advanceTimersByTime(MOTION_MS.short);
     });
     expect(menu(container)?.style.opacity).toBe('1');
-  });
-
-  it('offers a mind node only its growth actions and Duplicate', () => {
-    const { container } = render(ring(true, { onGrowMind: vi.fn() }));
-    const labels = [...container.querySelectorAll('button[aria-label]')]
-      .map((b) => b.getAttribute('aria-label'))
-      .filter((l) => l !== 'Quick add and connect');
-    expect(labels).toEqual(['Add Child', 'Add Sibling', 'Duplicate']);
   });
 });
 

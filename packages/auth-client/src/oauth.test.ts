@@ -4,6 +4,8 @@ import {
   closeAccount,
   createPkcePair,
   exchangeCode,
+  guestHandoffUrl,
+  isGuestHandoffState,
   randomState,
   refreshTokens,
 } from './oauth';
@@ -72,6 +74,48 @@ describe('authorizeUrl', () => {
       }),
     );
     expect(url.searchParams.get('prompt')).toBe('create');
+  });
+});
+
+describe('guestHandoffUrl', () => {
+  it("names the app's client, where to come back and the state", () => {
+    const url = new URL(
+      guestHandoffUrl({
+        accountsUrl: 'https://liveworkspace.app/',
+        clientId: 'client-1',
+        redirectUri: 'https://livediagram.app/auth/guest',
+        state: 'abcdefgh',
+        resource: 'https://api.livediagram.app',
+      }),
+    );
+    expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/guest');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      client_id: 'client-1',
+      redirect_uri: 'https://livediagram.app/auth/guest',
+      state: 'abcdefgh',
+      resource: 'https://api.livediagram.app',
+    });
+  });
+
+  it('keeps a path the accounts URL carries (a stand-in served under one)', () => {
+    const url = new URL(
+      guestHandoffUrl({
+        accountsUrl: 'http://127.0.0.1:3132/e2e/accounts',
+        clientId: 'client-1',
+        redirectUri: 'http://127.0.0.1:3132/auth/guest',
+        state: 'abcdefgh',
+        resource: 'http://127.0.0.1:8732',
+      }),
+    );
+    expect(url.origin + url.pathname).toBe('http://127.0.0.1:3132/e2e/accounts/api/auth/guest');
+  });
+
+  it('takes only a state shaped like one the editor makes', () => {
+    expect(isGuestHandoffState(randomState())).toBe(true);
+    expect(isGuestHandoffState('short')).toBe(false);
+    expect(isGuestHandoffState('has space in it')).toBe(false);
+    expect(isGuestHandoffState('x'.repeat(201))).toBe(false);
+    expect(isGuestHandoffState(null)).toBe(false);
   });
 });
 

@@ -12,9 +12,9 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown } from './PaletteDropdown';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
@@ -22,7 +22,7 @@ import { StripPopover, useStripPopover } from './ToolbarStripPopover';
 import { Divider } from './strip-rail-items';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
-import { setPalettePopoverOpen } from '@/lib/palette-popover-open';
+import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarLabels } from './useBarLabels';
 import { useStripCrowded } from './useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
@@ -143,7 +143,7 @@ export function ToolbarPalette(props: Props) {
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
   const crowded = useStripCrowded(cardRef, leading == null);
 
-  // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
+  // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
   const beforeSearch = () => {
     if (pendingDraw) tileActions.cancelDraw?.();
   };
@@ -216,7 +216,7 @@ export function ToolbarPalette(props: Props) {
                   ref={cardRef}
                   data-tour-id="palette"
                   // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
-                  // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
+                  // any panel (@liveworkspace/workbench/lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
                   data-floating-panel=""
                   // Slides across with the rest of the chrome when a split moves the editor
                   // (docs/specs/007-editor/split-view.md).

@@ -16,6 +16,7 @@ import {
   pageKindOf,
   pageSizesFor,
   pageUnits,
+  tabPageKind,
   withPageKindChosen,
   withDefaultPageBackgrounds,
   type ThemeDefinition,
@@ -51,7 +52,7 @@ import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
 import { lockedElementIds } from '@/lib/locked-element-ids';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
@@ -332,6 +333,11 @@ export function pageEdits({
   };
   const addPage = (kind: PageKind) => {
     if (!takesEdits()) return;
+    // One kind a tab (docs/specs/007-editor/pages-mode.md): pageAdded refuses any other kind too.
+    if (current.length > 0 && kind !== tabPageKind(current)) {
+      debugLog('[page] add refused: another kind', { tabId, kind, tabKind: tabPageKind(current) });
+      return;
+    }
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextPageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));

@@ -4,7 +4,7 @@
 // drag is one undo step (the Wordmark sliders, the Text Size slider). Without `onPreview` it only
 // commits on the let-go: the thumb and readout still follow the drag from local state.
 import { useState, type ReactNode } from 'react';
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 
 export function PreviewSliderRow({
   label,

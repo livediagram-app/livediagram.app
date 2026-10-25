@@ -13,7 +13,7 @@ import {
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { boardShape } from '@/lib/whiteboard-tool';
 
 export type PathEditKind = 'edit' | 'join';

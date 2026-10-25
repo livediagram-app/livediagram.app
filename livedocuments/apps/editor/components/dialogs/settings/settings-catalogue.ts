@@ -9,7 +9,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@livedocuments/api-schema';
+import type { TelemetryCategory } from '@livedocuments/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
@@ -43,16 +43,14 @@ import {
   uiScalePatch,
   withUiScalePatch,
   type UiScalePart,
-} from '@/lib/ui-scale';
-import { setUiScalePreview } from '@/lib/ui-scale-preview';
+} from '@liveworkspace/workbench/lib/ui-scale';
+import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import {
   readContentsPlacement,
   withContentsPlacement,
   type ContentsPlacement,
 } from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import type { PlacementDefaultKey } from '@livedocuments/api-schema';
-import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -109,14 +107,9 @@ function emailSwitch(
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
-// `authEnabled` is whether this deployment offers sign-in at all
-// (`signInEnabled`): API tokens are signed-in only, so on a no-auth deployment they
-// are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-without-sign-in).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
@@ -267,17 +260,13 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
+// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new documents go when made without
+// a place. Not a preference: the shared Explorer reads and writes them on the index.
+export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
+
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
-
-// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
-// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
-export type SettingsPlacementDefaultRowSpec = RowBase & {
-  kind: 'placementDefault';
-  placementKey: PlacementDefaultKey;
-};
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
@@ -293,8 +282,8 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsDefaultFoldersRowSpec
+  | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -1178,21 +1167,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      // One row per default folder entry, in list order: guests have defaults too.
-      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-        kind: 'placementDefault',
-        key: `placementDefault-${entry.key}`,
-        placementKey: entry.key,
-        section: 'Default Folders',
-        // Settings labels are title case; the entries' own labels are sentence case.
-        label: titleCase(entry.label),
-        keywords:
-          'default folder where new documents go save location place file automatically always save placement',
-        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      })),
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back.
+        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
         section: 'Explorer',
@@ -1203,6 +1180,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+      {
+        kind: 'defaultFolders',
+        key: 'defaultFolders',
+        section: 'Default Folders',
+        label: 'Where New Documents Go',
+        keywords:
+          'default folder where new documents go save location place file automatically always save placement template',
+        description: 'New documents you make without choosing a place are saved in this folder.',
       },
     ],
   },
@@ -1330,7 +1316,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Let your scripts, and AI tools connected over MCP, use livedocuments as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
-        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },

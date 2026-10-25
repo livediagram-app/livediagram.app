@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useState } from 'react';
 import {
   bestAnchorTowards,
@@ -13,7 +13,7 @@ import {
 } from '@livedocuments/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // CLICK-TO-CONNECT (docs/specs/008-canvas/canvas-and-palette.md): pick the arrow tool with a shape selected and
 // the next element you click is joined to it by a pinned arrow.

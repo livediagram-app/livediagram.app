@@ -15,11 +15,11 @@ flipped from its row in Settings, and it follows the account across devices.
 
 Switching the mode **on** writes these values, once:
 
-| Setting              | Preference key       | Value |
-| -------------------- | -------------------- | ----- |
-| Plan tour            | `planTourSeen`       | seen  |
-| Forms tour           | `formTourSeen`       | seen  |
-| Minimal chrome       | `minimalChrome`      | on    |
+| Setting        | Preference key  | Value |
+| -------------- | --------------- | ----- |
+| Plan tour      | `planTourSeen`  | seen  |
+| Forms tour     | `formTourSeen`  | seen  |
+| Minimal chrome | `minimalChrome` | on    |
 
 The Plan tour offers each of its tracks once (`planTourTracks`); its seen flag counts every track only while the
 mode is on, so switching it off gives back every track not yet answered. The Diagram, Pages and element tours'
@@ -93,7 +93,7 @@ Kept as they are:
 
 The mode also makes, whatever the Minimal chrome option says:
 
-- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md#dense-rows)
+- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md)
   draws its rows at half height.
 
 And it drops, whatever the Minimal chrome option says:

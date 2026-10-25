@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { track } from '@/lib/telemetry';
 
 export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } = {}) {

@@ -1,8 +1,4 @@
-import { PictureDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
-import { initialsOf } from '@/lib/identity';
-
-// The pill's leading picture (docs/specs/014-identity/profile-picture.md §5), only when there is one.
-const CURSOR_PICTURE_PX = 14;
+import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 
 // Floating cursor for a remote participant (extracted from Canvas so
 // CanvasElementsLayer can render it inside the transformed wrapper).
@@ -13,7 +9,7 @@ export function RemoteCursor({
   cursor,
   zoom,
 }: {
-  cursor: { id: string; name: string; color: string; x: number; y: number; picture?: string };
+  cursor: { id: string; name: string; color: string; x: number; y: number };
   zoom: number;
 }) {
   return (
@@ -42,16 +38,6 @@ export function RemoteCursor({
         className={`absolute left-3 top-3 flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
         style={identityVars(cursor.color)}
       >
-        {cursor.picture ? (
-          <PictureDisc
-            pictureUrl={cursor.picture}
-            size={CURSOR_PICTURE_PX}
-            aria-hidden
-            className="-ml-0.5 text-[7px]"
-          >
-            {initialsOf(cursor.name)}
-          </PictureDisc>
-        ) : null}
         {cursor.name}
       </span>
     </div>

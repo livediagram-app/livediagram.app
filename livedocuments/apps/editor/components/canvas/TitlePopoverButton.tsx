@@ -6,9 +6,9 @@
 // desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
 import { useRef, useState, type ReactNode } from 'react';
 import { Tooltip, useClickOutside, useEscape } from '@livedocuments/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 
 // The tour's step card: a press on it is the tour's, never an outside press that closes the popover under it.
 const TOUR_CARD = '[data-tour-popover]';

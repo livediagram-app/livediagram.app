@@ -1,11 +1,8 @@
-import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { votesSpentBy } from '@liveplanner/project';
 import { participantKey } from '@/lib/identity';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
-import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
-import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
 // `showIdentityPrompt`, false on the common path (the owner opening their own project); for a visitor the empty
@@ -16,7 +13,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
@@ -35,31 +32,23 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import {
-  Fragment,
-  useCallback,
-  useMemo,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react';
+import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
+import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
-import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import { atLeastInset } from '@liveplanner/ui';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -71,14 +60,6 @@ type ChromeExtras = {
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;
   marquee: { startX: number; startY: number; currentX: number; currentY: number } | null;
-  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
-  // Snapped pointer position while a draw is armed but not yet started
-  // (pre-press start-snap preview); null when not armed / not snapped.
-  drawHover: { x: number; y: number } | null;
-  // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
-  // the live rubber-band cursor position, both canvas coords.
-  polygonVertices: { x: number; y: number }[];
-  polygonCursor: { x: number; y: number } | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
   activeDockPanel: DockPanel | null;
   setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;
@@ -88,22 +69,6 @@ type ChromeExtras = {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
-  // Begin an isometric orbit drag from the given screen coordinates
-  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
-  // which only renders while the isometric tool is active.
-  onIsoOrbit: (clientX: number, clientY: number) => void;
-  // Reset the isometric camera to its default angle (wired to
-  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
-  onIsoReset: () => void;
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
-  // (the paint lives there), plus a description of the loaded element.
-  formatConfig?: import('@/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
-  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -134,10 +99,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     canRedo,
     canUndo,
-    canvasTool,
     projectName,
-    drawDrag,
-    drawHover,
     elements,
     handleDockButtonClick,
     handleSetZoom,
@@ -151,13 +113,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     offscreenContent,
     onFitToScreen,
     onRedo,
-    onIsoOrbit,
-    onIsoReset,
     onCancelIdentity,
     onUndo,
-    pendingDraw,
-    polygonVertices,
-    polygonCursor,
     readOnly,
     selfParticipant,
     settings,
@@ -172,8 +129,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   } = props;
   // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
   // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
-  const viewport = useViewportStore();
-  const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
@@ -188,22 +143,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
     useCornerDocking({ zenMode: zenMode === true });
-  // Alignment guides while a palette tile is being dragged in (docs/specs/010-palette/palette-drag-ghost.md):
-  // the same faint lines a move shows, BEFORE the element exists. The hook
-  // also publishes the snap the ghost + drop read, so all three agree.
-  const paletteDrag = usePaletteDragGuides({ elements, readZoom, wrapperRef });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
-  const { alignGuides, allSnapTargets } = computeDrawGuides({
-    drawDrag,
-    pendingDraw,
-    elements,
-    drawHover,
-    snapGuides,
-    snapTargets,
-  });
 
   // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
   const cardTypesButtonRef = useCardTypesOpener(!zenMode, {
@@ -224,11 +167,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  // Whether the tab has a Plan board, for an armed Plan card's hint (docs/specs/026-plan/plan-mode.md).
-  const hasPlanBoard = useMemo(
-    () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
-    [elements],
-  );
   // A board or Sheet covering the canvas (maximised or filling its tab, not a Dashboard's page): the bottom-right
   // cluster moves inside its frame.
   const canvasCovered = useCanvasCovered();
@@ -328,21 +266,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       <CanvasGuideOverlay
-        alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}
-        allSnapTargets={allSnapTargets}
-        distGuides={paletteDrag.distGuides.length > 0 ? paletteDrag.distGuides : distGuides}
-        drawHover={drawHover}
+        alignGuides={snapGuides}
+        allSnapTargets={snapTargets}
+        distGuides={distGuides}
         marquee={marquee}
         tabThemeId={tabThemeId}
-        wrapperRef={wrapperRef}
-        mainSize={props.mainSize}
-      />
-
-      <CanvasDrawPreview
-        drawDrag={drawDrag}
-        polygonVertices={polygonVertices}
-        polygonCursor={polygonCursor}
-        pendingDraw={pendingDraw}
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -350,7 +278,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
         active editor-mode banner, multi-selection toolbar, session timer
         and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} hasPlanBoard={hasPlanBoard} />
+      <TopCenterChrome {...props} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
         (zen hides it, the welcome flow doesn't). */}
@@ -380,7 +308,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <>
           {panelEls.collaborate}
           {panelEls.minimap}
-          {panelEls.format}
         </>
       )}
 
@@ -510,8 +437,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}
               onFitToScreen={onFitToScreen}
-              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
-              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
               // View-only visitors have no palette (so no canvas-tool

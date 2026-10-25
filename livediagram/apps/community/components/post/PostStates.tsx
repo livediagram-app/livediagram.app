@@ -15,7 +15,7 @@ export function PostNotFound() {
   return (
     <EmptyState
       icon={<PeopleIcon aria-hidden />}
-      title="This document isn't in the Community any more."
+      title="This canvas isn't in the Community any more."
       description="It may have been removed by its author. There's plenty more to explore."
     >
       <Link href="/" className={buttonClassName({ size: 'md' })}>

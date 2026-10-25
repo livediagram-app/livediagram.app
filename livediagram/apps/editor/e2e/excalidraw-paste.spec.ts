@@ -88,7 +88,7 @@ async function pasteSample(page: Page, path: string) {
   const sample = sampleCopy();
   await page.evaluate((text) => navigator.clipboard.writeText(text), sample.text);
   await page.mouse.move(700, 450);
-  await page.keyboard.press('Control+v');
+  await page.keyboard.press('ControlOrMeta+v');
   await expect.poll(() => countElements(page)).toBe(sample.items);
   return sample;
 }
@@ -115,9 +115,9 @@ for (const colorScheme of ['dark', 'light'] as const) {
       await page.keyboard.press('Shift+!');
       await page.screenshot({ path: testInfo.outputPath(`fit-${colorScheme}.png`) });
 
-      await page.keyboard.press('Control+z');
+      await page.keyboard.press('ControlOrMeta+z');
       await expect.poll(() => countElements(page)).toBe(0);
-      await page.keyboard.press('Control+Shift+z');
+      await page.keyboard.press('ControlOrMeta+Shift+z');
       await expect.poll(() => countElements(page)).toBe(sample.items);
       expectNoPageErrors(pageErrors);
     });
@@ -145,7 +145,7 @@ test.describe('ordinary text', () => {
     await dismissQuickTour(page);
     await page.evaluate(() => navigator.clipboard.writeText('{"type":"excalidrawish"}'));
     await page.mouse.move(700, 450);
-    await page.keyboard.press('Control+v');
+    await page.keyboard.press('ControlOrMeta+v');
     await page.waitForTimeout(500);
     expect(await countElements(page)).toBe(0);
     expectNoPageErrors(pageErrors);
@@ -195,13 +195,8 @@ test.describe('importing Excalidraw files from the Explorer', () => {
   test('each file becomes its own document, named after the file', async ({ page, pageErrors }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
-    await page.goto('/explorer/recent');
-    const button = page
-      .getByRole('toolbar', { name: 'Import from' })
-      .getByRole('button', { name: 'Import from Excalidraw' });
-    await expect(button).toBeVisible();
-    await page.screenshot({ path: test.info().outputPath('explorer-import-from.png') });
-    await button.click();
+    // The Explorer's Import from opens the /import page for its source.
+    await page.goto('/import?source=excalidraw');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Choose files', exact: true }).click();
     const sample = sampleCopy();

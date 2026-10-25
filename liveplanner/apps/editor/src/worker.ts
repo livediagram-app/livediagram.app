@@ -7,9 +7,9 @@
 import { TRUSTED_TYPES_CSP } from '@liveplanner/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
-// API is optional: the share page's link preview (./share-page.ts) asks it for the project's name, and without it
-// the page is served as built.
-type Env = { ASSETS: AssetsBinding; API?: Fetcher };
+// PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the
+// project's name (liveworkspace/docs/previews.md). Unset means production's; staging names its own.
+type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 
 // Defense-in-depth response headers. None of these block existing
 // functionality; they shut down whole classes of attack surface that
@@ -70,17 +70,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // /explorer is an index with no content of its own (docs/specs/013-workspace/folders.md):
-    // every section lives at /explorer/<section>, default Home
-    // (docs/specs/013-workspace/explorer-home.md "Route"). 302 here so the address bar lands on the real
-    // section before any HTML is served; the page's client-side
-    // replace covers dev where this worker isn't in front. The
-    // Location is a clean (`/live`-free) path — the router selects the
-    // editor app for /explorer routes directly (docs/specs/016-platform/router-app.md).
-    if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
-      return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
-    }
-    // `/project` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
+    // `/project` (../lib/editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/project/<id>` (that's the whole point of the path
     // scheme).
@@ -93,7 +83,9 @@ export default {
         const shell = () => env.ASSETS.fetch(new Request(rewritten.toString(), request));
         // A share link's page names its project for link previews (docs/specs/013-workspace/share-link-previews.md).
         if (isSharePagePath(url.pathname)) {
-          return withSecurityHeaders(await sharePage(request, env.API, shell));
+          return withSecurityHeaders(
+            await sharePage(request, shell, { previewsOrigin: env.PREVIEWS_ORIGIN }),
+          );
         }
         return withSecurityHeaders(await shell());
       }
@@ -120,8 +112,7 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
-import { isEditorPath } from '../lib/legacy-editor-path';
+import { isEditorPath } from '../lib/editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
-import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
-import { isSharePagePath, sharePage, type Fetcher } from './share-page';
+import { isSharePagePath, sharePage } from './share-page';

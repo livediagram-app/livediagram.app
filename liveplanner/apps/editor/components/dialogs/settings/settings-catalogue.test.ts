@@ -200,19 +200,17 @@ describe('settings catalogue', () => {
 
   // Plan has no AI assistant and no diagram canvas: their categories are gone for good.
   it('offers no AI, Layers, Map or Quick Style category', () => {
-    const ids = visibleCategories({ emailEnabled: true, signedIn: true, authEnabled: true }).map(
-      (c) => c.id,
-    );
+    const ids = visibleCategories({ emailEnabled: true, signedIn: true }).map((c) => c.id);
     for (const gone of ['ai', 'layers', 'map', 'quickStyle']) expect(ids).not.toContain(gone);
   });
 
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account, projects and tokens, and the Appearance choice, out of a workbench', () => {
-    const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
+  it('leaves the account and tokens, and the Appearance choice, out of a workbench', () => {
+    const ctx = { emailEnabled: true, signedIn: true, workbench: true };
     const categories = visibleCategories(ctx);
     const ids = categories.map((c) => c.id);
 
-    for (const hidden of ['projects', 'account', 'notifications', 'tokens']) {
+    for (const hidden of ['account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
     expect(ids).toContain('editor');
@@ -220,7 +218,7 @@ describe('settings catalogue', () => {
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
     const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['projects', 'account', 'tokens']));
+    expect(app).toEqual(expect.arrayContaining(['account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -233,13 +231,10 @@ describe('settings catalogue', () => {
     expect(topLevel.slice(-2)).toEqual(['account', 'privacy']);
   });
 
-  it('offers API Tokens only where sign-in exists', () => {
-    const ids = (authEnabled: boolean) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, authEnabled }).map((c) => c.id);
-    // A guest on a deployment WITH sign-in still sees the category: its row
-    // says why it is empty and links to sign in.
-    expect(ids(true)).toContain('tokens');
-    expect(ids(false)).not.toContain('tokens');
+  it('offers API Tokens to a guest too', () => {
+    // Its row says why it is empty and links to sign in.
+    const ids = visibleCategories({ emailEnabled: false, signedIn: false }).map((c) => c.id);
+    expect(ids).toContain('tokens');
   });
 
   it('points every link row at a category that exists', () => {
@@ -271,8 +266,9 @@ describe('settings catalogue', () => {
     // The category survives either way: in-editor notifications are not
     // gated on email, so Notifications never becomes a dead end.
     expect(notifyRows(without)).toContain('notificationsEnabled');
-    // Nothing in Plan assigns an action, so there is no email for one.
-    expect(notifyRows(withEmail)).not.toContain('notifyActionAssigned');
+    // A teammate assigning you an action emails you (docs/specs/012-collaboration/assigned-actions.md).
+    expect(notifyRows(withEmail)).toContain('notifyActionAssigned');
+    expect(notifyRows(without)).not.toContain('notifyActionAssigned');
   });
 
   it('offers Minimal chrome only while power user mode is on', () => {

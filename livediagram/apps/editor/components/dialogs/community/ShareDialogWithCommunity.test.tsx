@@ -24,23 +24,23 @@ vi.mock('@/hooks/persistence/useCommunityPost', () => ({
     return { post: h.post, loading: false, error: null, publish: vi.fn(), remove: vi.fn() };
   },
 }));
-vi.mock('@/hooks/persistence/usePublishedPicture', () => ({ usePublishedPicture: () => null }));
-vi.mock('@/components/dialogs/ShareDialog', () => ({
+vi.mock('@liveworkspace/explorer', () => ({
   ShareDialog: (p: {
     passwordLockedReason?: string | null;
-    communityListed?: boolean;
-    initialTab?: string;
-    community?: ReactNode;
+    publicNote?: string | null;
+    appSection?: ReactNode;
   }) => (
     <div
       data-testid="share"
       data-locked={p.passwordLockedReason ?? ''}
-      data-listed={String(!!p.communityListed)}
-      data-tab={p.initialTab ?? ''}
+      data-public={p.publicNote ?? ''}
     >
-      {p.community}
+      {p.appSection}
     </div>
   ),
+}));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: { listShareLinks: async () => ({ links: [], passwordSet: false }) },
 }));
 vi.mock('./CommunitySection', () => ({
   CommunitySection: (p: { onPublish: () => void; firstTabEmpty?: boolean }) => (
@@ -65,23 +65,29 @@ function renderDialog(
   over: {
     signedIn?: boolean;
     teamDocument?: boolean;
-    offline?: boolean;
     firstTabEmpty?: boolean;
   } = {},
 ) {
-  const props = {
-    participant: { id: 'user_a', name: 'Ada', color: '#f97316' },
-    offline: over.offline ?? false,
-    sharePasswordSet: false,
-    lockedName: null,
+  const share = {
+    client: {},
+    item: {
+      id: 'd1',
+      app: 'livediagram',
+      kind: 'canvas',
+      sharedVia: null,
+      title: 'Doc',
+      teamId: over.teamDocument ? 't1' : null,
+    },
+    shareUrl: () => '',
+    onClose: () => {},
   } as unknown as Parameters<typeof ShareDialogWithCommunity>[0];
   render(
     <ShareDialogWithCommunity
-      {...props}
-      documentId="d1"
+      {...share}
+      ownerId="user_a"
       documentName="Doc"
+      author={{ name: 'Ada', color: '#f97316' }}
       signedIn={over.signedIn ?? true}
-      teamDocument={over.teamDocument ?? false}
       firstTabEmpty={over.firstTabEmpty}
     />,
   );
@@ -95,29 +101,42 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('ShareDialogWithCommunity', () => {
-  it('reads the post only for a signed-in owner of a personal, cloud document', () => {
+  it('reads the post only for a signed-in owner of a personal canvas', () => {
     renderDialog();
     expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: true }));
     cleanup();
-    for (const over of [{ signedIn: false }, { teamDocument: true }, { offline: true }]) {
+    for (const over of [{ signedIn: false }, { teamDocument: true }]) {
       renderDialog(over);
       expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
       cleanup();
     }
   });
 
-  it('locks the share password, and says Public, only while the post is listed', () => {
+  it('locks the share password only while the post is listed', () => {
     h.post = post('listed');
     renderDialog();
     expect(screen.getByTestId('share').dataset.locked).toBe(
       'Remove it from the Community to set a password.',
     );
-    expect(screen.getByTestId('share').dataset.listed).toBe('true');
     cleanup();
     h.post = post('hidden');
     renderDialog();
     expect(screen.getByTestId('share').dataset.locked).toBe('');
-    expect(screen.getByTestId('share').dataset.listed).toBe('false');
+  });
+
+  it('says the canvas is public on the status line only while the post is listed', () => {
+    h.post = post('listed');
+    renderDialog();
+    expect(screen.getByTestId('share').dataset.public).toBe(
+      'in the Community, where anyone can find it, view it and make a copy.',
+    );
+    cleanup();
+    for (const state of ['hidden', null] as const) {
+      h.post = state ? post(state) : null;
+      renderDialog();
+      expect(screen.getByTestId('share').dataset.public).toBe('');
+      cleanup();
+    }
   });
 
   it('swaps in the publish dialog, and comes back to the Share dialog after', () => {
@@ -126,15 +145,6 @@ describe('ShareDialogWithCommunity', () => {
     expect(screen.queryByTestId('share')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
     expect(screen.getByTestId('share')).toBeTruthy();
-  });
-
-  // Saving Edit Listing came back on Passes, away from the post just edited.
-  it('opens on Passes, and on Community once it comes back from the publish dialog', () => {
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.tab).toBe('passes');
-    fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
-    expect(screen.getByTestId('share').dataset.tab).toBe('community');
   });
 
   it('hands the Community section an empty first tab, which holds Share to Community', () => {

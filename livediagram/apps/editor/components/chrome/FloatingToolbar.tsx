@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
-import { FloatingTitle } from '@/components/chrome/FloatingTitle';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import type { Rect } from '@livediagram/document';
 
 const GAP = 14; // canvas-space gap between the toolbar and the selection

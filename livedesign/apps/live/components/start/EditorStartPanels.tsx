@@ -14,19 +14,17 @@ const StartFromTemplates = dynamic(
   { ssr: false },
 );
 
-// What an empty tab shows in the canvas's place: its template start. Always mounted, so the template-pick handoff
+// What an empty tab shows in the canvas's place: its template start. Always mounted, so the template-pick note
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, accountUserId } = ctx;
+  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
   // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md). A template picked from it
   // on a design /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
   // picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
-    ownerId: ctx.selfParticipant.id,
     designId: ctx.designId,
     tabId: activeTab.id,
-    signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
   const templateStart = templateStartMode({

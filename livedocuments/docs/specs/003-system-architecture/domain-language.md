@@ -26,7 +26,8 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A **tab kind** is what a tab is. livedocuments has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
 - What a **page** is (a design page, a slide or an article page) is the page's kind, not the
-  tab's ([Pages mode](../007-editor/pages-mode.md)).
+  tab's ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
+  (`tabPageKind`), so a deck holds only slides.
 
 ### Template
 
@@ -71,7 +72,7 @@ The words for a program working on documents for a person ([Agents](../024-agent
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
 
-- **Participant** is the access level; a person's name and colour (the `participants` table) are their
+- **Participant** is the access level; a person's name and colour (their accounts profile, served as `/api/participants`) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
@@ -127,7 +128,7 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's
-error) takes its article from the name: `withArticle` / `indefiniteArticle` in `packages/document/src/indefinite-article.ts`
+error) takes its article from the name: `withArticle` / `indefiniteArticle` in `../packages/model-core/src/indefinite-article.ts`
 (exported by `@livedocuments/document`). A vowel sound takes "an" ("Add an infographic page", "Create an Article"),
 and a vowel said "you" keeps "a" ("a User Persona"). A fixed "a" before an interpolated name is how "Create a Org
 Chart" once reached livediagram's marketing site.

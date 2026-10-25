@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { contentBounds, type ArrowElement, type ShapeElement } from '@livediagram/document';
 import { importDrawio } from './import';
 import { importDrawioLibrary } from './library';

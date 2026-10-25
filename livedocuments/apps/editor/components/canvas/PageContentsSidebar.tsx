@@ -10,15 +10,15 @@ import {
   lucideListOrdered,
   lucidePanelLeftClose,
   lucidePanelRightClose,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedocuments/ui';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { CONTENTS_SIDEBAR_WIDTH, type ContentsSide } from '@/lib/contents-placement';
 import { restingRect, sideInsetsOf } from '@/lib/side-chrome-insets';
 import { ContentsAddPage } from './ContentsAddPage';

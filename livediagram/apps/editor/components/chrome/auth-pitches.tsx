@@ -60,7 +60,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'emerald',
     icon: DEVICES,
     lead: 'Every device',
-    title: 'Your documents sync',
+    title: 'Your canvases sync',
     line: 'Start on a laptop, pick up on a phone.',
   },
   {
@@ -106,7 +106,7 @@ export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
     icon: UNDO,
     lead: 'Revoke',
     title: 'Access, any time',
-    line: 'In Settings, under Account › API Tokens.',
+    line: 'On liveworkspace.app, under API tokens.',
   },
 ];
 

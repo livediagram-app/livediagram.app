@@ -3,7 +3,7 @@
 // The overprint sweep compares only texts sharing rows, so a page of texts in rows grows about linearly; four times
 // the texts cost under eight times as much.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livedesign/design';
 import { box, lint, tabOf, text } from './fixtures/build';
 

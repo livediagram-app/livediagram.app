@@ -4,9 +4,12 @@
 // Editor's to change) and Open <name> (everyone's who sees the tab). Read from the editor itself: the menu renders
 // outside the canvas, so the windows' own context is not here.
 import { tabWindowMayShow, type ShapeElement } from '@livedesign/design';
-import { lucideAppWindow, lucideArrowUpRight } from '@livedesign/icons/lucide';
+import { lucideAppWindow, lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionRow,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { TabWindowTabList } from '@/components/canvas/tab-window/TabWindowTabList';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useSelectTab } from '@/app/design/[id]/useSelectTab';

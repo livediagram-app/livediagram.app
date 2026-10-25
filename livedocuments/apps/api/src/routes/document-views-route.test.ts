@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_BATCH } from '@livedocuments/document-views';
 import type { Element } from '@livedocuments/document';
-import { createShareLink } from '../db/share';
+import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { getDocument } from '../db/documents';
 import { answerOverview, parseViewQuery, type ParsedView } from './document-views-route';
@@ -82,7 +82,7 @@ async function setUp(extraTabs = 0, room?: unknown) {
     ...TELEMETRY_ON,
     ...(room ? { DOCUMENT_ROOM: room } : {}),
   } as unknown as Partial<Env>);
-  sent = stubTelemetry();
+  sent = captureTelemetry();
   const tabs = [
     { id: 't1', name: 'Architecture', elements: ELEMENTS },
     ...Array.from({ length: extraTabs + 1 }, (_, i) => ({
@@ -101,7 +101,7 @@ const tabView = (db: SqliteD1, query: string, who: Who = {}) =>
 const docView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/documents/D?${query}`, undefined, who);
 // The Agent·Viewed types posted to the telemetry service since setUp, sorted.
-let sent: ReturnType<typeof stubTelemetry> = [];
+let sent: ReturnType<typeof captureTelemetry> = [];
 const viewed = () =>
   sent
     .filter((e) => e.category === 'Agent' && e.action === 'Viewed')
@@ -515,7 +515,7 @@ describe('views behind the read gate (E22, E23, E25)', () => {
   it('scopes a tab-scoped visitor to its tab, never reading the others', async () => {
     quiet();
     const db = await setUp();
-    await createShareLink(db.env, 'D', 'SCOPED', 'view', 'never', 't2');
+    testShareLink(db, 'D', 'SCOPED', 'view', 'never', 't2');
     const who = { owner: 'guest', headers: { 'X-Share-Code': 'SCOPED' } };
     expect((await tabView(db, 'view=outline', who)).status).toBe(404);
     const lines = (await (await docView(db, 'view=overview', who)).text()).split('\n');
@@ -524,13 +524,5 @@ describe('views behind the read gate (E22, E23, E25)', () => {
       '  tab t2 "Tab 2" · 1 element: 1 box · 1 page: 1 infographic (view pages) · rev 1',
     ]);
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
-  });
-
-  it('answers a trashed document as the plain read does', async () => {
-    quiet();
-    const db = await setUp();
-    expect((await call(db, 'DELETE', '/api/documents/D')).status).toBe(204);
-    const plain = await call(db, 'GET', '/api/documents/D/tabs/t1');
-    expect((await tabView(db, 'view=outline')).status).toBe(plain.status);
   });
 });

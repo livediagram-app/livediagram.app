@@ -466,12 +466,3 @@ export const SHEET_CHANGE_KINDS = [
   'ConditionalFormat',
 ] as const;
 export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
-
-// -----
-// Unfurl (docs/specs/009-elements/link-cards.md) — link-card preview metadata extracted server-side by
-// GET /api/unfurl?url=… (the static client can't read cross-origin page
-// HTML). Every field is optional: an unfurl that finds nothing still
-// returns 200 with the resolved url, and the card falls back to the bare
-// URL. `image` / `favicon` are absolute URLs referenced directly by the
-// client (no bytes proxied in v1).
-// -----

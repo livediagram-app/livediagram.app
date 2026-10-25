@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
 import { isUntitledDocumentName } from '@livediagram/templates';
 import {
@@ -20,7 +20,7 @@ import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/tex
 import { fitMindLabel } from '@/lib/mind-label-fit';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 

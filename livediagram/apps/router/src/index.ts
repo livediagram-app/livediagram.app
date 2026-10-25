@@ -6,6 +6,12 @@
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
+import {
+  routeToWorkspace,
+  routeToPreviews,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
+} from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -24,10 +30,22 @@ export interface Env {
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's.
+  INDEX_ORIGIN?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
+  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
+
 const TELEMETRY_PATH = '/telemetry';
 
 // The public telemetry dashboard is liveworkspace's now, shared by every app
@@ -196,6 +214,17 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // liveworkspace's Explorer under this address, while livediagram's switch is on (@liveworkspace/sites/workspace-proxy):
+  // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+  const workspace = routeToWorkspace(request, { app: 'livediagram', origin: env.WORKSPACE_ORIGIN });
+  if (workspace) return workspace;
+  // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  if (preview) return preview;
+  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them.
+  if (hasPrefix(url.pathname, INDEX_PATH)) {
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.

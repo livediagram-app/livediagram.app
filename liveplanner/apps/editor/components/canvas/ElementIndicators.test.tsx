@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ShapeKind } from '@liveplanner/project';
-import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { buildIndicatorItems, type IndicatorItem } from '@/components/canvas/indicator-items';
@@ -11,8 +11,7 @@ import { placeCluster, useIndicatorLayout } from '@/components/canvas/useIndicat
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md: the element's link / note / action / comments drawn
-// inside it in the person's style, a mind root's commands only when hovered or selected, and the
-// pip when the element has no room.
+// inside it in the person's style, and the pip when the element has no room.
 
 function shape(kind: ShapeKind, width: number, height: number): BoxedElement {
   return { ...createShape(kind, 0, 0), width, height };
@@ -20,8 +19,6 @@ function shape(kind: ShapeKind, width: number, height: number): BoxedElement {
 
 const items = (over: Partial<Parameters<typeof buildIndicatorItems>[0]> = {}) =>
   buildIndicatorItems({
-    outline: vi.fn(),
-    tidy: vi.fn(),
     note: vi.fn(),
     action: { onOpen: vi.fn(), assigneeName: 'Sam Reed', initials: 'SR', color: '#3e7be0' },
     comments: { count: 2, onOpen: vi.fn() },
@@ -70,14 +67,11 @@ function Placed({
 }
 
 describe('ElementIndicators', () => {
-  it('prints the glyphs inside a roomy element’s corner, commands hidden until hover', () => {
+  it('prints the glyphs inside a roomy element’s corner', () => {
     const { container } = draw(shape('mind-node', 260, 116));
     expect(container.querySelector('[data-indicators="top"]')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Open 2 comments' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open note' })).toBeTruthy();
-    const outline = screen.getByRole('button', { name: 'Edit Outline', hidden: true });
-    expect(outline.className).toContain('invisible');
-    expect(outline.className).toContain('group-hover/el:visible');
   });
 
   it('fades the whole cluster out while the element is selected, and back on deselect', () => {
@@ -121,7 +115,7 @@ describe('ElementIndicators', () => {
     expect(screen.getByText('SR')).toBeTruthy();
     roomy.unmount();
 
-    const narrow = draw(shape('mind-node', 175, 100), { style: 'footer' });
+    const narrow = draw(shape('mind-node', 140, 100), { style: 'footer' });
     expect(narrow.container.querySelector('[data-indicators="footer-compact"]')).not.toBeNull();
     expect(screen.queryByText('Note')).toBeNull();
   });
@@ -147,7 +141,8 @@ describe('ElementIndicators', () => {
       fontPx: 22,
       icon: { size: 35, position: 'above', gap: 7 },
     } as const;
-    const layout = placeCluster(cloud, 0, items(), 'top', content);
+    const wide = items({ link: { onFollow: vi.fn() }, comments: { count: 120, onOpen: vi.fn() } });
+    const layout = placeCluster(cloud, 0, wide, 'top', content);
     expect(layout.form).toBe('top');
     expect(layout.inset.top).toBeGreaterThan(0);
     expect(layout.inset.bottom).toBe(0);
@@ -164,7 +159,7 @@ describe('ElementIndicators', () => {
     const layout = placeCluster(
       shape('mind-node', 220, 76),
       12,
-      items({ comments: undefined, action: undefined, outline: undefined, tidy: undefined }),
+      items({ comments: undefined, action: undefined }),
       'top',
       content,
     );
@@ -206,36 +201,6 @@ describe('ElementIndicators', () => {
     // No outline point given: the box-corner rule places it.
     expect(pip.style.right).toBe('0px');
   });
-
-  it('hides a cluster of commands alone until hover, chip and all', () => {
-    const placed = { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } } as const;
-    const only = items({ note: undefined, action: undefined, comments: undefined });
-    const { container } = render(
-      <ElementIndicators
-        element={shape('square', 60, 30)}
-        items={only}
-        placed={placed}
-        cornerPx={0}
-        selected={false}
-      />,
-    );
-    const pip = container.querySelector<HTMLElement>('[data-indicators="pip"]')!;
-    expect(pip.className).toContain('invisible');
-    expect(pip.className).toContain('group-hover/el:visible');
-    cleanup();
-    // With status beside the commands, the chip stays shown for it.
-    const { container: mixed } = render(
-      <ElementIndicators
-        element={shape('square', 60, 30)}
-        items={items()}
-        placed={placed}
-        cornerPx={0}
-        selected={false}
-      />,
-    );
-    expect(mixed.querySelector('[data-indicators="pip"]')!.className).not.toContain('invisible');
-  });
-
   it('keeps a press on the cluster from reaching the element', () => {
     const onDown = vi.fn();
     const { container } = render(
@@ -263,7 +228,7 @@ describe('ElementIndicators', () => {
       label: 'Notes',
       textSize: 'sm',
     } as BoxedElement;
-    const layout = placeCluster(text, 0, items({ outline: undefined, tidy: undefined }), 'top');
+    const layout = placeCluster(text, 0, items(), 'top');
     expect(layout.form).toBe('top');
   });
 

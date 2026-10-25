@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@livedesign/design';
-
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { COMPARISONS } from './alternatives';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing
 // here was live copy, found false against the product; the test keeps it from coming back on any
-// page. The comparisons on liveworkspace.app keep the same list for this app
-// (liveworkspace/apps/site/lib/alternatives/product-claims.test.ts).
+// page: the landing page, the FAQ, and every comparison and its card (packages/comparisons/README.md
+// "Golden rule").
 const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern: /read-only,? (?:live-updating )?iframe|read-only iframe embed for any share link/i,
@@ -52,9 +52,17 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     pattern: /nothing is sent to a server/i,
     why: 'imported images go through the image upload pipeline',
   },
+  {
+    pattern: /AI assistance|AI (?:key|panel)|ask and clean|clean mode|assistant in the editor/i,
+    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+  },
 ];
 
 const copy: { where: string; text: string }[] = [
+  ...COMPARISONS.alternatives.map((a) => ({
+    where: `alternatives/${a.slug}`,
+    text: JSON.stringify(a),
+  })),
   ...FAQ_CATEGORIES.flatMap((c) =>
     c.items.map((i) => ({ where: `faq: ${i.q}`, text: faqAnswerText(i) })),
   ),
@@ -74,27 +82,4 @@ describe('product claims in marketing copy', () => {
       expect(hits).toEqual([]);
     });
   }
-});
-
-// A sentence that walks through the modes lists them in the editor's own order (Workshop after
-// Draw since #548), the order the mode switch shows.
-describe('mode lists in marketing copy', () => {
-  const labels = EDITOR_MODES.map(editorModeLabel);
-  const fields = copy;
-  it('name the modes in the editor order', () => {
-    const wrong = fields.flatMap(({ where, text }) =>
-      text
-        .split(/(?<=[.!?])\s+/)
-        .map((sentence) => {
-          const found = labels
-            .map((label) => ({ label, at: sentence.search(new RegExp(`\\b${label}\\b`)) }))
-            .filter((m) => m.at >= 0);
-          return { sentence, found };
-        })
-        .filter(({ found }) => found.length >= 4)
-        .filter(({ found }) => found.some((m, i) => i > 0 && m.at < found[i - 1]!.at))
-        .map(({ sentence }) => `${where}: ${sentence.slice(0, 80)}`),
-    );
-    expect(wrong).toEqual([]);
-  });
 });

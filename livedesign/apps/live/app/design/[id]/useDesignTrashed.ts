@@ -3,36 +3,35 @@
 // The editor's deleted state (docs/specs/013-workspace/trash.md, "While a
 // design is in the Trash"). Set when the load answers design_trashed, when
 // the room says the design was trashed, or when a save is refused because
-// of it. Whether the reader may restore it is read from their own Trash: the
-// row is there exactly when they may (owner, or a joined team member), and
-// never for a share-link visitor.
+// of it. Whether the reader may restore it is the index's answer
+// (liveworkspace/docs/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
+// or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
-import type { TrashedDesign } from '@livedesign/api-schema';
-import { apiListTrash, apiRestoreDesign } from '@/lib/api-client';
+import type { TrashedDesign } from '@/components/chrome/DesignTrashedCard';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDesignDeleted } from '@/lib/design-tombstones';
 
 type DesignTrashedState = {
   trashed: boolean;
   setDesignTrashed: (trashed: boolean) => void;
-  // The reader's Trash row for this design, or null when they may not
+  // When and why it went to the Trash, or null when the reader may not
   // restore it (or it hasn't been looked up yet).
   restorable: TrashedDesign | null;
   restore: () => Promise<void>;
 };
 
 export function useDesignTrashed(opts: {
-  ownerId: string | null;
   designId: string | null;
   // A share-link session never looks: a visitor holds no Trash for it.
   viaShareLink: boolean;
 }): DesignTrashedState {
-  const { ownerId, designId, viaShareLink } = opts;
+  const { designId, viaShareLink } = opts;
   const [trashed, setTrashed] = useState(false);
   const [restorable, setRestorable] = useState<TrashedDesign | null>(null);
   // Which Trash it sits in, for the telemetry `type`.
-  const [from, setFrom] = useState<'Personal' | 'Team' | 'Local'>('Personal');
+  const [from, setFrom] = useState<'Personal' | 'Team'>('Personal');
 
   const setDesignTrashed = useCallback(
     (next: boolean) => {
@@ -49,28 +48,30 @@ export function useDesignTrashed(opts: {
   );
 
   useEffect(() => {
-    if (!trashed || viaShareLink || !ownerId || !designId) return;
+    if (!trashed || viaShareLink || !designId) return;
     let live = true;
-    void apiListTrash(ownerId).then((listing) => {
-      if (!live) return;
-      const local = listing.local.find((r) => r.id === designId);
-      const cloud = listing.cloud?.find((r) => r.id === designId);
-      setRestorable(local ?? cloud ?? null);
-      setFrom(local ? 'Local' : cloud?.teamId ? 'Team' : 'Personal');
-    });
+    indexClient
+      .getItem(designId)
+      .then(({ item }) => {
+        if (!live || item.trashedAt === null || item.access !== 'edit') return;
+        setRestorable({ trashedAt: item.trashedAt, reason: item.trashReason });
+        setFrom(item.teamId ? 'Team' : 'Personal');
+      })
+      // Not the reader's to restore, or the index unreachable: the card says it was deleted.
+      .catch(() => {});
     return () => {
       live = false;
     };
-  }, [trashed, viaShareLink, ownerId, designId]);
+  }, [trashed, viaShareLink, designId]);
 
   const restore = useCallback(async () => {
-    if (!ownerId || !designId || !restorable) return;
-    await apiRestoreDesign(ownerId, designId);
+    if (!designId || !restorable) return;
+    await indexClient.restoreItem(designId);
     track('Trash', 'Restored', from);
     // Reopen it from scratch: a fresh load is the one path that hydrates
     // everything a live design has.
     window.location.reload();
-  }, [ownerId, designId, restorable, from]);
+  }, [designId, restorable, from]);
 
   return { trashed, setDesignTrashed, restorable, restore };
 }

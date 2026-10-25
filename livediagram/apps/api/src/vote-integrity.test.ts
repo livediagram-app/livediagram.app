@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sqliteD1 } from './test-sqlite-d1';
-import { liveDoc } from './db/test-trash-fixtures';
+import { sqliteD1, testDocument } from './test-sqlite-d1';
 import { makeTestRouteContext } from './routes/test-route-context';
 import type { Env } from './types';
 import {
@@ -15,8 +14,8 @@ import {
 describe('admitGuestVoter', () => {
   function seeded() {
     const db = sqliteD1();
-    liveDoc(db.sql, 'd1');
-    liveDoc(db.sql, 'd2');
+    testDocument(db, 'd1', 'owner');
+    testDocument(db, 'd2', 'owner');
     return db;
   }
 
@@ -37,12 +36,14 @@ describe('admitGuestVoter', () => {
     expect(await admitGuestVoter(env, 'd2', 'net-a', 'other-document')).toBe(true);
   });
 
-  it('is removed with the document', async () => {
+  it("keeps the voters in the document's own store", async () => {
     const { env, sql } = seeded();
     await admitGuestVoter(env, 'd1', 'net-a', 'p0');
-    sql.prepare('PRAGMA foreign_keys = ON').run();
-    sql.prepare("DELETE FROM documents WHERE id = 'd1'").run();
-    expect(sql.prepare('SELECT COUNT(*) AS n FROM guest_voters').get()).toEqual({ n: 0 });
+    expect(
+      sql.prepare("SELECT COUNT(*) AS n FROM guest_voters WHERE document_id = 'd1'").get(),
+    ).toEqual({
+      n: 1,
+    });
   });
 
   // The cap's whole cost is one batch over a primary-key range; a full network stays cheap.
@@ -70,7 +71,7 @@ describe('refuseGuestVoteOverCap', () => {
   it('lets a verified account vote without touching the ledger', async () => {
     const batch = vi.fn();
     const ctx = makeTestRouteContext('POST', '/api/documents/d1/items/i1/vote', {
-      env: { DB: { batch } } as unknown as Env,
+      env: { DOCUMENT_DB: { batch } } as unknown as Env,
     });
     ctx.verifiedUserId = 'user_1';
     expect(await refuseGuestVoteOverCap(ctx, 'd1', 'user_1')).toBeNull();
@@ -79,7 +80,7 @@ describe('refuseGuestVoteOverCap', () => {
 
   it('answers 429 vote_limit for a guest past the cap', async () => {
     const db = sqliteD1();
-    liveDoc(db.sql, 'd1');
+    testDocument(db, 'd1', 'owner');
     const ip = '198.51.100.9';
     const ctxFor = (owner: string) =>
       makeTestRouteContext('POST', '/api/documents/d1/items/i1/vote', {

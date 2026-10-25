@@ -57,6 +57,11 @@ export type SessionAttachment = {
   //     row. The room is named after it, so every session carries the same value.
   adderKey?: string | null;
   designId?: string | null;
+  //   - `grantExp`: when the index's grant this session holds lapses (epoch ms), from X-Verified-Grant-Exp; the
+  //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
+  //     Absent for a session admitted without one (tests).
+  grantExp?: number | null;
+  renewAsked?: boolean;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
@@ -75,7 +80,17 @@ type VerifiedSession = {
   workbenchPairing: string | null;
   adderKey: string | null;
   designId: string | null;
+  grantExp?: number | null;
+  // The design's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
+  // session: the room takes them as its own copy (design-room.ts takeHead).
+  head?: { owner: string | null; team: string | null };
 };
+
+// The grant's `exp` (epoch seconds) as epoch ms, or null.
+function grantExpOf(header: string | null): number | null {
+  const seconds = header ? Number(header) : NaN;
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
+}
 
 /**
  * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
@@ -94,6 +109,8 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     designId: header('X-Verified-Design'),
+    grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
+    head: { owner: header('X-Verified-Owner'), team: header('X-Verified-Team') },
   };
 }
 
@@ -117,6 +134,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     designId: v.designId?.slice(0, MAX_DESIGN_ID_LEN) ?? null,
+    grantExp: v.grantExp ?? null,
   };
 }
 

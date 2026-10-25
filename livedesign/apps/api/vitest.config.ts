@@ -1,4 +1,5 @@
-import { defineProject } from '@livedesign/vitest-config';
+import { fileURLToPath } from 'node:url';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
 // coverage vanity number, but because they are the only code in the repo that
@@ -13,28 +14,29 @@ import { defineProject } from '@livedesign/vitest-config';
 // has no threshold yet (docs/specs/003-system-architecture/testing.md) — this is the first ratchet, not the last.
 const GATE_KEEPERS = [
   'src/auth/**',
-  'src/api-token-row.ts',
   'src/db/api-tokens.ts',
-  'src/db/share.ts',
-  'src/db/shared.ts',
-  'src/db/ws-tickets.ts',
   'src/routes/share.ts',
-  // Link previews name a shared design (docs/specs/013-workspace/share-link-previews.md).
-  'src/routes/share-preview.ts',
-  'src/routes/shared.ts',
+  // The index's grant on a design: the whole of what a caller may do to it.
+  'src/routes/design-grant.ts',
   'src/routes/tokens.ts',
-  'src/routes/design-share-routes.ts',
   // The image reference index and the sweep that trusts it: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
   // Which designs may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
-  'src/db/image-retention.ts',
-  'src/db/design-removal.ts',
 ];
 
 export default defineProject({
+  // The Workers runtime's own module, which node has not: the Durable Object base class the design's room extends
+  // (@liveworkspace/api-kit's testing/cloudflare-workers.ts).
+  resolve: {
+    alias: {
+      'cloudflare:workers': fileURLToPath(
+        new URL('../../../packages/api-kit/src/testing/cloudflare-workers.ts', import.meta.url),
+      ),
+    },
+  },
   test: {
     coverage: {
       thresholds: Object.fromEntries(

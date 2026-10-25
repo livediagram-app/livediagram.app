@@ -10,7 +10,6 @@ import type { SaveStatus } from '@/components/chrome/EditorHeader';
 vi.mock('@/lib/api-client', () => ({
   apiListProjects: vi.fn(),
   apiListSharedWith: vi.fn(),
-  PROJECT_LIST_LOAD_SAFETY_MS: 10_000,
 }));
 
 import { useEditorPersistence } from './editor-persistence';

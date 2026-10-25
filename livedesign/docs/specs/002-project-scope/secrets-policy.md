@@ -20,30 +20,28 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 
 Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
 
-| Secret          | Purpose                                                                                                                                                                                                                                               |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                              |
+| Secret          | Purpose                                                                                                                                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
+| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
 
-The deploy workflow also **syncs** the sign-in values, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `INTERNAL_EVENTS_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `INTERNAL_EVENTS_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
+The deploy workflow also **syncs** the sign-in values, `MEDIA_KEY` and `TELEMETRY_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `MEDIA_KEY` and `TELEMETRY_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
 
 ## Worker secrets in use today
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which keeps every outside service optional (see [03](open-source-and-business-model.md)).
 
-| Secret                                                       | Worker          | Absent means                                                                                                           |
-| ------------------------------------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                              | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](../014-identity/auth-and-guest-access.md))                  |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`              | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                      |
-| `GUEST_ID_HMAC_SECRET`                                       | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](../014-identity/auth-and-guest-access.md))              |
-| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | api             | The AI surface hides entirely ([25](../007-editor/ai-assistance.md))                                                   |
-| `RESEND_API_KEY`                                             | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                            |
-| `MEDIA_KEY`                                                  | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md)) |
-| `INTERNAL_EVENTS_KEY`                                        | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](../017-telemetry/telemetry.md))               |
+| Secret                                          | Worker          | Absent means                                                                                                               |
+| ----------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md)) |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                          |
+| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                                |
+| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))     |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                        |
 
-`INTERNAL_EVENTS_KEY` is the only one that must hold the **same value on two workers**. A mismatch is silent — the caller simply lands back in the throttled bucket — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Non-secret configuration (`TELEMETRY_ENABLED`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -51,7 +49,6 @@ Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`
 
 Some keys are designed to be public; they go in `NEXT_PUBLIC_*` vars and end up in the bundle:
 
-- `NEXT_PUBLIC_SIGN_IN_ENABLED` — whether the editor offers sign-in (a flag, not a key).
 - Public URLs (`NEXT_PUBLIC_API_BASE`, etc.).
 
 If a value's documentation calls it "public", "publishable", or "client", it's fine for client bundles.
@@ -61,7 +58,7 @@ If a value's documentation calls it "public", "publishable", or "client", it's f
 Never imported in client code, never bundled into the static export:
 
 - Every secret in the table above.
-- D1 database access (always via a Worker; the browser never holds DB credentials).
+- Storage access (always via a Worker; the browser never holds storage credentials or service keys).
 - Any signing / encryption key.
 
 Workers and server-only code read these from `env` bindings — not from `process.env`-style imports in shared code.
@@ -71,8 +68,8 @@ Workers and server-only code read these from `env` bindings — not from `proces
 Each app or worker that needs env vars ships a `.env.example` designing **which variables are required** with placeholder values:
 
 ```
-# Required for production builds
-NEXT_PUBLIC_SIGN_IN_ENABLED=
+# Public, baked into the bundle
+NEXT_PUBLIC_API_BASE=
 # (no secret keys here — those go in the Cloudflare dashboard)
 ```
 

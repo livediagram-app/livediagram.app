@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { MCP_ORIGIN } from './mcp-config';
 import { completeDevice, denyDevice, fetchDeviceSession, userCodeOf } from './mcp-device-session';
 
@@ -48,12 +48,12 @@ describe('fetchDeviceSession', () => {
 describe('completeDevice and denyDevice', () => {
   it('post the code with the token, or the refusal, and say whether it landed', async () => {
     const calls = stubFetch(() => Response.json({ ok: true }));
-    expect(await completeDevice('BCDF-GHJK', 'lvd_x', 5)).toBe(true);
-    expect(await completeDevice('BCDF-GHJK', 'lvd_y', null)).toBe(true);
+    expect(await completeDevice('BCDF-GHJK', 'lwt_x', 5)).toBe(true);
+    expect(await completeDevice('BCDF-GHJK', 'lwt_y', null)).toBe(true);
     expect(await denyDevice('BCDF-GHJK')).toBe(true);
     expect(calls.map((c) => [c.url.replace(MCP_ORIGIN, ''), c.body])).toEqual([
-      ['/oauth/device/complete', { userCode: 'BCDF-GHJK', token: 'lvd_x', expiresAt: 5 }],
-      ['/oauth/device/complete', { userCode: 'BCDF-GHJK', token: 'lvd_y' }],
+      ['/oauth/device/complete', { userCode: 'BCDF-GHJK', token: 'lwt_x', expiresAt: 5 }],
+      ['/oauth/device/complete', { userCode: 'BCDF-GHJK', token: 'lwt_y' }],
       ['/oauth/device/deny', { userCode: 'BCDF-GHJK' }],
     ]);
     stubFetch(() => Response.json({ error: 'invalid_code' }, { status: 400 }));

@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from 'react';
 import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@livedesign/design';
-import { useConceptTourPreview } from './concept-tour-preview';
+import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import { animClass, animSpeedVars } from './icons';
 
 export { chartFrame } from '@livedesign/design';

@@ -65,15 +65,15 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
 
   return (
     <Dialog open onClose={close} titleId={titleId} phoneSheet>
-      <DialogHeader title={<span id={titleId}>Report This Document</span>}>
+      <DialogHeader title={<span id={titleId}>Report This Canvas</span>}>
         <DialogCloseButton onClick={close} />
       </DialogHeader>
       <div ref={bodyRef} tabIndex={-1} className="px-6 py-5 outline-none">
         {phase === 'sent' ? (
           <div className="flex flex-col gap-5">
             <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
-              Thanks for letting us know. When enough people report a document, it is taken out of
-              the Community.
+              Thanks for letting us know. When enough people report a canvas, it is taken out of the
+              Community.
             </p>
             <div className="flex justify-end">
               {/* The form it replaces held focus; keep it inside the dialog. */}
@@ -86,7 +86,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
           <form onSubmit={submit} className="flex flex-col gap-5">
             <fieldset className="flex flex-col gap-1.5">
               <legend className="mb-2 text-sm text-slate-600 dark:text-slate-300">
-                What&apos;s wrong with this document?
+                What&apos;s wrong with this canvas?
               </legend>
               {COMMUNITY_REPORT_REASONS.map((r) => (
                 <label

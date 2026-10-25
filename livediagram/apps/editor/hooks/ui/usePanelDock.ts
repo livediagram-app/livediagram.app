@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useUiScale } from '@/components/providers/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import {
   DEFAULT_PANEL_CORNER,
   PANEL_IDS,

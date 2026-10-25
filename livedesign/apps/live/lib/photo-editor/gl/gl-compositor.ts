@@ -28,6 +28,7 @@ import {
   QUAD_VS,
   TILE_FS,
 } from './shaders';
+import { coarsePointer } from '../coarse-pointer';
 
 type Node = { layer: PhotoLayer; children: Node[] };
 export type ViewRect = { x: number; y: number; width: number; height: number };
@@ -78,7 +79,10 @@ export class GlCompositor {
   private readonly blank2d: WebGLTexture;
   private readonly blank3d: WebGLTexture;
 
-  constructor(canvas: HTMLCanvasElement, tileBudget = GPU_TILE_BYTES_DESKTOP) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    tileBudget = coarsePointer() ? GPU_TILE_BYTES_COARSE : GPU_TILE_BYTES_DESKTOP,
+  ) {
     const gl = canvas.getContext('webgl2', {
       premultipliedAlpha: true,
       alpha: false,

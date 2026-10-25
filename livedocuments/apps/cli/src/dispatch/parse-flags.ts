@@ -5,7 +5,7 @@
 import { parseArgs } from 'node:util';
 import type { Verb } from '@livedocuments/agent-verbs';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { fieldsOf, flagOf, keyOf, restName, type Field } from './fields';
 
 const usage = (verb: Verb, message: string) =>

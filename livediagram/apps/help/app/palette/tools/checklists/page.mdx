@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ChecklistCard } from '@/components/illustrations/palette-tools-cards';
+import { ChecklistCard } from '@liveworkspace/help-site/art/illustrations/palette-tools-cards';
 import { ChecklistMenu } from '@/components/illustrations/tools-menus';
 
 export const metadata = helpMetadata({
@@ -43,7 +43,7 @@ A checklist is a card of checkable to-do rows, a visual home for the task lists 
 
 Clicking a checkbox on the canvas toggles that row, no edit mode needed. Done rows tick the box, **strike through** the text, and mute it, and a **done count** (for example "2/5") appears in the card's bottom-right corner once at least one row is done.
 
-Ticks **sync live**, so in a shared session everyone sees a box tick the moment it is clicked, and two people ticking different rows at once both land. A tick is the room's answer rather than an edit, so it is **not undoable**: click the box again to untick it. Only people who can edit the document can tick; with view-only access, or on a locked checklist, tab or layer, the boxes don't respond.
+Ticks **sync live**, so in a shared session everyone sees a box tick the moment it is clicked, and two people ticking different rows at once both land. A tick is the room's answer rather than an edit, so it is **not undoable**: click the box again to untick it. Only people who can edit the canvas can tick; with view-only access, or on a locked checklist, tab or layer, the boxes don't respond.
 
 ## Editing the rows
 

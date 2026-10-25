@@ -14,15 +14,13 @@ import { extentOf, placePicture } from './layer-ops';
 import { photoWorkers } from './photo-worker-client';
 import type { PhotoSession } from './session';
 import { rasterizeText } from './text-raster';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type PhotoClip = { raster: Raster; x: number; y: number; pngBytes: number };
 
 // This browser's last photo copy: its pixels and place, and the size of the PNG it put on the system
 // clipboard (a paste of that same PNG is this copy, so it keeps its place).
 let clip: PhotoClip | null = null;
-
-export const photoClip = (): PhotoClip | null => clip;
 
 const offsetOf = (l: PhotoLayer) =>
   l.layerKind === 'pixel' ? (l.offset ?? { x: 0, y: 0 }) : { x: 0, y: 0 };

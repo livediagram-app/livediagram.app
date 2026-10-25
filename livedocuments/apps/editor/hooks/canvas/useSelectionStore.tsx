@@ -5,8 +5,8 @@
 // changed.
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { useStoreSlice } from '@/hooks/ui/useStoreSlice';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 const SelectionStoreContext = createContext<SelectionStore | null>(null);
 
@@ -18,16 +18,6 @@ export function SelectionStoreProvider({
   children: ReactNode;
 }) {
   return <SelectionStoreContext.Provider value={store}>{children}</SelectionStoreContext.Provider>;
-}
-
-/** Whether a selection store is provided (a component that can do without one checks first). */
-export function useHasSelectionStore(): boolean {
-  return useContext(SelectionStoreContext) !== null;
-}
-
-/** The selection store, or null outside an editor that provides one. */
-export function useOptionalSelectionStore(): SelectionStore | null {
-  return useContext(SelectionStoreContext);
 }
 
 export function useSelectionStore(): SelectionStore {

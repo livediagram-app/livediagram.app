@@ -6,6 +6,7 @@ import { upgradeLegacyLinks } from './legacy-links';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
+import { dropCustomTheme } from './retired-custom-themes';
 import { dropRetiredPages } from './retired-pages';
 import { dropRetiredPlan } from './retired-plan';
 import { migrateStoredElements } from './stored-elements';
@@ -14,7 +15,7 @@ import { settleStacks } from './stack';
 import { settleTabFields } from './tab-fields';
 import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
@@ -23,9 +24,12 @@ export function migrateStoredTab<
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
   // A former Pages tab (./retired-pages) opens in Diagram, its pages, articles and page-only elements dropped, and a
   // former Plan tab (./retired-plan) as an ordinary one, its dashboard, form and Plan-only elements dropped.
-  const schemed = migrateRetiredTheme(
-    migrateRetiredScheme(
-      migrateWhiteboardKind(settleTabFields(dropRetiredPlan(dropRetiredPages(tab)))),
+  // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
+  const schemed = dropCustomTheme(
+    migrateRetiredTheme(
+      migrateRetiredScheme(
+        migrateWhiteboardKind(settleTabFields(dropRetiredPlan(dropRetiredPages(tab)))),
+      ),
     ),
   );
   if (!Array.isArray(schemed.elements)) return schemed;

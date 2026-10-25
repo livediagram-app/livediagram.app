@@ -38,16 +38,19 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livedocuments/document';
-import { ContextMenuDivider } from '@/components/palette/ContextMenu';
+import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,
   RemoveIconGlyph,
   StyleMenuGlyph,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile } from '@/components/primitives/MenuTiles';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { TypographySections } from './TypographySections';
 import { presetPxFor } from './TextSizeControl';
 

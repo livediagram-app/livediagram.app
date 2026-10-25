@@ -11,8 +11,8 @@ import {
   hexToBytes,
   type BlendMode,
 } from '@livedesign/photo-engine';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';

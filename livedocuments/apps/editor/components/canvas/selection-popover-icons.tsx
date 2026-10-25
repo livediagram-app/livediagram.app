@@ -1,4 +1,4 @@
-import { lucideBringToFront, lucideSendToBack, lucideType } from '@livedocuments/icons/lucide';
+import { lucideBringToFront, lucideSendToBack, lucideType } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 
 // Action icons specific to the floating SelectionPopover toolbar (edit text, bring to front / send

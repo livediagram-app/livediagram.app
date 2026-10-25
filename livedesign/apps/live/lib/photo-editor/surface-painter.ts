@@ -8,7 +8,7 @@ import { renderCpuView } from './cpu-view';
 import { GlCompositor, type ViewRect } from './gl/gl-compositor';
 import type { PhotoSession, TileChange } from './session';
 import { rasterizeText } from './text-raster';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { photoViewOptions } from './view-options';
 
 // The largest drawing buffer a side, device px (past it the view is drawn smaller and stretched).

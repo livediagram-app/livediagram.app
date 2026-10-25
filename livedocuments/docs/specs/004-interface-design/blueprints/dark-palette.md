@@ -10,10 +10,11 @@ Scope, by file:
 
 | File                                                    | Role                                                                                     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                    | `.dark` surface + Steel tokens                                                           |
-| `packages/ui/src/brand-classes.ts`                      | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
+| `../packages/tailwind-config/theme.css`                 | `.dark` surfaces (the shared theme)                                                      |
+| `packages/tailwind-config/theme.css`                    | `.dark` Steel brand tokens, in amber (this product's palette)                            |
+| `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-amber-400`                                                    |
-| `packages/document/src/canvas-colors.ts`                | Dark canvas + pattern constants                                                          |
+| `../packages/model-core/src/canvas-colors.ts`           | Dark canvas + pattern constants                                                          |
 | `packages/document/src/colors.ts`                       | `DARK_INK`, `defaultArrowLabelColor`                                                     |
 | `packages/document/src/svg-render-arrows.ts`            | Export caption colour through `defaultArrowLabelColor`                                   |
 | `packages/template-previews/src/preview-art-tile.css`   | Editor `.dark` tile rule landing on the canvas colour                                    |
@@ -76,7 +77,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/ui/src/brand-classes.ts
+// ../packages/ui/src/brand-classes.ts
 export const SOLID_BRAND_DARK = 'dark:bg-brand-600';
 export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-700';
 
@@ -128,7 +129,7 @@ mode (their backdrop).
 ## Security and trust
 
 No trust boundary: static tokens and pure colour functions. `editorAccentCss` and `identityVars` interpolate colours
-that are either built-in or validated hex (custom themes validate on save); the ramp and shade functions only emit
+that are either built-in or validated hex; the ramp and shade functions only emit
 `#rrggbb`, and a custom property value cannot break out of its declaration in React's style serialisation.
 
 ## Performance and limits

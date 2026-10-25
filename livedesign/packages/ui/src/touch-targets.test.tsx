@@ -1,9 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { BreadcrumbTrail } from './Breadcrumb';
-import { DialogCloseButton } from './dialog/DialogCloseButton';
-import { ProductNav } from './ProductNav';
+import { DialogCloseButton } from '@liveworkspace/ui';
+import { SiteSwitcher } from './SiteSwitcher';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
@@ -17,18 +16,20 @@ const classOf = (html: string, marker: RegExp): string => {
 };
 
 describe('touch targets on the public sites', () => {
-  it('pads the header brand, apps menu and primary CTA vertically', () => {
-    const html = renderToStaticMarkup(
-      <SiteHeader ctaSurface="Home" productNav="home" shareRail={false} />,
-    );
+  it('pads the header brand and primary CTA vertically', () => {
+    const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
     expect(classOf(html, /<a [^>]*href="\/"[^>]*>/)).toMatch(/\btouch-target-y\b/);
     expect(classOf(html, /<a [^>]*aria-label="Choose Template"[^>]*>/)).toMatch(
       /\btouch-target-y\b/,
     );
   });
 
-  it('pads the apps menu trigger vertically', () => {
-    const html = renderToStaticMarkup(<ProductNav current="home" showOnMobile />);
+  it('pads the site switcher trigger vertically', () => {
+    const html = renderToStaticMarkup(
+      <SiteSwitcher current="livedesign.app">
+        <a href="/">logo</a>
+      </SiteSwitcher>,
+    );
     expect(classOf(html, /<button [^>]*aria-haspopup[^>]*>/)).toMatch(/\btouch-target-y\b/);
   });
 
@@ -40,22 +41,6 @@ describe('touch targets on the public sites', () => {
     for (const c of columnLinks) expect(c).toMatch(/\bpointer-coarse:py-3\b/);
     expect(html).toMatch(/class="mt-3 flex flex-col items-start gap-2[^"]*pointer-coarse:gap-0/);
   });
-
-  it('pads breadcrumb links by padding, which `truncate` cannot clip', () => {
-    const html = renderToStaticMarkup(
-      <BreadcrumbTrail
-        rootLabel="Home"
-        items={[{ label: 'Features', href: '/features' }, { label: 'Plan' }]}
-      />,
-    );
-    const links = [...html.matchAll(/<a [^>]*class="([^"]*)"[^>]*>/g)].map((m) => m[1]!);
-    expect(links).toHaveLength(2);
-    for (const c of links) {
-      expect(c).toMatch(/\bpointer-coarse:py-3\b/);
-      expect(c).toMatch(/\bpointer-coarse:-my-3\b/);
-    }
-  });
-
   it('gives both dialog close shapes a 44px tap area', () => {
     for (const compact of [false, true]) {
       const html = renderToStaticMarkup(<DialogCloseButton onClick={() => {}} compact={compact} />);

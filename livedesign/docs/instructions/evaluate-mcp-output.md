@@ -22,8 +22,9 @@ The kit lives in `apps/mcp/eval/`:
 ## Set up
 
 1. Work in a worktree on a branch cut from a fresh `origin/main`, never in the main checkout.
-2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`, then
-   `corepack pnpm exec wrangler d1 migrations apply DB --local --persist-to .wrangler/state` from `apps/api`.
+2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`. The api
+   has no database of its own: liveworkspace's accounts, index and media (for a task's gallery) run locally beside it (`pnpm dev` in each of
+   `liveworkspace/apps/accounts`, `liveworkspace/apps/index`, `liveworkspace/apps/media`), at the origins `.dev.vars` names.
 3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
    `apps/mcp`:
    `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
@@ -35,9 +36,10 @@ The kit lives in `apps/mcp/eval/`:
 6. Run from `apps/mcp/eval`: `node bench/run.mjs --round <name> --tasks all --models haiku,sonnet,opus --repeat 2
 --concurrency 6`. `--tasks` takes `all`, an area (`pages`) or ids (`I1,I4`), mixed. A whole-bank round takes
    about a minute per run at that concurrency.
-7. Each run gets a token minted into local D1 for a throwaway owner, so it starts in an empty library and never sees
-   another run's designs ("our launch deck" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
-   run's library can be read again.
+7. Each run gets its own throwaway account and API token from the local accounts Worker (its development-only
+   `POST /api/auth/internal/bench-accounts`, with the accounts Worker's `ADMIN_TOKEN`, `local-admin-token` by default),
+   so it starts in an empty library and never sees another run's designs ("our onboarding screens" finds its own). The
+   tokens are kept in `runs/<round>/tokens.json` so a run's library can be read again.
 8. Each run is `claude -p` from an empty temp directory outside the repo, with `--strict-mcp-config`, `--tools ""`,
    `--setting-sources ""`, a short chat-app system prompt (with a fixed date) and `ENABLE_TOOL_SEARCH=false`, so the
    assistant sees every tool schema up front, as a connector in a chat app does, and nothing of the repo.

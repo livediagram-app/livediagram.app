@@ -2,10 +2,13 @@
 
 import { HoverCard } from '@livedocuments/ui';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
-import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
-import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
+import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
+import {
+  ClusterPopoverSegment,
+  ClusterStrip,
+} from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { ThemeLookIcon } from '@/components/palette/palette-icons';
-import { useDockNames } from '@/hooks/ui/useDockNames';
+import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 
 // Layers and the Theme & canvas button, one strip in the bottom-right cluster
 // (docs/specs/007-editor/editor-app.md): both shape how the tab looks rather than what is on it, so

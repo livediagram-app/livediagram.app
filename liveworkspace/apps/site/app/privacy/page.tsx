@@ -4,7 +4,7 @@ import {
   lucideEyeOff,
   lucideHandshake,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
@@ -67,16 +67,16 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>Signing in to an app.</strong> When an app sends you to liveworkspace.app to
             sign in, we give that app a short-lived token naming your account, your email and your
-            name, and keep a record of which apps you have signed in to so you aren&rsquo;t asked
-            again.
+            name, and keep a record of which apps you have signed in to, and when you first did, so
+            you aren&rsquo;t asked again.
           </li>
           <li>
             <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
             email address and role. If you invite someone, we store the address you typed and email
-            them the invitation; it waits on liveworkspace.app until they accept or decline it. The
-            token an app gets when you sign in also lists the teams you are in, and each app keeps a
-            copy of the teams its people are in, with their members, so it can show them and decide
-            who may open a team&rsquo;s work.
+            them the invitation, with up to three reminders while nobody has answered it, each with
+            a link to decline it; it waits on liveworkspace.app until they accept or decline it. The
+            token an app gets when you sign in also lists the teams you are in, which is how we
+            decide who may open a team&rsquo;s work. The apps keep no copy of your teams.
           </li>
           <li>
             <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
@@ -84,6 +84,11 @@ const SECTIONS: LegalSection[] = [
             A token works in every app, expires after six months and is deleted with your account.
             An app that a token is used with keeps a note of that token (never the secret) and of
             anything paired through it, such as a workbench.
+          </li>
+          <li>
+            <strong>Your onboarding emails.</strong> Which of the onboarding emails we have sent
+            you, which milestone emails each app has sent you, and when you last saved something in
+            any app, which is how we know whether to nudge you.
           </li>
           <li>
             <strong>Keeping abuse out.</strong> The sign-in pages use Cloudflare Turnstile to check
@@ -102,8 +107,24 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>
           <strong>Your documents.</strong> What you make is saved so it is there when you come back,
-          and so the people you share it with can see it. It is stored in the app&rsquo;s database
-          on Cloudflare.
+          and so the people you share it with can see it. Each document is stored on its own on
+          Cloudflare, with its comments beside what they are about. While people work on one
+          together, each comment, answer, idea and vote that passes through the live session is also
+          noted in that document&rsquo;s own storage, so none is lost or counted twice, and is
+          removed with it. A document you make in <strong>Offline Mode</strong> (This Browser),
+          which every app has, stays in your browser and never reaches our servers, unless you use
+          an AI feature on it or add a web link to it (our server fetches the link&rsquo;s preview).
+          A guest&rsquo;s new documents start in This Browser; someone signed in starts on our
+          servers. Either can move a document between the two.
+        </li>
+        <li>
+          <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
+          app, so the Explorer in each app can show all of it: each document&rsquo;s title, app,
+          owner, team, folder, favourite and Trash state, its share links, when you last opened it,
+          and a small summary for its card (such as how many elements it has). For the Timeline it
+          keeps what happened to each document (created, renamed, shared, commented on) and who did
+          it, and for the Inbox it keeps, for each comment thread and action, who is in it, whether
+          it is resolved or done, and the start of the latest comment (up to 500 characters).
         </li>
         <li>
           <strong>Images you upload</strong> are kept in Cloudflare object storage. Before a JPEG is
@@ -111,32 +132,22 @@ const SECTIONS: LegalSection[] = [
           An uploaded image that no document uses is removed once it is more than 30 days old.
         </li>
         <li>
-          <strong>A browser id.</strong> If you use an app without an account, it keeps a random
-          identifier in your browser to link your documents to your browser. It is not tied to your
-          name or email.
+          <strong>A guest id.</strong> If you use an app without an account, liveworkspace.app gives
+          your browser a random guest id, the same in every app, to link your documents to your
+          browser. It is not tied to your name or email. We note the day it was last handed to an
+          app. If you later sign in or create an account, what you made as a guest becomes your
+          account&rsquo;s.
         </li>
         <li>
           <strong>Your display name and colour</strong>, the ones collaborators see, against your
-          browser id or account.
-        </li>
-        <li>
-          <strong>livediagram&rsquo;s own API tokens.</strong> livediagram still makes API tokens in
-          its own Settings, apart from the liveworkspace ones above. For those it stores a one-way
-          hash of each token (never the token itself), its name and when it was last used. They
-          expire after six months and are deleted with your account.
+          guest id or account. liveworkspace.app keeps them, so they are the same in every app; an
+          account shows its own name until you choose a display name.
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
           app&rsquo;s MCP server, we store the tool&rsquo;s registration (its name and redirect
           address, for 30 days), short-lived authorisation codes that expire within minutes, and for
           an hour a count of registrations from your network address, to stop abuse.
-        </li>
-        <li>
-          <strong>livediagram&rsquo;s own team invitations.</strong> livediagram still runs its own
-          teams while it moves to liveworkspace teams. If a teammate invites you there by email, it
-          stores that address with the team, sends you the invitation (and up to three reminders
-          while nobody has answered it), and may email you about actions and mentions at that
-          address before you create an account.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -149,10 +160,6 @@ const SECTIONS: LegalSection[] = [
           <strong>Votes from guests.</strong> To stop one person voting many times, a guest&rsquo;s
           vote stores a one-way hash of their network address combined with the document&rsquo;s id.
           It is deleted with the document.
-        </li>
-        <li>
-          <strong>Document activity.</strong> What happened to your documents (created, renamed,
-          shared, commented on) and which ones you opened, so the app can show you. Kept for a year.
         </li>
         <li>
           <strong>Operational logs.</strong> Our host, Cloudflare, keeps standard request logs that
@@ -203,12 +210,6 @@ const SECTIONS: LegalSection[] = [
         <p>The AI features run only when you use them, and only where an AI provider is set up.</p>
         <ul>
           <li>
-            <strong>The AI assistant.</strong> When you ask it something, your prompt, the
-            tab&rsquo;s name, what is on the current tab and your last few messages in that
-            conversation are sent through our API to <strong>OpenAI</strong>, which writes the
-            answer. The assistant is off until you turn it on in Settings.
-          </li>
-          <li>
             <strong>Connected AI tools</strong>, such as Claude, read and change your documents
             through our API with the token you approved. What the tool does with what it reads is
             governed by its own terms and privacy policy.
@@ -219,29 +220,46 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: 'image-search',
+    title: 'Image search',
+    body: (
+      <p>
+        In livediagram, livedocuments and livedesign, the image picker&rsquo;s Search tab sends your
+        search words from your browser to <strong>Openverse</strong>, run by the WordPress
+        Foundation, which sees them and your IP address under its own privacy policy; our servers
+        never see the search. A picture you pick is downloaded from its original host and stored
+        like any image you upload.
+      </p>
+    ),
+  },
+  {
     id: 'anonymous-product-analytics',
     title: 'Anonymous product analytics',
     body: (
       <>
         <p>
-          To learn which features actually help, the apps record anonymous, first-party product
-          events, such as &ldquo;a document was created&rdquo;. Each event is a few fixed labels (a
-          category, an action and an optional type) and the app it came from. Events never include
-          anything that identifies you or your work: no names, no content, no account id, no IP
-          address. Page views are counted the same way, with ids and anything after a <code>?</code>{' '}
-          or <code>#</code> removed in your browser first, as are errors (only a generic kind) and
-          timings (only the range they fell in).
+          To learn which features actually help, the apps and the Explorer on liveworkspace.app
+          record anonymous, first-party product events, such as &ldquo;a document was
+          created&rdquo;. Each event is a few fixed labels (a category, an action and an optional
+          type) and the app it came from (the Explorer&rsquo;s count for the app it shows, or for
+          liveworkspace.app). Events never include anything that identifies you or your work: no
+          names, no content, no account id, no IP address. Page views are counted the same way, with
+          ids and anything after a <code>?</code> or <code>#</code> removed in your browser first,
+          as are errors (only a generic kind) and timings (only the range they fell in).
         </p>
         <p>
           Your browser sends them straight to liveworkspace&rsquo;s telemetry service at
           liveworkspace.app, without cookies, which keeps them in its own database, apart from your
           documents and account, for 60 days. To count sign-ups and sign-ins once each, an
-          app&rsquo;s server also remembers which sessions it has already counted, for 90 days. The
-          data is never sold or shared: the only place it goes beyond our own use is the public{' '}
-          <a href="/telemetry">telemetry dashboard</a>, which shows exactly the totals we see. You
-          can turn off the events your browser sends in each app&rsquo;s Settings. A few totals are
-          counted by our servers and can&rsquo;t be turned off: sign-ups and sign-ins, first visits
-          to a share link, multiplayer sessions, emails sent and server errors.
+          app&rsquo;s server also remembers which sessions it has already counted, for 90 days, and
+          that an account has been seen before (deleted with the account). Only the totals are
+          published. The data is never sold or shared: the only place it goes beyond our own use is
+          the public <a href="/telemetry">telemetry dashboard</a>, which shows exactly the totals we
+          see. You can turn off the events your browser sends: signed in, one setting turns them off
+          in every app and on liveworkspace.app; as a guest, in each app&rsquo;s Settings, and on
+          liveworkspace.app your browser&rsquo;s Global Privacy Control or Do Not Track does. A few
+          totals are counted by our servers and can&rsquo;t be turned off: sign-ups and sign-ins,
+          first visits to a share link, multiplayer sessions, emails sent and server errors.
         </p>
       </>
     ),
@@ -262,10 +280,11 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         If you sign in, liveworkspace.app sets a cookie to keep you signed in, and each app you use
-        sets its own to remember that you are. The apps keep your browser id, your preferences (also
-        saved to our database so they follow you) and your Community key in local storage, and
-        liveworkspace.app keeps your light or dark choice there. We do not use advertising or
-        tracking cookies.
+        sets its own to remember that you are. If you use an app without an account,
+        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your
+        preferences (also saved to our database so they follow you) and your Community key in local
+        storage, and liveworkspace.app keeps your light or dark choice there. We do not use
+        advertising or tracking cookies.
       </p>
     ),
   },
@@ -280,15 +299,16 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Account and service emails</strong>: team invitations from liveworkspace.app
-            (and, for livediagram&rsquo;s own teams, from livediagram with up to three reminders), a
-            confirmation when you delete your account, a reminder a week before a livediagram API
-            token expires, and a note if one of your forms is suspended after reports.
+            (with up to three reminders while unanswered), a confirmation when you delete your
+            account, a one-time reminder a week before an API token expires, and a note if one of
+            your forms is suspended after reports.
           </li>
           <li>
             <strong>Notifications about your work</strong>: when someone first opens a document you
-            shared, comments on one you own, fills in one of your forms, answers a team invite you
-            sent, assigns you an action or mentions you. A mention quotes the comment (up to about
-            280 characters); an assigned action includes its name and the start of its description.
+            shared, comments on one you own, fills in one of your forms, answers a team invitation
+            you sent, assigns you an action or mentions you. A mention quotes the comment (up to
+            about 280 characters); an assigned action includes its name and the start of its
+            description.
           </li>
           <li>
             <strong>A short onboarding series</strong>: a welcome, a few tips in your first two
@@ -312,17 +332,14 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Cloudflare</strong>: hosting, databases, image storage, sending sign-in codes,
-            and Turnstile on the sign-in pages.
+            <strong>Cloudflare</strong>: hosting, databases, image storage, and Turnstile on the
+            sign-in pages.
           </li>
           <li>
-            <strong>Resend</strong>: delivering the apps&rsquo; other emails.
+            <strong>Resend</strong>: delivering every email we send, sign-in codes included.
           </li>
           <li>
             <strong>Google</strong>: sign-in with Google, if you choose it.
-          </li>
-          <li>
-            <strong>OpenAI</strong>: the AI assistant, when you use it.
           </li>
         </ul>
         <p>
@@ -356,22 +373,32 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
-          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. That app
-          deletes your documents, folders, images, preferences and API tokens straight away, and
-          your liveworkspace account closes, for every app at once: your account details, sessions,
-          API tokens and every app&rsquo;s sign-in records are deleted, and you leave every team (a
-          team you ran alone goes; one you were the only admin of passes to its longest-standing
-          member). Documents in a team&rsquo;s shared library pass to another member of the team.
-          What you made in the other apps stays there until you delete it in each one, or ask us to
-          and we will.
+          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. Your
+          liveworkspace account closes, for every app at once: the documents you own in every app
+          (the Trash included), your folders, favourites, images and preferences, your account
+          details, sessions, API tokens and sign-in records are deleted straight away, and you leave
+          every team (a team you ran alone goes; one you were the only admin of passes to its
+          longest-standing member). Documents that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
-          days, document activity for a year, and changes made by connected AI tools for 30 days, so
-          they can be undone. A guest&rsquo;s documents have no account to delete: remove them in
-          the app, or ask us.
+          days, and changes made by connected AI tools for 30 days, so they can be undone. A
+          guest&rsquo;s documents have no account to delete: remove them in the Explorer, or ask us.
+          A guest id that no app has been handed for 400 days can&rsquo;t be used again, so its
+          preferences, display name and colour are then deleted; its documents stay.
         </p>
       </>
+    ),
+  },
+  {
+    id: 'self-hosting',
+    title: 'Self-hosting',
+    body: (
+      <p>
+        livediagram, liveplanner, livedocuments and livedesign are MIT-licensed. If you run your own
+        copy of one, you are responsible for your own deployment, and this policy does not apply to
+        it.
+      </p>
     ),
   },
   {
@@ -411,36 +438,7 @@ const SECTIONS: LegalSection[] = [
     ),
   },
 
-  // App by app.
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-sign-in',
-    title: 'Signing in, for now',
-    body: (
-      <p>
-        livediagram still signs you in through its own provider, <strong>Clerk</strong>, which
-        receives your email address and, if you choose Google sign-in, basic profile details from
-        Google. Clerk&rsquo;s sign-in script loads in the editor for every visitor and sets cookies
-        to remember whether you are signed in. We store only the web address of your profile
-        picture, never the image, to show it to collaborators who are signed in; turn that off in{' '}
-        <strong>Settings &gt; Account &gt; Show My Profile Picture</strong>. Deleting your account
-        deletes it at Clerk. livediagram will move to the liveworkspace account, and this section
-        will change when it does.
-      </p>
-    ),
-  },
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-offline-mode',
-    title: 'Offline Mode',
-    body: (
-      <p>
-        A document you create in Offline Mode stays in your browser and never reaches our servers,
-        unless you use an AI feature on it or add a web link to it (our server fetches the
-        link&rsquo;s preview).
-      </p>
-    ),
-  },
+  // App by app: only what one app does beyond the above (each signs you in with your liveworkspace account).
   {
     app: 'livediagram.app',
     id: 'livediagram-google-drive',
@@ -496,26 +494,12 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    app: 'livediagram.app',
-    id: 'livediagram-image-search',
-    title: 'Image search',
-    body: (
-      <p>
-        The image picker&rsquo;s Search tab sends your search words from your browser to{' '}
-        <strong>Openverse</strong>, run by the WordPress Foundation, which sees them and your IP
-        address under its own privacy policy; our servers never see the search. A picture you pick
-        is downloaded from its original host and stored like any image you upload.
-      </p>
-    ),
-  },
-  {
     app: 'liveplanner.app',
     id: 'liveplanner-everything-above',
     title: 'Nothing beyond the above',
     body: (
       <p>
-        liveplanner signs you in with your liveworkspace account, and its boards, sheets, dashboards
-        and forms are stored as described under{' '}
+        liveplanner&rsquo;s boards, sheets, dashboards and forms are stored as described under{' '}
         <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
         its own.
       </p>
@@ -527,8 +511,7 @@ const SECTIONS: LegalSection[] = [
     title: 'Nothing beyond the above',
     body: (
       <p>
-        livedocuments signs you in with your liveworkspace account, and its articles, slides and
-        infographics are stored as described under{' '}
+        livedocuments&rsquo; articles, slides and infographics are stored as described under{' '}
         <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
         its own.
       </p>
@@ -540,9 +523,9 @@ const SECTIONS: LegalSection[] = [
     title: 'Nothing beyond the above',
     body: (
       <p>
-        livedesign signs you in with your liveworkspace account. Its logos and wireframes are stored
-        as described under <a href="#what-the-apps-store">What the apps store</a>, and photos you
-        edit are images you upload, handled the same way. It handles your data in no way of its own.
+        livedesign&rsquo;s logos and wireframes are stored as described under{' '}
+        <a href="#what-the-apps-store">What the apps store</a>, and photos you edit are images you
+        upload, handled the same way. It handles your data in no way of its own.
       </p>
     ),
   },

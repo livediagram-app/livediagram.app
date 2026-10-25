@@ -6,7 +6,7 @@ import { HeroSearch } from './HeroSearch';
 // what the visitor is planning and takes them straight to a starting point, so it grows with the product
 // instead of naming one mode. A band in the brand mark's colours (@liveplanner/ui hero-band.css, shared with the help centre): the promise
 // badge, the question, the template search, then a fan along its foot:
-// templates dealt every few seconds, or a returning visitor's own projects (HeroFanMine).
+// templates dealt every few seconds, for every visitor.
 const BADGE =
   'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 

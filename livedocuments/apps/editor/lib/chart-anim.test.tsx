@@ -7,7 +7,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ShapeElement } from '@livedocuments/document';
 import { useChartAnim } from './chart';
-import { setConceptTourPreview } from './concept-tour-preview';
+import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 
 const chart = { id: 'c1', type: 'shape', shape: 'pie-chart', pieAnim: 'spin' } as ShapeElement;
 

@@ -1,4 +1,4 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -7,7 +7,7 @@ import {
 } from '@liveplanner/project';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 
@@ -17,7 +17,6 @@ type CanvasGuideOverlayProps = {
   alignGuides: AlignmentGuide[];
   allSnapTargets: SnapTarget[];
   distGuides: DistributionGuide[];
-  drawHover: { x: number; y: number } | null;
   marquee: Marquee;
   // The active tab's theme id, so the guides / marquee tint to the tab's
   // accent (same derivation the rest of the chrome uses).
@@ -29,14 +28,13 @@ type CanvasGuideOverlayProps = {
 };
 
 // The in-canvas snap overlays drawn during a drag: alignment guides, arrow
-// snap-point markers, the pre-press snap dot, equal-spacing (distribution)
+// snap-point markers, equal-spacing (distribution)
 // guides, and the marquee selection rectangle. Pure SVG, converting canvas
 // coords -> client via the wrapper rect + zoom. Split out of CanvasChrome.
 export function CanvasGuideOverlay({
   alignGuides,
   allSnapTargets,
   distGuides,
-  drawHover,
   marquee,
   tabThemeId,
   wrapperRef,
@@ -49,7 +47,7 @@ export function CanvasGuideOverlay({
   // already in client coords).
   const origin = useCanvasClientOrigin(
     wrapperRef,
-    alignGuides.length > 0 || allSnapTargets.length > 0 || !!drawHover || distGuides.length > 0,
+    alignGuides.length > 0 || allSnapTargets.length > 0 || distGuides.length > 0,
     viewKey,
   );
   return (
@@ -124,40 +122,12 @@ export function CanvasGuideOverlay({
                       cx={x}
                       cy={y}
                       r={t.active ? 5 : 3.5}
-                      fill={t.active ? 'rgb(14, 165, 233)' : 'white'}
-                      stroke="rgb(14, 165, 233)"
+                      fill={t.active ? 'var(--color-brand-500)' : 'white'}
+                      stroke="var(--color-brand-500)"
                       strokeWidth={t.active ? 2 : 1.5}
                     />
                   );
                 })}
-              </svg>
-            );
-          })()
-        : null}
-
-      {/* Pre-press start-snap dot. While a draw is armed and the hovered
-          pointer has snapped to a neighbour, mark the snapped point so the
-          user knows where the first corner will land before pressing (the
-          guide lines above show what it aligned to). */}
-      {drawHover
-        ? (() => {
-            const rect = origin;
-            if (!rect) return null;
-            const x = rect.left + drawHover.x * viewportZoom;
-            const y = rect.top + drawHover.y * viewportZoom;
-            return (
-              <svg
-                aria-hidden
-                className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
-              >
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={3.5}
-                  fill="rgb(14, 165, 233)"
-                  stroke="white"
-                  strokeWidth={1.5}
-                />
               </svg>
             );
           })()

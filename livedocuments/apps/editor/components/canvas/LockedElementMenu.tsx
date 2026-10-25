@@ -21,7 +21,7 @@ import {
   Portal,
   useClickOutside,
 } from '@livedocuments/ui';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 
 const WIDTH = 236;
 

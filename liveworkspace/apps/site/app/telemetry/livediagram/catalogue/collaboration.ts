@@ -1,14 +1,14 @@
 // Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
   SESSION_POLL_OPENED,
   SESSION_TIMER_OPENED,
   SESSION_VOTE_OPENED,
   SLIDE_DECK_OPENED,
 } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const VOTES_ENDED = chart(
   'Tab',
@@ -37,7 +37,7 @@ export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A document share link, embed code or live image copied.',
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
@@ -166,30 +166,12 @@ export const TIMERS_RESUMED = chart(
   { types: ['TimerResumed'] },
 );
 
-export const TEAM_CHANGES = chart(
-  'Team',
-  'Changed',
-  'Team Changes',
-  'A team renamed or a member’s role changed.',
-);
-
-export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
-  rising: 'neutral',
-});
-
 export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
   'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
-);
-
-export const INVITE_LINKS_SHARED = chart(
-  'Team',
-  'Shared',
-  'Invite Links Shared',
-  'A team invite link made to share.',
 );
 
 export const SLIDE_NOTES = chart(
@@ -320,9 +302,11 @@ export const TEAMS_CREATED: Metric = {
   action: 'Created',
   type: null,
   title: 'Teams Created',
-  blurb: 'A new team workspace was created.',
+  blurb: 'A new team workspace was created, in the app or on liveworkspace.app.',
 };
 
+// Teams are run on liveworkspace.app, where accounts counts each change under the app the person acting signed up
+// through (liveworkspace/docs/accounts.md "Teams").
 export const INVITES_SENT: Metric = {
   category: 'Team',
   action: 'Added',
@@ -349,7 +333,7 @@ export const INVITES_DECLINED: Metric = {
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
 };
 
-// docs/specs/013-workspace/teams.md "Declining from the email": the same answer, given from the inbox.
+// The same answer, given from the invitation email's Decline link.
 export const INVITES_DECLINED_FROM_EMAIL: Metric = {
   category: 'Team',
   action: 'Declined',
@@ -359,6 +343,24 @@ export const INVITES_DECLINED_FROM_EMAIL: Metric = {
   blurb:
     "The recipient turned an invitation down from the email's Decline link, without signing in.",
 };
+
+export const INVITE_LINKS_SHARED = chart(
+  'Team',
+  'Shared',
+  'Invite Links Shared',
+  'A team invite link turned on to share.',
+);
+
+export const TEAM_CHANGES = chart(
+  'Team',
+  'Changed',
+  'Team Changes',
+  'A team renamed or a member’s role changed.',
+);
+
+export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
+  rising: 'neutral',
+});
 
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
@@ -522,17 +524,24 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
+export const JOINING: MetricStack = {
+  stack: true,
+  title: 'Joining',
+  blurb:
+    'The people who came into a document through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+};
+
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
-  title: 'Sharing & Joining',
-  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
+  title: 'Sharing & Embeds',
+  blurb:
+    'Edit, Participant and view links made, share links and embed codes copied or switched off, embeds viewed, and the Workbench.',
   members: [
     EDIT_LINKS_SHARED,
     PARTICIPATE_LINKS_SHARED,
     VIEW_LINKS_SHARED,
-    COLLABORATORS_JOINED,
-    PARTICIPANTS_JOINED,
-    VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
@@ -541,7 +550,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     WORKBENCH_WORKSPACES,
     LIVE_IMAGE_TABS,
   ],
-  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: SHARE_LINKS_COPIED,
 };
 
 export const DISCUSSION: MetricStack = {
@@ -559,18 +568,11 @@ export const DISCUSSION: MetricStack = {
   headline: COMMENTS_ADDED,
 };
 
-export const INVITE_LINKS_COPIED = chart(
-  'UI',
-  'Copied',
-  'Invite Links Copied',
-  'A team invite link copied to share.',
-  { types: ['TeamInviteLink'] },
-);
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Teams made, the invite funnel (sent, accepted, declined), and documents shared to a team.',
+    'Teams made, the invite funnel (sent, accepted, declined), documents shared to a team, and team upkeep.',
   members: [
     TEAMS_CREATED,
     INVITES_SENT,
@@ -583,7 +585,6 @@ export const TEAM_ACTIVITY: MetricStack = {
     TEAM_CHANGES,
     TEAM_REMOVALS,
     TEAMS_DELETED,
-    INVITE_LINKS_COPIED,
   ],
   headline: INVITES_ACCEPTED,
 };
@@ -686,6 +687,14 @@ export const TIMELINE_STACKS_EXPANDED = chart(
   { types: ['Stack'] },
 );
 
+export const TIMELINE_CARDS_OPENED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Cards Opened',
+  'A document opened from its card on the Timeline.',
+  { types: ['Card'] },
+);
+
 export const TIMELINE_ENTRIES_REMOVED = chart(
   'Timeline',
   'Removed',
@@ -767,6 +776,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_VISITS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
+    TIMELINE_CARDS_OPENED,
     TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,

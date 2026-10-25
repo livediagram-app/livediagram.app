@@ -5,8 +5,8 @@ main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
 compatibility_flags = ["nodejs_compat"]
-# The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents. Every other
-# path is the static site's (apps/site), and /api/telemetry/* the telemetry Worker's. Each route is
+# The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents. The other
+# /api/* paths are the other platform Workers', and everything else the static site's (apps/site). Each route is
 # more specific than the site's liveworkspace.app/*, so it wins.
 routes = [
   { pattern = "liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
@@ -21,11 +21,39 @@ routes = [
 #   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
 #   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
 #   GOOGLE_CLIENT_SECRET
+#   INDEX_MERGE_KEY       accounts' key on the index: POST /internal/merge when a guest signs in, and
+#                         POST /internal/purge-person when an account closes
+#   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,
+#   TELEMETRY_KEY_LIVEDESIGN
+#                         each app's key on the telemetry service (the telemetry Worker's values), to
+#                         count Email·Sent for the onboarding emails under the app each speaks for;
+#                         optional, an app without one isn't counted
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"
+# The index service, told when a guest signs in (src/guests.ts) and when an account closes
+# (src/index-purge.ts), reached through the INDEX service binding below: a Worker's fetch to another
+# Worker's route on its own zone isn't routed to it. Unset, or without INDEX_MERGE_KEY, the merge is
+# skipped and a closed account's purge waits in pending_purges until it is set.
+INDEX_URL = "https://liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+# The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
+TELEMETRY_URL = "https://liveworkspace.app/api/telemetry"
+# Signing in on each app's own address (src/handoff.ts): the sign-in pages are served under the app's address, and
+# a one-time hop brings the session here. Every app's router must serve them before this is "true".
+SIGN_IN_ON_APP_ORIGINS = "true"
+# "true" once each app origin's /api/workspace/auth/callback/google is an authorised redirect URI of the Google client
+# (liveworkspace/docs/accounts.md "Before deploy"). Until then Google signs in on this site's own page, as before.
+GOOGLE_ON_APP_ORIGINS = "false"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
+
+[[services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry"
 
 [[d1_databases]]
 binding = "AUTH_DB"
@@ -45,6 +73,43 @@ name = "CODE_EMAIL_LIMITER"
 namespace_id = "1002"
 simple = { limit = 3, period = 60 }
 
+# GET /api/auth/guest: once per browser per app, so generous enough for an office behind one IP.
+[[ratelimits]]
+name = "GUEST_LIMITER"
+namespace_id = "1003"
+simple = { limit = 60, period = 60 }
+
+# The doors that need no session: a team join link's preview and an invitation's Decline link
+# (liveworkspace/docs/accounts.md), per network.
+[[ratelimits]]
+name = "TEAM_LINK_LIMITER"
+namespace_id = "1004"
+simple = { limit = 20, period = 60 }
+
+# A workbench token's ticket mints and pairing requests (src/workbench/routes.ts), per token: the
+# apps' WORKBENCH_TICKETS_PER_MINUTE.
+[[ratelimits]]
+name = "WORKBENCH_LIMITER"
+# 11xx: the platform Workers' own (telemetry 1101, community 1102), clear of the apps' 10xx.
+namespace_id = "1103"
+simple = { limit = 30, period = 60 }
+
+# Workbench pairings, tickets and sessions, one SQLite-backed store per person
+# (liveworkspace/docs/workbench.md). Its alarm runs only while something will lapse.
+[[durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WorkbenchStore"]
+
+# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations), and of
+# guests who can never come back (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges
+# not yet taken are sent again (src/index-purge.ts).
+[triggers]
+crons = ["17 9 * * *", "*/15 * * * *"]
+
 [env.staging]
 name = "liveworkspace-accounts-staging"
 routes = [
@@ -57,8 +122,20 @@ routes = [
 [env.staging.vars]
 ENVIRONMENT = "staging"
 BASE_URL = "https://staging.liveworkspace.app"
+INDEX_URL = "https://staging.liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
+SIGN_IN_ON_APP_ORIGINS = "true"
+GOOGLE_ON_APP_ORIGINS = "false"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
+
+[[env.staging.services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry-staging"
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"
@@ -75,3 +152,29 @@ simple = { limit = 10, period = 60 }
 name = "CODE_EMAIL_LIMITER"
 namespace_id = "2002"
 simple = { limit = 3, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "GUEST_LIMITER"
+namespace_id = "2003"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "TEAM_LINK_LIMITER"
+namespace_id = "2004"
+simple = { limit = 20, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "WORKBENCH_LIMITER"
+namespace_id = "2103"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["WorkbenchStore"]
+
+[env.staging.triggers]
+crons = ["17 9 * * *", "*/15 * * * *"]

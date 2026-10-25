@@ -1,7 +1,7 @@
-// /api/shape-libraries: owner-scoped named sets of reusable shapes
-// (docs/specs/013-workspace/shape-libraries.md). Mirrors /api/custom-themes: the requireOwner guard,
-// the 400 / 403 / 404 conventions, list / create / update / delete; plus the per-owner cap, the
-// row budget, item validation and the name rules (blueprint "Interfaces and contracts").
+// /api/shape-libraries: a person's named sets of reusable shapes (docs/specs/013-workspace/shape-libraries.md),
+// kept in their own Durable Object (person-client.ts). The requireOwner guard, the 400 / 404 conventions, list /
+// create / update / delete; plus the per-person cap, the row budget, item validation and the name rules (blueprint
+// "Interfaces and contracts"). The cap and name checks run inside the person's store, with the write.
 
 import {
   MAX_SHAPE_LIBRARIES_PER_OWNER,
@@ -9,28 +9,14 @@ import {
   SHAPE_LIBRARY_SOURCES,
   normaliseLibraryName,
   shapeLibraryItemsBytes,
-  uniqueLibraryName,
   validateShapeLibraryItems,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
-import {
-  createShapeLibrary,
-  deleteShapeLibrary,
-  getShapeLibrary,
-  listShapeLibrariesByOwner,
-  shapeLibraryNamesByOwner,
-  updateShapeLibrary,
-} from '../db';
-import {
-  badRequest,
-  conflict,
-  forbidden,
-  json,
-  noContent,
-  notFound,
-  payloadTooLarge,
-} from '../responses';
+import { renderElementsToSvg, type Tab } from '@livediagram/document';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
+import { personStore } from '../person-client';
+import { badRequest, conflict, json, noContent, notFound, payloadTooLarge } from '../responses';
 import { requireOwner, type RouteContext, readBody } from './context';
 
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -40,8 +26,6 @@ function rejected(reason: string, response: Response): Response {
   console.warn('[shape-libraries] rejected', { reason });
   return response;
 }
-
-const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 // Items checked for shape and budget: the validated items, or the refusal to send.
 function checkedItems(items: unknown): ShapeLibraryItem[] | Response {
@@ -57,11 +41,12 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
   if (segments[1] !== 'shape-libraries') return notFound();
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
+  const store = personStore(env, owner);
 
   // /api/shape-libraries: list / create
   if (segments.length === 2) {
     if (request.method === 'GET') {
-      return json({ libraries: await listShapeLibrariesByOwner(env, owner) });
+      return json({ libraries: await store.shapeLibraries() });
     }
     if (request.method === 'POST') {
       const read = await readBody(ctx);
@@ -77,19 +62,12 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
       }
       const items = checkedItems(body.items);
       if (items instanceof Response) return items;
-      const taken = await shapeLibraryNamesByOwner(env, owner);
-      if (taken.length >= MAX_SHAPE_LIBRARIES_PER_OWNER) {
-        return rejected('cap', conflict('shape_library_cap'));
-      }
-      if (await getShapeLibrary(env, id))
-        return rejected('exists', conflict('shape_library_exists'));
-      const library = await createShapeLibrary(env, {
-        id,
-        ownerId: owner,
-        name: uniqueLibraryName(name, taken),
-        source,
-        items,
-      });
+      const library = await store.createShapeLibrary(
+        { id, name, source, items },
+        MAX_SHAPE_LIBRARIES_PER_OWNER,
+      );
+      if (library === 'cap') return rejected('cap', conflict('shape_library_cap'));
+      if (library === 'exists') return rejected('exists', conflict('shape_library_exists'));
       console.info('[shape-libraries] created', {
         id,
         items: items.length,
@@ -99,12 +77,25 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
     }
   }
 
-  // /api/shape-libraries/<id>: update / delete
+  // /api/shape-libraries/<id>/previews: every shape of one library drawn as an SVG, by shape id, for an Explorer that
+  // cannot draw them itself (liveworkspace.app's, and the Explorer on this site's /explorer). One request a library,
+  // not one a shape; `?v=<updatedAt>` keys a cached answer to the library's version.
+  if (segments.length === 4 && segments[3] === 'previews' && request.method === 'GET') {
+    const libraryId = segments[2]!;
+    if (!ID.test(libraryId)) return notFound();
+    const library = await store.shapeLibrary(libraryId);
+    if (!library) return notFound();
+    return json(
+      { previews: shapePreviews(library.items) },
+      { headers: { 'Cache-Control': 'private, max-age=300' } },
+    );
+  }
+
+  // /api/shape-libraries/<id>: update / delete. Another person's library is not in this person's store, so it
+  // answers as no library at all.
   if (segments.length === 3) {
     const libraryId = segments[2]!;
-    const existing = await getShapeLibrary(env, libraryId);
-    if (!existing) return notFound();
-    if (existing.ownerId !== owner) return forbidden();
+    if (!ID.test(libraryId)) return notFound();
     if (request.method === 'PUT') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
@@ -113,12 +104,6 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
       if (body.name !== undefined) {
         const name = normaliseLibraryName(body.name);
         if (!name) return rejected('invalid-name', badRequest('invalid name'));
-        const others = (await shapeLibraryNamesByOwner(env, owner)).filter(
-          (n) => !sameName(n, existing.name),
-        );
-        if (others.some((n) => sameName(n, name))) {
-          return rejected('name-taken', conflict('shape_library_name_taken'));
-        }
         patch.name = name;
       }
       if (body.items !== undefined) {
@@ -126,13 +111,41 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
         if (items instanceof Response) return items;
         patch.items = items;
       }
-      await updateShapeLibrary(env, libraryId, patch);
-      return json({ library: await getShapeLibrary(env, libraryId) });
+      const library = await store.updateShapeLibrary(libraryId, patch);
+      if (library === 'not_found') return notFound();
+      if (library === 'name_taken') {
+        return rejected('name-taken', conflict('shape_library_name_taken'));
+      }
+      return json({ library });
     }
     if (request.method === 'DELETE') {
-      await deleteShapeLibrary(env, libraryId);
-      return noContent();
+      return (await store.deleteShapeLibrary(libraryId)) ? noContent() : notFound();
     }
   }
   return notFound();
+}
+
+// Each shape drawn by the same DOM-free renderer as a canvas's snapshot, on a transparent ground, so a tile shows it
+// as the palette does. Its images are not fetched (a library shape keeps none of its own); its icons and stickers
+// draw their real art. A shape the renderer cannot draw is left out, and its tile stays plain.
+export function shapePreviews(items: readonly ShapeLibraryItem[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const item of items) {
+    try {
+      const tab = {
+        id: `library-item-${item.id}`,
+        name: item.title,
+        elements: item.elements,
+      } as Tab;
+      out[item.id] = renderElementsToSvg(tab, {
+        padding: 4,
+        background: 'transparent',
+        resolveIconArt: resolveIconExportArt,
+        resolveStickerArt,
+      });
+    } catch (error) {
+      console.warn('[shape-libraries] preview failed', { item: item.id, error: String(error) });
+    }
+  }
+  return out;
 }

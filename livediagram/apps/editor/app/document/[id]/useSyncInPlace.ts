@@ -3,15 +3,15 @@ import type { Tab } from '@livediagram/document';
 import { saveOfflineToCloud, SyncStillSavingError } from '@/lib/offline/offline-convert';
 import { rewriteImageIds } from '@/lib/offline/offline-images';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
-// How long Sync Document waits for this browser's last save to land before it reads the record it
+// How long Sync Canvas waits for this browser's last save to land before it reads the record it
 // uploads; past it, the sync is refused rather than racing a write into a record about to go.
 export const SYNC_SAVE_WAIT_MS = 5_000;
 const SYNC_SAVE_POLL_MS = 100;
 
-// Sync Document from inside the editor, with no reload (docs/specs/006-document/offline-mode.md "Syncing in
+// Sync Canvas from inside the editor, with no reload (docs/specs/006-document/offline-mode.md "Syncing in
 // place"): wait for the pending save, upload the record, then turn the open document into the cloud
 // document it now is. The offline index announces the move, which the badge, the board and the sheets
 // follow on their own; this hook re-points the open tabs' images at the gallery copies, opens the room,

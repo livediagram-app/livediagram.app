@@ -262,9 +262,9 @@ describe('set with aliases', () => {
     expect(lines(cylinder)).toEqual(['~ n3  shape square→cylinder · taller 60→80']);
   });
 
-  it('paints a custom theme it was not given as the default, and logs it (E11)', () => {
+  it('paints an unknown theme as the default, and logs it (E11)', () => {
     const calls: string[] = [];
-    const tab = { ...checkoutFlow(), theme: 'custom-owner-theme' };
+    const tab = { ...checkoutFlow(), theme: 'unknown-theme' };
     applyEditOperations(tab, [set('n3', { fill: 'green' })], {
       log: (fingerprint) => void calls.push(fingerprint),
     });

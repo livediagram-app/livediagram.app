@@ -8,7 +8,7 @@
 // Presentation + the link field only; every command is dispatched by the
 // editor, which owns the runs and the selection.
 
-import { lucideList, lucideListOrdered } from '@livedesign/icons/lucide';
+import { lucideList, lucideListOrdered } from '@liveworkspace/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@livedesign/design';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
@@ -20,7 +20,7 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livedesign/ui';
 
 const BulletGlyph = lucideGlyph(lucideList, 16);

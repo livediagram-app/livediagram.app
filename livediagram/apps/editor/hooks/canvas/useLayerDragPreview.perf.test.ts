@@ -5,7 +5,7 @@ import {
   createShape,
   type Element,
 } from '@livediagram/document';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
 import { createLayerPreviewStore, type LayerPreviewInputs } from './useLayerDragPreview';

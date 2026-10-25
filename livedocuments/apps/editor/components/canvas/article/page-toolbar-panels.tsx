@@ -29,7 +29,7 @@ import {
   lucideTextAlignJustify,
   lucideTextAlignStart,
   lucideTextQuote,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import type { ArticleAlign, ArticleListKind, ArticleParagraphStyle } from '@livedocuments/document';
 import type { ArticleSelectionState } from '@/lib/article/article-commands';

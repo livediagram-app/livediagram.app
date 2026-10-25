@@ -5,18 +5,13 @@
 // call site, where a renamed key would drift silently.
 
 import type { LiveDoc, DesignSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
-import type { TeamRecentDesign } from './recent-diagrams';
 
 // GET / PUT /api/designs/:id, POST /api/designs (+ copy).
 export type DesignResponse = { design: LiveDoc };
 // GET /api/designs/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
-// GET /api/designs: the caller's personal library. With `?include=team-recent` it also carries the
-// newest designs of the teams they have joined (docs/specs/019-marketing/returning-visitor.md).
-export type DesignListResponse = {
-  designs: DesignSummary[];
-  teamRecent?: TeamRecentDesign[];
-};
+// GET /api/designs: the caller's personal library.
+export type DesignListResponse = { designs: DesignSummary[] };
 // POST /api/designs/:id/share (+ extend).
 export type ShareLinkResponse = { link: ShareLink };
 // GET /api/teams: the teams the caller belongs to (docs/specs/013-workspace/teams.md).

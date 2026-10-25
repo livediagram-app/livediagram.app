@@ -7,7 +7,7 @@
 import { plural } from '@livedocuments/document';
 import type { LaidOutPage } from '@livedocuments/document';
 import { ACTIVE_SEGMENT, SEGMENT_TRACK, Select } from '@livedocuments/ui';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { exportPageLabel, type PageExportFormat, type PageScope } from '@/lib/export-pages';
 
 const SCOPES: [PageScope, string][] = [

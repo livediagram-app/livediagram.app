@@ -19,7 +19,7 @@ livediagram --help
 Create an API token in livediagram (Settings › API Tokens), then either set it for a command:
 
 ```bash
-export LIVEDIAGRAM_TOKEN=lvd_...
+export LIVEDIAGRAM_TOKEN=lwt_...
 ```
 
 or store it for this machine:

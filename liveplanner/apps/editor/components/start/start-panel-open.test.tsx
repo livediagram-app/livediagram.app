@@ -1,26 +1,5 @@
-// @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  noteStartPanelLeft,
-  setStartPanelOpen,
-  startPanelJustLeft,
-  useStartPanelOpen,
-} from './start-panel-open';
-
-// docs/specs/007-editor/start-panel.md "The tours wait"
-describe('start panel open', () => {
-  afterEach(() => setStartPanelOpen(false));
-
-  it('tells its readers when a start panel opens and closes', () => {
-    const { result } = renderHook(() => useStartPanelOpen());
-    expect(result.current).toBe(false);
-    act(() => setStartPanelOpen(true));
-    expect(result.current).toBe(true);
-    act(() => setStartPanelOpen(false));
-    expect(result.current).toBe(false);
-  });
-});
+import { describe, expect, it, vi } from 'vitest';
+import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
 
 // A mode change on an empty tab swaps one start panel for another: the new one turns in place.
 describe('a start panel swapped for another', () => {

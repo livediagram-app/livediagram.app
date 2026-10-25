@@ -23,7 +23,7 @@ The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative
 
 What an agent may do follows its token, through the same gates as a share link:
 
-- A **full-access token** on a document you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
+- A **full-access token** on a canvas you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
 - A **read-only token** lists threads but writes nothing: no comments and no presence.
 - Presence is for API tokens only. A signed-in browser session already shows itself in the editor, so the presence endpoints answer it `403 presence_requires_token`.
 
@@ -43,7 +43,7 @@ curl "https://livediagram.app/api/documents/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the document's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
+`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the canvas's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
 
 ```json
 {
@@ -109,7 +109,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMM
 - `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
 - Arrows cannot carry a thread; every boxed element can.
 
-Everyone with the document open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
+Everyone with the canvas open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
 
 ## Show What Your Agent Is Doing
 
@@ -148,7 +148,7 @@ Setting presence again replaces both the status and the focus. `DELETE` on the s
 
 **You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab keeps its presence there for 30 seconds, so an agent that is busy editing stays visible and one that stops leaves on its own within two minutes at most. A dry run or a refused changeset refreshes nothing.
 
-Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a document already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
+Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a canvas already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
 
 ## What People See
 
@@ -157,7 +157,7 @@ Presence shows in the editor as its owner, never as a new person:
 - **The status line** appears in the hover card on the owner's avatar, on their row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. When the owner is not on that tab, the agent gets an avatar in their name and colour there.
 - **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
 - An agent is listed in Collaborators under its tab, but it is not counted as a person, cannot be followed, and never holds the facilitator role or counts in a session's head count.
-- Two of your tokens on one tab show as one avatar, with the status set last. A private document's presence stack, otherwise hidden, shows while your agent is on it.
+- Two of your tokens on one tab show as one avatar, with the status set last. A private canvas's presence stack, otherwise hidden, shows while your agent is on it.
 
 [Live Presence](/help/collaboration/live-presence/#agents-at-work) has what this looks like for the people working beside your agent.
 

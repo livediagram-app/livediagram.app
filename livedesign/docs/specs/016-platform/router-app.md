@@ -8,15 +8,15 @@ A small Cloudflare Worker that fronts the apex domain (`livedesign.app`) and rou
 
 ## Routing table
 
-| Path                                                                                                                         | Forwards to                      |
-| ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `/api`, `/api/*`                                                                                                             | api worker (`apps/api`)          |
-| `/telemetry`, `/telemetry/*`                                                                                                 | telemetry app (`apps/telemetry`) |
-| `/help`, `/help/*`                                                                                                           | help app (`apps/help`), stripped |
-| `/live/*` (the live app's `_next` assets only)                                                                               | live app (`apps/live`), stripped |
-| live page routes: `/design/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/icon.svg` | live app (`apps/live`), as-is    |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                             | 308 redirect to `/help/<path>`   |
-| everything else                                                                                                              | marketing app (`apps/marketing`) |
+| Path                                                                                                          | Forwards to                                                                             |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `/api`, `/api/*`                                                                                              | api worker (`apps/api`)                                                                 |
+| `/telemetry`, `/telemetry/*`                                                                                  | `301` to the central dashboard, `?app=livedesign.app` (liveworkspace/docs/telemetry.md) |
+| `/help`, `/help/*`                                                                                            | help app (`apps/help`), stripped                                                        |
+| `/live/*` (the live app's `_next` assets only)                                                                | live app (`apps/live`), stripped                                                        |
+| live page routes: `/design/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/icon.svg` | live app (`apps/live`), as-is                                                           |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                              | 308 redirect to `/help/<path>`                                                          |
+| everything else                                                                                               | marketing app (`apps/marketing`)                                                        |
 
 The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedesign/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 
@@ -34,11 +34,48 @@ Centre** and **Troubleshooting**), then **Help Centre**. It is still a 404, so s
 engines drop it. The editor answers an unknown address with its own card instead
 ([New design route](../007-editor/new-design-route.md) "Unknown addresses").
 
-Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the live app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+Two properties keep it safe. `explorer` is absent from the set: `/explorer/*` (a segment the help centre also uses) is liveworkspace's Explorer, served ahead of every route here ([The Explorer on livedesign.app](#the-explorer-on-livedesignapp)). And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+
+## Signing in on livedesign.app
+
+Signing in and creating an account stay on livedesign.app's address: the router serves liveworkspace's
+sign-in pages ahead of everything above, through the shared helper
+(`routeToWorkspace` and `workspaceRoutes` in `@liveworkspace/sites/workspace-proxy`;
+[liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#signing-in-on-the-apps-own-address)):
+
+| Path                                                                   | Forwards to                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `/sign-in`, `/sign-up`, `/consent` with a signed OAuth request (`sig`) | liveworkspace.app's page, no cookies either way                                |
+| `/api/workspace/auth/*`                                                | liveworkspace's accounts API at `/api/auth/*`, with the sign-in's cookies only |
+| `/_liveworkspace/*`                                                    | liveworkspace.app's build assets                                               |
+
+Without a signed request, `/sign-in` stays the app's own page (its sign-in hand-off). On the
+accounts route the app's own cookies never leave; liveworkspace's cookies land here renamed
+`lw_flow.<name>`, on `/api/workspace/auth` alone, for at most 15 minutes, and the hand-off to
+liveworkspace.app clears them. The router names the visitor's address in
+`X-Liveworkspace-Client-IP`. Once signed in, one top-level hop to liveworkspace.app sets its
+session (so the other apps sign in without a click) and comes straight back to `/auth/callback`.
+
+## The Explorer on livedesign.app
+
+The Explorer is liveworkspace's page, served at livedesign.app's own `/explorer` with the address unchanged (path,
+query and hash): the router asks the same shared helper first (`routeToWorkspace`, its switch
+`EXPLORER_ON_APP_ORIGIN` on for livedesign; [liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+
+| Path                                        | Forwards to                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------- |
+| `/explorer`, `/explorer/*`, `/explorer.txt` | liveworkspace.app's Explorer page and its payloads, no cookies either way |
+| `/api/workspace/account/*`                  | liveworkspace's account API at `/api/account/*`, with the page's bearer   |
+| `/_liveworkspace/*`                         | liveworkspace.app's build assets                                          |
+
+`WORKSPACE_ORIGIN` names liveworkspace.app (production's when unset; staging's and `http://localhost:3000` in local
+development). A redirect from there comes back as an address on livedesign.app. Every request carries
+`X-Liveworkspace-Proxy: livedesign`, and a router that receives one, or whose origin is its own, answers `508` rather than
+forward again. The page is `no-store`, as every page; the assets are content-hashed and cached for a year. Requests never reach the live app's own `/explorer` pages; its links to the Explorer are same-origin `/explorer` addresses.
 
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / TELEMETRY / HELP). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help) when forwarding to a binding:
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP); `/telemetry` is a redirect to liveworkspace's central dashboard, not a binding (liveworkspace/docs/telemetry.md). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + help) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
@@ -63,7 +100,7 @@ export default {
       return forward(request, url, env.LIVE, env.LIVE_ORIGIN, '/live');
     }
     if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, '/telemetry');
+      return telemetryRedirect(env); // 301 to the central dashboard, ?app=livedesign.app
     }
     // Clean live-app page routes + its root icon: forward as-is (no strip).
     if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
@@ -82,14 +119,13 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/telemetry`, `/help` and `/api`, with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3400` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
 | App       | Local URL                                                           |
 | --------- | ------------------------------------------------------------------- |
 | router    | `http://localhost:3400/` — everything, stitched like production     |
 | marketing | `http://localhost:3401/`                                            |
 | live      | `http://localhost:3402/new`, `/explorer/recent`, ... (clean routes) |
-| telemetry | `http://localhost:3403/telemetry` (basePath baked in)               |
 | help      | `http://localhost:3404/help` (basePath baked in)                    |
 | api       | `http://localhost:8989/api/...` (wrangler dev)                      |
 

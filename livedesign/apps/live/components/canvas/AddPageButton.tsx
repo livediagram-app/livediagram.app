@@ -1,21 +1,16 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import {
-  PAGE_GAP,
-  type LaidOutPage,
-  type PageKind,
-  type WireframeDeviceId,
-} from '@livedesign/design';
-import { lucideLayoutGrid } from '@livedesign/icons/lucide';
+import { PAGE_GAP, type LaidOutPage, type Page, type WireframeDeviceId } from '@livedesign/design';
+import { lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, PlusIcon, Tooltip } from '@livedesign/ui';
 import { addAnotherLabel } from '@/lib/add-page-labels';
-import { AddPagePopover } from './AddPagePopover';
+import { AddScreenPopover } from './AddScreenPopover';
 
 const ChooseIcon = lucideGlyph(lucideLayoutGrid, 14);
 
-// The + on screen (h-9), the chooser under it (h-7), the gap between, and the least room the pair
-// keeps from the last page, px.
+// The + on screen (h-9), a wireframe tab's device button under it (h-7), the gap between, and the
+// least room they keep from the last page, px.
 const ADD_PAGE_SIZE = 36;
 const ADD_PAGE_CLEARANCE = 12;
 
@@ -25,22 +20,28 @@ const IDLE =
   'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100';
 const PRESSED = 'bg-brand-700 text-white ring-brand-700 dark:bg-brand-600';
 
-// After the last page (docs/specs/007-editor/pages-mode.md "Adding a page"), two buttons, held at
-// one screen size whatever the zoom: the + adds another page like the last one (its kind and shape;
-// a wireframe page's device and frame too), named for what it adds ("Add Another Slide"); the
-// button under it opens Add a Page (AddPagePopover) to choose a page of any kind.
+export const ADD_SCREEN_LABEL = 'Add a Screen of Another Device';
+
+// After the last page (docs/specs/007-editor/pages-mode.md "Adding a page"), held at one screen size
+// whatever the zoom: the + adds another page like the last of the tab's kind (its kind and shape; a
+// wireframe page's device and frame too), named for what it adds ("Add Another Logo Page"). A tab
+// holds one kind ("One kind a tab"), so there is no choosing another; a wireframe tab's button under
+// the + adds a screen of another device (AddScreenPopover).
 export function AddPageButton({
   last,
+  like,
   zoom,
-  onAdd,
   onAddLike,
+  onAddDevice,
 }: {
-  // The last page: where the pair sits (in the gap after it, level with its middle) and what the +
-  // adds another of.
-  last: Pick<LaidOutPage, 'id' | 'rect' | 'kind' | 'device'>;
+  // The last page: where the + sits (in the gap after it, level with its middle).
+  last: Pick<LaidOutPage, 'rect'>;
+  // What the + adds another of: the last page of the tab's kind (lastPageOfTabKind).
+  like: Pick<Page, 'id' | 'kind' | 'device'>;
   zoom: number;
-  onAdd: (kind: PageKind, device?: WireframeDeviceId) => void;
   onAddLike: (pageId: string) => void;
+  // A wireframe screen in the device chosen; absent where it cannot be added.
+  onAddDevice?: (device: WireframeDeviceId) => void;
 }) {
   const lastRight = last.rect.x + last.rect.width;
   const lastMiddle = last.rect.y + last.rect.height / 2;
@@ -51,10 +52,11 @@ export function AddPageButton({
   const [open, setOpen] = useState(false);
   const chooser = useRef<HTMLButtonElement>(null);
   const getAnchor = useCallback(() => chooser.current, []);
-  const another = addAnotherLabel(last);
+  const another = addAnotherLabel(like);
+  const screens = like.kind === 'wireframe' ? onAddDevice : undefined;
   return (
     <div
-      // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md): both buttons.
+      // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md).
       data-tour-id="add-page"
       className="pointer-events-auto absolute flex flex-col items-center gap-1.5 transition-[left] duration-200 ease-out motion-reduce:transition-none"
       style={{ left: x, top: lastMiddle, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
@@ -67,35 +69,39 @@ export function AddPageButton({
           type="button"
           aria-label={another}
           data-add-page-like=""
-          onClick={() => onAddLike(last.id)}
+          onClick={() => onAddLike(like.id)}
           className={`${ROUND} h-9 w-9 ${IDLE}`}
         >
           <PlusIcon />
         </button>
       </Tooltip>
-      <Tooltip label="Add a Page of Any Kind">
-        <button
-          ref={chooser}
-          type="button"
-          aria-label="Add a Page of Any Kind"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          data-add-page-trigger
-          onClick={() => setOpen((o) => !o)}
-          className={`${ROUND} h-7 w-7 ${open ? PRESSED : IDLE}`}
-        >
-          <ChooseIcon />
-        </button>
-      </Tooltip>
-      {open ? (
-        <AddPagePopover
-          getAnchor={getAnchor}
-          onAdd={onAdd}
-          onClose={(restoreFocus) => {
-            setOpen(false);
-            if (restoreFocus) chooser.current?.focus();
-          }}
-        />
+      {screens ? (
+        <>
+          <Tooltip label={ADD_SCREEN_LABEL}>
+            <button
+              ref={chooser}
+              type="button"
+              aria-label={ADD_SCREEN_LABEL}
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              data-add-page-trigger
+              onClick={() => setOpen((o) => !o)}
+              className={`${ROUND} h-7 w-7 ${open ? PRESSED : IDLE}`}
+            >
+              <ChooseIcon />
+            </button>
+          </Tooltip>
+          {open ? (
+            <AddScreenPopover
+              getAnchor={getAnchor}
+              onAddDevice={screens}
+              onClose={(restoreFocus) => {
+                setOpen(false);
+                if (restoreFocus) chooser.current?.focus();
+              }}
+            />
+          ) : null}
+        </>
       ) : null}
     </div>
   );

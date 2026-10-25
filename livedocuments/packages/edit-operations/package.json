@@ -19,13 +19,13 @@
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
-    "@livedocuments/icons": "workspace:*",
-    "@livedocuments/templates": "workspace:*"
+    "@livedocuments/templates": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
     "@livedocuments/document-views": "workspace:*",
-    "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

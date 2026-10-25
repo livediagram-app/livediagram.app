@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 import {
   Glyph,
   MenuTreeContext,

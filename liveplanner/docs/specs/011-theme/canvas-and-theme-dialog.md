@@ -198,7 +198,7 @@ open the dialog on that panel.
 
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
 click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
-snapping (`lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
+snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
 root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
 
 ### Text panel
@@ -232,8 +232,7 @@ The canvas-style controls, shared with the palette's **Canvas** accordion (`Canv
 ### Colours panel
 
 Every theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion and
-the [New-project](../007-editor/new-project-route.md) picker so they stay identical), the owner's saved themes
-([Custom themes](custom-themes.md)) among them. No categories, no shuffle. Each card previews the theme in the
+the [New-project](../007-editor/new-project-route.md) picker so they stay identical). No categories, no shuffle. Each card previews the theme in the
 viewer's half ([Light and dark halves](light-and-dark.md)).
 
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
@@ -273,7 +272,7 @@ The editor chrome **follows the active tab's theme** so it matches the diagram y
 A tab's style tints the canvas side of the editor, never the app around it: the **header, the tab bar and the logo
 keep the app's own colours** whatever the active tab's style. The logo takes no colour from the tab, and the header
 and tab bar carry `data-app-chrome`, which re-declares the app's brand ramp (light and dark) and dark-mode surfaces
-from its theme (`packages/tailwind-config/theme.css`), so the tint from `useEditorAccent` stops at their edge.
+from its theme (the surfaces from `../packages/tailwind-config/theme.css`, the ramp from this product's `packages/tailwind-config/theme.css`), so the tint from `useEditorAccent` stops at their edge.
 Custom properties inherit, so the re-declaration on the element wins over the root's tint without any selector
 contest. A test (`theme-budget.test.ts`) keeps the block equal to `@theme` and `.dark`. Menus and popovers opened
 from them are portaled to the body, so they follow the tab like the rest of the editor's panels.

@@ -6,9 +6,9 @@ import type {
 } from '@/components/primitives/MovablePanel.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 
-// The chrome every MODE panel wears: Eraser, Format, Laser, Spotlight.
+// The chrome every MODE panel wears: Format, Laser, Spotlight.
 //
-// These four are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
+// These three are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
 // the Laser, and the same shape for the rest). They are
 // deliberately identical outside their bodies (same corner, same width, same
 // collapse behaviour) because the bottom-right column, above the bottom

@@ -1,4 +1,7 @@
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import type { UserPreferences } from './user-preferences';
 
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). The counts are

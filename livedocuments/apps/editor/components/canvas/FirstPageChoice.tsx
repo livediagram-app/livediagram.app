@@ -36,7 +36,7 @@ export function FirstPageChoice({
           What Is This Page For?
         </p>
         <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">
-          Choose now: a page keeps its kind once you start.
+          Choose now: every page of this tab will be this kind.
         </p>
         <div
           className="grid grid-cols-2 gap-2"

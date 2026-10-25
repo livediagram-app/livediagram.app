@@ -4,20 +4,20 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 
 | File                                                                                                 | Role                                                                         |
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `packages/design/src/concept.ts`                                                                   | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
-| `packages/design/src/web-components.ts`                                                            | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
-| `packages/design/src/svg-render-concept.ts`                                                        | `svgConcept`: the headless body (rest frame)                                 |
-| `packages/design/src/concept-timeline.ts`, `svg-render-timeline.ts`                                | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
+| `packages/design/src/concept.ts`                                                                     | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
+| `packages/design/src/web-components.ts`                                                              | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
+| `packages/design/src/svg-render-concept.ts`                                                          | `svgConcept`: the headless body (rest frame)                                 |
+| `packages/design/src/concept-timeline.ts`, `svg-render-timeline.ts`                                  | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
 | `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`                       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
-| `packages/design/src/element-normalise.ts`                                                         | `railToTimeline`: a saved timeline rail's points into milestones             |
-| `packages/design/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
+| `packages/design/src/element-normalise.ts`                                                           | `railToTimeline`: a saved timeline rail's points into milestones             |
+| `packages/design/src/shape-variants.ts`                                                              | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
 | `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
 | `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
 | `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note); none for chevrons                            |
 | `apps/live/components/canvas/ConceptRowBar.tsx`                                                      | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
 | `apps/live/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
-| `apps/live/lib/move-row.ts`                                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
+| `../packages/workbench/src/lib/move-row.ts`                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
 | `apps/live/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
 
 ## Domain and naming
@@ -221,17 +221,17 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 ## Testing
 
-| Rule                                             | Test file                                                                            |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Rule                                             | Test file                                                                          |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | Bounds (I1), ramp, layouts per kind (I2)         | `packages/design/src/concept.test.ts`                                              |
-| Writes, anims offered (I3), validation           | same                                                                                 |
-| Export draws rows, notes, arcs                   | same                                                                                 |
-| Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`                                   |
-| Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`                           |
-| Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`                                 |
+| Writes, anims offered (I3), validation           | same                                                                               |
+| Export draws rows, notes, arcs                   | same                                                                               |
+| Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`                                 |
+| Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`                         |
+| Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`                               |
 | Timeline layout, export, rail migration          | `packages/design/src/concept-timeline.test.ts`, `concept-timeline-element.test.ts` |
-| No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx`                     |
-| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                      |
+| No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx`                   |
+| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                    |
 
 ## Constants and configuration
 

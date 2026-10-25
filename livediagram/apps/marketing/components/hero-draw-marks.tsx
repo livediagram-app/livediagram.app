@@ -6,7 +6,7 @@ import { trustedHtml } from '@livediagram/ui';
 // wobble is the same on every render (and in the static HTML).
 
 import type { ReactNode } from 'react';
-import { stickerArt, type StickerDef } from '@livediagram/icons';
+import { stickerArt, type StickerDef } from '@liveworkspace/icons';
 import { seededRandom } from '@livediagram/document';
 import { at } from '@/components/art-tokens';
 

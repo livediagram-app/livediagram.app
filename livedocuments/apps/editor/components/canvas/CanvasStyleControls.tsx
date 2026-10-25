@@ -11,7 +11,7 @@
 // the active tab. The "Show more" expansion is local UI state owned here.
 
 import { isAnimatedPattern, type BackgroundPattern } from '@livedocuments/document';
-import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
+import { useShowMoreList } from '@liveworkspace/workbench/hooks/ui/useShowMoreList';
 import { PatternCarousel } from './PatternCarousel';
 import {
   ColorSwatch,
@@ -19,7 +19,7 @@ import {
   PatternButton,
   type PatternEntry,
 } from '@/components/palette/palette-controls';
-import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
+import { ShowMoreButton } from '@liveworkspace/workbench/components/primitives/ShowMoreButton';
 import { HoverCard } from '@livedocuments/ui';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 

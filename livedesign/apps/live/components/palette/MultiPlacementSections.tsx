@@ -7,9 +7,8 @@ import {
   type Element,
   type ShapeElement,
 } from '@livedesign/design';
-import { ContextMenuDivider } from '@/components/palette/ContextMenu';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   AspectLockMenuIcon,
@@ -24,7 +23,7 @@ import {
   MenuAccordionSection,
   MenuActionButton,
   MenuActionRow,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
@@ -33,6 +32,7 @@ import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import { Switch } from '@livedesign/ui';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -128,11 +128,7 @@ export function MultiPlacementSections({
                 </span>
                 Lock Aspect Ratio
               </span>
-              <ToggleSwitch
-                presentational
-                checked={!!boxedSel[0]!.aspectLocked}
-                label="Lock Aspect Ratio"
-              />
+              <Switch presentational size="sm" checked={!!boxedSel[0]!.aspectLocked} />
             </button>
           </>
         ) : null}

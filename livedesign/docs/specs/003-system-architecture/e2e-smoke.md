@@ -5,7 +5,7 @@ the production build and the real api worker. It is the layer Vitest cannot
 reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
 tests render single hooks and components, but none of them runs the whole
 editor with real layout, real pointer and keyboard input, the static export
-and a round trip through the api and D1. Every regression chased by hand in
+and a round trip through the api and its Durable Objects. Every regression chased by hand in
 that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
@@ -42,10 +42,10 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 | Job                 | Builds                                   | Runs                                                                    |
 | ------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
 | **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests |
-| **Sites audit**     | live, help, telemetry, then marketing    | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
+| **Sites audit**     | live, help, then marketing               | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
 | **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))           |
 
-Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds. Marketing builds after the
+Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
@@ -66,15 +66,12 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose designs no other test sees.
-- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
-  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
-  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
-  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
-  requests, `pageOwnerHeaders` for calls made inside the page (`apps/live/e2e/fixtures.ts`). A
-  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
-  unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
-  `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
-  the stack) and one folder straight into the local D1, for `guest-upgrade.spec.ts`.
+- **Guests are liveworkspace guests**, as in production
+  ([Auth + guest access](../014-identity/auth-and-guest-access.md) "Guests"). The stack's accounts
+  stand-in answers the guest handoff with a guest token, and a spec seeds through one: `mintGuest` +
+  `ownerHeaders` (its token as the Bearer) for Playwright requests, `adoptGuest` to put it where the
+  page keeps it, and `designHeaders` to add the index's grant on a design as `X-Index-Grant`
+  (`apps/live/e2e/fixtures.ts`).
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -84,7 +81,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
 - **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@livedesign/next-config`, shared by the five Next
+  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
@@ -118,18 +115,18 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the live app's
-`output: 'export'` static bundle plus the real api worker on local D1,
+`output: 'export'` static bundle plus the real api worker with its Durable Objects in local storage,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livedesign/live build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
-   `db:migrate:local` applied to a fresh local D1 so persistence works.
+1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port. Each design's
+   and each person's Durable Object keeps its own SQLite in wrangler's local
+   storage, so persistence works with no setup step.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
-   events pipe), and `AI_ALLOWED_ORIGINS` blanked with `--var` (production
-   declares it in `[vars]`, which would refuse the localhost editor).
+   events pipe).
 2. **live**: the static `apps/live/out` served by a minimal Node
    server that reproduces the three things the production router +
    live worker do (so clean routes and the design placeholder resolve
@@ -141,7 +138,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
-   - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
@@ -158,8 +155,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_LIVE_ONLY`,
-`E2E_LIVE_PORT`, `E2E_API_PORT`) and can pose as a deployment without an AI
-key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
+`E2E_LIVE_PORT`, `E2E_API_PORT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
@@ -184,23 +180,16 @@ reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_S
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
-`installSession` hands the bridge. So a stub account is a real verified account to the api and the
+`installSession` hands the bridge. API tokens are the liveworkspace account's too: a spec seeds one at
+`POST /e2e/accounts/__seed/token` (its `secret` is the `lwt_…` an agent sends), and the api checks it through the
+account API's `tokens/verify` as in production. Display names are the account's profiles: the api writes and reads them
+through the account API's `profiles/write` and `profiles/read`, so an agent's changes and comments carry the name the
+person set (`packages/auth-client/src/e2e-token-stand-in.ts` answers both, shared by every app's stack). So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one design. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
-
-## Armed guest signatures
-
-Every stack enforces guest signatures (above), so every spec runs as production does once armed.
-The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
-Explorer first, gets a signed id before any owner-scoped call, creates a design (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @livedesign/live test:e2e:armed` sets
-`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3417`, api `:8417`, marketing `:3418`). It
-reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
-has built it already.
 
 ## No uncaught errors
 
@@ -229,7 +218,7 @@ One spec file per feature, each linking the spec it proves:
 
 | File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                                  | Spec                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`                 | `/new` renders the wizard; `/explorer` renders for a guest; create a blank design, add a shape, label it, and it survives a reload                                                                                                                                                                                                                                                            | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
+| `smoke.spec.ts`                 | `/new` makes a design and opens on its start, with no apps menu in the header; `/explorer` renders for a guest; create a blank design, add a shape, label it, and it survives a reload                                                                                                                                                                                                        | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
 | `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-design/per-tab-storage.md)                                                           |
 | `trash.spec.ts`                 | delete, find it in Settings › Trash, restore it; the deleted card; permanent delete and Empty Trash; an open editor, or one refused its room, is told                                                                                                                                                                                                                                         | [Trash](../013-workspace/trash.md)                                                                            |
 | `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
@@ -268,11 +257,9 @@ tests where it's cheap.
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`startBlankDesign`, `startTemplateDesign`, `seedTab`, `dismissQuickTour`).
-  `startTemplateDesign` exists because the blank helper skips the wizard's category step and so never
-  exercises template creation.
+  shared flows (`openStartBlank`, `startBlankDesign`, `seedTab`, `dismissQuickTour`).
 - `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
+- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing).
 - `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/live/package.json`; `build:signed-in`

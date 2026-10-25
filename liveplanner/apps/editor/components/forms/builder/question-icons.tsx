@@ -12,7 +12,7 @@ import {
   lucideSquareCheck,
   lucideStar,
   lucideTextCursorInput,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { QuestionType } from '@liveplanner/forms';
 
 export const QUESTION_TYPE_ICONS: Readonly<Record<QuestionType, ReturnType<typeof lucideGlyph>>> = {

@@ -6,13 +6,12 @@
 // Responses, and Delete Link, which asks first. On a project in This Browser it offers Sync Project first (the project
 // Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
 import { useId, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import { Button, DialogCloseButton, DialogHeader, SwitchRow } from '@liveplanner/ui';
 import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
 import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
-import { Dialog } from '@/components/dialogs/Dialog';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';

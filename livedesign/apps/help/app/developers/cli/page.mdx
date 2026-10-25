@@ -74,10 +74,10 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 
 ### With an API Token
 
-For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, under **Account**, then **API Tokens**, and either set it for the commands you run:
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), and either set it for the commands you run:
 
 ```bash
-export LIVEDESIGN_TOKEN=lvd_your_token_here
+export LIVEDESIGN_TOKEN=lwt_your_token_here
 ```
 
 or store it for this machine, reading it from stdin:
@@ -95,9 +95,9 @@ livedesign auth status    # host, account, token name, role, expiry, and where i
 livedesign auth logout    # revoke the stored token and forget it
 ```
 
-`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livedesign, so it stops working everywhere at once. It will not revoke a token from `LIVEDESIGN_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **API Tokens**.
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livedesign, so it stops working everywhere at once. It will not revoke a token from `LIVEDESIGN_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token on liveworkspace.app.
 
-The browser and device sign-ins create an ordinary API token named **livedesign CLI**. It appears in **API Tokens** beside any others (with a **Read-only** badge if you chose that), lasts six months, and counts towards your ten. Signing in again on the same machine replaces it and revokes the old one.
+The browser and device sign-ins create an ordinary API token named **livedesign CLI**. It appears with your other tokens on liveworkspace.app (marked read-only if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
 
 ## Where Your Token Is Kept
 
@@ -235,7 +235,7 @@ The CLI counts which commands succeed, and which fail because of the server or t
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDESIGN_TOKEN` out of source control and logs, and
-  revoke a token from **API Tokens** (or with `livedesign auth logout`) the moment you no longer
+  revoke a token on liveworkspace.app (or with `livedesign auth logout`) the moment you no longer
   need it or think it may have leaked.
 </Note>
 

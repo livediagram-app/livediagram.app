@@ -9,17 +9,17 @@
 //   can always leave the canvas (no trap). Elements locked by another
 //   participant are skipped, mirroring pointer selection.
 // - **Announcements**: selection changes are spoken through the SR
-//   live region (lib/announcer), named by the same helpers the change
+//   live region (@liveworkspace/workbench/lib/announcer), named by the same helpers the change
 //   log prints (lib/element-names).
 
 import { useEffect } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
-import { anyModalOpen } from '@/lib/modal-guard';
-import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
+import { announce, getAnnouncementSnapshot } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeSelected } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // The traversal step, pure so it's unit-testable: which element index a
 // Tab (dir 1) / Shift+Tab (dir -1) press should select, or null when the

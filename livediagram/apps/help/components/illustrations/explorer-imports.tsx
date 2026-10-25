@@ -1,10 +1,10 @@
 // Explorer illustrations for the imports and the Library pages (docs/specs/018-help/help-app.md):
-// the page header's Import from group, the import checklists (draw.io, Microsoft Whiteboard), the
-// Shape libraries page, the Image gallery and the Themes page. Labels are lifted from the live
-// editor's own copy (ImportFromToolbar, ImportChecklist, ShapeLibrariesPane, GalleryPane,
-// ThemesPane) so the figures match what a reader sees. Composed from the shared primitives.
+// the import checklists (draw.io, Microsoft Whiteboard), the Shape libraries page and the Image
+// gallery. Labels are lifted from the live copy (ImportChecklist, and the shared Explorer's
+// ShapeLibrariesPane and GalleryPane) so the figures match what a reader sees. Composed from the
+// shared primitives.
 
-import { Scene, Label, Button, Dialog, TextBar } from './primitives';
+import { Scene, Label, Button, Dialog } from '@liveworkspace/help-site/art/primitives';
 
 // --- Local parts -------------------------------------------------------------
 
@@ -35,41 +35,6 @@ function Check({ x, y, on = true }: { x: number; y: number; on?: boolean }) {
   );
 }
 
-/** One outlined icon button of the Import from group, with a tiny glyph. */
-function SourceButton({ x, y, glyph }: { x: number; y: number; glyph: 'board' | 'pen' | 'net' }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <rect width={22} height={22} rx={5} className="fill-white" />
-      {glyph === 'board' && (
-        <g>
-          <rect x={4} y={5} width={14} height={11} rx={1.5} className="fill-brand-500" />
-          <path
-            d="M7 13 q2 -5 4 -1 t4 -3"
-            fill="none"
-            className="stroke-white help-art-as-drawn"
-            strokeWidth={1.3}
-            strokeLinecap="round"
-          />
-        </g>
-      )}
-      {glyph === 'pen' && (
-        <path
-          d="M6 16 l1 -4 l7 -7 l3 3 l-7 7 Z"
-          className="fill-violet-400 stroke-violet-500"
-          strokeWidth={1}
-        />
-      )}
-      {glyph === 'net' && (
-        <g className="fill-amber-400">
-          <rect x={4} y={5} width={6} height={5} rx={1} />
-          <rect x={12} y={12} width={6} height={5} rx={1} />
-          <path d="M7 10 v4.5 h5" fill="none" className="stroke-amber-500" strokeWidth={1.3} />
-        </g>
-      )}
-    </g>
-  );
-}
-
 /** A picture motif (sun and hills) inside a box. */
 function Picture({ x, y, w, h, hue }: { x: number; y: number; w: number; h: number; hue: string }) {
   return (
@@ -85,55 +50,6 @@ function Picture({ x, y, w, h, hue }: { x: number; y: number; w: number; h: numb
 }
 
 // --- Scenes ------------------------------------------------------------------
-
-/** The Explorer page header: the section title, then the Import from group (one icon button per
- *  source, in order Microsoft Whiteboard, Excalidraw, draw.io), Help, and Create. */
-export function ImportFromHeader() {
-  return (
-    <Scene w={420} h={130} bg="plain">
-      <rect
-        x={14}
-        y={18}
-        width={392}
-        height={94}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={30} y={44} size={15} weight={700} tone="strong">
-        Recent
-      </Label>
-      {/* Import from group */}
-      <rect
-        x={110}
-        y={31}
-        width={152}
-        height={26}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={120} y={45} size={10} weight={500} tone="muted">
-        Import from
-      </Label>
-      <SourceButton x={184} y={33} glyph="board" />
-      <SourceButton x={208} y={33} glyph="pen" />
-      <rect x={232} y={33} width={22} height={22} rx={5} className="fill-slate-100" />
-      <SourceButton x={232} y={33} glyph="net" />
-      <Button x={270} y={31} w={52} label="Help" />
-      <Button x={330} y={31} w={64} label="Create" variant="primary" />
-      {/* Tooltip on the draw.io button, dark in both appearances */}
-      <g className="help-art-as-drawn">
-        <path d="M243 62 l-5 6 h10 Z" className="fill-slate-800" />
-        <rect x={214} y={67} width={58} height={20} rx={5} className="fill-slate-800" />
-        <Label x={243} y={78} anchor="middle" size={10} weight={600} className="fill-white">
-          draw.io
-        </Label>
-      </g>
-      <TextBar x={30} y={96} w={160} tone="faint" />
-    </Scene>
-  );
-}
 
 /** An import checklist dialog: the title, the legend, Select all, one ticked row per file, and
  *  Back beside the counted Import button. */
@@ -338,13 +254,13 @@ export function GalleryCards() {
     {
       name: 'logo.png',
       size: '640 × 320 · 48 KB',
-      used: 'Used in 2 documents',
+      used: 'Used in 2 canvases',
       hue: 'fill-brand-200',
     },
     {
       name: 'team-photo.jpg',
       size: '1600 × 900 · 1.1 MB',
-      used: 'Used in 1 document',
+      used: 'Used in 1 canvas',
       hue: 'fill-emerald-200',
     },
     { name: 'old-sketch.png', size: '800 × 600 · 210 KB', used: 'Not used', hue: 'fill-amber-200' },
@@ -416,111 +332,6 @@ export function GalleryCards() {
           </g>
         );
       })}
-    </Scene>
-  );
-}
-
-/** The Themes page: a card per saved theme (swatch, name, Edit, Duplicate and Delete buttons) and
- *  the dashed New Theme card. */
-export function SavedThemeCards() {
-  const themes = [
-    { name: 'Ocean', swatches: ['fill-brand-500', 'fill-brand-300', 'fill-brand-100'] },
-    { name: 'Forest', swatches: ['fill-emerald-500', 'fill-emerald-400', 'fill-teal-400'] },
-    { name: 'Sunset', swatches: ['fill-rose-500', 'fill-amber-500', 'fill-amber-400'] },
-  ];
-  return (
-    <Scene w={420} h={176} bg="plain">
-      <Label x={24} y={22} size={14} weight={700} tone="strong">
-        Themes
-      </Label>
-      {themes.map((t, i) => {
-        const tx = 20 + i * 96;
-        return (
-          <g key={t.name}>
-            <rect
-              x={tx}
-              y={38}
-              width={88}
-              height={122}
-              rx={10}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            <g className="help-art-as-drawn">
-              {t.swatches.map((s, j) => (
-                <rect
-                  key={j}
-                  x={tx + 10 + j * 23}
-                  y={48}
-                  width={22}
-                  height={40}
-                  rx={j === 0 ? 4 : 0}
-                  className={s}
-                />
-              ))}
-            </g>
-            <Label x={tx + 10} y={104} size={11} weight={600} tone="strong">
-              {t.name}
-            </Label>
-            {/* Edit, Duplicate, Delete */}
-            {[0, 1, 2].map((j) => (
-              <g key={j}>
-                <rect
-                  x={tx + 10 + j * 24}
-                  y={120}
-                  width={20}
-                  height={20}
-                  rx={5}
-                  className="fill-white stroke-slate-200"
-                  strokeWidth={1.2}
-                />
-                {j === 0 && (
-                  <path
-                    d={`M${tx + 15} ${135} l1 -3.5 l6 -6 l2.5 2.5 l-6 6 Z`}
-                    fill="none"
-                    className="stroke-slate-500"
-                    strokeWidth={1.1}
-                  />
-                )}
-                {j === 1 && (
-                  <g fill="none" className="stroke-slate-500" strokeWidth={1.1}>
-                    <rect x={tx + 39} y={126} width={7} height={8} rx={1} />
-                    <path d={`M${tx + 42} ${126} v-2 h7 v8 h-3`} />
-                  </g>
-                )}
-                {j === 2 && (
-                  <path
-                    d={`M${tx + 63} ${126} h10 M${tx + 65} ${126} v8 h6 v-8 M${tx + 66.5} ${124} h3`}
-                    fill="none"
-                    className="stroke-rose-500"
-                    strokeWidth={1.1}
-                    strokeLinecap="round"
-                  />
-                )}
-              </g>
-            ))}
-          </g>
-        );
-      })}
-      <rect
-        x={308}
-        y={38}
-        width={92}
-        height={122}
-        rx={10}
-        className="fill-none stroke-slate-300"
-        strokeWidth={1.5}
-        strokeDasharray="5 4"
-      />
-      <path
-        d="M354 86 v14 M347 93 h14"
-        className="stroke-slate-400"
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      />
-      <Label x={354} y={114} anchor="middle" size={10} weight={500} tone="muted">
-        New Theme
-      </Label>
     </Scene>
   );
 }

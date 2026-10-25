@@ -66,7 +66,7 @@ export function LegalPage({
               />
             ))}
           </div>
-          <div className="relative mx-auto max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20">
+          <div className="relative mx-auto max-w-7xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20">
             <nav
               aria-label="Legal"
               className="inline-flex rounded-full border border-slate-200 bg-white/80 p-1 text-sm font-medium shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
@@ -127,7 +127,7 @@ export function LegalPage({
           </div>
         </section>
 
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-16 lg:py-20">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-16 lg:py-20">
           <aside>
             <details className="group rounded-2xl border border-slate-200 bg-white p-4 lg:hidden dark:border-slate-800 dark:bg-slate-900">
               <summary className="cursor-pointer text-sm font-semibold text-slate-900 dark:text-white">

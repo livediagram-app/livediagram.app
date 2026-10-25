@@ -25,8 +25,8 @@ import {
   type LinkedGroup,
 } from '@liveplanner/items';
 import { DialogCloseButton } from '@liveplanner/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';

@@ -17,12 +17,15 @@
     "@cloudflare/workers-types": "^5.20261007.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "wrangler": "^4.148.0"
+  },
+  "dependencies": {
+    "@liveworkspace/sites": "workspace:*"
   }
 }

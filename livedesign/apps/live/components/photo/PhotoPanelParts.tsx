@@ -19,7 +19,7 @@ import {
   lucideSquareDashed,
   lucideType,
   lucideWand,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { PhotoHistory } from '@/lib/photo-editor/photo-history';

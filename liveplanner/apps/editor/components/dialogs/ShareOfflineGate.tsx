@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncProjectPrompt } from './SyncProjectPrompt';
 
 // The Share dialog's offline gate (docs/specs/006-project/offline-mode.md "Sharing a project in

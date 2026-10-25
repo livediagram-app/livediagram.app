@@ -12,11 +12,11 @@
 // (in which case it goes into a sibling icon module).
 
 import type { TextAlignX, TextAlignY } from '@livedesign/design';
-import { lucideFileDown, lucideFileUp, lucidePenTool } from '@livedesign/icons/lucide';
+import { lucideFileDown, lucideFileUp, lucidePenTool } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livedesign/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MODE_GLYPHS } from '@livedesign/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -234,7 +234,7 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
 }
 
 // A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @livedesign/icons), the ONE drawing the palette and the export use.
+// @liveworkspace/icons), the ONE drawing the palette and the export use.
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;
   return (

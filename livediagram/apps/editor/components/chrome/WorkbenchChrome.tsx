@@ -7,9 +7,13 @@
 // document was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
 // says how to edit again.
 import type { WorkbenchEndReason } from '@livediagram/api-schema';
-import { lucideArrowLeft } from '@livediagram/icons/lucide';
+import { lucideArrowLeft } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livediagram/ui';
-import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
+import {
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
 import { TOOLBAR_CONTROL_REST } from './toolbar-surface';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
@@ -24,7 +28,7 @@ const BackGlyph = lucideGlyph(lucideArrowLeft, 18);
 export function WorkbenchOpenLink({
   href,
   labelled,
-  description = 'Opens this document in a full tab.',
+  description = 'Opens this canvas in a full tab.',
 }: {
   href: string;
   labelled: boolean;

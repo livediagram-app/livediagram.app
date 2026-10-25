@@ -198,24 +198,6 @@ export function assessCleanup(
   });
 }
 
-/** The short reason a tile shows under its name when it is greyed out; null when it is offered. */
-export function verdictLine(v: CleanupVerdict): string | null {
-  switch (v.kind) {
-    case 'ok':
-      return null;
-    case 'unchanged':
-      return 'Already tidy';
-    case 'covers':
-      return v.count === 1 ? 'Would cover a shape' : `Would cover ${v.count} shapes`;
-    case 'leaves-container':
-      return 'Would pull shapes out of their lanes';
-    case 'rearranges-lanes':
-      return 'Would rearrange your lanes';
-    case 'unsuited':
-      return 'For ideas that branch, not loop';
-  }
-}
-
 /** The notice the command palette shows when it refuses a tidier, naming it. */
 export function verdictNotice(name: string, v: CleanupVerdict): string | null {
   switch (v.kind) {

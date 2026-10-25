@@ -65,7 +65,9 @@ const kinds = (tab: Tab) => pageSummaries(tab).map((p) => p.kind);
 
 describe('fresh ids and the unexpected', () => {
   it('mints its own page ids when none are given', () => {
-    const out = applyPageChanges(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide' }]);
+    const out = applyPageChanges(tabOf({ pages: [page('p1', { name: 'Cover' })] }), [
+      { op: 'add', kind: 'infographic' },
+    ]);
     if ('refusal' in out) throw new Error('refused');
     expect(pagesOf(out.tab)[1]!.id).toMatch(/^page-/);
   });
@@ -106,12 +108,9 @@ describe('adding', () => {
       ['p1', 'Cover'],
       ['pg-1', 'Problem'],
     ]);
-    // Of another kind, named or holding anything, the one page stays and the new one follows it.
-    for (const kept of [
-      tabOf({ pages: [page('p1', { kind: 'infographic' })] }),
-      tabOf({ pages: [page('p1', { kind: 'slide', name: 'Title' })] }),
-    ])
-      expect(pagesOf(run(kept, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+    // Named or holding anything, the one page stays and the new one follows it.
+    const named = tabOf({ pages: [page('p1', { kind: 'slide', name: 'Title' })] });
+    expect(pagesOf(run(named, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
   });
 
   it('never takes a page the same call added as a blank', () => {
@@ -123,7 +122,7 @@ describe('adding', () => {
   });
 
   it('adds after the last page, with its fields, a layout and a place', () => {
-    const tab = tabOf({ pages: [page('p1'), page('p2')] });
+    const tab = tabOf({ pages: [page('p1', { kind: 'slide' }), page('p2', { kind: 'slide' })] });
     const slide = layoutCatalogueFor('slide').layouts[0]!;
     const out = run(tab, [
       {
@@ -145,24 +144,41 @@ describe('adding', () => {
   });
 
   it('adds slide and infographic pages, sized and turned', () => {
-    const tab = tabOf({ pages: [page('p1')] });
-    const out = run(tab, [
-      { op: 'add', kind: 'slide' },
+    const out = run(tabOf({ pages: [page('p1', { name: 'Cover' })] }), [
+      { op: 'add', kind: 'infographic' },
       { op: 'add', kind: 'infographic', size: 'a3', orientation: 'landscape' },
     ]);
-    expect(kinds(out.tab)).toEqual(['infographic', 'slide', 'infographic']);
+    expect(kinds(out.tab)).toEqual(['infographic', 'infographic', 'infographic']);
     expect(out.lines[1]).toBe('Added page 3 (infographic, A3 landscape): size a3, landscape.');
+    const deck = run(tabOf({ pages: [page('s1', { kind: 'slide', name: 'Cover' })] }), [
+      { op: 'add', kind: 'slide', size: 'slide-classic' },
+    ]);
+    expect(kinds(deck.tab)).toEqual(['slide', 'slide']);
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('one kind a tab: refuses a page of a kind other than the first page’s', () => {
+    const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide' }]);
+    expect(r).toMatchObject({ code: 'kind_not_offered', change: 0 });
+    expect(r.message).toBe(
+      'This tab holds infographic pages: every page of a tab is one kind. Put slide pages in a tab of their own (add_tab).',
+    );
+    const deck = tabOf({ pages: [page('s1', { kind: 'slide' }), page('s2', { kind: 'slide' })] });
+    expect(refusal(deck, [{ op: 'add', kind: 'infographic' }]).code).toBe('kind_not_offered');
+    // The fresh tab's unchosen, empty first page still takes any kind.
+    expect(kinds(run(tabOf(), [{ op: 'add', kind: 'infographic' }]).tab)).toEqual(['infographic']);
   });
 
   it('refuses an article (write_article makes them) and a size the kind lacks', () => {
     expect(refusal(tabOf(), [{ op: 'add', kind: 'article' }]).code).toBe('article_by_write');
-    const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide', size: 'a4' }]);
+    const deck = tabOf({ pages: [page('p1', { kind: 'slide', name: 'Cover' })] });
+    const r = refusal(deck, [{ op: 'add', kind: 'slide', size: 'a4' }]);
     expect(r).toMatchObject({ code: 'size_not_offered', change: 0 });
     expect(r.message).toContain('slide, slide-classic');
   });
 
   it('refuses a layout of another kind, and any on an article page', () => {
-    const r = refusal(tabOf({ pages: [page('p1')] }), [
+    const r = refusal(tabOf({ pages: [page('p1', { kind: 'slide', name: 'Cover' })] }), [
       { op: 'add', kind: 'slide', layout: 'title' },
     ]);
     expect(r.code).toBe('layout_unknown');
@@ -180,7 +196,7 @@ describe('adding', () => {
     const full = tabOf({
       pages: Array.from({ length: MAX_PAGES }, (_, i) => page(`p${i}`)),
     });
-    expect(refusal(full, [{ op: 'add', kind: 'slide' }]).code).toBe('page_limit');
+    expect(refusal(full, [{ op: 'add', kind: 'infographic' }]).code).toBe('page_limit');
   });
 });
 
@@ -414,7 +430,7 @@ describe('laying out, moving, duplicating, deleting', () => {
   it('stops at the first refusal and writes nothing, naming the change', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const r = refusal(tab, [
-      { op: 'add', kind: 'slide' },
+      { op: 'add', kind: 'infographic' },
       { op: 'delete', page: 7 },
     ]);
     expect(r).toMatchObject({ code: 'page_unknown', change: 1 });

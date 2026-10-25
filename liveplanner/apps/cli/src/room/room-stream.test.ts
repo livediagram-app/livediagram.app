@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createApiClient } from '@liveplanner/api-client';
+import { createApiClient } from '@liveworkspace/api-client';
 import { PROJECT_TRASHED_CLOSE } from '@liveplanner/api-schema';
 import { fakeIo, type Route } from '../testing/fake-io';
 import { openRoomStream, ROOM_RECONNECT_MAX_MS, ROOM_RECONNECT_MIN_MS } from './room-stream';

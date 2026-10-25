@@ -3,6 +3,8 @@
 // the secret is shown once. A token is 32 random bytes, so an indexed lookup by its hash leaks nothing
 // a timing attack could use.
 
+import { timelineStatement, type TimelineEvent } from './index-timeline.ts';
+
 export const API_TOKEN_PREFIX = 'lwt_';
 const TOKEN_RANDOM_BYTES = 32;
 // Live tokens one account can hold.
@@ -81,26 +83,33 @@ export async function mintApiToken(
   const secret = generateApiToken();
   const id = crypto.randomUUID();
   const expiresAt = apiTokenExpiry(now);
-  const result = await db
-    .prepare(
-      `INSERT INTO api_token (id, userId, tokenHash, name, readOnly, createdAt, lastUsedAt, expiresAt, revokedAt)
+  const [result] = await db.batch([
+    db
+      .prepare(
+        `INSERT INTO api_token (id, userId, tokenHash, name, readOnly, createdAt, lastUsedAt, expiresAt, revokedAt)
        SELECT ?, ?, ?, ?, ?, ?, NULL, ?, NULL
        WHERE (SELECT COUNT(*) FROM api_token WHERE userId = ? AND revokedAt IS NULL AND expiresAt > ?) < ?`,
-    )
-    .bind(
-      id,
-      userId,
-      await hashApiToken(secret),
-      options.name,
-      options.readOnly ? 1 : 0,
-      now,
-      expiresAt,
-      userId,
-      now,
-      MAX_API_TOKENS_PER_ACCOUNT,
-    )
-    .run();
-  if ((result.meta.changes ?? 0) === 0) return null;
+      )
+      .bind(
+        id,
+        userId,
+        await hashApiToken(secret),
+        options.name,
+        options.readOnly ? 1 : 0,
+        now,
+        expiresAt,
+        userId,
+        now,
+        MAX_API_TOKENS_PER_ACCOUNT,
+      ),
+    // On its owner's Timeline, only when it was made (under the limit).
+    timelineStatement(
+      db,
+      tokenEvent('token_created', { id, name: options.name }, userId, userId, now),
+      { sql: 'EXISTS (SELECT 1 FROM api_token WHERE id = ?)', args: [id] },
+    ),
+  ]);
+  if ((result?.meta.changes ?? 0) === 0) return null;
   return {
     id,
     name: options.name,
@@ -118,11 +127,46 @@ export async function revokeApiToken(
   id: string,
   now = Date.now(),
 ): Promise<boolean> {
-  const result = await db
-    .prepare('UPDATE api_token SET revokedAt = ? WHERE id = ? AND userId = ? AND revokedAt IS NULL')
-    .bind(now, id, userId)
-    .run();
-  return (result.meta.changes ?? 0) > 0;
+  const token = await db
+    .prepare('SELECT name FROM api_token WHERE id = ? AND userId = ? AND revokedAt IS NULL')
+    .bind(id, userId)
+    .first<{ name: string }>();
+  if (!token) return false;
+  const [result] = await db.batch([
+    db
+      .prepare(
+        'UPDATE api_token SET revokedAt = ? WHERE id = ? AND userId = ? AND revokedAt IS NULL',
+      )
+      .bind(now, id, userId),
+    timelineStatement(
+      db,
+      tokenEvent('token_revoked', { id, name: token.name }, userId, userId, now),
+      {
+        sql: 'EXISTS (SELECT 1 FROM api_token WHERE id = ? AND revokedAt = ?)',
+        args: [id, now],
+      },
+    ),
+  ]);
+  return (result?.meta.changes ?? 0) > 0;
+}
+
+// A token's event for its owner's Timeline. Its id is the token's, so it is recorded once.
+export function tokenEvent(
+  type: 'token_created' | 'token_revoked' | 'token_expiring',
+  token: { id: string; name: string },
+  ownerId: string,
+  actorId: string | null,
+  at: number,
+): TimelineEvent {
+  return {
+    id: `${type}:${token.id}`,
+    type,
+    actorId,
+    title: token.name,
+    detail: { tokenId: token.id },
+    at,
+    scopes: [`p:${ownerId}`],
+  };
 }
 
 export interface VerifiedToken {
@@ -186,11 +230,21 @@ export async function revokeApiTokenBySecret(
   now = Date.now(),
 ): Promise<boolean> {
   if (!isApiTokenFormat(token)) return false;
-  const result = await db
-    .prepare('UPDATE api_token SET revokedAt = ? WHERE tokenHash = ? AND revokedAt IS NULL')
-    .bind(now, await hashApiToken(token))
-    .run();
-  return (result.meta.changes ?? 0) > 0;
+  const row = await db
+    .prepare('SELECT id, userId, name FROM api_token WHERE tokenHash = ? AND revokedAt IS NULL')
+    .bind(await hashApiToken(token))
+    .first<{ id: string; userId: string; name: string }>();
+  if (!row) return false;
+  const [result] = await db.batch([
+    db
+      .prepare('UPDATE api_token SET revokedAt = ? WHERE id = ? AND revokedAt IS NULL')
+      .bind(now, row.id),
+    timelineStatement(db, tokenEvent('token_revoked', row, row.userId, row.userId, now), {
+      sql: 'EXISTS (SELECT 1 FROM api_token WHERE id = ? AND revokedAt = ?)',
+      args: [row.id, now],
+    }),
+  ]);
+  return (result?.meta.changes ?? 0) > 0;
 }
 
 // Which of these token ids still work: an app asks about the tokens it has seen, so what hangs off a

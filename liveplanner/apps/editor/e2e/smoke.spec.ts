@@ -1,11 +1,11 @@
 import {
   test,
   expect,
-  dismissQuickTour,
+  createInMode,
   expectNoPageErrors,
   openTeamRetro,
+  seedTab,
   startBlankProject,
-  paletteTile,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -13,25 +13,28 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-project wizard renders', async ({ page, pageErrors }) => {
-  await page.goto('/new');
-  await expect(page.getByText('New Project', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-project-route.md
-  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
-  expectNoPageErrors(pageErrors);
-});
-
-// The editor header carries no apps menu over the new-project wizard: the product's links live in the Explorer
-// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-project wizard shows with no apps menu in the header', async ({
+// /new asks nothing: it makes a plan and opens it on Start Planning (docs/specs/007-editor/new-project-route.md).
+// A guest's lives in This Browser (docs/specs/006-project/save-locations.md "The default depends on who is creating"):
+// listed in this browser's list for the Explorer, and badged so in the header.
+test('/new opens a guest’s new plan in This Browser on Start Planning, with no apps menu', async ({
   page,
   pageErrors,
 }) => {
-  await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  const id = await createInMode(page);
+  await expect(page.getByRole('heading', { name: 'Start Planning' })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) =>
+          (
+            (JSON.parse(localStorage.getItem(key) ?? '{}') as { items?: { id: string }[] }).items ??
+            []
+          ).map((i) => i.id),
+        'liveworkspace:this-browser:liveplanner',
+      ),
+    )
+    .toContain(id);
+  await expect(page.getByLabel('This Browser', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
@@ -50,29 +53,26 @@ test('create a blank project, add a shape, and it survives a reload', async ({
   pageErrors,
 }) => {
   await startBlankProject(page);
-  // The wizard created a real project and routed to it.
+  // /new created a real plan and routed to it.
   await expect(page).toHaveURL(/\/project\/[0-9a-f-]{36}/);
-  // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
-  // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
-  await dismissQuickTour(page);
-
-  // The palette is open by default on desktop; its shape tiles are
-  // aria-labelled ("Add Square"). Arm the Square, then drop it on the
-  // canvas with a single click. Element views carry a role=img label
-  // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
+  // A square on the tab, then a second by duplicating it (Cmd/Ctrl+D). Element views carry a role=img label
+  // (docs/specs/004-interface-design/canvas-accessibility.md), so the squares are addressable without reaching
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
-  await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 420, y: 300 } });
-  await expect(square).toHaveCount(1);
+  await seedTab(page, [
+    { id: 'sq', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+  ]);
+  await square.first().click();
+  await page.keyboard.press('ControlOrMeta+d');
+  await expect(square).toHaveCount(2);
 
   // The autosave round-trip through the api + D1 is the part no unit
   // test covers: reload and the shape must still be on the tab.
   await page.waitForTimeout(1500); // let the debounced autosave flush
   await page.reload();
   await canvas.waitFor();
-  await expect(square).toHaveCount(1);
+  await expect(square).toHaveCount(2);
 
   expectNoPageErrors(pageErrors);
 });

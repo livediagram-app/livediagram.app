@@ -6,7 +6,10 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  setRemoteBesideTab,
+  syncRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { EditorMode, QaNote, Tab } from '@livediagram/document';
 import {
@@ -17,8 +20,13 @@ import {
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
-import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  getSessionSharePassword,
+  type RoomHandlers,
+} from '@/lib/api-client';
+import { keepDocumentGrantFresh, documentGrant } from '@/lib/api/document-grants';
 import { parseLaserConfig } from '@/lib/laser-config';
 import {
   createPresenceCoalescer,
@@ -35,7 +43,7 @@ import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,
@@ -154,7 +162,7 @@ export function useRoomConnection(opts: {
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
   receiveDocumentTrashed: () => void;
-  // Re-hydrate tab content from D1 when the room can't replay our gap
+  // Re-hydrate tab content from the canvas when the room can't replay our gap
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
@@ -225,29 +233,16 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
-  //
-  // A signed-in session's ticket tells the room it is an account (the only kind that may publish a
-  // profile picture or see others'), and it says hello with its published picture
-  // (docs/specs/014-identity/profile-picture.md §6).
-  const picture = usePublishedPicture();
-  const selfForRoom = () => ({
-    id: selfParticipant.id,
-    key: selfParticipant.key,
-    name: selfParticipant.name,
-    color: selfParticipant.color,
-    ...(picture ? { picture } : {}),
-  });
   const connectAs = useEffectEvent(() => ({
-    self: selfForRoom(),
+    self: {
+      id: selfParticipant.id,
+      key: selfParticipant.key,
+      name: selfParticipant.name,
+      color: selfParticipant.color,
+    },
     shareCode: sessionShareCode,
   }));
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
-  // The switch flipped, or the picture changed: tell the open room, which updates the roster in
-  // place (switch off = initials for everyone from this update on).
-  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
-  useEffect(() => {
-    announceSelf();
-  }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
   // Each peer's presence name, to say who switched a tab's mode.
@@ -300,9 +295,6 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
-          // Only ever present when the room judged us an account session
-          // (docs/specs/014-identity/profile-picture.md §5).
-          ...(p.picture ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
@@ -637,12 +629,16 @@ export function useRoomConnection(opts: {
       onResync: () => roomResync(),
     };
     // Every session joins through a one-time room ticket (docs/specs/015-api/api.md "Realtime model"),
-    // minted over REST, where the access gates already read the guest signature, the share code and its
-    // password, and team membership as headers. The WS upgrade can't carry headers, so before tickets
+    // minted over REST, where the access gates already read the index's grant (and through it the share code,
+    // its password and team membership) as headers. The WS upgrade can't carry headers, so before tickets
     // those rode the upgrade URL, which is logged; now only the spent-on-use ticket does. The connector
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    // The grant every request and the room's ticket carry, fetched again a minute before it lapses while the
+    // canvas is open (document-grants.ts), so neither a save nor a renewal waits on the index.
+    const stopGrant = keepDocumentGrantFresh(documentId, share);
     let firstMint = true;
     const openedRoom = connectRoom(
       documentId,
@@ -662,11 +658,13 @@ export function useRoomConnection(opts: {
           return minted?.ticket ?? null;
         },
         readFollowing: roomReadFollowing,
+        renewGrant: async () => (await documentGrant(documentId, share))?.grant ?? null,
       },
       roomReadFacilitatorToken,
     );
     roomRef.current = openedRoom;
     return () => {
+      stopGrant();
       presence.cancel();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();

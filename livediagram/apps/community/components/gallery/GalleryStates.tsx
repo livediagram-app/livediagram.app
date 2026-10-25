@@ -12,7 +12,7 @@ export function GalleryEmpty() {
     <EmptyState
       icon={<PeopleIcon aria-hidden />}
       title="Nothing here yet."
-      description="Be the first to share a document."
+      description="Be the first to share a canvas."
     >
       <a href={SHARE_YOUR_OWN_HREF} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Share Your Own</ButtonContent>
@@ -26,7 +26,7 @@ export function GalleryNoMatches({ onClear }: { onClear: () => void }) {
   return (
     <EmptyState
       icon={<SearchIcon aria-hidden />}
-      title="No documents match these filters."
+      title="No canvases match these filters."
       description="Try a different search, or browse everything."
     >
       <Button variant="secondary" size="md" onClick={onClear}>
@@ -36,25 +36,15 @@ export function GalleryNoMatches({ onClear }: { onClear: () => void }) {
   );
 }
 
-// My Shares, signed out: it needs to know who you are. On a build without sign-in (guest only)
-// there is nobody to be, so it says so instead of offering a sign-in that does not exist.
-export function GallerySignedOut({ available }: { available: boolean }) {
-  if (!available) {
-    return (
-      <EmptyState
-        icon={<MineIcon aria-hidden />}
-        title="My Shares needs an account."
-        description="This site has no sign-in, so there are no shares to list."
-      />
-    );
-  }
+// My Shares, signed out: it needs to know who you are.
+export function GallerySignedOut() {
   // Back to this very view after signing in; the gallery only renders this in the browser.
   const here = `${window.location.pathname}${window.location.search}`;
   return (
     <EmptyState
       icon={<MineIcon aria-hidden />}
       title="Sign in to see your shares."
-      description="My Shares lists the documents you have shared to the Community, with how many likes and copies each has."
+      description="My Shares lists the canvases you have shared to the Community, with how many likes and copies each has."
     >
       <a href={signInHref(here)} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Sign In</ButtonContent>
@@ -69,7 +59,7 @@ export function GalleryMineEmpty() {
     <EmptyState
       icon={<MineIcon aria-hidden />}
       title="You haven't shared anything yet."
-      description="Share a document you are proud of, and see how it does here."
+      description="Share a canvas you are proud of, and see how it does here."
     >
       <a href={SHARE_YOUR_OWN_HREF} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Share Your Own</ButtonContent>

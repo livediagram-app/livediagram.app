@@ -19,7 +19,7 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-import { ProjectRoom } from './project-room';
+import { PlanRoom } from './plan-room/plan-room';
 import { ANSWERS_FLUSH_MS } from './room-participant';
 
 const ME = 'a'.repeat(32);
@@ -65,7 +65,7 @@ function newRoom() {
     blockConcurrencyWhile: (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},
   };
-  const room = new ProjectRoom(state as unknown as DurableObjectState, {} as never);
+  const room = new PlanRoom(state as unknown as DurableObjectState, {} as never);
   const join = (
     id: string,
     role: 'view' | 'participate' | 'edit',
@@ -109,7 +109,7 @@ const ops = (s: Socket) => frames(s).filter((f) => f.kind === 'op');
 const storedElements = () => (JSON.parse(store.data!) as { elements: unknown[] }).elements;
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
-async function send(room: ProjectRoom, from: Socket, op: unknown, ref?: number) {
+async function send(room: PlanRoom, from: Socket, op: unknown, ref?: number) {
   room.webSocketMessage(wsOf(from), JSON.stringify({ kind: 'op', op, ...(ref ? { ref } : {}) }));
   await settle();
 }
@@ -123,7 +123,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('ProjectRoom: a Participant adds and writes', () => {
+describe('PlanRoom: a Participant adds and writes', () => {
   it('stores an added sticky stamped with its adder, and everyone takes the stored copy', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
@@ -266,7 +266,7 @@ describe('ProjectRoom: a Participant adds and writes', () => {
   });
 });
 
-describe("ProjectRoom: a Participant's answers", () => {
+describe("PlanRoom: a Participant's answers", () => {
   it('relays a dot like an Editor and writes it to D1 without one', async () => {
     vi.useFakeTimers();
     store.data = JSON.stringify({

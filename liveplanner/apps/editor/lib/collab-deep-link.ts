@@ -8,11 +8,7 @@
 //
 // `t` is the tab pin the editor already writes on every tab switch
 // (docs/specs/006-project/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
-// consumed once on load. Pure functions, shared by the Explorer (which
-// builds the link) and the editor (which reads it), so the two halves
-// cannot drift on the parameter names.
-
-import type { ActivityCard, ActivityFormResponses, ActivityPlace } from '@liveplanner/api-schema';
+// consumed once on load. The shared Explorer builds the link; the editor reads it here.
 
 export type CollabPopover = 'action' | 'comments';
 
@@ -23,43 +19,6 @@ export type CollabDeepLink = {
   open: CollabPopover | null;
   itemId: string | null;
 };
-
-type Reachable = Pick<ActivityPlace, 'projectId' | 'via' | 'shareCode'>;
-
-function projectHref(doc: Reachable, hash: string): string {
-  const query =
-    doc.via === 'shared' && doc.shareCode ? `?s=${encodeURIComponent(doc.shareCode)}` : '';
-  return `/project/${encodeURIComponent(doc.projectId)}${query}#${hash}`;
-}
-
-const pin = (tabId: string, elementId: string) =>
-  `t=${encodeURIComponent(tabId)}&el=${encodeURIComponent(elementId)}`;
-
-export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): string {
-  return projectHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
-}
-
-// A Plan card's row (docs/specs/013-workspace/inbox.md §1, §2.5): the board it is on, and the card.
-export function cardDeepLinkHref(
-  card: Pick<ActivityCard, 'id' | 'board' | 'projectId' | 'via' | 'shareCode'>,
-): string {
-  const item = `item=${encodeURIComponent(card.id)}`;
-  return projectHref(
-    card,
-    card.board ? `${pin(card.board.tabId, card.board.elementId)}&${item}` : item,
-  );
-}
-
-// A form's responses (docs/specs/030-forms/forms.md "Hearing about responses"): the board they land on, else the
-// Form tab. A plain tab pin, so the editor opens that tab.
-export function formResponsesHref(
-  form: Pick<ActivityFormResponses, 'projectId' | 'tabId' | 'boardTabId'>,
-): string {
-  return projectHref(
-    { projectId: form.projectId, via: 'own', shareCode: null },
-    `t=${encodeURIComponent(form.boardTabId ?? form.tabId)}`,
-  );
-}
 
 // Null unless the fragment names a tab AND an element, or a card: a plain
 // `#t=` pin is the ordinary refresh case and is not a deep link. An

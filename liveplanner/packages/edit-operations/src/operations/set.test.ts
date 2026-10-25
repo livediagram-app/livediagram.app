@@ -40,6 +40,7 @@ describe('set', () => {
     expect(refused(run('set w1 fillColor=#ff0000'))).toEqual({
       code: 'unknown_field',
       operation: 1,
+      op: 'set w1 fillColor="#ff0000"',
       details: [
         'plan-view has no field "fillColor"',
         'fields: x y width height label locked planView textSize',

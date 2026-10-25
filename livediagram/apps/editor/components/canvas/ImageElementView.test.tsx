@@ -279,7 +279,7 @@ describe('image placeholder contrast', () => {
     }
   }
 
-  it('reads for any theme colours at all (a seeded sweep of custom themes)', () => {
+  it('reads for any theme colours at all (a seeded sweep of colours)', () => {
     let seed = 7;
     const rand = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648) * 256;
     const hex = () =>

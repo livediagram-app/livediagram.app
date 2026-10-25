@@ -18,10 +18,10 @@ import {
   lucideBetweenHorizontalStart,
   lucideListTree,
   lucideNetwork,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from './context-menu-icons';
 import { DataMenuGlyph } from './context-menu-rows';
 import { MIND_FLOW_ICON, MIND_OUTLINE_ICON, MIND_SPACING_ICON } from './mind-map-menu-glyphs';

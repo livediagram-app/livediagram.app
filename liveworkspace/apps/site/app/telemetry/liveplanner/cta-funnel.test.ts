@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_CTA_SOURCES, type TelemetryCount } from '@liveplanner/api-schema';
-import { bestSlot, ctaSourceLabel, formatRate, landingFunnel, rate } from './cta-funnel';
+import { bestSlot, formatRate, rate } from '../_shared/cta-funnel';
+import { LIVEPLANNER as APP } from './config';
+
+const ctaSourceLabel = APP.funnel.sourceLabel;
+const landingFunnel = APP.funnel.landingFunnel;
 
 const row = (category: string, action: string, type: string | null, count: number) =>
   ({ category, action, type, count }) satisfies TelemetryCount;
@@ -100,8 +104,12 @@ describe('rates', () => {
 });
 
 describe('bestSlot', () => {
-  const slot = (source: string, arrived: number, created: number) =>
-    ({ source, label: source, arrived, created }) as Parameters<typeof bestSlot>[0][number];
+  const slot = (source: string, arrived: number, created: number) => ({
+    source,
+    label: source,
+    arrived,
+    created,
+  });
 
   it('picks the most projects, breaking a tie on conversion', () => {
     expect(bestSlot([slot('Home.Hero', 40, 10), slot('Home.Gallery', 12, 10)])).toBe(

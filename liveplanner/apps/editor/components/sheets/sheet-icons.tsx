@@ -39,7 +39,7 @@ import {
   lucideSquareChevronDown,
   lucideShieldCheck,
   lucideHighlighter,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { FunctionFamily } from '@liveplanner/sheets';
 
 const SIZE = 16;

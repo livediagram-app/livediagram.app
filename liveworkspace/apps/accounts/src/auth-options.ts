@@ -1,9 +1,12 @@
 // Everything Better Auth is configured with, apart from where the database lives. Kept
 // free of Worker bindings so scripts/generate-migration.ts can build the same schema
 // against an in-memory SQLite.
-import { oauthProvider } from '@better-auth/oauth-provider';
+import { getOAuthProviderState, oauthProvider } from '@better-auth/oauth-provider';
 import type { BetterAuthOptions } from 'better-auth';
+import { getOAuthState } from 'better-auth/api';
 import { captcha, emailOTP, jwt } from 'better-auth/plugins';
+import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
+import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
 
@@ -20,12 +23,31 @@ export interface AuthConfig {
   resources: string[];
   turnstileSecretKey: string;
   adminToken: string;
-  // "Continue with Google", when the Worker has a Google OAuth client.
-  google: { clientId: string; clientSecret: string } | null;
+  // "Continue with Google", when the Worker has a Google OAuth client. `redirectURI` is where Google sends the browser
+  // back: this Worker's own callback unless it names one on an app's address (index.ts googleAuthFor).
+  google: { clientId: string; clientSecret: string; redirectURI?: string } | null;
+  // The apps' own origins, whose sign-in pages call this Worker through their routers (handoff.ts). Left out where
+  // there are none, as when generating the schema.
+  appOrigins?: string[];
+  // The hand-off that brings a session made on an app's address here (handoff.ts).
+  handoff?: HandoffPluginConfig;
   sendCode: (email: string, code: string) => Promise<void>;
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
   teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
+  // The account's presence colour (profiles.ts), for the ID token's `presence_color` claim. Left out
+  // where there is no database to ask, as when generating the schema.
+  colourFor?: (userId: string) => Promise<string | null>;
+  // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
+  // generating the schema.
+  guestMerge?: Omit<MergeConfig, 'secret'>;
+  // A new account starts its onboarding series (lifecycle.ts), told which OAuth client the sign-up came
+  // through (null for one on liveworkspace.app itself). Left out where there is no database, as when
+  // generating the schema. A failure is logged and never fails the sign-up.
+  onUserCreated?: (
+    user: { id: string; email: string },
+    via: { clientId: string | null },
+  ) => Promise<void>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -38,6 +60,8 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     // The jwt plugin's own /token hands a session JWT to any signed-in browser. Apps get
     // their tokens from /oauth2/token instead, so this one stays off.
     disabledPaths: ['/token'],
+    // The sign-in pages on each app's own address (handoff.ts) post here through the app's router.
+    trustedOrigins: config.appOrigins ?? [],
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's
     // limiter keeps its counts in isolate memory here, which an attacker spreads across.
     rateLimit: { enabled: false },
@@ -54,6 +78,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         google: {
           clientId: config.google.clientId,
           clientSecret: config.google.clientSecret,
+          ...(config.google.redirectURI && { redirectURI: config.google.redirectURI }),
           // Someone signed in to several Google accounts picks one rather than getting whichever
           // the browser last used.
           prompt: 'select_account' as const,
@@ -72,8 +97,30 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
     databaseHooks: {
       user: {
-        create: { before: async (user) => ({ data: withNames(user) }) },
+        create: {
+          before: async (user) => ({ data: withNames(user) }),
+          after: async (user) => {
+            if (!config.onUserCreated) return;
+            await signUpClientId()
+              .then((clientId) => config.onUserCreated?.(user, { clientId }))
+              .catch((error: unknown) =>
+                console.error('Starting the onboarding series failed:', error),
+              );
+          },
+        },
         update: { before: async (user) => ({ data: withNames(user) }) },
+      },
+      session: {
+        create: {
+          after: async (session, ctx) => {
+            if (!config.guestMerge) return;
+            await mergeGuestOnSignIn(
+              { ...config.guestMerge, secret: config.secret },
+              session.userId,
+              ctx,
+            );
+          },
+        },
       },
     },
     advanced: {
@@ -101,6 +148,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         endpoints: [SEND_CODE_PATH],
       }),
       jwt(),
+      ...(config.handoff ? [handoffPlugin(config.handoff)] : []),
       oauthProvider({
         loginPage: '/sign-in',
         // An app sends `prompt=create` from its "Create account" button.
@@ -136,10 +184,32 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
             : {},
         // The provider sends profile and email claims only from /userinfo. The apps read who
         // signed in from the ID token they already have, so the claims go in it as well.
-        customIdTokenClaims: ({ user, scopes }) => idTokenClaims(user, scopes),
+        // The profile's presence colour rides beside the names (one primary-key read per token), so
+        // each app's header paints the avatar in it (liveworkspace/docs/accounts.md "An app's
+        // signed-in cookies"). A failed read leaves it out rather than failing the token.
+        customIdTokenClaims: async ({ user, scopes }) =>
+          idTokenClaims(
+            user,
+            scopes,
+            scopes.includes('profile') && config.colourFor
+              ? await config.colourFor(user.id).catch(() => null)
+              : null,
+          ),
       }),
     ],
   } satisfies BetterAuthOptions;
+}
+
+// The OAuth client a sign-up came through: the `client_id` of the app's authorize request, which the
+// sign-in page sends back as the signed `oauth_query` (the provider checks its signature before the
+// endpoint runs). An email code sign-up carries it in its own request; a Google one carries it across
+// the trip to Google in the provider's server context. Null for a sign-up on liveworkspace.app itself.
+export async function signUpClientId(): Promise<string | null> {
+  const query =
+    (await getOAuthProviderState().catch(() => null))?.query ??
+    (await getOAuthState().catch(() => null))?.serverContext?.query;
+  if (typeof query !== 'string') return null;
+  return new URLSearchParams(query).get('client_id') || null;
 }
 
 async function isAdmin(headers: Headers, adminToken: string): Promise<boolean> {
@@ -171,13 +241,19 @@ export function withNames<T extends NamedUser>(user: T): T {
 
 type ClaimUser = NamedUser & { email: string; emailVerified: boolean };
 
-export function idTokenClaims(user: ClaimUser, scopes: string[]): Record<string, unknown> {
+// `colour`: the profile's presence colour (profiles.ts), a claim of the profile scope beside the names.
+export function idTokenClaims(
+  user: ClaimUser,
+  scopes: string[],
+  colour: string | null = null,
+): Record<string, unknown> {
   const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
   return {
     ...(scopes.includes('profile') && {
       name: text(user.name),
       given_name: text(user.givenName),
       family_name: text(user.familyName),
+      ...(colour && { presence_color: colour }),
     }),
     ...(scopes.includes('email') && { email: user.email, email_verified: user.emailVerified }),
   };

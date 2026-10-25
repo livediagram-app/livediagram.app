@@ -4,10 +4,17 @@
 // from a page, say) closes nothing, and an app can only close the account of someone signed in to it.
 //
 // Deleting the user takes everything else with it: sessions and linked Google accounts through
-// Better Auth, and the OAuth tokens and consents through their foreign keys. Every app's refresh
-// token stops working at once; an access token already issued runs out on its own (minutes).
+// Better Auth, and the OAuth tokens and consents through their foreign keys; teams, settings and
+// the profile are cleared first, explicitly. Every app's refresh token stops working at once; an access token
+// already issued runs out on its own (minutes). Then the index is told to purge everything it holds
+// for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
+// by the cron if the index doesn't take it now. Its workbench goes last: pairings, sessions and the rooms they had
+// open (liveworkspace/docs/workbench.md "Ending access"). The account is closed either way.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
+import { purgeFromIndex, recordPendingPurge, type IndexPurgeConfig } from './index-purge.ts';
+import { deleteProfile } from './profiles.ts';
+import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
@@ -34,6 +41,9 @@ export async function deleteAccount(
   request: Request,
   auth: Auth,
   db: D1Database,
+  index: IndexPurgeConfig = {},
+  // The account's workbench: its store dropped and its rooms closed (workbench/revoke.ts). Never fails the close.
+  closeWorkbench: (userId: string) => Promise<void> = async () => {},
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
@@ -70,8 +80,16 @@ export async function deleteAccount(
   }
 
   // Teams first, so the apps hear that the account left each one and a team it ran passes on.
-  await leaveAllTeams(db, result.sub);
+  const closedTeams = await leaveAllTeams(db, result.sub);
+  // Settings and the profile have no foreign key to the account (a guest's rows have no account), so
+  // they go here.
+  await deleteSettings(db, result.sub);
+  await deleteProfile(db, result.sub);
+  await recordPendingPurge(db, result.sub, closedTeams);
   const ctx = await auth.$context;
   await ctx.internalAdapter.deleteUser(result.sub);
+  // A failure is logged and left for the cron; it never keeps the account open.
+  await purgeFromIndex(db, index, result.sub);
+  await closeWorkbench(result.sub);
   return Response.json({ deleted: true });
 }

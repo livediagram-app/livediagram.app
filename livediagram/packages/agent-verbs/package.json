@@ -18,7 +18,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
@@ -28,8 +28,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

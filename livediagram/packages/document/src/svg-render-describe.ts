@@ -17,10 +17,10 @@ import {
   type CanvasSurface,
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
-import { fontIdsUsed, resolveFontStack } from './fonts';
+import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
-import { hasRichFormatting } from './rich-text';
-import { iconCaptionBand } from './icon-size';
+import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
+import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
@@ -34,9 +34,9 @@ import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
-import { runFontPx } from './label-font';
+import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
-import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
+import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
 import { labelBodyInset } from './label-body';
 
 export const EXPORT_PADDING = 32;
@@ -78,10 +78,10 @@ export type ResolveImageHref = (imageId: string) => string | undefined;
 // renderer wraps it with the element's stroke colour (icons tint + theme
 // like line drawings on the canvas). `colored: true` is a Technology brand
 // mark: the markup is self-coloured (brand tile + white glyph) and is never
-// recoloured. Matches @livediagram/icons' IconExportArt structurally — kept
+// recoloured. Matches @liveworkspace/icons' IconExportArt structurally — kept
 // structural so this package doesn't depend on the catalogue package; each
 // caller supplies a resolver (the editor from its async icon registry, the
-// Workers from @livediagram/icons/resolve). No resolver, or an unknown id,
+// Workers from @liveworkspace/icons/resolve). No resolver, or an unknown id,
 // falls back to the pre-icon output: a plain box with the centred label.
 export type ExportIconArt = { markup: string; colored: boolean };
 export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
@@ -90,7 +90,7 @@ export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 // markup plus the viewBox it was drawn in. Structural, for the same reason
 // ExportIconArt is — this package never imports the catalogue; each caller
 // passes a resolver (the editor from its async registry, the Workers from
-// @livediagram/icons/resolve). No resolver, or an unknown id, falls back to
+// @liveworkspace/icons/resolve). No resolver, or an unknown id, falls back to
 // the plain box-with-label output.
 export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
@@ -172,10 +172,7 @@ export function exportFontIds(
   const finishFonts = elements.map((el) =>
     el.font ? undefined : elementFontId(el, undefined, tabFinish),
   );
-  return fontIdsUsed(boxed, tabFont, [
-    ...boxed.map(eventStormingNoteFont),
-    ...finishFonts,
-  ]);
+  return fontIdsUsed(boxed, tabFont, [...boxed.map(eventStormingNoteFont), ...finishFonts]);
 }
 
 export function describeBoxedExport(
@@ -437,9 +434,7 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
   if (
     el.type === 'shape' &&
-    (el.shape === 'code-block' ||
-      el.shape === 'legend' ||
-      el.shape === 'checklist')
+    (el.shape === 'code-block' || el.shape === 'legend' || el.shape === 'checklist')
   )
     return false;
   return !selfLabelled(el);

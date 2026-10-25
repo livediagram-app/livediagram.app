@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ClusterStrip } from './ClusterPopoverButton';
+import { ClusterStrip } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // Pages mode's pages strip in the bottom-right cluster (docs/specs/007-editor/pages-mode.md "Contents" and
 // "Slides"): Contents and Slides joined in one frame, as Layers and Theme are, since both are ways through the tab's

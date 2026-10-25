@@ -22,7 +22,7 @@ const tab: Tab = { id: 't1', name: 'Board', elements: [] };
 
 async function projectWithTab(): Promise<SqliteD1> {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
   await upsertTab(db.env, 'D', tab, 0);
   return db;
@@ -58,7 +58,7 @@ const ops: ElementOp[] = [
 ];
 
 async function store(db: SqliteD1, r: ChangesetRecord): Promise<void> {
-  await db.env.DB.batch([
+  await db.env.PLAN_DB.batch([
     insertChangesetStatement(db.env, r),
     insertChangesetPartStatement(db.env, r.id, 'ops', JSON.stringify(ops)),
     insertChangesetPartStatement(db.env, r.id, 'inverse', '[]'),
@@ -84,7 +84,7 @@ describe('changeset records', () => {
   it('never lands without its tab write: a stale tab write aborts the record with it', async () => {
     const db = await projectWithTab();
     await expect(
-      db.env.DB.batch([
+      db.env.PLAN_DB.batch([
         ...tabWriteStatements(db.env, 'D', tab, 0, { expected: 0 }),
         insertChangesetStatement(db.env, record()),
       ]),
@@ -152,10 +152,10 @@ describe('the sweep', () => {
     expect(parts.n).toBe(0);
   });
 
-  it('goes with its project', async () => {
+  it('goes with its plan', async () => {
     const db = await projectWithTab();
     await store(db, record());
-    db.sql.exec("DELETE FROM projects WHERE id = 'D'");
+    db.sql.exec("DELETE FROM plan WHERE id = 'D'");
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
   });
 });

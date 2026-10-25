@@ -8,7 +8,7 @@ import {
   type MindSpacing,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type MindMapSetterDeps = {
   currentSelectionIds: () => Set<string>;

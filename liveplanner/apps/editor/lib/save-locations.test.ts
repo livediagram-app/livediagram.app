@@ -6,16 +6,12 @@ import { defaultSaveLocationFor, isOfflineLocation } from './save-locations';
 // future location can't silently create offline.
 describe('save locations', () => {
   // "The default depends on who is creating".
-  it('starts a guest on This Browser when sign-in is enabled', () => {
-    expect(defaultSaveLocationFor({ signedIn: false, signInEnabled: true })).toBe('browser');
+  it('starts a guest on This Browser', () => {
+    expect(defaultSaveLocationFor({ signedIn: false })).toBe('browser');
   });
 
   it('starts a signed-in person on liveplanner', () => {
-    expect(defaultSaveLocationFor({ signedIn: true, signInEnabled: true })).toBe('liveplanner');
-  });
-
-  it('starts everyone on liveplanner on a deployment without sign-in', () => {
-    expect(defaultSaveLocationFor({ signedIn: false, signInEnabled: false })).toBe('liveplanner');
+    expect(defaultSaveLocationFor({ signedIn: true })).toBe('liveplanner');
   });
 
   it('routes only This Browser to the offline store', () => {

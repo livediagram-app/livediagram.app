@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AnimatedHeightBox } from './AnimatedHeightBox';
-import { BackBar } from './BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 
 // docs/specs/004-interface-design/back-bar.md "Always in view": the bar sticks to the top of its scroller, flush
 // with its edge, in every host.

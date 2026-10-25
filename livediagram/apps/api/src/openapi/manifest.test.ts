@@ -21,6 +21,10 @@ function dispatchedSegments(): Set<string> {
   const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
+  // Forwarded to liveworkspace unchanged ahead of the switch (liveworkspace/docs/workbench.md), and still part of
+  // this api's published surface.
+  if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
+    segments.add('workbench');
   return segments;
 }
 
@@ -46,7 +50,11 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     }
   };
   const out = new Map<string, Set<string>>();
-  for (const m of index.matchAll(/case '([^']+)':\s*\n\s*return await (\w+)\(/g)) {
+  const cases = [...index.matchAll(/case '([^']+)':\s*\n\s*return await (\w+)\(/g)];
+  // Another segment's own handler, called with rewritten segments (a share link's read of its canvas), is that
+  // segment's routing, not this one's.
+  const segmentHandlers = new Set(cases.map((m) => handlerFile.get(m[2]!)));
+  for (const m of cases) {
     const file = handlerFile.get(m[2]!);
     const source = file ? read(file) : null;
     if (!source) continue;
@@ -54,6 +62,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
+      if (segmentHandlers.has(`${rel[1]}.ts`)) continue;
       const sibling = read(`${rel[1]}.ts`);
       if (sibling) sources.push(sibling);
     }
@@ -249,16 +258,12 @@ describe('buildOpenApiDocument', () => {
     expect(doc.components.schemas.Error).toBeDefined();
   });
 
-  it('advertises the SVG endpoints (snapshots and the tab render) as image/svg+xml, the rest as JSON', () => {
+  it('advertises the SVG endpoint (the tab render) as image/svg+xml, the rest as JSON', () => {
     const doc = buildOpenApiDocument() as {
       paths: Record<string, Record<string, { responses: Record<string, { content?: object }> }>>;
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
-    expect(svg.map((r) => r.path).sort()).toEqual([
-      '/documents/{id}/tabs/{tabId}/render.svg',
-      '/documents/{id}/thumbnail',
-      '/share/{code}/image.svg',
-    ]);
+    expect(svg.map((r) => r.path).sort()).toEqual(['/documents/{id}/tabs/{tabId}/render.svg']);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
@@ -320,6 +325,6 @@ describe('OpenAPI teams surface', () => {
   it('marks the team reads token-usable and no team write', () => {
     const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
     const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
-    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}', 'GET /teams/{id}/library']);
+    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
   });
 });

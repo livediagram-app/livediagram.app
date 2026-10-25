@@ -32,7 +32,7 @@ export type ExportedTabEnvelope = {
 };
 
 // The JSON envelope as a string — shared by the Blob download and the
-// export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md), which shows the same text
+// export dialog's view/copy panel, which shows the same text
 // in an editable box.
 // `plan`: the project's items, so a tab with Plan boards or cards carries them.
 export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
@@ -66,7 +66,7 @@ export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
 // details`). On a flowchart the arrows are the content: the main path carries no labels, and leaving it out kept
 // only the side branches (issue #985). A free line that joins nothing, with no label, says nothing and stays out.
 // The markdown outline as a string — shared by the Blob download and the
-// export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md).
+// export dialog's view/copy panel.
 // `plan`: the project's items, so Plan boards and cards list their cards.
 export function tabToMarkdownText(tab: Tab, plan?: TabPlanData): string {
   const lines: string[] = [];

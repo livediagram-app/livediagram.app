@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { newItemId } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   markPlanTracksSeen,
   PLAN_TOUR_RELAUNCH_EVENT,
@@ -15,7 +15,7 @@ import {
 } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import {
   boardRoot,

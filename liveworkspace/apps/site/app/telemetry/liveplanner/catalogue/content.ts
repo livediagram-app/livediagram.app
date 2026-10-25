@@ -4,8 +4,8 @@
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@liveplanner/api-schema';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { ANIMATED_BACKGROUNDS, LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
@@ -277,8 +277,9 @@ export const PROJECT_ACTIONS: MetricStack = {
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
 // project delete. Whether anyone comes back for a deleted project is the
-// question, so restores lead; each chart counts every Trash (Personal, Team,
-// Local).
+// question, so restores lead; each chart counts every Trash (Personal, Team).
+// The Trash itself is the One Explorer's; the editor opens it from Settings and
+// restores the open project from its deleted page.
 export const TRASH_OPENED = chart(
   'Trash',
   'Opened',
@@ -305,7 +306,7 @@ export const TRASH_EMPTIED = chart(
   'Trash',
   'Cleared',
   'Trash Emptied',
-  'Empty Trash on one group: your projects, a team, or this browser.',
+  'Empty Trash on one group: your projects or a team’s.',
   { rising: 'neutral' },
 );
 
@@ -441,17 +442,10 @@ export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frame
 
 export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and technology icons.');
 
-// The data-model types Data Models charts (docs/specs/009-elements/entity.md), kept out of the catch-alls.
-const DATA_MODEL_ADDED = ['EntityField'];
-const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
-
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  typeIn: (type) =>
-    !PALETTE_KINDS.has(canonicalElementType(type)) &&
-    !isTablePart(type) &&
-    !DATA_MODEL_ADDED.includes(type ?? ''),
+  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)) && !isTablePart(type),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
@@ -483,9 +477,7 @@ export const ELEMENTS_CHANGED = chart(
   'Element',
   'Changed',
   'Elements Changed',
-  'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An entity's fields and a relationship's cardinality are Data Models'.
-  { typeIn: (t) => !DATA_MODEL_CHANGED.includes(t ?? '') },
+  'Restyled or edited: colour, text, arrow ends, size, presets and more.',
 );
 
 export const ELEMENTS_DELETED = chart(
@@ -613,52 +605,6 @@ export const TABLES: MetricStack = {
   blurb:
     'Editing inside a table: rows and columns added, removed and moved, and its header and zebra switches.',
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
-};
-
-// Data models (docs/specs/009-elements/entity.md): entities grown where they stand and joined into a model.
-export const ENTITY_RELATED_ADDED = chart(
-  'Element',
-  'Created',
-  'Related Entities Added',
-  "An entity added from another's quick-connect ring, already joined to it by a foreign key.",
-  { types: ['RelatedEntity'] },
-);
-
-export const ENTITY_FIELDS_STARTED = chart(
-  'Element',
-  'Added',
-  'Entity Fields Started',
-  "A new field started on an entity from its ring's Add Field.",
-  { types: DATA_MODEL_ADDED },
-);
-
-export const ENTITY_FIELDS_SAVED = chart(
-  'Element',
-  'Changed',
-  'Entity Fields Saved',
-  "An entity's fields saved, in place on the canvas or from its Fields menu.",
-  { types: ['Entity'] },
-);
-
-export const RELATIONSHIP_CARDINALITY = chart(
-  'Element',
-  'Changed',
-  'Cardinality Set',
-  "A relationship's cardinality picked from its toolbar (one to many, many to many and the rest).",
-  { types: ['Cardinality'] },
-);
-
-export const DATA_MODELS: MetricStack = {
-  stack: true,
-  title: 'Data Models',
-  blurb:
-    'Entities grown into a model: related entities added, fields started and saved, and relationship cardinality set.',
-  members: [
-    ENTITY_RELATED_ADDED,
-    ENTITY_FIELDS_STARTED,
-    ENTITY_FIELDS_SAVED,
-    RELATIONSHIP_CARDINALITY,
-  ],
 };
 
 // Undo and redo. (Project·Reverted, the removed Activity panel's per-entry revert, is a

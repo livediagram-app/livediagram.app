@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { CountBadge, NoMatches } from '@livediagram/ui';
-import { SearchInput } from '@/components/primitives/SearchInput';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import type { BrowserCategory } from './PaletteCategoryBrowser';
 
 // The category browse as a two-pane picker (docs/specs/007-editor/toolbar-layout.md "The category bar"), for the

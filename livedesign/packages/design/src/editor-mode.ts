@@ -15,16 +15,6 @@ export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];
 
 export const EDITOR_MODES: readonly EditorMode[] = EDITOR_MODE_CATALOGUE.map((m) => m.id);
 
-/** "Pages": the mode's name as the interface shows it. */
-export function editorModeLabel(mode: EditorMode): string {
-  return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.label;
-}
-
-/** What the mode is for. */
-export function editorModeDescription(mode: EditorMode): string {
-  return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.description;
-}
-
 export const DEFAULT_EDITOR_MODE: EditorMode = 'pages';
 
 export function isEditorMode(v: unknown): v is EditorMode {

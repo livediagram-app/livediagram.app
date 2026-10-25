@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { dropSettingsLink, readSettingsLink } from './settings-link';
+import { dropSettingsLink, readSettingsLink } from '@liveworkspace/workbench/lib/settings-link';
 
 describe('the Settings deep link', () => {
   it('names a category and, optionally, a section', () => {
@@ -13,7 +13,11 @@ describe('the Settings deep link', () => {
   });
 
   it('leaves the URL once Settings closes, keeping the rest', () => {
-    window.history.replaceState(null, '', '/document/a?view=1&settings=account&section=your-data#t');
+    window.history.replaceState(
+      null,
+      '',
+      '/document/a?view=1&settings=account&section=your-data#t',
+    );
     dropSettingsLink();
     expect(`${location.pathname}${location.search}${location.hash}`).toBe('/document/a?view=1#t');
   });

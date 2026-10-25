@@ -6,7 +6,7 @@
 // shows cards. A module store; listeners hear only a real change.
 import { useMemo, useSyncExternalStore } from 'react';
 import type { Element } from '@liveplanner/project';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let held: ReadonlySet<string> = new Set();
 const listeners = createListeners();

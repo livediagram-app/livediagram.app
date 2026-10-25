@@ -9,10 +9,10 @@ import {
 } from '@/lib/canvas-gesture';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-performance.md: the selection chrome is hidden while a selection is
 // moved, resized or reshaped, and comes back when the gesture ends.
@@ -40,7 +40,6 @@ function renderToolbars(multi: boolean) {
   const selectionInput = {
     elements,
     editingId: null,
-    isPaintMode: false,
     tabLocked: false,
     readOnly: false,
   };

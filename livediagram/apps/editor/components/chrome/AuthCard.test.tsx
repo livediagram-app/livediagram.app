@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { MIDNIGHT_PALETTE } from '@/hooks/ui/useMidnightPalette';
+import { MIDNIGHT_PALETTE } from '@liveworkspace/workbench/hooks/ui/useMidnightPalette';
 import { AuthCard, RedirectingCard } from './auth-shared';
 import { ACCOUNT_PITCH_ROWS } from './auth-pitches';
 
@@ -38,7 +38,7 @@ describe('AuthCard messages', () => {
 describe('AuthCard on the Night Band frame', () => {
   it('titles the page with its one h1, and the pitch with an h2', () => {
     render(
-      <AuthCard title="Welcome back" subtitle="Sign in to keep your documents." error="">
+      <AuthCard title="Welcome back" subtitle="Sign in to keep your canvases." error="">
         <span />
       </AuthCard>,
     );
@@ -60,7 +60,7 @@ describe('AuthCard on the Night Band frame', () => {
     expect(field.compareDocumentPosition(pitch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('drops the pitch when asked (interstitials, guest-only notice)', () => {
+  it('drops the pitch when asked (interstitials)', () => {
     render(
       <AuthCard title="Signing you in" error="" pitch={false}>
         <span />

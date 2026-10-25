@@ -12,9 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  CustomTheme as CustomThemeDTO,
-  CustomThemeDefinition,
-  ApiToken as ApiTokenDTO,
   ImageSummary,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
@@ -24,54 +21,50 @@ export type {
   ClientMessage,
 } from '@livediagram/api-schema';
 
+import type { DocumentRoom } from './document-room/document-room';
+import type { PersonStore } from './person-store/person-store';
+
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  DB: D1Database;
-  DOCUMENT_ROOM: DurableObjectNamespace;
+  // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
+  // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
+  DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
+  // Each person's Durable Object (src/person-store/person-store.ts): what livediagram keeps for one person rather
+  // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
+  PERSON_STORE: DurableObjectNamespace<PersonStore>;
+  // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
+  // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
+  INDEX_KEY?: string;
+  // liveworkspace's index (liveworkspace/docs/one-explorer.md): where every canvas is filed and who may open it.
+  // The grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their
+  // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.
+  INDEX_ORIGIN?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
-  // Clerk JWKS URL: when set, the request handler verifies Bearer
-  // tokens against it via `src/auth/clerk.ts` and prefers the
-  // resulting userId over `X-Owner-Id`. When unset, the worker stays
-  // in pure-guest mode (X-Owner-Id only). See docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md.
-  CLERK_JWKS_URL?: string;
+  // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
+  // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
+  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // what this API was registered as, e.g. `https://livediagram.app/api`, and every access token must
+  // name it as its audience, as must a guest's token (liveworkspace/docs/accounts.md "Guests"). With either unset
+  // no caller has an identity: only share-link visitors are served.
+  ACCOUNTS_URL?: string;
+  API_RESOURCE?: string;
+  // This app's OAuth client at the accounts Worker (its scripts/register-client.ts). Only the
+  // /api/auth routes read them; the secret is a `wrangler secret`.
+  ACCOUNTS_CLIENT_ID?: string;
+  ACCOUNTS_CLIENT_SECRET?: string;
+  // Local dev only: the origin the browser is on (the router, `http://localhost:3100`), which the
+  // sign-in redirect returns to. Unset in production, where the request's own origin is right.
+  AUTH_ORIGIN?: string;
   // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `iss`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token from another instance sharing the JWKS
-  // host can't be replayed. Unset → issuer not asserted (back-compat).
-  CLERK_ISSUER?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `aud`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token minted for a different audience/app can't
-  // be replayed here. Unset → audience not asserted (back-compat).
-  CLERK_AUDIENCE?: string;
-  // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
-  // owner-signature.ts). When set, POST /api/guest-id mints a signed id
-  // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to a Clerk account — closing the "observe a guest id,
-  // claim its data" hole. Unset → migrate keeps its legacy unsigned
-  // behaviour (a deployment that hasn't configured it).
-  GUEST_ID_HMAC_SECRET?: string;
-  // Guest REST signature enforcement cutoff (docs/specs/015-api/public-api-and-tokens.md §4), epoch ms. While
-  // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
-  // legacy unsigned behaviour — the grace window that lets pre-signing guests
-  // self-heal to a signed id. Set to a past timestamp (once active guests have
-  // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
-  // without GUEST_ID_HMAC_SECRET.
-  GUEST_SIG_ENFORCE_AFTER?: string;
-  // When this deployment started signing guest ids, epoch ms (docs/specs/015-api/public-api-and-tokens.md §4).
-  // Once enforcement is armed, an id whose participant row is older than this
-  // is a legacy (pre-signing) guest and may still run the one-time upgrade onto
-  // a signed id unsigned; every newer id must prove possession. Unset = no
-  // legacy exception.
-  GUEST_SIGNING_LIVE_AT?: string;
-  // R2 bucket holding document snapshots (thumb/<documentId>, docs/specs/006-document/document-snapshots.md), and
-  // the image bytes uploaded before images moved to liveworkspace's media service, until they are migrated.
+  // R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service, until
+  // they are migrated. Previews are liveworkspace's now (liveworkspace/docs/previews.md); nothing here writes it.
   IMAGES?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
@@ -96,13 +89,9 @@ export type Env = {
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
   // "Tokens"): each call reaches Google's token endpoint, so it gets a far
-  // tighter bound than the general write limiter. Keyed on the Clerk user id.
-  // Optional: absent → "allow".
+  // tighter bound than the general write limiter. Keyed on the account id.
+  // Optional: absent (self-host) → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-  // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
-  // Optional: absent → "allow".
-  TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
@@ -131,9 +120,9 @@ export type Env = {
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
   TELEMETRY_KEY?: string;
-  // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
-  // the whole email feature is inert: no sends, and the email_lifecycle table
-  // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;
+  // Resend API key for this app's notification and milestone emails
+  // (docs/specs/014-identity/transactional-email.md; the onboarding series is liveworkspace's). When
+  // absent the whole email feature is inert: no sends. Set via `wrangler secret put RESEND_API_KEY` for prod;
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;
   // From identity for outbound email (optional). Defaults to
@@ -142,38 +131,26 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram.app".
   APP_BASE_URL?: string;
-  // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
-  // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. Each feature takes its own provider from them
-  // (the assistant prefers OpenAI, the crop reader Google); one key serves
-  // both. None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
-  // answer 503), which is the default when unset.
+  // WHOSE model reads sticky notes from a photo, and where
+  // (docs/specs/021-event-storming/note-reader.md). The PROVIDER is inferred
+  // from which of these keys is set, because a key is provider-specific and its
+  // name should say so — see ai-provider.ts. None = the photo reader is hidden
+  // (capabilities reports aiEnabled:false and /api/ai/read-notes answers 503),
+  // which is the self-host default.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
   GOOGLE_AI_STUDIO_API_KEY?: string;
-  OPENAI_API_KEY?: string;
   // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
-  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
+  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_VISION_MODEL with it.
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
-  // The assistant's model, overriding its provider's default. Reaches the
-  // reader only when the reader runs on the same provider.
-  AI_MODEL?: string;
-  // The crop reader's model (docs/specs/021-event-storming/event-storming.md Phase 8), beating every default.
+  // The reader's model, beating the Google default.
   AI_VISION_MODEL?: string;
-  // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
-  // per IP so a single client can't exhaust the operator's model budget.
-  // Optional: absent falls through to "allow".
+  // Per-IP rate limiter for POST /api/ai/read-notes. Caps AI requests at
+  // 20/60s per IP so a single client can't exhaust the operator's model budget.
+  // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // allows every read.
-  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
-  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding allows every mint.
-  WORKBENCH_TICKET_RATE_LIMITER?: {
-    limit: (input: { key: string }) => Promise<{ success: boolean }>;
-  };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
@@ -181,7 +158,8 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
-  // Comma-separated Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md).
+  // Comma-separated Origin allow-list for POST /api/ai/read-notes
+  // (docs/specs/021-event-storming/note-reader.md).
   // When set, the worker rejects 403 unless the request's Origin
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
@@ -193,14 +171,12 @@ export type Env = {
   // This comment previously named the apex alone, which as an actual
   // value would 403 every request the editor makes.
   AI_ALLOWED_ORIGINS?: string;
-  // When the literal string "true", POST /api/ai requires a verified
-  // Clerk Bearer JWT and rejects the X-Owner-Id guest path with 401
-  // (docs/specs/007-editor/ai-assistance.md). Anything else (unset, "false", any other value) keeps
-  // the guest path open. Hosted livediagram.app sets this to "true";
-  // deployments that run Clerk-less stay on the open path by
-  // default.
-  AI_REQUIRE_CLERK?: string;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Configuration").
+  // When the literal string "true", POST /api/ai/read-notes requires a verified
+  // access token and rejects a guest with 401
+  // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
+  // it open to guests. Hosted livediagram.app leaves it unset.
+  AI_REQUIRE_SIGN_IN?: string;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
   // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
   // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
   // refresh tokens, otherwise the browser holds its own short-lived tokens.
@@ -215,3 +191,9 @@ export type Env = {
   // by a real deployment.
   GOOGLE_OAUTH_BASE_URL?: string;
 };
+
+// The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
+// worker's bindings plus `DOCUMENT_DB`, the document's own SQLite behind the D1 surface (@liveworkspace/index-app item-db.ts).
+// Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
+// the worker reaches content through the document's Durable Object instead.
+export type DocumentEnv = Env & { DOCUMENT_DB: D1Database };

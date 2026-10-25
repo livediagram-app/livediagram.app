@@ -11,9 +11,13 @@ import {
   NOTE_FONT_PX,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
-} from './label-font';
-import { CELL_FONT_PX, scaleCellFontPx, tableCellFontPx } from './table-cell-font';
-import { arrowLabelFontSize } from './arrow-label';
+} from '@liveworkspace/model-core/label-font';
+import {
+  CELL_FONT_PX,
+  scaleCellFontPx,
+  tableCellFontPx,
+} from '@liveworkspace/model-core/table-cell-font';
+import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
 import { sankeyLabelPx } from './sankey-frame';
 import { svgBoxed } from './svg-render';
 import { createShape } from './factories';

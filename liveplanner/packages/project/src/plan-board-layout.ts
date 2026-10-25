@@ -11,7 +11,7 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
 } from '@liveplanner/items';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 const PLAN_BOARD_HEADER_H = 52;
 export const PLAN_BOARD_PAD = 12;

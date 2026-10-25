@@ -5,7 +5,7 @@ the production build and the real api worker. It is the layer Vitest cannot
 reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
 tests render single hooks and components, but none of them runs the whole
 editor with real layout, real pointer and keyboard input, the static export
-and a round trip through the api and D1. Every regression chased by hand in
+and a round trip through the api and its plans' storage. Every regression chased by hand in
 that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
@@ -52,10 +52,7 @@ Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
-- **Chromium only** (`--project=chromium`); no Firefox / WebKit. A `webkit` project exists
-  only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
-  `quick-style-swatch-rows.spec.ts`, whose swatch rows fit or wrap by the engine's layout; CI
-  never sets it.
+- **Chromium only** (`--project=chromium`); no Firefox / WebKit.
 - **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
   Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
   dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
@@ -66,15 +63,14 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose projects no other test sees.
-- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
-  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
-  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
-  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
-  requests, `pageOwnerHeaders` for calls made inside the page (`apps/editor/e2e/fixtures.ts`). A
-  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
-  unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
-  `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
-  the stack) and one folder straight into the local D1, for `guest-upgrade.spec.ts`.
+- **Guests as production makes them**: a spec seeds through a guest token from the stack's accounts
+  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each plan (`planHeaders`, `seedPlan`;
+  `pageOwnerHeaders` for calls made inside the page, `apps/editor/e2e/fixtures.ts`).
+- **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-project/save-locations.md#the-default-depends-on-who-is-creating)).
+  A spec that needs its new plan on the server (it seeds it through the api with `seedTab`, intercepts the api's
+  saves, or shares it) opens `/new` through `serverNewUrl`, which adopts a minted guest and adds a `?folder=` of
+  theirs, the placement that makes `/new` create on liveplanner whoever is creating. `startBlankProject` does it for
+  every caller. A spec that only needs a canvas takes the guest's own `/new`.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -84,7 +80,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
 - **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@liveplanner/next-config`, shared by the five Next
+  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
@@ -115,15 +111,15 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the editor app's
-`output: 'export'` static bundle plus the real api worker on local D1,
+`output: 'export'` static bundle plus the real api worker on local Durable Objects,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
 `pnpm --filter @liveplanner/editor build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
-   `db:migrate:local` applied to a fresh local D1 so persistence works.
+1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, beside a local liveworkspace index
+   (its own D1 migrated afresh on each boot). The api has no D1: each plan's object makes its own SQLite on first use.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
 2. **live**: the static `apps/editor/out` served by a minimal Node
@@ -137,6 +133,10 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
+   - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
+     `liveworkspace/apps/site/out` when that site is built, as the router's workspace routes
+     (`@liveworkspace/sites/workspace-proxy`) do; without the build they answer a logged 404, so only the specs
+     that open the Explorer page need it (CI builds it in each job that runs them);
    - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
@@ -150,7 +150,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
      each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
      the suite runs in parallel, and the tests beside it keep the build they loaded.
-3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
+3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3203`),
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
@@ -158,44 +158,37 @@ The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3102 + api :8887) runs
+developer with `pnpm dev` already running (live :3202 + api :8887) runs
 `pnpm --filter @liveplanner/editor test:e2e` against that stack with no
 extra boot.
 
 ## Signed-in specs
 
-Sign-in is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+The test-only session bridge is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
 guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/signed-in/` run
 against a second export, `apps/editor/.next/out-signed-in/` (inside `.next/`, so every ignore and
-source scanner already skips it), built by `pnpm build:signed-in` with sign-in on and
+source scanner already skips it), built by `pnpm build:signed-in` with
 `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
 
 `pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3215`, api `:8888`, marketing `:3216`), so a guest stack already up on `:3202` is never
+(live `:3215`, api `:8225`, marketing `:3216`), so a guest stack already up on `:3202` is never
 reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
-`installSession` hands the bridge. So a stub account is a real verified account to the api and the
+`installSession` hands the bridge. API tokens are the liveworkspace account's too: a spec seeds one at
+`POST /e2e/accounts/__seed/token` (its `secret` is the `lwt_…` an agent sends), and the api checks it through the
+account API's `tokens/verify` as in production. Display names are the account's profiles: the api writes and reads them
+through the account API's `profiles/write` and `profiles/read`, so an agent's changes and comments carry the name the
+person set (`packages/auth-client/src/e2e-token-stand-in.ts` answers both, shared by every app's stack). So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one project. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's local storage outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
-
-## Armed guest signatures
-
-Every stack enforces guest signatures (above), so every spec runs as production does once armed.
-The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
-Explorer first, gets a signed id before any owner-scoped call, creates a project (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @liveplanner/editor test:e2e:armed` sets
-`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3117`, api `:8789`, marketing `:3118`). It
-reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
-has built it already.
 
 ## No uncaught errors
 
@@ -222,34 +215,29 @@ A spec that opens its own context with `browser.newContext()` sets it there with
 
 One spec file per feature, each linking the spec it proves:
 
-| File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                                  | Spec                                                                                                          |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`                 | `/new` renders the wizard; `/explorer` renders for a guest; create a blank diagram, add a shape, label it, and it survives a reload; on a phone, the Session strip keeps Undo on screen and opens the Timer on top                                                                                                                                                                            | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
-| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-project/per-tab-storage.md)                                                          |
-| `trash.spec.ts`                 | delete, find it in Settings › Trash, restore it; the deleted card; permanent delete and Empty Trash; an open editor, or one refused its room, is told                                                                                                                                                                                                                                         | [Trash](../013-workspace/trash.md)                                                                            |
-| `article-paste.spec.ts`         | a rich paste into an article keeps its text and bold and italic, with no Trusted Types refusal                                                                                                                                                                                                                                                                                                | [Trusted Types](../016-platform/trusted-types.md)                                                             |
-| `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
-| `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                                          | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
-| `tab-scoped-share.spec.ts`      | a tab-scoped link opens its tab and nothing else; the owner is never scoped                                                                                                                                                                                                                                                                                                                   | [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)                                          |
-| `arrow-labels.spec.ts`          | a label sits on its broken-open line; double-clicks edit rather than bend; Shift+Enter and Enter; blank lines keep their height                                                                                                                                                                                                                                                               | [Arrow labels](../008-canvas/arrow-labels.md), [Arrow bending](../008-canvas/arrow-bending.md)                |
-| `arrow-rebind.spec.ts`          | arrows re-anchor live while dragging, keep a quarter point on the new side, and the Settings switch turns it off                                                                                                                                                                                                                                                                              | [Arrow anchors](../008-canvas/arrow-anchors.md)                                                               |
-| `grips-on-top.spec.ts`          | a selected element's resize handles and an arrow's end grips are the topmost thing at their centres, whatever the element's rotation, opacity or animation and whatever is drawn over it                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md) (Resize)                                            |
-| `viewport-on-add.spec.ts`       | the first element dropped on an empty tab stays where it was dropped; a reloaded tab is framed on its content                                                                                                                                                                                                                                                                                 | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                     |
-| `palette-drag.spec.ts`          | a tile in a category's More popover on the Toolbar strip drags onto the canvas, whatever its catalogue: a shape, and a line icon and a sticker found by their own catalogue's search                                                                                                                                                                                                          | [Palette drag ghost](../010-palette/palette-drag-ghost.md), [Toolbar layout](../007-editor/toolbar-layout.md) |
-| `quick-style-panel.spec.ts`     | one-click styles, the left-edge placement, swatch targets, and custom swatch overrides                                                                                                                                                                                                                                                                                                        | [Quick style panel](../008-canvas/quick-style-panel.md)                                                       |
-| `multicolour-theme.spec.ts`     | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                                  | [Multi-colour themes](../011-theme/multicolour-themes.md)                                                     |
-| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                     | [Editor app](../007-editor/editor-app.md)                                                                         |
-| `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                              | [Power user mode](../007-editor/power-user-mode.md)                                                           |
-| `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                                     | [User preferences](../007-editor/user-preferences.md)                                                         |
-| `hints.spec.ts`                 | a palette tile's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                         | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)                |
-| `icon-weight.spec.ts`           | icons draw regular by default and bold once chosen, across a reload; chrome glyphs keep the house weight in on-screen px                                                                                                                                                                                                                                                                      | [Iconography](../004-interface-design/iconography.md)                                                         |
-| `scrollbars.spec.ts`            | every scrolling surface is in-theme, per colour scheme                                                                                                                                                                                                                                                                                                                                        | [Scrollbars](../004-interface-design/scrollbars.md)                                                           |
-| `motion-budget.spec.ts`         | every chrome animation (menus, dropdowns, context menu, Settings, Search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                                                                                                                          | [Motion](../004-interface-design/motion.md)                                                                   |
-| `contrast-audit.spec.ts`        | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                                        |
-| `optical-audit.spec.ts`         | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
-| `optical-audit-sites.spec.ts`   | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
-| `optical-clip.spec.ts`          | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                        |
-| `shape-stroke-inside.spec.ts`   | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                     |
+| File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                                  | Spec                                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `smoke.spec.ts`                 | a guest's `/new` opens a plan in This Browser on Start Planning; `/explorer` renders for a guest; create a blank diagram, add a shape, label it, and it survives a reload; on a phone, the Session strip keeps Undo on screen and opens the Timer on top                                                                                                                                      | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)             |
+| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-project/per-tab-storage.md)                                           |
+| `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
+| `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                                          | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
+| `tab-scoped-share.spec.ts`      | a tab-scoped link opens its tab and nothing else; the owner is never scoped                                                                                                                                                                                                                                                                                                                   | [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)                           |
+| `arrow-labels.spec.ts`          | a label sits on its broken-open line; double-clicks edit rather than bend; Shift+Enter and Enter; blank lines keep their height                                                                                                                                                                                                                                                               | [Arrow labels](../008-canvas/arrow-labels.md), [Arrow bending](../008-canvas/arrow-bending.md) |
+| `arrow-rebind.spec.ts`          | arrows re-anchor live while dragging, keep a quarter point on the new side, and the Settings switch turns it off                                                                                                                                                                                                                                                                              | [Arrow anchors](../008-canvas/arrow-anchors.md)                                                |
+| `grips-on-top.spec.ts`          | a selected element's resize handles and an arrow's end grips are the topmost thing at their centres, whatever the element's rotation, opacity or animation and whatever is drawn over it                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md) (Resize)                             |
+| `viewport-on-add.spec.ts`       | the first element dropped on an empty tab stays where it was dropped; a reloaded tab is framed on its content                                                                                                                                                                                                                                                                                 | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                      |
+| `multicolour-theme.spec.ts`     | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                                  | [Multi-colour themes](../011-theme/multicolour-themes.md)                                      |
+| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                     | [Editor app](../007-editor/editor-app.md)                                                      |
+| `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                              | [Power user mode](../007-editor/power-user-mode.md)                                            |
+| `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                                     | [User preferences](../007-editor/user-preferences.md)                                          |
+| `hints.spec.ts`                 | a palette tile's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                         | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md) |
+| `icon-weight.spec.ts`           | icons draw regular by default and bold once chosen, across a reload; chrome glyphs keep the house weight in on-screen px                                                                                                                                                                                                                                                                      | [Iconography](../004-interface-design/iconography.md)                                          |
+| `scrollbars.spec.ts`            | every scrolling surface is in-theme, per colour scheme                                                                                                                                                                                                                                                                                                                                        | [Scrollbars](../004-interface-design/scrollbars.md)                                            |
+| `motion-budget.spec.ts`         | every chrome animation (menus, dropdowns, context menu, Settings, Search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                                                                                                                          | [Motion](../004-interface-design/motion.md)                                                    |
+| `contrast-audit.spec.ts`        | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                         |
+| `optical-audit.spec.ts`         | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
+| `optical-audit-sites.spec.ts`   | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
+| `optical-clip.spec.ts`          | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)         |
 
 A new browser-risky feature adds one focused spec file here (or a case in the
 file of the feature it extends), linked from its own spec; depth stays in unit

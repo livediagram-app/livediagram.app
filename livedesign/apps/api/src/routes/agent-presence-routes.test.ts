@@ -3,6 +3,10 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as roomClient from '../room-client';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
+import { resetProfiles, seedProfile } from '../test-profiles';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
 
 // `PUT` / `DELETE .../tabs/:tabId/presence` (docs/specs/024-agents/agent-presence.md "Presence", blueprint "REST",
 // E1 to E6): token callers only, through the participation gate; focus resolved against the tab's refs; the room
@@ -44,9 +48,10 @@ function call({
 beforeEach(() => {
   sql = sqliteD1();
   pending = [];
+  resetProfiles();
+  seedProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
-    INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
+    INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[{"id":"web-app","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":60,"label":"Web app"},{"id":"web-api","type":"shape","shape":"square","x":200,"y":0,"width":100,"height":60,"label":"Web API"}]}', 1);
     INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
   `);

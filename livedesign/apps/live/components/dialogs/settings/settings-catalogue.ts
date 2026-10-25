@@ -9,7 +9,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@livedesign/api-schema';
+import type { TelemetryCategory } from '@livedesign/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
@@ -43,8 +43,8 @@ import {
   uiScalePatch,
   withUiScalePatch,
   type UiScalePart,
-} from '@/lib/ui-scale';
-import { setUiScalePreview } from '@/lib/ui-scale-preview';
+} from '@liveworkspace/workbench/lib/ui-scale';
+import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import {
   readContentsPlacement,
   withContentsPlacement,
@@ -59,8 +59,6 @@ import {
   type LogoGuidePart,
   type LogoGuideStrength,
 } from '@/lib/logo-guide-prefs';
-import type { PlacementDefaultKey } from '@livedesign/api-schema';
-import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 
 // One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
 // Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
@@ -117,7 +115,7 @@ function emailSwitch(
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / AI / Map gear popovers that used to carry
+// the Palette / Layers / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
@@ -133,14 +131,9 @@ function emailSwitch(
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
-// `authEnabled` is whether this deployment offers sign-in at all
-// (`signInEnabled`): API tokens are signed-in only, so on a deployment without sign-in they
-// are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-without-sign-in).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
@@ -291,17 +284,13 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
+// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new designs go when made without
+// a place. Not a preference: the shared Explorer reads and writes them on the index.
+export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
+
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
-
-// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// designs of that key go, with Change and Clear. Not a preference: it reads and writes
-// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
-export type SettingsPlacementDefaultRowSpec = RowBase & {
-  kind: 'placementDefault';
-  placementKey: PlacementDefaultKey;
-};
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
@@ -317,8 +306,8 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsDefaultFoldersRowSpec
+  | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -329,8 +318,6 @@ export type SettingsCategorySpec = {
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
-  // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
-  requiresAi?: boolean;
   // A line under a section's heading, for what every row in it shares (Designs' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
@@ -1267,73 +1254,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'ai',
-    label: 'AI Tools',
-    requiresAi: true,
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'aiAssistanceEnabled',
-        keywords: 'assistant chat ask clean llm',
-        section: 'Assistant',
-        label: 'AI Assistant',
-        description:
-          'An AI panel to Ask about the active tab, or Clean up its labels, sizes and styles. Off by default.',
-        helpArticle: 'aiTools',
-        read: (p) => p.aiAssistanceEnabled === true,
-        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
-        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'aiSuggestedPrompts',
-        keywords: 'starter questions prompts suggestions ai',
-        section: 'Assistant',
-        parent: 'aiAssistanceEnabled',
-        label: 'Suggested Prompts',
-        description: 'One-click starter prompts under the panel’s mode buttons.',
-        read: (p) => p.aiSuggestedPrompts !== false,
-        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
-        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
-      },
-      {
-        kind: 'link',
-        key: 'apiTokensLink',
-        keywords: 'api token key mcp integration script developer access',
-        section: 'API Access',
-        label: 'API Tokens',
-        cta: 'Manage API Tokens',
-        target: 'tokens',
-        description: 'Let your scripts, and AI tools connected over MCP, use livedesign as you.',
-        available: (ctx) => ctx.authEnabled === true,
-      },
-    ],
-  },
-  {
     id: 'designs',
     label: 'Designs',
-    sectionNotes: {
-      'Default Folders': {
-        note: 'Where each kind of new design is saved when you create it without choosing a place.',
-        helpArticle: 'defaultFolders',
-      },
-    },
     rows: [
-      // One row per default folder entry, in list order: guests have defaults too.
-      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-        kind: 'placementDefault',
-        key: `placementDefault-${entry.key}`,
-        placementKey: entry.key,
-        section: 'Default Folders',
-        // Settings labels are title case; the entries' own labels are sentence case.
-        label: titleCase(entry.label),
-        keywords:
-          'default folder where new designs go save location place file automatically always save placement',
-        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      })),
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back.
+        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
         section: 'Explorer',
@@ -1344,6 +1270,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+      {
+        kind: 'defaultFolders',
+        key: 'defaultFolders',
+        section: 'Default Folders',
+        label: 'Where New Designs Go',
+        keywords:
+          'default folder where new designs go save location place file automatically always save placement designs kanban retrospective template',
+        description:
+          'New designs you make without choosing a place are saved in these folders. Kanban and Retrospective designs can have their own.',
       },
     ],
   },
@@ -1471,7 +1407,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Let your scripts, and AI tools connected over MCP, use livedesign as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
-        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -1502,16 +1437,10 @@ export function settingsSectionId(section: string): string {
 }
 
 // The categories actually offered right now, with each one's rows filtered to
-// those that apply. AI only appears when the api worker advertises the
-// capability, so a deploy without it never shows an empty group ,
-// and a category left with no applicable rows drops out entirely rather than
+// those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
-export function visibleCategories(
-  aiCapable: boolean,
-  ctx: SettingsRowContext,
-): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
+export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
+  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
@@ -1528,7 +1457,7 @@ export function visibleCategories(
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one design. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'designs', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['designs', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

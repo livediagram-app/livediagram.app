@@ -1,6 +1,6 @@
 # livedesign
 
-The command line for [livedesign](https://livedesign.app): read, build, edit and discuss diagrams from a terminal,
+The command line for [livedesign](https://livedesign.app): read, build, edit and discuss designs (logos, wireframes, photos) from a terminal,
 built first for coding agents and second for scripts.
 
 ```bash
@@ -19,7 +19,7 @@ livedesign --help
 Create an API token in livedesign (Settings › API Tokens), then either set it for a command:
 
 ```bash
-export LIVEDESIGN_TOKEN=lvd_...
+export LIVEDESIGN_TOKEN=lwt_...
 ```
 
 or store it for this machine:

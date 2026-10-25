@@ -1,3 +1,3 @@
-import { defineProject } from '@livedesign/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 export default defineProject();

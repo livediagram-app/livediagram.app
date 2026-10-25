@@ -36,9 +36,10 @@ jobs:
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-      CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
+      ACCOUNTS_URL: ${{ secrets.ACCOUNTS_URL }}
+      API_RESOURCE: ${{ secrets.API_RESOURCE }}
+      ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
+      ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       COMMUNITY_KEY: ${{ secrets.COMMUNITY_KEY }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}

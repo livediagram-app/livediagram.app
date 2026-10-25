@@ -49,6 +49,8 @@ export type CollabThreadRow = {
   latestText: string;
   latestAuthorName: string;
   latestAuthorColor: string;
+  // Who wrote the latest comment (the Timeline's `commented` names them), null when it has no author id.
+  latestAuthorId: string | null;
   firstAt: number;
   latestAt: number;
 };
@@ -121,6 +123,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,
+        latestAuthorId: latest.authorId || null,
         firstAt: first.createdAt,
         latestAt: latest.createdAt,
       });

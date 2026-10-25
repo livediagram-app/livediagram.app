@@ -17,8 +17,8 @@ import {
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view-frame';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
 import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
@@ -26,10 +26,10 @@ import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { useArrowFinish } from './arrow-finish';
-import { BRAND_600 } from './arrow-handle-style';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { pressLedger } from '@/lib/double-press';
+import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
 // knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast

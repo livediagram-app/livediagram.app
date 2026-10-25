@@ -7,13 +7,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8687
 
-# Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
@@ -29,12 +22,12 @@ globs = ["**/*.ttf", "**/*.otf"]
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 
-# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
+# Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
 # Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
 # dashboard-only value is invisible to code review, so the repo read as though
 # this endpoint were locked down while production served it wide open. A probe
-# of production (POST /api/ai with no Origin) answered `400 invalid mode`
-# rather than `403 origin_not_allowed`, which is only possible with this unset —
+# of production (an AI request with no Origin) got past the gate rather than
+# answering `403 origin_not_allowed`, which is only possible with this unset —
 # so the key behind `aiEnabled: true` was spendable from any page.
 #
 # BOTH hosts, and `www` is the one that matters: livediagram.app 301-redirects
@@ -46,35 +39,12 @@ globs = ["**/*.ttf", "**/*.otf"]
 # Scope of the protection, honestly: this stops a third-party WEB PAGE spending
 # the key, because a browser sets Origin and cannot forge it. It does NOT stop a
 # non-browser caller, which can send any Origin it likes. Bounding the budget
-# against that needs AI_REQUIRE_CLERK (deliberately NOT set here: the editor
+# against that needs AI_REQUIRE_SIGN_IN (deliberately NOT set here: the editor
 # offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
 # presence alone, so requiring sign-in would leave guests a visible panel that
 # 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
-
-# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
-# never only in the dashboard: every `wrangler deploy` replaces the worker's
-# plain vars with the ones this file declares, so a dashboard-only value is
-# silently wiped by the next deploy.
-#
-# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
-# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
-# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
-# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
-# whose participant row is older may still run its one-time upgrade unsigned.
-#
-# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call,
-# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
-# regression fails the suite; re-arming production is Tom's or Webber's call
-# (docs/specs/015-api/public-api-and-tokens.md §6).
-# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
-# can predate their local signing secret and would be locked out of their own
-# test data.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -82,7 +52,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 OAUTH_ISSUER = "https://mcp.livediagram.app"
 
 # Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md). No binding
-# of its own: it rides the D1 database above (drive_connections, drive_items).
+# of its own: each person's connection and mirrored items are in their PersonStore Durable Object.
 #   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
 #     lives in `hosted-vars.json` (a fork has its own Google project and must
 #     not inherit ours), per environment: production and staging are separate
@@ -96,20 +66,9 @@ OAUTH_ISSUER = "https://mcp.livediagram.app"
 # Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
 # shows no Drive entry, which is the default when unset.
 
-# D1 database holding documents + participants. The local binding name
-# (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
-# is the Cloudflare-side name (must be created via `wrangler d1 create
-# livediagram` or the dashboard). `database_id` is filled in after the
-# database is created — until then deploys will fail loudly.
-[[d1_databases]]
-binding = "DB"
-database_name = "livediagram"
-database_id = "79642003-5866-4c5a-9011-7fbeb0de6b58"
-migrations_dir = "migrations"
-
-# R2 bucket holding document snapshots (thumb/<documentId>, docs/specs/006-document/document-snapshots.md), and
-# the image bytes uploaded before images moved to liveworkspace's media service (MEDIA_KEY below), kept until
-# they are migrated. Created out of band via `wrangler r2 bucket create livediagram-images`.
+# R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service
+# (MEDIA_KEY below), until they are migrated. Snapshots and share cards are liveworkspace's previews now
+# (liveworkspace/docs/previews.md), so nothing writes here; its old thumb/ and share-card objects can go.
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livediagram-images"
@@ -144,47 +103,38 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# The document's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per document
+# id, holding the document's content (tabs, the slide deck, changesets, image references) in its own SQLite and
+# running its realtime room (presence + ordered ops over hibernating WebSockets).
 [[durable_objects.bindings]]
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
+# Each person's Durable Object (src/person-store/person-store.ts): one SQLite-backed instance per person id,
+# holding what livediagram keeps for the person rather than for one canvas (their shape libraries).
+[[durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
+# livediagram ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
 [[migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
 [[migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+deleted_classes = ["WorkbenchStore"]
 
-# Scheduled jobs the worker handles via the `scheduled` export. One
-# entry per cron; each fires the same handler with `event.cron` set
-# to the matching pattern so the body can dispatch.
-#
-# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger, among them:
-#   - events, 60-day floor: the retired events table drains (telemetry now lives in the
-#     liveworkspace service, docs/specs/017-telemetry/telemetry.md "Where events are stored").
-#   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
-#     from R2 + D1 once nothing references them.
-# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset.
-#
-# `* * * * *`: every minute, the Community sync (docs/specs/025-community/community.md "Keeping in step"): what
-# changed about published documents goes to the liveworkspace Community service, and the posts it hid after reports
-# close their links here. One indexed D1 read and one request when nothing changed; a no-op without COMMUNITY_KEY.
-[triggers]
-crons = ["0 3 * * *", "* * * * *"]
+# No scheduled jobs: each canvas keeps itself (its Durable Object's alarm: the index outbox, the Community check,
+# the daily upkeep) and each person's stores keep theirs. Teams, tokens and the Trash are liveworkspace's.
 
-# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# Per-IP rate limiter for the sticky-note reader (POST /api/ai/read-notes,
+# docs/specs/021-event-storming/note-reader.md). Separate namespace so AI abuse never eats into document-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
-# real user session while bounding runaway OpenAI spend. Absent binding
-# → helper allows, so a deployment still works without this feature.
+# real user session while bounding runaway model spend. Absent binding
+# → helper allows, so self-host still works without this feature.
 [[unsafe.bindings]]
 name = "AI_RATE_LIMITER"
 type = "ratelimit"
@@ -224,7 +174,7 @@ simple = { limit = 120, period = 60 }
 
 # Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
 # "Tokens"): each call reaches Google's token endpoint to mint a one-hour access
-# token, so a healthy browser needs about one an hour. 10 / 60s per Clerk user
+# token, so a healthy browser needs about one an hour. 10 / 60s per account
 # id bounds a looping client far below the general write limiter's 300. The
 # route answers 429 drive_token_rate_limited, which the browser treats like
 # Google's own rate limit (it backs off). Absent binding → allow.
@@ -234,56 +184,24 @@ type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
 
-# Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
-# docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
-# reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
-# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
-# Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
-# Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-# email"): GET and POST /api/teams/invite-decline/<token>, keyed invite-decline:<network> (an IPv4 /24 or IPv6 /56).
-# Open doors, so the owner-keyed write limiter would put every caller on one key. 20 / 60s is far above one
-# person declining. Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "TEAM_INVITE_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1012"
-simple = { limit = 20, period = 60 }
-
-# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
-# endpoint, and WHICH provider is inferred from which key is set — a key is
-# provider-specific, so its name says whose it is (see src/ai-provider.ts):
+# The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md) talks to ANY
+# OpenAI-compatible chat-completions endpoint, and WHICH provider is inferred
+# from which key is set — a key is provider-specific, so its name says whose it
+# is (see src/ai-provider.ts):
 #
 #   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
-#   OPENAI_API_KEY           -> OpenAI
-#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
+#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_VISION_MODEL
 #
-# All three are SECRETS, provisioned out-of-band:
+# Both are SECRETS, provisioned out-of-band:
 #   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
 #   Production: `wrangler secret put <NAME>`.
 #
-# Each feature takes its own provider from the keys that are set: the assistant
-# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
-# and one key serves both. Production sets both named keys to split them.
-# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
-# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
+# Google outranks the generic key. AI_BASE_URL / AI_VISION_MODEL are plain
+# [vars]; AI_VISION_MODEL overrides the Google default (docs/specs/021-event-storming/note-reader.md).
 #
-# With no key the whole surface is hidden: GET /api/capabilities answers
-# { aiEnabled: false }, the editor shows no AI panel and no photo import, and
-# the AI routes answer 503. That is the default when unset.
+# With no key the reader is hidden: GET /api/capabilities answers
+# { aiEnabled: false }, the editor shows no photo import, and the route
+# answers 503. That is the self-host default.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -302,33 +220,33 @@ simple = { limit = 20, period = 60 }
 #   - APP_BASE_URL: optional [vars] public origin for links in emails.
 #     Defaults to "https://livediagram.app".
 
-# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
-#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
-#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
-#     next `wrangler dev`.
-#   - Production: stored as a Cloudflare Worker secret via
-#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
-#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
-#     pipes it into `wrangler secret put` on every deploy so the
-#     value can rotate by editing the GitHub secret. Secrets
-#     persist across deploys independently of this file.
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://livediagram.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
-# When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
-# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
-# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
-# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
-# (production tenant).
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
 #
-# GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
-# `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
-# secret in prod; never in [vars] — it's secret material). When set, the
-# worker mints signed guest ids and /api/migrate requires a valid
-# signature, closing the "observe a guest id, claim its data" hole
-# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest / single-user deployment).
+# Guests are liveworkspace's too: the accounts Worker hands each browser a
+# guest token for this API (liveworkspace/docs/accounts.md "Guests"), checked
+# with the same keys. With ACCOUNTS_URL or API_RESOURCE unset no caller has an
+# identity and only share-link visitors are served
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering livediagram with the
+# accounts Worker (liveworkspace/docs/integrating-an-app.md).
 
 # TELEMETRY_KEY is livediagram's secret on the liveworkspace telemetry service
 # (liveworkspace/docs/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
@@ -374,13 +292,13 @@ simple = { limit = 20, period = 60 }
 # `wrangler deploy --env staging`.
 #
 # Everything below is restated ON PURPOSE. Wrangler does NOT inherit
-# bindings into a named environment: `vars`, `d1_databases`, `r2_buckets`,
+# bindings into a named environment: `vars`, `r2_buckets`,
 # `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
 # block omitted here is a binding MISSING from the deployed staging worker,
 # with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
 # carry over from the production config above.
 #
-# The values that genuinely differ from production are the D1 database, the
+# The values that genuinely differ from production are the
 # R2 bucket, and the email/AI vars that name the public origin. Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
@@ -399,36 +317,20 @@ name = "livediagram-api-staging"
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
-# Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
+# Lock the AI endpoint to the staging origin so the model key behind it
+# can't be spent from a third-party page (docs/specs/021-event-storming/note-reader.md). Production states the
 # equivalent in the top-level [vars] above, for the same reason: the
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 
-# Guest signature enforcement, matching production (see the top-level [vars]).
-# Staging's own database dates from 2026-09-17 and signs with its own secret;
-# its test guests take the same dates rather than drift from production.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
-
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
-# No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
+# No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.
 
-# Own database, created 2026-09-17. Empty until the first staging deploy
-# applies the migrations in `migrations/` against it — which is the whole
-# reason this environment exists (docs/specs/016-platform/staging-environment.md).
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "livediagram-staging"
-database_id = "fd18e315-baad-48d5-b2c7-4a14a793e7b4"
-migrations_dir = "migrations"
-
-# Own bucket: `wrangler r2 bucket create livediagram-images-staging`. Sharing
-# production's would let the staging retention cron delete real image bytes.
+# Own bucket, kept like production's only for legacy uploaded image bytes.
 [[env.staging.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livediagram-images-staging"
@@ -479,24 +381,6 @@ type = "ratelimit"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "TEAM_INVITE_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1012"
-simple = { limit = 20, period = 60 }
-
 # A different script is a different Durable Object namespace, so staging's
 # DOCUMENT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
@@ -504,23 +388,23 @@ simple = { limit = 20, period = 60 }
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
+[[env.staging.durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 
 [[env.staging.migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+deleted_classes = ["WorkbenchStore"]
 
-# The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
-# staging too, against staging's own data. Restated rather than inherited so
-# that reading this block tells you what the staging worker actually does.
-[env.staging.triggers]
-crons = ["0 3 * * *", "* * * * *"]
 
-# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and TELEMETRY_KEY come from the
+# The four ACCOUNTS_* / API_RESOURCE values and
+# TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
-# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
+# model key (GOOGLE_AI_STUDIO_API_KEY) are provisioned by
 # hand exactly as they are for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 # The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:

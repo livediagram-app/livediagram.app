@@ -23,15 +23,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-project inbox. 'Opened'
-  // once per visit, 'Selected' with type 'Action' | 'Thread' | 'Card' on a row
-  // click, 'Loaded'/'Retry' after a failed read.
-  'Activity·Loaded',
-  'Activity·Opened',
-  'Activity·Selected',
   'Agent·Opened',
   'Canvas·Changed',
-  'Canvas·Used',
   'Canvas·Zoomed',
   'Comment·Added',
   'Comment·Deleted',
@@ -44,6 +37,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
+  // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
+  // kind), 'Loaded' a failed read retried.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Project·Created',
   'Project·Deleted',
   'Project·Duplicated',
@@ -51,24 +49,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Project·Loaded',
   'Project·Moved',
   'Project·Redone',
+  // A share link revoked in the Share dialog (type ShareLink).
   'Project·Removed',
   'Project·Renamed',
-  'Project·Shared',
   'Project·Undone',
-  // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
-  'Explorer·Selected',
-  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a project, renamed,
-  // recoloured, deleted. Never its name.
-  'Explorer·Added',
-  'Explorer·Changed',
-  'Explorer·Created',
-  'Explorer·Deleted',
-  'Explorer·Removed',
-  'Explorer·Renamed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
-  'Element·Created',
   'Element·Deleted',
   'Element·Duplicated',
   'Element·Linked',
@@ -85,6 +72,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Error·Client',
   // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
+  // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
+  'Explorer·Selected',
   'Folder·Changed',
   'Folder·Cleared',
   'Folder·Created',
@@ -100,6 +89,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Shared',
   'Form·Toggled',
   'Home·Loaded',
+  // Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md): Selected (an entry opened its plan,
+  // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
   'Home·Opened',
   'Home·Selected',
   'Layer·Added',
@@ -133,6 +124,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Toggled',
   'Participant·Created',
   'Participant·Returned',
+  'Project·Shared',
   'Search·Opened',
   'Search·Searched',
   'Search·Selected',
@@ -173,31 +165,22 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Toggled',
   'Tab·Unlocked',
   'Team·Added',
-  'Team·Created',
-  // The recipient turned an invitation down — the counterpart to Team·Joined,
-  // and distinct from Team·Removed·Invite (an Admin withdrawing one). docs/specs/013-workspace/teams.md.
-  'Team·Declined',
-  'Team·Joined',
   'Team·Moved',
   'Team·Removed',
   'Template·Used',
   'Theme·Changed',
-  'Theme·Created',
-  'Theme·Deleted',
-  // The scoped event feeds, History and Team Activity (docs/specs/013-workspace/timeline.md): 'Opened'
-  // with type 'Stack' tells us whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More' a Show-more click.
+  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
+  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card, a Stack or a card's
+  // Menu), Removed (an Entry or a whole Stack taken off the reader's own Timeline).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
+  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
-  // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
-  'Token·Linked',
-  // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
-  // project restored / deleted for good / a group emptied, typed by which Trash.
   'Trash·Cleared',
   'Trash·Deleted',
+  // Trash (docs/specs/013-workspace/trash.md): a trashed plan's card, and the plan restored from it.
   'Trash·Opened',
   'Trash·Restored',
   'UI·Changed',

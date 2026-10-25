@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { DOUBLE_PRESS_MS } from '../lib/double-press';
+import { DOUBLE_PRESS_MS } from '@liveworkspace/workbench/lib/double-press';
 import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
 
 // Arrow labels on the line and bending by the line, end to end

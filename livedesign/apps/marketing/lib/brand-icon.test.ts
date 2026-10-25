@@ -9,7 +9,7 @@ import { brandLogoSvg, brandMarkSvg } from '@livedesign/ui';
 // `pnpm icons:brand` from the Living Prism module in @livedesign/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'live', 'help', 'telemetry'] as const;
+const APPS = ['marketing', 'live', 'help'] as const;
 const REPO = new URL('../../../', import.meta.url);
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, REPO)), 'utf8').trim();
 const REGENERATE = 'stale: run `pnpm icons:brand`';

@@ -10,32 +10,59 @@ split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 
+Most of these predate the Explorer moving to liveworkspace.app, the telemetry dashboard moving with it, and Pages
+and Plan leaving livediagram, so the Explorer, telemetry and editor-chrome shots show surfaces that have since
+changed. Retake a shot before using it for a claim about those.
+
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                                  |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.      |
-| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.           |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                         |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                     |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                      |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, AI (AI Assistant), Privacy (anonymous usage events). Stale: it shows the removed Minimal panel layout toggle; retake. |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                                 |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                               |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                      |
+| File                      | Shows                                                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `landing_page.png`        | The marketing landing page: the "A picture tells a thousand words, tell your story" hero, **Start drawing**, a live preview. |
+| `landing_page_2.png`      | A landing-page feature block: "Draw, write, and annotate" (freehand that snaps to shapes, rich text, notes).                 |
+| `editor_flowchart.png`    | The editor with the "Lost & Found Process" flowchart, the Explorer panel, the palette and the minimap.                       |
+| `collaborate.png`         | The same flowchart shared, with a teammate's cursor and avatars, and the Technology palette open.                            |
+| `comments.png`            | A comment thread open on the "Show error" step, and the Comments panel listing it.                                           |
+| `editor_1.png`            | A mind map ("Our product") in a warm theme.                                                                                  |
+| `editor_2_animation.png`  | The same mind map with an element's menu open on its Animation choices.                                                      |
+| `editor_dark.png`         | A "Growth flywheel" cycle in a dark theme.                                                                                   |
+| `editor_dark_context.png` | The dark flywheel with a selected square's menu open, and the old Tab Activity panel.                                        |
+| `spotlight.png`           | Spotlight mode on the dark flywheel: the canvas dimmed round the element under the cursor.                                   |
+| `isometric.png`           | The flowchart in the Isometric view, raised into 3D blocks.                                                                  |
+| `search.png`              | The search panel over the dark flywheel, searching "tab": tabs, actions, elements to add and help articles.                  |
+| `share.png`               | The **Share this diagram** dialog: Edit or View only links, expiry, an active link with Embed and Live image, a password.    |
+| `editor_new_template.png` | The **New Diagram** wizard's template step: Blank, Mind maps, Flowcharts, Hierarchies, Agile and more.                       |
+| `editor_new_theme.png`    | The wizard's theme step: Basic, Formal, Cool, Warm, Dark, Multi-colour and Custom.                                           |
+| `recent_1.png`            | The old full-page Explorer's Recent view, empty.                                                                             |
+| `recent_2_cards.png`      | The old Explorer's Recent view as cards: the flywheel, the flowchart and the mind map.                                       |
+| `editor_generated.png`    | The old Explorer's Generated view, empty, offering to set up an AI agent.                                                    |
+| `teams.png`               | The old Explorer's team page ("Web Team"): its member, invite by link and the team's folders.                                |
+| `API_Tokens.png`          | The old Explorer's API tokens page with two active tokens.                                                                   |
+| `help_1.png`              | The help centre's home: "How can we help?" search and the category cards.                                                    |
+| `help_2.png`              | A help article ("Spotlight") with its contents sidebar.                                                                      |
+| `telemetry_1.png`         | The old telemetry page ("Telemetry, in the open"): daily volume and its tabs.                                                |
+| `telemetry_2.png`         | The old telemetry page's Palette tab: what people reach for in the palette.                                                  |
 
 ### Mobile (`mobile/`)
 
-Stale: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a menu button) and show the old dock chrome, which is gone. Retake them.
+Stale too: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a
+menu button) and show the old Explorer and Palette buttons.
 
-| File           | Shows                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `canvas.PNG`   | The mobile editor: a diagram on the canvas with the bottom dock visible.                         |
-| `diagram.PNG`  | A diagram open on a phone, the dock collapsed so the canvas takes the full viewport.             |
-| `explorer.PNG` | The Explorer library on mobile, with the document list and the sidebar accessible from the dock. |
-| `palette.PNG`  | The mobile palette popover open above the dock, showing the shapes / tools / devices accordions. |
-| `search.PNG`   | The search panel on mobile, surfacing results across documents, folders, tabs, and elements.     |
+| File                | Shows                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `landing.PNG`       | The marketing landing page's hero on a phone.                                           |
+| `editor.PNG`        | The flowchart on a phone, a teammate's cursor on "Create account" and a comment marker. |
+| `editor_dark.PNG`   | The dark flywheel on a phone.                                                           |
+| `editor_recent.PNG` | The flowchart with the Explorer popover open on Recent.                                 |
+| `context.PNG`       | The mind map with an element's menu open on its Presets.                                |
+| `search.PNG`        | The search panel: documents, shared, teams, tabs and elements.                          |
+| `new_template.PNG`  | The New Diagram wizard's template step.                                                 |
+| `new_theme.PNG`     | The wizard's theme step.                                                                |
+| `recent.PNG`        | The old Explorer's Recent view as cards.                                                |
+| `teams.PNG`         | The old Explorer's team page.                                                           |
+| `help.PNG`          | The help centre's Features categories.                                                  |
+| `article.PNG`       | A help article ("Explorer Panel").                                                      |
+| `telemetry.PNG`     | The old telemetry page's metric cards.                                                  |
 
 ## Logo (`logo/`)
 

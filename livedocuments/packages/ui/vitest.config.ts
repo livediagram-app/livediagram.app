@@ -1,4 +1,4 @@
-import { defineProject } from '@livedocuments/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // Node stays the DEFAULT environment: most tests here are pure logic (tone
 // mapping, month cells, stacking, newness). A test that renders a hook or
@@ -18,6 +18,6 @@ export default defineProject({
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with
     // `window is not defined`. The shared setup file says why in full.
-    setupFiles: ['@livedocuments/vitest-config/react-cleanup'],
+    setupFiles: ['@liveworkspace/vitest-config/react-cleanup'],
   },
 });

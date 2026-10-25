@@ -2,7 +2,7 @@ import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, pressWord, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
-import { elementSelector, escapeId } from '@/lib/canvas-selectors';
+import { elementSelector, escapeId } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Diagram Key tour (docs/specs/007-editor/element-tours.md "The Diagram Key tour"), on a selected diagram key: rows
 // that build themselves from the tab, a row's meaning written in place, and its title. A key has no menu section.

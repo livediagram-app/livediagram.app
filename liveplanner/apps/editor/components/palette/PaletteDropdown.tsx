@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, Portal } from '@liveplanner/ui';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 
 // openOnHover: a mouse resting this long on the trigger opens the menu (passing over it does not), and the menu
 // closes this long after the pointer leaves both it and the trigger, so a path from one to the other keeps it open.

@@ -2,18 +2,12 @@
 
 // Persistence-model prompt shown inside the Explorer. Present for guest
 // sessions so the user understands their documents are browser-local
-// until they sign in; rendered shape depends on what the deployment
-// supports:
+// until they sign in:
 //
-//   - Clerk disabled, any session
-//        → "No sign-in on this deployment": the documents are saved, but
-//          only this browser's guest id can open them.
+//   - signed out
+//        → "Sign in to keep your documents across devices." + a Sign in link.
 //
-//   - Clerk enabled, signed out
-//        → "Sign in to keep your documents across devices." + CTA to
-//          /live/sign-in/.
-//
-//   - Clerk enabled, signed in
+//   - signed in
 //        → renders nothing (the user already has the account that
 //          syncs everything).
 //
@@ -21,19 +15,16 @@
 // with browser-local storage can reclaim the panel space; the choice
 // persists per-browser in localStorage (same degradation contract as
 // the other persisted toggles — see local-storage-safe).
-//
-// Same module-load enabled/disabled hook-swap pattern as
-// AuthControls and useClerkApiBootstrap — calling useAuth outside a
-// ClerkProvider would throw, so the disabled branch never touches
-// Clerk.
 
 import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { clerkEnabled } from '@/lib/clerk-config';
-import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
+import {
+  useLocalStorageValue,
+  writeLocalStorageValue,
+} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livediagram:v2:signin-prompt-dismissed';
 
@@ -114,13 +105,13 @@ function PromptShell({
 // state where the prompt itself doesn't show (signed in, or the user has
 // dismissed it). The Explorer passes its "Open Explorer" button here so
 // the two never occupy the panel at once but the button still surfaces
-// for dismissed guests. While Clerk / the dismissal read are still
+// for dismissed guests. While the session / the dismissal read are still
 // loading we render nothing, so the fallback doesn't flash in before the
 // prompt has a chance to claim the slot.
 // `bar`: the one-line form (the editor's Explorer, under its Current Document card).
 type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
-function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
+export function SignInPrompt({ fallback, bar = false }: SignInPromptProps) {
   const { authLoaded: isLoaded, isSignedIn } = useDeferredAuth();
   const { dismissed, dismiss } = usePromptDismissed();
   const { signInHref } = useAuthHrefs();
@@ -133,7 +124,7 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
       body={
         bar
           ? 'A free account saves it across devices.'
-          : 'A free account keeps your documents and content across sessions and devices.'
+          : 'A free account keeps your canvases and content across sessions and devices.'
       }
       onDismiss={dismiss}
       action={
@@ -150,26 +141,3 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
     />
   );
 }
-
-function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
-  const { dismissed, dismiss } = usePromptDismissed();
-  if (dismissed === null) return null;
-  if (dismissed) return <>{fallback ?? null}</>;
-  return (
-    <PromptShell
-      bar={bar}
-      // The documents are saved on the server ("Private" on the card), but without sign-in they belong to this
-      // browser's guest id: what clearing site data loses is the way back to them. Never "Browser only", which is
-      // what a This Browser document is.
-      title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
-      body={
-        bar
-          ? 'Only this browser can open your documents.'
-          : 'Your documents are saved, but only this browser can open them. Clear its site data and you lose them.'
-      }
-      onDismiss={dismiss}
-    />
-  );
-}
-
-export const SignInPrompt = clerkEnabled ? SignInPromptEnabled : SignInPromptDisabled;

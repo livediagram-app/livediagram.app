@@ -5,13 +5,17 @@
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@liveplanner/items';
-import type { TextRun } from './rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
-import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
+import type {
+  BorderStroke,
+  BorderStyle,
+  BorderRadius,
+} from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ShapeMarker } from './shape-marker';
+import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -20,7 +24,7 @@ import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from './code-themes';
+import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { MindFlow, MindSpacing } from './mind-flow';
 import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
@@ -36,8 +40,8 @@ import type {
 } from './sankey-model';
 import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SessionButtonConfig } from './behaviour-config';
-import type { IconSize } from './icon-size';
-import type { IconWeight } from './icon-weight';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { HeroCaption, StatItem } from './web-components';
@@ -93,7 +97,7 @@ export type ShapeElement = {
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
-  // (@liveplanner/icons), and an unknown key renders nothing rather than
+  // (@liveworkspace/icons), and an unknown key renders nothing rather than
   // guessing, so a project authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates
@@ -157,7 +161,7 @@ export type ShapeElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -513,7 +517,7 @@ export type TextElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -660,7 +664,7 @@ export type TableElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -731,7 +735,7 @@ export type StickyElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -840,7 +844,7 @@ export type ImageElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -916,7 +920,7 @@ export type FreehandElement = {
   // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
-  // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
+  // Polygon-tool paths (docs/specs/008-canvas/finish.md "Polygons"): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter
   // strokes (which want the smoothing).
@@ -938,7 +942,7 @@ export type FreehandElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see packages/project/src/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved projects round-trip independent of the
@@ -1048,14 +1052,13 @@ export type AnnotationElement = {
 
 // See docs/specs/009-elements/link-cards.md. A rectangular bookmark element: the user sets
 // its URL via the normal element-link UI (`link` with `{ kind: 'url' }`),
-// and the editor fetches a preview (title / site / favicon / image) through
-// the api worker's `/api/unfurl` endpoint and caches it in `meta`. The
-// metadata rides the normal tab sync, so peers + reloads get it for free.
+// and draws the preview (title / site / favicon / image) cached in `meta`,
+// which livediagram's editor fetched from its worker (liveplanner fetches
+// none). The metadata rides the normal tab sync.
 // Resizable like a shape; carries the shared boxed fields (mostly
 // always-undefined, mirroring AnnotationElement) for the generic code paths.
 // Only the fields the card actually renders (title / image / favicon).
-// The unfurl endpoint also returns siteName + description, but nothing
-// draws them, so they aren't cached onto the element or persisted.
+// siteName + description are never drawn, so they aren't cached.
 export type LinkCardMeta = {
   // The URL this metadata was fetched for — guards against showing stale
   // preview after the link changes.
@@ -1074,8 +1077,8 @@ export type LinkCardElement = {
   y: number;
   width: number;
   height: number;
-  // Cached unfurl preview for `link` (a url-kind ElementLink). Absent until
-  // a URL is set + fetched; the card shows the bare URL meanwhile.
+  // Cached preview for `link` (a url-kind ElementLink). Absent → the card
+  // shows the bare URL.
   meta?: LinkCardMeta;
   // fillColor = card background; strokeColor = card border; textColor = the
   // title/site text.

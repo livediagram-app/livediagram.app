@@ -3,7 +3,7 @@
 // (its tabs, boards and sheets named without their bodies) and the Form tab's own body, builds the whole change on a
 // draft, and writes only once every change has been checked: card types first, then the form (a new Form tab by a
 // changeset, an existing form through its route), then the tabs its responses go to.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,

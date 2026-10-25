@@ -1,5 +1,3 @@
-import type { TelemetrySummary, TelemetryWindow } from '@liveplanner/api-schema';
-
 // Events of features that no longer exist (docs/specs/017-telemetry/telemetry.md "Retired features").
 // The stored rows stay in D1 until retention ages them out, but the dashboard
 // treats the feature as gone: these events are dropped from the summary the
@@ -306,20 +304,32 @@ function isRetiredEditorModeEvent(category: string, action: string, type: string
   );
 }
 
-// The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
-// page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
-// page view. A project's History and a team's Activity draw the same feed and keep the rest of the
-// Timeline category (Changed, Selected, Loaded, Opened·Stack).
+// Custom themes (removed 2026-10-23, docs/specs/011-theme/retired-schemes.md "Custom themes"): the builder's
+// lifecycle (created, applied, edited, deleted) and its help article.
+const CUSTOM_THEMES = new Set([
+  'Theme|Created|Custom',
+  'Theme|Changed|Custom',
+  'Theme|Changed|CustomEdited',
+  'Theme|Deleted|Custom',
+  'Help|View|custom-themes',
+  'Help|Helpful|custom-themes',
+  'Help|Unhelpful|custom-themes',
+  'UI|Opened|custom-themes',
+]);
+
+// The old Explorer Timeline's arrivals and sidebar rows (docs/specs/013-workspace/timeline.md). The
+// shared Explorer's Timeline reports its own (Changed, Selected, Loaded, Opened·Card/Stack/Menu,
+// Removed·Entry/Stack) through its onTimeline prop; how someone arrived is the page view.
 const EXPLORER_TIMELINE = new Set([
   'Timeline|Opened|Landing',
   'Timeline|Opened|Nav',
-  'Timeline|Opened|Menu',
-  'Timeline|Removed|Entry',
-  'Timeline|Removed|Stack',
   'UI|Selected|Sidebar.Timeline',
   'UI|Selected|ExplorerPanel.Timeline',
-  'Page|View|/explorer/timeline',
 ]);
+
+// The Explorer filter liveplanner's Explorer had and the shared one does not (docs/specs/013-workspace/
+// explorer-filters.md "Dimensions"): Kind.
+const EXPLORER_RETIRED_FILTERS = new Set(['Explorer|Selected|Kind']);
 
 // The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's
 // `icon search`, which found ids for diagram boxes.
@@ -390,15 +400,41 @@ function isRetiredDiagramTourEvent(category: string, action: string, type: strin
   return RETIRED_TOUR_TOKENS.some((token) => type.startsWith(token));
 }
 
+// The Format and Isometric tools (removed 2026-10-24, docs/specs/026-plan/plan-mode.md "Tools"): no tool picker
+// offers them in Plan, so the two canvas modes, the painter's copies and its Format panel settings are no longer
+// sent, and the Modes section went with them. The image export's UI·Toggled·IsometricExport carries on.
+const FORMAT_AND_ISOMETRIC = new Set([
+  'Canvas|Used|FormatPainter',
+  'Canvas|Used|Isometric',
+  'Element|Changed|FormatPainter',
+]);
+const isFormatPanelSetting = (category: string, action: string, type: string | null) =>
+  category === 'UI' && action === 'Changed' && /^Format(Copies|Mode)/.test(type ?? '');
+
+// Entity editing (removed 2026-10-24, docs/specs/009-elements/entity.md): no Plan tab holds entities, so Add Related
+// Entity and Add Field on the ring, the Fields menu's save and the cardinality presets are no longer sent, and the
+// Data Models stack went with them.
+const ENTITY_EDITING = new Set([
+  'Element|Created|RelatedEntity',
+  'Element|Added|EntityField',
+  'Element|Changed|Entity',
+  'Element|Changed|Cardinality',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
+  if (FORMAT_AND_ISOMETRIC.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (isFormatPanelSetting(category, action, type)) return true;
+  if (ENTITY_EDITING.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isElementUsedInPlace(category, action)) return true;
   if (isRetiredDrawModeEvent(category, action, type)) return true;
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;
+  if (CUSTOM_THEMES.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (EXPLORER_RETIRED_FILTERS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
@@ -423,63 +459,4 @@ export function isRetiredEvent(category: string, action: string, type: string | 
     );
   }
   return false;
-}
-
-function dropFromWindow(window: TelemetryWindow): TelemetryWindow {
-  let dropped = 0;
-  const rows = window.rows.filter((r) => {
-    if (!isRetiredEvent(r.category, r.action, r.type)) return true;
-    dropped += r.count;
-    return false;
-  });
-  return dropped === 0 ? window : { total: window.total - dropped, rows };
-}
-
-const splitKey = (key: string): [string, string, string | null] => {
-  const [category = '', action = '', type = ''] = key.split('|');
-  return [category, action, type === '' ? null : type];
-};
-
-// The summary without any retired event: window rows and totals, the
-// previous windows behind the trend arrows, and the daily series (each
-// retired series also comes off its category's line and the day totals).
-export function dropRetiredEvents(summary: TelemetrySummary): TelemetrySummary {
-  // A deployment with telemetry off answers `{ enabled: false }` and nothing else: there is nothing to drop, and
-  // reading its absent windows threw, which the dashboard took for a failed request ("Couldn't load the
-  // numbers") instead of showing that telemetry is off here.
-  if (!summary.enabled || !summary.windows) return summary;
-  const windows = Object.fromEntries(
-    Object.entries(summary.windows).map(([k, w]) => [k, dropFromWindow(w)]),
-  ) as TelemetrySummary['windows'];
-  const previousWindows = summary.previousWindows
-    ? (Object.fromEntries(
-        Object.entries(summary.previousWindows).map(([k, w]) => [k, dropFromWindow(w)]),
-      ) as TelemetrySummary['previousWindows'])
-    : undefined;
-  let daily = summary.daily;
-  if (daily) {
-    const retired = Object.keys(daily.byMetric).filter((key) => isRetiredEvent(...splitKey(key)));
-    if (retired.length > 0) {
-      const byMetric = { ...daily.byMetric };
-      const byCategory = { ...daily.byCategory };
-      const totals = [...daily.totals];
-      for (const key of retired) {
-        const series = byMetric[key] ?? [];
-        delete byMetric[key];
-        const [category] = splitKey(key);
-        const line = byCategory[category];
-        if (line) byCategory[category] = line.map((n, i) => Math.max(0, n - (series[i] ?? 0)));
-        series.forEach((n, i) => {
-          totals[i] = Math.max(0, (totals[i] ?? 0) - n);
-        });
-      }
-      daily = { ...daily, byMetric, byCategory, totals };
-    }
-  }
-  return {
-    ...summary,
-    windows,
-    ...(previousWindows ? { previousWindows } : {}),
-    ...(daily ? { daily } : {}),
-  };
 }

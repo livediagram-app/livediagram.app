@@ -140,7 +140,7 @@ rectangle, so the editor works the same on either side. In the editor's column s
 header's and the tab bar's heights stand where they were, so its layout is unchanged.
 
 Chrome that sizes itself to the room it has measures the editor's box, not the window
-(`apps/editor/lib/editor-viewport.ts`: the pane in a split, the window otherwise), and watches that box's size.
+(`../packages/workbench/src/lib/editor-viewport.ts`: the pane in a split, the window otherwise), and watches that box's size.
 The palette strip ([Toolbar layout](toolbar-layout.md)) is the first: in a pane it fits the tiles
 a window of the pane's width would, and refits as the divider moves.
 

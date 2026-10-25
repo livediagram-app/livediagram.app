@@ -6,7 +6,7 @@ import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { pageCog, pageSheet } from './page-tour-dom';
 import { opensFrom } from './tour-open';
 import { combineDemoShape, placeCombineDemo, uniteCombineDemo } from './logo-combine-demo';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 type LogoTourStep = PageTourStep;
 

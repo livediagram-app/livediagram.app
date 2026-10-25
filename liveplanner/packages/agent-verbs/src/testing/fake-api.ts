@@ -1,7 +1,7 @@
 // A scripted api for the verb suites: routes by path (and query), answering JSON, text, or what a function returns
 // for the request (a POST, a refusal, a header); 404 otherwise.
 
-import { createApiClient, type ApiClient } from '@liveplanner/api-client';
+import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
 import type { VerbContext } from '../define';
 
 const isText = (a: unknown): a is { text: string } =>

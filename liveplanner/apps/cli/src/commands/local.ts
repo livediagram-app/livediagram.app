@@ -10,7 +10,7 @@ import {
 } from '@liveplanner/agent-verbs';
 import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
 import type { DebugLog } from '../debug';
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@liveplanner/api-schema';
 import {
   forgetCredential,
@@ -20,10 +20,10 @@ import {
   type CredentialSource,
 } from '../auth/credentials';
 import type { Profile } from '../config/profiles';
-import { inputReader } from '../input';
+import { inputReader } from '@liveworkspace/cli-kit/input';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 
 export function guideOf(topic: string | undefined): { text: string } {
   if (topic === undefined || !isGuideTopic(topic))

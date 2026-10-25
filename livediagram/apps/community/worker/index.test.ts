@@ -29,7 +29,7 @@ class RecordingRewriter {
   }
 }
 
-const SHELL = '<html><head><title>Community Document</title></head><body></body></html>';
+const SHELL = '<html><head><title>Community Canvas</title></head><body></body></html>';
 
 // The Community service, answering `api` for each path it is asked (always for livediagram.app's posts), or
 // unreachable without one.

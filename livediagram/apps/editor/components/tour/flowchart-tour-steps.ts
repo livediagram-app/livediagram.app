@@ -1,7 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
 import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Flowchart tour (docs/specs/007-editor/element-tours.md "The Flowchart tour"), on a selected step: growing the
 // chart from the keyboard (Tab, Enter) or the step's toolbar, its type, its lane, and the Flowchart menu. It points at

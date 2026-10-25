@@ -1,8 +1,8 @@
 // What a photo page says to a screen reader (docs/specs/031-photo/photo-tools.md "Accessibility"): each edit
 // by its name, a stroke or a fill with the layer it landed on ("Brush on Layer 2"), and the selection's size
-// as it changes ("Selection: 640 by 480"), through the canvas's live region (lib/announcer.ts).
+// as it changes ("Selection: 640 by 480"), through the canvas's live region (@liveworkspace/workbench/lib/announcer.ts).
 import { maskBounds, type Mask8 } from '@livedesign/photo-engine';
-import { announce } from '../announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import type { PhotoSession } from './session';
 
 // The edits made on one layer's pixels: said with the layer's name.

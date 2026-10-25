@@ -6,44 +6,44 @@
 import {
   RECENT_DIAGRAMS_KEY,
   RECENT_THUMBS_CACHE,
-  RECENT_THUMBS_CACHE_LEGACY,
   pickRecentDiagrams,
   recentThumbPath,
   serializeRecentDiagrams,
-  type ProjectSummary,
   type RecentDiagram,
 } from '@liveplanner/api-schema';
-import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // Fetches one diagram's snapshot SVG: null when the server has none (404 / 403 / 503), and throws when
 // the request itself failed, which is worth trying again on the next list.
 type FetchSnapshotSvg = (id: string, savedAt: number) => Promise<string | null>;
 
+// What the note is picked from: a plan's id, name, last save, whether it is empty, and whether the person hid it
+// from Recent (the index's, docs/specs/013-workspace/hide-from-recent.md).
+export type RecentSource = Parameters<typeof pickRecentDiagrams>[0][number] & {
+  hiddenFromRecent?: boolean;
+};
+
 // Set once the note is forgotten (sign-out): a project list still in flight from the signed-in
 // session must not write it back before the page leaves.
 let forgotten = false;
-// The latest list and its fetcher, so hiding a diagram from Recent takes it off the note at once
-// rather than at the next list.
-let latest: { projects: readonly ProjectSummary[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
-  null;
-let listening = false;
+// The latest list and its fetcher, for a thumbnail pass asked for while one ran.
+let latest: { projects: readonly RecentSource[]; fetchSnapshotSvg: FetchSnapshotSvg } | null = null;
 // One thumbnail sync at a time; a list that lands mid-sync asks for one more pass after it.
 let syncing = false;
 let syncAgain = false;
 
 export function rememberRecentDiagrams(
-  projects: readonly ProjectSummary[],
+  projects: readonly RecentSource[],
   fetchSnapshotSvg: FetchSnapshotSvg,
 ): void {
   if (forgotten || typeof window === 'undefined') return;
   latest = { projects, fetchSnapshotSvg };
-  listenForHiddenChanges();
-  const diagrams = pickRecentDiagrams(projects, hiddenFromRecent());
+  const hidden = projects.filter((p) => p.hiddenFromRecent).map((p) => p.id);
+  const diagrams = pickRecentDiagrams(projects, hidden);
   const next = diagrams.length > 0 ? serializeRecentDiagrams(diagrams) : null;
   if (next !== readLocalStorageSafe(RECENT_DIAGRAMS_KEY)) {
     if (next) writeLocalStorageSafe(RECENT_DIAGRAMS_KEY, next);
@@ -54,46 +54,6 @@ export function rememberRecentDiagrams(
   // filled in; a pass with nothing missing is a handful of cache reads.
   const later = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1));
   later(() => void syncThumbnails(diagrams, fetchSnapshotSvg));
-}
-
-// The ids hidden from Recent (docs/specs/013-workspace/hide-from-recent.md), read straight from the
-// preferences blob: going through lib/user-preferences would loop back into the api client this
-// module is called from.
-function hiddenFromRecent(): string[] {
-  try {
-    const prefs = JSON.parse(readLocalStorageSafe(USER_PREFERENCES_STORAGE_KEY) ?? '{}') as {
-      recentExcludedIds?: unknown;
-    } | null;
-    const ids = prefs?.recentExcludedIds;
-    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
-// lib/user-preferences.ts PREFERENCES_CHANGED_EVENT (same tab) and the browser's storage event (another
-// tab): either may be a diagram hidden from, or returned to, Recent.
-const PREFERENCES_CHANGED_EVENT = 'liveplanner:preferences-changed';
-
-function listenForHiddenChanges(): void {
-  if (listening) return;
-  listening = true;
-  const repick = () => {
-    if (latest) rememberRecentDiagrams(latest.projects, latest.fetchSnapshotSvg);
-  };
-  window.addEventListener(PREFERENCES_CHANGED_EVENT, repick);
-  window.addEventListener('storage', (e) => {
-    if (e.key === USER_PREFERENCES_STORAGE_KEY) repick();
-  });
-}
-
-// Drop the pre-v2 cache, which nothing reads now. Best effort: a browser that refuses keeps an orphan.
-async function dropLegacyCache(): Promise<void> {
-  try {
-    await caches.delete(RECENT_THUMBS_CACHE_LEGACY);
-  } catch {
-    // Cache Storage refused, or a partial implementation without delete.
-  }
 }
 
 // Fetch the snapshot of each noted diagram the cache lacks (at its current save), and drop every entry
@@ -109,9 +69,6 @@ async function syncThumbnails(
   }
   syncing = true;
   try {
-    // The v1 cache held "no preview" for every project in This Browser; v2 draws them (lib/local-snapshot.ts).
-    // On its own, so a refusal here never stops the sync.
-    await dropLegacyCache();
     const cache = await caches.open(RECENT_THUMBS_CACHE);
     const wanted = new Map(
       diagrams.map((d) => [new URL(recentThumbPath(d.id, d.savedAt), location.origin).href, d]),
@@ -158,6 +115,5 @@ export async function forgetRecentDiagrams(): Promise<void> {
   removeLocalStorageSafe(RECENT_DIAGRAMS_KEY);
   if (typeof window !== 'undefined' && 'caches' in window) {
     await caches.delete(RECENT_THUMBS_CACHE).catch(() => false);
-    await dropLegacyCache();
   }
 }

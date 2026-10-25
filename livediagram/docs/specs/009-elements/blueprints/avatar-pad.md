@@ -72,7 +72,7 @@ Arrivals, in `useAvatarPadArrivals`: `presentKey` = `self?` + peer ids. On each 
 Invariants:
 
 - **I1:** placing, moving or deleting a pad never moves a character already in the mode.
-- **I2:** nothing about a pad, a spawn or an arrival is written to the document, D1, the room or undo.
+- **I2:** nothing about a pad, a spawn or an arrival is written to the document, the index, the room or undo.
 - **I3:** at most `AVATAR_PAD_MAX_ARRIVALS` beams are mounted; each unmounts within `AVATAR_PAD_ARRIVAL_MS` + one timer.
 - **I4:** a character walking onto a pad, or teleported onto one by a portal, starts no beam (its id was seen).
 - **I5:** the picker lists `avatar` only while `canvasTool === 'avatar'`; no key and no command enters it.

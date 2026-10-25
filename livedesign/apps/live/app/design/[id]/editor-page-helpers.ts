@@ -1,16 +1,7 @@
 // Pure Tab helpers lifted out of editor-page.tsx to slim the page
 // component. No React, no editor state — just shape transforms on
 // Tab[] used by the design-hydration + autosave paths.
-import {
-  autoLayoutElements,
-  isBoxed,
-  isLayoutCandidate,
-  remapElementRefs,
-  unionRects,
-  type Element,
-  type Tab,
-} from '@livedesign/design';
-import { autoAlignElements } from '@/lib/auto-align';
+import type { Tab } from '@livedesign/design';
 import type { AccessLevel } from '@livedesign/api-schema';
 
 export function createTab(name: string): Tab {
@@ -267,97 +258,4 @@ export function pruneMapToPresent<V>(prev: Map<string, V>, present: Set<string>)
     else changed = true;
   }
   return changed ? next : prev;
-}
-
-// Merge AI-returned elements into the existing element list as one block
-// (docs/specs/007-editor/ai-assistance.md). Lifted out of useEditorState's `applyAiElements` so this
-// non-trivial logic (id dedup, arrow-endpoint remap, clean-vs-generate
-// merge) is unit-testable; the hook just wraps it in `commit`.
-//
-//   - `returned` elements whose id matches an existing one MODIFY it.
-//   - `returned` elements with a new id are ADDED; if the AI reused a
-//     short id (e.g. "ai-001") that clashes with an existing element or
-//     another addition, the addition is remapped to a fresh uuid and any
-//     arrow endpoints pinned to the old id are rewired to the new one so
-//     connections survive.
-//   - `mode: 'clean'` PRESERVES properties the AI never sees (colours,
-//     images, ...) by spreading the AI patch over the existing element,
-//     rather than replacing it wholesale; `'generate'` replaces in place.
-//
-// The result is run through `autoAlignElements` to snap the merged set to
-// the grid, matching the prior inline behaviour.
-export function mergeAiElements(
-  existingEls: Element[],
-  returned: Element[],
-  mode: 'generate' | 'clean',
-): Element[] {
-  const existingById = new Map(existingEls.map((e) => [e.id, e]));
-  const modifications = returned.filter((e) => existingById.has(e.id));
-  const additions = returned.filter((e) => !existingById.has(e.id));
-
-  // Deduplicate addition ids that clash with an existing element or with
-  // each other (the AI reuses short ids like "ai-001").
-  const allIds = new Set(existingEls.map((e) => e.id));
-  const idMap = new Map<string, string>();
-  for (const el of additions) {
-    if (allIds.has(el.id)) idMap.set(el.id, crypto.randomUUID());
-    else allIds.add(el.id);
-  }
-  // Every reference kind follows a renamed addition (arrow ends pinned or
-  // hung off another arrow, mind-map parents, portal partners), via the same
-  // walk the import re-mint uses. Only pinned arrow ends used to follow here.
-  const deduped = remapElementRefs(
-    additions.map((el) => ({ ...el, id: idMap.get(el.id) ?? el.id })),
-    idMap,
-  );
-
-  const modById = new Map(modifications.map((e) => [e.id, e]));
-  // 'clean' preserves AI-invisible props by spreading the patch over the
-  // existing element; 'generate' replaces the element in place.
-  //
-  // Clean must never change what an element IS, only how it looks. Its own
-  // prompt and docs/specs/007-editor/ai-assistance.md scope it to label spelling, sizes, positions, styles,
-  // borderRadius and textSize — `type` and `shape` are not on that list, and
-  // letting the patch carry them was destructive rather than merely wrong.
-  //
-  // The path: the client coerces any shape outside AI_SHAPE_KINDS to 'square'
-  // so a NEW off-vocabulary node still renders instead of being dropped. But
-  // clean asks the model to "Return ALL elements ... (same IDs)", and the
-  // server forwards each existing element's real shape, so the model echoes
-  // kinds the set doesn't hold — 30 of the 51 ShapeKinds, every composite from
-  // checklist and code-block to the charts and progress
-  // rings. Spread over the original, `shape: 'square'` overwrote the stored
-  // kind: one "Clean up" flattened those elements, autosaved, change-logged
-  // and broadcast the result to every peer. The coercion is right for an
-  // element the model invented and has no business touching one the user
-  // already had.
-  const identityOf = (el: Element) =>
-    el.type === 'shape' ? { type: el.type, shape: el.shape } : { type: el.type };
-  const merge = (el: Element): Element =>
-    !modById.has(el.id)
-      ? el
-      : mode === 'clean'
-        ? ({ ...el, ...(modById.get(el.id) as Element), ...identityOf(el) } as Element)
-        : (modById.get(el.id) as Element);
-
-  // When Generate produced a whole new connected diagram (≥3 linked nodes),
-  // re-lay-it-out deterministically (docs/specs/007-editor/ai-assistance.md): the model decides structure,
-  // we own the geometry — uniform sizes, layered placement, clean arrow
-  // anchors. Placed in free space below existing content so it doesn't land
-  // on top of the user's work. Small additive edits keep the model's
-  // placement (isLayoutCandidate is false), and Clean is left untouched.
-  const placed =
-    mode === 'generate' && isLayoutCandidate(deduped)
-      ? autoLayoutElements(deduped, freePlacement(existingEls))
-      : deduped;
-
-  return autoAlignElements([...existingEls.map(merge), ...placed]);
-}
-
-// Top-left for a freshly generated diagram: below the existing content (left
-// edges aligned) with a gap, or a sensible corner on an empty canvas.
-function freePlacement(existing: Element[]): { originX: number; originY: number } {
-  const b = unionRects(existing.filter(isBoxed));
-  if (!b) return { originX: 120, originY: 100 };
-  return { originX: b.x, originY: b.y + b.height + 120 };
 }

@@ -6,7 +6,10 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  setRemoteBesideTab,
+  syncRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedocuments/document';
 import {
@@ -15,8 +18,14 @@ import {
   type ChangesetRoomOp,
 } from '@livedocuments/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  getSessionSharePassword,
+  type RoomHandlers,
+} from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
+import { keepDocumentGrantFresh, documentGrant } from '@/lib/api/document-grants';
 import {
   createPresenceCoalescer,
   type CursorPos,
@@ -31,7 +40,7 @@ import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,
@@ -404,9 +413,9 @@ export function useRoomConnection(opts: {
         // closes its socket either way. Everyone else keeps their session.
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') {
-          // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-          noteAccessEnded(documentId, 'revoked');
-          window.location.assign('/explorer');
+          // The Explorer says why we arrived, rather than landing without a word. The note rides in the address:
+          // the Explorer is liveworkspace's, on another origin (liveworkspace/docs/site.md "Addresses handed over").
+          window.location.assign('/explorer?ended=revoked');
         } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
@@ -515,6 +524,10 @@ export function useRoomConnection(opts: {
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    // The grant every request and the room's ticket carry, fetched again a minute before it lapses while the
+    // document is open (document-grants.ts), so neither a save nor a renewal waits on the index.
+    const stopGrant = keepDocumentGrantFresh(documentId, share);
     const openedRoom = connectRoom(documentId, self, handlers, {
       // The api worker resolves the role the mint stored on the ticket and
       // stamps it into the participant row via X-Verified-Role so
@@ -525,9 +538,11 @@ export function useRoomConnection(opts: {
         return minted?.ticket ?? null;
       },
       readFollowing: roomReadFollowing,
+      renewGrant: async () => (await documentGrant(documentId, share))?.grant ?? null,
     });
     roomRef.current = openedRoom;
     return () => {
+      stopGrant();
       presence.cancel();
       resetArticlePeers();
       openedRoom.close();

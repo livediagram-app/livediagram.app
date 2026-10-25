@@ -25,7 +25,7 @@ import { groupRows } from './event-storming-lane-landing';
 import { ES_LANES, ES_NOTE_GAP, laneCentre, laneIndexAt } from './event-storming-lanes';
 import type { BoardNote } from './event-storming-photo-match';
 import type { PhotoAddition } from './event-storming-photo';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 // "Roughly above one another": within a quarter of a standard note.
 export const PHOTO_COLUMN_RADIUS = ES_NOTE_SIZE_PX.square.width / 4;

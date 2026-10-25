@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { backOutTarget } from './back-out';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 
 // docs/specs/007-editor/new-document-route.md "Escape backs out".
 describe('backOutTarget', () => {
   const origin = 'https://livedocuments.app';
 
   it('goes back to the page of ours that opened the wizard', () => {
-    expect(backOutTarget({ referrer: 'https://livedocuments.app/', origin, historyLength: 2 })).toBe(
-      'back',
-    );
+    expect(
+      backOutTarget({ referrer: 'https://livedocuments.app/', origin, historyLength: 2 }),
+    ).toBe('back');
     expect(
       backOutTarget({
         referrer: 'https://livedocuments.app/explorer/recent',
@@ -23,9 +23,9 @@ describe('backOutTarget', () => {
     expect(backOutTarget({ referrer: 'https://example.com/', origin, historyLength: 3 })).toBe(
       'home',
     );
-    expect(backOutTarget({ referrer: 'https://livedocuments.app/', origin, historyLength: 1 })).toBe(
-      'home',
-    );
+    expect(
+      backOutTarget({ referrer: 'https://livedocuments.app/', origin, historyLength: 1 }),
+    ).toBe('home');
     expect(backOutTarget({ referrer: 'not a url', origin, historyLength: 3 })).toBe('home');
   });
 

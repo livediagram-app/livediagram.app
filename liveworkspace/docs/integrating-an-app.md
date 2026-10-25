@@ -99,6 +99,12 @@ For a "Create account" button, pass `prompt: 'create'` to `authorizeUrl`. The ac
 opens its registration page (first name, last name, email, code) instead of sign-in. Everything
 after that is the same.
 
+`prompt: 'none'` never shows a page: the accounts site answers at once with a code when there is a
+liveworkspace session and with `error=login_required` when there isn't. That is how an app signs
+someone in without a click; `@liveworkspace/auth-client/silent` holds the whole of it, the page's boot
+script, the `/api/auth/silent` route and the callback's half
+([accounts.md](accounts.md#signing-in-without-a-click)).
+
 Who signed in comes from the ID token: `sub`, `email`, `name`, `given_name` and `family_name`.
 
 In the browser, keep the access token in memory. Call `POST /auth/token` on load and again a
@@ -154,9 +160,9 @@ session-token claim that Teams invites needed.
 
 ## Installing the package
 
-It isn't published yet. Until it is, copy `packages/auth-client/src` into the app's own
-`packages/`. It's two files that depend only on `jose`, which livediagram already uses. When a
-second app needs it, publish it to GitHub Packages, or move this repo into the apps' workspace.
+It is a workspace package, `@liveworkspace/auth-client` in `packages/auth-client`: add it to the app's
+`package.json` as `"@liveworkspace/auth-client": "workspace:*"` (`corepack pnpm --filter <package> add
+@liveworkspace/auth-client@workspace:*`).
 
 ## liveplanner
 
@@ -170,6 +176,7 @@ once per environment with its callback on each origin it serves:
 ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
   --accounts https://liveworkspace.app \
   --name liveplanner \
+  --app liveplanner.app \
   --redirect https://www.liveplanner.app/api/auth/callback \
   --redirect https://liveplanner.app/api/auth/callback \
   --resource https://liveplanner.app/api

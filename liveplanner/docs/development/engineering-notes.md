@@ -39,7 +39,7 @@ pnpm build
 
 CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
 
-Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
+Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `../packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
 
 ### Security alerts and `pnpm.overrides`
 
@@ -55,9 +55,9 @@ Drop an entry once an upstream release makes it redundant.
 
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.liveplanner.app](https://staging.liveplanner.app), a complete copy of the
-platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
-presses anything. Within a few minutes your change is running on a reachable host, and any
-D1 migration in it has been applied to a real remote database.
+platform with its own data ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
+presses anything. Within a few minutes your change is running on a reachable host, its Durable Objects
+running any new schema step against real remote storage.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.
@@ -78,17 +78,17 @@ Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go 
 TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
 - **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
-- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveplanner/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
+- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveworkspace/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
 The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @liveplanner/api gen:openapi` and its drift test.
 
-`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveplannerNextConfig()` from `@liveplanner/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
+`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 
 ## Tests
 
-Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@liveplanner/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
+Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@liveworkspace/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
 
 `pnpm install` installs a pre-push hook (`.githooks/pre-push`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
 
@@ -108,17 +108,11 @@ pnpm --filter @liveplanner/editor test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @liveplanner/editor build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/editor/e2e/signed-in/`) need the test-only session bridge, so they have their own build and run, on their own ports:
 
 ```sh
 pnpm --filter @liveplanner/editor build:signed-in
 pnpm --filter @liveplanner/editor test:e2e:signed-in
-```
-
-The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3117`):
-
-```sh
-pnpm --filter @liveplanner/editor test:e2e:armed
 ```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3202` is already taken (a second checkout, a worktree):
@@ -126,9 +120,9 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3202` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`      | `3102`                  | The port `e2e-stack.mjs` serves the built editor app on                 |
-| `E2E_API_PORT`       | `8887`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
-| `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
+| `E2E_EDITOR_PORT`    | `3202`                  | The port `e2e-stack.mjs` serves the built editor app on               |
+| `E2E_API_PORT`       | `8289`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
+| `E2E_MARKETING_PORT` | `3203`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
@@ -148,8 +142,8 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes, no server-required image loader. Any server logic goes in the api worker.
 - **Server logic lives in Cloudflare Workers**, not in Next.js. Frontends call those workers.
-- **Database access goes through the api worker**, never from the browser.
+- **Stored plans are reached through the api worker**, never from the browser.
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
-- **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveplannerNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and `packages/next-config/apps-use-shared.test.js` lists the app.
+- **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveworkspaceNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and the monorepo's `packages/next-config/apps-use-shared.test.js` finds the app and holds it to that.
 - **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@liveplanner/ui`, and only for markup our own escaping builders made, and nothing parses with `DOMParser`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.

@@ -10,7 +10,6 @@
 // bodies with their own content and take no tile list.
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
-import { openerById } from './palette-openers';
 import type { PaletteKind } from '@/lib/palette-kind';
 
 type PaletteLayoutEntry = {
@@ -19,7 +18,7 @@ type PaletteLayoutEntry = {
   label?: string;
   description?: string;
   band?: number;
-  // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
+  // The tiles, in order, by tile id. `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
 };
@@ -144,7 +143,7 @@ function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
       if (last) out[out.length - 1] = { ...last, dividerAfter: true };
       continue;
     }
-    const def = tileById(id) ?? openerById(id);
+    const def = tileById(id);
     if (def) out.push(def);
   }
   return out;

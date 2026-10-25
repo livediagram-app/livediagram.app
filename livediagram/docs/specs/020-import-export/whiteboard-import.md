@@ -241,7 +241,7 @@ parser normalises:
 | `too-large`        | The pick passes `MAX_IMPORT_BYTES`                                          | "This export is too large to import at once. Import fewer boards."       |
 | `board-unreadable` | A board's JSON does not parse or lacks its tree (per board, others go on)   | "This board's files couldn't be read."                                   |
 | `board-too-large`  | A board lands more elements than a tab holds (per board)                    | The landing's `too-many-elements` copy                                   |
-| `board-too-big`    | A board's document is over what one save carries (the api's 413, per board) | "This board is too big for one document"                                 |
+| `board-too-big`    | A board's document is over what one save carries (the api's 413, per board) | "This board is too big for one canvas"                                   |
 
 - A board that fails never stops the others; the result lists it.
 - A change that cannot be read (an unknown command, a damaged payload) is

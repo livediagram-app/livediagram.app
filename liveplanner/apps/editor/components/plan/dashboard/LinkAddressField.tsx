@@ -9,7 +9,10 @@ import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 're
 import { Portal, TextInput } from '@liveplanner/ui';
 import type { Tab } from '@liveplanner/project';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
-import { placeAnchored, type AnchoredPlace } from '@/components/primitives/AnchoredPopover';
+import {
+  placeAnchored,
+  type AnchoredPlace,
+} from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { matchingTabs } from './link-address';
 
 const LIST_MAX_H = 224;

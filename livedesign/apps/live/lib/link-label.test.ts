@@ -22,9 +22,7 @@ describe('describeLink', () => {
   });
 
   it('falls back to a generic phrase when the tab is not found', () => {
-    expect(describeLink({ kind: 'tab', tabId: 'gone' }, tabs)).toBe(
-      'Goes to a tab in this design',
-    );
+    expect(describeLink({ kind: 'tab', tabId: 'gone' }, tabs)).toBe('Goes to a tab in this design');
     expect(describeLink({ kind: 'tab', tabId: 't1' })).toBe('Goes to a tab in this design');
   });
 
@@ -42,9 +40,7 @@ describe('describeLink', () => {
 
   it('treats a whitespace-only tab name as no name', () => {
     const blank: { id: string; name: string }[] = [{ id: 't1', name: '   ' }];
-    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe(
-      'Goes to a tab in this design',
-    );
+    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this design');
   });
 
   it('covers every ElementLink kind', () => {

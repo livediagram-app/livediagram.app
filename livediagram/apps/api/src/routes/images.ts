@@ -3,17 +3,25 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import { documentServesImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import { reportImagesUploaded } from '@liveworkspace/index-app';
+import type { MediaClient } from '@liveworkspace/media';
+import { documentRoom } from '../document-client';
+import { indexAppClient, indexFor } from '../index-service';
 import {
   imageSummary,
+  MEDIA_APP,
   mediaClient,
   mediaImageOwner,
   mediaOwner,
-  rememberMediaImages,
+  rememberMediaOwner,
 } from '../media';
 import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
-import { recordImageUploaded } from '../timeline';
-import { COMMUNITY_CONTENT, gateGrant, requireOwner, type RouteContext } from './context';
+import { grantCallerOf, requireOwner, type RouteContext } from './context';
+import { resolveDocumentGrant } from './document-grant';
+
+// The Gallery's "Used in" badge looks up at most this many canvases at the index, this many at a time.
+export const USAGE_DOCUMENTS_MAX = 200;
+export const USAGE_LOOKUPS_IN_FLIGHT = 10;
 
 // Without the service (a deployment without MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
@@ -23,19 +31,16 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   const media = mediaClient(env);
   if (!media) return imagesUnavailable();
 
-  // GET /api/images: the owner's gallery, from every app. Owner only. Each image is remembered as
-  // theirs, so a document of theirs placing one uploaded in another app serves it.
+  // GET /api/images: the owner's gallery, from every app. Owner only. Each image is remembered as theirs, so a
+  // canvas reading one asks the service nothing more.
   if (segments.length === 2 && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const listed = await media.list(await mediaOwner(owner));
     if (!listed.ok) return serviceAnswer(listed);
     const images = listed.value.images;
-    await rememberMediaImages(
-      env,
-      owner,
-      images.map((i) => i.id),
-    );
+    const named = await mediaOwner(owner);
+    for (const image of images) rememberMediaOwner(image.id, named);
     return json({ images: images.map(imageSummary) });
   }
 
@@ -84,10 +89,11 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     });
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
-    await rememberMediaImages(env, owner, [image.id]);
-    // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload, so pasting the same
-    // screenshot twice is one event, and the day's uploads coalesce into one counted bubble.
-    if (!deduped) ctx.waitUntil?.(recordImageUploaded(env, owner));
+    rememberMediaOwner(image.id, await mediaOwner(owner));
+    // The Timeline's image_uploaded (liveworkspace/docs/one-explorer-contracts.md "Timeline"): only a genuinely
+    // NEW upload, so pasting the same screenshot twice is one event, and the day's uploads coalesce into one
+    // counted entry at the index.
+    if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));
     return json({ image: imageSummary(image), deduped });
   }
 
@@ -100,8 +106,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
-    const usage = await imageUsageByOwner(env, owner);
-    return json({ usage });
+    return json({ usage: await usageOf(ctx, media, owner) });
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the
@@ -111,7 +116,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && request.method === 'GET') {
     const imageId = segments[2]!;
     const callerOwner = resolveOwner();
-    const imageOwner = await mediaImageOwner(env, media, imageId, callerOwner);
+    const imageOwner = await mediaImageOwner(media, imageId, callerOwner);
     if (imageOwner === null) return notFound();
     // A document-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
     // shortcut and reads through its own document only, so it cannot walk its owner's gallery by id. A workspace
@@ -126,22 +131,16 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // document must place this image AND may serve it: the
         // image's owner owns `d`, or `d` holds a placement grant
         // (a teammate's or collaborator's upload, or a copy).
-        // The owner and team are all the gate needs: one row, not the full document load (its
-        // participants and tab summary), which ran once for every image a visitor's board shows.
-        const liveDoc = await getDocumentMeta(env, d);
-        if (liveDoc) {
-          // The same access policy as the tab read (auth/document-access.ts), so a tightening of the
-          // share-code check lands once and both routes follow. A tab-scoped visitor
-          // (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their own tab uses,
-          // not every image in the document.
-          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId, COMMUNITY_CONTENT);
-          if (grant) {
-            // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
-            // "Placement grants"): an id pasted into an unrelated document serves nothing.
-            allowed = await documentServesImage(env, d, imageId, grant.tabScope);
-            if (!allowed) {
-              console.warn('[images] not servable by document', { documentId: d, imageId });
-            }
+        // The same grant as the tab read (the index's, routes/document-grant.ts): a tab-scoped visitor
+        // (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their own tab uses, not every image
+        // in the canvas; a Community visitor reads the post's images. Then the canvas answers whether it places the
+        // image AND may serve it (docs/specs/009-elements/images.md "Placement grants"): an id pasted into an
+        // unrelated canvas serves nothing.
+        const grant = await resolveDocumentGrant(ctx, d);
+        if (grant && !(grant instanceof Response)) {
+          allowed = await documentRoom(env, d).servesImage(imageId, grant.tab);
+          if (!allowed) {
+            console.warn('[images] not servable by document', { documentId: d, imageId });
           }
         }
       }
@@ -169,7 +168,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const removed = await media.remove(await mediaOwner(owner), imageId);
     if (!removed.ok) return serviceAnswer(removed);
-    await env.DB.prepare('DELETE FROM media_images WHERE id = ?').bind(imageId).run();
+    rememberMediaOwner(imageId, null);
     return json({ ok: true });
   }
 
@@ -197,4 +196,53 @@ export function originalNameOf(header: string | null): string | null {
     // An older client's raw name (a lone `%`): kept as sent.
   }
   return Array.from(name).slice(0, ORIGINAL_NAME_MAX).join('');
+}
+
+// The Gallery's usage map: the canvases of this app the media service says place each of the owner's images, kept to
+// those the index answers as theirs and not in the Trash, named as the index has them. At most USAGE_DOCUMENTS_MAX
+// canvases are looked up (USAGE_LOOKUPS_IN_FLIGHT at a time); one past that, or one the index cannot answer, is left
+// out of the badge rather than failing the Gallery.
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
+): Promise<Record<string, { id: string; name: string }[]>> {
+  const usage: Record<string, { id: string; name: string }[]> = {};
+  const answered = await media.usage(await mediaOwner(owner));
+  if (!answered.ok) {
+    console.error('[images] media usage answered', answered.status);
+    return usage;
+  }
+  const placed = Object.entries(answered.value.usage);
+  const documents = [
+    ...new Set(
+      placed.flatMap(([, refs]) => refs.filter((r) => r.app === MEDIA_APP).map((r) => r.document)),
+    ),
+  ].slice(0, USAGE_DOCUMENTS_MAX);
+  const client = indexFor(ctx.env, grantCallerOf(ctx));
+  if (!client || documents.length === 0) return usage;
+  const names = new Map<string, string>();
+  for (let i = 0; i < documents.length; i += USAGE_LOOKUPS_IN_FLIGHT) {
+    await Promise.all(
+      documents.slice(i, i + USAGE_LOOKUPS_IN_FLIGHT).map(async (id) => {
+        try {
+          const { item } = await client.getItem(id);
+          if (item.ownerId === owner && item.trashedAt === null) names.set(id, item.title);
+        } catch {
+          // Gone, or not theirs to read: not in the badge.
+        }
+      }),
+    );
+  }
+  for (const [imageId, refs] of placed) {
+    const docs = refs
+      .filter((r) => r.app === MEDIA_APP && names.has(r.document))
+      .map((r) => ({ id: r.document, name: names.get(r.document)! }));
+    if (docs.length === 0) continue;
+    const seen = new Set<string>();
+    usage[imageId] = docs
+      .filter((doc) => (seen.has(doc.id) ? false : (seen.add(doc.id), true)))
+      .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  }
+  return usage;
 }

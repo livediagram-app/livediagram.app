@@ -18,65 +18,56 @@ Starring is personal. Starring a design in a shared team folder must not star
 it for the rest of the team, so a star is a row keyed by
 `(owner_id, design_id)` rather than a flag on the design.
 
-It gets a **D1 table** (the baseline migration, `0001_livedesign_baseline.sql`) rather than a key in
-the `user_preferences` blob, which is how [Hide a design from Recent](hide-from-recent.md) stores hidden-from-Recent
-ids. That blob is capped at **4 KB** server-side — roughly 100 36-char UUIDs —
+Stars are liveworkspace's index's, one `favourites` row per person and design
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
+defaults": `GET /favourites`, `PUT/DELETE /favourites/:itemId`), not a key in
+the preferences set, which is how [Hide a design from Recent](hide-from-recent.md) once stored hidden-from-Recent
+ids. That set is kept under **4 KB** — roughly 100 36-char UUIDs —
 and favourites are meant to be unlimited. Overflowing it wouldn't just lose a
 star: the PUT would start rejecting **every** preference write. A table has no
 such ceiling, which is what lets the answer to "any limit?" be _no_.
 
-The table carries `created_at`, so "when I starred it" is recoverable if a
+The row carries `created_at`, so "when I starred it" is recoverable if a
 sort-by-date-favourited ever earns its place. Re-starring keeps the original
-timestamp (`ON CONFLICT DO NOTHING`) rather than bumping it.
-
-`ON DELETE CASCADE` through `designs` means a deleted design takes everyone's
-star with it, so the view can never list a dead id.
+timestamp (`INSERT OR IGNORE`) rather than bumping it. A purged design takes
+everyone's star with it, so the view can never list a dead id.
 
 ## Stars follow the owner
 
-A star is the starrer's data, keyed on their owner id, so it takes part in
-both owner-wide operations ([Owner-keyed data](../015-api/api.md#owner-keyed-data)):
+A star is the starrer's data, so the index handles it in both person-wide operations:
 
-- **Account deletion erases every star the user placed**, including those on
-  a teammate's or anyone else's design. The cascade only reaches stars on
-  the user's own designs, so the rest are deleted by owner id.
+- **Closing an account erases every star the person placed**, including those on
+  a teammate's or anyone else's design.
 - **Signing up carries a guest's stars into the account.** Both identities may
-  have starred the same design, and the primary key is
-  `(owner_id, design_id)`, so the move is `INSERT OR IGNORE` then `DELETE`:
-  on a collision the account's star, and its original `created_at`, wins.
+  have starred the same design, so the move is `INSERT OR IGNORE`: on a
+  collision the account's star, and its original `created_at`, wins.
 
 ## No access check on write
 
-`PUT /api/favourites/:id` doesn't verify the caller can read that design. A
+Starring doesn't verify the caller can read that design. A
 star is a private bookmark in the starrer's own row: it grants no access,
-reveals nothing, and the Favourites view renders by intersecting the starred
-ids with **the design lists the client already has permission to see**. An id
+reveals nothing, and the Favourites view lists only starred designs the person can still reach. An id
 for something you can no longer open simply doesn't appear. Checking on write
 would cost a lookup per star to prevent nothing.
 
 ## An offline design's star lives in the browser
 
-The table's `design_id` is a foreign key into `designs`, and an offline
-design ([Offline Mode](../006-design/offline-mode.md)) has no row there: it lives only in this browser's
-IndexedDB. Sending its star to the server is therefore not merely wasted, it
-is **rejected**: the foreign key refuses the row and the route answers 404, as it
-does for a design deleted meanwhile (no lookup first; the insert's refusal is
-the check). Because the toggle
-is optimistic and the write is swallowed, the star would appear on click and
-be gone on the next reload.
+An offline design ([Offline Mode](../006-design/offline-mode.md)) is not in the index: it lives only in this
+browser's IndexedDB. A star sent to the index for it would name an item nobody can list, so the star would appear
+on click and be gone on the next reload.
 
-So a star on an offline design is kept on the offline record itself, and
-`apiSetFavourite` dispatches on `isOfflineId` exactly as load / save / delete
-already do. This is also what [Offline Mode](../006-design/offline-mode.md) requires of every offline row: no
+So a star on an offline design is kept on the offline record itself
+(`offlineSetFavourite`, `apps/live/lib/offline/offline-store.ts`), which the shared Explorer reads with the rest of
+the This Browser list (`packages/explorer/src/this-browser.ts` at the repo root). This is also what [Offline Mode](../006-design/offline-mode.md) requires of every offline row: no
 server fetch, "list, thumbnail, or otherwise".
 
-Listing is the exception that isn't a dispatch, for the same reason the
-design list is: the Favourites view shows both kinds in one place, so
-`apiListFavourites` **merges** the cloud ids with the local ones, and the
-local ones still answer when the cloud fetch fails.
+The Favourites view shows both kinds in one place: the index's stars and the
+This Browser ones, which still answer when the index can't be reached.
 
-Converting a design between offline and cloud does not carry the star
-across; it is dropped with the copy that held it.
+Converting a design between offline and cloud carries the star across: Take
+Offline reads it from the index onto the offline record, and Sync Design stars
+the new cloud design (`apps/live/lib/offline/offline-convert.ts`,
+`offline-sync.ts`).
 
 ## The view
 

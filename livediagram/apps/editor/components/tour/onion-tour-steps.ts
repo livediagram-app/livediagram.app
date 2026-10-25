@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Onion tour (docs/specs/007-editor/element-tours.md "The Onion tour"): rings nested round one core, never
 // overlapping, the core first and the rest outward, and Pulse rippling out from the middle.

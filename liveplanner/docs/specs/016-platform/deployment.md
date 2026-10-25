@@ -2,22 +2,22 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.liveplanner.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own D1 / R2 / KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.liveplanner.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects and KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
 | App              | Cloudflare Worker       | Type                                                                          |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
 | `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`      | `liveplanner-editor`      | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/editor`    | `liveplanner-editor`    | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `liveplanner-api`       | Worker (D1 binding + Durable Object).                                         |
+| `apps/api`       | `liveplanner-api`       | Worker (Durable Objects), no D1 and no R2.                                    |
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `liveplanner-router`    | Worker (service bindings to the other five).                                  |
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]` and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 
@@ -72,7 +72,7 @@ Jobs:
 3. **deploy-editor** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/editor/`.
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
-   - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
+   - the secret syncs (below). There is no migration step: the api has no D1, and each plan's object brings its own SQLite up to date on first use (`plan-schema.ts`).
    - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on liveplanner.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
 6. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.liveplanner.app` is its own host, not a path under the main hostname.
@@ -82,23 +82,18 @@ Jobs:
 
 All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
 
-### Renaming migrations
+### Deploy order
 
-Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** a table or column is different: from the moment it applies until the new api worker is live, the old worker's queries
-name tables that no longer exist, and the other apps' workers deploy separately, so old and new
-versions briefly serve side by side. The deploy keeps that window short and recoverable:
+The apps' workers deploy separately, so old and new versions briefly serve side by side. The deploy keeps that window
+short and recoverable:
 
-- **deploy-api** syncs its secrets first and applies the migration straight before `wrangler deploy`,
-  so the window is the deploy itself.
+- **deploy-api** syncs its secrets first, straight before `wrangler deploy`, so the window is the deploy itself.
 - **deploy-editor** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
 - A save that fails in the window is retried on its own
   ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)).
-- Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
-  so, api calls from open editors can fail and are retried.
-
-There is no down migration; a problem after a renaming migration is fixed forward.
+- A plan's schema only moves forward (a later change adds a step to `plan-schema.ts`, never edits one), so a problem
+  is fixed forward.
 
 ## Hosted profile
 
@@ -113,23 +108,22 @@ Some configuration is what **liveplanner.app** runs with, not what the software 
 
 Set in the repo under **Settings → Secrets and variables → Actions**:
 
-| Secret          | What it is                                                                      |
-| --------------- | ------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers and apply migrations. |
-| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.                                |
+| Secret          | What it is                                                 |
+| --------------- | ---------------------------------------------------------- |
+| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers. |
+| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.           |
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so an environment that sets none still deploys:
 
-| Secret                   | Synced to       | See                                                                                      |
-| ------------------------ | --------------- | ---------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build |
-| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `GUEST_ID_HMAC_SECRET`   | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
-
-The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
+| Secret                   | Synced to       | See                                                                                                                                                                          |
+| ------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                                                     |
+| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
+| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEPLANNER`                          |
+| `MEDIA_KEY`              | api             | liveworkspace's media service, which serves every plan's previews ([previews.md](../../../../liveworkspace/docs/previews.md)): the same value as its `MEDIA_KEY_LIVEPLANNER` |
+| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                                                     |
 
 Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
 
@@ -142,12 +136,11 @@ Cloudflare dashboard → **My Profile → API Tokens → Create Token → Custom
 Permissions (all on the account that owns the workers):
 
 - **Workers Scripts → Edit** — deploy & update workers.
-- **D1 → Edit** — apply migrations during deploy.
 - **Workers Routes → Edit** — wire / update custom domain routes.
 - **Account Settings → Read** — required by wrangler.
 - **User → User Details → Read** — `wrangler whoami` introspection.
 
-Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing D1 Edit (or was minted for a different account than `CF_ACCOUNT_ID`).
+Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing a scope above (or was minted for a different account than `CF_ACCOUNT_ID`).
 
 ### Getting the account ID
 

@@ -33,20 +33,19 @@
 /features/foundations/ / 301
 /features/slides /features/collaboration 301
 /features/slides/ /features/collaboration 301
-/features/infographics https://livedocuments.app/ 301
-/features/infographics/ https://livedocuments.app/ 301
-/features/documents https://livedocuments.app/ 301
-/features/documents/ https://livedocuments.app/ 301
-/features/plan https://liveplanner.app/ 301
-/features/plan/ https://liveplanner.app/ 301
-/features/sheets https://liveplanner.app/ 301
-/features/sheets/ https://liveplanner.app/ 301
-/features/forms https://liveplanner.app/ 301
-/features/forms/ https://liveplanner.app/ 301
+/features/infographics https://www.livedocuments.app/ 301
+/features/infographics/ https://www.livedocuments.app/ 301
+/features/documents https://www.livedocuments.app/ 301
+/features/documents/ https://www.livedocuments.app/ 301
+/features/plan https://www.liveplanner.app/ 301
+/features/plan/ https://www.liveplanner.app/ 301
+/features/sheets https://www.liveplanner.app/ 301
+/features/sheets/ https://www.liveplanner.app/ 301
+/features/forms https://www.liveplanner.app/ 301
+/features/forms/ https://www.liveplanner.app/ 301
 
-# The comparison pages moved to liveworkspace.app (liveworkspace/docs/comparison-pages.md), which
-# compares every app in one place. Each address here, the hub and every comparison, moves there
-# permanently under the same slug; lib/comparisons-moved.test.ts pins it.
-/alternatives https://liveworkspace.app/alternatives 301
-/alternatives/ https://liveworkspace.app/alternatives 301
-/alternatives/* https://liveworkspace.app/alternatives/:splat 301
+# Retired comparisons (packages/comparisons/README.md "livediagram"): Google Slides left with Pages
+# mode and is livedocuments' to compare now, so its old address lands on that page there.
+# lib/comparison-redirects.test.ts pins it, and that no rule here catches a live comparison.
+/alternatives/google-slides https://www.livedocuments.app/alternatives/google-slides 301
+/alternatives/google-slides/ https://www.livedocuments.app/alternatives/google-slides 301

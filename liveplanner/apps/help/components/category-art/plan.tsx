@@ -1,5 +1,5 @@
-import { Label } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 const COLUMNS: { title: string; x: number; cards: { y: number; tag: string }[] }[] = [
   {

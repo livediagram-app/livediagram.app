@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { useCanvasEraser } from './useCanvasEraser';
 
-vi.mock('@/lib/dom-hit-test', () => ({ elementHostsAtPoint: () => [] }));
+vi.mock('@liveworkspace/workbench/lib/dom-hit-test', () => ({ elementHostsAtPoint: () => [] }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/008-canvas/canvas-performance.md: an eraser sweep is an erase gesture, press to lift,

@@ -6,7 +6,7 @@
 // different reel land on a different name.
 
 import type { Participant } from './identity';
-import { randomPick } from './random';
+import { randomPick } from '@liveworkspace/workbench/lib/random';
 
 export const PICKER_SPIN_MS = 1600;
 

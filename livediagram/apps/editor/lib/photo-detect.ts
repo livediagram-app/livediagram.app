@@ -16,7 +16,7 @@ import {
 import { isFlatImage } from '@livediagram/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
 import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { photoTypeError, type PhotoDetectError } from './photo-accept';
 
 export { PHOTO_ACCEPT_ATTR, photoTypeError, type PhotoDetectError } from './photo-accept';

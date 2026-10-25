@@ -20,17 +20,17 @@
 // docs/specs/002-project-scope/secrets-policy.md). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
-// (colour + SVG markup) lives in @livedocuments/icons/tech-icon-catalog and
+// (colour + SVG markup) lives in @liveworkspace/icons/tech-icon-catalog and
 // loads as an async chunk through lib/icon-registry.ts, keeping ~25 kB out
 // of the editor's first-load JS. Nothing here may import the data module
 // statically.
 
-import type { TechIconDef, TechProvider } from '@livedocuments/icons';
+import type { TechIconDef, TechProvider } from '@liveworkspace/icons';
 import { getLoadedTechIconCatalog, getTechIconLoaded } from './icon-registry';
 
-// The catalogue types live in @livedocuments/icons (shared with the Workers'
+// The catalogue types live in @liveworkspace/icons (shared with the Workers'
 // headless renders); re-exported so existing import sites keep resolving.
-export type { TechIconDef, TechProvider } from '@livedocuments/icons';
+export type { TechIconDef, TechProvider } from '@liveworkspace/icons';
 
 // Drag-from-palette MIME for a Technology tile dropped on the canvas.
 // Distinct from ICON_DND_MIME so the tile creates a STANDALONE icon
@@ -48,12 +48,12 @@ export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
   { id: 'generic', label: 'Generic' },
 ];
 
-// The tech-icon id set + `isTechIconId` live in @livedocuments/icons
+// The tech-icon id set + `isTechIconId` live in @liveworkspace/icons
 // (tech-icon-ids.ts) so the document package's connector geometry can use
 // them too (a tech icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md);
 // re-exported so existing import sites keep resolving. Still a lightweight
 // first-load module — only the colour/glyph data waits on the async chunk.
-export { isTechIconId, TECH_ICON_IDS } from '@livedocuments/icons';
+export { isTechIconId, TECH_ICON_IDS } from '@liveworkspace/icons';
 
 // Resolves the full definition (colour + glyph markup). Returns undefined for
 // an unknown id AND until the async catalogue chunk has loaded — check

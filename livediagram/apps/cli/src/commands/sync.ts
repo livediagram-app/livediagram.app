@@ -7,7 +7,7 @@ import type { VerbContext } from '@livediagram/agent-verbs';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT, type ExitCode } from '../output/exit-codes';
+import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import type { LinkFile } from '../link/link-file';
 import { runSyncPass } from '../link/sync-run';
 import { watchLink } from '../link/sync-watch';

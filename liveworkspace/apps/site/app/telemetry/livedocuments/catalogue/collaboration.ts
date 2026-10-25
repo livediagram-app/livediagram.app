@@ -1,40 +1,27 @@
-// Working together: live sessions, sharing, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, the Share dialog and embeds, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { SLIDE_DECK_OPENED } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
-export const TEAM_DOCUMENTS_MOVED = chart(
-  'Team',
-  'Moved',
-  'Team Documents Moved',
-  'A document moved within a team library.',
-);
-
+// The shared Share dialog (@liveworkspace/explorer ShareDialog), reported through its host's onTelemetry
+// (apps/editor lib/explorer-share-host.ts) and, from the Explorer on liveworkspace.app, in this app's name.
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A document share link, embed code or live image copied.',
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
-);
-
-export const SHARE_SETTINGS = chart(
-  'Document',
-  'Shared',
-  'Share Link Settings',
-  'A password or an expiry set on a share link.',
-  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
 );
 
 export const SHARE_LINKS_REMOVED = chart(
   'Document',
   'Removed',
   'Share Links Removed',
-  'A share link switched off.',
+  'A share link revoked from the Share dialog.',
   { rising: 'neutral' },
 );
 
@@ -142,9 +129,9 @@ export const LIVE_IMAGE_TABS = chart(
 );
 
 // ---- Collaboration tab -------------------------------------------------------
-// Everything but Live Together counts an INVITATION (a link made, a member
-// added); Live Together counts two people on one canvas at the same moment,
-// which is what the rest is FOR, so read the rest against it.
+// Everything but Live Together counts a way in (a link copied, an embed, a
+// workbench frame); Live Together counts two people on one canvas at the same
+// moment, which is what the rest is FOR, so read the rest against it.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
   category: 'Document',
@@ -162,55 +149,6 @@ export const VIEWPORTS_FOLLOWED: Metric = {
   title: 'Viewports Followed',
   blurb:
     "Someone pinned their view to a teammate's, following their pan, zoom and tab: the strongest signal that a session is being presented rather than just co-edited.",
-};
-
-export const EDIT_LINKS_SHARED: Metric = {
-  category: 'Document',
-  action: 'Shared',
-  type: 'Edit',
-  title: 'Edit Links Shared',
-};
-
-export const VIEW_LINKS_SHARED: Metric = {
-  category: 'Document',
-  action: 'Shared',
-  type: 'View',
-  title: 'View Links Shared',
-};
-
-// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
-export const PARTICIPATE_LINKS_SHARED: Metric = {
-  category: 'Document',
-  action: 'Shared',
-  type: 'Participate',
-  title: 'Participant Links Shared',
-};
-
-export const PARTICIPANTS_JOINED: Metric = {
-  category: 'Document',
-  action: 'Joined',
-  type: 'Participate',
-  title: 'Participants Joined',
-  blurb:
-    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
-};
-
-export const COLLABORATORS_JOINED: Metric = {
-  category: 'Document',
-  action: 'Joined',
-  type: 'Edit',
-  title: 'Collaborators Joined',
-  blurb:
-    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
-};
-
-export const VIEWERS_JOINED: Metric = {
-  category: 'Document',
-  action: 'Joined',
-  type: 'View',
-  title: 'Viewers Joined',
-  blurb:
-    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
 };
 
 export const COMMENTS_ADDED: Metric = {
@@ -249,7 +187,18 @@ export const TEAMS_CREATED: Metric = {
   action: 'Created',
   type: null,
   title: 'Teams Created',
-  blurb: 'A new team workspace was created.',
+  blurb: 'A new team workspace was created, in the app or on liveworkspace.app.',
+};
+
+// Teams are run on liveworkspace.app, where accounts counts each change under the app the person acting signed up
+// through (liveworkspace/docs/accounts.md "Teams").
+export const INVITES_SENT: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Member',
+  title: 'Invites Sent',
+  blurb:
+    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
 };
 
 export const INVITES_ACCEPTED: Metric = {
@@ -269,12 +218,48 @@ export const INVITES_DECLINED: Metric = {
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
 };
 
+// The same answer, given from the invitation email's Decline link.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
+export const INVITE_LINKS_SHARED = chart(
+  'Team',
+  'Shared',
+  'Invite Links Shared',
+  'A team invite link turned on to share.',
+);
+
+export const TEAM_CHANGES = chart(
+  'Team',
+  'Changed',
+  'Team Changes',
+  'A team renamed or a member’s role changed.',
+);
+
+export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
+  rising: 'neutral',
+});
+
+export const TEAM_DOCUMENTS_MOVED = chart(
+  'Team',
+  'Moved',
+  'Team Documents Moved',
+  'A document already in a team moved on: to another team, or within the Explorer.',
+);
+
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
   type: 'Document',
   title: 'Documents Shared to a Team',
-  blurb: "A document was moved into a team's shared library for everyone on the team.",
+  blurb: "A document was created straight into a team's shared library, for everyone on the team.",
 };
 
 export const LIVE_TOGETHER: MetricStack = {
@@ -285,26 +270,95 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
-export const SHARING_AND_JOINING: MetricStack = {
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
+};
+
+export const VIEWERS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
+};
+
+export const JOINING: MetricStack = {
   stack: true,
-  title: 'Sharing & Joining',
-  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
+  title: 'Joining',
+  blurb:
+    'The people who came into a document through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+};
+
+// Share links made in the Share dialog, by level, and their settings (the people who come in through them are the
+// Joining stack's).
+export const EDIT_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Edit',
+  title: 'Edit Links Shared',
+};
+
+export const VIEW_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'View',
+  title: 'View Links Shared',
+};
+
+// Participant links: take part and write, never reshape the document.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const SHARE_SETTINGS = chart(
+  'Document',
+  'Shared',
+  'Share Link Settings',
+  'A share link given a lifetime or one tab when made, extended, rescoped, or given or cleared a password.',
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
+);
+
+export const SHARE_LINKS_MADE: MetricStack = {
+  stack: true,
+  title: 'Share Links Made',
+  blurb: 'Edit, Participant and view links made in the Share dialog, and their settings.',
+  members: [EDIT_LINKS_SHARED, PARTICIPATE_LINKS_SHARED, VIEW_LINKS_SHARED, SHARE_SETTINGS],
+};
+
+export const SHARING_AND_EMBEDS: MetricStack = {
+  stack: true,
+  title: 'Sharing & Embeds',
+  blurb:
+    'Links, embeds and live images copied from the Share dialog, links revoked, and documents opened inside another site or a developer tool’s frame.',
   members: [
-    EDIT_LINKS_SHARED,
-    PARTICIPATE_LINKS_SHARED,
-    VIEW_LINKS_SHARED,
-    COLLABORATORS_JOINED,
-    PARTICIPANTS_JOINED,
-    VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
-    SHARE_SETTINGS,
+    LIVE_IMAGE_TABS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
     WORKBENCH_SESSIONS,
     WORKBENCH_WORKSPACES,
-    LIVE_IMAGE_TABS,
   ],
-  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: SHARE_LINKS_COPIED,
 };
 
 export const DISCUSSION: MetricStack = {
@@ -322,50 +376,31 @@ export const DISCUSSION: MetricStack = {
   headline: COMMENTS_ADDED,
 };
 
-export const INVITE_LINKS_COPIED = chart(
-  'UI',
-  'Copied',
-  'Invite Links Copied',
-  'A team invite link copied to share.',
-  { types: ['TeamInviteLink'] },
-);
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Teams made, the invite funnel (sent, accepted, declined), and documents shared to a team.',
+    'Teams made, the invite funnel (sent, accepted, declined), documents shared to a team, and team upkeep.',
   members: [
     TEAMS_CREATED,
+    INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
     DOCUMENTS_SHARED_TO_A_TEAM,
     TEAM_DOCUMENTS_MOVED,
+    INVITE_LINKS_SHARED,
+    TEAM_CHANGES,
     TEAM_REMOVALS,
-    INVITE_LINKS_COPIED,
+    TEAMS_DELETED,
   ],
   headline: INVITES_ACCEPTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
-// Timeline·Opened carries four things by type: two ways of arriving on the
-// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
-// which is how the landing-page change is measured, and two things done in it
-// (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
+// The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md) and Inbox (docs/specs/013-workspace/inbox.md),
+// reported through a workbench frame's onTimeline prop and the Inbox host's onTelemetry (apps/editor
+// app/embed/workbench/ExplorerHost.tsx, lib/explorer-inbox-host.tsx), and by liveworkspace's Explorer page (on
+// liveworkspace.app and on this app's address) in this app's name. Timeline·Opened carries what was done in the feed by type: a card, a card or stack menu, a stacked run.
 
 export const TIMELINE_MENUS = chart(
   'Timeline',
@@ -381,6 +416,14 @@ export const TIMELINE_STACKS_EXPANDED = chart(
   'Stacks Expanded',
   'A stacked run of changes on the Timeline opened up to show each one.',
   { types: ['Stack'] },
+);
+
+export const TIMELINE_CARDS_OPENED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Cards Opened',
+  'A document opened from its card on the Timeline.',
+  { types: ['Card'] },
 );
 
 export const TIMELINE_ENTRIES_REMOVED = chart(
@@ -405,23 +448,8 @@ export const ACTIVITY_THREADS = chart(
   "An action or a comment thread opened from the Explorer's Inbox.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
-// from each part of Home, summaries expanded, and failed reads retried.
-export const HOME_LANDINGS = chart(
-  'Home',
-  'Opened',
-  'Home Landings',
-  'The Explorer opened straight onto Home, its default page.',
-  { types: ['Landing'] },
-);
-
-export const HOME_VISITS = chart(
-  'Home',
-  'Opened',
-  'Home Visits',
-  'Home opened after starting elsewhere in the Explorer.',
-  { types: ['Nav'] },
-);
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): What Happened, through ExplorerHost's onHome prop, and
+// the first run's welcome, from the Explorer on liveworkspace.app.
 
 export const HOME_WELCOMES = chart(
   'Home',
@@ -435,7 +463,7 @@ export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
+  'A document opened from What Happened, See Timeline followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
@@ -446,7 +474,16 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
-export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
+export const HOME_LOADS = chart(
+  'Home',
+  'Loaded',
+  'Home Retries',
+  'A failed read of Home retried.',
+  {
+    types: ['Retry'],
+    rising: 'bad',
+  },
+);
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
@@ -454,16 +491,13 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   blurb:
     "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
   members: [
-    HOME_LANDINGS,
-    HOME_VISITS,
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
+    TIMELINE_CARDS_OPENED,
     TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,

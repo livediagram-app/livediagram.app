@@ -31,34 +31,31 @@ gave nobody a reason to tell them apart or click.
 
 ## The share card
 
-`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width.
+`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
+liveworkspace's, built once for every app ([Previews](../../../../liveworkspace/docs/previews.md)): the router sends
+the address to the media service, which draws the card from the design's preview and caches it. livedesign only
+renders for the platform: its export door draws the design's SVG
+([Design SVG snapshots](../006-design/design-snapshots.md) "What livedesign draws").
 
 - **The picture is the live image's.** The same tab, the same rules: a tab-scoped link's own tab, otherwise the
-  first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
-  never stretched or cropped, on the drawing's own background colour. A small drawing grows to
-  at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on the deployment): the request is redirected (302) to the
-  brand card, so the preview still has a picture.
+  first tab ([Live image share link](live-image-share.md)), fitted inside the card, never stretched or cropped.
+- **Nothing to draw**: the request is redirected (302) to the brand card, so the preview still has a picture.
 - **Withheld exactly where the live image is**: a password-protected design, an unknown, revoked or expired code
-  and a trashed design answer 404, and the page names none of them.
-- **Cached in R2** beside the snapshots: `og/<designId>` for the first tab, stamped with the time it was drawn and redrawn when the design has been saved since. A
-  tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a design
-  deletes it with its snapshots.
-- **Drawn by the shared resvg renderer** (`@livedesign/render-png/worker`, the MCP server's), with Inter as the
-  one font, so a card's text matches the MCP previews.
-- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
+  and a trashed design answer 404, as the index decides, and the page names none of them.
 
 ## The share page's head
 
 The live app's worker fills in the shell's `<head>` for `/design/shared?s=<code>` before it is sent: the
-`<title>`, `description`, `og:title`, `og:description`, `og:image` (with its size and alt text), `twitter:title`,
-`twitter:description` and `twitter:image`. It asks the api for the link's preview with
-`GET /api/share/<code>/card`, which answers `{ name }` for a link whose preview names its design and 404 for every
-other row of the table above.
+`<title>`, `description`, `og:title`, `og:description`, `og:image` (with its alt text), `twitter:title`,
+`twitter:description` and `twitter:image`. The head is liveworkspace's too (`@liveworkspace/media`
+`createSharePage`): livedesign gives it only its share page's address and its words. It asks liveworkspace's
+previews for the link's name with `GET /api/previews/share/<code>/card` (at `PREVIEWS_ORIGIN`, production's
+https://liveworkspace.app unless set), which answers `{ name }` for a link whose preview names its design and 404
+for every other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a deployment without the `API` service binding): the
-  shell goes out as built, with the brand card, and the editor works as before.
+- **The service has 1.5 s.** Slower or failing: the shell goes out as built, with the brand card, and the editor
+  works as before.
 - **The editor still sets its own title** once the design loads; the worker only decides what a crawler reads.
 
 ## Share roles
@@ -69,11 +66,7 @@ of that link sees, so it needs no gate beyond the link's own.
 
 ## Limits and abuse
 
-- The card and the share card share one per-network bucket on `SHARE_RATE_LIMITER` (key `share-preview:<network>`),
-  apart from the share resolve's, so an office opening a link together in a meeting never spends the editor's own
-  budget on previews. Both doors answer only what the live image already answers for the same code, so the bucket
-  adds no way to learn more from a guessed code.
-- The live worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
-  the live worker as one caller.
-- The card is drawn at most once per save per design (its first tab), and the PNG's longer side is never
-  more than 1200 px, so a vast board cannot exhaust a Worker's memory.
+The card, the share card and the live image are the media service's to limit and cache
+([Previews](../../../../liveworkspace/docs/previews.md)); each answers only what the live image already answers for
+the same code, so none adds a way to learn more from a guessed code. The live worker passes the visitor's address on,
+so a limit applies per visitor, not to the live worker as one caller.

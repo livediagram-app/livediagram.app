@@ -122,12 +122,12 @@ an agent through the CLI is designing their own pages.
 
 In order of precedence:
 
-1. **`LIVEDESIGN_TOKEN`**, an `lvd_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
+1. **`LIVEDESIGN_TOKEN`**, an `lwt_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
 - `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
-  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lvd_` token. `--device` uses the
+  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
   do not run the MCP worker. The token is named "livedesign CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
@@ -171,14 +171,14 @@ In order of precedence:
 ## Previews
 
 `tab render` draws with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
-`@livedesign/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
+`@liveworkspace/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 
 ## One catalogue for the CLI and the MCP
 
 Every command and every MCP tool is a projection of one **verb** in `@livedesign/agent-verbs`: its id
 (`tab.view`, `element.set`), input and output schemas, a factual description, its behaviour (read, write,
-destructive) and a handler calling the api through `@livedesign/api-client`. The MCP keeps its tool names and
+destructive) and a handler calling the api through `@liveworkspace/api-client`. The MCP keeps its tool names and
 schemas: each tool is its own verb, a command whose shape differs is another, and the two share handlers. A parity
 test fails when a verb is exposed by neither, or a tool's schema drifts from its verb.
 

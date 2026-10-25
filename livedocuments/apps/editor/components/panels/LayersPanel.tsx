@@ -3,12 +3,12 @@
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livedocuments/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
-import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import { useRevertOnUnmount } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   FooterDeleteIcon,
   MergeDownIcon,

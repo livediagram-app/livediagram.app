@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's corner panels (AI, Minimap and the tool panels) each
+The editor's corner panels (the Minimap and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -8,7 +8,7 @@ that layout **persist in the browser** so a reload restores their arrangement.
 
 ## Why
 
-Without docking, corners are fixed: the AI panel is always in one corner, the Minimap always
+Without docking, corners are fixed: the tool panels are always in one corner, the Minimap always
 bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
 park each panel where it suits them — and remembering it — makes the chrome feel like
@@ -25,7 +25,7 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in a popover's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** AI, Minimap, and the tool panels (Laser, Spotlight,
+- **Participating panels:** Minimap and the tool panels (Laser, Spotlight,
   Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
@@ -49,14 +49,14 @@ the corner. No manual re-measuring — the layout falls out of the flexbox.
 
 When the user has never arranged panels, the corners match today's defaults:
 
-| Corner         | Panels (top → bottom)                                         |
-| -------------- | ------------------------------------------------------------- |
-| `top-left`     | _(empty; the menu button)_                                    |
-| `top-right`    | _(empty; the palette strip's end)_                            |
-| `bottom-left`  | Minimap                                                       |
-| `bottom-right` | AI, tool panels, above the bottom cluster (zoom controls pin) |
+| Corner         | Panels (top → bottom)                                     |
+| -------------- | --------------------------------------------------------- |
+| `top-left`     | _(empty; the menu button)_                                |
+| `top-right`    | _(empty; the palette strip's end)_                        |
+| `bottom-left`  | Minimap                                                   |
+| `bottom-right` | Tool panels, above the bottom cluster (zoom controls pin) |
 
-The AI panel and the tool panels (Laser, Spotlight, Format, Slide Deck) open bottom-right, stacked
+The tool panels (Laser, Spotlight, Format, Slide Deck) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
@@ -92,7 +92,7 @@ Dragging is still pointer-driven and uses no DnD library, consistent with the re
 editor (element drag, palette-to-canvas drag).
 
 A drag only **starts** once the pointer has travelled past a shared tolerance
-(`isDragTravel` in `lib/press-gestures.ts`), so a click on a panel header that jitters by a
+(`isDragTravel` in `../packages/workbench/src/lib/press-gestures.ts`), so a click on a panel header that jitters by a
 pixel stays a click. That tolerance is one definition for every draggable chrome control —
 panel headers, slide-deck rows, palette tiles, the quick-connect plus, the isometric
 orbit button, avatars — because six of them had their own and the copies had drifted: one
@@ -103,7 +103,7 @@ publishing only the constant would have left that split in place.
 
 ## Collapse to banner
 
-A collapsible corner panel (the Map, the AI panel, the tool panels) has a **collapse button** in its
+A collapsible corner panel (the Map, the tool panels) has a **collapse button** in its
 header. It hides the body and leaves the title row in place as a banner, so the way back is always
 in view. Its glyph flips between a dash (collapse) and a plus (expand). A panel starts expanded on
 a desktop and collapsed on a phone, and stays as set until pressed again. A panel that is not
@@ -113,7 +113,7 @@ collapsible has no such button.
 
 The layout is stored in **`localStorage` only**, under `livedesign:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
-D1-backed user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
+account-synced user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
 choice (screen size, handedness, external monitor) rather than a portable account setting,
 and guests get it too. This is deliberately a different store from [User preferences](user-preferences.md).
 
@@ -127,7 +127,7 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // their mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
 // (docs/specs/008-canvas/spotlight-panel.md, the light's look) and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'ai' | 'minimap' | 'laser' | 'spotlight' | 'format' | 'slide-deck';
+type PanelId = 'collaborate' | 'minimap' | 'laser' | 'spotlight' | 'format' | 'slide-deck';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /
@@ -174,7 +174,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
-- **`apps/live/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+- **`../packages/workbench/src/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.

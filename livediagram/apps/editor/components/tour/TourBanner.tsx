@@ -7,14 +7,14 @@
 // The sign-in banner steps aside while it is up (TOUR_CARD_ATTR), so the two never show together.
 import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
 import type { StartPalette } from '@/components/start/start-palette';
-import { lucideCircleHelp } from '@livediagram/icons/lucide';
+import { lucideCircleHelp } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';
-import { TourHelpArt } from './TourHelpArt';
+import { TourHelpArt } from '@liveworkspace/workbench/components/tour/TourHelpArt';
 import type { TourCardCopy } from './tour-card-copy';
-import { TourWelcomeArt } from './TourWelcomeArt';
+import { TourWelcomeArt } from '@liveworkspace/workbench/components/tour/TourWelcomeArt';
 
 // On the body while a bookend banner is up (SignInBanner steps aside).
 export const TOUR_CARD_ATTR = 'data-tour-card-open';

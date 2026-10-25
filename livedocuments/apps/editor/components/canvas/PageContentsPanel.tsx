@@ -7,17 +7,17 @@
 // (it closes so the page shows). Docked, Contents is PageContentsSidebar; the two share
 // usePageContents and PageContentsList.
 import { useEffect, useState } from 'react';
-import { lucidePanelLeftOpen } from '@livedocuments/icons/lucide';
+import { lucidePanelLeftOpen } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, useEscape } from '@livedocuments/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ContentsAddPage } from './ContentsAddPage';
 import { ContentsFind, ContentsList } from './PageContentsList';
 

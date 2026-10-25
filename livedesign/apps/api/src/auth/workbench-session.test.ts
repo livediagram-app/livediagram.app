@@ -1,85 +1,58 @@
-import { describe, expect, it } from 'vitest';
-import {
-  isWorkbenchSessionFormat,
-  WORKBENCH_HANDLE_PATTERN,
-  WORKBENCH_SESSION_PREFIX,
-} from '@livedesign/api-schema';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { insertWorkbenchSession } from '../db/workbench';
-import {
-  generatePairingCode,
-  generateWorkbenchSecret,
-  generateWorkbenchTicket,
-  hashWorkbenchSecret,
-  resolveWorkbenchSession,
-} from './workbench-session';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AccountsUnavailable } from '../db/api-tokens';
+import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
 
-const NOW = 1_800_000_000_000;
+// Sessions are liveworkspace's (liveworkspace/docs/workbench.md): the api asks accounts about each with its client
+// credentials and reads the answer in its own words.
+const ENV = {
+  ACCOUNTS_URL: 'https://accounts.test',
+  ACCOUNTS_CLIENT_ID: 'livedesign',
+  ACCOUNTS_CLIENT_SECRET: 'secret',
+};
 
-describe('workbench secrets', () => {
-  it('mints tickets and pairing codes as 22 base64url characters, never twice alike', () => {
-    const tickets = new Set(Array.from({ length: 50 }, () => generateWorkbenchTicket()));
-    const codes = new Set(Array.from({ length: 50 }, () => generatePairingCode()));
+const CHECKED = {
+  sessionId: 'sess-1234567',
+  ownerId: 'user_1',
+  tokenId: 'tok1',
+  pairingId: 'pair1',
+  scope: 'item',
+  itemId: 'doc1',
+  folderId: null,
+  tabId: 't1',
+  origin: 'https://w.example',
+  level: 'edit',
+  expiresAt: 1_900_000_000_000,
+  teams: [{ id: 'team1', name: 'T', role: 'member' }],
+};
 
-    expect(tickets.size).toBe(50);
-    expect(codes.size).toBe(50);
-    for (const value of [...tickets, ...codes]) expect(value).toMatch(WORKBENCH_HANDLE_PATTERN);
+let secretN = 0;
+// A fresh secret per test: the checker remembers answers for the life of the isolate.
+const secret = () => `lvw_${String(++secretN).padStart(43, 'a')}.${'f'.repeat(64)}`;
+
+function stubAccounts(respond: (path: string, body: Record<string, unknown>) => Response) {
+  const calls: { path: string; body: Record<string, unknown> }[] = [];
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    const body = JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as Record<
+      string,
+      unknown
+    >;
+    calls.push({ path: url.pathname, body });
+    return respond(url.pathname, body);
   });
+  return calls;
+}
 
-  it('mints sessions in the lvw_ format', () => {
-    const secret = generateWorkbenchSecret();
-
-    expect(secret.startsWith(WORKBENCH_SESSION_PREFIX)).toBe(true);
-    expect(isWorkbenchSessionFormat(secret)).toBe(true);
-  });
-
-  it('hashes as SHA-256 hex, deterministically', async () => {
-    const hash = await hashWorkbenchSecret('lvw_abc');
-
-    expect(hash).toMatch(/^[0-9a-f]{64}$/);
-    expect(await hashWorkbenchSecret('lvw_abc')).toBe(hash);
-    expect(await hashWorkbenchSecret('lvw_abd')).not.toBe(hash);
-  });
-});
+afterEach(() => vi.unstubAllGlobals());
 
 describe('resolveWorkbenchSession', () => {
-  async function arrange(
-    over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
-  ) {
-    const db: SqliteD1 = sqliteD1();
-    db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
-                 VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
-    db.sql
-      .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
-                 VALUES ('tok1', 'user_1', 'h', NULL, 1, ${NOW + 1e9}, ${over.tokenRevoked ? 1 : 0},
-                         ${over.tokenReadOnly ? 1 : 0})`);
-    db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
-                 VALUES ('pair1', 'user_1', 'tok1', 'https://w.example', 'Acme Editor', 1)`);
-    const secret = generateWorkbenchSecret();
-    await insertWorkbenchSession(db.env, {
-      id: 'abcdef12-0000-4000-8000-000000000000',
-      secretHash: await hashWorkbenchSecret(secret),
-      ownerId: 'user_1',
-      tokenId: 'tok1',
-      pairingId: 'pair1',
-      ...(over.workspace
-        ? { scope: 'workspace' as const, designId: null, folderId: 'fold1', tabId: null }
-        : { scope: 'design' as const, designId: 'doc1', folderId: null, tabId: 't1' }),
-      origin: 'https://w.example',
-      role: 'edit',
-      createdAt: NOW,
-      expiresAt: NOW + 1000,
-    });
-    return { db, secret };
-  }
-
-  it('resolves a live session to its context', async () => {
-    const { db, secret } = await arrange();
-
-    expect(await resolveWorkbenchSession(db.env, secret, NOW)).toEqual({
+  it('reads a design session in the api’s own words', async () => {
+    const calls = stubAccounts(() => Response.json(CHECKED));
+    const s = secret();
+    expect(await resolveWorkbenchSession(ENV, s)).toEqual({
       ok: true,
       workbench: {
-        sessionId: 'abcdef12-0000-4000-8000-000000000000',
+        sessionId: 'sess-1234567',
         ownerId: 'user_1',
         tokenId: 'tok1',
         pairingId: 'pair1',
@@ -89,47 +62,66 @@ describe('resolveWorkbenchSession', () => {
         tabId: 't1',
         origin: 'https://w.example',
         level: 'edit',
-        expiresAt: NOW + 1000,
+        expiresAt: CHECKED.expiresAt,
+        teams: CHECKED.teams,
       },
     });
+    expect(calls).toEqual([
+      { path: '/api/account/internal/workbench/session', body: { session: s } },
+    ]);
+    // Asked once a minute at most, however many requests the frame makes.
+    await resolveWorkbenchSession(ENV, s);
+    expect(calls).toHaveLength(1);
   });
 
-  it('resolves a workspace session to its folder, with no design', async () => {
-    const { db, secret } = await arrange({ workspace: true });
-
-    const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
-
-    expect(resolved).toMatchObject({
+  it('reads a workspace session with its folder and no design', async () => {
+    stubAccounts(() =>
+      Response.json({
+        ...CHECKED,
+        scope: 'workspace',
+        itemId: null,
+        folderId: 'fold1',
+        tabId: null,
+      }),
+    );
+    expect(await resolveWorkbenchSession(ENV, secret())).toMatchObject({
       ok: true,
-      workbench: { scope: 'workspace', designId: null, folderId: 'fold1', tabId: null },
+      workbench: { scope: 'workspace', designId: null, folderId: 'fold1' },
     });
   });
 
-  it('lowers the level to view when the token is read-only', async () => {
-    const { db, secret } = await arrange({ tokenReadOnly: true });
-
-    const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
-
-    expect(resolved.ok && resolved.workbench.level).toBe('view');
+  it('passes on why accounts refused it', async () => {
+    stubAccounts(() =>
+      Response.json({ error: 'invalid_session', reason: 'revoked' }, { status: 404 }),
+    );
+    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'revoked' });
   });
 
-  it('refuses an unknown, a revoked and an expired session', async () => {
-    const { db, secret } = await arrange();
-    const revoked = await arrange({ tokenRevoked: true });
+  it('is unknown with no accounts configured, and unavailable when accounts fails', async () => {
+    expect(await resolveWorkbenchSession({}, secret())).toEqual({ ok: false, reason: 'unknown' });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubAccounts(() => new Response(null, { status: 503 }));
+    await expect(resolveWorkbenchSession(ENV, secret())).rejects.toBeInstanceOf(
+      AccountsUnavailable,
+    );
+  });
 
-    expect(await resolveWorkbenchSession(db.env, generateWorkbenchSecret(), NOW)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    expect(await resolveWorkbenchSession(revoked.db.env, revoked.secret, NOW)).toEqual({
-      ok: false,
-      reason: 'revoked',
-      sessionPrefix: 'abcdef12',
-    });
-    expect(await resolveWorkbenchSession(db.env, secret, NOW + 1000)).toEqual({
-      ok: false,
-      reason: 'expired',
-      sessionPrefix: 'abcdef12',
-    });
+  it('logs a session by its id’s first eight characters', () => {
+    expect(sessionPrefixOf('abcdefghijkl')).toBe('abcdefgh');
+  });
+});
+
+describe('noteWorkbenchRoom', () => {
+  it('tells accounts once per session and design', async () => {
+    const calls = stubAccounts(() => new Response(null, { status: 204 }));
+    const session = { ownerId: 'user_1', sessionId: `s-${secret()}` };
+    await noteWorkbenchRoom(ENV, session, 'doc1');
+    await noteWorkbenchRoom(ENV, session, 'doc1');
+    expect(calls).toEqual([
+      {
+        path: '/api/account/internal/workbench/rooms',
+        body: { ownerId: 'user_1', sessionId: session.sessionId, itemId: 'doc1' },
+      },
+    ]);
   });
 });

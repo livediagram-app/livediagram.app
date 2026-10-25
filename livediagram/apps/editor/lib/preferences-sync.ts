@@ -1,6 +1,9 @@
-// Sending the preferences blob to the api (docs/specs/007-editor/user-preferences.md "Saving to the
-// server"). Three rules, each from a way settings used to be lost:
+// Sending the preferences to the api (docs/specs/007-editor/user-preferences.md "Saving to the
+// server"). Four rules, each from a way settings used to be lost:
 //
+// - Only what changed. A save sends the keys that differ from what the server last confirmed (each
+//   whole, null for one removed), so a setting changed in another app, or another tab, since this
+//   one loaded is never put back. Before the server's copy is known, the whole blob goes.
 // - It fits. The api refuses a body past PREFERENCES_BODY_MAX outright, and every later save of
 //   the whole blob with it, so the growable lists give up their oldest entries first.
 // - One save at a time, the latest wins. Saves sent together could land out of order and leave
@@ -11,16 +14,17 @@
 
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { UserPreferences } from './user-preferences';
-import { apiPutPreferences } from './api-client';
+import { apiPutPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
-// The api's cap on a preferences PUT body, in characters of `{"prefs":...}`
-// (apps/api/src/routes/preferences.ts, which checks `text.length`). Mirrored, not imported: the
-// worker is not a dependency of the editor.
+// The most the whole blob may be, in characters of `{"prefs":...}`. The api takes a patch of up to
+// twice this (apps/api/src/routes/preferences.ts PREFERENCES_PATCH_MAX, which checks
+// `text.length`): never more than the blob plus a null for each key dropped. Mirrored, not imported:
+// the worker is not a dependency of the editor.
 export const PREFERENCES_BODY_MAX = 4096;
 
 // Set while a save for this owner is waiting, in flight or refused; holds the owner id, so a
@@ -32,6 +36,9 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
 }
 
 type PickEntry = [WhiteboardShapeKey, readonly [number, number]];
+
+// An old blob's list of canvases hidden from Recent: nothing reads it, so it is the first to go.
+const DEAD_HIDDEN_KEY = 'recentExcludedIds';
 
 // The shape picks, least recently used first.
 function picksOldestFirst(picks: UserPreferences['whiteboardShapePicks']): PickEntry[] {
@@ -48,8 +55,8 @@ function entriesFreeing(sizes: readonly number[], excess: number): number {
   return n;
 }
 
-// The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go first (newest are
-// kept at the front, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
+// The blob, trimmed to fit the api's cap: an old blob's hidden-from-Recent list goes first, whole (nothing reads it:
+// Hide from Recent is the index's, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
 // shape picks (docs/specs/023-draw-mode/draw-mode.md "Shape slots"). Every other key is a choice
 // the person made once and stays whole. Unchanged (the same object) when it already fits; when
 // trimming both lists cannot make it fit, the save is refused and the device copy is kept (see
@@ -62,13 +69,12 @@ export function fitPreferences(prefs: UserPreferences): UserPreferences {
   let dropped = 0;
   while (length > PREFERENCES_BODY_MAX) {
     const excess = length - PREFERENCES_BODY_MAX;
-    const hidden = next.recentExcludedIds ?? [];
     const picks = picksOldestFirst(next.whiteboardShapePicks);
-    if (hidden.length > 0) {
-      const oldestFirst = [...hidden].reverse().map((id) => JSON.stringify(id).length);
-      const n = entriesFreeing(oldestFirst, excess);
-      next = { ...next, recentExcludedIds: hidden.slice(0, hidden.length - n) };
-      dropped += n;
+    if (DEAD_HIDDEN_KEY in next) {
+      const { [DEAD_HIDDEN_KEY]: gone, ...rest } = next as UserPreferences &
+        Record<string, unknown>;
+      next = rest;
+      dropped += Array.isArray(gone) ? gone.length : 1;
     } else if (picks.length > 0) {
       const sizes = picks.map(([k, v]) => JSON.stringify(k).length + 1 + JSON.stringify(v).length);
       const n = entriesFreeing(sizes, excess);
@@ -88,37 +94,89 @@ export function preferencesUnsynced(ownerId: string): boolean {
   return readLocalStorageSafe(PREFERENCES_UNSYNCED_KEY) === ownerId;
 }
 
+type Blob = Record<string, unknown>;
+
+// What the server last confirmed for the owner: its answer on load, then each save that landed.
+let confirmed: { ownerId: string; prefs: Blob } | null = null;
+// Owners this deployment keeps no preferences for: their choices stay in this browser.
+const localOnly = new Set<string>();
+
+export function rememberServerPreferences(ownerId: string, prefs: Blob): void {
+  confirmed = { ownerId, prefs };
+}
+
+export function markPreferencesLocalOnly(ownerId: string): void {
+  localOnly.add(ownerId);
+  if (preferencesUnsynced(ownerId)) removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
+}
+
+export function preferencesLocalOnly(ownerId: string): boolean {
+  return localOnly.has(ownerId);
+}
+
+// The keys of `next` that differ from `base`, each whole, and null for each key `base` has and
+// `next` dropped. Linear in the blob (at most PREFERENCES_BODY_MAX characters).
+export function preferencesPatch(base: Blob, next: Blob): Blob {
+  const patch: Blob = {};
+  for (const [key, value] of Object.entries(next)) {
+    if (JSON.stringify(value) !== JSON.stringify(base[key])) patch[key] = value;
+  }
+  for (const key of Object.keys(base)) if (!(key in next)) patch[key] = null;
+  return patch;
+}
+
 let inFlight = false;
 let waiting: { ownerId: string; prefs: UserPreferences } | null = null;
+// Bumped by the test seam, so a drain begun before a reset stops rather than taking the next save.
+let generation = 0;
 
 async function drain(): Promise<void> {
   inFlight = true;
+  const run = generation;
   try {
-    while (waiting) {
+    while (waiting && run === generation) {
       const save = waiting;
       waiting = null;
-      const ok = await apiPutPreferences(save.ownerId, save.prefs);
-      if (!ok) {
+      const blob = save.prefs as Blob;
+      const base = confirmed?.ownerId === save.ownerId ? confirmed.prefs : null;
+      const patch = base ? preferencesPatch(base, blob) : blob;
+      if (Object.keys(patch).length === 0) {
+        if (!waiting) removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
+        continue;
+      }
+      const result = await apiPutPreferences(save.ownerId, patch);
+      if (run !== generation) return;
+      if (result === PREFERENCES_LOCAL_ONLY) {
+        markPreferencesLocalOnly(save.ownerId);
+        waiting = null;
+      } else if (!result) {
         console.warn('[preferences] save-not-confirmed, device copy kept');
-      } else if (!waiting) {
-        removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
+      } else {
+        confirmed = { ownerId: save.ownerId, prefs: base ? { ...base, ...blob } : blob };
+        for (const key of Object.keys(patch)) if (patch[key] === null) delete confirmed.prefs[key];
+        if (!waiting) removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
       }
     }
   } finally {
-    inFlight = false;
+    if (run === generation) inFlight = false;
   }
 }
 
-// Queue the blob for the server. Marked unsynced at once, so a tab closed mid-save still keeps
-// its copy on the next load.
+// Queue the blob for the server; only what changed is sent (above). Marked unsynced at once, so a
+// tab closed mid-save still keeps its copy on the next load. Nothing goes for an owner whose
+// preferences stay in this browser.
 export function savePreferences(ownerId: string, prefs: UserPreferences): void {
+  if (localOnly.has(ownerId)) return;
   writeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY, ownerId);
   waiting = { ownerId, prefs };
   if (!inFlight) void drain();
 }
 
-// Test seam: forget any queued save.
+// Test seam: forget any queued save and what the server confirmed.
 export function __resetPreferencesSync(): void {
+  generation += 1;
   inFlight = false;
   waiting = null;
+  confirmed = null;
+  localOnly.clear();
 }

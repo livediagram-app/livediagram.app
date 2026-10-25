@@ -1,4 +1,4 @@
-import { lucideSparkles } from '@livedocuments/icons/lucide';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { FONT, at } from '@/components/art-tokens';
 import {
   CONTENT,

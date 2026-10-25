@@ -17,7 +17,7 @@ import type {
   ImportImageSource,
   PreparedImportImage,
 } from './types';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type ImportImageLog = (fingerprint: string, outcome: string, detail?: unknown) => void;
 

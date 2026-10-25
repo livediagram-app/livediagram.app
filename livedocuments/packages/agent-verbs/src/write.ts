@@ -3,7 +3,7 @@
 // after a write that rebased over nothing (CLI24, CLI25).
 
 import { z } from 'zod';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import {
   CHANGESET_SUMMARY_MAX,
   type ChangesetBase,

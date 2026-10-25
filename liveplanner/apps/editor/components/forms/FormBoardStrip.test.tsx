@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@liveplanner/vitest-config/sent-request';
+import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Tab } from '@liveplanner/project';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';

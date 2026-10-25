@@ -1,7 +1,7 @@
 // The engine's hot paths held to their budgets (docs/specs/031-photo/blueprints/photo-engine.md
 // "Performance and limits"), each the median of a few runs, with an allowance for slower machines.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { applyAdjustment } from './adjust/catalogue';
 import { compositePhoto } from './composite/composite';
 import { FILTERS } from './filters/catalogue';

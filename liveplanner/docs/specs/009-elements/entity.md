@@ -1,5 +1,7 @@
 # The entity
 
+**Status in liveplanner: editing removed (2026-10-24).** No Plan tab holds entities ([Plan mode](../026-plan/plan-mode.md)), so the Fields menu, Add Field / Add Related Entity on the ring, and the Cardinality presets are gone, with their wiring in `useEditorState`. The element kind stays in `packages/project` for the file format; this spec describes livediagram's behaviour.
+
 ## What
 
 An **Entity**: a title bar over a list of fields, each a `name`, an optional type and an optional key. One

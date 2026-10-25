@@ -1,8 +1,8 @@
 // The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages").
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { layOutPages, type LaidOutPage } from '@livedocuments/document';
-import { besideSideInsets, computeFitBelow } from './viewport';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import {
   SNAP_EDGE_ROOM,
   SNAP_FLICK_MIN_PX,

@@ -50,7 +50,7 @@ boards, sheets, dashboards and forms in one project. Lead with the hook: a
 project works without signing in (open a link, plan, share). Say "project",
 never "document", in anything a person reads. Be honest about trade-offs (realtime is last-write-wins,
 not CRDT). Say "free, no trackers, no ads, no paid tier" where the
-format allows. Never call liveplanner open source, MIT-licensed or self-hostable: it is proprietary ([03](../002-project-scope/business-model-and-licence.md)). Product name
+format allows. Call it MIT licensed where a licence comes up, but never open source or self-hostable: its source is not public ([03](../002-project-scope/business-model-and-licence.md)). Product name
 **liveplanner** (lowercase); brand colour violet `#8B5CF6`
 ([01-color-scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.
 

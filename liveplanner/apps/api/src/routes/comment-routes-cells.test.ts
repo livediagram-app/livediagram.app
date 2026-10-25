@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import type { ProjectCommentsResponse } from '@liveplanner/api-schema';
 import type { Comment, Element } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -66,15 +68,16 @@ const cellThread = async () =>
 beforeEach(() => {
   sql = sqliteD1();
   pending = [];
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
-    INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+    INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
       VALUES ('d1', 'sheet01', 't1', 'Budget',
         '{"rows":["row001","row002","row003","row004"],"cols":["cola01","colb01"]}', 0, 1, 1, '{}');
   `);

@@ -50,7 +50,7 @@ throws. Only the parse stage has to be pure.
      the root of My Work (the Microsoft Whiteboard import). A board that cannot land is
      named in the report with its reason (a board over the api's tab cap,
      [Tab size](../015-api/api.md#tab-size), checked before the create and again
-     by the server: "This board is too big for one document") and the rest still
+     by the server: "This board is too big for one canvas") and the rest still
      do; an open document is left as it
      was. It needs no open document: from the editor, an Offline Mode document
      makes Offline Mode documents too, as a copy does; from the Explorer, the
@@ -62,7 +62,7 @@ throws. Only the parse stage has to be pure.
      Home's Jump Back In at once; an import of **more than one** in one go
      marks none of them used (`markUsed: false`, in this browser's record too
      for Offline Mode documents), so it never pushes everything else out
-     ([Explorer Home: Making a document](../013-workspace/explorer-home.md#making-a-document));
+     ([Explorer Home: Making a document](../013-workspace/explorer-home.md#opens));
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 

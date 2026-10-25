@@ -8,18 +8,18 @@ file only adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                               | Role                                                                                                                                                  |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File                                                               | Role                                                                                                                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/page-lint/{package.json,tsconfig.json,oxlint.config.ts}` | The package `@livedesign/page-lint`; depends on `@livedesign/design` and `@livedesign/api-schema` (tests also on `templates` and `edit-operations`) |
-| `packages/page-lint/vitest.config.ts`                              | `defineProject`, node environment, 100% coverage thresholds                                                                                           |
-| `packages/page-lint/src/index.ts`                                  | The barrel: `lintTab`, the formatters, the logger, the constants                                                                                      |
-| `packages/page-lint/src/lint.ts`                                   | `lintTab`: prepare, measure, check, order, log                                                                                                        |
-| `packages/page-lint/src/context.ts`, `boxes.ts`, `measures.ts`     | The visible elements, refs and boxes (LN1, LN2); the extent (LN16)                                                                                    |
-| `packages/page-lint/src/checks/`                                   | `label-overflow`, `text-overflow`, in code order                                                                                                      |
-| `packages/page-lint/src/order.ts`, `quote.ts`, `fixes.ts`          | Finding order (LN18), label quoting (LN21), the fix catalogue (LN29)                                                                                  |
-| `packages/page-lint/src/format.ts`                                 | The summary line, the verdict, the footer part and the text report (LN19 to LN22)                                                                     |
-| `packages/api-schema/src/lint.ts`                                  | The wire types: `LintCode`, `LintSeverity`, `LintFinding`, `LintMeasures`, `LintReport` (LN25)                                                        |
-| `apps/api/src/changesets/lint.ts`                                  | `lintResult`: the api's call, logging where it ran, `null` when the lint throws (LN23)                                                                |
+| `packages/page-lint/vitest.config.ts`                              | `defineProject`, node environment, 100% coverage thresholds                                                                                         |
+| `packages/page-lint/src/index.ts`                                  | The barrel: `lintTab`, the formatters, the logger, the constants                                                                                    |
+| `packages/page-lint/src/lint.ts`                                   | `lintTab`: prepare, measure, check, order, log                                                                                                      |
+| `packages/page-lint/src/context.ts`, `boxes.ts`, `measures.ts`     | The visible elements, refs and boxes (LN1, LN2); the extent (LN16)                                                                                  |
+| `packages/page-lint/src/checks/`                                   | `label-overflow`, `text-overflow`, in code order                                                                                                    |
+| `packages/page-lint/src/order.ts`, `quote.ts`, `fixes.ts`          | Finding order (LN18), label quoting (LN21), the fix catalogue (LN29)                                                                                |
+| `packages/page-lint/src/format.ts`                                 | The summary line, the verdict, the footer part and the text report (LN19 to LN22)                                                                   |
+| `packages/api-schema/src/lint.ts`                                  | The wire types: `LintCode`, `LintSeverity`, `LintFinding`, `LintMeasures`, `LintReport` (LN25)                                                      |
+| `apps/api/src/changesets/lint.ts`                                  | `lintResult`: the api's call, logging where it ran, `null` when the lint throws (LN23)                                                              |
 
 ## Domain and naming
 
@@ -47,7 +47,7 @@ Scope, by file:
 
 ### The checks
 
-Every measure is the headless one (`estimatedLabelMeasure`, LN4, LN33), so the lint agrees with the PNG an agent sees.
+Every measure is the headless one (`estimatedLabelMeasure`, LN4), so the lint agrees with the PNG an agent sees.
 
 | Code             | Fires when                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Fix                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -62,8 +62,8 @@ Every measure is the headless one (`estimatedLabelMeasure`, LN4, LN33), so the l
 | Changeset revert (api)            | The tab after the inverse (LN31)                          | As above: a revert is a changeset                                                                        |
 | Rejected changeset                | nothing                                                   | No lint: nothing was applied                                                                             |
 | `GET …/tabs/:tabId?view=lint`     | The stored tab, after the route's read gate and redaction | `formatLintReport` as `text/plain`; with `json=1` the `LintReport`                                       |
-| MCP `update_design`, `add_tab`  | The changeset response's `lint`                           | `lint` (the summary line) in structured content and a second text block (LN24)                           |
-| MCP `create_design`             | `?view=lint&json=1` for each created tab                  | `lint: string[]`, one summary line per tab in `tabIds` order (LN24)                                      |
+| MCP `update_design`, `add_tab`    | The changeset response's `lint`                           | `lint` (the summary line) in structured content and a second text block (LN24)                           |
+| MCP `create_design`               | `?view=lint&json=1` for each created tab                  | `lint: string[]`, one summary line per tab in `tabIds` order (LN24)                                      |
 | CLI `tab lint <doc> [--tab]`      | `?view=lint` (text), or `?view=lint&json=1` with `--json` | The text as served; `--json` prints `report.findings` (LN38)                                             |
 
 The MCP's other write tools (rename, share, comments, trash) change no drawing and carry no lint. A lint that throws
@@ -180,13 +180,12 @@ ran (`designId`, `tabId`). A throw logs `[lint] failed` at the caller. No teleme
 
 ## Constants and configuration
 
-| Constant                    | Value | Why                                                                          | Safe range |
-| --------------------------- | ----- | ---------------------------------------------------------------------------- | ---------- |
-| `LINT_OVERLAP_TOLERANCE_PX` | 2     | Texts that only touch are not printed over (LN3)                             | 0 to 8     |
-| `LINT_MEASURE_EPOCH`        | -1    | A `fontEpoch` no browser uses, so estimates never share cached widths (LN33) | any < 0    |
-| `LINT_MAX_LINES_PER_CODE`   | 10    | Keeps the report near 100 tokens (LN20)                                      | 3 to 50    |
-| `LINT_LABEL_QUOTE_MAX`      | 40    | A heading's length (LN21)                                                    | 20 to 80   |
-| `LINT_MESSAGE_COLUMN_MAX`   | 48    | The fix column stays inside a 100-column terminal (LN19)                     | 32 to 64   |
+| Constant                    | Value | Why                                                      | Safe range |
+| --------------------------- | ----- | -------------------------------------------------------- | ---------- |
+| `LINT_OVERLAP_TOLERANCE_PX` | 2     | Texts that only touch are not printed over (LN3)         | 0 to 8     |
+| `LINT_MAX_LINES_PER_CODE`   | 10    | Keeps the report near 100 tokens (LN20)                  | 3 to 50    |
+| `LINT_LABEL_QUOTE_MAX`      | 40    | A heading's length (LN21)                                | 20 to 80   |
+| `LINT_MESSAGE_COLUMN_MAX`   | 48    | The fix column stays inside a 100-column terminal (LN19) | 32 to 64   |
 
 ## Defaults ledger
 

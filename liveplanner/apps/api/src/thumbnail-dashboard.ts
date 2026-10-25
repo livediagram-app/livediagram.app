@@ -18,7 +18,7 @@ import {
 } from '@liveplanner/items';
 import { planArtResolver, planImageOf } from '@liveplanner/plan-art';
 import { dashboardSourceTabs } from './db';
-import type { Env } from './types';
+import type { PlanEnv } from './types';
 
 // The most other tabs a Dashboard's image reads: every tab its slots show (at most 12 rows of 4) and the boards whose
 // columns name the statuses its charts count by. Past it, a slot's tab draws as deleted and a status as unnamed.
@@ -38,7 +38,7 @@ const boardSetupsOf = (tab: Tab): unknown[] =>
 
 /** The Dashboard `tab` of project `projectId` laid out for an image, or null when it lays out nothing. */
 export async function dashboardImageOf(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tab: Tab,
   now: Date = new Date(),

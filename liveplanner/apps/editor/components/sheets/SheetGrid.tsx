@@ -49,8 +49,8 @@ import { sheetPresenceFor } from './sheet-presence-store';
 import type { SheetActions } from './useSheetActions';
 import type { FormulaInput } from './useFormulaInput';
 import type { SheetPeer } from '@/hooks/sheets/useSheetsBridge';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { LongPressRing } from '@/components/primitives/LongPressRing';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 
 type Props = {
   elementId: string;

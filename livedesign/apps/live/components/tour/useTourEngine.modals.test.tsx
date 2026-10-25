@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
+import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import type { TourStepOf } from './tour-step';
 import { useTourEngine } from './useTourEngine';
 
@@ -13,7 +13,9 @@ vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
 }));
-vi.mock('./tour-reveal', () => ({ revealInScrollers: () => {} }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-reveal', () => ({
+  revealInScrollers: () => {},
+}));
 
 type Api = { log: string[] };
 

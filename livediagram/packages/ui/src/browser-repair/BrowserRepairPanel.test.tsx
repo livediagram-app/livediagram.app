@@ -45,7 +45,7 @@ describe('BrowserRepairPanel', () => {
   });
 
   it('asks before repairing, then clears and reports the count', () => {
-    window.localStorage.setItem('livediagram:v2:self-id', 'guest');
+    window.localStorage.setItem('livediagram:v2:guest-token', 'guest-token');
     window.localStorage.setItem('livediagram:v2:ui-mode', 'x');
     const order: string[] = [];
     const onRepairStart = vi.fn(() => order.push('start'));
@@ -60,7 +60,7 @@ describe('BrowserRepairPanel', () => {
     const toggle = screen.getByRole('button', { name: /repair this browser/i });
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getByText(/guest identity, Offline Mode documents/)).toBeTruthy();
+    expect(screen.getByText(/guest identity, Offline Mode canvases/)).toBeTruthy();
     // Nothing cleared until the confirm.
     expect(window.localStorage.getItem('livediagram:v2:ui-mode')).toBe('x');
 
@@ -68,7 +68,7 @@ describe('BrowserRepairPanel', () => {
     expect(order).toEqual(['start', 'done']);
     expect(onRepaired).toHaveBeenCalledWith(1);
     expect(window.localStorage.getItem('livediagram:v2:ui-mode')).toBeNull();
-    expect(window.localStorage.getItem('livediagram:v2:self-id')).toBe('guest');
+    expect(window.localStorage.getItem('livediagram:v2:guest-token')).toBe('guest-token');
   });
 
   it('cancels without clearing', () => {

@@ -10,7 +10,7 @@ import {
   r1,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is designing a logo" loop, livedesign's loader: on an artboard the "You" cursor draws a mark with
 // the pen, anchor by anchor with their handles showing; the path closes and fills, a cut-out lands in it, then the

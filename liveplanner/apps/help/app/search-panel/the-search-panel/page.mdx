@@ -6,13 +6,13 @@ import { SearchSettings } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'The Search Panel',
   description:
-    'Search everything in liveplanner from one box: plans, folders, teams, tabs, settings and help, and run commands such as creating a tab.',
+    'Search everything in liveplanner from one box: plans, teams, tabs, settings and help, and run commands such as creating a tab.',
   path: '/help/search-panel/the-search-panel/',
 });
 
 <ArticleLayout
   title="The Search Panel"
-  description="One box to jump anywhere: plans, folders, teams, tabs, settings and help, plus actions like creating a tab or exporting it."
+  description="One box to jump anywhere: plans, teams, tabs, settings and help, plus actions like creating a tab or exporting it."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   subArticles={getSubArticles('the-search-panel')}
@@ -32,13 +32,13 @@ The panel pops up near the top of the screen and blurs what is behind it so you 
 
 Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `plan` finds "Sprint plan" and "Planning". What is in scope depends on where you open it:
 
-- **Always:** your **[plans and folders](/help/search-panel/the-search-panel/search-projects/)**, and the **plans shared with you**.
-- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and plans.
+- **Always:** your **[plans](/help/search-panel/the-search-panel/search-projects/)**.
+- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)**.
 - **Inside a plan:** also the current plan's **[tabs, boards and cards](/help/search-panel/the-search-panel/search-tabs-and-elements/)**: a card by its number (`12` or `#12`) or the words of its title.
 
-With an empty box, the panel lists what it can browse (your plans, folders, teams and, in the editor, the plan's tabs), so you can open it and arrow straight to something. Most groups show at most 8 results (10 for Actions, 6 for Settings and Help; Teams shows up to 8 each of teams, team folders and team plans), so keep typing to narrow a long list.
+With an empty box, the panel lists what it can browse (your plans, teams and, in the editor, the plan's tabs), so you can open it and arrow straight to something. Most groups show at most 8 results (10 for Actions, 6 for Settings and Help; Teams shows up to 8 each of teams, team folders and team plans), so keep typing to narrow a long list.
 
-The results come in this order: **Plans**, **Shared with You**, **My Work** (your folders), **Teams**, **Tabs**, **Boards**, **Cards**, then **Actions**, **Settings** and **Help**.
+The results come in this order: **Plans**, **Teams**, **Tabs**, **Boards**, **Cards**, then **Actions**, **Settings** and **Help**.
 
 ## Beyond navigation
 
@@ -67,8 +67,8 @@ Results are ordered by group, and the very first match is preselected, so for th
 Search only navigates, so it works in a view-only plan too: you can still find and jump to tabs. The command palette keeps only the actions that do not change the plan. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#on-view-only-links).
 
 <Tip>
-  A plan with lots of tabs? Press `⌘K`, type part of a tab's name and press `Enter` to switch to
-  it, quicker than scanning the tab bar.
+  A plan with lots of tabs? Press `⌘K`, type part of a tab's name and press `Enter` to switch to it,
+  quicker than scanning the tab bar.
 </Tip>
 
 </ArticleLayout>

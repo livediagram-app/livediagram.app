@@ -1,6 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SignInError } from '@/components/illustrations/troubleshooting';
 
 export const metadata = helpMetadata({
   title: 'Cannot Sign In',
@@ -11,26 +10,23 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Cannot Sign In" description="What to try when sign-in will not complete, and why you can keep working in the meantime." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Before anything else, the good news: **you do not need to sign in to use livediagram**. The canvas always works without an account, so a sign-in problem never blocks you from building or sharing a document. You can continue as a guest and sort the account out later. With that safety net in mind, here is how to get sign-in working.
+Before anything else, the good news: **you do not need to sign in to use livediagram**. The canvas always works without an account, so a sign-in problem never blocks you from building or sharing a canvas. You can continue as a guest and sort the account out later. With that safety net in mind, here is how to get sign-in working.
 
 ## First, keep working
 
-If sign-in is failing and you just want to get on with it, leave the sign-in page and head straight to a [new document](/new) or [the Explorer](/explorer). Everything works: persistence, sharing by link, and real-time collaboration (only publishing to the Community needs an account). When you sign up or sign in later, the documents you built as a guest move into your account automatically, so nothing is lost, and you're offered the chance to move any documents in This Browser. See [working as a guest](/help/getting-started/guest-vs-account/).
+If sign-in is failing and you just want to get on with it, leave the sign-in page and head straight to a [new canvas](/new) or [the Explorer](/explorer). Everything works: persistence, sharing by link, and real-time collaboration (only publishing to the Community needs an account). When you sign up or sign in later, the canvases you built as a guest move into your account automatically, so nothing is lost, and you're offered the chance to move any canvases in This Browser. See [working as a guest](/help/getting-started/guest-vs-account/).
 
 ## Sign-in checklist
 
-<Figure caption="A wrong code shows an error above the form. Choose Resend code for a fresh one, or Back to change the email.">
-  <SignInError />
-</Figure>
+1. **Check the email code.** Sign-in uses a 6-digit code sent to your email from liveworkspace. Look in spam, and ask for a fresh code on the sign-in page if the first is slow or has expired.
+2. **Use the same email** you originally signed up with. A new email makes a new, empty account.
+3. **Start again from livediagram.** If the sign-in page says the sign-in had expired or did not finish, choose **Try again**. This happens when a sign-in sat open for more than ten minutes, or was started in another tab.
+4. **Allow cookies for both sites.** Signing in passes between livediagram.app and liveworkspace.app in the same tab. A browser set to block all cookies, or a privacy extension, can stop it finishing. Try an incognito window with extensions off.
 
-1. **Check the email code.** Sign-in uses a 6-digit code sent to your email. Look in spam, and choose **Resend code** for a fresh one if the first is slow or has expired. Typing or pasting all six digits submits the code on its own; otherwise choose **Verify**.
-2. **Use the same email** you originally signed up with. Signing in with an address that has no account takes you to sign-up instead, with that address filled in; choose **Back** on the code step if you mistyped it.
-3. **Reload and retry.** A stalled sign-in form usually clears with a refresh.
-4. **Disable interfering extensions.** Privacy or script-blocking extensions can break the sign-in flow. Try an incognito window with extensions off.
-5. **Check the Google option.** If you signed up with Google, use **Continue with Google** rather than the email code. It takes you to Google and back in the same tab, so allow the redirect and third-party sign-in for the site if your browser blocks them.
+## If sign-in fails on a self-hosted copy
 
-## If it still will not sign in
+Every livediagram offers sign-in, through the liveworkspace accounts Worker its API points at. If a self-hosted copy has none configured, signing in cannot complete and nobody gets a guest identity either; its operator needs to set one up. See [configuration and optional auth](/help/self-hosting/configuration/).
 
-If sign-in still will not complete after the checklist above, [contact us](/help/contact/) with the email address you are using and the error you see. Keep working as a guest in the meantime, your documents are safe.
+If you are on the hosted site, expected sign-in to work, and it still will not complete after the checklist above, [contact us](/help/contact/) with the email address you are using and the error you see. Keep working as a guest in the meantime, your canvases are safe.
 
 </ArticleLayout>

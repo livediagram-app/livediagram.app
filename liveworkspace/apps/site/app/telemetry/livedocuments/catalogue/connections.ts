@@ -1,8 +1,27 @@
 // Programmatic access: API tokens and MCP tool calls (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
+
+// Tokens made by hand and revoked on liveworkspace.app, counted by accounts under the app their owner signed up
+// through.
+export const TOKENS_CREATED: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Manual',
+  title: 'Tokens Created',
+  blurb: 'Personal API tokens created by hand on liveworkspace.app.',
+};
+
+export const TOKENS_REVOKED: Metric = {
+  rising: 'neutral',
+  category: 'Token',
+  action: 'Removed',
+  type: null,
+  title: 'Tokens Revoked',
+  blurb: 'API tokens revoked by hand on liveworkspace.app.',
+};
 
 export const AI_TOOLS_CONNECTED: Metric = {
   category: 'Token',
@@ -20,21 +39,13 @@ export const CLI_SIGN_INS: Metric = {
   blurb: 'The livedocuments CLI signed in, through the browser or with a code on another device.',
 };
 
-export const WORKBENCHES_PAIRED: Metric = {
-  category: 'Token',
-  action: 'Linked',
-  type: 'Workbench',
-  title: 'Workbenches Paired',
-  blurb: 'A token’s owner allowed a developer tool to open their documents.',
-};
-
 export const API_TOKEN_ACTIVITY: MetricStack = {
   rising: 'neutral',
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event livedocuments sees: one made for an AI tool connecting over MCP, for the CLI signing in, and a workbench paired. Tokens are made by hand and revoked on liveworkspace.app.',
-  members: [AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED],
+    'Every token event: created by hand, by an AI tool connecting over MCP or by the CLI signing in, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp

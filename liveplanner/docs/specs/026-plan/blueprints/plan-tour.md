@@ -28,7 +28,7 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | `apps/editor/components/tour/PlanTourHost.tsx`      | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
 | `apps/editor/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/editor/components/tour/art/TourArtFrame.tsx`)                          |
 | `apps/editor/lib/tour-tracks.ts`                    | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
-| `apps/editor/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'workshop' \| null`), a module store                                                                                  |
+| `apps/editor/lib/tour-active.ts`                    | Which tour is on screen (`'plan' \| 'dashboard' \| 'form' \| 'show-me' \| null`), a module store                                                                       |
 | `apps/editor/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                                                |
 | `apps/editor/hooks/plan/usePlanTourLeftovers.ts`    | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
 
@@ -36,7 +36,7 @@ Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `ca
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
 `apps/help/app/canvas/plan-mode/plan-tour/page.mdx` with its registry entry, icon and colour, and the telemetry
 dashboard (`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/features.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/visitors.ts`,
-`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/DashboardView.tsx`,
+`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/config.ts`,
 `../liveworkspace/apps/site/app/telemetry/liveplanner/computed-emitters.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`).
 
 Wiring: `useEditorState` composes `usePlanTourLeftovers` (it returns nothing); `EditorView` mounts `<PlanTourHost />` beside `<TourHost />` in the same

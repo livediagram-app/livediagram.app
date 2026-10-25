@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedocuments/document';
 import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
-import { svgFrameOf } from './svg-frame';
+import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 
 // docs/specs/009-elements/tab-window.md "The drawing": a tab is drawn as its pages.
 

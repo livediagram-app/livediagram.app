@@ -11,7 +11,7 @@ export async function joinRefusedBecauseTrashed(args: {
   shareCode: string | null;
 }): Promise<boolean> {
   try {
-    if (args.shareCode) await apiLoadShared(args.shareCode, args.selfId);
+    if (args.shareCode) await apiLoadShared(args.shareCode, args.selfId, args.projectId);
     else await apiLoadProject(args.selfId, args.projectId);
     return false;
   } catch (err) {

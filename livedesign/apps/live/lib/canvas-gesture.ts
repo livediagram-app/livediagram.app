@@ -6,8 +6,8 @@
 // gesture changes.
 
 import { useSyncExternalStore } from 'react';
-import { debugLog } from './debug-log';
-import { createListeners } from '@/lib/listeners';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';

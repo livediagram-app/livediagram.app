@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { test, expect, expectNoPageErrors, openStartBlank, seedTab } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoPageErrors,
+  openStartBlank,
+  seedTab,
+  serverNewUrl,
+} from './fixtures';
 
 // The handles are always on top (docs/specs/008-canvas/canvas-and-palette.md "Resize"): whatever the
 // selected element's place in the stacking order, its rotation or opacity, and whatever
@@ -77,7 +84,7 @@ async function select(page: Page, label: string): Promise<void> {
 
 test.describe('selection grips', () => {
   test('stay above every element', async ({ page, pageErrors }) => {
-    await openStartBlank(page);
+    await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
     await seedTab(page, seed);
 
     for (const [i, c] of CASES.entries()) {

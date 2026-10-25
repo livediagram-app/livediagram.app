@@ -18,6 +18,8 @@ import {
   DriveMirrorContext,
   type DriveMirrorContextValue,
 } from './drive-mirror-context';
+import { SettingsUiKitProvider } from '@liveworkspace/settings-ui';
+import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { GoogleDriveSyncRow } from './GoogleDriveSyncRow';
 
 const NOW = 10 * 60_000;
@@ -50,9 +52,12 @@ function value(
 function show(status: Partial<DriveMirrorStatus>, over: Partial<DriveMirrorContextValue> = {}) {
   const v = value(status, over);
   const view = render(
-    <DriveMirrorContext.Provider value={v}>
-      <GoogleDriveSyncRow row={ROW} />
-    </DriveMirrorContext.Provider>,
+    // In the Settings dialog's kit, whose help link the row's description ends with.
+    <SettingsUiKitProvider kit={SETTINGS_KIT}>
+      <DriveMirrorContext.Provider value={v}>
+        <GoogleDriveSyncRow row={ROW} />
+      </DriveMirrorContext.Provider>
+    </SettingsUiKitProvider>,
   );
   return { ...v, view };
 }
@@ -62,7 +67,12 @@ const statusText = () =>
 
 const NOTICE = { kind: 'document' as const, ldId: 'd', name: 'Plan', parentId: 'p' };
 const problemLine = () => document.querySelector('[data-drive-problem]');
-const description = () => document.getElementById(`${ROW.key}-description`)!.textContent ?? '';
+// The row's words as read: a hover card's hidden description copy (for assistive technology) is not part of them.
+const description = () => {
+  const row = document.getElementById(`${ROW.key}-description`)!.cloneNode(true) as HTMLElement;
+  row.querySelectorAll('[hidden]').forEach((n) => n.remove());
+  return row.textContent ?? '';
+};
 
 describe('GoogleDriveSyncRow', () => {
   it('is one row when not connected: Not connected and Connect, nothing else', () => {
@@ -106,7 +116,7 @@ describe('GoogleDriveSyncRow', () => {
     expect(problemLine()).toBeNull();
     expect(screen.queryByRole('button', { name: /Sync now|Connect/ })).toBeNull();
     expect(description()).toContain(
-      'Your documents are synced to “livediagram (staging)” in Google Drive.',
+      'Your canvases are synced to “livediagram (staging)” in Google Drive.',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
     expect(v.disconnect).toHaveBeenCalledOnce();
@@ -120,7 +130,7 @@ describe('GoogleDriveSyncRow', () => {
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     expect(description()).toBe(
-      'Your documents are synced to “livediagram (staging)” in Google Drive. Learn more',
+      'Your canvases are synced to “livediagram (staging)” in Google Drive. Learn more',
     );
     // One row, one button: the link is in the description, not beside Disconnect.
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Disconnect']);

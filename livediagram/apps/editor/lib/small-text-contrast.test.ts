@@ -9,7 +9,8 @@ import { describe, expect, it } from 'vitest';
 // small text size and fails one that pairs it with those light-mode colours; a `dark:` (or other variant) colour, a
 // placeholder and an icon (no text size) are not text on a light surface and are left alone.
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
-const DIRS = ['components', 'app', 'hooks'];
+// The editor code every editor shares (@liveworkspace/workbench) renders here too.
+const DIRS = ['components', 'app', 'hooks', '../../../packages/workbench/src'];
 
 function sourceFiles(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

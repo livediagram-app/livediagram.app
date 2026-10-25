@@ -1,6 +1,6 @@
 // Barrel for the livedesign HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + designs / tabs / share /
-// folders / self / room / images / preferences / ai); this
+// folders / self / room / images / preferences / capabilities); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -8,18 +8,7 @@
 // historically imported from here. The canonical definitions live in
 // `@livedesign/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
-export type {
-  Folder,
-  ImageSummary,
-  ShareLink,
-  ShareLinkExpiry,
-  ShareRole,
-  TeamInvite,
-  TeamListItem,
-  TeamMember,
-  TeamMemberStatus,
-  TeamRole,
-} from '@livedesign/api-schema';
+export type { ImageSummary, ShareLink, ShareLinkExpiry, ShareRole } from '@livedesign/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers
@@ -45,22 +34,14 @@ export * from './api/designs';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
-export * from './api/folders';
-export * from './api/custom-themes';
-export * from './api/teams';
-export * from './api/tokens';
-export * from './api/oauth';
+export * from '@liveworkspace/workbench/lib/api/tokens';
+export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';
-export * from './api/favourites';
-export * from './api/placement-defaults';
-export * from './api/timeline';
-export * from './api/activity';
-export * from './api/home';
 export * from './api/preferences';
-export * from './api/ai';
+export * from './api/capabilities';
 export * from './api/unfurl';
-export * from './api/trash';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
+export * from './api/team-people';

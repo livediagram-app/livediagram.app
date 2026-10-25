@@ -2,7 +2,7 @@
 // drawn as the canvas draws them: a locked element wears a solid padlock badge on its top-left corner and shows no resize handles
 // (canvas/element-parts.tsx LockBadge).
 
-import { Scene, Shape, Label, SelectionBox } from './primitives';
+import { Scene, Shape, Label, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 
 /** A small solid padlock badge, centred on (cx, cy). */
 function LockBadge({ cx, cy }: { cx: number; cy: number }) {

@@ -11,7 +11,7 @@ import type { SheetPerson } from '@liveplanner/sheets';
 import type { BoxedElement, Element } from '@liveplanner/project';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export type SheetPeer = { id: string; name: string; color: string };
 

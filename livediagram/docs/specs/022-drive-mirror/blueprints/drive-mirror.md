@@ -7,72 +7,68 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                            | Role                                                                                    |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`                    |
-| `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                                      |
-| `apps/api/migrations/0088_drive_google_account.sql`             | `drive_connections.google_account_id`                                                   |
-| `apps/api/migrations/0089_drive_account_switch.sql`             | `drive_connections.pending_*` (a pending account switch)                                |
-| `apps/api/src/drive/google-account.ts`                          | Which Google account a consent belongs to (Drive `about`)                               |
-| `apps/api/src/drive/account-switch.ts`                          | Confirm or cancel a pending account switch                                              |
-| `apps/api/src/drive/revoke-sealed.ts`                           | Best-effort revoke of a sealed refresh token                                            |
-| `apps/api/src/db/drive-account.ts`                              | Recorded account and pending switch statements                                          |
-| `apps/editor/components/drive/DriveAccountSwitchDialog.tsx`     | The Switch Google Account? dialog on `/drive/connected`                                 |
-| `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                               |
-| `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                                |
-| `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                                  |
-| `apps/api/src/drive/google-oauth.ts`                            | Code exchange, refresh, revoke                                                          |
-| `apps/api/src/db/drive.ts`                                      | Every statement on the two tables                                                       |
-| `apps/api/src/routes/drive.ts`                                  | `/api/drive/*`                                                                          |
-| `apps/api/src/db/document-removal.ts`                           | Drops the doomed documents' `drive_items`                                               |
-| `apps/api/src/db/folders.ts`                                    | `deleteFolder` is one batch: contents to the parent, the folder's `drive_items` dropped |
-| `apps/api/src/db/account.ts`                                    | Account deletion revokes and drops the Drive rows                                       |
-| `apps/api/src/routes/capabilities.ts`                           | `driveMode`                                                                             |
-| `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies                     |
-| `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                                           |
-| `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                                    |
-| `packages/document/src/document-envelope.ts`                    | The `livediagram.document` envelope                                                     |
-| `apps/editor/lib/api/drive.ts`                                  | Wire calls to `/api/drive/*`                                                            |
-| `apps/editor/lib/drive/config.ts`                               | Client id, Picker key, `driveUiMode`                                                    |
-| `apps/editor/lib/drive/cadence.ts`                              | Every cadence constant                                                                  |
-| `apps/editor/lib/drive/log.ts`                                  | `driveLog`, the `[drive-mirror]` fingerprint                                            |
-| `apps/editor/lib/drive/drive-client.ts`                         | `DriveClient` interface, `DriveApiError`                                                |
-| `apps/editor/lib/drive/drive-rest-client.ts`                    | `DriveClient` over Google's REST API                                                    |
-| `apps/editor/lib/drive/thumbnail.ts`                            | SVG snapshot to PNG `contentHints.thumbnail`                                            |
-| `apps/editor/lib/drive/livediagram-port.ts`                     | `LivediagramPort` interface + implementation over `lib/api`                             |
-| `apps/editor/lib/drive/snapshot.ts`                             | `MirrorSnapshot` and its indexes                                                        |
-| `apps/editor/lib/drive/plan-outbound.ts`                        | Pure: snapshot + items to outbound ops                                                  |
-| `apps/editor/lib/drive/plan-inbound.ts`                         | Pure: a change + snapshot + items to an inbound decision                                |
-| `apps/editor/lib/drive/tombstones.ts`                           | Per-browser memory of the rows last seen                                                |
-| `apps/editor/lib/drive/backoff.ts`                              | The back-off state machine                                                              |
-| `apps/editor/lib/drive/engine.ts`                               | `DriveMirrorEngine`: passes, triggers, lease, token, status                             |
-| `apps/editor/lib/drive/pass-context.ts`                         | One pass's snapshot, pending item rows and dependencies; the 409 retry                  |
-| `apps/editor/lib/drive/engine-inbound.ts`                       | Applies inbound decisions through the port                                              |
-| `apps/editor/lib/drive/engine-outbound.ts`                      | Runs outbound ops against Drive, records what Google returns                            |
-| `apps/editor/lib/drive/browser-engine.ts`                       | The engine as a tab runs it: real fetch, timers, storage, telemetry mapping             |
-| `apps/editor/lib/api/core.ts`                                   | `registerTokenProvider`: the Bearer stays while any session mount remains               |
-| `apps/editor/lib/drive/token-source.ts`                         | Broker and browser-only (GIS) token sources                                             |
-| `apps/editor/lib/drive/consent.ts`                              | Google authorisation URL, pending-return memory                                         |
-| `apps/editor/lib/drive/google-scripts.ts`                       | Google Identity Services and Picker loaders, `FolderPicker`                             |
-| `apps/editor/lib/drive/open-with.ts`                            | `/drive/open` state parsing and outcome decision                                        |
-| `apps/editor/lib/drive/tab-election.ts`                         | Web Locks election + BroadcastChannel relay                                             |
-| `apps/editor/components/drive/DriveMirrorProvider.tsx`          | Mounts the engine in the elected tab, publishes status                                  |
-| `apps/editor/components/drive/drive-mirror-context.ts`          | `useDriveMirror`, `useDriveNotice`, the context value                                   |
-| `apps/editor/components/drive/DriveConnected.tsx`               | `/drive/connected`: redeems the code once, returns to the page                          |
-| `apps/editor/components/drive/DriveOpen.tsx`                    | `/drive/open`: sign-in, Allow access, open, Import a copy, errors                       |
-| `apps/editor/components/chrome/LandingCard.tsx`                 | The centred landing card `/join` and the Drive routes share                             |
-| `apps/editor/components/providers/E2EAuthBridge.tsx`            | Test builds only: a signed-in session from a test-minted JWT                            |
-| `apps/editor/e2e/drive-mirror.spec.ts`                          | The opt-in browser e2e against the fake Google                                          |
-| `apps/editor/e2e/drive-shots.spec.ts`                           | Every Drive state screenshotted, light and dark (`test:e2e:drive-shots`)                |
-| `apps/editor/e2e/drive-support.ts`                              | Test JWKS, the fake Google over HTTP, routed Google traffic                             |
-| `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                                |
-| `apps/editor/components/drive/GoogleDriveSyncRow.tsx`           | The Google Drive row of Settings > Account > Cloud Sync                                 |
-| `apps/editor/lib/drive/cloud-sync-copy.ts`                      | The row's plain-language copy, and the rhythm derived from the cadence                  |
-| `apps/editor/lib/cloud-sync/providers.ts`                       | The Cloud Sync provider catalogue                                                       |
-| `apps/editor/components/drive/DriveReconnectBanner.tsx`         | The quiet Needs reconnecting / Resume sync banner                                       |
-| `apps/editor/components/drive/DriveNoticeMarker.tsx`            | The unseen-folder mark on an Explorer row                                               |
-| `apps/editor/app/drive/connected/page.tsx`                      | The OAuth redirect target                                                               |
-| `apps/editor/app/drive/open/page.tsx`                           | The Drive UI integration's Open URL                                                     |
+| File                                                            | Role                                                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`                  |
+| `apps/api/src/person-store/drive-store.ts`                      | `drive_connections`, `drive_items` in the person's store; drops removed items on list |
+| `apps/api/src/drive/google-account.ts`                          | Which Google account a consent belongs to (Drive `about`)                             |
+| `apps/api/src/drive/account-switch.ts`                          | Confirm or cancel a pending account switch                                            |
+| `apps/api/src/drive/revoke-sealed.ts`                           | Best-effort revoke of a sealed refresh token                                          |
+| `apps/api/src/db/drive-account.ts`                              | Recorded account and pending switch statements                                        |
+| `apps/editor/components/drive/DriveAccountSwitchDialog.tsx`     | The Switch Google Account? dialog on `/drive/connected`                               |
+| `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                             |
+| `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                              |
+| `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                                |
+| `apps/api/src/drive/google-oauth.ts`                            | Code exchange, refresh, revoke                                                        |
+| `apps/api/src/db/drive.ts`                                      | Every statement on the two tables                                                     |
+| `apps/api/src/routes/drive.ts`                                  | `/api/drive/*`                                                                        |
+| `apps/api/src/db/account.ts`                                    | Account deletion revokes and drops the Drive rows                                     |
+| `apps/api/src/routes/capabilities.ts`                           | `driveMode`                                                                           |
+| `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies                   |
+| `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                                         |
+| `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                                  |
+| `packages/document/src/document-envelope.ts`                    | The `livediagram.document` envelope                                                   |
+| `apps/editor/lib/api/drive.ts`                                  | Wire calls to `/api/drive/*`                                                          |
+| `apps/editor/lib/drive/config.ts`                               | Client id, Picker key, `driveUiMode`                                                  |
+| `apps/editor/lib/drive/cadence.ts`                              | Every cadence constant                                                                |
+| `apps/editor/lib/drive/log.ts`                                  | `driveLog`, the `[drive-mirror]` fingerprint                                          |
+| `apps/editor/lib/drive/drive-client.ts`                         | `DriveClient` interface, `DriveApiError`                                              |
+| `apps/editor/lib/drive/drive-rest-client.ts`                    | `DriveClient` over Google's REST API                                                  |
+| `apps/editor/lib/drive/thumbnail.ts`                            | SVG snapshot to PNG `contentHints.thumbnail`                                          |
+| `apps/editor/lib/drive/livediagram-port.ts`                     | `LivediagramPort` interface + implementation over `lib/api`                           |
+| `apps/editor/lib/drive/snapshot.ts`                             | `MirrorSnapshot` and its indexes                                                      |
+| `apps/editor/lib/drive/plan-outbound.ts`                        | Pure: snapshot + items to outbound ops                                                |
+| `apps/editor/lib/drive/plan-inbound.ts`                         | Pure: a change + snapshot + items to an inbound decision                              |
+| `apps/editor/lib/drive/tombstones.ts`                           | Per-browser memory of the rows last seen                                              |
+| `apps/editor/lib/drive/backoff.ts`                              | The back-off state machine                                                            |
+| `apps/editor/lib/drive/engine.ts`                               | `DriveMirrorEngine`: passes, triggers, lease, token, status                           |
+| `apps/editor/lib/drive/pass-context.ts`                         | One pass's snapshot, pending item rows and dependencies; the 409 retry                |
+| `apps/editor/lib/drive/engine-inbound.ts`                       | Applies inbound decisions through the port                                            |
+| `apps/editor/lib/drive/engine-outbound.ts`                      | Runs outbound ops against Drive, records what Google returns                          |
+| `apps/editor/lib/drive/browser-engine.ts`                       | The engine as a tab runs it: real fetch, timers, storage, telemetry mapping           |
+| `apps/editor/lib/api/core.ts`                                   | `registerTokenProvider`: the Bearer stays while any session mount remains             |
+| `apps/editor/lib/drive/token-source.ts`                         | Broker and browser-only (GIS) token sources                                           |
+| `apps/editor/lib/drive/consent.ts`                              | Google authorisation URL, pending-return memory                                       |
+| `apps/editor/lib/drive/google-scripts.ts`                       | Google Identity Services and Picker loaders, `FolderPicker`                           |
+| `apps/editor/lib/drive/open-with.ts`                            | `/drive/open` state parsing and outcome decision                                      |
+| `apps/editor/lib/drive/tab-election.ts`                         | Web Locks election + BroadcastChannel relay                                           |
+| `apps/editor/components/drive/DriveMirrorProvider.tsx`          | Mounts the engine in the elected tab, publishes status                                |
+| `apps/editor/components/drive/drive-mirror-context.ts`          | `useDriveMirror`, `useDriveNotice`, the context value                                 |
+| `apps/editor/components/drive/DriveConnected.tsx`               | `/drive/connected`: redeems the code once, returns to the page                        |
+| `apps/editor/components/drive/DriveOpen.tsx`                    | `/drive/open`: sign-in, Allow access, open, Import a copy, errors                     |
+| `apps/editor/components/chrome/LandingCard.tsx`                 | The centred landing card `/join` and the Drive routes share                           |
+| `apps/editor/components/providers/E2EAuthBridge.tsx`            | Test builds only: a signed-in session from a test-minted JWT                          |
+| `apps/editor/e2e/drive-mirror.spec.ts`                          | The opt-in browser e2e against the fake Google                                        |
+| `apps/editor/e2e/drive-shots.spec.ts`                           | Every Drive state screenshotted, light and dark (`test:e2e:drive-shots`)              |
+| `apps/editor/e2e/drive-support.ts`                              | Test JWKS, the fake Google over HTTP, routed Google traffic                           |
+| `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                              |
+| `apps/editor/components/drive/GoogleDriveSyncRow.tsx`           | The Google Drive row of Settings > Account > Cloud Sync                               |
+| `apps/editor/lib/drive/cloud-sync-copy.ts`                      | The row's plain-language copy, and the rhythm derived from the cadence                |
+| `apps/editor/lib/cloud-sync/providers.ts`                       | The Cloud Sync provider catalogue                                                     |
+| `apps/editor/components/drive/DriveReconnectBanner.tsx`         | The quiet Needs reconnecting / Resume sync banner                                     |
+| `apps/editor/components/drive/DriveNoticeMarker.tsx`            | The unseen-folder mark on an Explorer row                                             |
+| `apps/editor/app/drive/connected/page.tsx`                      | The OAuth redirect target                                                             |
+| `apps/editor/app/drive/open/page.tsx`                           | The Drive UI integration's Open URL                                                   |
 
 ## Domain and naming
 
@@ -295,7 +291,7 @@ non-elected tab, handed to the elected one).
 | our MIME or `.livediagram`, other `ldOrigin` or no `ldDocumentId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
 | anything else, 404, 403 or unreadable                                               | `error`                       | `Error`         |
 
-`import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new document** (`copy`): download
+`import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new canvas** (`copy`): download
 (`alt=media`), `parseDocumentEnvelope`, then `port.importDocumentCopy` (fresh document and tab ids, tab links remapped
 with `remapTabLinks`, the deck carried). A `copy` import also runs `importAsNewDocument`
 (`apps/editor/lib/drive/open-with-copy.ts`):
@@ -358,8 +354,8 @@ type DriveAccessToken = { accessToken: string; expiresAt: number };
 
 ### Routes (`routes/drive.ts`)
 
-Every route: `503 drive_not_configured` when `driveMode` is `off`; `401 sign_in_required` without `ctx.clerkUserId`
-(guest header and API token both refused); owner is `ctx.clerkUserId`. Each logs `drive: <route> <outcome>`.
+Every route: `503 drive_not_configured` when `driveMode` is `off`; `401 sign_in_required` without `ctx.accountUserId`
+(guest header and API token both refused); owner is `ctx.accountUserId`. Each logs `drive: <route> <outcome>`.
 
 | Method   | Path                         | Body                                                | Success                      | Rejections                                                                                                                                         |
 | -------- | ---------------------------- | --------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -507,43 +503,45 @@ from `exportedAt`, D3). `parseDocumentEnvelope(text)` returns the envelope or a 
 
 ## Data and persistence
 
-`0057_drive_mirror.sql`:
+In each person's `PersonStore` (`apps/api/src/person-store/person-schema.ts`, `drive-store.ts`); `db/drive.ts` and
+`db/drive-account.ts` keep their owner-scoped signatures and reach the owner's store:
 
 ```sql
 CREATE TABLE drive_connections (
-  owner_id TEXT PRIMARY KEY,
-  refresh_token_enc TEXT,
-  root_folder_id TEXT,
-  page_token TEXT,
-  page_token_saved_at INTEGER,
-  status TEXT NOT NULL DEFAULT 'connected' CHECK (status IN ('connected', 'needs_reconnect')),
-  connected_at INTEGER NOT NULL,
-  lease_holder TEXT,
-  lease_expires_at INTEGER
+  id                        INTEGER PRIMARY KEY CHECK (id = 1),
+  refresh_token_enc         TEXT,
+  root_folder_id            TEXT,
+  page_token                TEXT,
+  page_token_saved_at       INTEGER,
+  status                    TEXT    NOT NULL DEFAULT 'connected' CHECK (status IN ('connected', 'needs_reconnect')),
+  connected_at              INTEGER NOT NULL,
+  lease_holder              TEXT,
+  lease_expires_at          INTEGER,
+  google_account_id         TEXT,
+  pending_refresh_token_enc TEXT,
+  pending_google_account_id TEXT,
+  pending_expires_at        INTEGER
 );
 CREATE TABLE drive_items (
-  owner_id TEXT NOT NULL,
-  item_kind TEXT NOT NULL CHECK (item_kind IN ('document', 'folder')),
-  ld_id TEXT NOT NULL,
-  drive_file_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  ld_name TEXT NOT NULL,
-  parent_id TEXT,
-  trashed INTEGER NOT NULL DEFAULT 0,
-  md5 TEXT,
-  head_revision_id TEXT,
+  item_kind         TEXT    NOT NULL CHECK (item_kind IN ('document', 'folder')),
+  ld_id             TEXT    NOT NULL,
+  drive_file_id     TEXT    NOT NULL UNIQUE,
+  name              TEXT    NOT NULL,
+  ld_name           TEXT    NOT NULL,
+  parent_id         TEXT,
+  trashed           INTEGER NOT NULL DEFAULT 0,
+  md5               TEXT,
+  head_revision_id  TEXT,
   mirrored_saved_at INTEGER,
-  notice TEXT CHECK (notice IS NULL OR notice = 'unseen_folder'),
-  notice_parent_id TEXT,
-  PRIMARY KEY (owner_id, item_kind, ld_id),
-  UNIQUE (owner_id, drive_file_id)
+  notice            TEXT    CHECK (notice IS NULL OR notice = 'unseen_folder'),
+  notice_parent_id  TEXT,
+  PRIMARY KEY (item_kind, ld_id)
 );
-CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 ```
 
-`0088_drive_google_account.sql`: `ALTER TABLE drive_connections ADD COLUMN google_account_id TEXT`.
-`0089_drive_account_switch.sql`: `pending_refresh_token_enc TEXT`, `pending_google_account_id TEXT`,
-`pending_expires_at INTEGER`, all nullable, null when no switch is pending.
+A `PUT /api/drive/items` lands whole or not at all (one store transaction; a Drive file another item holds is
+`409`). The account switch's confirm is one transaction too. The lease is a read and write inside the store's
+single-threaded call.
 
 | Field                          | Class             | Notes                                                                |
 | ------------------------------ | ----------------- | -------------------------------------------------------------------- |
@@ -554,14 +552,15 @@ CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 | `pending_google_account_id`    | account link      | That account's `permissionId`; never on the wire                     |
 | `pending_expires_at`           | coordination      | Epoch ms; only its presence and time reach the wire                  |
 | `lease_*`                      | coordination      | Overwritten freely                                                   |
-| `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the documents table already holds      |
+| `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the index already holds                |
 | everything else                | mirror state      |                                                                      |
 
-Removal: `documentRemovalStatements` gains `DELETE FROM drive_items WHERE item_kind = 'document' AND ld_id IN
-(doomed)` before the documents delete; `deleteFolder` becomes one batch that also drops `item_kind = 'folder' AND
-ld_id = ?`; `deleteAccount` revokes (when a refresh token decrypts) and deletes both tables' owner rows.
-`migrateOwnerId` leaves both untouched (`account-only`: a guest never holds a connection). No snapshot or restore
-beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/drive/connection` deletes both.
+Removal: a document or folder removed for good keeps no row. `listDriveItems` checks the ids its rows name against
+the documents and folders that still exist (one indexed read per kind present) and drops the rest from the store
+before answering, so the browser sees the row gone, as before. `deleteAccount` (and the index's account-closed
+notice) revokes the grant (when a refresh token decrypts) and then empties the person's store.
+`migrateOwnerId` leaves the mirror untouched (`account-only`: a guest never holds a connection). A connection is
+re-creatable by reconnecting. `DELETE /api/drive/connection` deletes both tables' rows.
 
 ## Errors and edge cases
 
@@ -596,30 +595,30 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 
 ## Security and trust
 
-- Trust boundary: only `ctx.clerkUserId` reaches Drive rows; every statement is `WHERE owner_id = ?`.
+- Trust boundary: only `ctx.accountUserId` reaches Drive rows; every statement is `WHERE owner_id = ?`.
 - The refresh token never leaves the worker; AES-GCM with a random 12-byte IV, AAD the owner id, so a row copied to
   another owner fails to open.
 - `state` binds user, redirect URI and 10 minutes; a code minted for one user cannot be redeemed by another.
 - Access tokens reach the browser only for the caller's own grant, which is what the browser would hold anyway.
 - Writes ride the existing `WRITE_RATE_LIMITER`. `POST /drive/token` also has its own `DRIVE_TOKEN_RATE_LIMITER`
-  (10 per 60 s per Clerk user id, namespace `1007`, production and `[env.staging]`), checked before Google is
-  called; absent binding allows.
+  (10 per 60 s per account id, namespace `1007`, production and `[env.staging]`), checked before Google is
+  called; absent binding allows (self-host).
 - The browser never deletes a Drive file it did not create: tombstones name only files an item recorded.
 - `/drive/open` treats `state` as untrusted JSON; ids are validated before any request; an unknown file is an error.
 - No Google data is used for anything but the mirror (Limited Use); no Drive content reaches the server.
 - The e2e session bridge exists only in a build with `NEXT_PUBLIC_E2E_AUTH=1`; the worker trusts nothing new, it
-  verifies that JWT against `CLERK_JWKS_URL` like any other.
+  verifies that access token against the `ACCOUNTS_URL` key set like any other.
 - Every session mount registers the api Bearer (`registerTokenProvider`), so the root-level Drive provider and a
   page never clear each other's credential on unmount.
 
 ## Performance and limits
 
-- Server: `POST /drive/token` about once an active hour; D1 writes per active user-day: the page token (at most one
+- Server: `POST /drive/token` about once an active hour; person-store writes per active user-day: the page token (at most one
   per 10 minutes), the lease (at most one per 10 minutes of writing), item rows (one per upload or applied change).
 - Drive units per active two-hour day stay near the research's 1,600: one `changes.list` per poll, one
   `files.update` per content write, metadata updates only on real changes. Adoption lists run only when the root is
   missing.
-- `PUT /drive/items` carries at most `DRIVE_ITEMS_PUT_MAX` (100) rows, one D1 batch.
+- `PUT /drive/items` carries at most `DRIVE_ITEMS_PUT_MAX` (100) rows, one store transaction.
 - `localStorage` tombstones: about 80 bytes a row.
 
 ### Views follow
@@ -631,13 +630,13 @@ raises the same signal on receipt. The provider's own write relay ignores `drive
 `useAfterDriveChange(onChange)` (`hooks/persistence/useAfterDriveChange.ts`) is `useAfterApiWrite` with a
 `filter` for `drive` signals; its callers re-read quietly (no loading skeleton):
 
-| View                                      | Re-read                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Explorer page (`useExplorerState`)        | `load(ownerId)`: documents, shared, folders                                                                                     |
-| Any `useFolders` with an owner            | its folder list (the Explorer, the editor, the wizard)                                                                          |
-| Trash view (`useTrash`)                   | the Trash listing                                                                                                               |
-| Editor (`useDriveFollow`)                 | `refreshDocumentList`; the open document's meta: a new name sets `documentName`, a 410 `document_trashed` sets the deleted card |
-| New Document page (`RecentDocumentsCard`) | its recent list                                                                                                                 |
+| View                                    | Re-read                                                                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Explorer page (`useExplorerState`)      | `load(ownerId)`: documents, shared, folders                                                                                     |
+| Any `useFolders` with an owner          | its folder list (the Explorer, the editor, the wizard)                                                                          |
+| Trash view (`useTrash`)                 | the Trash listing                                                                                                               |
+| Editor (`useDriveFollow`)               | `refreshDocumentList`; the open document's meta: a new name sets `documentName`, a 410 `document_trashed` sets the deleted card |
+| New Canvas page (`RecentDocumentsCard`) | its recent list                                                                                                                 |
 
 ### Not-ours logging
 
@@ -766,10 +765,14 @@ Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livedia
 
 Banner (`needs_reconnect` / `needs_resume`), bottom-left, dismissible for the session: "Google Drive sync is paused."
 with **Reconnect** / **Resume sync**. `/drive/connected`: "Connecting Google Drive…", then back to the page the user
-started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. `/drive/open`: "Opening from
-Google Drive…"; import: "This document isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
-"This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
-**Import as new document**; error: "This file can't be
+started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. Cloud Sync lives only in the
+editor's Settings, so every way back to it is the remembered page (which already names Account > Cloud Sync): a
+connection the api refused offers **Back to Cloud Sync** there, as does the account switch dialog. With no remembered
+page (a consent this browser did not start: **Go to Explorer**; a cancel whose page was lost: **Back**) they go to
+the Explorer. `/drive/open`: "Opening from
+Google Drive…"; import: "This canvas isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
+"This is a copy made in Google Drive. Import it as a new canvas to open it here; the original stays as it is."
+**Import as new canvas**; error: "This file can't be
 opened in livediagram." with **Go to Explorer**.
 
 ### Account switch dialog
@@ -811,8 +814,8 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Reconnect by another Google account         | `routes/drive.test.ts` (`reconnecting with another Google account`)     |
 | Account switch confirm, cancel, expiry      | `routes/drive.test.ts` (`account switch`)                               |
 | Account switch dialog                       | `apps/editor/components/drive/DriveAccountSwitchDialog.test.tsx`        |
-| Clerk-only, 503 when off                    | `routes/drive.test.ts`                                                  |
-| Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
+| Signed-in only, 503 when off                | `routes/drive.test.ts`                                                  |
+| Rows removed with document, folder, account | `db/drive.test.ts`, `account-owner-columns.test.ts`                     |
 | OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |
 | Envelope                                    | `packages/document/src/document-envelope.test.ts`                       |
 | REST client against the fake                | `apps/editor/lib/drive/drive-rest-client.test.ts`                       |
@@ -828,43 +831,43 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Connection, items, lease statements         | `apps/api/src/db/drive.test.ts`                                         |
 | Disconnect and account deletion revoke      | `apps/api/src/drive/disconnect.test.ts`                                 |
 | OAuth calls, mode resolution, capabilities  | `google-oauth.test.ts`, `config.test.ts`, `routes/capabilities.test.ts` |
-| Bearer survives a second session mount      | `apps/editor/hooks/persistence/useClerkApiBootstrap.test.tsx`           |
+| Bearer survives a second session mount      | `apps/editor/hooks/persistence/useAccountBootstrap.test.tsx`            |
 | Telemetry vocabulary                        | `apps/editor/lib/telemetry-coverage.test.ts`, `apps/telemetry` tests    |
 
 The browser e2e is opt-in (`pnpm --filter @livediagram/editor test:e2e:drive`), kept out of CI's default run to spare
-its minutes: it rebuilds the editor app with `NEXT_PUBLIC_E2E_AUTH=1`, which swaps Clerk for `E2EAuthBridge` (a
-session JWT the test mints against its own JWKS, verified by the worker exactly as Clerk's), and boots the stack
+its minutes: it rebuilds the editor app with `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for `E2EAuthBridge`
+(an access token the test mints against its own JWKS, verified by the worker exactly as the accounts Worker's), and boots the stack
 with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled out.
 
 ## Constants and configuration
 
-| Constant                                   | Value                                                   | Where                    | Provenance / safe range                                     |
-| ------------------------------------------ | ------------------------------------------------------- | ------------------------ | ----------------------------------------------------------- |
-| `DRIVE_POLL_INTERVAL_MS`                   | 2 min                                                   | `lib/drive/cadence.ts`   | Operator decision (was the research's 20); 1..20 min, gated |
-| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                                                  | cadence                  | Research back-off cap                                       |
-| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 30 s                                                    | cadence                  | D21; 10 s..5 min                                            |
-| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                                                    | cadence                  | Google maximum                                              |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 s                                                    | cadence                  | Research; 10 s..5 min                                       |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                                                   | cadence                  | Research; 1..30 min                                         |
-| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                                                  | cadence                  | Research back-off cap                                       |
-| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                                                  | cadence                  | Research                                                    |
-| `DRIVE_BACKOFF_MAX_LEVEL`                  | 5                                                       | cadence                  | 2^5 x 2 min > the 60-minute cap                             |
-| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                                                  | cadence                  | Research                                                    |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                                                   | cadence                  | D4; 1..10 min of a 60-minute token                          |
-| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                                             | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30      |
-| `DRIVE_LEASE_MS`                           | 15 min                                                  | api-schema `drive.ts`    | Spec; 5..30 min                                             |
-| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                                                   | api-schema               | Spec                                                        |
-| `DRIVE_STATE_TTL_MS`                       | 10 min                                                  | api-schema               | Spec                                                        |
-| `DRIVE_ACCOUNT_SWITCH_TTL_MS`              | 30 min                                                  | api-schema               | Spec; time to read and answer the dialog; 10..60 min        |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                                     | api-schema               | One D1 batch; D1 allows 1000 statements                     |
-| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                                      | cadence                  | D5                                                          |
-| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                   | cadence                  | Google multipart limit                                      |
-| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                                                    | cadence                  | Google's recommendation; min 220                            |
-| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                                                    | cadence                  | Google limit                                                |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json`                      | api-schema               | Spec                                                        |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                                          | api-schema               | Spec                                                        |
-| `driveRootName(host)`                      | `livediagram` / `livediagram (staging)` / `livediagram` | api-schema               | Spec, "The root folder's name"                              |
-| `DRIVE_SCOPES`                             | `drive.file drive.install`                              | api-schema               | Spec                                                        |
+| Constant                                   | Value                                                                 | Where                    | Provenance / safe range                                     |
+| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------- |
+| `DRIVE_POLL_INTERVAL_MS`                   | 2 min                                                                 | `lib/drive/cadence.ts`   | Operator decision (was the research's 20); 1..20 min, gated |
+| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                                                                | cadence                  | Research back-off cap                                       |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 30 s                                                                  | cadence                  | D21; 10 s..5 min                                            |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                                                                  | cadence                  | Google maximum                                              |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 s                                                                  | cadence                  | Research; 10 s..5 min                                       |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                                                                 | cadence                  | Research; 1..30 min                                         |
+| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                                                                | cadence                  | Research back-off cap                                       |
+| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                                                                | cadence                  | Research                                                    |
+| `DRIVE_BACKOFF_MAX_LEVEL`                  | 5                                                                     | cadence                  | 2^5 x 2 min > the 60-minute cap                             |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                                                                | cadence                  | Research                                                    |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                                                                 | cadence                  | D4; 1..10 min of a 60-minute token                          |
+| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                                                           | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30      |
+| `DRIVE_LEASE_MS`                           | 15 min                                                                | api-schema `drive.ts`    | Spec; 5..30 min                                             |
+| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                                                                 | api-schema               | Spec                                                        |
+| `DRIVE_STATE_TTL_MS`                       | 10 min                                                                | api-schema               | Spec                                                        |
+| `DRIVE_ACCOUNT_SWITCH_TTL_MS`              | 30 min                                                                | api-schema               | Spec; time to read and answer the dialog; 10..60 min        |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                                                   | api-schema               | One store transaction per request                           |
+| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                                                    | cadence                  | D5                                                          |
+| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                                 | cadence                  | Google multipart limit                                      |
+| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                                                                  | cadence                  | Google's recommendation; min 220                            |
+| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                                                                  | cadence                  | Google limit                                                |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json`                                    | api-schema               | Spec                                                        |
+| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                                                        | api-schema               | Spec                                                        |
+| `driveRootName(host)`                      | `livediagram` / `livediagram (staging)` / `livediagram (self-hosted)` | api-schema               | Spec, "The root folder's name"                              |
+| `DRIVE_SCOPES`                             | `drive.file drive.install`                                            | api-schema               | Spec                                                        |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,

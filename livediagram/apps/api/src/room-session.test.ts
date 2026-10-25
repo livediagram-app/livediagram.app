@@ -12,12 +12,14 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Owner': '1',
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
-        'X-Verified-Account': '1',
         'X-Verified-Person': 'p',
         'X-Verified-Network': 'n',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
         'X-Verified-Document': 'd',
+        'X-Verified-Grant-Exp': '1700000000',
+        'X-Verified-Item-Owner': 'o',
+        'X-Verified-Item-Team': '',
       }),
     );
     expect(v).toEqual({
@@ -25,12 +27,13 @@ describe('verifiedSessionOf', () => {
       isOwner: true,
       tabScope: 't1',
       shareCode: null,
-      account: true,
       personTag: 'p',
       networkTag: 'n',
       workbenchPairing: 'w',
       adderKey: 'a',
       documentId: 'd',
+      grantExp: 1_700_000_000_000,
+      head: { owner: 'o', team: null },
     });
   });
 
@@ -47,7 +50,6 @@ describe('newSessionAttachment', () => {
         isOwner: false,
         tabScope: null,
         shareCode: null,
-        account: false,
         personTag: long,
         networkTag: long,
         workbenchPairing: long,

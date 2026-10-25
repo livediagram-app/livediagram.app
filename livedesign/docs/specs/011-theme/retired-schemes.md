@@ -46,6 +46,15 @@ still holding the retired theme's value for that role (its fill, outline, text, 
 theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
 
+## Custom themes
+
+Custom themes, the ones a person built and saved to their account (`custom:<uuid>` ids), were removed: only built-in
+themes exist, and there is no builder, no saved-theme list and no `/api/custom-themes`. A tab that still names a
+`custom:` id is not migrated, since there is no saved definition left to map it from. It stays a valid tab (the tab
+validator leaves `theme` unchecked) and `getBuiltInTheme` resolves the id to Default in the viewer's appearance, so it
+paints as Default until someone picks a theme. That first pick finds no previous theme to compare against and so
+resets the element colours to the new theme's.
+
 ## Where it runs
 
 One pure function in `@livedesign/design`, `migrateStoredTab`, composes every tab-level migration (this one and the
@@ -56,8 +65,9 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 - the offline store's tab load, for designs kept only in this browser;
 - a file import, since an exported file is a stored tab like any other.
 
-It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline designs and files never reach D1.
+It runs at read time rather than as a stored-data migration because the rewrite needs the element model (per-kind
+colour fields), which SQL over a JSON blob cannot express safely, and because offline designs and files never reach
+the api.
 
 ## Properties
 

@@ -1,8 +1,10 @@
-// /api/participants/<id> — read / update a participant's display row.
+// /api/participants/<id> — read / update a person's display name and colour, their profile at the
+// liveworkspace accounts Worker (person/profiles.ts).
 
+import { ProfileError } from '@liveworkspace/auth-client';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livedocuments/api-schema';
 import { isSafeColourValue } from '@livedocuments/document';
-import { getParticipant, upsertParticipant } from '../db';
+import { getParticipant, saveParticipant } from '../person/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
@@ -59,16 +61,15 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {
       return badRequest('name/color too long');
     }
-    const existing = await getParticipant(env, id);
-    const now = Date.now();
-    const p: ParticipantDTO = {
-      id,
-      name: body.name,
-      color: body.color,
-      createdAt: existing?.createdAt ?? now,
-    };
-    await upsertParticipant(env, p);
-    return json({ participant: p });
+    try {
+      const p = await saveParticipant(env, id, { name: body.name, color: body.color });
+      return json({ participant: p });
+    } catch (error) {
+      // The accounts Worker refused it (its own checks of a name and colour) or can't be reached.
+      if (error instanceof ProfileError) return badRequest(error.code);
+      console.warn('[participants] save_failed', { error: String(error) });
+      return json({ error: 'profile_unavailable' }, { status: 503 });
+    }
   }
   return notFound();
 }

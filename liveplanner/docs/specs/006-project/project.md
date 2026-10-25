@@ -8,13 +8,13 @@ which fixes what that tab is, and every tab is worked on in Plan, the one
 
 ## Domain language
 
-| Term            | Means                                                                                                   |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| **project**     | The top-level container: its name, owner, location, share links and tabs.                               |
-| **tab**         | One page of a project, with its own canvas, layers and elements.                                       |
-| **tab kind**    | What a tab is (`TabKind`, `packages/project/src/tab-kind.ts`): Board, Sheet, Dashboard, Form, or general. |
+| Term            | Means                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| **project**     | The top-level container: its name, owner, location, share links and tabs.                                  |
+| **tab**         | One page of a project, with its own canvas, layers and elements.                                           |
+| **tab kind**    | What a tab is (`TabKind`, `packages/project/src/tab-kind.ts`): Board, Sheet, Dashboard, Form, or general.  |
 | **general tab** | A tab Start Planning has not yet made one of the four; stored as the kind `'diagram'`, livediagram's name. |
-| **editor mode** | How a tab is worked on: always Plan ([Editor mode](../007-editor/editor-modes.md)).                     |
+| **editor mode** | How a tab is worked on: always Plan ([Editor mode](../007-editor/editor-modes.md)).                        |
 
 - The kind id `'diagram'` is a stored value, never a term: prose says general tab. A tab with no `kind`, or a kind
   this build no longer has (a stored `'event-storming'` or `'whiteboard'`), reads as a general tab.
@@ -47,17 +47,14 @@ The container was called a diagram until the domain language settled on project.
 that named it moved in one change:
 
 - **Code:** identifiers, files and packages (`@liveplanner/project`, `apps/editor/app/project/[id]`).
-- **Database:** the tables are `projects` and `project_tabs`, every foreign key is
-  `project_id`, and the stored values that name the container (timeline source, scope and event
-  types, titles and snapshot keys, the `notifyProjectJoin` preference, telemetry types) use
-  project. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
-- **Realtime:** the Durable Object class is `ProjectRoom`, declared new in its first migration (liveplanner was
-  never deployed, so it carries no rename history); the room ops are `project-meta` and `project-trashed`.
-- **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
-  offline projects (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
-  preferences (`upgradeLegacyPreferences`), the offline store (moved to the `projects` object
-  store on the next visit), and stored names: a project still called "Untitled diagram" counts as
-  untitled, exactly as "Untitled project" does.
+- **Stored data:** there is no D1. Each plan's own SQLite names the container `plan` (the `plan`
+  row, `plan_tabs`, `plan_id`), and the stored values that name it (titles and snapshot keys, the
+  `notifyProjectJoin` preference, telemetry types) use project. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+- **Realtime and storage:** the Durable Object class is `PlanRoom` (binding `PLAN_ROOM`), a SQLite-backed class declared
+  new in its first migration (liveplanner was never deployed, so it carries no rename history); it holds each plan's
+  content ([API](../015-api/api.md#storage)); the room ops are `project-meta` and `project-trashed`.
+- **Stored names:** a project still called "Untitled diagram" counts as untitled, exactly as "Untitled project"
+  does.
 - **No old addresses.** liveplanner was never deployed, so nobody holds a `/diagram/<id>` link or an old help
   address: the router redirects neither, and there are no `/api/diagrams…` routes and no MCP `*_diagram` tools.
 

@@ -30,10 +30,10 @@ import {
   lucideTextAlignStart,
   lucideType,
   lucideWand,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { FONTS } from '@livedesign/design';
 import { lucideGlyph } from '@livedesign/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { FlyoutHeader, onFlyoutArrowKey } from '@/components/palette/CategoryFlyout';
 import { FlyoutFooter, Kbd } from '@/components/palette/category-flyout-items';
 import { CHOICE_BLURBS, choiceSections, OPTION_GUIDES } from '@/lib/photo-editor/option-guides';

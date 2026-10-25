@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { AVATAR_TOUR_RELAUNCH_EVENT } from '@/lib/avatar-tour';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import {

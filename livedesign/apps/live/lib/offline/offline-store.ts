@@ -29,6 +29,7 @@ import {
   resetOfflineIds,
 } from './offline-ids';
 import { offlineDesignStats } from './offline-stats';
+import { noteThisBrowser } from './this-browser';
 
 // Sentinel owner id stamped on offline designs. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -47,17 +48,12 @@ export type OfflineDesignRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // design_id is a foreign key into `designs`, which an offline design has
-  // no row in, so its star has to live here instead. Optional so records
+  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars are liveworkspace's index's,
+  // on an item an offline design does not have, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline design's tags live in the browser"), by
-  // tag id, for the same reason as the star: design_tags.design_id is a foreign key into `designs`. Optional so
-  // records written before the field existed stay valid.
-  tagIds?: string[];
   // When the design was moved to this browser's local Trash
-  // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
+  // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the design (docs/specs/013-workspace/explorer-home.md "Opens"),
@@ -256,7 +252,11 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
 // Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
 // inside serializeOfflineWrite.
 export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
-  return offlineBackend().update(id, change);
+  // What the change left, for This Browser's list (this-browser.ts).
+  let after: ReturnType<OfflineRecordChange>;
+  return offlineBackend()
+    .update(id, (rec) => (after = change(rec)))
+    .then(() => noteThisBrowser(id, after));
 }
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
@@ -325,6 +325,7 @@ export async function offlineCreateDesign(
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
   return recordToDesign(rec);
 }
 
@@ -362,26 +363,6 @@ export async function offlineListFavouriteIds(): Promise<string[]> {
   return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
 }
 
-// Put a tag on / take it off an offline design (docs/specs/013-workspace/tags.md). Like a star, a tag is the
-// reader's own label, not an edit, so savedAt is left alone.
-export async function offlineSetDesignTag(id: string, tagId: string, on: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => {
-      if (!rec) return undefined;
-      const rest = (rec.tagIds ?? []).filter((t) => t !== tagId);
-      return { ...rec, tagIds: on ? [...rest, tagId] : rest };
-    }),
-  );
-}
-
-// Every live offline design's tags, as links.
-export async function offlineListTagLinks(): Promise<{ tagId: string; designId: string }[]> {
-  const recs = await offlineBackend().all();
-  return recs
-    .filter((r) => r.trashedAt === undefined)
-    .flatMap((r) => (r.tagIds ?? []).map((tagId) => ({ tagId, designId: r.id })));
-}
-
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   // No create-on-missing: a save must never resurrect a deleted design.
   // A pending debounced autosave can land AFTER a sync-to-cloud deleted
@@ -402,6 +383,7 @@ export async function offlineDeleteDesign(id: string): Promise<void> {
   await serializeOfflineWrite(async () => {
     await offlineBackend().delete(id);
     forgetOfflineId(id);
+    noteThisBrowser(id, 'delete');
   });
 }
 
@@ -438,4 +420,5 @@ export async function offlineGetRecord(id: string): Promise<OfflineDesignRecord 
 export async function offlinePutRecord(rec: OfflineDesignRecord): Promise<void> {
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
 }

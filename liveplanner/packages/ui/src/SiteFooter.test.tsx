@@ -18,7 +18,7 @@ describe('SiteFooter', () => {
     expect(brand).toContain('size-10');
   });
 
-  it('links the security policy and third-party licences among the legal links', () => {
+  it("links liveworkspace's terms and privacy policy, the security policy and third-party licences", () => {
     expect(labels.slice(labels.indexOf('Terms'))).toEqual([
       'Terms',
       'Privacy Policy',
@@ -27,6 +27,8 @@ describe('SiteFooter', () => {
       'Licences',
       'Contact',
     ]);
+    expect(footerNav).toContain('href="https://liveworkspace.app/terms"');
+    expect(footerNav).toContain('href="https://liveworkspace.app/privacy"');
     expect(footerNav).toContain('href="/help/policies/report-a-vulnerability/"');
     expect(footerNav).toContain('href="/licences"');
   });
@@ -75,7 +77,7 @@ describe('SiteFooter year', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '2026');
     vi.useFakeTimers({ now: new Date('2031-01-01T00:00:00Z') });
     try {
-      expect(render()).toContain('© 2026 liveplanner. All rights reserved.');
+      expect(render()).toContain('© 2026 liveplanner. MIT licensed.');
     } finally {
       vi.useRealTimers();
       vi.unstubAllEnvs();
@@ -85,7 +87,7 @@ describe('SiteFooter year', () => {
   it('shows no year rather than a wrong one when the build gave none', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '');
     try {
-      expect(render()).toContain('© liveplanner. All rights reserved.');
+      expect(render()).toContain('© liveplanner. MIT licensed.');
     } finally {
       vi.unstubAllEnvs();
     }

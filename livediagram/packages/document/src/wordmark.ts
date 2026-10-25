@@ -53,20 +53,6 @@ export function resolvedFontWeight(el: Pick<TextElement, 'fontWeight' | 'textBol
   return el.fontWeight ?? (el.textBold ? 700 : 400);
 }
 
-/** Tracking clamped to its range and to hundredths of an em; 0 (none) is undefined. */
-export function clampLetterSpacing(v: number): number | undefined {
-  if (!Number.isFinite(v)) return undefined;
-  const c = Math.round(Math.min(LETTER_SPACING_MAX, Math.max(LETTER_SPACING_MIN, v)) * 100) / 100;
-  return c === 0 ? undefined : c;
-}
-
-/** An arc clamped to whole degrees in range; 0 (flat) is undefined. */
-export function clampTextArc(v: number): number | undefined {
-  if (!Number.isFinite(v)) return undefined;
-  const c = Math.round(Math.min(TEXT_ARC_MAX, Math.max(-TEXT_ARC_MAX, v)));
-  return c === 0 ? undefined : c;
-}
-
 /** Arched text is one line: each line break, with the white space round it, reads as one space.
  *  Split rather than a regex, so a long run of spaces stays linear (CodeQL js/polynomial-redos). */
 export function arcText(text: string): string {

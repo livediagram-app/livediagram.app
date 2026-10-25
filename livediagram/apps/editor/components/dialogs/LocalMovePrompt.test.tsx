@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // turn and names any that stayed; Not Now is remembered until the count grows.
 
 const { auth, store, convert, track } = vi.hoisted(() => {
-  const auth: { authLoaded: boolean; clerkUserId: string | null } = {
+  const auth: { authLoaded: boolean; accountUserId: string | null } = {
     authLoaded: true,
-    clerkUserId: 'user_1',
+    accountUserId: 'user_1',
   };
   return {
     auth,
@@ -18,7 +18,7 @@ const { auth, store, convert, track } = vi.hoisted(() => {
     track: vi.fn(),
   };
 });
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({ useClerkApiBootstrap: () => auth }));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({ useAccountBootstrap: () => auth }));
 vi.mock('@/lib/offline/offline-store', () => store);
 vi.mock('@/lib/offline/offline-convert', () => convert);
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -33,7 +33,7 @@ const reload = vi.fn();
 
 beforeEach(() => {
   auth.authLoaded = true;
-  auth.clerkUserId = 'user_1';
+  auth.accountUserId = 'user_1';
   store.offlineListDocuments.mockResolvedValue(DOCS);
   store.offlineIdCount.mockResolvedValue(DOCS.length);
   convert.saveOfflineToCloud.mockResolvedValue('x');
@@ -54,7 +54,7 @@ const show = async (enabled?: boolean) => {
 describe('LocalMovePrompt', () => {
   it('offers every document in This Browser, newest first, all ticked', async () => {
     await show();
-    expect(screen.getByText('Move Documents in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Canvases in This Browser to Your Account?')).toBeTruthy();
     const names = screen.getAllByRole('checkbox').slice(1);
     expect(names.map((c) => (c as HTMLInputElement).checked)).toEqual([true, true]);
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
@@ -65,9 +65,9 @@ describe('LocalMovePrompt', () => {
   });
 
   it('stays away for a guest, before auth settles, when disabled, or with nothing local', async () => {
-    auth.clerkUserId = null;
+    auth.accountUserId = null;
     await show();
-    auth.clerkUserId = 'user_1';
+    auth.accountUserId = 'user_1';
     auth.authLoaded = false;
     await show();
     auth.authLoaded = true;
@@ -77,7 +77,7 @@ describe('LocalMovePrompt', () => {
     await show();
     // Nothing held here: the records are never read.
     expect(store.offlineListDocuments).not.toHaveBeenCalled();
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Canvases in This Browser to Your Account?')).toBeNull();
   });
 
   it('moves the ticked documents into the account, then reloads', async () => {
@@ -111,10 +111,10 @@ describe('LocalMovePrompt', () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LocalMovePrompt');
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Canvases in This Browser to Your Account?')).toBeNull();
     cleanup();
     await show();
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Canvases in This Browser to Your Account?')).toBeNull();
     // Not even listed while the count is no more than what was put off.
     expect(store.offlineListDocuments).toHaveBeenCalledOnce();
     store.offlineIdCount.mockResolvedValue(3);
@@ -124,6 +124,6 @@ describe('LocalMovePrompt', () => {
     ]);
     cleanup();
     await show();
-    expect(screen.getByText('Move Documents in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Canvases in This Browser to Your Account?')).toBeTruthy();
   });
 });

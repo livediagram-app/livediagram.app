@@ -3,6 +3,7 @@ import type { Comment, Element, ShapeElement } from '@livedesign/design';
 import {
   findCommentHost,
   hasNewComments,
+  newCommentsBy,
   redactCommentAuthorIds,
   redactTabDataAuthors,
   removeComment,
@@ -387,5 +388,25 @@ describe('a comment’s token id (docs/specs/024-agents/agent-presence.md I7)', 
       (redactCommentAuthorIds(els, 'someone')[0] as ShapeElement).commentThread!.comments[0]!
         .tokenId,
     ).toBeUndefined();
+  });
+});
+
+describe('newCommentsBy (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const cm = (id: string, authorId: string): Comment => ({
+    id,
+    text: 't',
+    createdAt: 0,
+    authorName: 'a',
+    authorColor: '#000',
+    authorId,
+  });
+  it("lists only the writer's comments the save adds, in order", () => {
+    expect(
+      newCommentsBy(
+        [mkShape('e1', [cm('c1', 'w'), cm('c2', 'w'), cm('c3', 'x')])],
+        [mkShape('e1', [cm('c1', 'w')])],
+        'w',
+      ).map((c) => c.id),
+    ).toEqual(['c2']);
   });
 });

@@ -25,9 +25,9 @@
     "@livedocuments/templates": "workspace:*"
   },
   "devDependencies": {
-    "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/tailwind-config": "workspace:*",
-    "@livedocuments/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

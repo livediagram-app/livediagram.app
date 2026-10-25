@@ -15,6 +15,7 @@ const { db, gates, votes } = vi.hoisted(() => ({
   votes: { refuseGuestVoteOverCap: vi.fn() },
 }));
 vi.mock('../db', () => db);
+vi.mock('../liveworkspace/profiles', () => ({ getParticipant: db.getParticipant }));
 vi.mock('../vote-integrity', () => votes);
 vi.mock('./context', async (orig) => ({
   ...(await orig<typeof import('./context')>()),

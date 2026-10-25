@@ -8,7 +8,7 @@ import { makeTestRouteContext } from './routes/test-route-context';
 import { handleDocuments } from './routes/documents';
 import { tabStatsOfData } from './db/tab-stats';
 
-// docs/specs/015-api/api.md "Tab size": a tab's data fits one D1 row (2,000,000 bytes), which the
+// docs/specs/015-api/api.md "Tab size": a tab's data fits one SQLite row (2,000,000 bytes), which the
 // local sqlite does not enforce, so the worker does, at every write, at the boundary.
 
 const T0 = 1_700_000_000_000;
@@ -30,7 +30,7 @@ function tabOf(bytes: number, id = 't1'): Tab {
 function liveDoc(db: SqliteD1, id: string, owner = 'owner') {
   db.sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, owner, id, T0, T0);
 }
@@ -106,7 +106,7 @@ describe('the routes answer the named 413', () => {
     );
     expect(res?.status).toBe(413);
     expect((await res.json<{ error: string }>()).error).toBe('payload_too_large');
-    expect(db.sql.prepare('SELECT id FROM documents WHERE id = ?').get('d1')).toBeUndefined();
+    expect(db.sql.prepare('SELECT id FROM test_documents WHERE id = ?').get('d1')).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
       '[tab-size] refused',
       expect.objectContaining({ write: 'create', bytes: MAX_TAB_BYTES + 1 }),

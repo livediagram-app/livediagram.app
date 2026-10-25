@@ -92,7 +92,7 @@ Dragging is still pointer-driven and uses no DnD library, consistent with the re
 editor (element drag, palette-to-canvas drag).
 
 A drag only **starts** once the pointer has travelled past a shared tolerance
-(`isDragTravel` in `lib/press-gestures.ts`), so a click on a panel header that jitters by a
+(`isDragTravel` in `../packages/workbench/src/lib/press-gestures.ts`), so a click on a panel header that jitters by a
 pixel stays a click. That tolerance is one definition for every draggable chrome control —
 panel headers, slide-deck rows, palette tiles, the quick-connect plus, the isometric
 orbit button, avatars — because six of them had their own and the copies had drifted: one
@@ -113,7 +113,7 @@ collapsible has no such button.
 
 The layout is stored in **`localStorage` only**, under `livedocuments:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
-D1-backed user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
+synced user-preferences blob, which the liveworkspace accounts Worker keeps ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
 choice (screen size, handedness, external monitor) rather than a portable account setting,
 and guests get it too. This is deliberately a different store from [User preferences](user-preferences.md).
 
@@ -174,7 +174,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
-- **`apps/editor/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+- **`../packages/workbench/src/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.

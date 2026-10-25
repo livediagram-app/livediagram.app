@@ -1,5 +1,6 @@
 import { pageViewApp, pageViewPath, WEB_VITALS, type WebVital } from '@livediagram/api-schema';
-import { reportTiming, type TimingTrack } from '@livediagram/telemetry-client';
+import type { TimingTrack } from '@liveworkspace/telemetry-client';
+import { reportTiming } from '@livediagram/telemetry-client';
 
 // Core Web Vitals as timings (docs/specs/017-telemetry/timing-telemetry.md): LCP, INP and CLS as the
 // web-vitals library reports them, each sent as `Timing·Measured·<Vital>.<App>.<Bucket>`. The library's

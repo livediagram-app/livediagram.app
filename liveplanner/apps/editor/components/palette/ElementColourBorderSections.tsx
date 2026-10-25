@@ -31,7 +31,10 @@ import {
   type ElementShadow,
 } from '@liveplanner/project';
 import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { isTechIconId } from '@/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';

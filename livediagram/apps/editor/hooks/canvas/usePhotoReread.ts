@@ -3,7 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { CropReader, ReadOptions, ReadText } from '@/lib/reading/types';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Reading a box again after the author moved, resized or drew it (docs/specs/021-event-storming/event-storming.md
 // Phase 9). The crop is cut afresh from the FULL-resolution photo for the

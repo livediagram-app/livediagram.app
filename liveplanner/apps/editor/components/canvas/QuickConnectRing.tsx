@@ -6,26 +6,18 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { PlusIcon, HoverCard } from '@liveplanner/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {
-  ADD_COLUMN_OPTION,
-  webRowOption,
-  ADD_ROW_OPTION,
-  FLOWCHART_NEXT_OPTION,
-  FLOWCHART_PARALLEL_OPTION,
-  ADD_ENTITY_FIELD_OPTION,
-  ADD_RELATED_ENTITY_OPTION,
-  MIND_CHILD_OPTION,
-  MIND_SIBLING_OPTION,
-  OPTIONS,
-} from './quick-connect-options';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
-import { isDragTravel } from '@/lib/press-gestures';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';
+  FLOATING_CONTROL_GAP,
+  FLOATING_CONTROL_SIZE,
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
+import { ADD_COLUMN_OPTION, webRowOption, ADD_ROW_OPTION, OPTIONS } from './quick-connect-options';
+import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
+import { quickRingMenuRect } from '@liveworkspace/workbench/lib/quick-ring-menu-rect';
 
 // Same grace period as the other hover-open surfaces: long enough to cross
 // the gap between the + and its menu.
@@ -75,15 +67,7 @@ type QuickConnectRingProps = {
   // on the right one. Duplicate / Text don't apply to a grid.
   variant?: 'default' | 'table';
   onAddTableRow?: () => void;
-  // Mind-map growth (docs/specs/009-elements/mind-node.md). Set only on a mind node, which is what
-  // puts Add child / Add sibling on its ring.
-  onGrowMind?: (relation: 'child' | 'sibling') => void;
-  // What `onGrowMind` grows, which names its two options. Absent: a mind map.
-  growing?: 'mind' | 'flowchart';
   onAddTableColumn?: () => void;
-  // An entity (docs/specs/009-elements/entity.md "Growing a model"): Add Related Entity on this side, and
-  // Add Field when this is the bottom ring.
-  entity?: { onAddRelated: () => void; onAddField?: () => void };
 };
 
 // The plus trigger stays in the shared floating-control family (matching
@@ -164,10 +148,7 @@ export function QuickConnectRing({
   webRow,
   variant = 'default',
   onAddTableRow,
-  onGrowMind,
-  growing = 'mind',
   onAddTableColumn,
-  entity,
 }: QuickConnectRingProps) {
   // The table variant slims to Arrow + this side's structural add (Add Row
   // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Text
@@ -179,27 +160,9 @@ export function QuickConnectRing({
           ...(onAddTableColumn ? [ADD_COLUMN_OPTION] : []),
           OPTIONS.find((o) => o.kind === 'arrow')!,
         ]
-      : entity
-        ? // An entity's ring grows a data model: a related entity, a field, then the usual connect and copy.
-          [
-            ADD_RELATED_ENTITY_OPTION,
-            ...(entity.onAddField ? [ADD_ENTITY_FIELD_OPTION] : []),
-            ...OPTIONS.filter((o) => o.kind === 'arrow' || o.kind === 'duplicate'),
-          ]
-        : webRow
-          ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
-          : onGrowMind
-            ? // A mind node's ring is how a map grows: its two growth actions
-              // and Duplicate. A free arrow, a sketch or a loose label is not
-              // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
-              // (docs/specs/009-elements/flowchart.md).
-              [
-                ...(growing === 'flowchart'
-                  ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
-                  : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
-                ...OPTIONS.filter((o) => o.kind === 'duplicate'),
-              ]
-            : OPTIONS;
+      : webRow
+        ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
+        : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
   // off for exit).
@@ -416,16 +379,7 @@ export function QuickConnectRing({
                       if (isArrow) return;
                       if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
-                      else if (option.kind === 'entity-related') entity?.onAddRelated();
-                      else if (option.kind === 'entity-field') entity?.onAddField?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();
-                      else if (option.kind === 'mind-child' || option.kind === 'flowchart-next')
-                        onGrowMind?.('child');
-                      else if (
-                        option.kind === 'mind-sibling' ||
-                        option.kind === 'flowchart-parallel'
-                      )
-                        onGrowMind?.('sibling');
                       else onSpawn(option.kind as QuickConnectKind);
                       onClose();
                     }}

@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
 - **Mode** is how a tab is worked on. livedocuments has one, **Pages**; a mode stored by livediagram (Diagram, Draw, Workshop, Plan) reads as Pages. Never a type of document or tab.
-- **Page kind** is what a page is: infographic, article or slide. A tab holds pages of any kind.
+- **Page kind** is what a page is: infographic, article or slide. Every page of a tab is of one kind, its first page's.
 - **Template** is what a document was made from: a Pages template or a page layout, never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
@@ -195,36 +195,28 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 ```
 apps/
   marketing/    # static marketing site (Next.js, /)
-  editor/       # the Pages editor app (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help)
-  api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
+  editor/       # the Pages editor app, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
+  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
+  api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, no D1, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedocuments.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the livedocuments command line for agents and scripts (Node, one esbuild bundle)
 packages/
-  ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  document/       # document data model (Tab, Element types + element helpers)
-  icons/          # icon catalogues (line-art + stickers) + SVG markup builders + xmlEscape
+  ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
+  document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
-  page-background/ # a page background's colours, patterns and motions + their parser (pure)
+  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
-  api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is laid out (overlaps, crossings, arrows behind boxes), with a fix each
-  render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
-  telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
-  licences/     # build-time generator of the /licences page from what each app bundles
-  source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
-  oxlint-config/  # shared oxlint config + the repo's own lint rules
-  prettier-config/# shared Prettier config
-  tailwind-config/# shared Tailwind theme (brand palette)
-  vitest-config/  # shared Vitest defaults (extended per workspace)
-  next-config/    # shared Next.js settings
+  telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
+  licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
+  tailwind-config/ # this product's brand ramps (amber) over @liveworkspace/tailwind-config's theme
+  # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), model-core, page-background, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)
@@ -243,7 +235,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 - The codebase is **MIT-licensed** and **publicly viewable**.
 - A free hosted version runs alongside at livedocuments.app. **No paid tier and no plan to introduce one.**
-- Keep every outside service optional (no required SaaS calls, no license checks gating the core editor). Sign-in (the liveworkspace accounts Worker) is optional: when unset the api worker and live frontend degrade to pure-guest mode.
+- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). The accounts Worker is optional: with its settings unset the api worker degrades to pure-guest mode, and the editor (which always offers sign-in) keeps working.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
@@ -251,8 +243,8 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
-- Server-only secrets (the accounts client secret, Resend, D1 access) never appear in client code.
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
+- Server-only secrets (the accounts client secret, Resend, `INDEX_KEY`, `MEDIA_KEY`) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 
 ## Auth model
@@ -260,12 +252,13 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The editor always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
-  - **Guest path**: a per-browser participant id (`livedocuments:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
-  - The api worker uses the `sub` claim as the owner id.
-- The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, guest documents migrate from the localStorage id to the account id via `POST /api/migrate`.
+- **One kind of identity, two kinds of person** — every caller sends a liveworkspace token as `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`); the api uses its `sub` claim as the owner id:
+  - **Guest**: a year-long guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`livedocuments:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
+  - **Account**: an account access token from signing in, or from signing in without a click (`/api/auth/silent`) when the browser already has a liveworkspace session.
+  - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
+- **Access is the index's.** Where a document is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
+- **Content is the document's.** Each document's tabs, comments, image references and grants live in its own Durable Object's SQLite (`DocumentRoom`), which pushes its summary, Inbox rows and edits to the index and its images to the media service. Workbench pairings, tickets and sessions, API tokens and teams are liveworkspace's. The api has no D1 database.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). Signing in moves a guest's items to the account; the index does that, not livedocuments.
 
 ## Core principle: reuse over duplication
 
@@ -292,7 +285,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 - Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes.
 - **A fully-decomposed orchestration root is exempt like pure data**; its bar is cohesion, not the number.
 - `useEditorState.ts` and `Canvas.tsx` already sit large; extract new slices out of them rather than adding in.
-- A new dialog / page / overlay → its **own component file** (e.g. `components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
+- A new dialog / page / overlay → its **own component file** (e.g. `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
 - New behaviour or a slice of state → its **own hook** (`useXxx.ts`), then composed in. Editor state lives in domain slices, not piled into one hook.
 - When you add to an existing file, confirm it's the _cohesive_ home, not just the convenient one. Wire new pieces in with the smallest edit to the host file.
 - If a file is drifting toward a "kitchen sink", stop and extract — the same way duplication gets extracted on first sight (see the reuse principle above).
@@ -301,7 +294,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 - **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
-- Database access goes through a Worker that holds the D1 binding — never from the browser.
+- Stored data is reached only through a Worker (the api's Durable Objects, liveworkspace's index and accounts) — never from the browser.
 
 ## Tech stack
 
@@ -321,7 +314,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
-- D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
+- The api has no D1 and no migrations: each Durable Object makes its own SQLite schema on first use (`document-room/document-schema.ts`), beside the class that owns it.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
 - **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
 - A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.

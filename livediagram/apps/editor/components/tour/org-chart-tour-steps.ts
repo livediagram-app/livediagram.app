@@ -1,7 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
 import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Org Chart tour (docs/specs/007-editor/element-tours.md "The Org Chart tour"), on a selected person node: its
 // name, role and initials, reports and peers grown from the keyboard or the toolbar, and the tree it hangs in. It points

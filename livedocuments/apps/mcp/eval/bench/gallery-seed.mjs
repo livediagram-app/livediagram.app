@@ -1,16 +1,14 @@
 // Puts a task's pictures into one run's image gallery before the run (a task's `gallery`: the user has uploaded
-// these). The local api is not reachable over HTTP inside the combined wrangler session, so the picture goes where an
-// upload would put it: its bytes in the local R2 bucket under its id, its row in `images` for the run's owner
-// (docs/specs/009-elements/images.md "Storage"). Each run gets its own ids: an image belongs to one owner.
-import { spawnSync } from 'node:child_process';
-import { createHash, randomUUID } from 'node:crypto';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+// these). Each picture is uploaded to liveworkspace's local media service as livedocuments' api uploads one
+// (liveworkspace/docs/media.md "The API": `POST /api/media/app/images?owner=`), so it lands in the run's account's
+// gallery exactly as an upload would. MEDIA_URL and MEDIA_KEY are the api's own (its .dev.vars), or the environment's.
+// Each run gets its own account, so its own copies: an image belongs to one owner.
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const BUCKET = 'livedocuments-images';
 
 // A PNG's size, from its IHDR chunk (bytes 16 to 23, big-endian).
 export function pngSize(bytes) {
@@ -19,69 +17,60 @@ export function pngSize(bytes) {
   return { width: view.getUint32(16), height: view.getUint32(20) };
 }
 
-function wrangler(apiDir, args) {
-  const res = spawnSync(
-    'corepack',
-    ['pnpm', 'exec', 'wrangler', ...args, '--local', '--persist-to', '.wrangler/state'],
-    {
-      cwd: apiDir,
-      encoding: 'utf8',
-    },
+// A value from the environment, else from the api's .dev.vars.
+function devVar(apiDir, name) {
+  if (process.env[name]) return process.env[name];
+  const file = join(apiDir, '.dev.vars');
+  if (!existsSync(file)) return undefined;
+  const line = readFileSync(file, 'utf8')
+    .split('\n')
+    .find((l) => l.startsWith(`${name}=`));
+  return (
+    line
+      ?.slice(name.length + 1)
+      .trim()
+      .replace(/^"|"$/g, '') || undefined
   );
-  if (res.status !== 0)
-    throw new Error(`wrangler ${args.slice(0, 3).join(' ')} failed:\n${res.stderr || res.stdout}`);
 }
 
-const sql = (s) => `'${String(s).replace(/'/g, "''")}'`;
-
-// Seeds each owner's `pictures` ([{ file, name }], files under fixtures/), all before a round starts: the wrangler
-// commands block, so none may run while runs are talking to the server. Answers each owner's gallery as listed.
-export function seedGalleries(apiDir, wanted) {
-  const now = Date.now();
-  const rows = [];
+// Seeds each owner's `pictures` ([{ file, name }], files under fixtures/), all before a round starts, so none is
+// uploaded while runs are talking to the server. Answers each owner's gallery as listed.
+export async function seedGalleries(apiDir, wanted) {
+  const media = (devVar(apiDir, 'MEDIA_URL') ?? 'http://localhost:8792/api/media').replace(
+    /\/+$/,
+    '',
+  );
+  const key = devVar(apiDir, 'MEDIA_KEY');
+  if (!key)
+    throw new Error("Seeding a gallery needs MEDIA_KEY (the api's .dev.vars, or the environment)");
   const out = new Map();
   for (const { owner, pictures } of wanted) {
-    const seeded = pictures.map((p, i) => {
-      const file = join(HERE, 'fixtures', p.file);
-      const bytes = readFileSync(file);
+    const seeded = new Array(pictures.length);
+    // The last picture first, so newest first is the order given.
+    for (let i = pictures.length - 1; i >= 0; i--) {
+      const p = pictures[i];
+      const bytes = readFileSync(join(HERE, 'fixtures', p.file));
       const { width, height } = pngSize(bytes);
-      const id = randomUUID();
-      wrangler(apiDir, [
-        'r2',
-        'object',
-        'put',
-        `${BUCKET}/${id}`,
-        '--file',
-        file,
-        '--content-type',
-        'image/png',
-      ]);
-      // A second apart, so newest first is the order given.
-      const createdAt = now - i * 1000;
-      const sha = createHash('sha256').update(bytes).digest('hex');
-      rows.push(
-        'insert into images(id,owner_id,content_type,byte_size,width,height,sha256,original_name,created_at) values(' +
-          [
-            sql(id),
-            sql(owner),
-            sql('image/png'),
-            bytes.byteLength,
-            width,
-            height,
-            sql(sha),
-            sql(p.name),
-            createdAt,
-          ].join(',') +
-          ');',
-      );
-      return { id, name: p.name, width, height };
-    });
+      const res = await fetch(`${media}/app/images?owner=${encodeURIComponent(owner)}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'X-Media-App': 'livedocuments.app',
+          'Content-Type': 'image/png',
+          'X-Image-Width': String(width),
+          'X-Image-Height': String(height),
+          'X-Image-Original-Name': encodeURIComponent(p.name),
+          'X-Image-Sha256': createHash('sha256').update(bytes).digest('hex'),
+        },
+        body: bytes,
+      });
+      if (!res.ok) throw new Error(`Seeding ${p.file} failed: ${res.status} ${await res.text()}`);
+      const { image } = await res.json();
+      seeded[i] = { id: image.id, name: p.name, width, height };
+      // A millisecond apart at least, so the gallery's order is the one given.
+      await new Promise((r) => setTimeout(r, 2));
+    }
     out.set(owner, seeded);
-  }
-  if (rows.length) {
-    const sqlFile = join(mkdtempSync(join(tmpdir(), 'ldbench-gallery-')), 'gallery.sql');
-    writeFileSync(sqlFile, rows.join('\n'));
-    wrangler(apiDir, ['d1', 'execute', 'DB', '--file', sqlFile]);
   }
   return out;
 }

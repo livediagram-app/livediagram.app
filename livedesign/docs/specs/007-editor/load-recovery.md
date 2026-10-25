@@ -93,14 +93,13 @@ holding identifiers and states only, never design content:
 - the identity, the same lines on every surface:
   - **Signed in:** yes or no. The editor adds the account id it resolved. The
     help page, which has no session loaded, reads the api's readable
-    `lp_signed_in` hint cookie (`0` signed out, `1` signed in), which says
+    `ldes_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
-  - **Guest id in this browser:** only its first 8 characters (a full guest id
-    is an `X-Owner-Id` credential) and whether it is signed, or "none".
-  - **Identity upgrade pending:** yes or no.
-  - When signed in with a guest id still present: "Guest designs moved to
+  - **Guest id in this browser:** only the first 8 characters of the id the
+    guest token names (the token is a credential), or "none".
+  - When signed in with a guest token still present: "Guest designs moved to
     the account: NOT YET". Signing in moves a guest's designs and then
-    clears the guest id, so one still there means the move has not happened,
+    drops the guest token, so one still there means the move has not happened,
     the usual cause of "my designs went missing after I signed in";
 - the load: the step it reached (`identity`, `participant`, `design`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;
@@ -118,14 +117,13 @@ Repair clears what is safe to lose and keeps what would lose work or identity.
 
 **Cleared:** every `localStorage` and `sessionStorage` key starting with
 `livedesign:` or `livedesign-` that is not kept below. This covers editor
-preferences, panel layout, dismissed banners and tours, the recent-designs
-cache, cached share passwords, and the stale-build reload guards.
+preferences, panel layout, dismissed banners and tours, an old recent-designs
+note, cached share passwords, and the stale-build reload guards.
 
 **Kept, always:**
 
-- the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
-  `name-confirmed` (all under `livedesign:v2:`). Losing the guest id loses
-  every design a guest owns;
+- the guest identity: `guest-token` and `name-confirmed` (both under
+  `livedesign:v2:`). Losing the guest token loses every design a guest owns;
 - `collab-key`, the per-browser key that past answers and votes are matched
   against;
 - the offline store (IndexedDB `livedesign-offline`): Offline Mode designs

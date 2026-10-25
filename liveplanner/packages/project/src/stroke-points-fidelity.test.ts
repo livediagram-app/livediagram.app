@@ -1,13 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
 import { freehandGeometry } from './freehand-points';
 import { catmullRomToBezierPath } from './polyline';
-import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
 import { svgFreehandShape } from './svg-render-shapes';
-import { STROKE_POINT_MAX_ERROR, STROKE_PRESSURE_MAX_ERROR } from './stroke-points';
-import type { Element, FreehandElement } from './index';
+import {
+  STROKE_POINT_MAX_ERROR,
+  STROKE_PRESSURE_MAX_ERROR,
+} from '@liveworkspace/model-core/stroke-points';
+import type { FreehandElement } from './index';
 
 // Export fidelity (docs/specs/006-project/stroke-points.md "Precision guarantee";
 // docs/specs/020-import-export/export-fidelity.md): the SVG export of a packed stroke is the SVG of
@@ -122,26 +124,4 @@ describe('SVG export of packed strokes', () => {
       expectWithin(markup, reference(entry, el), tolerance);
     },
   );
-
-  it('exports a migrated stroke as the stroke packed from the same points', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const entry = board[0]!;
-    const geometry = freehandGeometry(entry.samples);
-    const former = {
-      id: 'f',
-      type: 'freehand',
-      x: geometry.x,
-      y: geometry.y,
-      width: geometry.width,
-      height: geometry.height,
-      points: geometry.points,
-      pressures: entry.pressures,
-      closed: false,
-      ...entry.extra,
-    } as unknown as Element;
-    const [migrated] = migrateLegacyStrokePoints([former]);
-    expect(svgFreehandShape(migrated as FreehandElement, '#000', 'none')).toBe(
-      svgFreehandShape({ ...stroke(entry), id: 'f' }, '#000', 'none'),
-    );
-  });
 });

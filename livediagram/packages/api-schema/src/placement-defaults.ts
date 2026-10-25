@@ -1,12 +1,11 @@
 // Default folders (docs/specs/013-workspace/default-folders.md, blueprint
 // docs/specs/013-workspace/blueprints/default-folders.md): where a person's new documents land when
-// no place is chosen, keyed by what the document is made as. The api resolves and stores them; the
-// editor and the MCP server send the creation intent; all read the keys and the intent from here.
+// no place is chosen, keyed by what the document is made as. liveworkspace's index resolves and stores them; the
+// editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
 //
 // Three honest dimensions, most specific first: the first tab's kind (a specific kind such as an
-// event-storming board), the template family it was made from (a retrospective, a Kanban board),
-// and the editor mode it opens in. Each comes from one closed list, and the keys are generated from
-// them, so a new editor mode adds its key here unasked.
+// event-storming board), the template family it was made from (a retrospective), and the editor mode it opens in.
+// Each comes from one closed list, so a new editor mode adds its Default Folders entry here unasked.
 
 import {
   DEFAULT_TAB_KIND,
@@ -17,9 +16,6 @@ import {
   type Layer,
   type TabKind,
 } from '@livediagram/document';
-
-/** The dimensions of a default key, most specific first: the order a create's keys are tried in. */
-export const DEFAULT_KEY_DIMENSIONS = ['kind', 'template', 'mode'] as const;
 
 /** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
  *  whiteboard is a general tab that opens in Draw mode. */
@@ -38,7 +34,7 @@ export const SPECIFIC_TAB_KINDS: readonly SpecificTabKind[] =
 
 /** The template families: ordinary diagram tabs made from a family of templates. The map from each
  *  template to its family is `templateFamilyOf` in `@livediagram/templates`. */
-export const TEMPLATE_FAMILIES = ['retrospective', 'kanban'] as const;
+export const TEMPLATE_FAMILIES = ['retrospective'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 
 /** What a new document is made as, captured once when it is created: the create body's `intent`. */
@@ -48,26 +44,33 @@ export type CreationIntent = {
   templateFamily?: TemplateFamily;
 };
 
-export type PlacementDefaultKey =
-  `mode:${EditorMode}` | `kind:${SpecificTabKind}` | `template:${TemplateFamily}`;
+type EntryWords = { label: string; noun: string };
+const MODE_WORDS: Record<EditorMode, EntryWords> = {
+  diagram: { label: 'Diagrams', noun: 'diagrams' },
+  draw: { label: 'Whiteboards', noun: 'whiteboards' },
+  workshop: { label: 'Sessions', noun: 'sessions' },
+};
+const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
+  'event-storming': { label: 'Event Storming boards', noun: 'Event Storming boards' },
+};
 
-/** The default keys, `<dimension>:<value>`, in the order the "New documents that open as" list
- *  shows them: one per editor mode, per specific tab kind, per template family, all generated. */
-export const PLACEMENT_DEFAULT_KEYS: readonly PlacementDefaultKey[] = [
-  ...EDITOR_MODES.map((mode) => `mode:${mode}` as const),
-  ...SPECIFIC_TAB_KINDS.map((kind) => `kind:${kind}` as const),
-  ...TEMPLATE_FAMILIES.map((family) => `template:${family}` as const),
+/** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
+ *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families: "Whiteboards" holds
+ *  new canvases that open in Draw mode (`livediagram:mode:draw` at the index). Typed per dimension, so a new mode
+ *  or kind does not compile until it is named here. */
+export const DEFAULT_FOLDER_OPTIONS: readonly {
+  dimension: 'mode' | 'kind';
+  value: string;
+  label: string;
+  noun: string;
+}[] = [
+  ...EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] })),
+  ...SPECIFIC_TAB_KINDS.map((kind) => ({
+    dimension: 'kind' as const,
+    value: kind,
+    ...KIND_WORDS[kind],
+  })),
 ];
-
-/** One person's default folder for one key, as `GET /api/placement-defaults` answers it. */
-export type PlacementDefault = { key: PlacementDefaultKey; folderId: string };
-
-/** The named refusals of the default-folder routes besides the shared `folder_not_found`. */
-export const PLACEMENT_DEFAULT_REJECTIONS = [
-  'default_key_invalid',
-  'default_folder_invalid',
-] as const;
-export type PlacementDefaultRejection = (typeof PLACEMENT_DEFAULT_REJECTIONS)[number];
 
 /** The create's refusal of a malformed `intent`. */
 export const INTENT_INVALID = 'intent_invalid';
@@ -75,49 +78,12 @@ export const INTENT_INVALID = 'intent_invalid';
 const isMember = <T extends string>(list: readonly T[], value: unknown): value is T =>
   list.some((member) => member === value);
 
-export function isPlacementDefaultKey(value: unknown): value is PlacementDefaultKey {
-  return isMember(PLACEMENT_DEFAULT_KEYS, value);
-}
-
-// Keys stored under a name since retired: Workshop mode was Facilitate mode. A key for Pages mode (`mode:pages`, or
-// its older `mode:illustrate` and `mode:infographic`) is no key now Pages moved out to livedocuments, and reads as
-// none.
-const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:facilitate': 'mode:workshop',
-};
-
-/** A stored or requested key as today's key: a current key as it is, a retired one renamed,
- *  anything else null. */
-export function parsePlacementDefaultKey(value: unknown): PlacementDefaultKey | null {
-  if (isPlacementDefaultKey(value)) return value;
-  return typeof value === 'string' ? (LEGACY_PLACEMENT_DEFAULT_KEYS[value] ?? null) : null;
-}
-
-/** The retired names a key may still be stored under, so clearing it clears them too. */
-export function legacyPlacementDefaultKeys(key: PlacementDefaultKey): string[] {
-  return Object.keys(LEGACY_PLACEMENT_DEFAULT_KEYS).filter(
-    (k) => LEGACY_PLACEMENT_DEFAULT_KEYS[k] === key,
-  );
-}
-
 export function isCreationTabKind(value: unknown): value is CreationTabKind {
   return isMember(CREATION_TAB_KINDS, value);
 }
 
 export function isTemplateFamily(value: unknown): value is TemplateFamily {
   return isMember(TEMPLATE_FAMILIES, value);
-}
-
-const pascal = (part: string) =>
-  part
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-
-/** The telemetry value of a key (`Folder·Changed` / `Folder·Cleared`): `kind:event-storming` →
- *  `DefaultKindEventStorming`. Closed, as the keys are. */
-export function placementDefaultTelemetryType(key: PlacementDefaultKey): string {
-  return `Default${key.split(':').map(pascal).join('')}`;
 }
 
 /**
@@ -161,16 +127,10 @@ export function readCreationIntent(
   return { ok: true, intent: { ...intent, templateFamily } };
 }
 
-/** Every key an intent names, most specific first: kind, template, mode. */
-export function candidateKeysFor(intent: CreationIntent): string[] {
-  const keys: string[] = [];
-  if (isSpecificTabKind(intent.tabKind)) keys.push(`kind:${intent.tabKind}`);
-  if (intent.templateFamily) keys.push(`template:${intent.templateFamily}`);
-  keys.push(`mode:${intent.mode}`);
-  return keys;
-}
-
-/** The keys a create with this intent tries, most specific first. */
-export function defaultKeysFor(intent: CreationIntent): PlacementDefaultKey[] {
-  return candidateKeysFor(intent).filter(isPlacementDefaultKey);
+/** The intent the index files a create by (its default folders, docs/specs/013-workspace/default-folders.md):
+ *  `mode:tabKind:templateFamily`, whose last part names the template family the index's defaults key on. Null for
+ *  no intent. */
+export function indexIntentOf(intent: CreationIntent | null): string | null {
+  if (!intent) return null;
+  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
 }

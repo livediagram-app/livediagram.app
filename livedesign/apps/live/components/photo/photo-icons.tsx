@@ -30,7 +30,7 @@ import {
   lucideType,
   lucideWand,
   lucideWandSparkles,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import type { PhotoToolId } from '@/lib/photo-editor/tool-state';
 

@@ -2,6 +2,10 @@
 
 **Status: built.**
 
+> The shared Share dialog (`@liveworkspace/explorer`) copies a link as `/project/shared?s=<code>`
+> (`shareUrl` in `apps/editor/lib/explorer-host.ts`), the address whose head is filled in below, so a copied link
+> previews as its plan.
+
 When a share link is pasted into Slack, Teams, Discord, iMessage, WhatsApp, X, LinkedIn or anything else that
 draws a link preview, the preview names the project and shows a picture of it. A link that is not a working,
 open share link previews as liveplanner itself, with the brand card.
@@ -31,34 +35,28 @@ gave nobody a reason to tell them apart or click.
 
 ## The share card
 
-`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width.
-
-- **The picture is the live image's.** The same tab, the same rules: a tab-scoped link's own tab, otherwise the
-  first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
-  never stretched or cropped, on the drawing's own background colour. A small drawing grows to
-  at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on the deployment): the request is redirected (302) to the
-  brand card, so the preview still has a picture.
-- **Withheld exactly where the live image is**: a password-protected project, an unknown, revoked or expired code
-  and a trashed project answer 404, and the page names none of them.
-- **Cached in R2** beside the snapshots: `og/<projectId>` for the first tab, stamped with the time it was drawn and redrawn when the project has been saved since. A
-  tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a project
-  deletes it with its snapshots.
-- **Drawn by the shared resvg renderer** (`@liveplanner/render-png/worker`, the MCP server's), with Inter as the
-  one font, so a card's text matches the MCP previews.
-- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
+`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
+liveworkspace's, built once for every app ([previews.md](../../../../liveworkspace/docs/previews.md) "The addresses"): liveplanner's router
+forwards the address to the previews service, which draws the card from the plan's drawing (the live image's: the
+same tab, the same rules, [Live image share link](live-image-share.md)), stores it until the plan is saved again, and
+redirects (302) to the brand card when there is nothing to draw. A password-protected project, an unknown, revoked or
+expired code and a trashed project answer 404, exactly where the live image does. liveplanner only draws the tab when
+asked ([Project previews](../006-project/project-snapshots.md)).
 
 ## The share page's head
 
 The editor app's worker fills in the shell's `<head>` for `/project/shared?s=<code>` before it is sent: the
-`<title>`, `description`, `og:title`, `og:description`, `og:image` (with its size and alt text), `twitter:title`,
-`twitter:description` and `twitter:image`. It asks the api for the link's preview with
-`GET /api/share/<code>/card`, which answers `{ name }` for a link whose preview names its project and 404 for every
-other row of the table above.
+`<title>`, `description`, `og:title`, `og:description`, `og:image` (with its alt text), `twitter:title`,
+`twitter:description` and `twitter:image`. The rewrite is liveworkspace's, the same in every app
+(`@liveworkspace/media` `createSharePage`, [previews.md](../../../../liveworkspace/docs/previews.md) "The share page's head"); liveplanner's
+`apps/editor/src/share-page.ts` gives only its words: the share page's addresses, the share pitch and "Untitled plan".
+It asks liveworkspace's previews for the link's name with `GET /api/previews/share/<code>/card` (at
+`https://liveworkspace.app`, or the editor's `PREVIEWS_ORIGIN`: staging's own), which answers `{ name }` for a link
+whose preview names its project and 404 for every other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a deployment without the `API` service binding): the
-  shell goes out as built, with the brand card, and the editor works as before.
+- **The service has 1.5 s.** Slower or failing: the shell goes out as built, with the brand card, and the editor works
+  as before.
 - **The editor still sets its own title** once the project loads; the worker only decides what a crawler reads.
 
 ## Share roles
@@ -69,11 +67,10 @@ of that link sees, so it needs no gate beyond the link's own.
 
 ## Limits and abuse
 
-- The card and the share card share one per-network bucket on `SHARE_RATE_LIMITER` (key `share-preview:<network>`),
-  apart from the share resolve's, so an office opening a link together in a meeting never spends the editor's own
-  budget on previews. Both doors answer only what the live image already answers for the same code, so the bucket
-  adds no way to learn more from a guessed code.
-- The editor worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
-  the editor worker as one caller.
-- The card is drawn at most once per save per project (its first tab), and the PNG's longer side is never
-  more than 1200 px, so a vast board cannot exhaust a Worker's memory.
+- The previews never reach liveplanner's api, so they spend nothing of its share resolve's per-network budget on
+  `SHARE_RATE_LIMITER`. Each door answers only what the live image already answers for the same code, so a guessed
+  code learns nothing more from them.
+- The editor worker passes the visitor's address on to the service, so it sees visitors rather than the editor worker
+  as one caller.
+- The card is drawn at most once per save per project and tab, and the PNG's longer side is never more than 1200 px,
+  so a vast board cannot exhaust a Worker's memory.

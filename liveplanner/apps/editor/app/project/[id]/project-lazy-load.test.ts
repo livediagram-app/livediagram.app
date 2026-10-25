@@ -19,7 +19,6 @@ describe('the project page’s first load', () => {
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/project/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
-    ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
@@ -31,13 +30,14 @@ describe('the project page’s first load', () => {
     expect(importsOf(file)).not.toContain(module);
   });
 
-  it('loads the tool panels on demand', () => {
-    const imports = importsOf('components/canvas/useCanvasToolPanels.tsx');
-    expect(imports.filter((m) => m.startsWith('@/components/panels/'))).toEqual([]);
-  });
-
   it('takes the template overrides from the builders loaded at the press', () => {
     const src = read('app/project/[id]/useTemplateFlow.ts');
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);
+  });
+
+  // The Explorer opens only from the canvas's menu button (docs/specs/007-editor/toolbar-layout.md): the status
+  // screens (deleted, couldn't load, not found) render neither it nor its code.
+  it('shows no Explorer panel on the status screens', () => {
+    expect(read('app/project/[id]/editor-page.tsx')).not.toMatch(/LazyExplorer|panels\/Explorer\b/);
   });
 });

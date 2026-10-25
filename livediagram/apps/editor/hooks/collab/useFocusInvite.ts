@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press puts on your
 // screen, and what taking it does.

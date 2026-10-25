@@ -1,6 +1,7 @@
-// tabs — one row per tab, linked to designs through the
-// design_tabs many-to-many table (the baseline migration / docs/specs/006-design/tab-design-many-to-many.md).
+// tabs — one row per tab in the design's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the design by
+// `design_tabs`. Runs only inside the design's Durable Object, on `env.DESIGN_DB` (design-room/design-db.ts).
 
+import { shareLeaveStatements } from '@liveworkspace/index-app';
 import { capElementActions, drawnCount, type Tab } from '@livedesign/design';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -14,43 +15,25 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   logTabRefused(write, tabId, bytes);
   throw new TabTooLargeError(tabId, bytes, write);
 }
-import type { SharedTabsSummary } from '@livedesign/api-schema';
-import type { Env, TabDTO } from '../types';
+import type { DesignEnv, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
-import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
-import { collabIndexStatements } from './collab-index';
 import {
   imageRefAddStatements,
   imageRefPruneTabStatement,
   imageRefReplaceStatements,
 } from './image-refs';
-import { mediaRefQueueDesignsStatement } from '../media';
 
-// Whether `tabId` is a tab that exists but is not one of `designId`'s: a save must never adopt it. A save
-// upserts by tab id, so without this a tab id seen elsewhere (a share link) could
-// overwrite that tab and link it into the caller's own design. Linking an existing tab has its own route.
-export async function tabBelongsElsewhere(
-  env: Env,
-  tabId: string,
+export async function getTab(
+  env: DesignEnv,
   designId: string,
-): Promise<boolean> {
-  const row = await env.DB.prepare(
-    `SELECT 1 AS found FROM tabs t
-      WHERE t.id = ?
-        AND NOT EXISTS (SELECT 1 FROM design_tabs dt WHERE dt.tab_id = t.id AND dt.design_id = ?)`,
-  )
-    .bind(tabId, designId)
-    .first<{ found: number }>();
-  return row !== null;
-}
-
-export async function getTab(env: Env, designId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the design_tabs link table (docs/specs/006-design/tab-design-many-to-many.md) so a
+  tabId: string,
+): Promise<TabDTO | null> {
+  // Resolve via the design_tabs link table so a
   // linked tab surfaces from every design that contains it. The link
   // also carries the per-design order_index, so the returned summary's
   // position is correct for whichever design the caller asked about.
-  const row = await env.DB.prepare(
+  const row = await env.DESIGN_DB.prepare(
     `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
        JOIN design_tabs dt ON dt.tab_id = t.id
@@ -63,8 +46,8 @@ export async function getTab(env: Env, designId: string, tabId: string): Promise
 
 // The design's tabs that hold a comment thread, in tab order (agent-presence PR21): the thread listing reads them
 // one at a time rather than every body at once.
-export async function tabIdsWithComments(env: Env, designId: string): Promise<string[]> {
-  const { results } = await env.DB.prepare(
+export async function tabIdsWithComments(env: DesignEnv, designId: string): Promise<string[]> {
+  const { results } = await env.DESIGN_DB.prepare(
     `SELECT dt.tab_id FROM design_tabs dt JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.design_id = ?
         AND instr(t.data, '"commentThread"') > 0
@@ -78,12 +61,12 @@ export async function tabIdsWithComments(env: Env, designId: string): Promise<st
 // A page of a design's tabs in order, bodies included: `overview` reads a design this way so it
 // never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/design-views.md, VW47).
 export async function tabBodiesInOrder(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   offset: number,
   limit: number,
 ): Promise<TabDTO[]> {
-  const { results } = await env.DB.prepare(
+  const { results } = await env.DESIGN_DB.prepare(
     `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
        JOIN design_tabs dt ON dt.tab_id = t.id
@@ -96,39 +79,16 @@ export async function tabBodiesInOrder(
   return results.map(rowToTab);
 }
 
-// The raw `tabs.data` JSON for a design's first tab (lowest
-// order_index in the design_tabs link), or null when the design has
-// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-design/design-snapshots.md), which needs
-// only the element body — never the full TabDTO hydration — so this
-// reads the single `data` column rather than going through getTab.
-// The `empty` column of a design list (docs/specs/006-design/design-snapshots.md): the element
-// count of the design's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
-// count each tab write binds (the baseline migration), never a tab body. NULL = no tab, -1 = not yet known.
-export function firstTabCountSql(designIdSql: string, scopeTabSql: string | null = null): string {
-  const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
-  return `(SELECT COALESCE(t.element_count, -1)
-             FROM design_tabs dt
-             JOIN tabs t ON t.id = dt.tab_id
-            WHERE dt.design_id = ${designIdSql}${scope}
-            ORDER BY dt.order_index ASC
-            LIMIT 1) AS first_tab_count`;
-}
-
-// No tab, or a counted tab with no elements. A count not yet known is not empty: its thumbnail is asked for.
-export function isEmptyCount(firstTabCount: number | null | undefined): boolean {
-  return firstTabCount == null || firstTabCount === 0;
-}
-
-// A stored tab body with its id and its element count (null until known, the baseline migration).
+// A stored tab body with its id and its element count (null until known).
 export type StoredTabBody = { id: string; data: string; elementCount: number | null };
 
 // The design's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
 export async function getTabBody(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string | null = null,
 ): Promise<StoredTabBody | null> {
-  const row = await env.DB.prepare(
+  const row = await env.DESIGN_DB.prepare(
     `SELECT t.id, t.data, t.element_count
        FROM design_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
@@ -141,23 +101,16 @@ export async function getTabBody(
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
-// How much the design's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
-// not yet known (the baseline migration). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
-export async function firstTabElementCount(env: Env, designId: string): Promise<number> {
-  const body = await getTabBody(env, designId);
-  if (!body) return 0;
-  if (body.elementCount !== null) return body.elementCount;
-  try {
-    return drawnCount(JSON.parse(body.data) as { elements?: unknown });
-  } catch {
-    return 0;
-  }
-}
-
 // The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
-export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {
-  await env.DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
+export async function stampTabElementCount(
+  env: DesignEnv,
+  tabId: string,
+  count: number,
+): Promise<void> {
+  await env.DESIGN_DB.prepare(
+    'UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL',
+  )
     .bind(count, tabId)
     .run();
 }
@@ -170,11 +123,11 @@ export async function stampTabElementCount(env: Env, tabId: string, count: numbe
 // (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
 // lowest order_index.
 export async function getTabData(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string,
 ): Promise<string | null> {
-  const row = await env.DB.prepare(
+  const row = await env.DESIGN_DB.prepare(
     `SELECT t.data
        FROM design_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
@@ -193,13 +146,12 @@ type TabRevWrite = { advance: true } | { expected: number };
 
 // The statements of one tab write. Splits the live-app's Tab type into columns + a `data` JSON
 // blob (everything except id + name) so list queries can return summaries without parsing element
-// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), this design's position
-// to its `design_tabs` link (docs/specs/006-design/tab-design-many-to-many.md), the
-// design's `saved_at`, and the collaboration and image reference indexes, replaced in the SAME
-// batch as the blob they mirror so they can never drift. Exported so a changeset batches its
+// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), its position to its
+// `design_tabs` row, the design's `saved_at`, and the image reference index and placement grants, replaced
+// in the SAME transaction as the blob they mirror so they can never drift. Exported so a changeset batches its
 // record beside the write: a lost compare-and-swap then aborts the whole batch.
 export function tabWriteStatements(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   input: Tab,
   orderIndex: number,
@@ -215,7 +167,7 @@ export function tabWriteStatements(
   const advance = 'advance' in revision;
   const insertRev = advance ? 1 : revision.expected + 1;
   return [
-    env.DB.prepare(
+    env.DESIGN_DB.prepare(
       `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
        VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
@@ -226,7 +178,7 @@ export function tabWriteStatements(
          rev = ${advance ? 'tabs.rev + 1' : 'excluded.rev'}
        RETURNING rev`,
     ).bind(id, name, data, now, drawnCount(tab), insertRev),
-    env.DB.prepare(
+    env.DESIGN_DB.prepare(
       `INSERT INTO design_tabs (design_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
        ON CONFLICT (design_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
@@ -234,17 +186,13 @@ export function tabWriteStatements(
     // The Details view's numbers (docs/specs/013-workspace/explorer-details-view.md), from the body
     // just stored, after the tabs upsert, which the row's FK needs.
     tabStatsStatement(env, id, tabStatsOf(rest, data), now),
-    // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON.
-    env.DB.prepare('UPDATE designs SET saved_at = ? WHERE id = ?').bind(now, designId),
-    // The collaboration index (docs/specs/013-workspace/inbox.md §2.1), after the tabs
-    // upsert, which the rows' FK needs.
-    ...collabIndexStatements(env, id, tab.elements),
+    // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON. The collaboration
+    // index (docs/specs/013-workspace/inbox.md §2.1) and the listing summary follow from the outbox the
+    // triggers fill in this same transaction (design-room/design-outbox.ts).
+    env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(now, designId),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
-    // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
-    // design_tabs upsert above, which they read.
-    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
   ];
 }
 
@@ -264,12 +212,12 @@ export function isTabRevStale(err: unknown): boolean {
 // Full upsert for a single tab, advancing its revision from whatever is stored. One batch: the
 // extra serial D1 hops were once the largest latency item on a save. Answers the new revision.
 export async function upsertTab(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   input: Tab,
   orderIndex: number,
 ): Promise<number> {
-  const results = await env.DB.batch(
+  const results = await env.DESIGN_DB.batch(
     tabWriteStatements(env, designId, input, orderIndex, { advance: true }),
   );
   return revFromBatch(results);
@@ -278,13 +226,13 @@ export async function upsertTab(
 // A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
 // `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
 export async function upsertTabAtRev(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   input: Tab,
   orderIndex: number,
   expectedRev: number,
 ): Promise<number> {
-  const results = await env.DB.batch(
+  const results = await env.DESIGN_DB.batch(
     tabWriteStatements(env, designId, input, orderIndex, { expected: expectedRev }),
   );
   return revFromBatch(results);
@@ -292,8 +240,12 @@ export async function upsertTabAtRev(
 
 // A tab rename (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"): the
 // name column only, advancing the revision (CS42). Answers the new revision, or null for no tab.
-export async function renameTab(env: Env, tabId: string, name: string): Promise<number | null> {
-  const row = await env.DB.prepare(
+export async function renameTab(
+  env: DesignEnv,
+  tabId: string,
+  name: string,
+): Promise<number | null> {
+  const row = await env.DESIGN_DB.prepare(
     'UPDATE tabs SET name = ?, rev = rev + 1, updated_at = ? WHERE id = ? RETURNING rev',
   )
     .bind(name, Date.now(), tabId)
@@ -310,7 +262,7 @@ export async function renameTab(env: Env, tabId: string, name: string): Promise<
 // `savedAt`: the design's last-modified date after seeding, its own when a create carried one
 // (docs/specs/015-api/api.md "Design dates"); absent, now.
 export async function seedTabs(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabs: Tab[],
   savedAt?: number,
@@ -326,7 +278,7 @@ export async function seedTabs(
     const { id, name, ...rest } = tab;
     const data = JSON.stringify(rest);
     return [
-      env.DB.prepare(
+      env.DESIGN_DB.prepare(
         `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
          VALUES (?, ?, ?, ?, ?, 1)
          ON CONFLICT(id) DO UPDATE SET
@@ -336,7 +288,7 @@ export async function seedTabs(
            element_count = excluded.element_count,
            rev = tabs.rev + 1`,
       ).bind(id, name, data, now, drawnCount(tab)),
-      env.DB.prepare(
+      env.DESIGN_DB.prepare(
         `INSERT INTO design_tabs (design_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
          ON CONFLICT (design_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
@@ -345,177 +297,46 @@ export async function seedTabs(
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE designs SET saved_at = ? WHERE id = ?').bind(
+    env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(
       savedAt ?? now,
       designId,
     ),
   );
-  // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
-  // copy from a share link can carry actions and threads in on create.
+  // The collaboration index of every seeded tab follows from the outbox (design-room/design-outbox.ts): a JSON
+  // import or a copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
-    stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
-    stmts.push(
-      ...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements, tab.pages), now),
-    );
   }
-  await env.DB.batch(stmts);
+  await env.DESIGN_DB.batch(stmts);
 }
 
-// Which of `tabIds` already name a tab that is NOT in `designId`: a create
-// seeding one of those would write into a tab another design holds, so the
-// create re-mints it (docs/specs/006-design/offline-mode.md, "Shared tabs fork").
-// A tab already in this design is a retried create and keeps its id.
-export async function tabIdsHeldElsewhere(
-  env: Env,
-  designId: string,
-  tabIds: string[],
-): Promise<Set<string>> {
-  if (tabIds.length === 0) return new Set();
-  const rows = await env.DB.prepare(
-    `SELECT id FROM tabs
-      WHERE id IN (SELECT value FROM json_each(?))
-        AND NOT EXISTS (SELECT 1 FROM design_tabs dt WHERE dt.design_id = ? AND dt.tab_id = tabs.id)`,
-  )
-    .bind(JSON.stringify(tabIds), designId)
-    .all<{ id: string }>();
-  return new Set((rows.results ?? []).map((r) => r.id));
-}
-
-// Remove the tab from this design (drops the `design_tabs` link
-// row). The underlying `tabs` row only goes away when no other
-// design still references it: linked tabs (per docs/specs/006-design/tab-design-many-to-many.md) survive
-// an unlink from one of their containing designs so the body
-// stays readable from the rest. Legacy single-link tabs end up
-// fully deleted, matching the prior contract.
+// Remove the tab from the design: its `design_tabs` row, its body (its stats and changesets go with it by the
+// foreign keys) and its image and photo references, in one transaction.
 //
-// Answers the tab's stored body as it was unlinked (null when this design did not hold it), read
-// by the unlink itself so a comment written a moment before cannot slip between a read and the
+// Answers the tab's stored body as it was removed (null when this design did not hold it), read
+// by the delete itself so a comment written a moment before cannot slip between a read and the
 // delete: the caller retracts the tab's comment events from this design's feed with it.
 export async function deleteTabRow(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string,
 ): Promise<string | null> {
-  const unlinked = await env.DB.prepare(
-    `DELETE FROM design_tabs WHERE design_id = ? AND tab_id = ?
-      RETURNING (SELECT t.data FROM tabs t WHERE t.id = design_tabs.tab_id) AS data`,
-  )
-    .bind(designId, tabId)
-    .first<{ data: string | null }>();
-  // The design no longer shows the tab's images, if it had any: tell the media service (src/media.ts).
-  if (unlinked) {
-    await mediaRefQueueDesignsStatement(
-      env,
-      'd.id = ?2 AND EXISTS (SELECT 1 FROM image_refs WHERE tab_id = ?3)',
-      [designId, tabId],
-      false,
-    ).run();
-  }
-  const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM design_tabs WHERE tab_id = ?')
-    .bind(tabId)
-    .first<{ n: number }>();
-  if ((remaining?.n ?? 0) === 0) {
-    // image_refs has no FK to cascade from `tabs`, so its rows go explicitly.
-    await env.DB.batch([
-      imageRefPruneTabStatement(env, tabId),
-      env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
-    ]);
-  }
-  return unlinked?.data ?? null;
-}
-
-// Link an existing tab into another design (docs/specs/006-design/tab-design-many-to-many.md). Inserts a
-// `design_tabs` row at the end of the target design's order,
-// idempotent on conflict so re-linking the same pair returns 200
-// without double-counting. The `tabs` row itself is untouched: the
-// tab body lives in one place and edits propagate to every design
-// that references it. Returns true when a fresh link was created,
-// false when the link already existed (idempotent path).
-export async function linkTabToDesign(
-  env: Env,
-  designId: string,
-  tabId: string,
-): Promise<boolean> {
-  const existing = await env.DB.prepare(
-    'SELECT 1 AS present FROM design_tabs WHERE design_id = ? AND tab_id = ?',
-  )
-    .bind(designId, tabId)
-    .first<{ present: number }>();
-  if (existing) return false;
-  const count = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM design_tabs WHERE design_id = ?',
-  )
-    .bind(designId)
-    .first<{ n: number }>();
-  const orderIndex = count?.n ?? 0;
-  const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO design_tabs (design_id, tab_id, order_index, added_at)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT (design_id, tab_id) DO NOTHING`,
-  )
-    .bind(designId, tabId, orderIndex, now)
-    .run();
-  await env.DB.prepare('UPDATE designs SET saved_at = ? WHERE id = ?')
-    .bind(now, designId)
-    .run();
-  // Placement grants (docs/specs/009-elements/images.md): the new holder serves what the tab showed.
-  await env.DB.batch([
-    imageGrantLinkStatement(env, designId, tabId, now),
-    // And the media service hears that it shows them (src/media.ts).
-    mediaRefQueueDesignsStatement(env, 'd.id = ?2', [designId]),
+  const [unlinked] = await env.DESIGN_DB.batch([
+    env.DESIGN_DB.prepare(
+      `DELETE FROM design_tabs WHERE design_id = ? AND tab_id = ?
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = design_tabs.tab_id) AS data`,
+    ).bind(designId, tabId),
+    // The tab's image and photo references go with it (no foreign key cascades them); the outbox triggers tell
+    // the media service the design no longer shows its images (design-room/design-outbox.ts).
+    imageRefPruneTabStatement(env, tabId),
+    env.DESIGN_DB.prepare('DELETE FROM photo_blob_refs WHERE tab_id = ?').bind(tabId),
+    // A shared tab (design-room/tab-shares.ts): every other holder hears that this design left, and nothing else it
+    // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
+    ...shareLeaveStatements(env.DESIGN_DB, tabId),
+    env.DESIGN_DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
   ]);
-  return true;
-}
-
-// The link endpoint's authorisation check in one query: is this tab
-// linked into at least one design owned by `ownerId`? Replaces the
-// old "list every containing design id, then getDesign() each in a
-// loop" pattern (N full design hydrations to read one column). The
-// JOIN + LIMIT 1 stops at the first owned match.
-export async function tabLinkedToOwnedDesign(
-  env: Env,
-  tabId: string,
-  ownerId: string,
-): Promise<boolean> {
-  const row = await env.DB.prepare(
-    `SELECT 1 AS present
-       FROM design_tabs dt
-       JOIN designs d ON d.id = dt.design_id
-      WHERE dt.tab_id = ? AND d.owner_id = ? AND d.trashed_at IS NULL
-      LIMIT 1`,
-  )
-    .bind(tabId, ownerId)
-    .first<{ present: number }>();
-  return row !== null;
-}
-
-// How many of this design's tabs are shared (also linked into another
-// design), and across how many other designs: what deleting or taking the
-// design offline leaves behind (docs/specs/006-design/tab-design-many-to-many.md,
-// "Shared-tab notice").
-export async function sharedTabsSummary(env: Env, designId: string): Promise<SharedTabsSummary> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.design_id) AS designs
-       FROM design_tabs dt
-       JOIN design_tabs o ON o.tab_id = dt.tab_id AND o.design_id <> dt.design_id
-      WHERE dt.design_id = ?`,
-  )
-    .bind(designId)
-    .first<SharedTabsSummary>();
-  return { tabs: row?.tabs ?? 0, designs: row?.designs ?? 0 };
-}
-
-// Look up every design id that links the given tab. Used by the
-// link endpoint's auth check (caller must own at least one of
-// them) and would also drive a future "this tab is shared with N
-// designs" indicator.
-export async function designsContainingTab(env: Env, tabId: string): Promise<string[]> {
-  const rows = await env.DB.prepare('SELECT design_id FROM design_tabs WHERE tab_id = ?')
-    .bind(tabId)
-    .all<{ design_id: string }>();
-  return (rows.results ?? []).map((r) => r.design_id);
+  const row = (unlinked as { results?: { data?: string | null }[] } | undefined)?.results?.[0];
+  return row?.data ?? null;
 }
 
 // One position in a reorder request: the tab id plus its per-design
@@ -553,22 +374,22 @@ export function normalizeReorderEntry(entry: ReorderEntry): { id: string; folder
 // docs/specs/006-design/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
 // so a blank folder can never persist.
 export async function reorderTabs(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
   // Order and folder live on the link, per design
-  // (docs/specs/006-design/tab-design-many-to-many.md): moving a tab here
+  //: moving a tab here
   // leaves its place in every other design, and its body, untouched.
   const batch = entries.map((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
-    return env.DB.prepare(
+    return env.DESIGN_DB.prepare(
       'UPDATE design_tabs SET order_index = ?, folder = ? WHERE design_id = ? AND tab_id = ?',
     ).bind(idx, folder, designId, tabId);
   });
-  if (batch.length > 0) await env.DB.batch(batch);
-  await env.DB.prepare('UPDATE designs SET saved_at = ? WHERE id = ?')
+  if (batch.length > 0) await env.DESIGN_DB.batch(batch);
+  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')
     .bind(now, designId)
     .run();
 }
@@ -584,7 +405,7 @@ export async function reorderTabs(
 // image reference index is only ever ADDED to here: the swap can lose to a
 // concurrent save, and a delete would then drop references the winner wrote.
 export async function swapTabData(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string,
   expectedData: string,
@@ -595,30 +416,29 @@ export async function swapTabData(
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();
-  const [res] = await env.DB.batch([
-    env.DB.prepare(
+  const [res] = await env.DESIGN_DB.batch([
+    env.DESIGN_DB.prepare(
       'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND data = ?',
     ).bind(nextData, now, nextStats.elementCount, tabId, expectedData),
     // Only if the swap above won: then the tab stores exactly `nextData`.
     tabStatsStatement(env, tabId, nextStats, now, nextData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
-    ...imageGrantPlacementStatements(env, tabId, imageRefIdsFromData(nextData), now),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.DB.prepare('UPDATE designs SET saved_at = ? WHERE id = ?')
+  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')
     .bind(now, designId)
     .run();
   return true;
 }
 
-// Does the design link this tab? A workbench ticket naming a tab the design lacks is refused
+// Does the design hold this tab? A workbench ticket naming a tab the design lacks is refused
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
-export async function designLinksTab(
-  env: Env,
+export async function designHasTab(
+  env: DesignEnv,
   designId: string,
   tabId: string,
 ): Promise<boolean> {
-  const row = await env.DB.prepare(
+  const row = await env.DESIGN_DB.prepare(
     'SELECT 1 AS present FROM design_tabs WHERE design_id = ? AND tab_id = ?',
   )
     .bind(designId, tabId)

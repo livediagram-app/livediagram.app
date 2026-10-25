@@ -9,56 +9,10 @@ Product screenshots, split by viewport so the desktop and mobile pitches stay
 independent. Each should be captioned with what it shows so copywriters can
 match it to a claim in [`../copy/facts.md`](../copy/facts.md).
 
-**Not yet checked.** The captions that used to sit here described livediagram
-(a mind-map hero, Kanban and retrospective boards, an org chart, the old `/new`
-template modal) and matched none of the files below, so they were removed.
-Before using a file, open it and check it shows livedocuments as it is today:
-articles, slide decks and infographics. Retake anything showing diagrams,
-whiteboards, boards, sheets or removed chrome, then add a caption here.
-
-### Desktop (`desktop/`)
-
-- `API_Tokens.png`
-- `collaborate.png`
-- `comments.png`
-- `editor_1.png`
-- `editor_2_animation.png`
-- `editor_dark.png`
-- `editor_dark_context.png`
-- `editor_flowchart.png`
-- `editor_generated.png`
-- `editor_new_template.png`
-- `editor_new_theme.png`
-- `editor_wireframe.png`
-- `help_1.png`
-- `help_2.png`
-- `isometric.png`
-- `landing_page.png`
-- `landing_page_2.png`
-- `recent_1.png`
-- `recent_2_cards.png`
-- `search.png`
-- `share.png`
-- `spotlight.png`
-- `teams.png`
-- `telemetry_1.png`
-- `telemetry_2.png`
-
-### Mobile (`mobile/`)
-
-- `article.PNG`
-- `context.PNG`
-- `editor.PNG`
-- `editor_dark.PNG`
-- `editor_recent.PNG`
-- `help.PNG`
-- `landing.PNG`
-- `new_template.PNG`
-- `new_theme.PNG`
-- `recent.PNG`
-- `search.PNG`
-- `teams.PNG`
-- `telemetry.PNG`
+None yet. The ones the fork brought from livediagram showed livediagram (its
+flowcharts, mind maps, wireframes and Explorer), so they were removed. Take new
+ones of livedocuments as it is today (articles, slide decks and infographics)
+into `desktop/` and `mobile/`, and caption each here.
 
 ## Logo (`logo/`)
 
@@ -104,8 +58,6 @@ Current layout:
 ```
 media/
   README.md      this file
-  desktop/       desktop product screenshots (see table above)
-  mobile/        mobile product screenshots (see table above)
   icons/         the brand mark as PNGs (see table above)
   logo/          the mark and lockup as SVG, light + dark (see table above)
 ```
@@ -114,6 +66,8 @@ Likely additions as the asset set grows:
 
 ```
 media/
+  desktop/       desktop product screenshots, captioned
+  mobile/        mobile product screenshots, captioned
   social/        Open Graph (1200x630) and other share-card sizes
   demo/          short screen recordings / GIFs
 ```

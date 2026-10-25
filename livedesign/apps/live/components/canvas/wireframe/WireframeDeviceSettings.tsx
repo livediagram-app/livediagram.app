@@ -13,9 +13,9 @@ import {
   type WireframeDevicePatch,
   type WireframeFrameTheme,
 } from '@livedesign/design';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { DeviceMiniature } from './DeviceMiniature';
+import { SwitchRow } from '@livedesign/ui';
 
 const ORIENTATIONS: readonly { id: PageOrientation; label: string }[] = [
   { id: 'portrait', label: 'Portrait' },

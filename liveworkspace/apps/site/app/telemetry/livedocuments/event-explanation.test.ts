@@ -1,10 +1,13 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COMPUTED, scanEmitters } from './emitter-scan';
-import { eventExplanation } from './event-explanation';
-import { articleTitle } from './event-vocab';
+import { COMPUTED, scanEmitters } from '../emitter-scan';
+import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
+import { LIVEDOCUMENTS as APP } from './config';
+
+const eventExplanation = APP.explain;
 
 // Every metric on the dashboard carries a sentence saying what someone did
 // (docs/specs/017-telemetry/telemetry.md). These guard that no event the code can send falls through to the
@@ -12,7 +15,12 @@ import * as CATALOGUE from './metric-catalogue';
 // the code.
 
 const REPO = resolve(__dirname, '../../../../../../livedocuments');
-const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
+const EMITS = [
+  ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
+  ...sharedClientEmitters(),
+  // Every app's help-centre views, votes and searches, sent by the shared help site.
+  ...sharedSiteEmitters(),
+];
 const LAST_RESORT = /^Someone did /;
 
 // Words a reader shouldn't meet: spec numbers, infra and vendor names, code

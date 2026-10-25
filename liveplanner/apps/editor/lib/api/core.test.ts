@@ -3,17 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BUILD_ID_HEADER, PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from '@liveplanner/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverProjectFormat } from '../server-release';
 
-// getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
-// it so the guest-signature header is deterministic per case.
-const { identity } = vi.hoisted(() => ({
-  identity: { getGuestSelfSig: vi.fn((): string | null => null) },
+// The guest token is the only identity core.ts reads besides the session's (liveworkspace/docs/one-explorer-
+// contracts.md "Guests"); mock it so each case says whether there is one.
+const { guest } = vi.hoisted(() => ({
+  guest: {
+    readGuestToken: vi.fn((): { token: string; id: string; expiresAt: number } | null => null),
+  },
 }));
-vi.mock('../local-identity', () => identity);
+vi.mock('../guest-token', () => guest);
 
 import {
   API_BASE,
   ApiError,
-  apiDelete,
   apiFetch,
   apiHeaders,
   expectOk,
@@ -30,7 +31,6 @@ import {
   WorkbenchConfinedError,
   tabForWire,
 } from './core';
-import { resetApiWriteListeners, subscribeApiWrites } from './write-signal';
 import { setApiErrorReporter, setApiWarningReporter } from './error-report';
 
 const H = (h: HeadersInit) => h as Record<string, string>;
@@ -38,34 +38,33 @@ const H = (h: HeadersInit) => h as Record<string, string>;
 beforeEach(() => {
   setTokenProvider(null);
   setSessionSharePassword(null);
-  identity.getGuestSelfSig.mockReturnValue(null);
+  guest.readGuestToken.mockReturnValue(null);
 });
 
-describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
-  it('sends X-Owner-Id for a guest, no Authorization', async () => {
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
-  });
+const GUEST = { token: 'guest-jwt', id: 'guest_1', expiresAt: Date.now() + 1e9 };
 
-  it('attaches the guest signature when one is held', async () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(H(await apiHeaders('guest-1'))['X-Owner-Sig']).toBe('sig-abc');
-  });
-
-  it('sends Bearer and NOT X-Owner-Id when a token resolves (never both)', async () => {
-    setTokenProvider(() => Promise.resolve('jwt-xyz'));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['Authorization']).toBe('Bearer jwt-xyz');
+describe('apiHeaders (docs/specs/014-identity/auth-and-guest-access.md)', () => {
+  it('sends the guest token as the Bearer for a guest', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    const h = H(await apiHeaders('guest_1'));
+    expect(h['Authorization']).toBe('Bearer guest-jwt');
     expect(h['X-Owner-Id']).toBeUndefined();
-    expect(h['X-Owner-Sig']).toBeUndefined();
   });
 
-  it('falls back to X-Owner-Id when the provider resolves null', async () => {
+  it('sends no identity for a visitor with no token of either kind', async () => {
+    expect(H(await apiHeaders('guest_1'))).toEqual({});
+  });
+
+  it('sends the account token over the guest one', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    setTokenProvider(() => Promise.resolve('jwt-xyz'));
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBe('Bearer jwt-xyz');
+  });
+
+  it('falls back to the guest token when the provider resolves null', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
     setTokenProvider(() => Promise.resolve(null));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBe('Bearer guest-jwt');
   });
 
   // The session's getToken() can resolve null for a moment on a live session. A
@@ -151,12 +150,9 @@ describe('identityHeaders', () => {
     expect(identityHeaders('user_abc', 'jwt')).toEqual({ Authorization: 'Bearer jwt' });
   });
 
-  it('sends the guest id and its signature without a token', () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(identityHeaders('guest-1', null)).toEqual({
-      'X-Owner-Id': 'guest-1',
-      'X-Owner-Sig': 'sig-abc',
-    });
+  it('sends the guest token without an account token', () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    expect(identityHeaders('guest_1', null)).toEqual({ Authorization: 'Bearer guest-jwt' });
   });
 
   it('throws rather than present an account id as a guest credential', () => {
@@ -218,60 +214,6 @@ describe('expectOk / expectOkOrNull / expectOkVoid', () => {
   it('expectOkVoid resolves on 2xx and throws otherwise', async () => {
     await expect(expectOkVoid(ok({}), 'del')).resolves.toBeUndefined();
     await expect(expectOkVoid(err(403), 'del')).rejects.toBeInstanceOf(ApiError);
-  });
-});
-
-// The write signal the Timeline re-reads off (docs/specs/013-workspace/timeline.md §2.4b). Raised
-// from the one place every request passes through, so no call site has
-// to remember it — and only for a write that actually landed.
-describe('apiFetch / apiDelete write signal', () => {
-  const heard = vi.fn();
-  beforeEach(() => {
-    resetApiWriteListeners();
-    heard.mockReset();
-    subscribeApiWrites(heard);
-  });
-
-  it('announces a successful non-GET', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/projects/d1`, { method: 'PUT' });
-    expect(heard).toHaveBeenCalledWith({});
-    vi.unstubAllGlobals();
-  });
-
-  it('stays silent for a GET, a failed write, and the feeds own endpoints', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/projects`);
-    await apiFetch(`${API_BASE}/timeline/events/e1`, { method: 'DELETE' });
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
-    await apiFetch(`${API_BASE}/projects/d1`, { method: 'PUT' });
-    expect(heard).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
-  });
-
-  it('names the entity a DELETE ended, after the plain signal', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
-    await apiDelete(`${API_BASE}/projects/d1`, 'g', {
-      action: 'delete project',
-      purge: { sourceType: 'project', sourceId: 'd1' },
-    });
-    expect(heard.mock.calls.map(([s]): unknown => s)).toEqual([
-      {},
-      { purge: { sourceType: 'project', sourceId: 'd1' } },
-    ]);
-    vi.unstubAllGlobals();
-  });
-
-  it('does not name the entity when the DELETE found nothing to end', async () => {
-    // A tolerated 404: nothing was removed, so nothing should vanish
-    // from the feed on the strength of it.
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
-    await apiDelete(`${API_BASE}/projects/d1`, 'g', {
-      action: 'delete project',
-      purge: { sourceType: 'project', sourceId: 'd1' },
-    });
-    expect(heard).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
   });
 });
 
@@ -372,7 +314,7 @@ describe('apiFetch under a workbench session', () => {
 
     await expect(
       apiFetch(`${API_BASE}/folders`, {
-        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}` },
+        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}.${'0f'.repeat(32)}` },
       }),
     ).rejects.toBeInstanceOf(WorkbenchConfinedError);
     expect(fetchMock).not.toHaveBeenCalled();

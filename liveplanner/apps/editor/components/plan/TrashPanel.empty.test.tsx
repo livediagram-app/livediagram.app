@@ -9,7 +9,7 @@ import { TrashPanel } from './TrashPanel';
 const plan: Record<string, unknown> = {};
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 const confirm = vi.fn(async () => true);
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
 vi.mock('@/components/primitives/MovablePanel', () => ({
   MovablePanel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));

@@ -5,14 +5,14 @@
 // reaches the page: it lives in an HttpOnly cookie on /api/auth, and the page
 // asks POST /api/auth/token for a short-lived access token, which it holds in
 // memory and sends as `Authorization: Bearer` (docs/specs/014-identity/auth-and-guest-access.md).
-// A browser with no `lp_signed_in` hint is a guest and asks nothing.
+// A browser with no `ldoc_signed_in` hint is a guest and asks nothing.
 //
 // Loaded lazily by AuthProvider, like the Clerk bridge it replaced, so the
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 
 import { useEffect } from 'react';
-import { API_BASE } from '@/lib/api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
@@ -109,8 +109,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       createdAt: null,
     },
     getToken,
-    // The landing page sign-out returns to must not show the account's recent diagrams
-    // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
+    // A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       await endSession();
       window.location.assign(opts?.redirectUrl ?? '/');

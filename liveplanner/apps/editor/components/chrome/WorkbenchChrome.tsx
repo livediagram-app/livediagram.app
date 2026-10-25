@@ -7,9 +7,13 @@
 // project was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
 // says how to edit again.
 import type { WorkbenchEndReason } from '@liveplanner/api-schema';
-import { lucideArrowLeft } from '@liveplanner/icons/lucide';
+import { lucideArrowLeft } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@liveplanner/ui';
-import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
+import {
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
 
 function reconnectLine(workbenchName: string): string {

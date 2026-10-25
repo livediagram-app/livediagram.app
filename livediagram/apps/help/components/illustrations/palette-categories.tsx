@@ -4,7 +4,7 @@
 // packages/icons/src/sticker-catalog.ts, and the technology marks from tech-icon-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene, Tile } from './primitives';
+import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
 
 /** The palette body as a panel: its title bar, then the header band (selection mode on the
  *  left, the category picker on the right) the body hangs under. */

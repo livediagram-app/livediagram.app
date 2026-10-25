@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ComponentProps } from 'react';
 import { PortalMenu } from './TabPortalMenu';
 
-vi.mock('@/lib/clamp-to-viewport', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/clamp-to-viewport')>()),
+vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/workbench/lib/clamp-to-viewport')>()),
   clampToViewport: () => ({ x: 0, y: 0 }),
 }));
 

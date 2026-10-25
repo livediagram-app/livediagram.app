@@ -140,7 +140,12 @@ describe('wireframe pages', () => {
   });
 
   it('adds a wireframe page in the device chosen, else the last one', () => {
-    const one = pageAdded(tab([{ id: 'a', orientation: 'portrait' }]), 'wireframe', 'b', 'watch');
+    const one = pageAdded(
+      tab([{ id: 'a', orientation: 'portrait', kind: 'wireframe', device: 'iphone' }]),
+      'wireframe',
+      'b',
+      'watch',
+    );
     expect('tab' in one && kinds(one.tab).at(-1)).toMatchObject({
       kind: 'wireframe',
       device: 'watch',
@@ -173,7 +178,6 @@ describe('wireframe pages', () => {
 
   it('adds another page like a page: its kind and shape, a wireframe its device and frame too', () => {
     const t = tab([
-      { id: 'a', orientation: 'portrait', size: 'logo', kind: 'logo' },
       {
         id: 'w',
         orientation: 'landscape',
@@ -192,7 +196,8 @@ describe('wireframe pages', () => {
       orientation: 'landscape',
       systemBars: false,
     });
-    const a = pageAddedLike(t, 'a', 'm');
+    const logos = tab([{ id: 'a', orientation: 'portrait', size: 'logo', kind: 'logo' }]);
+    const a = pageAddedLike(logos, 'a', 'm');
     expect('tab' in a && kinds(a.tab).at(-1)).toMatchObject({ size: 'logo', kind: 'logo' });
     expect(pageAddedLike(t, 'nope', 'x')).toEqual({ refused: 'unknown_page' });
   });

@@ -4,12 +4,12 @@
 import { getDocumentMeta } from '../db';
 import { notFound, svgImage } from '../responses';
 import { renderTabSvg } from '../thumbnail';
-import { deniedOnTab, gateRead, missingDocument, type RouteContext } from './context';
+import { deniedOnTab, gateRead, missingDocument, type DocumentRouteContext } from './context';
 
 // A drawing changes with every edit; it is never cached.
 const NO_STORE = 'no-store';
 
-export async function handleTabRender(ctx: RouteContext): Promise<Response | null> {
+export async function handleTabRender(ctx: DocumentRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   if (segments.length !== 6 || segments[3] !== 'tabs' || segments[5] !== 'render.svg') return null;
   if (request.method !== 'GET') return null;

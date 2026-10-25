@@ -3,9 +3,11 @@
 ## Project
 
 What a person makes in liveplanner is a **project**: a named set of Board, Sheet, Dashboard and Form tabs, its
-items, sharing and history. **Project** is its one name, in the interface, help, marketing, email, the descriptions
-agents read, and the code: the type (`Project`), its package, tables, API routes (`/api/projects`), room and URL
-(`/project/<id>`). "Document", "file" and "board" never name it. (A page's DOM `document` is the browser's, not this.)
+items, sharing and history. People see it called a **plan**: the interface, help, marketing, email and the
+descriptions agents read all say plan ("Creating your plan", "New Plan"). **Project** is its name in the code: the
+type (`Project`), its package, tables, API routes (`/api/projects`), room and URL (`/project/<id>`), and the CLI's
+`project` commands, until the move in liveworkspace/docs/one-explorer.md. "Document", "file" and "board" never name
+it. (A page's DOM `document` is the browser's, not this.)
 
 ## Mode, kind and template
 
@@ -101,7 +103,7 @@ The words for a program working on projects for a person ([Agents](../024-agents
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a project (sharing, delete, move), apart from any level                         | admin, edit level                       |
 
-- **Participant** is the access level; a person's name and colour (the `participants` table) are their
+- **Participant** is the access level; a person's name and colour (their accounts profile, served as `/api/participants`) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).

@@ -6,9 +6,8 @@
 // (docs/specs/026-plan/plan-tour.md "The Dashboards tour").
 import { useEffect, useRef, useState } from 'react';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { markPlanTracksSeen, planTrackSeen } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
@@ -102,7 +101,6 @@ export function useDashboardTourOffer({
   const ctx = useOptionalEditorContext();
   const shown = useActiveTour();
   const modalOpen = useAnyModalOpen();
-  const startPanelOpen = useStartPanelOpen();
   const owed = !!ctx && !planTrackSeen(ctx.userPreferences, 'dashboards');
   const ready =
     !!ctx &&
@@ -113,7 +111,6 @@ export function useDashboardTourOffer({
     !ctx.embedMode &&
     shown === null &&
     !modalOpen &&
-    !startPanelOpen &&
     !tour.active;
   const offeredRef = useRef(false);
   const latest = useLatest({ tour, freeze, slots });

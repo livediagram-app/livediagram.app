@@ -13,7 +13,7 @@ import {
   type FormSection,
 } from '@liveplanner/forms';
 import { Select, lucideGlyph } from '@liveplanner/ui';
-import { lucideGitFork } from '@liveplanner/icons/lucide';
+import { lucideGitFork } from '@liveworkspace/icons/lucide';
 import { updateSection } from '@liveplanner/forms';
 import { FormSheet } from './FormSheet';
 import { useFormBuilder } from './form-builder-context';

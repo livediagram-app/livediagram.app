@@ -19,11 +19,10 @@ function row(sql: DatabaseSync, table: string, values: Record<string, string | n
 }
 
 function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: string | null = null) {
-  row(sql, 'documents', {
+  row(sql, 'test_documents', {
     id,
     owner_id: ownerId,
     name: id,
-    shareable: 0,
     team_id: teamId,
     saved_at: T0,
     created_at: T0,
@@ -49,14 +48,20 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
   );
 }
 
+// The other documents a tab of A's is shared with, as A's room lists them (document-room/tab-shares.ts).
+function sharedWith(sql: DatabaseSync, tabId: string, ...documentIds: string[]) {
+  for (const d of documentIds) row(sql, 'tab_shares', { tab_id: tabId, item_id: d });
+}
+
 describe('GET /api/documents/:id/shared-tabs', () => {
   it('counts the tabs also in other documents, and those documents', async () => {
     const db = sqliteD1();
     for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
-    tabIn(db.sql, 'glossary', 'A', 'B');
-    tabIn(db.sql, 'timeline', 'A', 'B', 'C');
+    tabIn(db.sql, 'glossary', 'A');
+    sharedWith(db.sql, 'glossary', 'B');
+    tabIn(db.sql, 'timeline', 'A');
+    sharedWith(db.sql, 'timeline', 'B', 'C');
     tabIn(db.sql, 'solo', 'A');
-    tabIn(db.sql, 'elsewhere', 'B', 'C');
 
     const res = await get(db, { owner: 'owner' });
 
@@ -76,19 +81,13 @@ describe('GET /api/documents/:id/shared-tabs', () => {
 
   it('answers a joined teammate, who may delete a team document', async () => {
     const db = sqliteD1();
-    row(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
-    row(db.sql, 'team_members', {
-      id: 'm-bob',
-      team_id: 'team',
-      user_id: 'user_bob',
-      role: 'member',
-      status: 'joined',
-      created_at: T0,
-      updated_at: T0,
-    });
     liveDoc(db.sql, 'A', 'user_alice', 'team');
 
-    const res = await get(db, { owner: 'user_bob', accountUserId: 'user_bob' });
+    const res = await get(db, {
+      owner: 'user_bob',
+      accountUserId: 'user_bob',
+      teams: [{ id: 'team', name: 'Team', role: 'member' }],
+    });
 
     expect(res?.status).toBe(200);
   });
@@ -101,9 +100,9 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     expect((await get(db))?.status).toBe(400);
   });
 
-  it('is a 404 for a missing document', async () => {
+  it('answers a missing document as one the caller may not edit (no existence leak)', async () => {
     const db = sqliteD1();
 
-    expect((await get(db, { owner: 'owner' }))?.status).toBe(404);
+    expect((await get(db, { owner: 'owner' }))?.status).toBe(403);
   });
 });

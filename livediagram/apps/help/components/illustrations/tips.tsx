@@ -3,7 +3,14 @@
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Panel,
+  Label,
+  TextBar,
+} from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
 /** A single key cap, sized to its glyph, drawn like a physical keyboard key. */

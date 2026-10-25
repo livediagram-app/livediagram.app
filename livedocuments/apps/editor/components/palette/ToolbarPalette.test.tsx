@@ -7,15 +7,15 @@ import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add
 import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { Element } from '@livedocuments/document';
-import type { ReactNode } from 'react';
-import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.
 const viewport = vi.hoisted(() => ({ width: 1440 }));
-vi.mock('@/hooks/ui/useViewportWidth', () => ({ useViewportWidth: () => viewport.width }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useViewportWidth', () => ({
+  useViewportWidth: () => viewport.width,
+}));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
 
@@ -42,11 +42,6 @@ function handlers(): PaletteAddHandlers {
   ) as unknown as PaletteAddHandlers;
 }
 
-// The palette reads the editor mode from the editor's provider.
-const inMode = (node: ReactNode) => (
-  <EditorModeProvider value={{ mode: 'pages', canEdit: true }}>{node}</EditorModeProvider>
-);
-
 function show(
   props: {
     hidden?: boolean;
@@ -56,16 +51,14 @@ function show(
   const h = handlers();
   const onSetCanvasTool = vi.fn();
   const view = render(
-    inMode(
-      <ToolbarPalette
-        canvasTool="select"
-        onSetCanvasTool={onSetCanvasTool}
-        canvasEmpty={false}
-        pendingDraw={null}
-        {...h}
-        {...props}
-      />,
-    ),
+    <ToolbarPalette
+      canvasTool="select"
+      onSetCanvasTool={onSetCanvasTool}
+      canvasEmpty={false}
+      pendingDraw={null}
+      {...h}
+      {...props}
+    />,
   );
   return { ...view, h, onSetCanvasTool };
 }
@@ -119,16 +112,14 @@ describe('ToolbarPalette', () => {
   it('keeps the phone’s swiping row with no menu card', () => {
     mobile.value = true;
     render(
-      inMode(
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          leading={null}
-          {...handlers()}
-        />,
-      ),
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        canvasEmpty={false}
+        pendingDraw={null}
+        leading={null}
+        {...handlers()}
+      />,
     );
     expect(document.querySelector('[data-strip-leading]')).toBeNull();
     // The swiping card: its rail gives way, the controls beside it keep their size.
@@ -140,16 +131,14 @@ describe('ToolbarPalette', () => {
   it('draws the menu card on a phone’s row when given one', () => {
     mobile.value = true;
     render(
-      inMode(
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          leading={<button type="button">Menu</button>}
-          {...handlers()}
-        />,
-      ),
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        canvasEmpty={false}
+        pendingDraw={null}
+        leading={<button type="button">Menu</button>}
+        {...handlers()}
+      />,
     );
     expect(document.querySelector('[data-strip-leading]')).not.toBeNull();
   });
@@ -189,16 +178,14 @@ describe('ToolbarPalette', () => {
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
-        inMode(
-          <ToolbarPalette
-            canvasTool="select"
-            onSetCanvasTool={vi.fn()}
-            canvasEmpty={false}
-            pendingDraw={null}
-            hidden={hidden}
-            {...h}
-          />,
-        ),
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          hidden={hidden}
+          {...h}
+        />,
       );
     rerender(true);
     const root = document.querySelector('[data-toolbar-palette]') as HTMLElement;

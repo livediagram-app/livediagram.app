@@ -14,7 +14,7 @@ import {
 } from '@liveplanner/forms';
 import { TrashIcon, Tooltip } from '@liveplanner/ui';
 import { patchForm, deleteSection, updateSection } from '@liveplanner/forms';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { themeBackgroundPresets } from '@/lib/page-paint';

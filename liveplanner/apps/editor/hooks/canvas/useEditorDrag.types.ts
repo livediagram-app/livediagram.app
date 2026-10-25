@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/project';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
@@ -34,20 +34,6 @@ export type EditorDragDeps = {
   // Elements on a hidden or locked layer (docs/specs/006-project/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
-  // Modal interaction state. When format-painter is active, a click
-  // on an element applies the format instead of dragging. The drag
-  // dispatcher checks this and routes appropriately.
-  formatSourceId: string | null;
-  applyFormatFromSource: (targetId: string) => void;
-  // The persistent Format canvas tool is active. A click on an element
-  // picks it as the paint source (first click) or paints the armed
-  // source's style onto it and stays armed (subsequent clicks) — instead
-  // of selecting / dragging. `setFormatSourceId` arms the source.
-  formatToolActive: boolean;
-  setFormatSourceId: (id: string | null) => void;
-  // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): armed source + the action.
-  connectSourceId: string | null;
-  connectArrowTo: (targetId: string) => void;
   // Element setters from the editor. `tick` writes elements without
   // taking a history checkpoint (used during the move-effect's
   // 60+/sec updates); `commit` writes elements AND snapshots history
@@ -109,8 +95,6 @@ export type EditorDragApi = {
   // renders only the chrome that draws it (useSnapGuideState).
   snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action (connect an arrow, the format painter) a press on an element takes instead of selecting it.
-  pressArmedAction: (elementId: string) => boolean;
   beginAnchorDrag: (
     elementId: string,
     anchor: Anchor,

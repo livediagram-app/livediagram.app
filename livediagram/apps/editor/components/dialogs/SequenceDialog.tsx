@@ -9,7 +9,7 @@
 // anything structural at once, one undo step each. A store that would change nothing is skipped.
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button, DialogCloseButton, DialogHeader, Switch } from '@livediagram/ui';
 import {
   nextMessageAfter,
   parseSequenceText,
@@ -21,16 +21,15 @@ import {
   type SequenceElementParticipant,
   type ShapeElement,
 } from '@livediagram/document';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogTabs } from '@/components/dialogs/DialogTabs';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { SequenceParticipantStrip } from '@/components/dialogs/SequenceParticipantStrip';
 import { SequenceMessageList } from '@/components/dialogs/SequenceMessageList';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 type Tab = 'messages' | 'text';
 const TABS: readonly Tab[] = ['messages', 'text'];
@@ -291,7 +290,8 @@ export function SequenceDialog({
           data-tour-id="sequence-numbered"
           className="flex cursor-pointer items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200"
         >
-          <ToggleSwitch
+          <Switch
+            size="sm"
             checked={element.sequenceNumbered === true}
             onChange={() => onNumbered(element.sequenceNumbered !== true)}
             label="Numbered"

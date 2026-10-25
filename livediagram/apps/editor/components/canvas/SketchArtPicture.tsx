@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { SKETCH_ART_FILTER_ID, svgSketchArtFilter } from '@livediagram/document';
-import { watchUntilSettled } from '@/components/canvas/settle-watch';
+import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/settle-watch';
 
 // An icon or sticker under Sketch in WebKit (docs/specs/008-canvas/finish.md "In WebKit"). WebKit runs a live
 // `filter: url(#...)` again on every repaint, so a pan over wobbled art took 220-400 ms a frame at iPhone resolution.

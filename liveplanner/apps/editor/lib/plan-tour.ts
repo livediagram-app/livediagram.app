@@ -3,7 +3,7 @@ import {
   removeLocalStorageSafe,
   safeJson,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 

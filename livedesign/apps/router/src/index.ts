@@ -5,28 +5,47 @@
 
 import { applyCachePolicy } from './cache-policy';
 import { LIVE_ROUTE_SEGMENTS } from '@livedesign/api-schema';
+import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
+import {
+  routeToWorkspace,
+  routeToPreviews,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
+} from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
   LIVE?: Fetcher;
   API?: Fetcher;
-  TELEMETRY?: Fetcher;
   HELP?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
-  TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
+  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
+  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
+  // production's, staging and local dev name their own.
+  TELEMETRY_DASHBOARD_URL?: string;
+  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's; staging and local dev name their own.
+  INDEX_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
 
@@ -106,7 +125,7 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
 // files and the router presents `/<prefix>/foo` to them as `/foo`.
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
-// Next dev servers serve their own prefixes (basePath for telemetry/help,
+// Next dev servers serve their own prefixes (basePath for help,
 // the live app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
@@ -182,6 +201,18 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // liveworkspace's Explorer under this address, while livedesign's switch is on (@liveworkspace/sites/workspace-proxy):
+  // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+  const workspace = routeToWorkspace(request, { app: 'livedesign', origin: env.WORKSPACE_ORIGIN });
+  if (workspace) return workspace;
+  // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  if (preview) return preview;
+  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
+  // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
+  if (hasPrefix(url.pathname, INDEX_PATH)) {
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.
@@ -194,13 +225,13 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
-    // static app — same prefix-strip as the live app's assets.
-    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+    // for every app: an old link lands on it with livedesign picked.
+    return telemetryRedirect(env);
   }
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
-    // prefix-strip as telemetry.
+    // prefix-strip as the live app's assets.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   // Clean live-app page routes (/design, /explorer, /new, ...) and
@@ -217,4 +248,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return Response.redirect(url.toString(), 308);
   }
   return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}
+
+// Where /telemetry and everything under it now lives: the central dashboard, filtered to livedesign.
+export function telemetryRedirect(env: Env): Response {
+  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_DASHBOARD_URL);
+  target.searchParams.set('app', 'livedesign.app');
+  // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
 }

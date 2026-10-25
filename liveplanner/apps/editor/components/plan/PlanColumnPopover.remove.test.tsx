@@ -11,7 +11,9 @@ type Props = ComponentProps<typeof PlanColumnPopover>;
 // the state; Delete Status deletes the state, its columns coming off every board.
 const plan = { items: new Map(), statusNames: new Map() };
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 afterEach(cleanup);
 
 const setup = {

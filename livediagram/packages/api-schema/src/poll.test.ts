@@ -3,7 +3,6 @@ import {
   POLL_OPTIONS_MAX,
   POLL_QUESTION_MAX,
   POLL_TEXT_ANSWER_MAX,
-  formatPollResults,
   isLivePollShape,
   pollOptionTokens,
   pollSupersedes,
@@ -151,28 +150,6 @@ describe('tallyPoll', () => {
     expect(r.textAnswers).toEqual(['slower', 'more colour']);
     expect(r.rows).toEqual([]);
     expect(r.skipped).toBe(1);
-  });
-});
-
-describe('formatPollResults', () => {
-  it('writes the question, per-option percentages, and the response split', () => {
-    const text = formatPollResults(poll('yesNo'), answers('Yes', 'Yes', 'No', null));
-    expect(text).toBe('Ship it?\n\nYes: 2 (67%)\nNo: 1 (33%)\n\n3 answered, 1 skipped');
-  });
-
-  it('lists free-text answers instead of counts', () => {
-    const text = formatPollResults(poll('text'), answers('slower', 'more colour'));
-    expect(text).toBe('Ship it?\n\n- slower\n- more colour\n\n2 answered, 0 skipped');
-  });
-
-  it('says so when a free-text poll got nothing', () => {
-    expect(formatPollResults(poll('text'), answers(null))).toContain('(no answers)');
-  });
-
-  it('carries no participant identity, matching the on-screen panel', () => {
-    const text = formatPollResults(poll('yesNo'), answers('Yes', 'No'));
-    expect(text).not.toContain('sender-0');
-    expect(text).not.toContain('sender-1');
   });
 });
 

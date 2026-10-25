@@ -97,11 +97,8 @@ hero.
 - Components already on a board were built as loose primitives and **stay as they are**: they
   are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
-- A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved
-  to, by `migrateLegacyGroups`, at the two boundaries where stored tabs enter: the api worker's
-  `rowToTab` (so the editor, MCP, share links and thumbnails all see migrated data) and the
-  offline store's tab load. The validator still accepts the legacy endpoint shape on write, so a
-  browser running a cached pre-change build can still save; the next read migrates it.
+- A legacy `pinned-group` arrow end is refused by the validator. liveplanner removed its migration
+  (`migrateLegacyGroups`) on 2026-10-24: no liveplanner build ever wrote one.
 
 ## No groups
 

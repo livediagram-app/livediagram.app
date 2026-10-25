@@ -155,7 +155,7 @@ export type ArrowEnd = 'from' | 'to';
 // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; 'text' drops a label to the side.
-export type QuickConnectDirection = 'right' | 'below' | 'left' | 'above';
+export type { QuickConnectDirection } from '@liveworkspace/workbench/lib/quick-connect';
 export type QuickConnectKind = 'duplicate' | 'text';
 
 export const SNAP_THRESHOLD = 24;
@@ -171,10 +171,10 @@ export const ALIGN_SNAP_THRESHOLD = 6;
 export const ARROW_SNAP_REVEAL_PX = 36;
 export const ARROW_SNAP_THRESHOLD_PX = 12;
 
-// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel
-// zoom so the two can never drift apart. 0.1 = 10%, 5 = 500%.
-export const ZOOM_MIN = 0.1;
-export const ZOOM_MAX = 5;
+// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
+// (@liveworkspace/workbench/lib/zoom-range.ts).
+import { ZOOM_MAX, ZOOM_MIN } from '@liveworkspace/workbench/lib/zoom-range';
+export { ZOOM_MAX, ZOOM_MIN };
 
 // While a photo page is in focus the ceiling rises (docs/specs/031-photo/photo-pages.md "Navigating"):
 // its sheet can be a quarter of its pixels across, so ZOOM_MAX alone could leave a photo pixel under two

@@ -11,7 +11,7 @@ import { useEffect, useMemo } from 'react';
 import { subscribeWorkbenchSessionRefused } from '@/lib/api/core';
 import { WorkbenchAuthBridge } from '@/components/providers/WorkbenchAuthBridge';
 import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { addressOf } from './workbench-fragment';
 import { useWorkbenchHandshake } from './useWorkbenchHandshake';
 import { useWorkbenchRenewal } from './useWorkbenchRenewal';

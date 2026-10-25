@@ -28,7 +28,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
-import type { Env } from '../types';
+import { setGrantVerifierForTests } from '../index-service';
+import { answerDesignRequest, type RouteIdentity } from '../design-room/design-route';
+import type { Env, DesignEnv } from '../types';
 
 const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 export type ProbeMethod = (typeof PROBE_METHODS)[number];
@@ -172,17 +174,59 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on, a model key set.
+  // answering "not configured" for every path: telemetry on.
+  // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
+  // placeholder design, so a design route reaches its own routing instead of answering "no access".
   const env = {
-    DB: trap('DB'),
-    IMAGES: trap('IMAGES'),
     // Images, which live in liveworkspace's media service (liveworkspace/docs/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
-    DESIGN_ROOM: trap('DESIGN_ROOM'),
+    // The liveworkspace accounts Worker, which keeps settings and profiles (accounts/client.ts): reached
+    // through the fetch trap below.
+    ACCOUNTS_URL: 'http://accounts.invalid',
+    ACCOUNTS_CLIENT_ID: 'probe-client',
+    ACCOUNTS_CLIENT_SECRET: 'probe-secret',
     TELEMETRY_ENABLED: 'true',
-    OPENAI_API_KEY: 'probe-key',
+    INDEX_ORIGIN: 'https://index.probe',
   } as unknown as Env;
+  const now = Math.floor(Date.now() / 1000);
+  setGrantVerifierForTests(async () => ({
+    iss: 'probe',
+    aud: 'livedesign',
+    sub: 'user_probe',
+    item: PARAM,
+    level: 'edit',
+    tab: null,
+    team: null,
+    iat: now,
+    exp: now + 600,
+    jti: 'probe',
+  }));
+  // The worker hands every request about one design to the design's Durable Object (`route`), which answers it with
+  // the same handlers against its own store. The probe runs that answer in process, the design's store a trap too,
+  // so a path the design does not serve is still a clean 404; any other use of the room is storage.
+  // Inside the room, a call back to the design itself (design-room.ts `localNamespace`) reads its store: a trap too.
+  const designEnv = {
+    ...env,
+    DESIGN_DB: trap('DESIGN_DB'),
+    DESIGN_ROOM: { idFromName: (name: string) => name, get: () => trap('DESIGN_ROOM (local)') },
+  } as unknown as DesignEnv;
+  const room = new Proxy(
+    {},
+    {
+      get(_, method) {
+        if (method === 'route') {
+          return (_designId: string, request: Request, identity: RouteIdentity) =>
+            answerDesignRequest(designEnv, request, identity, (p) => {
+              pending.push(p.catch(() => undefined));
+            });
+        }
+        state.touched = true;
+        throw new StorageTrap(`probe touched DESIGN_ROOM.${String(method)}`);
+      },
+    },
+  );
+  Reflect.set(env, 'DESIGN_ROOM', { idFromName: (name: string) => name, get: () => room });
   const pending: Promise<unknown>[] = [];
   const executionCtx = {
     waitUntil: (p: Promise<unknown>) => pending.push(p.catch(() => undefined)),
@@ -203,7 +247,11 @@ export async function probeDispatch(
         const res = await worker.fetch(
           new Request(`https://probe.test/api/${path.join('/')}`, {
             method,
-            headers: { 'X-Owner-Id': 'probe-owner', 'Content-Type': 'application/json' },
+            headers: {
+              Authorization: 'Bearer probe-token',
+              'X-Index-Grant': 'probe-grant',
+              'Content-Type': 'application/json',
+            },
           }),
           env,
           executionCtx,
@@ -217,6 +265,7 @@ export async function probeDispatch(
     }
   } finally {
     globalThis.fetch = realFetch;
+    setGrantVerifierForTests(null);
   }
   return results;
 }

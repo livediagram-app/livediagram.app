@@ -13,7 +13,7 @@ import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 type BoxedDragHandlerDeps = {
   depsRef: RefObject<EditorDragDeps>;

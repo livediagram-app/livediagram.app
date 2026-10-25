@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livedocuments/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { sqliteD1, type SqliteD1, testCopyDocument } from '../test-sqlite-d1';
 import {
   getTab,
   isTabRevStale,
@@ -16,7 +15,7 @@ import { tabStatsOfData } from './tab-stats';
 
 // normalizeReorderEntry is the pure decision the reorder batch leans
 // on (docs/specs/006-document/tab-folders.md): it decides what folder value lands on each
-// document_tabs row. The D1 batch itself needs a live binding to test,
+// document_tabs row. The batch itself is tested against the document's SQLite elsewhere,
 // but this normalisation — legacy-string vs object, and the
 // empty-name-to-NULL guard — is where the folder correctness lives.
 
@@ -57,7 +56,7 @@ describe('tab revisions', () => {
 
   function documentWith(): SqliteD1 {
     const db = sqliteD1();
-    db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
     return db;
   }
@@ -110,7 +109,7 @@ describe('tab revisions', () => {
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);
-    await copyDocument(db.env, 'D', 'D2', 'o', 'Copy');
+    await testCopyDocument(db.env, 'D', 'D2', 'o', 'Copy');
     const copied = db.sql
       .prepare(
         "SELECT t.rev FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id WHERE dt.document_id = 'D2'",

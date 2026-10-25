@@ -5,7 +5,7 @@ Derived from [Corner radius](../corner-radius.md). Defaults in [DEFAULTS.md](DEF
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/border-style.ts
+// ../packages/model-core/src/border-style.ts
 export const CORNER_RADIUS_MAX_SHARE = 0.25;
 export function cornerRadiusPx(
   preset: BorderRadius | undefined,
@@ -48,7 +48,7 @@ See the quick style blueprint's "Corners row".
 
 | Rule                                                              | Test                                                                          |
 | ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Quarter cap, presets, fallback, Full exempt, None 0, broken sides | `packages/document/src/corner-radius.test.ts`                                 |
+| Quarter cap, presets, fallback, Full exempt, None 0, broken sides | `../packages/model-core/src/corner-radius.test.ts`                            |
 | Shorter side at least 4x the preset: unchanged, every preset      | same                                                                          |
 | SVG export and hit outline use the rule (small rounded square)    | `packages/document/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
 | Canvas variant uses the rule (presets, kind defaults, Full)       | `apps/editor/components/canvas/element-variant.test.ts`                       |

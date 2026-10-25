@@ -1,92 +1,75 @@
-// A project delete asks nothing first (docs/specs/013-workspace/trash.md "Deleting"): it only moves the project to
-// the Trash, so the "“Roadmap” deleted" toast carries an Undo that restores it from there, the same everywhere.
-import { apiRestoreProject } from '@/lib/api/trash';
+// Deleting the plan open in the editor (docs/specs/013-workspace/trash.md "Deleting"): from the command palette or
+// any menu in the Explorer panel. The plan is tombstoned first (lib/project-tombstones.ts), so neither the autosave
+// debounce nor the unload flush can write it back while it goes to the Trash; then the editor leaves for the
+// Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
+// moment, so a later visit offers nothing.
+import { explorerHref } from './explorer-href';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { markProjectDeleted, unmarkProjectDeleted } from '@/lib/project-tombstones';
 import { track } from '@/lib/telemetry';
-import { toastName } from '@/lib/toast-name';
-import {
-  projectDeletedMessage,
-  projectRestoreFailedMessage,
-  projectRestoredMessage,
-} from '@/lib/project-toast-copy';
-import type { useToast } from '@/hooks/ui/useToast';
-import type { Project } from '@liveplanner/api-schema';
 
-/** Which Trash a deleted project went to, as the Trash's own telemetry types it. */
-export type DeletedTrash = 'Personal' | 'Team' | 'Local';
-
-/**
- * Say a project was deleted, with an Undo that restores it. `onRestored` gets the project back (null for an
- * offline one, which the caller re-lists) so the list can put its row back.
- */
-export function offerDeleteUndo(
-  toast: ReturnType<typeof useToast>,
-  at: {
-    ownerId: string;
-    id: string;
-    name?: string | null;
-    trash: DeletedTrash;
-    onRestored?: (doc: Project | null) => void;
-  },
-): void {
-  const key = `project-deleted:${at.id}`;
-  toast.action({
-    key,
-    message: projectDeletedMessage(at.name),
-    actions: [
-      {
-        label: 'Undo',
-        ariaLabel: `Undo: restore ${toastName(at.name) ?? 'the plan'}`,
-        onSelect: () => {
-          toast.dismissAction(key);
-          void apiRestoreProject(at.ownerId, at.id).then(
-            (doc) => {
-              track('Trash', 'Restored', at.trash);
-              at.onRestored?.(doc);
-              toast.success(projectRestoredMessage(at.name));
-            },
-            () => toast.error(projectRestoreFailedMessage(at.name)),
-          );
-        },
-      },
-    ],
-  });
-}
-
-// The open project's delete leaves the editor for the Explorer, so its Undo is handed over: the Explorer offers it
-// on arrival. Held for one page load in sessionStorage, and only for a moment, so a later visit offers nothing.
 const HANDOFF_KEY = 'liveplanner:deleted-project';
 const HANDOFF_MAX_AGE_MS = 30_000;
 
-type Handoff = { id: string; name?: string; trash: DeletedTrash; at: number };
+type Handoff = { id: string; name?: string; at: number };
 
-export function handOffDeleteUndo(
+export type TrashedPlan = { id: string; title: string | null };
+
+/**
+ * The open plan to the Trash, then to the Explorer with its Undo. Resolves false, with the plan writable again,
+ * when the index refuses; the caller says so.
+ */
+export async function trashOpenPlan(
   id: string,
-  trash: DeletedTrash,
-  name?: string | null,
-  now = Date.now(),
-): void {
+  name: string | null | undefined,
+  leave: (href: string) => void = (href) => window.location.assign(href),
+): Promise<boolean> {
+  markProjectDeleted(id);
   try {
-    const handoff: Handoff = { id, trash, at: now, ...(name ? { name } : {}) };
+    await indexClient.deleteItem(id);
+  } catch {
+    unmarkProjectDeleted(id);
+    return false;
+  }
+  track('Project', 'Deleted');
+  handOffDeleteUndo(id, name);
+  // The Explorer is liveworkspace's page, served here: the plan rides in its address, for the Undo.
+  const params = new URLSearchParams({ trashed: id });
+  if (name) params.set('title', name);
+  leave(explorerHref('', `?${params}`));
+  return true;
+}
+
+export function handOffDeleteUndo(id: string, name?: string | null, now = Date.now()): void {
+  try {
+    const handoff: Handoff = { id, at: now, ...(name ? { name } : {}) };
     window.sessionStorage.setItem(HANDOFF_KEY, JSON.stringify(handoff));
   } catch {
-    // Storage off: the project is still in the Trash.
+    // Storage off: the plan is still in the Trash.
   }
 }
 
 /** The handed-over delete, taken (read once and cleared); null when there is none or it is stale. */
-export function takeDeleteUndo(
-  now = Date.now(),
-): { id: string; name: string | null; trash: DeletedTrash } | null {
+export function takeDeleteUndo(now = Date.now()): TrashedPlan | null {
   try {
     const raw = window.sessionStorage.getItem(HANDOFF_KEY);
     if (raw === null) return null;
     window.sessionStorage.removeItem(HANDOFF_KEY);
     const h = JSON.parse(raw) as Partial<Handoff>;
     if (typeof h.id !== 'string' || typeof h.at !== 'number') return null;
-    if (h.trash !== 'Personal' && h.trash !== 'Team' && h.trash !== 'Local') return null;
     if (now - h.at > HANDOFF_MAX_AGE_MS || now < h.at) return null;
-    return { id: h.id, name: typeof h.name === 'string' ? h.name : null, trash: h.trash };
+    return { id: h.id, title: typeof h.name === 'string' ? h.name : null };
   } catch {
     return null;
   }
+}
+
+// Taken once per page load and kept, so a remount (or Strict Mode's second call) sees the same answer.
+let arrival: { taken: boolean; plan: TrashedPlan | null } = { taken: false, plan: null };
+
+/** The plan deleted just before this page opened, for the Explorer's Undo; null on the server or when none. */
+export function arrivedTrashed(): TrashedPlan | null {
+  if (typeof window === 'undefined') return null;
+  if (!arrival.taken) arrival = { taken: true, plan: takeDeleteUndo() };
+  return arrival.plan;
 }

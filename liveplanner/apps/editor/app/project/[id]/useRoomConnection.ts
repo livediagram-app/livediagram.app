@@ -6,7 +6,11 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import { explorerHref } from '@/lib/explorer-href';
+import {
+  setRemoteBesideTab,
+  syncRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@liveplanner/project';
 import {
@@ -18,7 +22,13 @@ import {
   type SheetsRoomOp,
 } from '@liveplanner/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  getSessionSharePassword,
+  type RoomHandlers,
+} from '@/lib/api-client';
+import { keepPlanGrantFresh, planGrant } from '@/lib/api/plan-grants';
 import {
   createPresenceCoalescer,
   type CursorPos,
@@ -32,7 +42,7 @@ import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,
@@ -377,8 +387,8 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') {
           // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-          noteAccessEnded(projectId, 'revoked');
-          window.location.assign('/explorer');
+          // The note rides in the address: the Explorer is another site's page, served here.
+          window.location.assign(explorerHref('', '?ended=revoked'));
         } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
@@ -490,6 +500,10 @@ export function useRoomConnection(opts: {
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    // The grant every request and the room's ticket carry, fetched again a minute before it lapses while the
+    // plan is open (plan-grants.ts), so neither a save nor a renewal waits on the index.
+    const stopGrant = keepPlanGrantFresh(projectId, share);
     let firstMint = true;
     const openedRoom = connectRoom(projectId, self, handlers, {
       // The api worker resolves the role the mint stored on the ticket and
@@ -504,9 +518,11 @@ export function useRoomConnection(opts: {
         firstMint = false;
         return minted?.ticket ?? null;
       },
+      renewGrant: async () => (await planGrant(projectId, share))?.grant ?? null,
     });
     roomRef.current = openedRoom;
     return () => {
+      stopGrant();
       presence.cancel();
       openedRoom.close();
       roomRef.current = null;

@@ -4,7 +4,7 @@
 import type { RefObject } from 'react';
 import { pageAt } from '@livedocuments/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 
 /** True when Pages mode's pages are up and the press lands off all of them. */

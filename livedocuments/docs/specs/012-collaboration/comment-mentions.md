@@ -15,6 +15,8 @@ invited, except yourself. That is exactly the Assign Action picker's rule
 ([Assigned actions](assigned-actions.md) §2), for the same reason: a mention should reach someone
 who can open the document and read the thread, and a teammate on another team
 almost certainly cannot.
+The editor reads them from `GET /api/teams/<teamId>/members` (the team as liveworkspace keeps it, for a caller
+whose token names the team), the same list the Assign Action picker uses.
 
 - On a **personal document** or for a **guest** there is nobody to mention.
   Typing `@` then shows one quiet row, "Mention teammates on a team document",
@@ -84,37 +86,34 @@ page as every thread does.
 
 ## The email
 
-After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
-commentText, mentions: [{ userId?, memberId? }] }`. It is signed-in only (the
-teams mutation gate) and best-effort: the comment has already persisted, a
-failure is swallowed, the response is `202`.
+The api sends it when the comment is saved, from what it stored, so the editor asks for nothing: a comment
+posted through the comment routes (on the canvas) at once, and a canvas comment that reaches
+the document with a tab save (or an agent-free changeset) with that save. A save emails only about the comments it
+adds that its writer wrote (`newCommentsBy` in `apps/api/src/comments.ts`), never one already stored, and never
+a peer's comment that reached the writer live first. An API token's comment emails nobody. Best-effort, in
+`waitUntil`: the comment has already persisted, and a failure is swallowed.
 
 The server decides everything that matters:
 
-- The caller is a **joined** member of the team, and the team is the
-  document's team (`documents.team_id`), and the caller can access the document.
-  Otherwise `404`, never probing.
-- Each mention resolves to a member of that team (joined or invited) other
-  than the caller; anything else is skipped silently. At most 20.
-- The author name comes from the caller's verified identity (participant
-  profile, else email), and the document name from the document row, never the
-  body.
-- Each recipient's **"Someone Mentions Me in a Comment"** preference
-  (`notifyMentions`, default on) is honoured; an invited member with no
-  account has no preferences and is emailed at their invite address.
-- `commentText` is required, at most 5000 characters; the email
-  quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, document, recipient and the comment's text is sent at most once per 24 hours
-  (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
-  author's action-assigned and mention emails together are capped at 60 an hour
-  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
-  deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
-- A comment and an
-  assigned action ([Assigned actions](assigned-actions.md)) are deduped by exact text: neither is stored where the route can read it when the request lands
-  (both reach D1 only with the next tab save), so a client that rewords each
-  request gets past the dedupe, and the hourly cap is the bound.
+- The document has a team (`document.team_id`), and the author is a **joined** member of it as liveworkspace keeps the
+  team now (`POST /api/account/internal/teams/members`). Otherwise nobody is emailed.
+- Each mention resolves to a person of that team (joined or invited), by membership row first, then account,
+  other than the author; anything else is skipped silently. At most 20 a comment.
+- The author name comes from the author's profile (else their verified address), and the document name from the
+  document, never the comment.
+- Each recipient's **"Someone Mentions Me in a Comment"** setting
+  (`notifyMentions`, default on, shared by every app) is honoured, read with their verified address in one
+  request for everyone a save mentions; an invited member with no account has no settings and is emailed at
+  their invite address.
+- The email quotes the first 280 characters, cut at a word with an ellipsis.
+- Each email is **claimed** before it goes, in the document's own `notify_claims` table: a hash of the author,
+  document, recipient and the stored comment's id is sent at most once per 24 hours
+  (`NOTIFY_EMAIL_DEDUPE_MS`), so a saved-again comment emails nobody twice, and one
+  author's action-assigned and mention emails are capped at 60 an hour across all their documents
+  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, `@liveworkspace/auth-client`), counted in the author's own per-person store
+  (`@liveworkspace/index-app` `claimNotice`). A refused claim sends nothing, is released so the email may go once
+  the hour allows, and logs `[notify-email] skipped`; a claim past the 24 hours is deleted by the next claim, so the
+  table holds a day at most, and it goes with the document.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
 comment, and has one button, **Open the document**. It is sent only when email is
@@ -122,8 +121,8 @@ configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-
 
 ## Setting
 
-Settings → Email gains **Someone Mentions Me in a Comment** ("When a teammate
-@mentions you in a comment."), signed-in only, like the other email toggles.
+Settings → Notifications has **Someone Mentions Me in a Comment** ("A teammate
+@mentions you in a comment."), signed-in only, like the other email switches.
 
 ## Telemetry
 

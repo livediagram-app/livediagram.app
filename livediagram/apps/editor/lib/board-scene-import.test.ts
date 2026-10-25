@@ -114,7 +114,7 @@ describe('importBoardsAsDocuments', () => {
       status: 'done',
       failures: [{ title: 'Huge', message: BOARD_TOO_BIG }],
     });
-    expect(BOARD_TOO_BIG).toBe('This board is too big for one document');
+    expect(BOARD_TOO_BIG).toBe('This board is too big for one canvas');
     expect(warn).toHaveBeenCalledWith(
       '[board-scene] board too big',
       expect.objectContaining({ board: 1, bytes: expect.any(Number) }),

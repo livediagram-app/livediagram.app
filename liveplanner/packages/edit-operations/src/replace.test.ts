@@ -98,7 +98,7 @@ describe('applyReplace for a new tab', () => {
     expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
   });
 
-  it('logs the source and the element count, and a custom theme it could not paint', () => {
+  it('logs the source and the element count, and a theme it could not paint', () => {
     const { calls, log } = recording();
     applyReplace(null, simple, {
       ...options,

@@ -2,7 +2,7 @@ import { TemplatePreview } from '@livedesign/template-previews';
 import { ctaHref, type CtaSource } from '@livedesign/api-schema';
 import { templateCreateHref } from '@livedesign/templates';
 import type { GalleryTemplate } from '@/lib/template-gallery';
-import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
+import { BAND_CARD, BAND_CONTROL_HOVER } from '@liveworkspace/marketing-site/lib/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // One template as a card that creates that design straight away and opens it in the editor

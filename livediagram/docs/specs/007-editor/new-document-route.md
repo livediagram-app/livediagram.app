@@ -25,7 +25,7 @@ want to create a document" end-to-end.
 
 The overlap is the source of recurring state bugs:
 
-- The "Empty Canvas" flash on `New Document` clicks (multiple
+- The "Empty Canvas" flash on `New Canvas` clicks (multiple
   iterations to land cleanly).
 - `templatePickerMode = 'welcome'` showing on existing-document tabs.
 - Hydration spinner hangs because the no-params path raced with the
@@ -44,7 +44,7 @@ each one own a clean state model without conditional gates.
   `?s=` URLs and never has to consider "do I mint an id?".
 - Visiting `/live` with no params redirects to `/new` instead
   of trying to be both surfaces at once.
-- "New Document" buttons (Explorer + NotFound CTA) navigate to
+- "New Canvas" buttons (Explorer + NotFound CTA) navigate to
   `/new`. Existing share / open flows stay on `/live`.
 
 ## Non-goals
@@ -125,11 +125,11 @@ document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
 `<NotFound>` card at once, titled **Page not found**
 ("There is no page at this address. Open a document from the Explorer or
-start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
+start fresh.") with its **Open Explorer** and **New Canvas** buttons, and asks
 the API for nothing. A document that is missing or not yours gets the same card
-titled **Document not found**. The card stands alone under the app header, with
+titled **Canvas not found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
-`/explorer`, New Document to `/new`). An embed shows the card with New Document
+`/explorer`, New Canvas to `/new`). An embed shows the card with New Canvas
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`. Before, every address without a
 document id went to `/new`, so a mistyped or retired page opened the New
@@ -142,13 +142,13 @@ that FAILS — network down, 5xx, share link unresolvable — means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
-raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
+raises `loadError`, which renders `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`
 instead. That card leads with **Retry** (a reload), because unlike a
 missing document the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -164,7 +164,7 @@ knowing about when adding another.
 
 ### Owner creates a new document
 
-1. User clicks **New Document** in the Explorer (or lands on `/live`).
+1. User clicks **New Canvas** in the Explorer (or lands on `/live`).
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately — no spinner.
 4. User picks a mode, which creates the document at once, where new documents go by default
@@ -199,7 +199,7 @@ knowing about when adding another.
    Start Drawing, Start a Workshop; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
-### Document not found
+### Canvas not found
 
 1. URL is `/document/<id>` but the API returns 404.
 2. NotFound surface renders as today, but its "Create new document"
@@ -211,7 +211,7 @@ Removed from the editor route:
 
 - `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
   derivation.
-- `welcomeOpen` (the chrome-hide trigger for the New Document modal).
+- `welcomeOpen` (the chrome-hide trigger for the New Canvas modal).
 - `commitDocumentId()` and every call site (`createShareLink`,
   `skipTemplatePicker`, `chooseTemplate`).
 - The "no URL params" branch of hydration. If the pathname's id
@@ -252,7 +252,7 @@ creates anything:
 - **On `/new`:** back to the screen that opened it, at once (the step has
   no search; a `?q=` preset waits for the new document's start). When the
   browser came from another page of this site (the home page's Diagram or Brainstorm,
-  the header's Choose Template, the Explorer's New Document), it goes back there,
+  the header's Choose Template, the Explorer's New Canvas), it goes back there,
   as the browser's Back would (`history.back()`), so that page returns as it was.
   With nothing of ours to go back to (the URL typed, or opened from another site),
   it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
@@ -288,7 +288,7 @@ reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetr
 
 ## Responsive layout
 
-The New Document wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
+The New Canvas wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
 The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the logo's site switcher, the account menu) open in front of the card rather than behind it.
 
@@ -299,8 +299,7 @@ This is the only welcome surface so it sets the mobile floor for the rest of the
 Returning users get a **"Jump Back In" card** pinned to the right of the
 centred wizard (desktop `xl+` only — below that the wizard owns the width):
 the 5 most recently-saved documents they own or that sit in a team they have
-joined (the same list as the landing page's Welcome back,
-[Returning visitor](../019-marketing/returning-visitor.md)), each row opening that
+joined, as the index lists them, each row opening that
 document directly, with a relative "saved N ago" line. A team document's name
 follows the team mark (the Explorer's team icon), read out as "<team> team:". It is a side affordance,
 deliberately separate from the create flow, and hidden entirely for someone
@@ -339,7 +338,7 @@ browsed before signing up.
 The welcome screen asks **one question**, what you are making, and creates the document as soon as it is
 answered. It does not ask where the document goes or what it is called:
 
-- **Mode.** [Choosing a mode](#choosing-a-mode). Footer: **Open Existing Document** on the left, then **Skip**
+- **Mode.** [Choosing a mode](#choosing-a-mode). Footer: **Open Existing Canvas** on the left, then **Skip**
   and **Create**. Choosing a card creates at once; **Create** creates the chosen card (a `?mode=` preset), else a
   Blank Diagram.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
@@ -354,7 +353,7 @@ answered. It does not ask where the document goes or what it is called:
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livediagram and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
-    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Document
+    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Canvas
     or Take Offline), so asking up front only slowed the first document down.
 - **No step rail.** One step needs no progress indicator.
 - **There is no theme step.** A new document starts on the **Default** theme,
@@ -362,7 +361,7 @@ answered. It does not ask where the document goes or what it is called:
   anything is on the canvas was a decision most people could not yet make.
 - **Skip** commits the documented defaults straight away: the **Blank** template and the **Default** theme, with
   its start closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
-- A bottom-left **Open Existing Document** button navigates to `/explorer`. The
+- A bottom-left **Open Existing Canvas** button navigates to `/explorer`. The
   `/new` route therefore does **not** render an Explorer panel of its own (it
   used to float one as the escape hatch); the button is the single, unambiguous
   way out, which is less confusing.
@@ -379,6 +378,11 @@ There is **no template picker over the editor**. An empty tab's templates are on
 shows over the canvas. (The in-editor **Quick Start**, the whole catalogue across every mode in one modal, was
 removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
 switch reaches the others.)
+
+**Where it will be saved.** Under the modes, the wizard shows the **Sync Canvas to Server** switch, which chooses
+where the create goes rather than asking: it starts at the default for who is creating and moves nothing, as nothing
+exists yet ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)). It is not
+drawn when a `/new?folder=` / `?team=` context names a server place.
 
 ### A choice before hydration
 
@@ -425,7 +429,7 @@ documented Skip defaults (Blank template, Default theme, the template's
 default document name) without walking the wizard:
 
 - **`/new?blank=1`** — the query param bypasses the wizard entirely. The
-  page renders the opening screen (below) at its "Creating your document"
+  page renders the opening screen (below) at its "Creating your canvas"
   stage instead of the wizard, commits the blank document as soon as
   identity resolves, and hands off to the editor in place (below). Any
   truthy presence of `blank` counts.
@@ -528,15 +532,15 @@ place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
 - **Why:** a hard navigation paid for a second full page load: the editor's
-  document, a second Clerk settle, a second identity round trip, and a
+  document, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
-  swap keeps the one Clerk session, the one document, and one continuous
+  swap keeps the one signed-in session, the one document, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
   chunk as soon as it mounts (a bypass needs it within a second; a wizard
   visitor almost always goes on to create), so the chunk downloads in
   parallel with identity and the create request. If it is not ready at
-  handoff, the opening screen holds at the "Opening your document" stage
+  handoff, the opening screen holds at the "Opening your canvas" stage
   until it is.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
@@ -557,8 +561,8 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your document"** to **"Opening your
-document"**; everything else stays put.
+Its label moves from **"Creating your canvas"** to **"Opening your
+canvas"**; everything else stays put.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
@@ -583,8 +587,8 @@ document"**; everything else stays put.
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
-  so the sso-callback and OAuth consent cards keep composing it inside their
-  own card.
+  so a card can compose it inside its own (the Clerk-era sso-callback card
+  did).
 
 Every create from `/new` honours the URL placement context (the `?folder` /
 `?team` pre-seed): the document files there, not silently at the personal root.
@@ -593,7 +597,7 @@ Every create from `/new` honours the URL placement context (the `?folder` /
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the document in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -604,13 +608,13 @@ wizard is filed by its mode; the template picked later on its start screen may t
 default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
-  "Placement refused", title "Couldn't file the document there", and one action,
+  "Placement refused", title "Couldn't file the canvas there", and one action,
   **Choose another place**, which reopens `/new` without the bypass and placement params, so the
   next create goes where new documents go by default:
-  - `team_forbidden`: "You're not a member of that team, so the document can't be filed in its library."
+  - `team_forbidden`: "You're not a member of that team, so the canvas can't be filed in its library."
   - `folder_not_found`: "That folder no longer exists, or isn't yours."
   - `folder_scope_mismatch`: "That folder belongs to a different space from the one you chose."
-  - `placement_invalid`: "That isn't a place a document can be filed."
+  - `placement_invalid`: "That isn't a place a canvas can be filed."
 - **Any other failure** keeps the connection copy and **Try again**.
 - **Telemetry:** `Team / Added / Document` fires once a create into a team has succeeded,
   never on a refused one.
@@ -619,21 +623,19 @@ Telemetry: the Start Blank bypass (`/new?blank=1`) fires `UI / Used / JustDraw` 
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Custom themes
+## Themes
 
-With the theme step retired, the picker no longer shows themes at all. Custom
-themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
-the Tab Style dialog, which renders the same `CustomThemePicker` the theme
+With the theme step retired, the picker no longer shows themes at all. Themes are
+picked from the Tab Style dialog, which renders the same `ThemeBrowser` the theme
 step used. The create path still carries a theme id (`onPick`,
-`commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
-passes through), now always the caller's: `brand` on `/new`, the source tab's
-theme for a new tab.
+`commitNewDocument`, `buildTemplatedTab` take a `string`), now always the
+caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
   optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 
@@ -645,7 +647,7 @@ theme for a new tab.
 - `/document/<id>` (existing) → editor hydrates as before.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
-- "New Document" from Explorer → goes to `/new`.
+- "New Canvas" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
 - `/new`, choose a mode → the document is created at once, This Browser for a guest, filed in the

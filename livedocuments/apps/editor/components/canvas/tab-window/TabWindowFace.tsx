@@ -13,7 +13,7 @@ import {
   type CanvasSurface,
   type ShapeElement,
 } from '@livedocuments/document';
-import { lucideArrowUpRight } from '@livedocuments/icons/lucide';
+import { lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedocuments/ui';
 import { useTabWindows } from './tab-window-context';
 

@@ -1,27 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Getting Started',
   description:
-    'New to liveplanner? Create your first diagram, learn the canvas, and share it with your team.',
-  path: '/help/getting-started/',
-});
+    'New to liveplanner? Create your first plan, learn the canvas, and share it with your team.',
+  lede: 'New here? These guides get you up and running quickly.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'getting-started', COPY);
 
 export default function GettingStartedPage() {
-  const articles = getArticlesByCategory('getting-started');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/getting-started/', articles: articles }}
-      title="Getting Started"
-      lede="New here? These guides get you up and running quickly."
-    >
-      {articles.map((article, index) => (
-        <ArticleCard key={article.slug} article={article} number={index + 1} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="getting-started" copy={COPY} numbered />;
 }

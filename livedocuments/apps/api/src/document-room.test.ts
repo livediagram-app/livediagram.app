@@ -8,7 +8,7 @@ import {
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
 } from '@livedocuments/api-schema';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
@@ -635,7 +635,7 @@ describe('DocumentRoom op-role enforcement', () => {
     // Unordered: a `seq` would put it in the ordered stream, and at 10 Hz it
     // would push every real mutation out of the 256-slot catch-up log within
     // half a minute of somebody scrolling, forcing the next reconnecting peer
-    // into a full D1 re-hydrate.
+    // into a full re-hydrate.
     expect(received[0]).not.toHaveProperty('seq');
   });
 
@@ -684,7 +684,7 @@ describe('DocumentRoom op-role enforcement', () => {
     // The expensive half. Every ordered op costs a `seq` and a slot in the
     // 256-entry log, and at 10 Hz a scrolling editor filled the whole thing
     // with camera positions in ~26s, pushing `floor` past every real mutation
-    // so the next reconnecting peer got `resync` and re-hydrated from D1.
+    // so the next reconnecting peer got `resync` and re-hydrated from the stored tabs.
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     sendFrame(room, editor.ws, {

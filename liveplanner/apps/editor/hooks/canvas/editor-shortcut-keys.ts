@@ -5,17 +5,9 @@
 // wiring; the unit test asserts the key -> action mapping against
 // these tables directly.
 
-import type { Selection } from '@/lib/selection-store';
-import type { CanvasTool } from '@/components/palette/palette.types';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
-
-// Shape kinds that have a single-key palette shortcut: the common
-// flowchart set. The rest of the ShapeKind union (stadium, project,
-// cloud, devices, etc.) has no memorable free letter and stays a click
-// away in the palette.
-type ShortcutShape =
-  'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
 
 export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
@@ -25,18 +17,6 @@ export type EditorKeyboardShortcutsDeps = {
   // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
   // input does. Read when a key is pressed.
   canvasCovered?: () => boolean;
-  // Modal-interaction state. Escape clears whichever is active.
-  formatSourceId: string | null;
-  setFormatSourceId: (v: string | null) => void;
-  // Pending draw-to-size intent, set when the palette was clicked
-  // under the drawToAdd user preference. Escape clears it so a
-  // user who accidentally entered draw mode (or changed their
-  // mind) can bail before clicking on the canvas. Null when no
-  // draw is pending. The hook only needs to know "is something
-  // pending" so we accept the opaque truthiness rather than the
-  // discriminated union type itself.
-  pendingDraw: unknown;
-  onCancelDraw: () => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -59,33 +39,6 @@ export type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  // Canvas tool setter. V / H / I switch between select / pan /
-  // isometric. Mirrors the in-canvas tool picker so a keyboard user
-  // can switch tools without leaving home position. View-role
-  // visitors still get this (panning doesn't mutate
-  // anything; selecting is harmless because the popover hides for
-  // view-role).
-  setCanvasTool: (t: CanvasTool) => void;
-  // Active canvas tool. Read by the Escape handler so Escape exits the
-  // persistent Format tool (back to Select) from either phase.
-  canvasTool: CanvasTool;
-  // Element-add callbacks. R / O / D / C / H / G fire addShape with the
-  // matching ShortcutShape; T / N / A fire the dedicated handlers. All
-  // mirror their palette counterparts so the keyboard route reaches the
-  // same code path as the click route.
-  addShape: (kind: ShortcutShape) => void;
-  addText: () => void;
-  addSticky: () => void;
-  addArrow: (ends?: import('@liveplanner/project').ArrowEnds) => void;
-  // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
-  // and the grower itself. Asked per keystroke rather than held as a flag so
-  // it can't go stale against the selection.
-  canGrowMindNode: (id: string) => boolean;
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Escape on the empty node a growth just made (the Tab one time too many):
-  // removes it and selects its parent. False when that is not the case, so
-  // Escape deselects as usual.
-  onEscapeMindNode: (id: string) => boolean;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.

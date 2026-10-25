@@ -1,0 +1,25 @@
+{
+  "name": "@liveworkspace/trusted-types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./csp": "./src/csp.ts",
+    "./sinks-suite": "./src/sinks-suite.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "jsdom": "^30.1.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

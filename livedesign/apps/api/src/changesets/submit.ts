@@ -14,11 +14,11 @@ import {
   type ApplySuccess,
 } from '@livedesign/edit-operations';
 import { rewriteCommentAuthors } from '../comments';
-import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
+import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
-import type { DesignDTO, Env } from '../types';
+import type { DesignDTO, DesignEnv } from '../types';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
@@ -38,7 +38,7 @@ export const SUBMIT_ATTEMPTS = 2;
 const TAB_ID_MAX = 128;
 
 type SubmitArgs = {
-  env: Env;
+  env: DesignEnv;
   design: DesignDTO;
   tabId: string;
   request: ParsedChangeset;
@@ -67,9 +67,6 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     ]);
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
-      if ((await tabIdsHeldElsewhere(env, design.id, [tabId])).size > 0) {
-        return refusal(409, 'tab_id_taken', 'another design holds a tab with this id');
-      }
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);
@@ -192,7 +189,7 @@ export function writtenFooter(
 
 // The selections on the tab, the agent owner's own marked by their person tag.
 async function readSelections(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string,
   ownerId: string,

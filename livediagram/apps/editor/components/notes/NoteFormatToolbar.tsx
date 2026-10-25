@@ -19,7 +19,7 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the

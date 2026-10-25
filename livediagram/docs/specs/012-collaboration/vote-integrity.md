@@ -15,9 +15,9 @@ browsers are many votes. The bound makes a scripted flood from one network buy n
 
 Every path uses the strongest identity the server holds for the caller, in this order:
 
-1. **A verified account** (a Clerk session or an API token over REST; a room session whose ticket carried a person
+1. **A verified account** (a signed-in session or an API token over REST; a room session whose ticket carried a person
    tag). One account is one voter, whatever browser or device it votes from.
-2. **A guest.** A guest id costs nothing to make (`POST /api/guest-id`), so it is never trusted to be one person.
+2. **A guest.** A guest identity costs nothing to make (a fresh browser gets a new guest token), so it is never trusted to be one person.
    Guests are counted against their **network**: the caller's IPv4 address, or IPv6 /64 (`clientRateKey`). At most
    `GUEST_VOTERS_PER_NETWORK` (100) distinct guest voters per network take part in one target (below). The 101st is
    refused; one who has already taken part can always change or withdraw their vote.
@@ -58,9 +58,10 @@ votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`)
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 
-The ledger is `guest_voters (document_id, network_tag, person_tag)`, migration 0076, one row per guest voter per
-network per document, removed with the document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is
-stored. Admission is one D1 batch: a conditional insert, then a read of the caller's row.
+The ledger is `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
+Object, `apps/api/src/document-room/document-schema.ts`), one row per guest voter per network, removed with the
+document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is stored. Admission is one batch: a
+conditional insert, then a read of the caller's row.
 
 A refused vote answers `429 { error: 'vote_limit' }` and logs `[vote-integrity] guest voter refused`.
 

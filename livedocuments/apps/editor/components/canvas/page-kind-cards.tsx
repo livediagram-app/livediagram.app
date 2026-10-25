@@ -1,13 +1,12 @@
 'use client';
 
 // The three kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
-// miniature of the page above its name and a line on what it is for: the first page's own choice.
-// The Add a Page list shows the same kinds as rows (AddPagePopover).
+// miniature of the page above its name and a line on what it is for: the first page's own choice,
+// which sets the tab's kind ("One kind a tab").
 import type { PageKind } from '@livedocuments/document';
 import type { KeyboardEvent, Ref } from 'react';
 
-// `hint`: the short line the Add a Page list shows beside the name.
-type PageKindChoice = { kind: PageKind; name: string; line: string; hint: string };
+type PageKindChoice = { kind: PageKind; name: string; line: string };
 
 // The cards sit two by two, the last across both columns.
 const KIND_COLUMNS = 2;
@@ -35,19 +34,16 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     kind: 'infographic',
     name: 'Infographic',
     line: 'A page to lay out: layouts, icons, charts and media.',
-    hint: 'Lay out icons, charts and media.',
   },
   {
     kind: 'article',
     name: 'Article',
     line: 'A page to write on, flowing onto new pages as it grows.',
-    hint: 'Write, flowing onto new pages.',
   },
   {
     kind: 'slide',
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
-    hint: 'A widescreen slide for a deck.',
   },
 ];
 

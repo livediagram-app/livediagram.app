@@ -8,7 +8,7 @@ assigned action to the element, optionally emailing the assignee. It sits on the
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
-email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
+email ([Transactional email (Resend)](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
 
 An action is collaboration metadata on an element, exactly like a comment
 thread: it lives in the element, persists through the normal tab autosave,
@@ -117,7 +117,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
   of the team whose shared library holds this design** (`GET
-/api/teams/<designTeamId>` members, via the existing api-client
+/api/teams/<designTeamId>/members`, via the existing api-client
   helper), each row showing the member's avatar bubble and display name
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
@@ -136,8 +136,8 @@ Clicking it opens the **Assign Action dialog** (its own component under
   Myself-only states, each with its own nudge: a **personal design**
   (no team library) offers the fix INLINE — "Move this design into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared designs](../013-workspace/team-shared-designs.md) placement move (`PUT /api/designs/<id>/folder`
-  with the team id, landing at the team root) right from the dialog and
+  performs the [Team shared designs](../013-workspace/team-shared-designs.md) placement move (the index's item move
+  into the team, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
   signed-in user **not a member of the design's team** (a share-link
@@ -150,7 +150,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   selected on focus so typing replaces it in one keystroke.
 - **Description**: optional multi-line text.
 - **"Email {name} about this action"**: the shared iOS-style toggle
-  (`ToggleSwitch`, the same control every settings row uses), **default
+  (`@liveworkspace/ui`'s `Switch` at `sm`, the same control every settings row uses), **default
   on**, rendered only when `useCapabilities().emailEnabled` is true
   ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without Resend never advertises a send it
   can't perform. **Hidden entirely for a self-assignment** (guest or
@@ -196,12 +196,12 @@ state; nothing is added to `useEditorState.ts` beyond the wiring call.
 
 ## 4. Email notification
 
-A new **signed-in-only** endpoint on the api worker (account access token required,
-401 otherwise):
+A **signed-in-only** endpoint on the api worker (account access token required,
+401 otherwise), answered inside the design's Durable Object, which keeps the email's once-only claim:
 
 ```
-POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId?, assigneeMemberId?, designId, actionName, description? }
+POST /api/designs/<designId>/notify-action
+body: { teamId, assigneeUserId?, assigneeMemberId?, actionName, description? }
 ```
 
 The server, not the client, establishes every fact that matters:
@@ -211,10 +211,10 @@ The server, not the client, establishes every fact that matters:
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
 - verifies the caller can access `designId` (owner, team library, or
-  shared-with), and reads the **design name from D1**, not the body;
+  shared-with, by the index's grant), and reads the **design name from the design itself**, not the body;
 - resolves the assignee's address from trusted server state
-  (`team_members.email` / `email_lifecycle`), never a client header
-  ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
+  (the team's people and the account's verified address, asked of liveworkspace), never a client header
+  ([Transactional email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
 - resolves the assigner's display name from the caller's own identity, so a
   spoofed `assignerName` in a tab blob can never sign an email;
 - no-ops silently unless `emailEnabled(env)` and the assignee's
@@ -229,8 +229,8 @@ The server, not the client, establishes every fact that matters:
 - **claims** the email before sending, since the action name and description
   come from the body: the same email (assigner, design, recipient, action
   name, description) goes at most once per 24 hours, and one sender's
-  action-assigned and mention emails are capped at 60 an hour, both in
-  `notify_email_claims` ([Comment mentions](comment-mentions.md) "The email" has the
+  action-assigned and mention emails are capped at 60 an hour across all their designs
+  (the once-a-day rule in the design's own `notify_claims` table, the cap in the sender's own store; [Comment mentions](comment-mentions.md) "The email" has the
   detail).
 
 Then it sends the **action-assigned** email (new template in
@@ -240,7 +240,7 @@ assigned you an action on _{design name}_", the action name, the first
 ~200 characters of the description, and a CTA linking to the design (when
 the assignee can open it, see above). All
 user-influenced strings (action name, description, design name, assigner
-name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
+name) are HTML-escaped. The content stays within [Transactional email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
 or a design/team fact the two already share.
 
@@ -252,19 +252,13 @@ accept — acceptable v1: the action is still on the canvas, and reassigning
 claim already identified carry their real `userId` and match normally.
 
 **Access caveat:** assigning is allowed on any design the assigner can
-edit, including ones the assignee cannot open. The dialog does a REAL
-check rather than guessing: picking an assignee fires
-`GET /api/teams/<teamId>/access-check?assigneeUserId=&designId=`, which
-applies the same gates as notify-action (caller + assignee joined members
-of the team, caller can access the design, 404s that never probe) and
-answers `{ canAccess }` from the three legs the server can actually see —
-the assignee owns the design, is a joined member of the design's
-team-library team, or has previously opened it through a share link
-(`shared_with`). Only a definite "no" shows the hint ("{name} can't open
-this design yet: share it or move it to the team library"); while the
-check is in flight nothing shows, and if it errors the dialog falls back
-to the old heuristic (picked team ≠ the design's team → hedged "may not
-be able to open" wording). Auto-sharing on assign is explicitly not done
+edit, including ones the assignee cannot open. Only the team whose library
+holds the design is pickable, and its people open the design by being in it,
+so the dialog decides without asking the server (`useAssigneeOptions`): a
+joined teammate can open it, an invited one will on accepting, and anyone
+else (an action kept from before the design moved) is unknown, shown with the
+hedged "may not be able to open" wording. The email decides for itself
+whether it can name the design. Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA, and the email to an assignee who cannot open the design
 names no design and links to none.
@@ -351,8 +345,9 @@ One new opt-out flag in the [User preferences](../007-editor/user-preferences.md
 notifyActionAssigned?: boolean; // someone assigns me an action
 ```
 
-- Server-side it joins `NotificationPrefs`
-  (`apps/api/src/db/notification-prefs.ts`), read by the notify dispatcher.
+- Server-side it is one of the shared settings in `@liveworkspace/settings`, kept by liveworkspace
+  accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
+  reads it through `NotificationPrefs` (`apps/api/src/accounts/settings.ts`).
 - Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
   `NotificationRow`: "Someone assigns me an action", gated with the others
   on `emailEnabled`, flipping through the same `setFlag` round-trip.
@@ -403,7 +398,7 @@ enum-ish tokens, not user content.
 
 - ~~A cross-design "my actions" inbox~~ — shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
-  a D1 projection (`collab_actions`) written beside every tab save,
+  a projection in liveworkspace's index (`collab_actions`), pushed from each design's outbox,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an element, and multiple
   assignees.

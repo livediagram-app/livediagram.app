@@ -24,7 +24,7 @@ const DashboardPage = dynamic(
 );
 
 // What an empty or page-kind tab shows in the canvas's place: a Dashboard or Form tab's page, or an empty tab's Start
-// Planning (docs/specs/026-plan/plan-mode.md "Starting a board"). Always mounted, so the template-pick handoff
+// Planning (docs/specs/026-plan/plan-mode.md "Starting a board"). Always mounted, so the template-pick note
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
@@ -34,7 +34,6 @@ export function EditorStartPanels() {
     embedMode,
     activeTab,
     isReadOnly,
-    accountUserId,
     tabs,
     loadAllTabs,
     deleteTab,
@@ -42,13 +41,11 @@ export function EditorStartPanels() {
   } = ctx;
   const selectTab = useSelectTab();
   const isOffline = useIsOfflineProject(ctx.projectId);
-  // A template picked from Start Planning on a project /new just made goes to its default folder
+  // A template picked from Start Planning on a plan /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
-    ownerId: ctx.selfParticipant.id,
     projectId: ctx.projectId,
     tabId: activeTab.id,
-    signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
   // An empty tab: Start Planning, in the middle of the canvas, for someone who can edit. Anything already drawn (a

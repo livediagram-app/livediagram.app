@@ -10,13 +10,13 @@
 // mutating command withheld inside the pure builder.
 
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
 import { isBoxed, renumberSteps, supportsRotation } from '@livedocuments/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -24,7 +24,7 @@ import {
 } from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
 // alone, never on the handlers, so the searchable list needs none.

@@ -6,10 +6,13 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { PlusIcon, HoverCard } from '@livediagram/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
+import {
+  FLOATING_CONTROL_GAP,
+  FLOATING_CONTROL_SIZE,
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
 import {
   ADD_COLUMN_OPTION,
   webRowOption,
@@ -22,10 +25,10 @@ import {
   MIND_SIBLING_OPTION,
   OPTIONS,
 } from './quick-connect-options';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
-import { isDragTravel } from '@/lib/press-gestures';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';
+import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
+import { quickRingMenuRect } from '@liveworkspace/workbench/lib/quick-ring-menu-rect';
 
 // Same grace period as the other hover-open surfaces: long enough to cross
 // the gap between the + and its menu.

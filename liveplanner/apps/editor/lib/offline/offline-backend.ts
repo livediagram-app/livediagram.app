@@ -2,13 +2,12 @@
 // store of project records, behind a small interface so tests swap in an in-memory map. The
 // record shape and every operation on it live in ./offline-store.ts.
 
-import { upgradeStores } from './legacy-offline-store';
 import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@liveplanner/ui';
 import type { OfflineProjectRecord } from './offline-store';
 
 const DB_NAME = 'liveplanner-offline';
-// Version 2 renamed the object store (docs/specs/006-project/offline-mode.md);
-// ./legacy-offline-store moves every record across.
+// Version 2, the first liveplanner opened (docs/specs/006-project/offline-mode.md). Never lowered: a browser that
+// holds version 2 refuses an open that asks for less.
 const DB_VERSION = 2;
 const STORE = 'projects';
 
@@ -66,7 +65,10 @@ function openDb(): Promise<IDBDatabase> {
       reject(new OfflineStoreUnavailableError(reason));
     };
     const timer = setTimeout(() => giveUp('timeout'), OFFLINE_STORE_OPEN_TIMEOUT_MS);
-    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
+    };
     req.onblocked = () => giveUp('blocked');
     req.onsuccess = () => {
       // An open that lands after we gave up is closed at once, so it never holds a version lock.

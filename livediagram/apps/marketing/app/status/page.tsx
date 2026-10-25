@@ -14,7 +14,7 @@ export const metadata = pageMetadata({
 });
 
 // Lightweight first-party status page. v1 is intentionally a static
-// snapshot of the architecture (one row per Cloudflare Worker / D1
+// snapshot of the architecture (one row per Cloudflare Worker / storage
 // binding the product depends on) rather than a live health probe:
 // every service is fronted by Cloudflare's global edge so the most
 // honest "is it up" signal is whether the marketing site you're
@@ -46,32 +46,32 @@ const COMPONENTS: Component[] = [
   {
     name: 'Community',
     description:
-      'The public gallery of shared documents at https://livediagram.app/community. Static export served by a Cloudflare Worker.',
+      'The public gallery of shared canvases at https://livediagram.app/community. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'API',
     description:
-      'The backend at https://livediagram.app/api. A Cloudflare Worker that owns the D1 binding.',
+      'The backend at https://livediagram.app/api. A Cloudflare Worker in front of each document’s Durable Object.',
   },
   {
     name: 'Realtime room',
     description:
-      'Per-document Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
+      'Per-document Durable Object that holds the document and brokers live edits, cursors and selections. Lives inside the API Worker.',
   },
   {
-    name: 'Database',
+    name: 'Document storage',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, Community posts, telemetry events.',
+      'Each document’s own Durable Object (SQLite) holds its tabs, change logs and Community post. Filing and share links live on the liveworkspace index.',
   },
   {
     name: 'Image storage',
     description:
-      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached document snapshots.',
+      'Cloudflare R2. Stores uploaded image blobs, content-addressed; each document records the images it places.',
   },
   {
     name: 'Edge router',
     description:
-      'Cloudflare Worker that stitches marketing, live, telemetry, help, community and api under one hostname via service bindings.',
+      'Cloudflare Worker that stitches marketing, the editor, help, community and api under one hostname via service bindings.',
   },
   {
     name: 'MCP server',

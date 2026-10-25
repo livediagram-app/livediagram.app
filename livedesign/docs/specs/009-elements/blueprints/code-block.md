@@ -8,13 +8,13 @@ Scope, by file:
 
 | File                                                         | Role                                                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/design/src/data-shapes.ts`                       | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
-| `packages/design/src/code-themes.ts`                       | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
-| `packages/design/src/element-types.ts`                     | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
-| `packages/design/src/shape-factory.ts`                     | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
-| `packages/design/src/colors.ts`                            | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
-| `packages/design/src/validate.ts`                          | Snippet length, closed language set, closed scheme ids                                        |
-| `packages/design/src/svg-render-shapes.ts`                 | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
+| `packages/design/src/data-shapes.ts`                         | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
+| `../packages/model-core/src/code-themes.ts`                  | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
+| `packages/design/src/element-types.ts`                       | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
+| `packages/design/src/shape-factory.ts`                       | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
+| `packages/design/src/colors.ts`                              | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
+| `packages/design/src/validate.ts`                            | Snippet length, closed language set, closed scheme ids                                        |
+| `packages/design/src/svg-render-shapes.ts`                   | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
 | `apps/live/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
 | `apps/live/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
 | `apps/live/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
@@ -28,7 +28,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
 | `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
 | `apps/live/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
-| `apps/api/src/ai-prompt.ts`                                  | The AI vocabulary, which omits `code-block`                                                   |
 
 ## Domain and naming
 
@@ -208,12 +207,12 @@ The tokenizer and dialog are separate chunks (LCP unaffected). The canvas card i
 
 | Rule                                            | Test                                                                       | File                                         |
 | ----------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------- |
-| Guard matches only `code-block`                 | code block matches only its own kind                                       | `packages/design/src/data-shapes.test.ts`  |
-| Bounded snippet, closed language set            | bounds the code block + checklist fields                                   | `packages/design/src/validate.test.ts`     |
-| Every scheme complete, unique, default midnight | code themes cases                                                          | `packages/design/src/code-themes.test.ts`  |
-| Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/design/src/code-themes.test.ts`  |
-| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/design/src/svg-render.test.ts`   |
-| Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/design/src/code-themes.test.ts`  |
+| Guard matches only `code-block`                 | code block matches only its own kind                                       | `packages/design/src/data-shapes.test.ts`    |
+| Bounded snippet, closed language set            | bounds the code block + checklist fields                                   | `packages/design/src/validate.test.ts`       |
+| Every scheme complete, unique, default midnight | code themes cases                                                          | `packages/design/src/code-themes.test.ts`    |
+| Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/design/src/code-themes.test.ts`    |
+| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/design/src/svg-render.test.ts`     |
+| Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/design/src/code-themes.test.ts`    |
 | Preset writes only the scheme                   | sets the scheme on a code block and nothing else                           | `apps/live/lib/style-presets.test.ts`        |
 | Tokenizer classes per language                  | none [GE11]                                                                |                                              |
 | Degrades to plain until loaded                  | none [GE11]                                                                |                                              |

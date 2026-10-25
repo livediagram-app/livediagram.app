@@ -53,6 +53,8 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **Opens instantly** on hover and on keyboard-visible focus. It is chosen where the explanation is
   wanted at once: a control whose purpose is not obvious from its glyph.
 - **A bold title over a one-line description.** The description may run to two or three short lines.
+- **Its description is the control's accessible description** (`aria-describedby`), shown or not, so a screen
+  reader hears what the card says; the title is the name the control already carries.
 - **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
 - **Quiet while the control's own popover is open** (the Explorer, a cluster button, a palette group), since it
@@ -156,8 +158,8 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
 - The canvas's own fields (a label being typed) pan the canvas instead, on a tablet as on a phone
   ([Mobile chrome](../007-editor/live-app.md)).
 
-Where it lives: `apps/live/hooks/ui/useFloatingKeyboardAvoidance.ts`, mounted once for every page by
-`components/providers/KeyboardAvoidanceBoot.tsx` in the root layout.
+Where it lives: `../packages/workbench/src/hooks/ui/useFloatingKeyboardAvoidance.ts`, mounted once for every page by
+`../packages/workbench/src/components/providers/KeyboardAvoidanceBoot.tsx` in the root layout.
 
 ## Native `title`
 
@@ -179,7 +181,7 @@ None. Hints change no one's workflow, and hovering is not an action worth counti
 
 ## Where it lives
 
-- `@livedesign/ui` owns `Tooltip` and `HoverCard`, used by every app.
-- The shared lint config (`@livedesign/oxlint-config`) holds the native-`title` rule.
+- `@liveworkspace/ui` owns `Tooltip` and `HoverCard`, used by every app (through `@livedesign/ui`, which re-exports it).
+- The shared lint config (`@liveworkspace/oxlint-config`) holds the native-`title` rule.
 - Popovers keep their own homes (`packages/ui` popover positioning, the editor's menus and pickers);
   this spec only fixes what the word means. A popover that is a menu follows [Menus](./menus.md).

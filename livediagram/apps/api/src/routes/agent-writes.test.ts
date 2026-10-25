@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { Element } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -48,7 +48,7 @@ function call(
   const base = makeTestRouteContext(method, path, {
     env: db.env,
     owner: OWNER,
-    clerkUserId: who === 'person' ? OWNER : null,
+    accountUserId: who === 'person' ? OWNER : null,
     verifiedUserId: OWNER,
     body,
     headers,

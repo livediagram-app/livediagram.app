@@ -2,18 +2,15 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import {
   accountDeletedEmail,
-  activationEmail,
-  winBackEmail,
-  projectJoinedEmail,
-  inviteResponseEmail,
-  teamInviteEmail,
-  teamInviteReminderEmail,
-  week1Email,
-  week2Email,
-  welcomeEmail,
+  actionAssignedEmail,
+  commentNotificationEmail,
+  firstShareEmail,
+  formResponseEmail,
+  MENTION_QUOTE_CHARS,
   mentionedEmail,
   mentionQuote,
-  MENTION_QUOTE_CHARS,
+  milestoneEmail,
+  projectJoinedEmail,
 } from './templates';
 
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
@@ -22,8 +19,7 @@ describe('email templates', () => {
   // docs/specs/014-identity/transactional-email.md §6 "Branding": every email opens with the logo mark next
   // to the wordmark and closes on the branded footer, all from the one shell.
   it.each([
-    ['welcome', () => welcomeEmail(env)],
-    ['team invite', () => teamInviteEmail(env, 'Acme')],
+    ['comment notification', () => commentNotificationEmail(env, 'Roadmap', 'p1', 'Ada')],
     ['account deleted', () => accountDeletedEmail(env)],
   ])('%s carries the logo beside the wordmark', (_label, build) => {
     const { html } = build();
@@ -38,128 +34,85 @@ describe('email templates', () => {
     expect(html).toContain('>app.test</a>');
   });
 
-  it('welcome has a subject + links to /new', () => {
-    const e = welcomeEmail(env);
-    expect(e.subject).toMatch(/welcome/i);
-    expect(e.html).toContain('https://app.test/new');
-  });
-
-  it('week 1 links to the explorer', () =>
-    expect(week1Email(env).html).toContain('https://app.test/explorer'));
-
-  it('week 2 links to teams', () =>
-    expect(week2Email(env).html).toContain('https://app.test/explorer/team'));
-
-  // docs/specs/014-identity/transactional-email.md: every tip / check-in respects notifyTips, so each one
-  // links to the toggle in its footer and in its List-Unsubscribe header.
+  // docs/specs/014-identity/transactional-email.md: every opt-out notification links to the switch that stops
+  // it, in its footer and in its List-Unsubscribe header.
   it.each([
-    ['week 1', week1Email],
-    ['week 2', week2Email],
-    ['activation', activationEmail],
-    ['win-back', winBackEmail],
+    ['comment notification', () => commentNotificationEmail(env, 'Roadmap', 'p1', 'Ada')],
+    [
+      'form response',
+      () => formResponseEmail(env, { heading: 'Intake', projectId: 'p1', projectName: 'Roadmap' }, 'A card', 0),
+    ],
   ])('%s carries the manage-notifications footer and unsubscribe url', (_label, build) => {
-    const e = build(env);
+    const e = build();
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
     expect(e.html).toContain('Manage your notifications');
-    expect(e.html).toContain('tips and check-ins are on');
   });
 
-  it('the welcome is not opt-out, so it carries no unsubscribe url', () =>
-    expect(welcomeEmail(env).unsubscribeUrl).toBeUndefined());
-
-  it('team invite links to the invites page + names the team', () => {
-    const e = teamInviteEmail(env, 'Acme');
-    expect(e.html).toContain('https://app.test/explorer/invites');
-    expect(e.html).toContain('Acme');
-    expect(e.subject).toContain('Acme');
+  it('account-deleted confirms the deletion, and is not opt-out', () => {
+    const e = accountDeletedEmail(env);
+    expect(e.subject).toMatch(/deleted/i);
+    expect(e.unsubscribeUrl).toBeUndefined();
   });
+});
 
-  it('account-deleted confirms the deletion', () =>
-    expect(accountDeletedEmail(env).subject).toMatch(/deleted/i));
-
-  it('escapes a malicious team name (no raw markup in the body)', () => {
-    const e = teamInviteEmail(env, '<script>alert(1)</script>');
-    expect(e.html).not.toContain('<script>');
-    expect(e.html).toContain('&lt;script&gt;');
-  });
-
-  it('falls back gracefully on a null team name', () =>
-    expect(teamInviteEmail(env, null).html).toContain('a team'));
-
-  // docs/specs/013-workspace/teams.md "Declining from the email"
-  it('team invite carries a Decline link to /join/decline with its token, escaped for the URL', () => {
-    const e = teamInviteEmail(env, 'Acme', 'm-1.a/b+c');
-    expect(e.html).toContain('https://app.test/join/decline?token=m-1.a%2Fb%2Bc');
-    expect(e.html).toContain('Decline the invite');
-    expect(e.html).toContain('no account needed');
-  });
-
-  it('team invite without a token has no Decline link', () =>
-    expect(teamInviteEmail(env, 'Acme').html).not.toContain('/join/decline'));
-
-  // docs/specs/013-workspace/teams.md "Reminders and expiry"
-  it('the three reminders name the team, link to the invites page and carry the decline link', () => {
-    const subjects = new Set<string>();
-    for (const stage of [1, 2, 3] as const) {
-      const e = teamInviteReminderEmail(env, 'Acme', stage, 'tok');
-      expect(e.kind).toBe(`TeamInviteReminder${stage}`);
-      expect(e.subject).toContain('Acme');
-      expect(e.html).toContain('https://app.test/explorer/invites');
-      expect(e.html).toContain('https://app.test/join/decline?token=tok');
-      expect(e.unsubscribeUrl).toBeUndefined();
-      subjects.add(e.subject);
-    }
-    expect(subjects.size).toBe(3);
-    expect(teamInviteReminderEmail(env, 'Acme', 3, 'tok').html).toMatch(/closes in a week/);
-  });
-
-  it('reminders escape the team name too', () => {
-    const e = teamInviteReminderEmail(env, '<b>x</b>\nBcc: y', 2, 'tok');
-    expect(e.html).not.toContain('<b>x</b>');
-    expect(e.subject).not.toContain('\n');
-  });
-
-  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my project
-  it('project-joined names the project + joiner and CTAs to the explorer', () => {
+// docs/specs/014-identity/profile-and-email-notifications.md: someone joined my plan.
+describe('projectJoinedEmail', () => {
+  it('names the plan + joiner and CTAs to the explorer', () => {
     const e = projectJoinedEmail(env, 'Roadmap', 'Anna');
+    expect(e.kind).toBe('ProjectJoined');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
-    expect(e.html).toContain('Anna');
     expect(e.html).toContain('https://app.test/explorer');
   });
 
-  it('project-joined says join notifications are on by default, not that the owner turned them on', () => {
+  it('says join notifications are on by default, not that the owner turned them on', () => {
     const e = projectJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.html).not.toContain('you turned on');
     expect(e.html).toContain('on by default');
   });
 
-  it('project-joined falls back to "Someone" / "your project" when unknown', () => {
+  it('falls back to "Someone" / "your plan" when unknown, and escapes the name', () => {
     const e = projectJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
     expect(e.html).toContain('your plan');
+    const bad = projectJoinedEmail(env, '<img src=x onerror=1>', null);
+    expect(bad.html).not.toContain('<img src=x');
+    expect(bad.html).toContain('&lt;img');
+  });
+});
+
+describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
+  it('names the assigner, plan, and action, links to the plan', () => {
+    const e = actionAssignedEmail(env, 'Sam', { id: 'd1', name: 'Roadmap' }, 'Review the copy', 'Hero only');
+    expect(e.kind).toBe('ActionAssigned');
+    expect(e.subject).toMatch(/Sam/);
+    expect(e.html).toContain('Roadmap');
+    expect(e.html).toContain('Review the copy');
+    expect(e.html).toContain('Hero only');
+    expect(e.html).toContain('https://app.test/project/d1');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
-  it('project-joined escapes a malicious project name', () => {
-    const e = projectJoinedEmail(env, '<img src=x onerror=1>', null);
-    expect(e.html).not.toContain('<img src=x');
-    expect(e.html).toContain('&lt;img');
-  });
-
-  // docs/specs/014-identity/profile-and-email-notifications.md — someone responded to a team invite
-  it('invite-response distinguishes accept from decline', () => {
-    const yes = inviteResponseEmail(env, 'Acme', 'a@b.test', true);
-    expect(yes.subject).toMatch(/accepted/i);
-    expect(yes.html).toContain('a@b.test');
-    expect(yes.html).toContain('Acme');
-    const no = inviteResponseEmail(env, 'Acme', 'a@b.test', false);
-    expect(no.subject).toMatch(/declined/i);
-  });
-
-  it('invite-response escapes a malicious team name', () => {
-    const e = inviteResponseEmail(env, '<b>x</b>', 'a@b.test', true);
+  it('escapes user-influenced strings and truncates a long description', () => {
+    const e = actionAssignedEmail(env, '<b>x</b>', { id: 'd1', name: 'Roadmap' }, '<script>', 'y'.repeat(500));
+    expect(e.html).not.toContain('<script>');
+    expect(e.html).toContain('&lt;script&gt;');
     expect(e.html).not.toContain('<b>x</b>');
-    expect(e.html).toContain('&lt;b&gt;');
+    expect(e.html).not.toContain('y'.repeat(201));
+    expect(e.html).toContain(`${'y'.repeat(200)}…`);
+  });
+
+  it('falls back when the assigner or plan name is unknown', () => {
+    const e = actionAssignedEmail(env, null, { id: 'd1', name: '' }, 'Do it', null);
+    expect(e.subject).toMatch(/A teammate/);
+    expect(e.html).toContain('a shared plan');
+  });
+
+  it('names no plan, and links to none, for an assignee who cannot open it', () => {
+    const e = actionAssignedEmail(env, 'Sam', null, 'Review the copy', null);
+    expect(e.html).toContain('ask them to share it');
+    expect(e.html).not.toContain('/project/');
+    expect(e.html).toContain('https://app.test/explorer');
   });
 });
 
@@ -169,13 +122,12 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
     expect(e.kind).toBe('Mentioned');
     expect(e.html).toContain('look &lt;here&gt; please');
     expect(e.html).toContain('Sam &lt;b&gt;');
-    const long = `${'word '.repeat(100)}end`;
-    const quoted = mentionQuote(long);
+    const quoted = mentionQuote(`${'word '.repeat(100)}end`);
     expect(quoted.length).toBeLessThanOrEqual(MENTION_QUOTE_CHARS + 1);
     expect(quoted.endsWith('word…')).toBe(true);
   });
 
-  it("opens the card for a card's comment, the project otherwise", () => {
+  it("opens the card for a card's comment, the plan otherwise", () => {
     const card = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi', 'it 1');
     expect(card.html).toContain('/project/d1#item=it%201');
     expect(card.html).toContain('Open the card');
@@ -184,9 +136,25 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
     expect(doc.html).toContain('Open the plan');
   });
 
-  it('falls back to "A teammate" without an author name', () => {
+  it('falls back to "A teammate" without an author name', () =>
     expect(mentionedEmail(env, null, 'Roadmap', 'd1', 'hi').subject).toBe(
       'A teammate mentioned you in Roadmap',
-    );
+    ));
+});
+
+// docs/specs/014-identity/transactional-email.md #6: the milestones.
+describe('milestone emails', () => {
+  it('celebrates the count, with the opt-out link', () => {
+    const e = milestoneEmail(env, 10);
+    expect(e.kind).toBe('Milestone');
+    expect(e.subject).toBe('You’ve made 10 plans on liveplanner');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
+  });
+
+  it('the first share explains the link controls', () => {
+    const e = firstShareEmail(env);
+    expect(e.kind).toBe('FirstShare');
+    expect(e.html).toContain('Revoke a link any time');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 });

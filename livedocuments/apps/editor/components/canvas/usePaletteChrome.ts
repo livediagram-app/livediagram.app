@@ -12,7 +12,7 @@ export function usePaletteChrome({ tabThemeId }: { tabThemeId: CanvasChromeProps
   // theme leaves elementStroke null, so we pass nothing and the palette
   // keeps its default slate look. See docs/specs/008-canvas/canvas-and-palette.md.
   const paletteTheme = getTheme(tabThemeId);
-  // A per-shape theme (UML / custom, docs/specs/011-theme/canvas-and-theme-dialog.md + docs/specs/011-theme/custom-themes.md) tints each shape
+  // A per-shape theme (UML, docs/specs/011-theme/canvas-and-theme-dialog.md) tints each shape
   // tile by its own kind even when the base element stroke is unset, so
   // surface the tint whenever there's a base stroke OR per-shape colours.
   const paletteTint =

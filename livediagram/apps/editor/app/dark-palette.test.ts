@@ -13,7 +13,7 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livediagram/source-ast';
+import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from '@livediagram/document';
 
@@ -25,7 +25,8 @@ import { contrastRatio } from '@livediagram/document';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-const THEME_CSS = readFileSync(`${REPO}packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
+const THEME_CSS = readFileSync(`${REPO}../packages/tailwind-config/theme.css`, 'utf8');
 
 /** The declarations of the first top-level rule whose selector is exactly `selector`. */
 function block(css: string, selector: string): Record<string, string> {
@@ -145,10 +146,13 @@ describe('the Explorer Midnight tokens', () => {
 });
 
 describe('the wordmark', () => {
-  const brand = readFileSync(`${REPO}packages/ui/src/Brand.tsx`, 'utf8');
+  // Every app's wordmark classes live in the shared logo package (packages/brand/src/apps.ts).
+  const brand = readFileSync(`${REPO}../packages/brand/src/apps.ts`, 'utf8');
 
   it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
-    expect(brand).toMatch(/'text-brand-700 dark:text-sky-400'/);
+    expect(brand).toMatch(
+      /livediagram: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/,
+    );
   });
 });
 
@@ -168,6 +172,10 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = [
   ...['app', 'components', 'hooks', 'lib'].flatMap((d) => sourceFiles(`${ROOT}${d}`)),
   ...sourceFiles(`${REPO}packages/ui/src`),
+  // The shared design system (@liveworkspace/ui), which this app renders too.
+  ...sourceFiles(`${REPO}../packages/ui/src`),
+  // The editor code every editor shares (@liveworkspace/workbench), which this app renders too.
+  ...sourceFiles(`${REPO}../packages/workbench/src`),
 ];
 
 // Parsed once, here at collection time, and shared by every rule below: re-parsing ~900 files
@@ -227,7 +235,7 @@ describe('brand-coloured text in dark mode', () => {
   });
 });
 
-// The optical utilities and the optical guard live with optical-alignment.md: packages/tailwind-config
+// The optical utilities and the optical guard live with optical-alignment.md: the monorepo's packages/tailwind-config
 // (optical-utilities.test.ts) and each workspace's optical-guard.test.ts.
 
 // White text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules):

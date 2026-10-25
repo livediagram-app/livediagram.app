@@ -1,11 +1,9 @@
 # Public API and API tokens
 
-**Status: shipped.** Everything below is live on `main`: API tokens (§3),
-the `X-Owner-Id` hardening (§4, §4.1) and the input validation (§5). One part
-is an operator switch rather than code: the guest signature requirement of §4
-is enforced only once a deployment sets `GUEST_ID_HMAC_SECRET` and a past
-`GUEST_SIG_ENFORCE_AFTER` ([§6](#6-rollout)). This spec sequenced opening the
-REST API to external, programmatic callers.
+**Status: shipped.** API tokens (§3) and the input validation (§5) are live. The guest header this spec once
+hardened (`X-Owner-Id` and its signature, §4) is gone: a guest is now a liveworkspace guest token, checked like an
+account's ([Auth + guest access](../014-identity/auth-and-guest-access.md)). This spec sequenced opening the REST
+API to external, programmatic callers.
 
 ## 1. Goal
 
@@ -21,7 +19,7 @@ A token always acts as a signed-in account; there are **no guest-owned tokens**.
 is a deliberate constraint, not a limitation to apologise for: programmatic API
 use is a power-user need, requiring an account for it is reasonable, and it
 keeps tokens off the spoofable guest-identity path entirely (the guest REST
-hardening in [§4](#4-x-owner-id-trust-change) is a separate track).
+hardening in [§4](#4-the-guest-header-retired) is a separate track).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
 or the degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
@@ -67,32 +65,21 @@ fallback accepted it whenever a request carried no Bearer token.
 
 Conclusion at the time: external access needed a real, server-verifiable
 credential, AND the bare `X-Owner-Id` trust had to be replaced, which also
-closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
+closed the escalation. The fix is [§4](#4-the-guest-header-retired).
 
 ### Where it stands now
 
-- **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
-  room ticket minted over authenticated REST (`t`, `routes/project-room-routes.ts`;
-  [API app](api.md) "Realtime model"), which every editor session now uses, so no
-  owner id, guest signature, share code or share password rides the upgrade URL.
-  The legacy legs, a personal project's owner id or a share code with the share
-  password where one is set (`o` / `os` / `s` / `p`), still admit an editor from
-  before 2026-10-17 and log `[room-upgrade] legacy leg admitted` until they are
-  retired.
-- **Presence carries no owner id.** The room mints a random presence id per
-  socket and builds each presence entry itself (`helloPresence`,
-  `project-room-rules.ts`); a client never supplies or learns one.
-- **An account id is never a guest credential.** An account-shaped (`user_…`) `X-Owner-Id`
-  is refused on every owner-scoped route with `401
-account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-an-account-id-in-x-owner-id-is-refused-unconditionally)).
+- **No guest header.** Every caller is a verified token (an account's, a guest's, an API token or a workbench
+  session) or a link visitor with a share code. The spoofable `X-Owner-Id` path, its HMAC signature
+  (`X-Owner-Sig`, `GUEST_ID_HMAC_SECRET`, `GUEST_SIG_ENFORCE_AFTER`), `POST /api/guest-id` and `POST /api/migrate`
+  are removed ([§4](#4-the-guest-header-retired)).
+- **Access is the index's grant.** Who may open a plan is decided by liveworkspace's index and carried as a
+  short-lived grant; an API token's request gets one fetched for it as its account ([API app](api.md) "Access").
+- **The WS upgrade takes only a ticket**: the grant, as `?t=` ([API app](api.md) "Realtime model"). No owner id,
+  share code or password rides the upgrade URL.
+- **Presence carries no owner id.** The room mints a random presence id per socket and builds each presence entry
+  itself (`helloPresence`, `project-room-rules.ts`); a client never supplies or learns one.
 - **External callers have a real credential**: API tokens ([§3](#3-design-api-tokens)).
-- **Still a switch, not a guarantee:** the signature requirement on a _guest_
-  `X-Owner-Id` (§4) is enforced only when a deployment sets
-  `GUEST_ID_HMAC_SECRET` and a past `GUEST_SIG_ENFORCE_AFTER`. Until then REST
-  accepts an unsigned guest id, so a guest id obtained some other way still acts
-  as that guest; the surfaces above simply stop handing it out. Check the
-  deployment, not the source: `POST /api/guest-id` answering
-  `"ownerSig": null` means signing is off.
 
 ## 3. Design: API tokens
 
@@ -104,19 +91,16 @@ storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
   client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
-  `MIRROR_REFRESH_MS` (60 s) per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
+  a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
-- **The mirror.** `api_tokens` keeps a row per account token liveplanner has seen (id, owner, name, read-only,
-  expiry, last used; never the secret), upserted on verify at most once a minute, because workbench pairings and
-  sessions hang off it by foreign key. Every five minutes the cron asks liveworkspace which of the most recently
-  used tokens (up to 1000, in batches of 100: `POST /api/account/internal/tokens/live`) still work, marks the rest
-  revoked and ends what was paired through them.
+- **No copy.** liveplanner keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
+  liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
+  it when it is revoked ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
-- **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app and
+- **Management** is on liveworkspace.app; this app has no routes for listing, minting or revoking tokens. The Settings dialog's API Tokens row links to liveworkspace.app and
   lists the account's paired workbenches with Unpair.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
@@ -134,9 +118,10 @@ storing tokens itself, the account-level design below supersedes it.
   randomness, so there's no low-entropy value to time-attack (unlike a
   password) and the lookup leaks nothing useful.
 
-### 3.2 Storage (D1)
+### 3.2 Storage (liveworkspace accounts)
 
-A new owner-scoped table, migration with the worker that owns the binding:
+liveplanner stores no tokens and has no D1. The table is the liveworkspace accounts service's
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)); as first designed, its shape was:
 
 ```
 api_tokens(
@@ -170,25 +155,18 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lwt_…` → hash → look up a non-revoked,
-   non-expired row → the request's owner id is the row's `owner_id`; stamp
-   `last_used_at`. The column means "the last request this token made, to
-   within a minute": a request writes it only when the stored value is older
-   than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
-   checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
-   api requests each) costs one write a minute rather than one per request.
-   Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
-   bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
+2. Else `Authorization: Bearer lwt_…` → checked with liveworkspace (`resolveApiToken` in
+   `apps/api/src/db/api-tokens.ts`, cached a minute per isolate) → the request's owner id is the token's account.
+   (A token and a JWT can't both be the bearer.) An `lwt_`
+   bearer liveworkspace does not accept (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
 error="invalid_token"`, on every route: it never falls through to the guest
    path or to no owner, so a script holding a dead token is told so.
-3. Else the guest `X-Owner-Id` path — now requiring a valid HMAC signature on
-   the header (see [§4](#4-x-owner-id-trust-change)). Tokens never resolve to a
-   guest id, so this path is for the first-party app only; it grants no token.
+3. Else a workbench session (`lvw_…`), and else no identity: a link visitor. There is no guest header; a guest
+   is a liveworkspace guest token, checked in step 1. Tokens never resolve to a guest id.
 
-The resolved owner id flows through the **same** `gateRead` / `gateEdit` /
-ownership checks every route already enforces — so a token can only touch what
-its `owner_id` owns. No route changes for authorization; only the identity
+The resolved owner id flows through the **same** checks every route already enforces: the index's grant for a
+plan, fetched for the token's account, so a token can only touch what its account can reach. No route changes for authorization; only the identity
 source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag
@@ -224,7 +202,7 @@ personal `GET /projects` excludes team projects by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
 (create, invite, role change, join/accept/leave, invite links, team deletion)
-plus token management (`/api/tokens`), account deletion, and guest migration
+plus account deletion
 require a verified signed-in **session** (`accountUserId`), never a token. Boundary
 rationale: a leaked token already exposes the owner's content (that's §3.4's
 deal, revocable + 6-month-capped), but it must not be able to escalate — mint
@@ -314,31 +292,17 @@ category.
 "Sign in to create API tokens." and a **Sign In** link (see the Settings
 sign-in rule in [User preferences](../007-editor/user-preferences.md)).
 
-Behind it, a new `GET/POST/DELETE /api/tokens` surface, **gated exactly like
-the team routes** ([Teams](../013-workspace/teams.md)): it requires a verified account
-identity and rejects a guest (`X-Owner-Id`-only) caller outright (`401`/`403`,
-mirroring `routes/teams.ts`) — so the manager is inert for guests, the
-same way the rest of the signed-in surface is. A token can only ever be minted
-by, and act as, a signed-in account. Creation returns the secret **once**
-(shown in the manager to copy, never retrievable again); the row then shows only
-the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage-d1))
-so rotation isn't a surprise.
+Minting, listing and revoking are liveworkspace's (the head of §3): this api has no `/api/tokens` routes beyond
+`/api/tokens/current` ([§3.6a](#36a-a-tokens-view-of-itself)). A token can only ever be minted by, and act as, a
+signed-in account, and the fixed 6-month expiry ([§3.2](#32-storage-liveworkspace-accounts)) is stated where tokens
+are made, so rotation isn't a surprise.
 
-**Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
-already has 10 live (non-revoked, non-expired) tokens — enough for any real
-integration set, low enough to keep the list + table tidy. Revoking or letting
-one expire frees a slot. The count is part of the INSERT itself (one
-`INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
-`apps/api/src/db/api-tokens.ts`), so concurrent mints, from the Explorer and
-the OAuth exchange alike, can never take an account past 10; a refused mint
-logs `[api-tokens] mint refused: owner at the token cap` and answers `409
-token_limit_reached`.
+**Per-account cap.** liveworkspace caps an account's live tokens (the head of §3) and refuses a mint past it,
+the OAuth exchange's included.
 
-**Account deletion removes them.** Deleting an account erases ALL of that
-user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
-must delete the owner's `api_tokens` rows in the same cascade as their projects
-/ folders / themes, so no credential outlives the account.
+**Account deletion removes them.** Tokens are the account's on liveworkspace and close with it, so no credential
+outlives the account; `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts)) ends
+the person's workbench pairings here.
 
 ### 3.6a A token's view of itself
 
@@ -350,25 +314,17 @@ out cleanly:
 - A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
   front door like any dead token (§3.3).
 
-Every other `/api/tokens` route answers `410 tokens_moved` (see the head of §3).
+Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
 
-### 3.7 Deployments without sign-in
+### 3.7 An api without sign-in
 
-API tokens are gated on **auth being enabled**, exactly as teams and sign-in
-are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-deployment that hasn't configured sign-in runs in pure-guest mode, and in that
-mode the feature is **absent end to end** — there is no API Tokens category to
-open and no way to mint one:
+Sign-in is always offered in the editor ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+Settings API Tokens category is always listed; a guest sees why it is empty and a Sign In link.
 
-- **Frontend** — the Settings API Tokens category (and the AI Tools link row to
-  it) renders only when `signInEnabled` (`apps/editor/lib/auth-config.ts`, derived
-  from `NEXT_PUBLIC_SIGN_IN_ENABLED === 'true'`). This is the **same
-  flag** that already hides the teams / sign-in sections of the sidebar, so when
-  auth is off the category simply isn't in the list.
-- **Backend** — the `/api/tokens` routes require a verified account identity, and
+- **Backend** — a token is checked with the liveworkspace accounts Worker, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
-  ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so the
-  routes reject every caller. Belt and suspenders: even if the UI were somehow
+  ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so no token
+  is accepted. Belt and suspenders: even if the UI were somehow
   reached, token creation / use is impossible without auth configured.
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
@@ -377,118 +333,13 @@ from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
 
-## 4. `X-Owner-Id` trust change
+## 4. The guest header (retired)
 
-The bare header must stop being a usable credential — both for external callers
-and to close the [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history)
-escalation. Two options were weighed:
-
-- **(a) First-party origin gate — rejected as the sole fix.** Accept
-  `X-Owner-Id` only on same-origin requests via the `Origin` / `Sec-Fetch-Site`
-  signals (as the telemetry ingest did). This does **not** stop the
-  attack: a non-browser client sets the `Origin` header freely, so a `curl`
-  caller forges `Origin: https://liveplanner.app` and passes the gate. Origin
-  is hygiene, not an authorization boundary.
-- **(b) Require an HMAC proof on the header — chosen.** Extend the guest-id
-  HMAC (`auth/owner-signature.ts`, then also carried on the WS upgrade as
-  `?g=`, since replaced by the room ticket) to REST: an `X-Owner-Id` request must also carry a valid `X-Owner-Sig` for that
-  id, verified against `GUEST_ID_HMAC_SECRET`. The legitimate guest holds its
-  signature (minted at `POST /api/guest-id`); a collaborator who merely
-  _harvested_ an id (a guest UUID, or an account `sub`) has no valid signature, so
-  the spoof is rejected. Signed-in users keep using the account Bearer (a real
-  credential) and never the header.
-
-**Explicit guarantee for signed-up users.** Before this work `resolveOwner()`
-(`apps/api/src/index.ts`) was `accountUserId ?? X-Owner-Id`, with no check binding
-the credential _type_ to the owner id, so a caller with no Bearer and
-`X-Owner-Id: <an account sub>` was accepted AS that account (verified at the time:
-the sub leaked via presence / the change-log, and nothing rejected it). After (b), an
-account's projects are reachable **only via a verified Bearer token**: an
-`X-Owner-Id` carrying an account `sub` has no guest signature (one is never minted
-for an account id), so it is rejected. The post-fix invariant is therefore "once
-signed up, your projects require your Bearer token; the header can't reach
-them" — which is the property to assert in tests.
-
-(b) is the heavier change — every guest write now signs — but it's the one that
-actually closes the harvested-id escalation, and the editor app already obtains
-its signature, so wiring it onto REST requests is incremental. API tokens
-([§3](#3-design-api-tokens)) are a parallel server-verifiable credential for
-external callers.
-
-**Compatibility — legacy unsigned guests (recommended approach).**
-`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so deployments
-without the secret opt out of the guard entirely (as today). Where the secret
-IS set, the migration follows from one hard truth: **an unsigned id can't be
-retroactively secured** — there is no proof bound to it, so the server cannot
-tell its real owner from someone who harvested it (that's exactly why we're
-adding signatures). So don't try; bound the window instead and lean on the
-self-heal that already exists:
-
-1. The app already, on load, mints a _signed_ id and migrates a legacy unsigned
-   id's projects onto it (`apps/editor/lib/guest-identity.ts` → `apiUpgradeGuestId`).
-   Active guests largely hold a signed id already (they migrated when signing
-   first shipped, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
-2. Ship the `X-Owner-Sig` requirement **behind a grace flag / cutoff date.**
-   Before the cutoff, an unsigned `X-Owner-Id` is still accepted (today's
-   behaviour) so every returning guest self-heals to a signed id; at the
-   cutoff, unsigned ids are rejected for writes.
-3. **Never delete the orphaned data.** A long-dormant guest who only returns
-   after the cutoff finds their old unsigned id rejected, but the projects
-   still exist server-side under that id — recoverable via the migrate tooling
-   / a "sign in to recover" path, so it's a re-auth, never data loss.
-
-The grace window IS the residual exposure (unsigned ids stay spoofable until
-migrated) — the same residual [Auth + guest access](../014-identity/auth-and-guest-access.md) /
-`routes/migrate.ts` already acknowledge — so set the cutoff far enough out
-(e.g. 30–90 days after the migrate code is live) that the active-guest
-population has rotated to signed ids, and keep it short enough to close the
-window. No active user is ever hard-locked.
-
-### 4.1 An account id in `X-Owner-Id` is refused unconditionally
-
-The "explicit guarantee for signed-up users" above is the most valuable half of
-§4, and it was the half the grace flag was **needlessly** holding hostage.
-
-The compatibility argument for a grace window is entirely about **guest UUIDs**:
-a legacy guest has real data under an unsigned id and rejecting it early locks
-them out, so the cutoff exists to let them self-heal. An account `sub` presented as
-`X-Owner-Id` has no such story. No client has ever sent one:
-
-- The guest credential is always a server-minted `crypto.randomUUID()`
-  (`POST /api/guest-id`), and `apps/editor/lib/local-identity.ts` only ever writes
-  a UUID into that header.
-- A signed-in caller sends `Authorization` **instead** — the editor app's
-  `lib/api/core.ts` sends one or the other, never both.
-
-So a `user_…` value in that header is only ever a replay of an account id
-someone harvested, and account ids are harvestable by design: `GET /api/teams/<id>`
-lists `members[].userId` to every member of the team, invitees included.
-
-The worker therefore refuses the **shape** outright, on every owner-scoped
-segment, before the signature gate and independent of
-`GUEST_SIG_ENFORCE_AFTER` (`isAccountIdShape`, `apps/api/src/auth/guest-rest.ts`;
-`401 account_id_not_a_guest_credential`). Nothing legitimate is grandfathered
-because nothing legitimate ever had this shape, so there is no window to bound
-and nothing for an operator to arm.
-
-The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/project-room-routes.ts`):
-a signed-in owner of a personal project joins through the one-time room ticket, as a team owner does, and an
-account id presented as `?o=` admits nobody. Once the guest signature gate is armed, a guest owner id on `?o=`
-needs its signature on `?os=` (the same value REST carries as `X-Owner-Sig`); without it the leg admits nobody.
-
-`GET /api/share/<code>` also refuses an account id as `X-Owner-Id`, because its resolver compares that header with
-the project's owner. It never returns the project's primary `shareCode`, to anyone: the visitor already holds the
-code they arrived with. An empty `X-Owner-Id` is no identity at all, never a shared owner.
-
-This matters most for **personal** projects, whose ownership legitimately
-resolves through the hybrid header path — that path is safe precisely because a
-personal owner id is an unguessable UUID, which an account id is not. The
-**team**-project half of the same escalation is closed structurally instead, by
-`ownsProject` ([Team shared projects §Access](../013-workspace/team-shared-projects.md)), so it holds
-whatever a deployment has configured.
-
-The signature gate keeps its grace flag and its job: proving possession of a
-**guest** id.
+REST once took a guest's identity from an `X-Owner-Id` header carrying a per-browser UUID, later guarded by an HMAC
+signature (`X-Owner-Sig`) and a refusal of account-shaped ids. All of it is gone: a guest's identity now comes from
+liveworkspace as a signed guest token, the same in every app, sent as the Bearer and verified exactly as an
+account's access token is ([Auth + guest access](../014-identity/auth-and-guest-access.md#guests)). A forged or
+harvested id is worth nothing without the token, and the token never leaves the guest's own browser.
 
 ## 5. Input validation (prerequisite — shipped)
 
@@ -505,71 +356,25 @@ hardening landed first:
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Project
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and project name length](../006-project/name-length.md)).
-- **Already solid** (pre-existing): D1 is fully parameterized; session JWT
+- **Already solid** (pre-existing): every SQL statement is parameterised; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
 
 ## 6. Rollout
 
 1. ✅ Input hardening (done).
-2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
-   Shipped behind the grace switch; the operator arms it by setting
-   `GUEST_SIG_ENFORCE_AFTER` ([Deployment](../016-platform/deployment.md)).
-   **Not armed.** It is stated in `apps/api/wrangler.toml` `[vars]` (a
-   dashboard-only value is wiped by every deploy), blank. It was armed in
-   production on 2026-10-06 and un-armed the same day: `/new` mints a local
-   unsigned id, so a first-time visitor arriving there from the landing page was
-   refused (`401 signature_required`) and could not create a project, against
-   the rule that the canvas always works without signing in. Every entry path
-   now resolves a signed id before its first owner-scoped call
-   ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
-   guest ids"), and every e2e stack runs with enforcement armed
-   (`scripts/e2e-stack.mjs`), so a regression of that kind fails the suite. **Re-arming
-   production is Tom's or Webber's call**, made by setting
-   `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
-   holds from then. Production only
-   started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
-   were still unsigned when it was armed: about 219, holding 274 projects. An
-   id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
-   upgrade (migrate flow 2) without a signature, so those guests self-heal
-   whenever they return. Every id minted signed must prove possession, which
-   includes the id a legacy guest moves onto: its participant row is stamped
-   with the time of the move, never the legacy date (`migrateOwnerId`,
-   `apps/api/src/db/account.ts`). Retire
-   the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids
-   are judged gone.
-   Pulled to the FRONT: it closed the cross-object escalation in
-   [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history) and
-   is independent of the token work, so it ships first (with the legacy-guest
-   grace). **Stop emitting the raw owner id where a collaborator can read it**
-   (do this, not just "consider" — shrinking the attack surface is worth it
-   even though §4 already neutralises a leaked id, because people WILL probe
-   for it):
-   - Redact `participantId` in the change-log read for non-owners (the static
-     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the project `ownerId` already
-     are.
-   - Give each realtime session a **room-scoped ephemeral presence id**
-     (random per connection) for the broadcast presence / cursor frames,
-     decoupled from the real owner id. Cursor identity + dedup within the room
-     use the ephemeral id; the server keeps the real→ephemeral mapping
-     internally for its role/identity checks but never broadcasts the owner id.
-     This removes the last surface that exposed it.
-
-     One thing the ephemeral id cannot do, learned the hard way: **join a peer
-     to something saved in the project.** It changes on every socket, so any
-     feature that records an answer per person and then matches it back to the
-     roster needs a second, stable id. That is `ParticipantPresence.key`, the
-     collab key — see [Per-participant responses](../012-collaboration/participant-responses.md), which also
-     explains why the owner id can't be it and why leaving the key claimable
-     costs nothing.
+2. ✅ **Closing the guest-header hole** ([§4](#4-the-guest-header-retired)): first an HMAC signature on `X-Owner-Id`,
+   then (October 2026) the header itself retired for liveworkspace guest tokens. The raw owner id is no longer
+   emitted where a collaborator can read it: each realtime session gets a **room-scoped ephemeral presence id**,
+   and features that match an answer back to a person use the stable collab key (`ParticipantPresence.key`,
+   [Per-participant responses](../012-collaboration/participant-responses.md)).
 3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), signed-in-only `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page,
-   rendered only when `signInEnabled` so it's absent on a deployment without sign-in
-   ([§3.7](#37-deployments-without-sign-in)).
+   replaced the original Explorer "API tokens" page
+   ([§3.7](#37-an-api-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live

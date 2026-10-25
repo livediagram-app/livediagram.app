@@ -12,7 +12,6 @@ import {
   lucideLink,
   lucideLocateFixed,
   lucideMagnet,
-  lucidePalette,
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
@@ -21,8 +20,7 @@ import {
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
-} from '@livedocuments/icons/lucide';
-import { topCategorySlug } from '@livedocuments/help-registry';
+} from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
 
@@ -724,8 +722,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The dialog's list, with one theme picked. A wheel of hues was the obvious
   // drawing and it rendered as the `pie-chart` glyph exactly; `themes` already
-  // owns the paint palette, and `custom-themes` owns swatches-with-a-plus, so
-  // what is left to draw is the browsing itself.
+  // owns the paint palette, so what is left to draw is the browsing itself.
   'changing-theme': (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -744,15 +741,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7.2v3.3M6 13.5v-1.5h12v1.5" />
       <circle cx="6" cy="17" r="2.5" fill="currentColor" stroke="none" />
       <circle cx="18" cy="17" r="2.5" />
-    </Glyph>
-  ),
-  // Swatches with a plus: building one rather than picking one.
-  'custom-themes': (
-    <Glyph>
-      <rect x="3" y="5" width="6" height="6" rx="1.5" />
-      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <path d="M14 14v6M11 17h6" />
     </Glyph>
   ),
   // Two elements, both with handles on them: many things selected at once.
@@ -977,6 +965,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 7.5 11 10l4.5-5" />
     </Glyph>
   ),
+  // A funnel: a list, narrowed.
+  filters: (
+    <Glyph>
+      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
+    </Glyph>
+  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>
@@ -991,12 +985,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 10.5A1.5 1.5 0 014.5 9h3L9 10.5h10.5A1.5 1.5 0 0121 12v6.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z" />
       <path d="M12 3v8.5" />
       <path d="M9 8.5l3 3 3-3" />
-    </Glyph>
-  ),
-  // A funnel: a list, narrowed.
-  filters: (
-    <Glyph>
-      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
     </Glyph>
   ),
   // An account, not a person in a list: the head sits in its avatar ring.
@@ -1038,11 +1026,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <circle cx="8.5" cy="10" r="1.5" />
       <path d="M21 16l-5-5-7 7" />
-    </Glyph>
-  ),
-  'themes-library': (
-    <Glyph>
-      <Prims prims={lucidePalette} />
     </Glyph>
   ),
   // Tabs guides.
@@ -1300,14 +1283,3 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
 };
-
-/** The glyph for a feature card: the feature's own icon, else its top-level
- *  category's, else the canvas frame. One resolver so the card, the category
- *  index, and the MDX `<Feature>` tile can't disagree about the order. */
-export function featureIcon(slug: string, categorySlug?: string): ReactNode {
-  return (
-    FEATURE_ICONS[slug] ??
-    FEATURE_CATEGORY_ICONS[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_ICONS['the-canvas']
-  );
-}

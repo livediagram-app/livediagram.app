@@ -21,7 +21,6 @@ export const HAIRLINE = 'stroke-slate-200 dark:stroke-slate-700';
 // An unpainted canvas element: the Default scheme's ink, light or dark with the appearance.
 export const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
 export const INK_TEXT = 'fill-(--art-ink-text)';
-export const INK_SHADE = 'fill-(--art-ink-shade)';
 export const ARROW = 'stroke-(--art-arrow)';
 
 // The selection the editor draws round what you picked, and its corner handles.

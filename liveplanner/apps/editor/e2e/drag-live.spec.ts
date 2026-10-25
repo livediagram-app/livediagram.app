@@ -2,10 +2,11 @@ import type { Browser, Page } from '@playwright/test';
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  mintGuest,
   test,
+  adoptGuest,
+  planHeaders,
+  seedPlan,
 } from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
@@ -52,15 +53,14 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     viewport: { width: 1440, height: 900 },
     colorScheme: 'dark',
   });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o }) => {
       if (o) {
         localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-        localStorage.setItem('liveplanner:v2:self-id', o);
-        if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -74,15 +74,18 @@ const leftOf = async (page: Page, id: string) =>
   parseFloat((await box(page, id).evaluate((el) => (el as HTMLElement).style.left)) || 'NaN');
 
 test('a collaborator sees a drag live, and where it lands', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: { id, name: 'Board', tabs: [{ id: tabId, name: 'Board', elements: BOARD }] },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Board',
+    tabs: [{ id: tabId, name: 'Board', elements: BOARD }],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await planHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
@@ -96,7 +99,7 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
 
   const ownerPage = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
-  const peerPage = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
+  const peerPage = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
   await dismissQuickTour(ownerPage);

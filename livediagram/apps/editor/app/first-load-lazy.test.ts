@@ -25,11 +25,3 @@ describe('every route’s first load', () => {
     expect(src).toContain("import('@/lib/drive/browser-engine')");
   });
 });
-
-describe('the Explorer’s first load', () => {
-  it('loads Settings and the move picker on first open', () => {
-    const imports = staticImports(read('app/explorer/ExplorerShell.tsx'));
-    expect(imports).not.toContain('@/components/dialogs/SettingsDialog');
-    expect(imports).not.toContain('@/components/dialogs/MoveToFolderDialog');
-  });
-});

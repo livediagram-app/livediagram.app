@@ -9,59 +9,19 @@
 // Each article carries `keywords`: the words a user would actually type when
 // they don't know the article's title ("transparency" for opacity, "hotkey"
 // for keyboard shortcuts). Both search surfaces match on them.
+//
+// The catalogue is this product's; its shapes and the lookups over it (grouping, search) are
+// @liveworkspace/help-registry's, bound to it below.
 
-export interface Article {
-  slug: string;
-  title: string;
-  description: string;
-  /**
-   * Space-separated, lowercase search synonyms. Widens matching beyond the
-   * title + description to the vocabulary users actually type: synonyms
-   * ("transparency" for opacity), adjacent spellings ("color" next to
-   * "colour"), and concept words the copy doesn't happen to use. Every
-   * article must have them (enforced by test) so nothing is findable only
-   * by its exact title.
-   */
-  keywords: string;
-  category: string;
-  /** Full nested path under /help, e.g. "canvas" or "canvas/the-canvas". */
-  categorySlug: string;
-  /** Feature-landing slug this article hangs off, if it's a sub-article. */
-  parentSlug?: string;
-  /** Optional sub-category heading used to group a feature category's landing
-   *  cards on its index page (e.g. Palette → "Selection Modes" / "Elements" /
-   *  "Palette Settings"). Landings without a group render in a single grid. */
-  group?: string;
-}
+import { createHelpRegistry, type Article, type Category } from '@liveworkspace/help-registry';
 
-// The href helpers live in ./hrefs, a module with no data, so a client component that only builds
-// links (the help centre's article page and search box) does not bundle the whole catalogue.
-export { articleHref, categoryHref } from './hrefs';
-
-/**
- * The top-level category a (possibly nested) `categorySlug` belongs to:
- * `palette/tools/data-elements` → `palette`, `canvas` → `canvas`. Lives here
- * because the nested-path shape is this registry's convention, so anything
- * grouping articles by their top-level category (the help centre's per-category
- * icon and accent fallbacks) reads it from one place rather than re-splitting
- * the string and drifting on what a segment means.
- */
-export function topCategorySlug(categorySlug: string): string {
-  return categorySlug.split('/')[0] ?? '';
-}
-
-export interface Category {
-  slug: string;
-  title: string;
-  description: string;
-  articleCount: number;
-  /** Feature-guide categories: grouped under "Feature Guides" on the home page,
-   *  apart from the support categories (About, Getting Started, ...). */
-  kind?: 'feature';
-  /** The order this category's card groups appear in on its page (docs/specs/018-help/help-pages.md "Groups").
-   *  Names every `group` its articles use; without it, groups appear in first-appearance order. */
-  groups?: string[];
-}
+export {
+  articleHref,
+  categoryHref,
+  topCategorySlug,
+  type Article,
+  type Category,
+} from '@liveworkspace/help-registry';
 
 export const categories: Category[] = [
   {
@@ -124,8 +84,8 @@ export const categories: Category[] = [
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted livedesign service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
-    articleCount: 3,
+      "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
+    articleCount: 1,
   },
   {
     slug: 'contact',
@@ -158,8 +118,8 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your designs, folders, teams, and assets easy to find and manage.',
-    articleCount: 15,
+      'Organise everything you build: one library, shared by every liveworkspace app, that keeps your designs, folders, teams and images easy to find and manage.',
+    articleCount: 13,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -209,8 +169,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
-    articleCount: 4,
+      'Do more with less effort using the editor helpers: zen mode, light and dark mode, and cleanup.',
+    articleCount: 3,
     kind: 'feature',
   },
   {
@@ -222,10 +182,6 @@ export const categories: Category[] = [
     kind: 'feature',
   },
 ];
-
-// The feature-guide categories (the card grids), derived once here so the
-// features page doesn't re-spell the predicate.
-export const featureCategories: Category[] = categories.filter((c) => c.kind === 'feature');
 
 export const articles: Article[] = [
   // ---- User Interface ----
@@ -295,7 +251,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new designs go plan email api tokens trash delete',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new designs go plan email api tokens trash delete',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -486,15 +442,17 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your designs when you are not signed in.',
-    keywords: 'anonymous browser id localstorage owner identity without account',
+    description:
+      'The liveworkspace guest identity that owns your designs when you are not signed in.',
+    keywords:
+      'anonymous browser guest id token identity owner without account liveworkspace redirect every app design',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest designs.',
+    description: 'Create an account, sign in, and bring your guest designs with you.',
     keywords:
       'login log in sign up register email code google oauth account create migrate avatar initials',
     category: 'Account and Data',
@@ -603,9 +561,8 @@ export const articles: Article[] = [
   {
     slug: 'images-and-pages',
     title: 'Images, Pages and More',
-    description: 'API examples for images, pages, renders, copies and themes.',
-    keywords:
-      'images upload pages page logo wireframe photo render svg picture copy duplicate custom themes api',
+    description: 'API examples for images, pages, renders and copies.',
+    keywords: 'images upload pages page logo wireframe photo render svg picture copy duplicate api',
     category: 'Developers',
     categorySlug: 'developers/working-with-designs',
     parentSlug: 'working-with-designs',
@@ -669,25 +626,6 @@ export const articles: Article[] = [
 
   // ---- Policies ----
   {
-    slug: 'terms',
-    title: 'Terms of Service',
-    description: 'The terms that govern use of the hosted livedesign service.',
-    keywords: 'tos legal terms conditions agreement rules',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
-  {
-    slug: 'privacy-policy',
-    title: 'Privacy Policy',
-    description: 'The full privacy policy for the hosted livedesign service.',
-    keywords:
-      'legal privacy gdpr data protection personal information openai ai retention security',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
-  {
     slug: 'report-a-vulnerability',
     title: 'Reporting a Vulnerability',
     description: 'How to report a security issue privately, and our safe-harbour promise.',
@@ -711,7 +649,7 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a design only in this browser, and move it to or from your account.',
+    description: 'Designs kept only in this browser, and moving them to your account.',
     keywords:
       'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
     category: 'Privacy and Security',
@@ -741,7 +679,7 @@ export const articles: Article[] = [
   {
     slug: 'share-link-security',
     title: 'Share Link Security',
-    description: 'Passwords and expiry for the links you hand out.',
+    description: 'A password and lifetimes for the links you hand out.',
     keywords:
       'password protect expire lock secure links safety access pass expiry extend revoke viewer editor',
     category: 'Privacy and Security',
@@ -756,6 +694,47 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
+  },
+
+  // ---- Self-Hosting ----
+  {
+    slug: 'self-hosting-overview',
+    title: 'Self-Hosting Overview',
+    description: 'What it takes to run your own livedesign, and why you might.',
+    keywords: 'host yourself own server on premise deploy install run',
+    category: 'Self-Hosting',
+    categorySlug: 'self-hosting',
+    parentSlug: 'self-hosting',
+  },
+  {
+    slug: 'deploying-livedesign',
+    title: 'Deploying livedesign',
+    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
+    keywords:
+      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
+    category: 'Self-Hosting',
+    categorySlug: 'self-hosting',
+    parentSlug: 'self-hosting',
+  },
+  {
+    slug: 'configuration',
+    title: 'Configuration and Optional Auth',
+    description: 'Environment variables, optional sign-in, and guest-only mode.',
+    keywords:
+      'env vars environment sign-in accounts setup secrets settings configure resend email mcp telemetry r2',
+    category: 'Self-Hosting',
+    categorySlug: 'self-hosting',
+    parentSlug: 'self-hosting',
+  },
+  {
+    slug: 'mcp-server',
+    title: 'The MCP Server on a Self-Hosted Instance',
+    description: 'Set up the MCP server for AI tools on your own deployment.',
+    keywords:
+      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
+    category: 'Self-Hosting',
+    categorySlug: 'self-hosting/configuration',
+    parentSlug: 'configuration',
   },
 
   // ---- Troubleshooting ----
@@ -1220,7 +1199,7 @@ export const articles: Article[] = [
   {
     slug: 'themes',
     title: 'Themes',
-    description: 'Restyle a whole tab, including multi-colour and custom themes.',
+    description: 'Restyle a whole tab, including multi-colour themes.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1432,20 +1411,9 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+      "The full-page library every liveworkspace app shares: Designs or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my designs my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Your Library',
-  },
-  {
-    slug: 'tags',
-    title: 'Tags',
-    description:
-      'Coloured labels you put on your designs to group related ones together, across folders and teams.',
-    keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
+      'library home dashboard files my designs list manage browse sidebar overview spaces more keyboard navigation tree search all apps every app filter canvases liveworkspace duplicate copy design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1454,9 +1422,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: the same Overview, Spaces and More, opening designs in place.',
+      'The compact in-editor Explorer: a rail of sections beside a list, opening designs in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch designs diagrams files library in editor menu button hamburger popover open more menu new share export github',
+      'sidebar rail switch designs library in editor menu button hamburger popover open explorer every app new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1465,9 +1433,9 @@ export const articles: Article[] = [
     slug: 'list-and-card-views',
     title: 'List, Card and Details Views',
     description:
-      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+      'Toggle browse views between preview cards, compact rows and a sortable details table.',
     keywords:
-      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
+      'card grid view toggle layout rows tiles gallery details table columns sort type comments access size created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1476,7 +1444,7 @@ export const articles: Article[] = [
     slug: 'timeline',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view and the Timeline: what you use most and last, and what happened.',
+      'The Explorer\u2019s landing view and the Timeline: what you use most and last, what was shared with you recently, and what happened.',
     keywords:
       'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
@@ -1487,19 +1455,20 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every design: open actions and comment threads.',
+      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross design all designs cross diagram all diagrams local only offline this browser',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps all designs local only offline this browser',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
   },
   {
     slug: 'recent',
-    title: 'Recent Designs',
-    description: 'The designs that changed most recently, across every folder, team and share.',
+    title: 'Recent',
+    description:
+      'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
+      'history last opened latest previously recently opened folder location where filed chip owner hide from recent show in recent exclude remove clutter twelve design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1507,9 +1476,9 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Designs other people have shared with you, collected in one place.',
+    description: 'Items other people have shared with you through a link, collected in one place.',
     keywords:
-      'shared with me received from others incoming shares collaborations dismiss role owner',
+      'shared with me received from others incoming shares links collaborations remove dismiss role owner design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1539,7 +1508,7 @@ export const articles: Article[] = [
     description:
       'Narrow any design list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
+      'search find filter filters chips pill pills narrow refine query token tokens opens in made by ai generated edited date last week recent people me others owner space team shared folder name subfolders lens results clear design',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1547,7 +1516,7 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description: 'Your own library: the folders you create, and your unfiled designs at its root.',
+    description: 'Your own library: the folders you create, your unfiled items and Favourites.',
     keywords:
       'my designs personal space library my work your designs your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
@@ -1557,8 +1526,9 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
-    keywords: 'teams team spaces shared workspace invites membership group new team',
+    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
+    keywords:
+      'teams team spaces shared workspace library manage teams liveworkspace membership group',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1568,15 +1538,6 @@ export const articles: Article[] = [
     title: 'Image Gallery',
     description: 'Every image you have uploaded, with where each is used and how to delete them.',
     keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'themes-library',
-    title: 'Saved Themes',
-    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
-    keywords: 'custom themes swatches colours colors library reuse manage',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',
@@ -1603,8 +1564,10 @@ export const articles: Article[] = [
   {
     slug: 'sharing',
     title: 'Sharing and Embeds',
-    description: 'Share links, passwords, expiry, embeds, and live images.',
-    keywords: 'share link collaborate invite embed read only publish url send',
+    description:
+      'Share links at Viewer, Participant or Editor level, a password, lifetimes, embeds and live images.',
+    keywords:
+      'share link collaborate invite embed read only publish url send viewer participant editor create and copy link turn off',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1624,15 +1587,6 @@ export const articles: Article[] = [
     description: 'Set livedesign to light, dark, or your device setting, everywhere at once.',
     keywords:
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'ai',
-    title: 'AI Assistance',
-    description: 'An optional assistant that answers questions about, and tidies, the active tab.',
-    keywords:
-      'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -2032,15 +1986,6 @@ export const articles: Article[] = [
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
   },
-  {
-    slug: 'custom-themes',
-    title: 'Custom Themes',
-    description: 'Build, save, and reuse your own themes.',
-    keywords: 'own colors colours personalise personalize create save brand',
-    category: 'Canvas',
-    categorySlug: 'canvas/themes',
-    parentSlug: 'themes',
-  },
 
   // ---- Sub-articles: Links ----
 
@@ -2069,7 +2014,7 @@ export const articles: Article[] = [
   {
     slug: 'share-passwords',
     title: 'Share Passwords',
-    description: 'Gate view or edit access behind a password.',
+    description: 'Guard every share link to a design with one password.',
     keywords: 'protect lock secure gate private restrict access remember',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2111,18 +2056,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-  },
-
-  // ---- Sub-articles: AI ----
-  {
-    slug: 'ai-tools',
-    title: 'Ask and Clean',
-    description: 'What each AI helper does and when to reach for it.',
-    keywords:
-      'ai assistant helpers question tidy generate review ask clean summarise summarize typo prompt',
-    category: 'Tools',
-    categorySlug: 'tools/ai',
-    parentSlug: 'ai',
   },
 
   // ---- Sub-articles: Session Tools ----
@@ -2278,63 +2211,11 @@ export const articles: Article[] = [
   },
 ];
 
-export function getArticlesByCategory(categorySlug: string): Article[] {
-  return articles.filter((a) => a.categorySlug === categorySlug);
-}
-
-/**
- * A feature category's landing cards, split into sub-category groups in the
- * category's `groups` order, else the order each group first appears in {@link articles}. Used by the category
- * index to render grouped sections (e.g. Palette's Selection Modes / Elements
- * / Palette Settings). A category whose landings have no `group` collapses to
- * a single section with an empty `group` label, so callers can render a plain
- * grid unchanged.
- */
-export function getCategoryGroups(categorySlug: string): { group: string; articles: Article[] }[] {
-  const items = getArticlesByCategory(categorySlug);
-  const groups: { group: string; articles: Article[] }[] = [];
-  for (const article of items) {
-    const label = article.group ?? '';
-    const existing = groups.find((g) => g.group === label);
-    if (existing) existing.articles.push(article);
-    else groups.push({ group: label, articles: [article] });
-  }
-  // A category may fix its groups' order; a group it does not name keeps its place after the named ones.
-  const order = categories.find((c) => c.slug === categorySlug)?.groups ?? [];
-  const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
-  return groups.sort((a, b) => rank(a.group) - rank(b.group));
-}
-
-export function getSubArticles(parentSlug: string): Article[] {
-  return articles.filter((a) => a.parentSlug === parentSlug);
-}
-
-/**
- * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
- * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
- * the description, then one in the keywords alone, then (for a query of several words) an article holding every
- * word somewhere across the three, those with more of the words in the title first: "export png" finds Exporting
- * Diagrams. Registry order breaks ties.
- */
-export function searchArticles(query: string): Article[] {
-  const lower = query.toLowerCase().trim();
-  const words = lower.split(/\s+/).filter(Boolean);
-  // Ranks 5 and up: every word found across the three fields, fewer of them outside the title ranking higher.
-  const rank = (a: Article): number => {
-    const title = a.title.toLowerCase();
-    if (title.startsWith(lower)) return 0;
-    if (title.includes(` ${lower}`)) return 1;
-    if (title.includes(lower)) return 2;
-    if (a.description.toLowerCase().includes(lower)) return 3;
-    if (a.keywords.toLowerCase().includes(lower)) return 4;
-    if (words.length < 2) return -1;
-    const hay = `${title} ${a.description} ${a.keywords}`.toLowerCase();
-    if (!words.every((w) => hay.includes(w))) return -1;
-    return 5 + words.filter((w) => !title.includes(w)).length;
-  };
-  return articles
-    .map((a) => ({ a, r: rank(a) }))
-    .filter(({ r }) => r >= 0)
-    .sort((x, y) => x.r - y.r)
-    .map(({ a }) => a);
-}
+// The lookups the help app and the editor's search read, over this catalogue.
+export const {
+  featureCategories,
+  getArticlesByCategory,
+  getCategoryGroups,
+  getSubArticles,
+  searchArticles,
+} = createHelpRegistry(categories, articles);

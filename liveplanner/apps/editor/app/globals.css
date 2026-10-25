@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@liveplanner/tailwind-config';
+/* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md). */
+@import '@liveworkspace/explorer/explorer.css';
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
 @import './collab-cards.css';
@@ -16,7 +18,7 @@
 @import './scroll-edge-fade.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
- * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * is PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two state the same query. Phone-only layout uses
  * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
 @custom-variant phone {
   @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
@@ -25,7 +27,7 @@
 }
 
 /* A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and the
- * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two
  * state the same query. */
 @custom-variant landscape-phone {
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
@@ -46,8 +48,15 @@
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
 @source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
+/* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
+@source '../../../../packages/settings-ui/src';
+/* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
+@source '../../../../packages/workbench/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
@@ -210,7 +219,7 @@
     forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
      shared tailwind theme (@liveplanner/tailwind-config) so every app's
-     EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
+     EmptyState animates alike; see ../packages/ui/src/EmptyState.tsx. */
 }
 
 /* The syncing arrows turn about their own centre (transform-box: fill-box). */
@@ -697,72 +706,11 @@
   transform: translateY(-2px) scale(1.12);
 }
 
-/* Isometric z-fighting, generally (docs/specs/008-canvas/isometric-view.md).
-   Under preserve-3d every element sits at z=0, so ANY two that overlap are
-   coplanar and the compositor picks a winner per frame — which reads as
-   flicker while the camera orbits, and as flicker on repaint even when it
-   doesn't. The two rules that used to live here only de-conflicted frames and
-   arrows; every other pair of overlapping elements still fought.
-   So each element is staggered by its own paint index (--iso-z, set in
-   CanvasElementsLayer). A hundredth of a pixel is far too small to see and far
-   more than enough to order the layers, and it restores DOM paint order in 3D,
-   where painting goes by z rather than by document position.
-   The independent `translate` property is used rather than `transform` on
-   purpose: it COMPOSES with an element's own rotation, where a transform would
-   replace it. */
-[data-iso] [data-element-id],
-[data-iso] [data-arrow-svg] {
-  translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
-}
-
-/* The floating chrome gets its OWN compositing layer while isometric is on.
-   Isometric puts a large preserve-3d scene on the page, and the panels sit
-   above it in z but shared its repaint region — which is why the palette
-   flickered too, not just the canvas. `will-change` is the promotion hint
-   that doesn't touch `transform`, which MovablePanel needs for dragging.
-   Gated on the scene being there rather than unconditional: a promoted layer
-   loses sub-pixel text anti-aliasing on a 1x display, so every panel's small
-   text (the palette's tile captions most of all) read soft ALL the time to
-   buy a fix that only matters in one mode. The cost is one re-layer on
-   entering and leaving isometric, which is a deliberate, rare switch. */
-:root:has([data-iso]) [data-floating-panel] {
-  will-change: transform;
-}
-
 /* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
    tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
    says what the next click does (docs/specs/007-editor/start-panel.md "Bringing it back"). */
 body:has([data-mode-message]) [data-yields-to-mode] {
   display: none;
-}
-
-/* Frames still settle BELOW the base plane rather than taking their index:
-   a frame is a backdrop its contents sit on, and it is often added after the
-   things inside it, so paint order alone would float it over them. */
-[data-iso] [data-frame] {
-  translate: 0 0 -1px;
-}
-
-/* Arrows get the same treatment in the other direction: an arrow's SVG is
-   coplanar with the boxes it crosses under preserve-3d, so the two z-fight.
-   On a static arrow that only shows while the camera orbits; on a FLOWING one
-   (docs/specs/008-canvas/canvas-and-palette.md animated arrows) the path repaints every frame, so the fight is
-   continuous and reads as a shimmer that never settles. +1px puts arrows just
-   ABOVE the base plane, which is also where they belong visually — a
-   connector should paint over the shapes it joins. Invisible at any tilt, and
-   the per-arrow <svg> carries no transform of its own, so nothing is
-   clobbered. */
-[data-iso] [data-arrow-svg] {
-  /* Arrows keep their nudge ON TOP of the index stagger: a connector should
-     cross above the boxes it joins, whatever order it was added in. */
-  translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
-}
-
-/* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
-   the top element (its --iso-z) plus the arrows' nudge, so the handles stay above everything in 3D,
-   where painting goes by z rather than by z-index. */
-[data-iso] [data-selection-grips] {
-  translate: 0 0 calc(2px + var(--iso-z, 0) * 0.01px);
 }
 
 /* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
@@ -886,7 +834,7 @@ body:has([data-mode-message]) [data-yields-to-mode] {
   stroke-opacity: 0.88;
 }
 
-/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+/* A Tab Style change (@liveworkspace/workbench/lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
    costs nothing the rest of the time; Reduce motion (above) zeroes it. */
 :root.lvd-style-transition [data-canvas-root],
 :root.lvd-style-transition [data-canvas-root] * {

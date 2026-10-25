@@ -1,8 +1,7 @@
 // The editor-side seam over @livediagram/templates: the pure builders
 // live in the package (shared with the MCP worker, docs/specs/015-api/mcp-server.md); this
-// wrapper adds what only the app can — resolving the theme id (which
-// may be a custom `custom:<uuid>` id, docs/specs/011-theme/custom-themes.md) and the graph-aware
-// theme recolour — to land a picked template as a fully styled tab.
+// wrapper adds what only the app can — resolving the theme id in the
+// viewer's appearance and the graph-aware theme recolour — to land a picked template as a fully styled tab.
 // editor-page dynamic-imports this module inside the onChooseTemplate
 // callback so the builders stay out of the editor's initial bundle;
 // /live/new imports it statically since it's the template-creation
@@ -21,8 +20,6 @@ export {
 
 export function buildTemplatedTab(
   kind: TemplateKind,
-  // string, not ThemeId: may be a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md),
-  // which getTheme resolves via the custom-theme registry.
   themeId: string,
   tabId: string,
   tabName: string,

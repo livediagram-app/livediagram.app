@@ -15,14 +15,13 @@ flipped from its row in Settings, and it follows the account across devices.
 
 Switching the mode **on** writes these values, once:
 
-| Setting              | Preference key       | Value |
-| -------------------- | -------------------- | ----- |
-| Alignment guides     | `alignmentGuides`    | on    |
-| Auto-attach arrows   | `autoRebindArrows`   | on    |
-| Pages tour           | `pagesTourSeen`      | seen  |
-| Element tours        | `elementToursSeen`   | seen  |
-| AI suggested prompts | `aiSuggestedPrompts` | off   |
-| Minimal chrome       | `minimalChrome`      | on    |
+| Setting            | Preference key     | Value |
+| ------------------ | ------------------ | ----- |
+| Alignment guides   | `alignmentGuides`  | on    |
+| Auto-attach arrows | `autoRebindArrows` | on    |
+| Pages tour         | `pagesTourSeen`    | seen  |
+| Element tours      | `elementToursSeen` | seen  |
+| Minimal chrome     | `minimalChrome`    | on    |
 
 The Pages tour offers each of its tracks once (`pagesTourKinds`), and the
 [element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
@@ -58,12 +57,12 @@ directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
 2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, the Pages tours, Show Me on Every Element, Suggested Prompts), each with its current value
+   Guides, Auto-Attach Arrows, the Pages tours, Show Me on Every Element), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise
-   about switching off. A setting whose row is not offered here (Suggested
-   Prompts without AI) shows its value without the button.
+   about switching off. A setting whose row is not offered here shows its value
+   without the button.
 
 With the mode off the group is absent. Keyboard order follows the visual order: the mode's switch, then the group.
 While searching, a child that matches shows on its own, like any other row.
@@ -147,7 +146,8 @@ switches between Light and Dark instead of cycling through System, so the everyd
 - **Its name says both.** The accessible name reads where you are, where a click goes, and that a right-click follows
   the device ("Appearance: Dark. Switch to Light. Right-click to follow your device."). The hover card's description
   says the same.
-- It applies wherever the control reads the mode: the editor's status bar and the Explorer's bottom bar. It is not a
+- It applies wherever the control reads the mode: the editor's status bar (the Explorer page's Appearance control is
+  liveworkspace's own, which keeps the three-step cycle). It is not a
   Minimal chrome behaviour: it holds with Minimal chrome off.
 - The public sites (the home page, help centre and dashboard) have no power user mode, so their control keeps the
   three-step cycle whatever the preference holds.

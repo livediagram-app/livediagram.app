@@ -27,21 +27,21 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/design';
-import { besideSideInsets, computeFitBelow } from '@/lib/viewport';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 
 // The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
 const WIREFRAME_FIT_MAX_ZOOM = 2.5;
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
 import { bottomClusterInset, topStripInset } from '@/lib/top-strip-inset';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import { pageEdits, type PageEdits } from './page-edits';
 import type { PageLayoutId } from '@livedesign/templates';
-import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
-import type { View } from '@/lib/viewport-store';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';

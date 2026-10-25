@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput } from '@livediagram/ui';
+import { Button, CloseIcon, TextInput, Switch } from '@livediagram/ui';
 import {
   ACTION_STATUSES,
   ACTION_STATUS_LABELS,
   type ElementAction,
   type ElementActionStatus,
 } from '@livediagram/document';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import type { TeamListItem } from '@/lib/api-client';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useAssigneeOptions } from '@/hooks/collab/useAssigneeOptions';
@@ -19,10 +18,8 @@ import {
   AssigneePicker,
   type PickableMember,
 } from '@/components/dialogs/AssignActionAssigneePicker';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 // Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
@@ -33,7 +30,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // and an edit that keeps the assignee never sends email (the hook
 // enforces it, the control hides to match).
 //
-// The email offer is the shared iOS-style ToggleSwitch, default on, and
+// The email offer is the shared iOS-style Switch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
 // check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this document" hint only shows
@@ -52,11 +49,11 @@ type AssignActionDialogProps = {
   elementLabel: string | null;
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
-  teams: TeamListItem[];
-  // The signed-in Clerk id, or null for a guest session (guests get the
+  teams: { id: string; name: string }[];
+  // The signed-in account id, or null for a guest session (guests get the
   // Myself-only picker).
   ownerId: string | null;
-  // The assigner's identity: the Clerk account, or the guest participant
+  // The assigner's identity: the account, or the guest participant
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
@@ -134,7 +131,7 @@ export function AssignActionDialog({
   // only renders for a non-self assignee anyway).
   // The seed is adjusted during render against the target it last seeded for, so the first commit
   // already shows the seeded fields. selfRow is read but is not a trigger: a late identity settle
-  // (Clerk name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
+  // (account name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
   const [seededFor, setSeededFor] = useState<SeedTarget | null>(null);
   if (!open && seededFor !== null) setSeededFor(null);
   if (
@@ -161,7 +158,7 @@ export function AssignActionDialog({
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
   useEffect(() => {
-    if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
+    if (open && !signedIn) track('UI', 'Opened', 'ActionSignInNudge');
   }, [open, signedIn]);
 
   const editing = existing !== null;
@@ -321,14 +318,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
-                  to this document when they join.
+                  to this canvas when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this document yet"
-                    : 'may not be able to open this document'}
+                    ? "can't open this canvas yet"
+                    : 'may not be able to open this canvas'}
                   : share it or move it to the team library.
                 </>
               )}
@@ -343,11 +340,7 @@ export function AssignActionDialog({
               className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <span>Email {assignee?.name ?? 'them'} about this action</span>
-              <ToggleSwitch
-                checked={notifyEmail}
-                label={`Email ${assignee?.name ?? 'them'} about this action`}
-                presentational
-              />
+              <Switch presentational size="sm" checked={notifyEmail} />
             </button>
           ) : null}
         </div>

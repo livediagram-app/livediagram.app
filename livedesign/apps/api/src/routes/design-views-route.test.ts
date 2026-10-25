@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_BATCH } from '@livedesign/design-views';
 import type { Element } from '@livedesign/design';
-import { createShareLink } from '../db/share';
+import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { getDesign } from '../db/designs';
 import { answerOverview, parseViewQuery, type ParsedView } from './design-views-route';
@@ -78,9 +79,10 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
 
 async function setUp(extraTabs = 0, room?: unknown) {
   const db = sqliteD1({
-    TELEMETRY_ENABLED: 'true',
+    ...TELEMETRY_ON,
     ...(room ? { DESIGN_ROOM: room } : {}),
   } as unknown as Partial<Env>);
+  sent = captureTelemetry();
   const tabs = [
     { id: 't1', name: 'Architecture', elements: ELEMENTS },
     ...Array.from({ length: extraTabs + 1 }, (_, i) => ({
@@ -98,14 +100,19 @@ const tabView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/designs/D/tabs/t1?${query}`, undefined, who);
 const docView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/designs/D?${query}`, undefined, who);
-const viewed = (db: SqliteD1) =>
-  db.sql
-    .prepare("SELECT type FROM events WHERE category = 'Agent' AND action = 'Viewed' ORDER BY type")
-    .all()
-    .map((r) => r.type);
+// The Agent·Viewed types posted to the telemetry service since setUp, sorted.
+let sent: ReturnType<typeof captureTelemetry> = [];
+const viewed = () =>
+  sent
+    .filter((e) => e.category === 'Agent' && e.action === 'Viewed')
+    .map((e) => e.type)
+    .sort();
 
 let infos: unknown[][] = [];
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 const quiet = () => {
   infos = [];
   vi.spyOn(console, 'info').mockImplementation((...args: unknown[]) => void infos.push(args));
@@ -132,7 +139,7 @@ describe('tab views over REST (R23)', () => {
     ]);
     expect(logged('[views] rendered outline')).toMatchObject({ doc: 'D', tab: 't1', elements: 6 });
     await settled();
-    expect(viewed(db)).toEqual(['Outline']);
+    expect(viewed()).toEqual(['Outline']);
   });
 
   it('answers JSON with json=1, never carrying a person id', async () => {
@@ -163,7 +170,7 @@ describe('tab views over REST (R23)', () => {
     }
     expect(logged('[views] budget outline')).toMatchObject({ budget: 50 });
     await settled();
-    expect(viewed(db)).toEqual(['Comments', 'Find', 'Graph', 'Layout', 'Outline']);
+    expect(viewed()).toEqual(['Comments', 'Find', 'Graph', 'Layout', 'Outline']);
   });
 
   it('leaves the plain tab read as it was', async () => {
@@ -229,7 +236,7 @@ describe('show selected over REST (R27)', () => {
     expect(r.asked[0]).toContain(await personTagFor('D', OWNER));
     expect(logged('[views] selection')).toEqual({ doc: 'D', tab: 't1', read: true, count: 1 });
     await settled();
-    expect(viewed(db)).toEqual(['Show']);
+    expect(viewed()).toEqual(['Show']);
   });
 
   it('answers 404 when nothing is selected, or the room cannot be read', async () => {
@@ -273,7 +280,7 @@ describe('the lint over REST', () => {
       elements: 6,
     });
     await settled();
-    expect(viewed(db)).toEqual(['Lint']);
+    expect(viewed()).toEqual(['Lint']);
   });
 
   it('answers the report as JSON with json=1', async () => {
@@ -440,7 +447,7 @@ describe('the overview over REST', () => {
     expect(lines).toHaveLength(11);
     expect(logged('[views] overview')).toMatchObject({ doc: 'D', tabs: 10, batches: 2 });
     await settled();
-    expect(viewed(db)).toEqual(['Overview']);
+    expect(viewed()).toEqual(['Overview']);
   });
 
   it('answers JSON with json=1 and a budget', async () => {
@@ -502,13 +509,13 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     expect((await tabView(db, 'view=outline', stranger)).status).toBe(plainTab.status);
     expect((await docView(db, 'view=overview', stranger)).status).toBe(404);
     await settled();
-    expect(viewed(db)).toEqual([]);
+    expect(viewed()).toEqual([]);
   });
 
   it('scopes a tab-scoped visitor to its tab, never reading the others', async () => {
     quiet();
     const db = await setUp();
-    await createShareLink(db.env, 'D', 'SCOPED', 'view', 'never', 't2');
+    testShareLink(db, 'D', 'SCOPED', 'view', 'never', 't2');
     const who = { owner: 'guest', headers: { 'X-Share-Code': 'SCOPED' } };
     expect((await tabView(db, 'view=outline', who)).status).toBe(404);
     const lines = (await (await docView(db, 'view=overview', who)).text()).split('\n');
@@ -519,11 +526,4 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
   });
 
-  it('answers a trashed design as the plain read does', async () => {
-    quiet();
-    const db = await setUp();
-    expect((await call(db, 'DELETE', '/api/designs/D')).status).toBe(204);
-    const plain = await call(db, 'GET', '/api/designs/D/tabs/t1');
-    expect((await tabView(db, 'view=outline')).status).toBe(plain.status);
-  });
 });

@@ -4,7 +4,7 @@
 // ones from apps/cli and apps/editor/app/oauth. Composed from the shared primitives so the house style
 // holds; the terminal stays dark in both appearances, like the code windows elsewhere.
 
-import { Scene, Panel, Button, Label } from './primitives';
+import { Scene, Panel, Button, Label } from '@liveworkspace/help-site/art/primitives';
 import { ConsentCard } from './account-settings';
 
 /** One line of terminal text, monospaced. */
@@ -134,7 +134,7 @@ export function CliConsent() {
       title="Connect livediagram CLI"
       intro={[
         'livediagram CLI wants to access your livediagram',
-        'documents on your behalf. Approving creates an API token.',
+        'canvases on your behalf. Approving creates an API token.',
       ]}
       sentTo="127.0.0.1:53124"
     />

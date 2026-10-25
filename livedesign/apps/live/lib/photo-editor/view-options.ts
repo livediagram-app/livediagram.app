@@ -1,8 +1,6 @@
 // How this person views a photo page (docs/specs/031-photo/photo-pages.md "Navigating"): the pixel grid
 // past PIXEL_GRID_FROM screen px a photo px, on by default, toggled from the command palette. Kept in this
 // browser; a view, never an edit.
-import { useSyncExternalStore } from 'react';
-
 const STORAGE_KEY = 'livedesign:photo-view';
 
 type ViewOptions = { pixelGrid: boolean };
@@ -39,11 +37,3 @@ export const photoViewOptions = {
     for (const fn of listeners) fn();
   },
 };
-
-export function usePhotoViewOptions(): ViewOptions {
-  return useSyncExternalStore(
-    (fn) => photoViewOptions.subscribe(fn),
-    current,
-    () => DEFAULTS,
-  );
-}

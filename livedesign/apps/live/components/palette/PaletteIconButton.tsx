@@ -5,7 +5,7 @@ import { tileCaption } from './tile-caption';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livedesign/ui';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -17,8 +17,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // applied via the `palette-tile-filled` rule in globals.css. Both are
 // undefined for the Default theme, where the palette keeps its default look.
 //
-// `shapeColors` carries a per-shape-kind override (docs/specs/011-theme/canvas-and-theme-dialog.md Formal / UML +
-// docs/specs/011-theme/custom-themes.md custom themes): a tile whose `dragKind` has an entry previews
+// `shapeColors` carries a per-shape-kind override (docs/specs/011-theme/canvas-and-theme-dialog.md Formal /
+// UML): a tile whose `dragKind` has an entry previews
 // THAT kind's colour instead of the base — so a UML diamond tile shows
 // amber, a cylinder purple, etc., matching what the shape becomes when
 // added. Kinds without an entry fall back to stroke/fill.
@@ -308,7 +308,7 @@ export function useTileGlyph({
   // (the style only lands on the glyph wrapper), so labels keep their
   // contrast.
   const themeTint = useContext(PaletteTintContext);
-  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
+  // Per-shape themes (UML) colour a tile by its own kind; fall
   // back to the theme's single element stroke / fill for kinds without an
   // override (and for non-shape tiles, which carry no dragKind).
   const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;

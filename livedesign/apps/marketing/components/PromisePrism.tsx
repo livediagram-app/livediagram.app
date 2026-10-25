@@ -6,14 +6,8 @@ import {
   lucideGitFork,
   lucideUsers,
   lucideUserX,
-} from '@livedesign/icons/lucide';
-import {
-  BrandMark,
-  ChevronRightIcon,
-  lucideGlyph,
-  REPO_URL,
-  type IconProps,
-} from '@livedesign/ui';
+} from '@liveworkspace/icons/lucide';
+import { BrandMark, ChevronRightIcon, lucideGlyph, REPO_URL, type IconProps } from '@livedesign/ui';
 import {
   useEffect,
   useLayoutEffect,
@@ -36,7 +30,7 @@ import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 // beam. Pointing at (or focusing) a promise brightens its beam and dims the rest. The beams are measured
 // from the page (the prism and each card), so they meet the cards at any width; below lg the copy and
 // the cards stack and the beams give way to a dot of each promise's light. The static HTML, JS off and
-// reduced motion show everything in place (app/promises.css).
+// reduced motion show everything in place (@liveworkspace/marketing-site's css/promises.css).
 
 type Look = { Icon: ComponentType<IconProps>; hue: string };
 

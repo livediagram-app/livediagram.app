@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentText } from '@livedesign/vitest-config/sent-request';
+import { sentText } from '@liveworkspace/vitest-config/sent-request';
 import type { Tab } from '@livedesign/design';
 import { apiLoadTabRevisioned, apiSaveTab, flushDesignSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
@@ -86,7 +86,7 @@ describe('flushDesignSavesBeacon', () => {
     expect(calls[0]!.url).toBe('/api/designs/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
-    expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
+    expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBeUndefined();
   });
 
   it('keeps writes alive only while they fit the browser keepalive budget, sending the rest plainly', () => {

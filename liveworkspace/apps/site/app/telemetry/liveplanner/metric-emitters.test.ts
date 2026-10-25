@@ -1,23 +1,12 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as EDITING } from './EditingView';
 import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
-import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS } from './computed-emitters';
-import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
-import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
-import { GROUPS as HELP } from './HelpView';
-import { GROUPS as DASHBOARD } from './DashboardView';
-import { GROUPS as TIMINGS } from './TimingsView';
-import { GROUPS as PAGES } from './PagesView';
-import { CONNECTIONS_GROUPS, FACILITATION_GROUPS } from './FeaturesView';
-import { TOURS_GROUPS } from './PagesHelpView';
-import {
-  CUSTOM_THEME_METRICS,
-  CUSTOM_THEME_TYPES,
-  NON_PATTERN_CANVAS_TYPES,
-  THEME_ALIASES,
-} from './LookAndFeelView';
+import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
+import { isValidTelemetryEvent } from '@liveplanner/api-schema';
+import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
 import {
   groupMetrics,
@@ -26,8 +15,23 @@ import {
   matches,
   type Metric,
   type MetricGroup,
-} from './metric-series';
-import { SELECTION_MODES } from './PaletteView';
+} from '../_shared/metric-series';
+import { LIVEPLANNER as APP } from './config';
+
+const EDITING = APP.editing.groups;
+const SETTINGS = APP.settings;
+const EXCEPTIONS = APP.exceptions.groups;
+const RECOVERY_GROUPS = APP.exceptions.recovery;
+const HELP = APP.help.groups;
+const DASHBOARD = APP.dashboard;
+const TIMINGS = [
+  { title: 'Editor timings', metrics: [...APP.timings.editor] },
+  { title: 'Core Web Vitals', metrics: [...APP.timings.vitals] },
+];
+const PAGES = APP.pages;
+const CONNECTIONS_GROUPS = APP.connections.groups;
+const FACILITATION_GROUPS = APP.teamwork.groups;
+const TOURS_GROUPS = APP.tours;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -50,7 +54,15 @@ import { SELECTION_MODES } from './PaletteView';
 
 const REPO = resolve(__dirname, '../../../../../../liveplanner');
 // The dashboard reads events, it never emits them.
-const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
+// Plus what liveworkspace's own Workers send in this app's name (the onboarding emails).
+const EMITS = [
+  ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
+  ...platformEmitters(isValidTelemetryEvent, 'Project'),
+  // Every app's client errors and timings, sent through the shared browser client.
+  ...sharedClientEmitters(),
+  // Every app's help-centre views, votes and searches, sent by the shared help site.
+  ...sharedSiteEmitters(),
+];
 
 type Known = Emit & { category: string; action: string };
 const KNOWN = EMITS.filter(
@@ -62,7 +74,7 @@ const KNOWN = EMITS.filter(
 // file here means an emitter the scan can't see, so extend the scan (or add it
 // here with the reason) rather than let its events go unchecked.
 const DYNAMIC_EMITTERS: Record<string, string> = {
-  'apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx':
+  'apps/editor/components/dialogs/settings/settings-model.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
 };
 
@@ -110,9 +122,9 @@ describe('the emitter scan', () => {
     // Guards the scan itself: a path or parser slip would pass every card below.
     const has = (c: string, a: string, t: string | null) =>
       KNOWN.some((e) => e.category === c && e.action === a && e.type === t);
-    expect(
-      has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG'),
-    ).toBe(true);
+    expect(has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG')).toBe(
+      true,
+    );
     expect(has('UI', 'Toggled', 'TelemetryOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
@@ -167,22 +179,12 @@ describe('metric cards', () => {
 
 describe('hard-coded ranking types', () => {
   const triples: [string, string, string, string][] = [
-    ...SELECTION_MODES.map(
-      (t) => ['Selection modes', 'Canvas', 'Used', t] as [string, string, string, string],
-    ),
     ...NON_PATTERN_CANVAS_TYPES.map(
       (t) =>
         ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
     ),
-    ...[...CUSTOM_THEME_TYPES].map(
-      (t) => ['Themes exclusion', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
     ...Object.values(THEME_ALIASES).map(
       (t) => ['Themes alias target', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
-    ...CUSTOM_THEME_METRICS.map(
-      (m) =>
-        ['Custom theme builder', m.category, m.action, m.type] as [string, string, string, string],
     ),
     ...RECOVERY_TYPES.map(
       (t) => ['Exceptions recovery', 'Error', 'Client', t] as [string, string, string, string],

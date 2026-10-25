@@ -1101,8 +1101,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
-  'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Changed|Calendar':
     "Someone switched the Explorer's Timeline from list view to calendar view.",
   'Timeline|Changed|List':
@@ -1117,6 +1115,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
     "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
+  'Timeline|Opened|Card': "Someone opened a document from its card on the Explorer's Timeline.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -1141,13 +1140,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Selected|People':
     'Someone filtered an Explorer list by who owns the documents (Me or Others).',
   'Explorer|Created|Tag':
-    'Someone made a tag, a coloured label for grouping their documents, from the tag picker or the Tags page.',
-  'Explorer|Added|Tag': 'Someone put one of their tags on a document.',
-  'Explorer|Removed|Tag': 'Someone took one of their tags off a document.',
-  'Explorer|Renamed|Tag': 'Someone renamed one of their tags.',
-  'Explorer|Changed|TagColour': 'Someone changed the colour of one of their tags.',
-  'Explorer|Deleted|Tag':
-    'Someone deleted one of their tags, which takes it off every document it was on.',
+    'Someone made a tag, a coloured label for grouping their documents, before tags were removed.',
+  'Explorer|Added|Tag': 'Someone put one of their tags on a document, before tags were removed.',
+  'Explorer|Removed|Tag':
+    'Someone took one of their tags off a document, before tags were removed.',
+  'Explorer|Renamed|Tag': 'Someone renamed one of their tags, before tags were removed.',
+  'Explorer|Changed|TagColour':
+    'Someone changed the colour of one of their tags, before tags were removed.',
+  'Explorer|Deleted|Tag': 'Someone deleted one of their tags, before tags were removed.',
   'Explorer|Selected|Space':
     'Someone filtered an aggregate Explorer list by where documents live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
@@ -1764,10 +1764,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
-  'UI|Toggled|ShowProfilePictureOff':
-    'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
-  'UI|Toggled|ShowProfilePictureOn':
-    'Someone started showing their profile picture to collaborators again, in Settings > Account.',
   'UI|Toggled|NotifyFormResponsesOff':
     'Someone turned off the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyFormResponsesOn':
@@ -2431,9 +2427,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
     'Someone who arrived from a call to action on a public page went on to create a document. Counted once per arrival.',
-  'AI|Toggled': 'Someone turned an AI setting on or off in Settings under AI Tools.',
+  'AI|Toggled':
+    'Someone turned an AI setting on or off in Settings under AI Tools, before the in-editor AI assistant was removed.',
   'AI|Used':
-    'Someone used a feature of the AI Assistant panel, or another AI-powered tool in the editor.',
+    'Someone used an AI-powered tool in the editor: the sticky-note photo import, or (before it was removed) the AI Assistant panel.',
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
@@ -2629,8 +2626,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Removed':
     'Someone was taken off a team, left one, or had a pending invite or the invite link withdrawn.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
-  'Theme|Created': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted': 'Someone deleted a custom theme they had created.',
   'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
   'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
   'Home|Selected': "Someone opened a document from one part of the Explorer's Home.",
@@ -2658,12 +2653,12 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Cleared':
     'Someone cleared a default folder, so new documents of that kind land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
-  'Explorer|Created': 'Someone made something in the Explorer (a tag).',
-  'Explorer|Added': 'Someone put one of their tags on a document.',
-  'Explorer|Removed': 'Someone took one of their tags off a document.',
-  'Explorer|Renamed': 'Someone renamed one of their tags.',
-  'Explorer|Changed': 'Someone changed one of their tags (its colour).',
-  'Explorer|Deleted': 'Someone deleted one of their tags.',
+  'Explorer|Created': 'Someone made a tag in the Explorer, before tags were removed.',
+  'Explorer|Added': 'Someone put one of their tags on a document, before tags were removed.',
+  'Explorer|Removed': 'Someone took one of their tags off a document, before tags were removed.',
+  'Explorer|Renamed': 'Someone renamed one of their tags, before tags were removed.',
+  'Explorer|Changed': 'Someone changed the colour of one of their tags, before tags were removed.',
+  'Explorer|Deleted': 'Someone deleted one of their tags, before tags were removed.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Plan|Added':
@@ -2738,7 +2733,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
   AppendChangeLog: "recording an entry in a document's since-removed change history",
   CopyDocument: 'duplicating a document',
-  CreateCustomTheme: 'saving a new custom theme',
   CreateDocument: 'creating a new document',
   CreateFolder: 'creating a folder',
   CreateShareLink: 'generating a share link',
@@ -2748,7 +2742,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   DeleteChangeLog: "clearing a document's since-removed change history",
   DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
-  DeleteCustomTheme: 'deleting a saved custom theme',
   DeleteDocument: 'deleting a document',
   DeleteFolder: 'deleting a folder',
   DeleteImage: 'deleting a saved image',
@@ -2765,7 +2758,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   LinkTab: 'linking a tab into another document',
   List: "listing a visitor's documents",
   ListChangeLog: "listing a document's since-removed change history",
-  ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
   ListImages: 'listing the images saved to an account',
   ListShareLinks: "listing a document's share links",
@@ -2795,7 +2787,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareDocument: 'generating a share link, from an AI tool connected over MCP',
-  UpdateCustomTheme: 'updating a saved custom theme',
   UpdateDocument: 'updating a document, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',
   UpdateTeam: "updating a team's name or organisation",

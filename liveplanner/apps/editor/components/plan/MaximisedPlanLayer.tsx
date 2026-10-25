@@ -27,22 +27,25 @@ import {
   useMaximisedPlanClosing,
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
-import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { isAnimatedPattern } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@/components/canvas/SketchFace';
-import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
 import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';
 import { BAND_CARD_PX } from './band-controls';
-import { useUiScale } from '@/components/providers/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import type { PlanPalette } from './plan-palette';
-import { CANVAS_ROOT_SELECTOR, elementSelector } from '@/lib/canvas-selectors';
+import {
+  CANVAS_ROOT_SELECTOR,
+  elementSelector,
+} from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 

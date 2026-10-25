@@ -38,14 +38,18 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
       },
       all: async () => ({ success: true, results: rows(), meta: {} }),
       run: async () => run(),
-      // What a batch runs: a read answers its rows, a write its change count.
+      // What a batch runs: a read (or a write with RETURNING) answers its rows, a write its change count.
       exec: () =>
-        /^\s*select/i.test(query) ? { success: true, results: rows(), meta: {} } : run(),
+        /^\s*select/i.test(query) || /\breturning\b/i.test(query)
+          ? { success: true, results: rows(), meta: {} }
+          : run(),
     };
   };
 
   const db = {
     prepare: (query: string) => statement(query),
+    // Never called here, but Better Auth recognises a D1 by it.
+    exec: async (query: string) => sql.exec(query),
     batch: async (statements: { exec: () => unknown }[]) => {
       sql.exec('BEGIN');
       try {
@@ -77,4 +81,16 @@ export function addUser(
       '2026',
       '2026',
     );
+}
+
+// An OAuth client, as clients.ts registers one, and the app it is (none when `app` is null).
+export function addClient(sql: DatabaseSync, clientId: string, app: string | null) {
+  sql
+    .prepare(
+      `INSERT INTO oauthClient (id, clientId, redirectUris, createdAt, updatedAt) VALUES (?, ?, '[]', '2026', '2026')`,
+    )
+    .run(`id-${clientId}`, clientId);
+  if (app) {
+    sql.prepare('INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)').run(clientId, app);
+  }
 }

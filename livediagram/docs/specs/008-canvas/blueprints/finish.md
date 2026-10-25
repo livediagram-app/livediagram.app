@@ -258,7 +258,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
-- WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
+- WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
   icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
@@ -280,7 +280,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   and replaces the pictures only when its markup changed; the hider is `visibility: hidden` while pictures show.
   Art with a running animation (`getAnimations({ subtree: true })`) or a drawing with no size yet gets no copy: the
   live art shows, unwobbled.
-- `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
+- `../packages/workbench/src/components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
   `SketchArtPicture` share (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
   `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
@@ -367,7 +367,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
   `resolveOwnFinish(el)` picks the checked row.
-- `components/plan/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
+- `components/primitives/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
@@ -516,7 +516,7 @@ per command letter.
 | ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                          |
 | face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
-| WebKit is told by `GestureEvent`                             | `apps/editor/lib/live-filter-cost.test.ts`                                                                   |
+| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
 | pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`                                                    |
 
 ## Constants and configuration
@@ -564,5 +564,5 @@ per command letter.
 
 ## Assets and external resources
 
-Caveat and Permanent Marker are already in the font catalogue (`packages/document/src/fonts.ts`, Google Fonts, OFL
+Caveat and Permanent Marker are already in the font catalogue (`../packages/model-core/src/fonts.ts`, Google Fonts, OFL
 and Apache 2.0). No new asset.

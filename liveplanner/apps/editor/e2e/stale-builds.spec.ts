@@ -3,9 +3,8 @@ import { BUILD_ID_HEADER } from '@liveplanner/api-schema';
 import { expect, test } from './fixtures';
 
 // Stale builds (docs/specs/016-platform/stale-builds.md), in dark mode, on the Explorer, whose
-// sections are separate routes with their own code chunks. A deploy is simulated two ways: the code
-// chunks this page has not loaded yet answer 404 (the old names are gone), and the api reports a
-// newer build id than the one this export was built with.
+// sections are separate routes. A deploy is simulated by the api reporting a newer build id than the
+// one this export was built with.
 
 const CRASH = "This page couldn't load";
 
@@ -22,37 +21,9 @@ async function openExplorer(page: Page, path = '/explorer/inbox') {
 function pageLoads(page: Page): string[] {
   const loads: string[] = [];
   page.on('request', (r) => {
-    if (r.resourceType() === 'project') loads.push(new URL(r.url()).pathname.replace(/\/$/, ''));
+    if (r.resourceType() === 'document') loads.push(new URL(r.url()).pathname.replace(/\/$/, ''));
   });
   return loads;
-}
-
-// A deploy, simulated: from now on every code chunk this page has not fetched before answers 404,
-// as a removed file does (prefetches included), until a page load of `destination`, whose HTML
-// names the chunks the server has.
-async function removeUnseenChunks(page: Page, ledger: Set<string>, destination: RegExp) {
-  // Frozen now: the ledger goes on recording, the 404s included.
-  const seen = new Set(ledger);
-  let stale = true;
-  page.on('request', (r) => {
-    if (r.resourceType() === 'project' && destination.test(new URL(r.url()).pathname)) {
-      stale = false;
-    }
-  });
-  await page.route('**/_next/static/chunks/**', (route) =>
-    stale && !seen.has(route.request().url())
-      ? route.fulfill({ status: 404, contentType: 'text/html', body: 'Not found' })
-      : route.continue(),
-  );
-}
-
-// Every code chunk the page fetches, from the start of the test.
-function chunkLedger(page: Page): Set<string> {
-  const seen = new Set<string>();
-  page.on('request', (r) => {
-    if (r.url().includes('/_next/static/chunks/')) seen.add(r.url());
-  });
-  return seen;
 }
 
 test.describe('stale builds', () => {
@@ -60,40 +31,8 @@ test.describe('stale builds', () => {
   test.afterEach(async ({ page }) => {
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
-
-  // The Explorer loads each section's view lazily: Trash's code is a chunk this page never fetched.
-  test('a section whose chunk is gone loads in full instead of crashing', async ({ page }) => {
-    const seen = chunkLedger(page);
-    await openExplorer(page, '/explorer/all');
-    await removeUnseenChunks(page, seen, /^\/explorer\/trash/);
-    const loads = pageLoads(page);
-    await page.getByRole('treeitem', { name: 'Trash', exact: true }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/trash']);
-    await expect(page.getByRole('heading', { name: 'Trash', level: 1 })).toBeVisible();
-    await expect(page.getByText(/This page couldn.t load|Something went wrong/)).toHaveCount(0);
-    await page.screenshot({ path: test.info().outputPath('recovered.png') });
-  });
-
-  test('reloads at most once: a second failure shows the error, never a loop', async ({ page }) => {
-    const seen = chunkLedger(page);
-    await openExplorer(page, '/explorer/all');
-    // This destination was already reloaded for a moment ago.
-    await page.evaluate(() =>
-      sessionStorage.setItem(
-        'liveplanner:stale-chunk-reloads',
-        JSON.stringify({ '/explorer/trash': Date.now() }),
-      ),
-    );
-    await removeUnseenChunks(page, seen, /^$/);
-    const loads = pageLoads(page);
-    await page.getByRole('treeitem', { name: 'Trash', exact: true }).click();
-    await expect(
-      page.getByText(/This page couldn.t load|Something went wrong/).first(),
-    ).toBeVisible();
-    await page.waitForTimeout(1_500);
-    expect(loads).toEqual([]);
-    await page.screenshot({ path: test.info().outputPath('gave-up.png') });
-  });
+  // (The tests of a section whose code chunk is gone went with the Explorer's own section views: the shared
+  // Explorer draws every section from one chunk.)
 
   test('once a newer build is live, links and back are full page loads', async ({ page }) => {
     await openExplorer(page);

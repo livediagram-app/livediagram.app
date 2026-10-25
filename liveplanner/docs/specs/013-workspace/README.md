@@ -2,29 +2,29 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, titles vs separators (Minimal chrome), alignment, ARIA tree keyboard model, mobile drawer, projects in This Browser
-- ./folders.md - when working on Folders: Nested folders for projects in the Explorer; projects with no folder sit at the root of their space; deleting a folder moves its contents up to its parent
+The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) is the plan and [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what liveplanner still does.
+
+- ./explorer-structure.md - when working on the Explorer page or the editor's Explorer panel: the shared `@liveworkspace/explorer` on liveworkspace.app, the `/explorer` redirect, This Browser, and the panel (moved)
 - ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers
-- ./share-password.md - when working on Share password: Optional per-project password gating share-link view + edit access; the visitor's per-share-code password cache in localStorage
-- ./teams.md - when working on Teams: Teams with Admin/Member roles, email invites, Explorer section
-- ./embeds.md - when working on Read-only embeds (`/embed`): Iframe-able `/embed` share view + Copy-embed-code in Share
+- ./share-password.md - when working on a link visitor's password prompt; the password itself is the index's (moved)
+- ./tab-scoped-share-links.md - when working on a share link confined to one tab: the grant's `tab`, enforced by the api and the room (moved)
+- ./share-link-expiry.md - when working on how long a share link lasts (moved)
+- ./teams.md - when working on teams: managed on liveworkspace.app, read from the access token (moved)
+- ./team-shared-projects.md - when working on a team's library (moved)
+- ./folders.md - when working on folders (moved)
+- ./default-folders.md - when working on where a new plan is filed by default (moved)
+- ./tags.md - tags (removed from the Explorer)
+- ./favourites.md - when working on favourites (moved)
+- ./trash.md - when working on the Trash or a trashed plan's refusals (moved)
+- ./empty-project-cleanup.md - when working on Empty plan clean-up: the index's daily sweep moves a plan with nothing on any tab and no card or sheet, unchanged for 30 days, to the Trash (marked `empty`, a fresh 30 days there); guest, account and team plans, never Offline Mode
+- ./explorer-home.md - when working on Explorer Home and recording a plan's opens (moved)
+- ./hide-from-recent.md - when looking for Hide from Recent / Show in Recent
+- ./explorer-filters.md - when looking for the Explorer's filter lens (the shared Explorer's)
+- ./explorer-details-view.md - when working on the per-tab stats a plan pushes to the index for the Details view (moved)
+- ./inbox.md - when working on what a plan pushes for the Inbox (moved)
+- ./timeline.md - when looking for the Timeline, What Happened, History or Team Activity (removed)
+- ./embeds.md - when working on Read-only embeds (`/embed`): the iframe-able share view
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
-- ./tab-scoped-share-links.md - when working on Tab-scoped share links: A share link scoped to one tab; other tabs locked, enforced server-side incl. the room
-- ./share-link-expiry.md - when working on Share-link expiry: Optional link lifetime (week/month/6 months); Inactive section
-- ./team-shared-projects.md - when working on Team shared projects: Per-team folder tree + projects every joined member can manage
-- ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served from the snapshot cache ([Project SVG snapshots](../006-project/project-snapshots.md))
+- ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served by liveworkspace's previews ([Project previews](../006-project/project-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the project's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`), the editor worker's head rewrite, and the brand card everywhere else
-- ./hide-from-recent.md - when working on Hide a project from Recent: Per-user "Hide from Recent" / "Show in Recent" on the project menu in both Explorer surfaces; stored as capped `recentExcludedIds` in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)), filtered before the cap in both Recent lists and in the sidebar badge count; no badge elsewhere
-- ./recent-folder-chip.md - when working on Folder location on Recent rows: Each Explorer > Recent row/card names the folder it lives in and links to it (immediate parent only; `My Work` for the root, team name for team rows, none for shared-with-you); a quiet link rather than a status badge, Explorer page only
-- ./tags.md - when working on Tags: per-person coloured labels on projects (`tags` + `project_tags`, `/api/tags`), the project menu's Tags and its tag picker, the chips on rows and cards, the Tags page and its sidebar rows under More, the editor panel's Tags section, offline records' `tagIds`, owner migration merges
-- ./favourites.md - when working on Favourite projects: Per-user project stars in their own D1 table (unlimited, unlike the 4 KB preferences blob), a Favourite/Unfavourite toggle in both project menus, and a Favourites view (route only, no sidebar row) aggregating personal + team stars with the [Folder location on Recent rows](recent-folder-chip.md) source chip
-- ./explorer-details-view.md - when working on the Explorer's Details view: the sortable table (type, comments, access, size, dates), its resting-hover preview, and the per-tab stats behind it (`tab_stats`, `ProjectSummary.stats`, the cron backfill)
-- ./folder-content-previews.md - when working on Folder content previews: A folder card in the Explorer card grid previews what's inside: a centred 2x2 mosaic of up to four sheets (project snapshots first, then subfolder glyphs, with a `+N` tile for the overflow) instead of one generic folder icon; reuses the [Project SVG snapshots](../006-project/project-snapshots.md) cached thumbnails and the client-side folder indexes, so no new fetch. Card grid only — the list view keeps its count badge
-- ./timeline.md - when working on the timeline events, the record of everything that happened across your projects, teams and account that Explorer Home, a project's History and a team's Team Activity read (the Explorer's own Timeline section is removed): the feed those two draw, grouped by day with same-day stacking and an optional calendar month grid. A `timeline_events` + `timeline_event_scopes` pair emitted inline on the api worker's write paths (one event, many recipients), scope-typed so a per-project or per-team feed is later a new scope value, not a migration. Editing coalesces to one event per person per project per day. Guests included, and their history migrates on sign-up. The sidebar's Home row carries its unread badge.
-- ./explorer-home.md - when working on Explorer Home: the landing view, one column of Jump Back In (a Within reach set: 4 most used, 4 recent) then What Happened
-- ./inbox.md - when working on the Inbox (once called Activity): Explorer section at `/explorer/inbox` (the retired `/explorer/activity` opens it): every open action assigned to you or by you and every unresolved comment thread you are in, across all projects you can open, each row opening the editor at the element with its popover ready. Backed by a collaboration index (`collab_actions` / `collab_threads`) written in the same D1 batch as every tab write, `owner_aliases` so guest-era identities survive sign-up, and a lazy per-owner backfill. Sidebar badge counts open actions assigned to you.
-- ./default-folders.md - when working on Default folders: per-person folders new projects land in by creation intent (Diagrams, Whiteboards, Retrospectives, Kanban boards: `mode:*`, `template:*`), the explicit root, Duplicate beside its source, the intent recorded on the project, the `placement_defaults` table, `/api/placement-defaults`, precedence after explicit placement, dangling defaults skipped and kept, guest migration; the Use as Default for menu, the default marker, the wizard pre-selecting the default, Settings > Projects
-- ./trash.md - when working on Trash: every project delete moves it to a 30-day Trash (personal, team, or this-browser for Offline Mode), restorable to its folder, purged by the daily cron; trashed projects leave every list, share links / room / saves answer `project_trashed`; Take Offline and account deletion bypass it
-- ./explorer-filters.md - when working on Explorer filters: the lens, one string of words and tokens (`opens-in:` `kind:` `template:` `made-by:ai` `edited:` `people:` `space:`) that chips write and the top-bar search types, with autocomplete, scope versus lens, `?q=` in the URL, the chip row, the field, Search results, and Made by AI replacing the Generated bucket
-- ./empty-project-cleanup.md - when working on Empty project clean-up: the daily cron moves a project with no elements or articles in any tab, unsaved for 30 days, to the Trash (marked `empty`, a fresh 30 days there); guest, account and team projects, never Offline Mode
-- ./blueprints/README.md - when implementing a workspace spec from its blueprint (trash, empty-project-cleanup, project placement, default folders, folder delete, Explorer structure, filters, Home data and view)
+- ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

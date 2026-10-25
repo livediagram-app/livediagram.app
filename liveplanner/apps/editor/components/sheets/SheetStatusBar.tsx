@@ -8,7 +8,7 @@ import { formatNumber } from '@liveplanner/sheets';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { STATS, toggleStatusPick, useStatusPick, type Stat } from './sheet-status-pick';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 
 const STATUS_BAR_PX = 24;
 const CELLS_MAX = 100_000;

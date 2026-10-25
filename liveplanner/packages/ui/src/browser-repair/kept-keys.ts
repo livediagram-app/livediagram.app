@@ -1,7 +1,7 @@
 // What a browser repair never clears (docs/specs/007-editor/load-recovery.md "Repairing a browser").
 // One list for every surface that repairs, the editor's recovery card and the help centre's Repair page,
-// so the two clear exactly the same set. Kept means losing it loses work or identity: the guest id is
-// the key to every project a guest owns, and the per-browser keys are what past answers and likes are
+// so the two clear exactly the same set. Kept means losing it loses work or identity: the guest token
+// from liveworkspace is the key to every plan a guest owns, and the per-browser keys are what past answers and likes are
 // matched against. apps/editor's local-identity test fails if one of its identity keys is not listed here.
 
 /** The prefixes a repair considers at all. Anything else (the sign-in provider's own keys) is never touched. */
@@ -9,9 +9,7 @@ export const REPAIR_SCOPE_PREFIXES = ['liveplanner:', 'liveplanner-'] as const;
 
 /** The guest identity's keys (apps/editor/lib/local-identity.ts, which a test holds to these names). */
 export const GUEST_IDENTITY_KEYS = {
-  selfId: 'liveplanner:v2:self-id',
-  selfSig: 'liveplanner:v2:self-sig',
-  pendingUpgrade: 'liveplanner:v2:pending-signed-id',
+  guestToken: 'liveplanner:v2:guest-token',
   nameConfirmed: 'liveplanner:v2:name-confirmed',
 } as const;
 

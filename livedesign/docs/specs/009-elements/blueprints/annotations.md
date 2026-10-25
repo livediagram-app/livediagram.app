@@ -230,13 +230,13 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 
 ## Constants and configuration
 
-| Name                      | Value                      | Provenance / safe range                 | Home                       |
-| ------------------------- | -------------------------- | --------------------------------------- | -------------------------- |
-| `ANNOTATION_SIZE`         | `44`                       | Spec "~44 px"; 32 to 56                 | `factories.ts`             |
-| `GAP`                     | `10`                       | Marker to preview, px; 6 to 16          | `AnnotationMarker.tsx`     |
-| `MAX_W`                   | `280`                      | Preview width cap, px; 240 to 360       | `AnnotationMarker.tsx`     |
-| Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`     |
-| Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`     |
-| Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`     |
-| `DARK_INK.annotationFill` | `#1c2533`                  | A shade above `DARK_INK.fill` `#141b26` | `colors.ts`                |
-| `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `lib/clamp-to-viewport.ts` |
+| Name                      | Value                      | Provenance / safe range                 | Home                                                 |
+| ------------------------- | -------------------------- | --------------------------------------- | ---------------------------------------------------- |
+| `ANNOTATION_SIZE`         | `44`                       | Spec "~44 px"; 32 to 56                 | `factories.ts`                                       |
+| `GAP`                     | `10`                       | Marker to preview, px; 6 to 16          | `AnnotationMarker.tsx`                               |
+| `MAX_W`                   | `280`                      | Preview width cap, px; 240 to 360       | `AnnotationMarker.tsx`                               |
+| Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`                               |
+| Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`                               |
+| Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`                               |
+| `DARK_INK.annotationFill` | `#1c2533`                  | A shade above `DARK_INK.fill` `#141b26` | `colors.ts`                                          |
+| `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `../packages/workbench/src/lib/clamp-to-viewport.ts` |

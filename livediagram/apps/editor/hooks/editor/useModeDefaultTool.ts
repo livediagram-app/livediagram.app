@@ -6,7 +6,7 @@
 import { useEffect, useRef } from 'react';
 import type { EditorMode } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 
 export function modeDefaultTool(mobile: boolean): CanvasTool {
   return mobile ? 'pan' : 'select';

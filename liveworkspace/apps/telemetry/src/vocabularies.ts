@@ -3,6 +3,10 @@
 // emit them and the vocabulary have to change together; the service only reads them.
 
 import {
+  isServerEmittedEvent as isLivedesignServerEvent,
+  isValidTelemetryEvent as isLivedesignEvent,
+} from '@livedesign/api-schema';
+import {
   isServerEmittedEvent as isLivediagramServerEvent,
   isValidTelemetryEvent as isLivediagramEvent,
 } from '@livediagram/api-schema';
@@ -14,7 +18,21 @@ import {
   isServerEmittedEvent as isLiveplannerServerEvent,
   isValidTelemetryEvent as isLiveplannerEvent,
 } from '@liveplanner/api-schema';
-import type { TelemetryApp, TelemetryWireEvent } from '@liveworkspace/telemetry';
+import {
+  catalogueEvents,
+  sharedCatalogueEvents,
+  type AppCatalogue,
+} from '@liveworkspace/settings/catalogue';
+import { CATALOGUE as LIVEDESIGN_SETTINGS } from '@liveworkspace/settings/catalogues/livedesign';
+import { CATALOGUE as LIVEDIAGRAM_SETTINGS } from '@liveworkspace/settings/catalogues/livediagram';
+import { CATALOGUE as LIVEDOCUMENTS_SETTINGS } from '@liveworkspace/settings/catalogues/livedocuments';
+import { CATALOGUE as LIVEPLANNER_SETTINGS } from '@liveworkspace/settings/catalogues/liveplanner';
+import {
+  isExplorerTelemetryEvent,
+  TELEMETRY_TYPE_PATTERN,
+  type TelemetrySender,
+  type TelemetryWireEvent,
+} from '@liveworkspace/telemetry';
 
 type Vocabulary = {
   isValid: (value: unknown) => value is TelemetryWireEvent;
@@ -23,12 +41,23 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
-const NOTHING_YET: Vocabulary = {
-  isValid: (_value: unknown): _value is TelemetryWireEvent => false,
-  isServerOnly: () => false,
-};
+// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps, and a shared switch flipped on
+// its settings page opened for no app (isSiteSettingsEvent).
+function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
+  if (typeof value !== 'object' || value === null) return false;
+  const e = value as Record<string, unknown>;
+  if (typeof e.category !== 'string' || typeof e.action !== 'string') return false;
+  if (e.type !== undefined && e.type !== null) {
+    if (typeof e.type !== 'string' || !TELEMETRY_TYPE_PATTERN.test(e.type)) return false;
+  }
+  return (
+    isExplorerTelemetryEvent(e as TelemetryWireEvent) ||
+    isSiteSettingsEvent('liveworkspace.app', e as TelemetryWireEvent)
+  );
+}
 
-export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
+export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
+  'liveworkspace.app': { isValid: isPlatformEvent, isServerOnly: () => false },
   'livediagram.app': {
     isValid: isLivediagramEvent as Vocabulary['isValid'],
     isServerOnly: isLivediagramServerEvent,
@@ -41,6 +70,33 @@ export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
     isValid: isLivedocumentsEvent as Vocabulary['isValid'],
     isServerOnly: isLivedocumentsServerEvent,
   },
-  // livedesign doesn't send to this service yet, so the service stores nothing from it.
-  'livedesign.app': NOTHING_YET,
+  'livedesign.app': {
+    isValid: isLivedesignEvent as Vocabulary['isValid'],
+    isServerOnly: isLivedesignServerEvent,
+  },
 };
+
+// What liveworkspace.app may report in an app's name besides the Explorer's events: a setting of the app's changed
+// on the settings page or in its dialog there, as the app's own Settings reports it (@liveworkspace/settings
+// catalogueEvents over the app's catalogue). Each app's set is built once per isolate.
+const keyOf = (e: { category: string; action: string; type?: string | null }) =>
+  `${e.category}·${e.action}·${e.type ?? ''}`;
+const settingsSet = (catalogue: AppCatalogue) => new Set(catalogueEvents(catalogue).map(keyOf));
+const CATALOGUES = [
+  LIVEDIAGRAM_SETTINGS,
+  LIVEPLANNER_SETTINGS,
+  LIVEDOCUMENTS_SETTINGS,
+  LIVEDESIGN_SETTINGS,
+];
+const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
+  // A shared switch flipped on the settings page opened for no app: once, in liveworkspace.app's own name.
+  'liveworkspace.app': new Set(CATALOGUES.flatMap(sharedCatalogueEvents).map(keyOf)),
+  'livediagram.app': settingsSet(LIVEDIAGRAM_SETTINGS),
+  'liveplanner.app': settingsSet(LIVEPLANNER_SETTINGS),
+  'livedocuments.app': settingsSet(LIVEDOCUMENTS_SETTINGS),
+  'livedesign.app': settingsSet(LIVEDESIGN_SETTINGS),
+};
+
+export function isSiteSettingsEvent(app: TelemetrySender, event: TelemetryWireEvent): boolean {
+  return SITE_SETTINGS[app]?.has(keyOf(event)) ?? false;
+}

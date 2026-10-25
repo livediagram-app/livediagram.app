@@ -9,9 +9,7 @@ import {
   isShown,
   psdFromPhoto,
   writePsd,
-  type Photo,
   type PhotoLayer,
-  type PixelsLookup,
   type Raster,
 } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
@@ -40,22 +38,6 @@ export function download(blob: Blob, name: string): void {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
-}
-
-/** The composite as a PNG, band by band. */
-export function compositePng(photo: Photo, pixels: PixelsLookup): Promise<Blob> {
-  return encodePngStream(
-    photo.width,
-    photo.height,
-    (y, rows) =>
-      compositePhoto(
-        photo,
-        pixels,
-        { x: 0, y, width: photo.width, height: rows },
-        { text: rasterizeText },
-      ),
-    BAND,
-  );
 }
 
 /** One layer's pixels over the photo, as a PNG the photo's size. */

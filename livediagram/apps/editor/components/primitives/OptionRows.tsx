@@ -10,7 +10,7 @@
 // is in the Tab order, ArrowUp / ArrowDown / Home / End move between rows, Enter or Space picks.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { CheckIcon, useMenuKind } from '@livediagram/ui';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
 export type OptionRow = {
   id: string;

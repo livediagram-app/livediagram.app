@@ -1,9 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { Glyph } from '@livedocuments/ui';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { Glyph, Switch } from '@livedocuments/ui';
 import { DirArrow } from '@/components/palette/context-menu-icons';
 import { type IconPosition, type StandardTone } from '@livedocuments/document';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
@@ -203,7 +202,7 @@ export function MenuToggleRow({
           <span className="text-[10px] text-slate-600 dark:text-slate-400">{description}</span>
         ) : null}
       </span>
-      <ToggleSwitch presentational checked={checked} label={label} />
+      <Switch presentational size="sm" checked={checked} />
     </button>
   );
 }

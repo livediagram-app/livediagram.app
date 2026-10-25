@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { WORKSHOP_TOUR_RELAUNCH_EVENT } from '@/lib/workshop-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { findTour } from './tour-dom';
 import {
@@ -18,7 +18,7 @@ import {
 } from './workshop-tour-steps';
 import { createShape, defaultSessionConfig, type Element } from '@livediagram/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import { computeViewportCenter } from '@/lib/viewport';
+import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { WorkshopTourArt } from './WorkshopTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';

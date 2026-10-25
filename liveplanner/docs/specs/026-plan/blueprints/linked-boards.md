@@ -7,14 +7,14 @@ Derived from [Linked boards](../linked-boards.md).
 | Spec term       | Identifier                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------------- |
 | linked board    | `PlanBoardSetup.collects?: LinkedRecordKind` (`LINKED_RECORD_KINDS = ['actions']`, packages/items) |
-| Actions board   | `actionsBoardIn(tabs)` (apps/editor), `collectingBoard(boards, 'actions')` (packages/items)          |
+| Actions board   | `actionsBoardIn(tabs)` (apps/editor), `collectingBoard(boards, 'actions')` (packages/items)        |
 | linked card     | an item whose `fields.linked` parses (`cardLink`); id `linkedCardId('actions', actionId)`          |
 | link            | `fields.linked = 'actions/<tabId>/<elementId>/<actionId>'` (`LINKED_FIELD`, `linkString`)          |
 | baseline        | `fields.linkedAt` (the action's `updatedAt`) and `fields.linkedRev` (the card's `rev`)             |
 | trashed by link | `fields.linkedGone = true` on a card in the Trash (`LINKED_GONE_FIELD`), from before an action's   |
 |                 | going left its card; still restored by the heal, never written now                                 |
 | Won't Do        | `ElementAction.status = 'wont-do'` (`ElementActionStatus`); `isClosedAction`                       |
-| record          | `LinkedRecord` (structural: the items package never imports the project model)                    |
+| record          | `LinkedRecord` (structural: the items package never imports the project model)                     |
 | heal            | `healLinkedCards` (pure), run by `useLinkedActionCards`                                            |
 
 ## Files
@@ -105,7 +105,7 @@ apps/editor/components/dialogs/AssignActionDialog.tsx  the Status row when editi
   an ordinary card.
 - `collects` is stored in the board's set-up in its tab; no migration (absent is none).
 - `'wont-do'` is a new stored action status: older editors read it as not done and not open (they compare `=== 'open'`
-  for open), and the collab index stores it as `'done'`. No D1 change.
+  for open), and the collab index stores it as `'done'`. No schema change.
 - Nothing is snapshotted apart: undo restores cards through the item undo, actions stay outside undo as ever.
 
 ## Errors and edge cases
@@ -119,7 +119,7 @@ apps/editor/components/dialogs/AssignActionDialog.tsx  the Status row when editi
 | A board with no done column                                      | Status never synced (null); titles and descriptions still are               |
 | The Action type deleted from the catalogue                       | Cards draw as the fallback type; the board shows every type (boardAddTypes) |
 | A restored card whose action was taken off in an earlier session | A card of its own; the heal has no record for it                            |
-| A copy of a board tab with its cards in another project         | Links name tabs that are not there: no banner, never healed                 |
+| A copy of a board tab with its cards in another project          | Links name tabs that are not there: no banner, never healed                 |
 
 ## Security and trust
 
@@ -160,12 +160,12 @@ narrows a read; it widens nothing.
 | Heal: create, agree, either side wins, baseline | linked-cards.test.ts "healLinkedCards"                                                           |
 | Trash both ways                                 | linked-cards.test.ts "linkedCardGonePatch", "linkedCardsTrashedBy"; useLinkedActionCards.test.ts |
 | Duplicate carries no link                       | linked-cards.test.ts "unlinkedFields"                                                            |
-| Board made once, after a lazy commit            | apps/editor/hooks/plan/useLinkedActionCards.test.ts                                                |
+| Board made once, after a lazy commit            | apps/editor/hooks/plan/useLinkedActionCards.test.ts                                              |
 | Unopened tabs read first                        | useLinkedActionCards.test.ts                                                                     |
 | Only an Editor heals or makes the board         | useLinkedActionCards.test.ts "never makes…", "heals nothing…"                                    |
-| Canvas writes                                   | apps/editor/hooks/plan/linked-actions.test.ts                                                      |
-| Won't Do on the panel, the Board chip           | apps/editor/components/canvas/ActionPanelFace.test.tsx                                             |
-| Won't Do indexed closed                         | packages/project/src/collab-index-rows.test.ts                                                  |
+| Canvas writes                                   | apps/editor/hooks/plan/linked-actions.test.ts                                                    |
+| Won't Do on the panel, the Board chip           | apps/editor/components/canvas/ActionPanelFace.test.tsx                                           |
+| Won't Do indexed closed                         | packages/project/src/collab-index-rows.test.ts                                                   |
 | Linked cards off the Inbox                      | apps/api/src/db/activity-cards.test.ts                                                           |
 
 ## Defaults ledger

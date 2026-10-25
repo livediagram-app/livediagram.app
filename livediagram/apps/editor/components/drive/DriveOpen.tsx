@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Button } from '@livediagram/ui';
 import { ApiError, apiDriveToken } from '@/lib/api-client';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { googleClientId } from '@/lib/drive/config';
 import { createDriveRestClient } from '@/lib/drive/drive-rest-client';
 import { requestBrowserAccessToken } from '@/lib/drive/google-scripts';
@@ -24,6 +24,7 @@ import {
   type OpenWithOutcome,
   type OpenWithState,
 } from '@/lib/drive/open-with';
+import { explorerHref } from '@/lib/explorer-href';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
 import { useDriveMirror } from './drive-mirror-context';
@@ -52,7 +53,7 @@ type Phase =
   | { kind: 'import-failed' };
 
 export function DriveOpen() {
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const drive = useDriveMirror();
   const state = useSyncExternalStore(noSubscription, readState, beforeHydration);
   const here = useSyncExternalStore(noSubscription, readHere, hereBeforeHydration);
@@ -61,9 +62,9 @@ export function DriveOpen() {
 
   // A token: the broker's, or a click away in browser-only mode.
   useEffect(() => {
-    if (!clerkUserId || drive.mode !== 'broker' || token) return;
+    if (!accountUserId || drive.mode !== 'broker' || token) return;
     let live = true;
-    void apiDriveToken(clerkUserId)
+    void apiDriveToken(accountUserId)
       .then((t) => live && setToken(t.accessToken))
       .catch((err: unknown) => {
         if (!live) return;
@@ -74,7 +75,7 @@ export function DriveOpen() {
     return () => {
       live = false;
     };
-  }, [clerkUserId, drive.mode, token]);
+  }, [accountUserId, drive.mode, token]);
 
   const client = useCallback(
     (accessToken: string) =>
@@ -86,12 +87,12 @@ export function DriveOpen() {
   );
 
   useEffect(() => {
-    if (!token || !state || !clerkUserId) return;
+    if (!token || !state || !accountUserId) return;
     let live = true;
     void resolveOpenWith(
       {
         drive: client(token),
-        port: createApiLivediagramPort(clerkUserId),
+        port: createApiLivediagramPort(accountUserId),
         host: window.location.host,
       },
       state,
@@ -110,7 +111,7 @@ export function DriveOpen() {
     return () => {
       live = false;
     };
-  }, [token, state, clerkUserId, client]);
+  }, [token, state, accountUserId, client]);
 
   const allowAccess = async () => {
     if (drive.mode === 'browser') {
@@ -121,13 +122,13 @@ export function DriveOpen() {
   };
 
   const importCopy = async (reason: OpenWithImportReason) => {
-    if (!token || !state || !clerkUserId) return;
+    if (!token || !state || !accountUserId) return;
     setPhase({ kind: 'importing' });
     try {
       const id = await importOpenWithCopy(
         {
           drive: client(token),
-          port: createApiLivediagramPort(clerkUserId),
+          port: createApiLivediagramPort(accountUserId),
           host: window.location.host,
         },
         state,
@@ -146,7 +147,7 @@ export function DriveOpen() {
     const back = encodeURIComponent(here);
     return (
       <LandingCard>
-        <Heading>Sign in to open this document</Heading>
+        <Heading>Sign in to open this canvas</Heading>
         <Body>
           Files from Google Drive open in your livediagram account. We&apos;ll bring you right back.
         </Body>
@@ -184,12 +185,12 @@ export function DriveOpen() {
         <Heading>{name}</Heading>
         <Body>
           {copy
-            ? 'This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is.'
-            : "This document isn't in your livediagram. Import a copy to open it here."}
+            ? 'This is a copy made in Google Drive. Import it as a new canvas to open it here; the original stays as it is.'
+            : "This canvas isn't in your livediagram. Import a copy to open it here."}
         </Body>
         <div className="mt-5 flex justify-center">
           <Button size="md" onClick={() => void importCopy(reason)}>
-            {copy ? 'Import as new document' : 'Import a copy'}
+            {copy ? 'Import as new canvas' : 'Import a copy'}
           </Button>
         </div>
       </LandingCard>
@@ -199,8 +200,8 @@ export function DriveOpen() {
     return (
       <LandingCard>
         <Heading>The copy couldn&apos;t be made</Heading>
-        <Body>The file isn&apos;t a readable livediagram document.</Body>
-        <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
+        <Body>The file isn&apos;t a readable livediagram canvas.</Body>
+        <PrimaryLink href={explorerHref()}>Go to Explorer</PrimaryLink>
       </LandingCard>
     );
   }
@@ -216,7 +217,7 @@ function CannotOpen() {
     <LandingCard>
       <Heading>This file can&apos;t be opened in livediagram</Heading>
       <Body>It isn&apos;t a livediagram file, or livediagram can&apos;t read it.</Body>
-      <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
+      <PrimaryLink href={explorerHref()}>Go to Explorer</PrimaryLink>
     </LandingCard>
   );
 }

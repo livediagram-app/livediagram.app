@@ -51,7 +51,7 @@ import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
-import { searchIcons } from '@livedesign/icons/search';
+import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import {
@@ -121,8 +121,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const imageIssue = await imageIdIssue(env, token, args);
     if (imageIssue) return errorResult(imageIssue);
     // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
-    const single =
-      args.tabs || args.tab === undefined ? null : createDesignTab.safeParse(args.tab);
+    const single = args.tabs || args.tab === undefined ? null : createDesignTab.safeParse(args.tab);
     if (single && !single.success)
       return errorResult(
         `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +

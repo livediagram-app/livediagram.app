@@ -9,7 +9,7 @@
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
 import { Button, CircleXIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideFolder } from '@livediagram/icons/lucide';
+import { lucideFolder } from '@liveworkspace/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 
@@ -45,18 +45,14 @@ export function NotFound({
         <h1
           className={`${accessEnded ? 'mt-4' : 'mt-1'} text-xl font-semibold text-slate-900 dark:text-slate-100`}
         >
-          {page
-            ? 'Page not found'
-            : accessEnded
-              ? 'No Longer Shared With You'
-              : 'Document not found'}
+          {page ? 'Page not found' : accessEnded ? 'No Longer Shared With You' : 'Canvas not found'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {page
-            ? 'There is no page at this address. Open a document from the Explorer or start fresh.'
+            ? 'There is no page at this address. Open a canvas from the Explorer or start fresh.'
             : accessEnded
-              ? 'Your access to this document was removed while you had it open. Ask its owner to share it with you again.'
-              : 'This document doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
+              ? 'Your access to this canvas was removed while you had it open. Ask its owner to share it with you again.'
+              : 'This canvas doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           {onOpenExplorer ? (
@@ -67,7 +63,7 @@ export function NotFound({
           ) : null}
           <Button size="md" onClick={onCreateNew} className="shadow-sm">
             <SparkleIcon />
-            New Document
+            New Canvas
           </Button>
         </div>
       </div>

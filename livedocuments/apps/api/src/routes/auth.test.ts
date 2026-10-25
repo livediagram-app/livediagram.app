@@ -1,4 +1,4 @@
-import { sentForm, sentUrl } from '@livedocuments/vitest-config/sent-request';
+import { sentForm, sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
@@ -65,7 +65,7 @@ const cookieValue = (res: Response, name: string) =>
 async function signInCookie(returnTo = '/document/abc') {
   const res = await call(`/api/auth/sign-in?return_to=${encodeURIComponent(returnTo)}`);
   const location = new URL(res.headers.get('Location')!);
-  return { res, location, pkce: cookieValue(res, 'lp_pkce')! };
+  return { res, location, pkce: cookieValue(res, 'ldoc_pkce')! };
 }
 
 describe('GET /api/auth/sign-in', () => {
@@ -82,9 +82,15 @@ describe('GET /api/auth/sign-in', () => {
     expect(location.searchParams.get('state')).toBeTruthy();
   });
 
+  it('asks for the registration page for Create account', async () => {
+    const res = await call('/api/auth/sign-in?return_to=%2Fnew&screen=sign-up');
+    const location = new URL(res.headers.get('Location')!);
+    expect(location.searchParams.get('prompt')).toBe('create');
+  });
+
   it('keeps the verifier in an HttpOnly cookie scoped to /api/auth', async () => {
     const { res } = await signInCookie();
-    const pkce = setCookies(res).find((c) => c.startsWith('lp_pkce='))!;
+    const pkce = setCookies(res).find((c) => c.startsWith('ldoc_pkce='))!;
     expect(pkce).toContain('HttpOnly');
     expect(pkce).toContain('Secure');
     expect(pkce).toContain('Path=/api/auth');
@@ -93,11 +99,11 @@ describe('GET /api/auth/sign-in', () => {
 
   it('returns to AUTH_ORIGIN when set (local dev behind the router)', async () => {
     const res = await call('/api/auth/sign-in', {
-      env: { ...ENV, AUTH_ORIGIN: 'http://localhost:3200/' },
+      env: { ...ENV, AUTH_ORIGIN: 'http://localhost:3300/' },
     });
     const location = new URL(res.headers.get('Location')!);
     expect(location.searchParams.get('redirect_uri')).toBe(
-      'http://localhost:3200/api/auth/callback',
+      'http://localhost:3300/api/auth/callback',
     );
   });
 });
@@ -107,7 +113,7 @@ describe('GET /api/auth/callback', () => {
     const { location, pkce } = await signInCookie();
     const state = opts.state ?? location.searchParams.get('state')!;
     return call(`/api/auth/callback?code=the-code&state=${state}`, {
-      headers: { Cookie: `other=1; lp_pkce=${opts.cookie ?? pkce}` },
+      headers: { Cookie: `other=1; ldoc_pkce=${opts.cookie ?? pkce}` },
     });
   }
 
@@ -125,14 +131,14 @@ describe('GET /api/auth/callback', () => {
     expect(body.get('code')).toBe('the-code');
     expect(body.get('code_verifier')).toBeTruthy();
 
-    expect(cookieValue(res, 'lp_refresh')).toBe('refresh-2');
-    const refresh = setCookies(res).find((c) => c.startsWith('lp_refresh='))!;
+    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-2');
+    const refresh = setCookies(res).find((c) => c.startsWith('ldoc_refresh='))!;
     expect(refresh).toContain('HttpOnly');
     expect(refresh).toContain('SameSite=Strict');
-    expect(cookieValue(res, 'lp_pkce')).toBe('');
+    expect(cookieValue(res, 'ldoc_pkce')).toBe('');
     // The page-readable hint, site-wide and not HttpOnly, holding nothing secret.
-    const hint = setCookies(res).find((c) => c.startsWith('lp_signed_in='))!;
-    expect(hint).toContain('lp_signed_in=1;');
+    const hint = setCookies(res).find((c) => c.startsWith('ldoc_signed_in='))!;
+    expect(hint).toContain('ldoc_signed_in=1;');
     expect(hint).toContain('Path=/;');
     expect(hint).not.toContain('HttpOnly');
   });
@@ -148,7 +154,7 @@ describe('GET /api/auth/callback', () => {
     const res = await callback({ state: 'forged' });
     expect(res.headers.get('Location')).toBe('/sign-in?error=expired');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieValue(res, 'lp_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
   });
 
   it('refuses a callback with no sign-in cookie', async () => {
@@ -162,7 +168,7 @@ describe('GET /api/auth/callback', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await callback();
     expect(res.headers.get('Location')).toBe('/sign-in?error=failed');
-    expect(cookieValue(res, 'lp_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
     warn.mockRestore();
   });
 });
@@ -179,7 +185,7 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(tokenResponse({ refresh_token: 'refresh-3' }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'lp_refresh=refresh-2' },
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
     });
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -190,7 +196,7 @@ describe('POST /api/auth/token', () => {
       user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' },
     });
     expect(typeof body.expiresAt).toBe('number');
-    expect(cookieValue(res, 'lp_refresh')).toBe('refresh-3');
+    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-3');
     const sent = sentForm(fetchMock.mock.calls[0]![1]);
     expect(sent.get('grant_type')).toBe('refresh_token');
     expect(sent.get('refresh_token')).toBe('refresh-2');
@@ -202,11 +208,11 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'lp_refresh=stale' },
+      headers: { Cookie: 'ldoc_refresh=stale' },
     });
     expect(res.status).toBe(401);
-    expect(cookieValue(res, 'lp_refresh')).toBe('');
-    expect(cookieValue(res, 'lp_signed_in')).toBe('0');
+    expect(cookieValue(res, 'ldoc_refresh')).toBe('');
+    expect(cookieValue(res, 'ldoc_signed_in')).toBe('0');
     warn.mockRestore();
   });
 });
@@ -215,8 +221,38 @@ describe('POST /api/auth/sign-out', () => {
   it('drops the refresh cookie and the hint', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
     expect(res.status).toBe(200);
-    expect(cookieValue(res, 'lp_refresh')).toBe('');
-    expect(cookieValue(res, 'lp_signed_in')).toBe('0');
+    expect(cookieValue(res, 'ldoc_refresh')).toBe('');
+    expect(cookieValue(res, 'ldoc_signed_in')).toBe('0');
+  });
+});
+
+describe('GET /api/auth/guest', () => {
+  it("sends the browser to the accounts site's guest handoff with this app's client, coming back to /auth/guest", async () => {
+    const res = await call('/api/auth/guest?state=abcdefgh12');
+    expect(res.status).toBe(302);
+    const to = new URL(res.headers.get('Location')!);
+    expect(`${to.origin}${to.pathname}`).toBe('https://accounts.example/api/auth/guest');
+    expect(Object.fromEntries(to.searchParams)).toEqual({
+      client_id: 'client-lp',
+      redirect_uri: 'https://lp.example/auth/guest',
+      state: 'abcdefgh12',
+      resource: 'https://lp.example/api',
+    });
+    expect(setCookies(res)).toEqual([]);
+  });
+
+  it('comes straight back, saying so, on a deployment with no accounts site', async () => {
+    const res = await call('/api/auth/guest?state=abcdefgh12', { env: {} as Env });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe(
+      'https://lp.example/auth/guest#error=guest_not_configured&state=abcdefgh12',
+    );
+  });
+
+  it('refuses a missing or odd state rather than redirect with it', async () => {
+    for (const q of ['', '?state=short', '?state=has%20space%20in%20it']) {
+      expect((await call(`/api/auth/guest${q}`)).status, q).toBe(400);
+    }
   });
 });
 
@@ -245,6 +281,79 @@ describe('the /api/auth surface', () => {
   });
 });
 
+describe('the account name cookie (ldoc_account)', () => {
+  // liveworkspace/docs/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
+  const named = (claims: Record<string, unknown>) =>
+    tokenResponse({ id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', ...claims }) });
+
+  it('names the account beside the hint at sign-in, readable on the whole site', async () => {
+    const { location, pkce } = await signInCookie();
+    fetchMock.mockResolvedValue(named({ name: 'Ada Lovelace', given_name: 'Ada' }));
+    const res = await call(
+      `/api/auth/callback?code=c&state=${location.searchParams.get('state')}`,
+      { headers: { Cookie: `ldoc_pkce=${pkce}` } },
+    );
+    expect(cookieValue(res, 'ldoc_account')).toBe('Ada');
+    const name = setCookies(res).find((c) => c.startsWith('ldoc_account='))!;
+    expect(name).toContain('Path=/;');
+    expect(name).not.toContain('HttpOnly');
+  });
+
+  it('names it afresh at every refresh, encoded, falling back to the full name and then the email', async () => {
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada Lovelace' }));
+    const full = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(full, 'ldoc_account')).toBe(encodeURIComponent('Ada Lovelace'));
+
+    fetchMock.mockResolvedValueOnce(named({}));
+    const email = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(email, 'ldoc_account')).toBe(encodeURIComponent('ada@example.com'));
+  });
+
+  it("keeps the profile's presence colour beside it, and clears it with none or at sign-out", async () => {
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada', presence_color: '#0ea5e9' }));
+    const coloured = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(coloured, 'ldoc_account_colour')).toBe(encodeURIComponent('#0ea5e9'));
+    const body: { user: { color: unknown } } = await coloured.json();
+    expect(body.user.color).toBe('#0ea5e9');
+
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada' }));
+    const automatic = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+    });
+    expect(cookieValue(automatic, 'ldoc_account_colour')).toBe('');
+
+    const out = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(setCookies(out).find((c) => c.startsWith('ldoc_account_colour='))).toContain(
+      'Max-Age=0',
+    );
+  });
+
+  it('clears it when the refresh is refused and at sign-out', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
+    const refused = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ldoc_refresh=stale' },
+    });
+    expect(cookieValue(refused, 'ldoc_account')).toBe('');
+    warn.mockRestore();
+
+    const out = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(cookieValue(out, 'ldoc_account')).toBe('');
+    expect(setCookies(out).find((c) => c.startsWith('ldoc_account='))).toContain('Max-Age=0');
+  });
+});
+
 describe('safeReturnPath', () => {
   it('keeps a path on this site and replaces anything that would leave it', () => {
     expect(safeReturnPath('/document/abc?tab=1')).toBe('/document/abc?tab=1');
@@ -256,8 +365,99 @@ describe('safeReturnPath', () => {
 
 describe('readCookie', () => {
   it('finds one cookie among several', () => {
-    const req = new Request(APP, { headers: { Cookie: 'a=1; lp_refresh=xyz ; b=2' } });
-    expect(readCookie(req, 'lp_refresh')).toBe('xyz');
+    const req = new Request(APP, { headers: { Cookie: 'a=1; ldoc_refresh=xyz ; b=2' } });
+    expect(readCookie(req, 'ldoc_refresh')).toBe('xyz');
     expect(readCookie(req, 'missing')).toBeNull();
+  });
+});
+
+// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): the page's boot
+// script sends a browser with no session here once per browser session; it always comes back to where it was.
+describe('GET /api/auth/silent', () => {
+  async function bounce(
+    returnTo = '/explorer/home?x=1#card',
+    init: RequestInit & { env?: Env } = {},
+  ) {
+    return call(`/api/auth/silent?return=${encodeURIComponent(returnTo)}`, init);
+  }
+
+  it('asks the accounts site with prompt=none, guarding against a second bounce', async () => {
+    const res = await bounce();
+    const location = new URL(res.headers.get('Location')!);
+    expect(location.origin + location.pathname).toBe(
+      'https://accounts.example/api/auth/oauth2/authorize',
+    );
+    expect(location.searchParams.get('prompt')).toBe('none');
+    expect(location.searchParams.get('redirect_uri')).toBe(`${APP}/api/auth/callback`);
+    expect(cookieValue(res, 'ldoc_silent')).toBe('1');
+    expect(cookieValue(res, 'ldoc_silent_pkce')).toBeTruthy();
+    // A clicked sign-in in another tab keeps its own cookie.
+    expect(cookieValue(res, 'ldoc_pkce')).toBeUndefined();
+  });
+
+  it('goes straight back after the person signed out of this app', async () => {
+    const res = await bounce('/new', { headers: { Cookie: 'ldoc_signed_out=1' } });
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  it('goes straight back on a guest-only deployment, never to an error page', async () => {
+    const res = await bounce('/new', { env: {} as Env });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  it('goes straight back when rate limited', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await bounce('/new', {
+      env: { ...ENV, WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    });
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  async function comeBack(query: (state: string) => string) {
+    const out = await bounce();
+    const state = new URL(out.headers.get('Location')!).searchParams.get('state')!;
+    return call(`/api/auth/callback?${query(state)}`, {
+      headers: { Cookie: `ldoc_silent_pkce=${cookieValue(out, 'ldoc_silent_pkce')}` },
+    });
+  }
+
+  it('signs in at the callback when the accounts site had a session, back to the same address', async () => {
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    const res = await comeBack((state) => `code=c1&state=${state}`);
+    expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
+    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-2');
+    expect(cookieValue(res, 'ldoc_signed_in')).toBe('1');
+    expect(cookieValue(res, 'ldoc_signed_out')).toBe('');
+    expect(cookieValue(res, 'ldoc_silent_pkce')).toBe('');
+    expect(reportSignIn).toHaveBeenCalledWith(expect.anything(), 'user_abc');
+  });
+
+  it('comes back a guest on login_required, swapping nothing', async () => {
+    const res = await comeBack((state) => `error=login_required&state=${state}`);
+    expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ldoc_silent_pkce')).toBe('');
+  });
+});
+
+describe('signing out, and signing in again', () => {
+  it('remembers an explicit sign-out, so no silent sign-in undoes it', async () => {
+    const res = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(cookieValue(res, 'ldoc_signed_out')).toBe('1');
+    const out = setCookies(res).find((c) => c.startsWith('ldoc_signed_out='))!;
+    expect(out).toContain('Path=/');
+    expect(out).not.toContain('HttpOnly');
+  });
+
+  it('forgets it at the next clicked sign-in', async () => {
+    const { location, pkce } = await signInCookie();
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    const res = await call(
+      `/api/auth/callback?code=c1&state=${location.searchParams.get('state')}`,
+      { headers: { Cookie: `ldoc_pkce=${pkce}; ldoc_signed_out=1` } },
+    );
+    expect(cookieValue(res, 'ldoc_signed_out')).toBe('');
   });
 });

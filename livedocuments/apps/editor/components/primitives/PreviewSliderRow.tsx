@@ -4,7 +4,7 @@
 // drag is one undo step (the Wordmark sliders, the Text Size slider). Without `onPreview` it only
 // commits on the let-go: the thumb and readout still follow the drag from local state.
 import { useState, type ReactNode } from 'react';
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 
 export function PreviewSliderRow({
   label,
@@ -71,18 +71,5 @@ export function PreviewSliderRow({
       action={action}
       trailing={trailing}
     />
-  );
-}
-
-// The quiet text button a slider row carries at its label's end (Flat on the Arc).
-export function SliderRowAction({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded px-1 text-[10px] font-semibold text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
-    >
-      {label}
-    </button>
   );
 }

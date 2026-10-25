@@ -15,7 +15,7 @@
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
+import type { EditorMode, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
@@ -64,7 +64,7 @@ export type LiveDoc = {
   // Owner's display name + avatar colour, joined server-side from the
   // participants table so visitors can render "Owner: <name>" without
   // waiting for the owner to come online in the realtime room. Null
-  // when the owner has no participant row yet (e.g. Clerk-authed
+  // when the owner has no participant row yet (e.g. signed-in
   // owners who never set a name on a document); the UI falls back to
   // hiding the badge in that case.
   ownerName: string | null;
@@ -126,36 +126,6 @@ export type SharedTabsSummary = {
   documents: number;
 };
 
-// One row of the "Shared with you" list (shared_with, migration 0010):
-// a document a non-owner has previously opened via a share link. The api
-// worker (`listSharedWith` in db/shared.ts) builds this by joining
-// shared_with → documents → participants; the live editor's Explorer
-// renders it. Canonical home here so the worker's emit and the client's
-// read can't drift apart (consistency review #7) — both import this one
-// type instead of redeclaring the shape on each side.
-export type SharedWithItem = {
-  id: string;
-  name: string;
-  savedAt: number;
-  // The role the visitor was granted on the share link they used.
-  role: ShareRole;
-  // Still-live share code for that same role, so the client can rebuild
-  // the openable `/document/<id>?s=<code>` URL — without it the link
-  // lands on the owner-only path and 404s. The worker filters out rows
-  // whose share was revoked (no code left), so this is never null here.
-  shareCode: string;
-  // The scope the visitor was granted (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  // `shareCode` always carries this same scope, never a broader one.
-  tabId: string | null;
-  // Owner's display name + avatar colour, joined from participants.
-  // Nullable: Clerk-authed owners may have no participant row yet, so
-  // the UI shows an "Unknown owner" placeholder.
-  ownerName: string | null;
-  ownerColor: string | null;
-  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DocumentSummary.empty.
-  empty: boolean;
-};
-
 // ---------------------------------------------------------------------
 // Tabs
 // ---------------------------------------------------------------------
@@ -215,50 +185,10 @@ export type Folder = {
 };
 
 // ---------------------------------------------------------------------
-// Custom themes (docs/specs/011-theme/custom-themes.md)
-// ---------------------------------------------------------------------
-
-// The themable payload of a custom theme — the same fields a built-in
-// `ThemeDefinition` carries MINUS its `id` / `label` (which live on the
-// row) and the `extra` "show more" flag (custom themes are never
-// gated). Stored as a JSON string in the `custom_themes.definition`
-// column; this is the parsed shape the api emits and the live editor
-// materialises into a full ThemeDefinition. Kept structurally in step
-// with `apps/editor/lib/themes.ts` ThemeDefinition by the editor's
-// `materialiseCustomTheme` helper.
-export type CustomThemeDefinition = {
-  backgroundColor: string;
-  backgroundPattern: BackgroundPattern;
-  patternColor: string;
-  // Pattern opacity 0..1 (the canvas pattern-opacity slider). Optional;
-  // absent / undefined means fully opaque.
-  backgroundOpacity?: number;
-  elementFill: string | null;
-  elementStroke: string | null;
-  elementText: string | null;
-  palette?: { fill: string; stroke: string; text: string }[];
-  rootColor?: { fill: string; stroke: string; text: string };
-  shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string; text?: string }>>;
-};
-
-// A saved custom theme. `id` is `custom:<uuid>` so it can never collide
-// with a built-in ThemeId and is a cheap "is this custom?" check. It is
-// stored on `Tab.theme` like any other theme id. Owner-scoped (docs/specs/014-identity/auth-and-guest-access.md
-// hybrid identity), guests included.
-export type CustomTheme = {
-  id: string;
-  ownerId: string;
-  name: string;
-  definition: CustomThemeDefinition;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// ---------------------------------------------------------------------
 // API tokens (docs/specs/015-api/public-api-and-tokens.md)
 // ---------------------------------------------------------------------
 
-// An external API credential, owner-scoped to a Clerk account. The wire
+// An external API credential, owner-scoped to an account. The wire
 // shape NEVER carries the secret or its hash — only the public id +
 // metadata shown in the management list. The plaintext is returned once,
 // at creation, on a separate response field (see the /api/tokens route).
@@ -313,7 +243,7 @@ export function isOpenTeamMember(member: { status: TeamMemberStatus }): boolean 
   return member.status === 'invited' || member.status === 'joined';
 }
 
-// One member link row. `userId` is the Clerk user id, null while the
+// One member link row. `userId` is the account id, null while the
 // invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
 // connecting identifies the person, it does NOT accept for them).
 // `email` is the lowercased invite address; null only on a creator
@@ -331,50 +261,20 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
-  // The joined member's published profile picture (docs/specs/014-identity/profile-picture.md §5), or
-  // null (pending invite, no picture, or the switch off).
-  pictureUrl: string | null;
   createdAt: number;
   updatedAt: number;
 };
 
-// One row of `GET /api/teams/invites`: the caller's own pending
-// member row plus enough of the team to decide (name, organisation,
-// how many people have actually joined).
+// One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
+// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
+// its name and organisation, how many people have joined, the role offered, who invited them and when.
 export type TeamInvite = {
   memberId: string;
   team: Team;
   memberCount: number;
   invitedAt: number;
-};
-
-// The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it
-// expires after a week, and anyone signed in who opens it can join.
-// Null in the team detail when off / expired. Admin-only.
-export type TeamInviteLink = {
-  token: string;
-  expiresAt: number;
-};
-
-// What a join token resolves to (the /join landing reads this to show
-// "Join <team>?"), plus whether the caller is already a member.
-export type TeamInviteLinkInfo = {
-  team: Team;
-  memberCount: number;
-  alreadyMember: boolean;
-};
-
-// Result of joining via an invite link.
-export type TeamInviteLinkJoin = {
-  teamId: string;
-  alreadyMember: boolean;
-};
-
-// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
-// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
-export type TeamInviteDecline = {
-  teamName: string;
-  status: TeamMemberStatus;
+  role: TeamRole;
+  invitedByName: string | null;
 };
 
 // ---------------------------------------------------------------------
@@ -436,10 +336,6 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
-  // The published profile picture (docs/specs/014-identity/profile-picture.md §6): set only by the
-  // participant's own verified Clerk session, null when they have none or turned it off, and
-  // returned only to signed-in callers (null for everyone else).
-  pictureUrl: string | null;
 };
 
 // Realtime presence identity, broadcast to every connected peer: the room and the participant route clamp to
@@ -492,10 +388,6 @@ export type ParticipantPresence = {
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
-  // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
-  // room keeps it only from a verified account session and sends it only to account sessions;
-  // anonymous recipients get the roster without it.
-  picture?: string;
 };
 
 // ---------------------------------------------------------------------
@@ -519,11 +411,17 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
@@ -536,51 +434,24 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
-  isClerkIdShape,
+  isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
-
-export type AiMode = 'clean' | 'ask';
-
-export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
-
-// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
-// keep within them rather than meet a bare 400.
-export const AI_MAX_PROMPT_CHARS = 1000;
-export const AI_MAX_ELEMENTS = 200;
-
-// Request body for POST /api/ai.
-export type AiRequest = {
-  mode: AiMode;
-  // Free-text instruction from the user (max 1 000 chars, enforced server-side).
-  prompt: string;
-  // All elements on the active tab (full context). Server uses focusIds
-  // to tell the model which subset to act on; the rest is read-only context.
-  elements: unknown[];
-  // Name of the active tab, included in the system prompt for context.
-  tabName: string;
-  // IDs of the currently selected elements. When non-empty the model is
-  // asked to focus its changes on these elements while treating the rest
-  // as context only. Empty / absent = act on all elements.
-  focusIds?: string[];
-  // Last N conversation turns for multi-turn context. Kept short (≤ 6
-  // turns) so the token cost stays bounded.
-  history?: AiConversationTurn[];
-};
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
+  // Whether the sticky-note photo reader has a model (docs/specs/021-event-storming/note-reader.md).
   aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
   // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
@@ -609,16 +480,11 @@ export type CapabilitiesResponse = {
 // count on the same day. Pre-aggregated server-side so the dashboard
 // can render the sparkline + stacked-area without any client work.
 //
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
+// A link card's unfurl (GET /api/unfurl), every product's (@liveworkspace/api-kit/unfurl).
+export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
 export * from './access-levels';
+export * from './participant-colours';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
@@ -636,7 +502,6 @@ export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
 export * from './drive';
-export * from './profile-picture';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
 export * from './document-dates';
@@ -644,7 +509,6 @@ export * from './document-dates';
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
 export * from './shape-libraries';
-export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -654,10 +518,10 @@ export {
   type PlacementRejection,
 } from './placement';
 
-// Default folders: the keys in force and the creation intent a create carries
+// Default folders: their entries and the creation intent a create carries
 // (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
+// Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
 export * from './avatar-say';
@@ -670,7 +534,8 @@ export * from './document-views';
 // The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
 export * from './lint';
 export * from './ref-errors';
-// Returning visitor (docs/specs/019-marketing/returning-visitor.md).
+// The retired returning-visitor note's storage names, and the snapshot SVG helpers
+// (docs/specs/019-marketing/returning-visitor.md, docs/specs/006-document/document-snapshots.md).
 export * from './recent-diagrams';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
@@ -683,7 +548,7 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
@@ -693,11 +558,12 @@ export * from './agent-presence';
 export * from '@liveworkspace/community';
 export * from './community-paths';
 export * from './document-paths';
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
-export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
 export * from './workbench-messages';
 export * from './mcp-origin';
+
+// The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
+export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';

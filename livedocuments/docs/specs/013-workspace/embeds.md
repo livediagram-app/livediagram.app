@@ -12,13 +12,13 @@ The issue sketched a path segment (`/embed/<code>`), but the static export ([Ded
 
 The embed route mounts the same editor page component with an `embed` flag. The flag:
 
-- **Honours the share code's role.** A view-role or Participant code renders a read-only viewer (an embed has no identity screen to put a name on someone's text and comments, [Share roles](share-roles.md)); an **edit-role code renders an editable embed**: direct manipulation, text editing, and context menus work inside the iframe, with the same zen-style chrome (the palette and panels stay hidden; the full editor is one badge-click away for heavier work). The api already enforces the role on every write, so the embed adds no new authorisation surface. (Originally embeds forced read-only regardless of role; that rule was reversed so an edit link pasted into a wiki lets teammates fix a diagram where they read it.)
+- **Honours the share code's role.** A view-role or Participant code renders a read-only viewer (an embed has no identity screen to put a name on what someone adds, [Share roles](share-roles.md)); an **edit-role code renders an editable embed**: direct manipulation, text editing, and context menus work inside the iframe, with the same zen-style chrome (the palette and panels stay hidden; the full editor is one badge-click away for heavier work). The index's grant for the link sets the role and the api enforces it on every write, so the embed adds no new authorisation surface. (Originally embeds forced read-only regardless of role; that rule was reversed so an edit link pasted into a wiki lets teammates fix a diagram where they read it.)
 - **Hides all chrome**: header, TabBar, every floating panel (the same gates zen mode uses, [Zen mode](../007-editor/zen-mode.md)). What remains: the canvas (pan / zoom / pinch), the ZoomControls dock (without the zen toggle), and the two embed affordances below. An embed draws no element indicators ([Element indicators](../008-canvas/element-indicators.md)): they are editor chrome. A view-role embed's selection toolbar also has no Add Comment button (a reader there has no comments panel to open); comment pins and comment panels are content and stay.
 - **Defaults to the Hand (pan) tool** on every viewport (`useCanvasTool({ defaultPan })`): an embed is read-first even when editable, so a drag on empty canvas pans rather than starting a marquee. Editable embeds still select / edit by clicking elements, and tool shortcuts work as usual.
 - **Suppresses the visitor identity screen.** A "what's your name" card inside a README iframe is wrong; embed sessions keep their default guest identity silently. They still join the realtime room like any view-role visitor, so embedded documents **live-update** as the document is edited (the room's whole-tab ops; [API app](../015-api/api.md)). If the WebSocket can't connect, the embed simply shows the fetch-time content, which is the existing degradation path.
 - Renders, bottom-left, an **"Open in livedocuments" badge** linking to the full share view (`/document/shared?s=<code>`, new tab; the acquisition loop) and, only when the document has more than one tab, an **embed tab switcher**. The switcher is a compact hamburger button showing the current tab's name; tapping it opens a dropdown **above** listing the tabs. A fixed-width button (rather than a horizontal pill row) keeps the chrome from stretching across the canvas and colliding with the bottom-right ZoomControls dock when a document has many tabs.
 
-The share-password gate ([Share password](share-password.md)) renders inside the iframe exactly as it does on the share view. Browsers partition third-party iframe storage, so the cached password is per-embedding-site: visitors enter it once per site, which is acceptable for a password-protected artifact. NotFound (revoked code) and the API-error card render minimal versions inside the frame, without the app header or Explorer.
+The share-password gate ([Share password](share-password.md)) renders inside the iframe exactly as it does on the share view. The password is kept for the tab's session, so a visitor enters it once per visit, which is acceptable for a password-protected artifact. NotFound (revoked code) and the API-error card render minimal versions inside the frame, without the app header or Explorer.
 
 ## Frame headers
 
@@ -26,18 +26,18 @@ The editor worker (`apps/editor/src/worker.ts`) sends `X-Frame-Options: DENY` on
 [workbench embed](workbench-embeds.md) under `/embed/workbench`, is safe for a second reason: its credential comes
 only from a ticket minted with the person's own API token, and the page mounts only for the origin that minted it. No `Content-Security-Policy: frame-ancestors` is added (absence means frameable, and the CSP cycle is still deferred per the worker's comment).
 
-## Share dialog
+## Getting the code
 
-Each pass in the ShareDialog ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet built by `buildEmbedSnippet` (`apps/editor/lib/embed.ts`, unit-tested): the embed URL for that link's code, a sensible default size (800×500), a hairline border, and `allowfullscreen`. The pass carries no separate embed hint for a password: its **Password** tag already shows when one is set, and viewers are prompted for it inside the embed.
+The Share dialog is the shared one from `@liveworkspace/explorer` ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)), which offers no embed menu. An embed is built from a link by hand: `/embed?s=<code>` on livedocuments's origin (`embedUrlFor`), in an `<iframe>` of a sensible size. `buildEmbedSnippet` (`apps/editor/lib/embed.ts`, unit-tested) still builds that snippet (800×500, a hairline border, `allowfullscreen`) for any surface that offers it again. A password-protected link prompts for its password inside the embed.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 - `track('Session', 'Opened', 'Embed')` once when the embed route hydrates.
-- `track('UI', 'Copied', 'EmbedCode')` when the snippet is copied (sibling of the existing `UI / Copied / ShareLink`).
+- `UI·Copied·EmbedCode` counted the snippet's copy button, which went with the old Share dialog.
 
 ## No external services
 
-Works with zero external services: the embed page is part of the editor app's static export, and the snippet builds its URL from the live origin at copy time, so staging emits staging embed URLs.
+Works with zero external services: the embed page is part of the editor app's static export, and the snippet builds its URL from the live origin, so every deployment (staging, local development) emits embed URLs on its own origin.
 
 ## Out of scope
 

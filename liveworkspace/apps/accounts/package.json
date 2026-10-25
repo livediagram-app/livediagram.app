@@ -18,11 +18,13 @@
   },
   "dependencies": {
     "@better-auth/oauth-provider": "1.7.12",
+    "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/index-client": "workspace:^",
+    "@liveworkspace/sites": "workspace:*",
     "better-auth": "1.7.12"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
-    "@liveworkspace/auth-client": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "tsx": "^4.20.6",

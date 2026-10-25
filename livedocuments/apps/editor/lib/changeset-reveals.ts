@@ -1,5 +1,5 @@
 import { elementBounds, type Element } from '@livedocuments/document';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // The outlines a relayed changeset draws around what it touched, in its author's colour, for
 // CHANGESET_REVEAL_MS (docs/specs/024-agents/agent-changesets.md "In the editor"). A small external

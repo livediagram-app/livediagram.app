@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Comment, Element, ShapeElement } from '@livedocuments/document';
 import {
   findCommentHost,
-  hasNewComments,
+  newCommentsBy,
   redactCommentAuthorIds,
   redactTabDataAuthors,
   removeComment,
@@ -250,42 +250,6 @@ describe('redactTabDataAuthors', () => {
   });
 });
 
-describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', () => {
-  const cm = (id: string, authorId: string | null = 'w'): Comment => ({
-    id,
-    text: 't',
-    createdAt: 0,
-    authorName: 'a',
-    authorColor: '#000',
-    ...(authorId ? { authorId } : {}),
-  });
-  it("is true when the writer's own comment id appears that was not in prev", () => {
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c2')])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(true);
-  });
-  it("is false when the only new comment is a peer's that reached the writer live", () => {
-    // Credited from the room: no author id until its author's own save claims it.
-    const peer = cm('c2', null);
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), peer])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c3', 'x')])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
-  });
-  it('is false when nothing new was added (a removal)', () => {
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1')])], [mkShape('e1', [cm('c1'), cm('c2')])], 'w'),
-    ).toBe(false);
-  });
-  it('is false on identical sets and with empty threads', () => {
-    const els = [mkShape('e1', [cm('c1')])];
-    expect(hasNewComments(els, els, 'w')).toBe(false);
-    expect(hasNewComments([mkShape('e1', [])], [], 'w')).toBe(false);
-  });
-});
-
 describe('rewriteCommentAuthors with the room ledger (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const posted = new Map([['c1', { authorName: 'Bea', authorColor: '#f00' }]]);
   const commentsOf = (els: Element[]) => (els[0] as ShapeElement).commentThread!.comments;
@@ -387,5 +351,25 @@ describe('a comment’s token id (docs/specs/024-agents/agent-presence.md I7)', 
       (redactCommentAuthorIds(els, 'someone')[0] as ShapeElement).commentThread!.comments[0]!
         .tokenId,
     ).toBeUndefined();
+  });
+});
+
+describe('newCommentsBy (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const cm = (id: string, authorId: string): Comment => ({
+    id,
+    text: 't',
+    createdAt: 0,
+    authorName: 'a',
+    authorColor: '#000',
+    authorId,
+  });
+  it("lists only the writer's comments the save adds, in order", () => {
+    expect(
+      newCommentsBy(
+        [mkShape('e1', [cm('c1', 'w'), cm('c2', 'w'), cm('c3', 'x')])],
+        [mkShape('e1', [cm('c1', 'w')])],
+        'w',
+      ).map((c) => c.id),
+    ).toEqual(['c2']);
   });
 });

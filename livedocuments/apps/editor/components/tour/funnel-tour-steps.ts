@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Funnel tour (docs/specs/007-editor/element-tours.md "The Funnel tour"): a Pyramid in its Funnel variant, its
 // stages narrowing down, the number each band carries, and Build from the top.

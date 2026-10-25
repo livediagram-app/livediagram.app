@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
-// docs/specs/006-document/offline-mode.md "Syncing in place": Sync Document waits for the pending save,
+// docs/specs/006-document/offline-mode.md "Syncing in place": Sync Canvas waits for the pending save,
 // uploads, re-points the open tabs' images at their gallery copies, opens the room and refreshes the
 // Explorer, all without a reload; a save that will not land refuses the sync.
 

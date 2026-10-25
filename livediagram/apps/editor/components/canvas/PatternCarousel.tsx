@@ -8,7 +8,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { HoverCard, useMediaQuery } from '@livediagram/ui';
 import type { BackgroundPattern } from '@livediagram/document';
-import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import type { PatternEntry } from '@/components/palette/palette-controls';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 

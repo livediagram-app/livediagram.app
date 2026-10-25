@@ -55,10 +55,18 @@ describe('parseWorkbenchOrigin', () => {
 
 describe('isWorkbenchSessionFormat', () => {
   it('tells an lvw_ session from a token and from a malformed one', () => {
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(true);
-    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!`)).toBe(false);
+    const store = `.${'0f'.repeat(32)}`;
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}${store}`)).toBe(
+      true,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}${store}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}${store}`)).toBe(
+      false,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!${store}`)).toBe(
+      false,
+    );
   });
 });
 
@@ -90,7 +98,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'schema/square'],
     ['GET', 'participants/user_1'],
     ['GET', 'preferences'],
-    ['GET', 'custom-themes'],
     ['GET', 'projects/doc1'],
     ['PUT', 'projects/doc1'],
     ['GET', 'projects/doc1/tabs/t1'],
@@ -158,7 +165,6 @@ describe('workbenchRouteVerdict', () => {
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
-    ['POST', 'custom-themes'],
     ['POST', 'workbench/tickets'],
     ['POST', 'workbench/sessions'],
     ['GET', 'workbench/pairings'],
@@ -240,21 +246,10 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['POST', 'folders'],
     ['PUT', 'folders/f1'],
     ['DELETE', 'folders/f1'],
-    ['GET', 'shared'],
-    ['DELETE', 'shared/doc1'],
-    ['PUT', 'favourites/doc1'],
-    ['GET', 'tags'],
-    ['GET', 'home'],
-    ['GET', 'timeline'],
-    ['GET', 'activity'],
     ['GET', 'trash'],
     ['POST', 'trash/doc1/restore'],
-    ['GET', 'placement-defaults'],
-    ['POST', 'custom-themes'],
     ['GET', 'teams'],
-    ['GET', 'teams/team1'],
     ['GET', 'teams/team1/library'],
-    ['GET', 'teams/team1/members'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');

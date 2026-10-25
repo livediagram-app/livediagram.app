@@ -500,7 +500,7 @@ help article's tour section; and a section here.
 
 - `apps/editor/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the answered list.
 - `apps/editor/lib/element-tour-offer.ts`: the offer the host publishes and the selection toolbar reads.
-- `apps/editor/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
+- `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
 - `apps/editor/components/tour/ElementTourHost.tsx`: decides the offer, runs the tour, ends it.
 - `apps/editor/components/tour/element-tour-defs.ts`: one definition per toured kind.
 - `apps/editor/components/tour/element-tour-api.ts`: what a step may do on its element.
@@ -513,8 +513,8 @@ help article's tour section; and a section here.
 - `apps/editor/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`, `entity-tour-steps.ts`,
   `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`,
   `portal-tour-steps.ts`: the round-two tours' steps; `menu-tour-step.ts`: their menu step.
-- `apps/editor/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
+- `../packages/workbench/src/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
   it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
-- `apps/editor/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
-- `apps/editor/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
+- `../packages/workbench/src/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
+- `../packages/workbench/src/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
   (a chart's Grow), or a chevron stage's bar held open.

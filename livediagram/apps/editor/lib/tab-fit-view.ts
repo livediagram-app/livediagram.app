@@ -5,14 +5,18 @@
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
-import { fitClearOfPanel, MAP_PANEL_SELECTOR, type FitInsets } from './fit-clear-of-panel';
+import {
+  fitClearOfPanel,
+  MAP_PANEL_SELECTOR,
+  type FitInsets,
+} from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import {
   besideSideInsets,
   computeFitToScreen,
   FIT_TO_SCREEN_PADDING,
   topChromeInset,
-} from './viewport';
-import type { ViewPose } from './viewport-glide';
+} from '@liveworkspace/workbench/lib/viewport';
+import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 
 // No chrome beside the content to fit clear of.
 const NO_INSETS: FitInsets = { left: 0, right: 0, top: 0, bottom: 0 };

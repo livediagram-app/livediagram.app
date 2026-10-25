@@ -6,8 +6,8 @@
 // cog. Presses in it are its own, never the canvas's or the element's.
 import { useState, type ReactNode } from 'react';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideSettings } from '@liveplanner/icons/lucide';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import type { PlanPalette } from './plan-palette';
 import { useSlotSettings } from './dashboard/slot-menu';
 

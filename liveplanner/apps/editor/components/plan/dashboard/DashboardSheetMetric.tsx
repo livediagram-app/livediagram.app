@@ -9,7 +9,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { SheetMetricContent } from '@liveplanner/project';
 import { percentDone } from '@liveplanner/plan-art';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideTable } from '@liveplanner/icons/lucide';
+import { lucideTable } from '@liveworkspace/icons/lucide';
 import { tabsStateOf, useDashboard } from './dashboard-context';
 import { TabWaiting } from './TabWaiting';
 import { Missing, useBoxSize } from './DashboardSlotContent';

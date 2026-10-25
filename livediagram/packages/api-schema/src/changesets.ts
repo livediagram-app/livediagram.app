@@ -269,7 +269,6 @@ export const CHANGESET_ERROR_CODES = [
   'changeset_conflict',
   'elements_held',
   'tab_busy',
-  'tab_id_taken',
   'stale_tab',
   'too_large',
   'use_changesets',

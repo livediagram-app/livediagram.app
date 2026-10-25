@@ -8,15 +8,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('./api-client', () => ({
   apiGetPreferences: vi.fn(),
   apiPutPreferences: vi.fn(),
+  PREFERENCES_LOCAL_ONLY: 'local-only',
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { setWorkbenchConfinement } from './api/workbench-confinement';
+import { __resetPreferencesSync } from './preferences-sync';
 import {
+  __resetFetchedPreferences,
   autoRebindArrowsEnabled,
   fetchUserPreferences,
-  RECENT_EXCLUDED_LIMIT,
-  toggleRecentExcluded,
   PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
   STORAGE_KEY,
@@ -106,6 +107,8 @@ afterEach(() => {
 beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
+  __resetFetchedPreferences();
+  __resetPreferencesSync();
 });
 
 describe('readUserPreferences (no window)', () => {
@@ -320,34 +323,5 @@ describe('writeUserPreferences quota / failure handling', () => {
       dispatchEvent: () => true,
     } as unknown as Window;
     expect(() => writeUserPreferences({ autoRebindArrows: false })).not.toThrow();
-  });
-});
-
-// Exclude from Recent (docs/specs/013-workspace/hide-from-recent.md).
-describe('recent exclusions', () => {
-  it('toggles on, then back off', () => {
-    const on = toggleRecentExcluded({}, 'd1');
-    expect(on).toEqual(['d1']);
-    expect(toggleRecentExcluded({ recentExcludedIds: on }, 'd1')).toEqual([]);
-  });
-
-  it('puts the newest exclusion first so the cap drops the oldest choice', () => {
-    expect(toggleRecentExcluded({ recentExcludedIds: ['old'] }, 'new')).toEqual(['new', 'old']);
-  });
-
-  it('caps the list so the 4 KB preferences blob can never be blown by this alone', () => {
-    // Over-cap would make EVERY preference write fail, not just this one.
-    const full = Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => `id-${i}`);
-    const next = toggleRecentExcluded({ recentExcludedIds: full }, 'newest');
-    expect(next).toHaveLength(RECENT_EXCLUDED_LIMIT);
-    expect(next[0]).toBe('newest');
-    expect(next).not.toContain(`id-${RECENT_EXCLUDED_LIMIT - 1}`);
-  });
-
-  it('un-excluding something already at the cap does not add anything', () => {
-    const full = Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => `id-${i}`);
-    expect(toggleRecentExcluded({ recentExcludedIds: full }, 'id-0')).toHaveLength(
-      RECENT_EXCLUDED_LIMIT - 1,
-    );
   });
 });

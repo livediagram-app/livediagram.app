@@ -1,15 +1,14 @@
 'use client';
 
-import { usePublishProjectVisibility } from '@/hooks/editor/project-visibility-store';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
-import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
+import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { truncateName } from '@liveplanner/project';
-import { openSearchWithPrefetch } from '@/lib/open-search';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
-import { registerUnsavedWork } from '@/lib/unsaved-work';
+import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToProjectTargets } from '@/lib/add-to-project-targets';
@@ -22,7 +21,7 @@ import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
 import { FormBoardContext } from '@/components/forms/form-board-context';
@@ -54,22 +53,24 @@ import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { signInEnabled } from '@/lib/auth-config';
-import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
+import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
-import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
+import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
-import { UiScaleProvider, useUiScalePreview } from '@/components/providers/ui-scale';
-import { DockNamesProvider } from '@/hooks/ui/useDockNames';
-import { resolveUiScales } from '@/lib/ui-scale';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import {
+  UiScaleProvider,
+  useUiScalePreview,
+} from '@liveworkspace/workbench/components/providers/ui-scale';
+import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
@@ -117,7 +118,6 @@ export function EditorView() {
     // workbench-embeds.md, Surface table).
     appChrome,
     workbench,
-    canvasTool,
     drag,
     clearTabContent,
     accountUserId,
@@ -132,7 +132,6 @@ export function EditorView() {
     projectShareable,
     projectTeamId,
     duplicateTab,
-    formatSourceId,
     hydrated,
     setImportOpen,
     canShareProject,
@@ -144,14 +143,11 @@ export function EditorView() {
     loadAllTabs,
     makeCopy,
     participantsByTab,
-    pendingDraw,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
     removeTabFromFolder,
     reorderTabs,
-    connectSourceId,
-    cancelConnect,
     selfParticipant,
     sessionRole,
     sessionShareCode,
@@ -213,7 +209,7 @@ export function EditorView() {
   // doesn't restart the countdown; it only hides the card at render.
   const { dismissed: signInDismissed, dismiss: dismissSignIn } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = signInEnabled && !accountUserId && appChrome && !signInDismissed;
+  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
   const backdrop = resolveViewBackdrop(activeTab, appearance);
@@ -235,19 +231,6 @@ export function EditorView() {
       patternScale,
       patternSpeed,
     ],
-  );
-
-  // The same visibility for the Explorer panel's Current Project card (project-visibility-store).
-  usePublishProjectVisibility(
-    projectShareable,
-    !!projectTeamId,
-    isOffline,
-    canShareProject && hydrated
-      ? () => {
-          setShareDialogOpen(true);
-          track('UI', 'Opened', 'Share');
-        }
-      : undefined,
   );
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
@@ -448,27 +431,6 @@ export function EditorView() {
                             <SplitViewFrame header={header} footer={footer}>
                               {(headerInColumn, footerInColumn) => (
                                 <div className="flex h-dvh flex-col">
-                                  {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
-          is armed so the user knows the next shape click connects, and
-          gives a click target to cancel (clicking empty canvas also
-          cancels). */}
-                                  {connectSourceId !== null ? (
-                                    <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-                                      <button
-                                        type="button"
-                                        onClick={cancelConnect}
-                                        className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-                                      >
-                                        Click a shape to connect the arrow
-                                        <span className="text-brand-300" aria-hidden>
-                                          |
-                                        </span>
-                                        <span className="text-brand-700 dark:text-brand-300">
-                                          Cancel
-                                        </span>
-                                      </button>
-                                    </div>
-                                  ) : null}
                                   {headerInColumn}
                                   <AreaErrorBoundary area="TabDialogs">
                                     <EditorTabDialogs />
@@ -566,11 +528,6 @@ export function EditorView() {
                                       drag={drag}
                                       elements={activeTab.elements}
                                       hasElements={activeTab.elements.length > 0}
-                                      suppressed={
-                                        canvasTool === 'format' ||
-                                        formatSourceId !== null ||
-                                        pendingDraw !== null
-                                      }
                                     />
                                   )}
 

@@ -1,7 +1,11 @@
 import { useCallback, type PointerEvent as ReactPointerEvent } from 'react';
-import type { Selection } from '@/lib/selection-store';
-import { armPlainClick, isOnlySelected, plainClickOutcome } from '@/lib/selection-click';
-import { debugLog } from '@/lib/debug-log';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import {
+  armPlainClick,
+  isOnlySelected,
+  plainClickOutcome,
+} from '@liveworkspace/workbench/lib/selection-click';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The element / arrow selection-routing callbacks, lifted out of
 // Canvas: stable wrappers for the memo'd children (BoxedElementView /
@@ -9,7 +13,6 @@ import { debugLog } from '@/lib/debug-log';
 // closure and defeat the memo.
 export function useCanvasSelectHandlers({
   inertIds,
-  isPaintMode,
   readSelection,
   onSelect,
   onDeselect,
@@ -21,7 +24,6 @@ export function useCanvasSelectHandlers({
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
   // The format painter is armed: every press paints, so none settles a click.
-  isPaintMode: boolean;
   // The selection as it is when a handler runs (docs/specs/008-canvas/blueprints/selection-store.md):
   // read from the store, so the handlers stay stable and a release reads the selection it ends.
   readSelection: () => Selection;
@@ -83,13 +85,13 @@ export function useCanvasSelectHandlers({
         onShiftSelect(id);
         return;
       }
-      if (!paired && !isPaintMode && isOnlySelected(readSelection(), id)) {
+      if (!paired && isOnlySelected(readSelection(), id)) {
         armPlainClick(e, () => handleElementClick(id));
         return;
       }
       onSelect(id);
     },
-    [onSelect, onShiftSelect, inertIds, isPaintMode, handleElementClick, readSelection],
+    [onSelect, onShiftSelect, inertIds, handleElementClick, readSelection],
   );
 
   return { handleElementContextSelect, handleArrowSelect, handleElementClick };

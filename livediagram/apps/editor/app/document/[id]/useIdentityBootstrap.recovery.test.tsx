@@ -11,7 +11,6 @@ const { api, identity, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDocument: vi.fn(),
     apiLoadShared: vi.fn(),
-    apiListShareLinks: vi.fn(),
   },
   identity: { ensureCollabKey: vi.fn(() => 'collab'), hasConfirmedName: vi.fn(() => true) },
   seed: vi.fn(async () => {}),
@@ -26,7 +25,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 vi.mock('@/lib/local-identity', () => identity);
 vi.mock('@/lib/guest-identity', () => ({
-  ensureSignedGuestIdentity: async () => ({ id: 'guest-1' }),
+  ensureGuestIdentity: async () => ({ id: 'guest-1' }),
 }));
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -60,14 +59,12 @@ function render(passwordRetry = 0) {
       authLoaded: true,
       passwordRetry,
       hydrated: false,
-      clerkUserId: null,
-      clerkDisplayName: null,
+      accountUserId: null,
+      accountDisplayName: null,
       embed: false,
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
-      refreshDocumentList: () => {},
-      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },
@@ -97,7 +94,6 @@ beforeEach(() => {
   );
   api.apiLoadSelf.mockResolvedValue({ id: 'guest-1', name: 'G', color: '#111', status: 'online' });
   api.apiSaveSelf.mockResolvedValue(undefined);
-  api.apiListShareLinks.mockResolvedValue({ links: [], passwordSet: false });
   identity.ensureCollabKey.mockReturnValue('collab');
 });
 
@@ -148,7 +144,7 @@ describe('useIdentityBootstrap recovery', () => {
     expect(s.setLoadingDocument).toHaveBeenCalledWith(false);
   });
 
-  // Clerk answering after the guest timeout settles auth twice: the second run wins, the first's late answer is
+  // sign-in answering after the guest timeout settles auth twice: the second run wins, the first's late answer is
   // dropped rather than overwriting it.
   it('drops the writes of a load superseded by a later run', async () => {
     seed.mockClear();
@@ -162,14 +158,12 @@ describe('useIdentityBootstrap recovery', () => {
       authLoaded,
       passwordRetry: 0,
       hydrated: false,
-      clerkUserId: null,
-      clerkDisplayName: null,
+      accountUserId: null,
+      accountDisplayName: null,
       embed: false,
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' as const },
-      refreshDocumentList: () => {},
-      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },

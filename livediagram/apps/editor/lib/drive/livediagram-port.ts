@@ -1,9 +1,12 @@
 // What the Drive mirror needs from livediagram itself
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "LivediagramPort"):
 // My Work reads, the ordinary writes an inbound change goes through
-// (so authorisation, the change log and realtime rooms behave exactly as if
-// the user had done it here), and the mirror's own rows. The engine only ever
-// sees this interface; tests give it an in-memory livediagram.
+// (so authorisation, the Timeline and realtime rooms behave exactly as if
+// the user had done it here), and the mirror's own rows. My Work's canvases,
+// folders and Trash are the liveworkspace index's, read and written as the
+// person (@liveworkspace/workbench/lib/index-client.ts); a canvas's content is the api's, and the
+// mirror's rows stay at /api/drive. The engine only ever sees this interface;
+// tests give it an in-memory livediagram.
 
 import {
   creationIntentOf,
@@ -20,32 +23,45 @@ import {
   type DocumentEnvelope,
   type EnvelopeTab,
 } from '@livediagram/document';
+import { LIST_LIMIT_MAX, type Page } from '@liveworkspace/index-client';
 import {
   ApiError,
   API_BASE,
   apiAcquireDriveLease,
   apiCreateDocument,
-  apiCreateFolder,
-  apiDeleteDocument,
   apiDeleteDriveItem,
-  apiDeleteFolder,
   apiGetDriveConnection,
   apiListDriveItems,
-  apiListFolders,
-  apiListTrash,
   apiLoadDocument,
   apiLoadTab,
-  apiPurgeDocument,
   apiPutDriveConnection,
   apiPutDriveItems,
   apiReleaseDriveLease,
-  apiRestoreDocument,
   apiSaveDocumentMeta,
-  apiSetDocumentFolder,
-  apiUpdateFolder,
 } from '../api-client';
-import { apiFetch, apiHeaders, expectOk } from '../api/core';
-import type { DocumentListResponse } from '@livediagram/api-schema';
+import { apiFetch, apiHeaders } from '../api/core';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+
+// The most index pages a My Work list reads (LIST_LIMIT_MAX each). The mirror takes a canvas or folder missing from
+// a list as gone and removes its Drive file, so a list that would be cut short throws instead: the pass stops and
+// the next one tries again.
+export const MIRROR_LIST_PAGES_MAX = 100;
+
+// Every page of an index list, or a throw when there are more than the mirror may read.
+export async function everyPage<T, K extends string>(
+  read: (cursor: string | undefined) => Promise<Page<T, K>>,
+  key: K,
+): Promise<T[]> {
+  const out: T[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < MIRROR_LIST_PAGES_MAX; page++) {
+    const answer = await read(cursor);
+    out.push(...(answer[key] as T[]));
+    if (!answer.nextCursor) return out;
+    cursor = answer.nextCursor;
+  }
+  throw new Error('My Work is too large to mirror in one pass');
+}
 
 export type MirrorDocument = {
   id: string;
@@ -129,36 +145,70 @@ export function copyEnvelope(envelope: DocumentEnvelope): {
 // The production port, over lib/api.
 export function createApiLivediagramPort(ownerId: string): LivediagramPort {
   return {
+    // My Work: the person's own live canvases, never a team's, a link's or this browser's offline ones (the index
+    // never sees those). `savedAt` is the item's last content or title change.
     async listPersonalDocuments() {
-      // The raw cloud list: apiListDocuments merges this browser's offline
-      // documents in, and those are never mirrored.
-      const res = await apiFetch(`${API_BASE}/documents`, { headers: await apiHeaders(ownerId) });
-      const { documents: liveDocs } = await expectOk<DocumentListResponse>(res, 'list');
-      return liveDocs
-        .filter((d) => d.teamId === null)
-        .map((d) => ({
-          id: d.id,
-          name: d.name,
-          folderId: d.folderId,
-          savedAt: d.savedAt,
-          createdAt: d.createdAt,
+      const items = await everyPage(
+        (cursor) =>
+          indexClient.listItems({
+            app: 'livediagram',
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(cursor ? { cursor } : {}),
+          }),
+        'items',
+      );
+      return items
+        .filter((i) => i.teamId === null && i.trashedAt === null && i.sharedVia === null)
+        .map((i) => ({
+          id: i.id,
+          name: i.title,
+          folderId: i.folderId,
+          savedAt: i.updatedAt,
+          createdAt: i.createdAt,
         }));
     },
     async listPersonalFolders() {
-      return (await apiListFolders(ownerId))
+      const folders = await everyPage(
+        (cursor) =>
+          indexClient.listFolders({
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(cursor ? { cursor } : {}),
+          }),
+        'folders',
+      );
+      return folders
         .filter((f) => f.teamId === null)
         .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId, updatedAt: f.updatedAt }));
     },
     async listPersonalTrash() {
-      const { cloud } = await apiListTrash(ownerId);
-      if (!cloud) throw new Error('trash unavailable');
-      return cloud
-        .filter((t) => t.teamId === null)
-        .map((t) => ({ id: t.id, name: t.name, trashedAt: t.trashedAt }));
+      const items = await everyPage(
+        (cursor) =>
+          indexClient.listTrash({
+            app: 'livediagram',
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(cursor ? { cursor } : {}),
+          }),
+        'items',
+      );
+      return items
+        .filter((i) => i.teamId === null && i.trashedAt !== null)
+        .map((i) => ({ id: i.id, name: i.title, trashedAt: i.trashedAt! }));
     },
     async loadEnvelope(id) {
       const liveDoc = await apiLoadDocument(ownerId, id);
       if (!liveDoc) return null;
+      // The list's `savedAt` is the index item's last change, which a rename at the index moves without a save
+      // here. The upload is stamped with the later of the two, so the next pass sees it mirrored rather than
+      // uploading it again and again (plan-outbound.ts compares the two).
+      // Unread (the index not answering), the canvas's own save stands.
+      const item = await indexClient.getItem(id).then(
+        (r) => r.item,
+        () => null,
+      );
+      const savedAt = Math.max(liveDoc.savedAt, item?.updatedAt ?? 0);
       const tabs: EnvelopeTab[] = [];
       for (const summary of liveDoc.tabs) {
         const tab = await apiLoadTab(ownerId, id, summary.id, null);
@@ -171,13 +221,14 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
         text: documentToEnvelopeText(
           { id: liveDoc.id, name: liveDoc.name, presentation: liveDoc.presentation },
           tabs,
-          liveDoc.savedAt,
+          savedAt,
         ),
-        savedAt: liveDoc.savedAt,
+        savedAt,
       };
     },
     async loadSnapshotSvg(id) {
-      const res = await apiFetch(`${API_BASE}/documents/${encodeURIComponent(id)}/thumbnail`, {
+      // liveworkspace's preview of it (liveworkspace/docs/previews.md), through this app's router.
+      const res = await apiFetch(`${API_BASE}/previews/items/${encodeURIComponent(id)}`, {
         headers: await apiHeaders(ownerId),
       });
       return res.ok ? res.text() : null;
@@ -191,22 +242,24 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
       }
     },
     renameDocument: (id, name) => apiSaveDocumentMeta(ownerId, { id, name }),
-    moveDocument: (id, folderId) => apiSetDocumentFolder(ownerId, id, folderId, null),
-    trashDocument: (id) => apiDeleteDocument(ownerId, id),
-    restoreDocument: async (id) => {
-      await apiRestoreDocument(ownerId, id);
+    moveDocument: async (id, folderId) => {
+      await indexClient.updateItem(id, { folderId });
     },
-    purgeDocument: (id) => apiPurgeDocument(ownerId, id),
+    trashDocument: (id) => indexClient.deleteItem(id),
+    restoreDocument: async (id) => {
+      await indexClient.restoreItem(id);
+    },
+    purgeDocument: (id) => indexClient.deleteItem(id, { permanent: true }),
     createFolder: async (id, name, parentId) => {
-      await apiCreateFolder(ownerId, { id, name, parentId, teamId: null });
+      await indexClient.createFolder({ id, name, parentId, teamId: null });
     },
     renameFolder: async (id, name) => {
-      await apiUpdateFolder(ownerId, id, { name });
+      await indexClient.updateFolder(id, { name });
     },
     moveFolder: async (id, parentId) => {
-      await apiUpdateFolder(ownerId, id, { parentId });
+      await indexClient.updateFolder(id, { parentId });
     },
-    deleteFolder: (id) => apiDeleteFolder(ownerId, id),
+    deleteFolder: (id) => indexClient.deleteFolder(id),
     async importDocumentCopy(envelope, target) {
       const id = target?.id ?? crypto.randomUUID();
       const { tabs, presentation } = copyEnvelope(envelope);

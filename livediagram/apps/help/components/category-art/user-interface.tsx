@@ -1,17 +1,5 @@
-import { Arrow, Label, Shape, DiscText } from '@/components/illustrations/primitives';
-import { Stage, Window } from './parts';
-
-// A numbered callout: the anatomy diagram's way of pointing at one part of the editor.
-function Callout({ cx, cy, n }: { cx: number; cy: number; n: number }) {
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={9} className="fill-brand-500 stroke-white" strokeWidth={2} />
-      <DiscText cx={cx} cy={cy} size={10} weight={800}>
-        {n}
-      </DiscText>
-    </g>
-  );
-}
+import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Callout, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
 // User Interface: the whole editor laid out, with numbered callouts on its parts: the menu and tab name,
 // the palette strip, the style panel, and the tab bar and zoom along the foot.

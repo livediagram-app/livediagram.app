@@ -49,6 +49,16 @@ describe('idTokenClaims', () => {
     expect(idTokenClaims(user, ['openid'])).toEqual({});
   });
 
+  it('carries the presence colour with the profile scope, and only when there is one', () => {
+    expect(idTokenClaims(user, ['openid', 'profile'], '#0ea5e9')).toMatchObject({
+      presence_color: '#0ea5e9',
+    });
+    expect(idTokenClaims(user, ['openid', 'profile'], null)).not.toHaveProperty('presence_color');
+    expect(idTokenClaims(user, ['openid', 'email'], '#0ea5e9')).not.toHaveProperty(
+      'presence_color',
+    );
+  });
+
   it('leaves out a name the account does not have', () => {
     const claims = idTokenClaims({ ...user, name: '', givenName: null, familyName: undefined }, [
       'profile',

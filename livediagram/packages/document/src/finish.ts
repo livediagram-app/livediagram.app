@@ -7,9 +7,9 @@
 // font) plus how a line is drawn (Sketch, see sketch.ts; Marker, see marker.ts). An explicit pick on the element always wins. Pure
 // functions, read by the canvas and every export so the two agree.
 import { ARROW_THICKNESS_PX, type ArrowStyle, type ArrowThickness } from './arrow-style';
-import { DEFAULT_ICON_WEIGHT, type IconWeight } from './icon-weight';
-import type { BorderStroke } from './border-style';
-import { DEFAULT_BORDER_STROKE } from './border-style';
+import { DEFAULT_ICON_WEIGHT, type IconWeight } from '@liveworkspace/model-core/icon-weight';
+import type { BorderStroke } from '@liveworkspace/model-core/border-style';
+import { DEFAULT_BORDER_STROKE } from '@liveworkspace/model-core/border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
 import type { Element } from './index';
 

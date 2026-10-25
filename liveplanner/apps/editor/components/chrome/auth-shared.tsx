@@ -10,11 +10,10 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { buttonClassName, ButtonContent } from '@liveplanner/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
-import { API_BASE } from '@/lib/api/base';
-import { sameOriginPath } from '@/lib/same-origin-path';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
 import { AUTH_TITLE, AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 
@@ -27,8 +26,8 @@ import { AccountPitch } from './auth-pitches';
 // Band"): the page's title, an optional line under it, an optional
 // inline error or notice, and an optional footer link slot, beside the
 // account pitch. Keeps the two pages from drifting in spacing / colour /
-// shadow tokens. `pitch={false}` drops the pitch for the interstitials
-// and the guest-only notice, where "what an account adds" would mislead.
+// shadow tokens. `pitch={false}` drops the pitch for the interstitials,
+// where "what an account adds" would mislead.
 export function AuthCard({
   title,
   subtitle,
@@ -97,38 +96,6 @@ export function RedirectingCard() {
     <AuthStage>
       <p className="text-center text-sm text-slate-600 dark:text-slate-400">Redirecting…</p>
     </AuthStage>
-  );
-}
-
-// ---------------------------------------------------------------------
-// Notice shown on the auth routes when sign-in isn't configured for the
-// deployment (NEXT_PUBLIC_SIGN_IN_ENABLED unset).
-// The editor still works — only sign-up / sign-in are off — so the
-// CTA points back to the editor's welcome flow.
-// ---------------------------------------------------------------------
-
-export function AuthDisabledNotice() {
-  return (
-    <AuthCard
-      title="Sign-in is off here"
-      subtitle="Sign-in isn't enabled on this deployment"
-      error=""
-      pitch={false}
-    >
-      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        This liveplanner instance is running in <strong>guest-only</strong> mode: the planner works
-        without an account. To enable sign-in, set{' '}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-900 dark:text-slate-200">
-          NEXT_PUBLIC_SIGN_IN_ENABLED=true
-        </code>{' '}
-        at build time, configure the api&apos;s accounts settings, and redeploy.
-      </p>
-      <div className="mt-6 flex justify-center">
-        <a href="/" className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
-          <ButtonContent>Continue as guest</ButtonContent>
-        </a>
-      </div>
-    </AuthCard>
   );
 }
 

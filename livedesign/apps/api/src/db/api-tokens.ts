@@ -1,182 +1,93 @@
-// api_tokens — external API credentials, owner-scoped to an account
-// (docs/specs/015-api/public-api-and-tokens.md). We store only the SHA-256 hash; the auth hot path hashes the
-// presented token and looks the hash up here.
+// API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): made and revoked on
+// liveworkspace.app, and good on every app. This app checks a presented `lwt_` token with liveworkspace and keeps
+// no copy of it. What hangs off a token (workbench pairings and sessions) is liveworkspace's too, which ends it when
+// the token stops working (liveworkspace/docs/workbench.md "Ending access").
 
-import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
-import { rowToApiToken, type ApiTokenRow } from '../api-token-row';
-import type { ApiTokenDTO, Env } from '../types';
+import {
+  createTokenChecker,
+  mintAccountToken,
+  revokeAccountToken,
+  type ClientCredentials,
+  type TeamClaim,
+  type TokenAccount,
+} from '@liveworkspace/auth-client';
+import { accountCredentials } from '../auth/accounts';
+import type { Env } from '../types';
 
-const COLS =
-  'id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only';
+// One checker per client for the life of the isolate: it remembers each answer for a minute (an
+// unknown token for ten seconds), so a burst of MCP tool calls asks liveworkspace once.
+type Check = ReturnType<typeof createTokenChecker>;
+const checkers = new Map<string, Check>();
 
-// Hard cap on live tokens per account (docs/specs/015-api/public-api-and-tokens.md): enough for any real
-// integration set, low enough to keep the list + table tidy.
-export const MAX_API_TOKENS_PER_OWNER = 10;
-
-export async function listApiTokensByOwner(env: Env, ownerId: string): Promise<ApiTokenDTO[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${COLS} FROM api_tokens WHERE owner_id = ? AND revoked = 0 ORDER BY created_at DESC`,
-  )
-    .bind(ownerId)
-    .all<ApiTokenRow>();
-  return (result.results ?? []).map(rowToApiToken);
+function checkerFor(credentials: ClientCredentials): Check {
+  const key = `${credentials.accountsUrl} ${credentials.clientId}`;
+  let check = checkers.get(key);
+  if (!check) {
+    check = createTokenChecker(credentials);
+    checkers.set(key, check);
+  }
+  return check;
 }
 
-// Insert a token row only while its owner holds fewer than MAX_API_TOKENS_PER_OWNER live (not revoked, not expired)
-// tokens. The count and the insert are one statement, so two concurrent mints cannot both pass a count of 9 and
-// leave the owner with 11 (D1 runs each statement atomically). Returns whether the row was written.
-async function insertApiTokenUnderCap(
-  env: Env,
-  t: {
-    id: string;
-    ownerId: string;
-    name: string | null;
-    tokenHash: string;
-    createdAt: number;
-    expiresAt: number;
-    // Read-only token (docs/specs/015-api/mcp-server.md §4.11): may only GET/HEAD. Defaults to full
-    // read+write when omitted.
-    readOnly?: boolean;
-  },
-): Promise<boolean> {
-  const res = await env.DB.prepare(
-    `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
-     SELECT ?, ?, ?, ?, ?, NULL, ?, 0, ?
-     WHERE (SELECT COUNT(*) FROM api_tokens WHERE owner_id = ? AND revoked = 0 AND expires_at > ?) < ?`,
-  )
-    .bind(
-      t.id,
-      t.ownerId,
-      t.tokenHash,
-      t.name,
-      t.createdAt,
-      t.expiresAt,
-      t.readOnly ? 1 : 0,
-      t.ownerId,
-      t.createdAt,
-      MAX_API_TOKENS_PER_OWNER,
-    )
-    .run();
-  return (res.meta?.changes ?? 0) > 0;
+// liveworkspace couldn't answer, so a token can be neither accepted nor refused: the caller answers 503.
+export class AccountsUnavailable extends Error {}
+
+export type ResolvedApiToken = {
+  ownerId: string;
+  tokenId: string;
+  readOnly: boolean;
+  // The token's name and expiry, for the CLI's auth status and the workbench.
+  name: string | null;
+  expiresAt: number;
+  // The account's teams.
+  teams: TeamClaim[];
+};
+
+// The auth hot path: the account behind a presented token, or null when liveworkspace doesn't know
+// it (unknown, revoked or expired all read as "not authenticated"). No database read or write.
+export async function resolveApiToken(env: Env, token: string): Promise<ResolvedApiToken | null> {
+  const credentials = accountCredentials(env);
+  if (!credentials) return null;
+  let account: TokenAccount | null;
+  try {
+    account = await checkerFor(credentials)(token);
+  } catch (err) {
+    console.error('[tokens] liveworkspace unreachable', err);
+    throw new AccountsUnavailable();
+  }
+  if (!account) return null;
+  return {
+    ownerId: account.userId,
+    tokenId: account.tokenId,
+    readOnly: account.readOnly,
+    name: account.name,
+    expiresAt: account.expiresAt,
+    teams: account.teams,
+  };
 }
 
 /**
- * Mint a live API token: enforce the per-account cap, generate the secret,
- * hash it, and insert the row (docs/specs/015-api/public-api-and-tokens.md).
- *
- * Two routes mint tokens — `POST /api/tokens` for a user in the Explorer, and
- * the OAuth exchange for an MCP client (docs/specs/015-api/mcp-server.md) — and each used to carry its
- * own copy of this sequence. The rules that matter are all in it: the cap, the
- * six-month expiry, and the fact that only the HASH is ever stored. A second
- * copy is a second place for one of those to quietly stop being true, and the
- * OAuth path is the one no person watches as it happens.
- *
- * Returns null when the owner is already at the cap (checked in the INSERT
- * itself, so concurrent mints cannot overshoot it), so the caller answers
- * with its own 409 envelope. The plaintext `secret` comes back once, here, and
- * is never retrievable again.
+ * An account token for an AI tool someone is connecting here (docs/specs/015-api/mcp-server.md),
+ * made by liveworkspace for whoever `accessToken` belongs to, so it works on every app and shows on
+ * liveworkspace.app with the rest. Null when the account is at the token cap. The plaintext
+ * `secret` comes back once, here.
  */
 export async function mintApiToken(
   env: Env,
-  t: { ownerId: string; name: string | null; readOnly?: boolean },
+  t: { accessToken: string; name: string; readOnly: boolean },
 ): Promise<{ secret: string; id: string; expiresAt: number } | null> {
-  const secret = generateApiToken();
-  const now = Date.now();
-  const id = crypto.randomUUID();
-  const expiresAt = apiTokenExpiry(now);
-  const inserted = await insertApiTokenUnderCap(env, {
-    id,
-    ownerId: t.ownerId,
-    name: t.name,
-    tokenHash: await hashApiToken(secret),
-    createdAt: now,
-    expiresAt,
-    readOnly: t.readOnly,
-  });
-  if (!inserted) {
-    console.info('[api-tokens] mint refused: owner at the token cap');
+  const credentials = accountCredentials(env);
+  if (!credentials) return null;
+  const minted = await mintAccountToken(credentials, t);
+  if (!minted) {
+    console.info('[api-tokens] mint refused: account at the token cap');
     return null;
   }
-  return { secret, id, expiresAt };
+  return { secret: minted.secret, id: minted.id, expiresAt: minted.expiresAt };
 }
 
-// How fresh `last_used_at` is kept (docs/specs/015-api/public-api-and-tokens.md §3.3): a request stamps it only when
-// the stored value is older than this, so a burst of MCP tool calls (3 to 6 api requests each) costs one write a
-// minute rather than one per request. The column is read only by the Settings token card, whose finest grain is
-// "used in the last 24 hours", so a minute's lag is invisible. Safe range: 1 s to 1 h.
-export const LAST_USED_STAMP_WINDOW_MS = 60_000;
-
-// Resolve a presented token to its owner + token id — the auth hot path.
-// Hashes the token, looks up a LIVE (non-revoked, unexpired) row, and stamps
-// `last_used_at` when it is older than LAST_USED_STAMP_WINDOW_MS. Returns `{ ownerId, tokenId }`, or null when no live token
-// matches (revoked / expired / unknown all collapse to "not authenticated").
-// The tokenId lets the request rate-limit on the specific token (docs/specs/015-api/public-api-and-tokens.md §3.5)
-// rather than the owner, so one runaway integration can't burn the owner's
-// interactive-app budget.
-export async function resolveApiToken(
-  env: Env,
-  token: string,
-): Promise<{ ownerId: string; tokenId: string; readOnly: boolean } | null> {
-  const hash = await hashApiToken(token);
-  const now = Date.now();
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, read_only, last_used_at FROM api_tokens WHERE token_hash = ? AND revoked = 0 AND expires_at > ?',
-  )
-    .bind(hash, now)
-    .first<{ id: string; owner_id: string; read_only: number; last_used_at: number | null }>();
-  if (!row) return null;
-  const staleBefore = now - LAST_USED_STAMP_WINDOW_MS;
-  if ((row.last_used_at ?? 0) < staleBefore) {
-    // The same guard in the WHERE, so concurrent requests that all read a stale value still write once.
-    await env.DB.prepare(
-      'UPDATE api_tokens SET last_used_at = ? WHERE id = ? AND (last_used_at IS NULL OR last_used_at < ?)',
-    )
-      .bind(now, row.id, staleBefore)
-      .run();
-  }
-  return { ownerId: row.owner_id, tokenId: row.id, readOnly: row.read_only === 1 };
-}
-
-// Revoke one of the owner's own tokens. Scoped by owner_id so a caller can
-// only revoke their own. Returns whether a live row was actually flipped.
-export async function revokeApiToken(env: Env, ownerId: string, id: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE api_tokens SET revoked = 1 WHERE id = ? AND owner_id = ? AND revoked = 0',
-  )
-    .bind(id, ownerId)
-    .run();
-  return (res.meta?.changes ?? 0) > 0;
-}
-
-// docs/specs/014-identity/transactional-email.md (#3): tokens that expire within `windowMs` and haven't been warned
-// yet (live only). The daily cron uses this to send a one-time "expiring soon"
-// heads-up so a programmatic integration doesn't silently break. Bounded batch,
-// soonest-first.
-type ExpiringToken = { id: string; ownerId: string; name: string | null; expiresAt: number };
-export async function apiTokensExpiringSoon(
-  env: Env,
-  now: number,
-  windowMs: number,
-  limit: number,
-): Promise<ExpiringToken[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT id, owner_id, name, expires_at FROM api_tokens
-     WHERE revoked = 0 AND expiry_warned_at IS NULL
-       AND expires_at > ? AND expires_at <= ?
-     ORDER BY expires_at ASC LIMIT ?`,
-  )
-    .bind(now, now + windowMs, limit)
-    .all<{ id: string; owner_id: string; name: string | null; expires_at: number }>();
-  return (results ?? []).map((r) => ({
-    id: r.id,
-    ownerId: r.owner_id,
-    name: r.name,
-    expiresAt: r.expires_at,
-  }));
-}
-
-export async function markApiTokenExpiryWarned(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('UPDATE api_tokens SET expiry_warned_at = ? WHERE id = ?')
-    .bind(Date.now(), id)
-    .run();
+// A token revoking itself (the CLI's auth logout), at liveworkspace.
+export async function revokePresentedToken(env: Env, secret: string): Promise<void> {
+  const credentials = accountCredentials(env);
+  if (credentials) await revokeAccountToken(credentials, secret);
 }

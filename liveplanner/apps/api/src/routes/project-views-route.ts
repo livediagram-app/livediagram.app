@@ -36,8 +36,8 @@ import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import type { ProjectDTO, Env, TabDTO } from '../types';
-import type { RouteContext } from './context';
+import type { ProjectDTO, PlanEnv, TabDTO } from '../types';
+import type { PlanRouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
 
@@ -151,7 +151,7 @@ const TITLE_CASE: Record<ProjectViewName | TabViewName, string> = {
   find: 'Find',
 };
 
-function countViewed(ctx: RouteContext, view: ProjectViewName | TabViewName): void {
+function countViewed(ctx: PlanRouteContext, view: ProjectViewName | TabViewName): void {
   const { env } = ctx;
   ctx.waitUntil?.(reportServerEvent(env, 'Agent', 'Viewed', TITLE_CASE[view]));
 }
@@ -171,7 +171,7 @@ function logUnknownKinds(tab: TabDTO): void {
 // What the caller has selected on the tab now, for `show selected` only (blueprint "REST"): the `mine` selections
 // of the room, as the changeset submit reads them; null when the room could not answer. No other view asks.
 async function ownerSelection(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   request: ViewRequest,
   projectId: string,
   tabId: string,
@@ -197,7 +197,7 @@ async function ownerSelection(
 
 // A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
 export async function answerTabView(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   parsed: ParsedView,
   project: ProjectDTO,
   tab: TabDTO,
@@ -246,7 +246,7 @@ export async function answerTabView(
   return parsed.json ? json(rendered.json, { headers }) : textPlain(rendered.text, { headers });
 }
 
-async function inScopeFacts(env: Env, project: ProjectDTO, tabScope: string | null) {
+async function inScopeFacts(env: PlanEnv, project: ProjectDTO, tabScope: string | null) {
   const tabIds = project.tabs.map((t) => t.id);
   const facts = new Map<string, ReturnType<typeof headerFactsOf>>();
   let batches = 0;
@@ -272,7 +272,7 @@ async function inScopeFacts(env: Env, project: ProjectDTO, tabScope: string | nu
 // The project overview, after the project GET's gate and scope redaction: in-scope tab bodies are
 // read a batch at a time and reduced to their header facts; out-of-scope tabs are never read.
 export async function answerOverview(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   parsed: ParsedView,
   project: ProjectDTO,
   tabScope: string | null,

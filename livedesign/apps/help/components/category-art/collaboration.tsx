@@ -1,12 +1,69 @@
-import { Arrow, Avatar, Cursor, Label, Shape } from '@/components/illustrations/primitives';
-import { Button } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Avatar, Button, Cursor, Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
-// Collaboration: three people on one canvas at once. Their cursors, Sam's live selection, a comment thread
-// pinned to a shape, and the presence avatars beside Share.
+// Collaboration: two people on one logo at once. Sam's live selection round the mark, Maya's cursor on the
+// wordmark, a comment pinned to the mark and its thread, and the presence avatars beside Share.
 export function CollaborationArt() {
   return (
     <Stage>
+      {/* The logo artboard. */}
+      <Label x={24} y={22} size={8.5} weight={600} tone="muted">
+        1024 x 1024 · Logo
+      </Label>
+      <Card x={24} y={30} w={180} h={180} r={4}>
+        <circle
+          cx={114}
+          cy={104}
+          r={56}
+          className="fill-none stroke-sky-300"
+          strokeWidth={1}
+          strokeDasharray="4 4"
+        />
+        <path
+          d="M114 30 V210 M24 104 H204"
+          className="fill-none stroke-sky-200"
+          strokeWidth={0.8}
+        />
+        <path d="M114 66 L152 134 H76 Z" className="fill-brand-500" />
+        <circle cx={114} cy={108} r={13} className="fill-white help-art-as-drawn" />
+        <Label x={114} y={182} anchor="middle" size={18} weight={800} tone="strong">
+          PEAK
+        </Label>
+      </Card>
+
+      {/* Sam's live selection round the mark. */}
+      <rect
+        x={70}
+        y={60}
+        width={88}
+        height={80}
+        rx={3}
+        className="fill-none stroke-emerald-500"
+        strokeWidth={2}
+      />
+      <rect
+        x={70}
+        y={46}
+        width={34}
+        height={14}
+        rx={4}
+        className="fill-emerald-500 dark:fill-emerald-700"
+      />
+      <Label x={87} y={53.5} anchor="middle" size={8.5} weight={700} tone="onAccent">
+        Sam
+      </Label>
+      <Cursor x={150} y={134} colour="emerald" />
+
+      {/* Maya on the wordmark. */}
+      <Cursor x={146} y={180} name="Maya" colour="violet" />
+
+      {/* A comment pinned to the mark. */}
+      <path
+        d="M160 70 a10 10 0 1 1 6 9 l-6 3 Z"
+        className="fill-amber-400 stroke-white"
+        strokeWidth={1.5}
+      />
+
       {/* Presence and Share. */}
       <Card x={254} y={12} w={134} h={32} r={10}>
         <Avatar cx={274} cy={28} r={10} initial="M" colour="violet" />
@@ -15,68 +72,30 @@ export function CollaborationArt() {
         <Button x={324} y={18} w={56} h={20} label="Share" variant="primary" />
       </Card>
 
-      <Arrow from={[124, 86]} to={[170, 112]} kind="elbow" />
-      <Shape x={36} y={66} w={88} h={40} label="Research" />
-      <Shape x={172} y={94} w={96} h={40} accent label="Prototype" />
-      <Shape
-        x={60}
-        y={146}
-        w={84}
-        h={36}
-        kind="stadium"
-        label="Interviews"
-        fill="fill-amber-100"
-        stroke="stroke-amber-400"
-      />
-      <Arrow from={[80, 106]} to={[92, 144]} tone="muted" />
-
-      {/* Sam's live selection on Research. */}
-      <rect
-        x={31}
-        y={61}
-        width={98}
-        height={50}
-        rx={9}
-        className="fill-none stroke-emerald-500"
-        strokeWidth={2}
-      />
-      <rect
-        x={31}
-        y={47}
-        width={34}
-        height={14}
-        rx={4}
-        className="fill-emerald-500 dark:fill-emerald-700"
-      />
-      <Label x={48} y={54.5} anchor="middle" size={8.5} weight={700} tone="onAccent">
-        Sam
-      </Label>
-
-      {/* A comment pinned to Prototype, and its thread. */}
-      <path
-        d="M262 84 a10 10 0 1 1 6 9 l-6 3 Z"
-        className="fill-amber-400 stroke-white"
-        strokeWidth={1.5}
-      />
-      <Card x={212} y={146} w={170} h={60} r={10}>
-        <Avatar cx={230} cy={163} r={9} initial="M" colour="violet" />
-        <Label x={245} y={163} size={9.5} weight={700} tone="strong">
+      {/* The thread. */}
+      <Card x={232} y={64} w={156} h={96} r={10}>
+        <Avatar cx={249} cy={81} r={9} initial="M" colour="violet" />
+        <Label x={264} y={81} size={9.5} weight={700} tone="strong">
           Maya
         </Label>
-        <Label x={276} y={163} size={8.5} tone="muted">
+        <Label x={294} y={81} size={8.5} tone="muted">
           just now
         </Label>
-        <Label x={224} y={182} size={9.5} tone="body">
-          Can we test this on Friday?
+        <Label x={243} y={101} size={9} tone="body">
+          Could the peak sit a
         </Label>
-        <Label x={224} y={196} size={8.5} weight={600} tone="accent">
+        <Label x={243} y={114} size={9} tone="body">
+          little higher?
+        </Label>
+        <line x1={242} y1={126} x2={378} y2={126} className="stroke-slate-100" strokeWidth={1} />
+        <Avatar cx={249} cy={142} r={7} initial="S" colour="emerald" />
+        <Label x={261} y={142.5} size={8.5} tone="body">
+          Moving it now
+        </Label>
+        <Label x={378} y={142.5} anchor="end" size={8.5} weight={600} tone="accent">
           Reply
         </Label>
       </Card>
-
-      <Cursor x={148} y={60} name="Maya" colour="violet" />
-      <Cursor x={112} y={92} colour="emerald" />
-      <Cursor x={240} y={126} name="You" colour="brand" />
     </Stage>
   );
 }

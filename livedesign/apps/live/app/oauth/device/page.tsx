@@ -8,15 +8,18 @@
 import { Suspense, use, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
-import { signInEnabled } from '@/lib/auth-config';
+import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
 import {
   completeDevice,
   denyDevice,
   fetchDeviceSession,
   userCodeOf,
 } from '@/lib/mcp-device-session';
-import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
+import {
+  handoverFailureCopy,
+  mintAndHandOver,
+  type HandoverFailure,
+} from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { OAUTH_PRIMARY, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
@@ -67,13 +70,6 @@ function Device() {
 
   if (step.kind === 'cancelled')
     return <Message heading="Connection cancelled" body="Your terminal will stop waiting." />;
-  if (!signInEnabled)
-    return (
-      <Message
-        heading="Connecting apps isn’t available"
-        body="This deployment doesn’t have accounts enabled, so there’s nothing to connect to."
-      />
-    );
   if (!authLoaded)
     return (
       <OauthShell>
@@ -122,13 +118,13 @@ function Device() {
   const approve = async (userCode: string, clientName: string) => {
     setStep({ kind: 'consent', userCode, clientName, working: true, failed: null });
     // Checks the code is still waiting before minting, and revokes a token the MCP did not take, so a failed
-    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    // Connect never leaves a six-month token behind (@liveworkspace/workbench/lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchDeviceSession(userCode)) !== null,
       mint: () => apiExchangeOauthToken(accountUserId, clientName, readOnly),
       complete: async (token, expiresAt) =>
         (await completeDevice(userCode, token, expiresAt)) ? true : null,
-      revoke: (id) => apiRevokeToken(accountUserId, id),
+      revoke: (token) => apiRevokeTokenAsItself(token),
     });
     if (!result.ok) {
       setStep({ kind: 'consent', userCode, clientName, working: false, failed: result.reason });
@@ -176,8 +172,9 @@ function Device() {
           <h1 className={HEADING}>Connect {clientName}</h1>
           <p className={BODY}>
             <span className="font-medium text-slate-700 dark:text-slate-200">{clientName}</span>{' '}
-            wants to access your livedesign designs on your behalf. Approving creates an API
-            token, which you can revoke any time from Settings, under Account › API Tokens.
+            wants to act as you in your liveworkspace apps, livedesign among them. Approving creates
+            an API token for your liveworkspace account, which you can revoke any time on
+            liveworkspace.app.
           </p>
           <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
           {failed ? (

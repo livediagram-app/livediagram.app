@@ -16,7 +16,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
 } from '@livediagram/document';
-import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
+import { SizeButton } from '@/components/palette/palette-controls';
 import {
   ArrowEndsIcon,
   ArrowheadShapeIcon,
@@ -25,7 +25,7 @@ import {
   BorderStyleIcon,
   ThicknessIcon,
 } from '@/components/palette/palette-style-previews';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Switch } from '@livediagram/ui';
 
 const LINE_PATTERN_ORDER: readonly BorderStyle[] = [
   'solid',
@@ -189,7 +189,7 @@ export function ArrowLineControls({
                 Break the line where it crosses another box.
               </span>
             </span>
-            <ToggleSwitch checked={routeBehind} label="Pass Behind Boxes" presentational />
+            <Switch presentational size="sm" checked={routeBehind} />
           </button>
         </>
       ) : null}
@@ -207,7 +207,7 @@ export function ArrowLineControls({
               Start where you connected it, not spread out from other arrows there.
             </span>
           </span>
-          <ToggleSwitch checked={exactStart} label="Start at Exact Anchor" presentational />
+          <Switch presentational size="sm" checked={exactStart} />
         </button>
       ) : null}
     </>

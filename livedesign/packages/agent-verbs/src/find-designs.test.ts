@@ -6,7 +6,7 @@ import {
   matchDesigns,
   readLibraries,
 } from './find-designs';
-import { createApiClient, type ApiClient } from '@livedesign/api-client';
+import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
 
 function summary(overrides: Partial<DesignSummary>): DesignSummary {
   return {

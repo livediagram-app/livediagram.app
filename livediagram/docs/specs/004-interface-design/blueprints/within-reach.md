@@ -82,14 +82,14 @@ kinds; Home's 8 server items plus this browser's opened local documents).
 
 ## Testing
 
-| Rule                                                | Test                                                                                           |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                 |
-| Recent newest first, never one of the most used     | same                                                                                           |
-| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
-| The merge property over two lists                   | same                                                                                           |
+| Rule                                                | Test                                                                                               |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                     |
+| Recent newest first, never one of the most used     | same                                                                                               |
+| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                               |
+| The merge property over two lists                   | same                                                                                               |
 | The Shapes flyout unchanged                         | `apps/editor/lib/whiteboard-shape-slots.test.ts`, `apps/editor/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump Back In's split, merge and alternation         | `apps/editor/app/explorer/home/home-model.test.ts`                                               |
+| Jump Back In's Most Used                            | `../liveworkspace/apps/index/src/most-used.test.ts`                                                |
 
 ## Constants and configuration
 

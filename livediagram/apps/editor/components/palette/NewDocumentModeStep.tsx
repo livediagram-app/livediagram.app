@@ -12,8 +12,8 @@ import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
 import { PreviewFan } from '@livediagram/template-previews';
 import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget } from '@/lib/typing-target';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { Spinner } from './template-picker-icons';
 
 // The modes in the order every mode list shows them (the mode switch's dropdown, Opens in): the catalogue's.

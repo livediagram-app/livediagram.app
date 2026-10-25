@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { SHARE_SECTION_LABEL as SECTION_LABEL } from '@liveworkspace/explorer';
+import { SHARE_STATE_META } from '@/components/chrome/share-states';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   communityCategoryLabel,
@@ -8,12 +10,12 @@ import {
   communityPostPath,
 } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livediagram/ui';
-import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
+import { lucideExternalLink, lucideGlobe } from '@liveworkspace/icons/lucide';
 import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
-import { SECTION_LABEL } from '../share-dialog-parts';
 import { communitySectionState } from './community-section-state';
+import { CommunityGuide } from './CommunityGuide';
 
 const GlobeIcon = lucideGlyph(lucideGlobe, 16);
 const OpenIcon = lucideGlyph(lucideExternalLink, 12);
@@ -22,7 +24,8 @@ const NOTE = 'text-xs leading-relaxed text-slate-600 dark:text-slate-300';
 
 // The Share dialog's Community band (docs/specs/025-community/community.md "Publishing"; final copy in
 // the blueprint §9), beneath the passes and the password. Which face it shows is
-// communitySectionState's decision; this only draws it. Publishing and Edit Listing open the publish
+// communitySectionState's decision; this only draws it. Before a first publish, What Is the Community? opens the
+// illustrated guide (CommunityGuide), folded so the band stays short in the shared Share dialog. Publishing and Edit Listing open the publish
 // dialog (the caller's), Remove From Community asks once, here, before it goes.
 export function CommunitySection({
   signedIn,
@@ -99,12 +102,20 @@ export function CommunitySection({
         <GlobeIcon />
         {/* The section is named by the word alone, not the help link beside it. */}
         <span id={headingId}>Community</span>
+        {state === 'published' ? (
+          <span
+            data-community-public=""
+            className={`inline-flex items-center rounded-full py-0.5 normal-case tracking-normal ${SHARE_STATE_META.community.badge}`}
+          >
+            {SHARE_STATE_META.community.label}
+          </span>
+        ) : null}
         <HelpArticleLink article="community" className="ml-auto" />
       </p>
 
       {state === 'guest' ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className={NOTE}>Sign in to share your document with the Community.</p>
+          <p className={NOTE}>Sign in to share your canvas with the Community.</p>
           <a href={signInHref} className={buttonClassName({ variant: 'secondary', size: 'xs' })}>
             Sign In to Share
           </a>
@@ -112,7 +123,7 @@ export function CommunitySection({
       ) : null}
 
       {state === 'team' ? (
-        <p className={NOTE}>Team library documents can&rsquo;t be shared to the Community.</p>
+        <p className={NOTE}>Team library canvases can&rsquo;t be shared to the Community.</p>
       ) : null}
 
       {state === 'loading' ? (
@@ -130,8 +141,16 @@ export function CommunitySection({
         <div className="flex flex-col gap-2">
           <p className={NOTE}>
             The Community is <strong className="font-semibold">public</strong>: anyone, with or
-            without an account, can find this document there, view it and make their own copy.
+            without an account, can find this canvas there, view it and make their own copy.
           </p>
+          <details className="group rounded-xl border border-slate-200 dark:border-slate-700">
+            <summary className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium text-slate-700 select-none hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+              What Is the Community?
+            </summary>
+            <div className="px-3 pt-1 pb-3">
+              <CommunityGuide />
+            </div>
+          </details>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="xs"

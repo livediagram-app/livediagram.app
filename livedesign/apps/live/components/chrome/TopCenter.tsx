@@ -8,8 +8,8 @@ import { SOLID_BRAND_DARK } from '@livedesign/ui';
 
 // Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,
-// the editor mode banners (format painter, group, draw), the
-// multi-selection toolbar, the session timer and the vote banner — used
+// the editor mode banners (format painter, group, draw) and the
+// multi-selection toolbar — used
 // to pin itself independently to `left-1/2 top-X -translate-x-1/2`, so
 // they overlapped whenever two were visible at once (and each reinvented
 // the same pill chrome with minute differences). They now render as
@@ -60,7 +60,7 @@ export function TopCenterStack({
   return (
     // On mobile this stack starts BELOW the top row of chrome rather than
     // beside it: the stack spans the full width, so anything wide enough (the
-    // vote-results banner, the timer pill, the mode banners) would otherwise
+    // mode banners) would otherwise
     // run under the Toolbar strip, or a read-only visitor's menu button, and
     // cover it. From sm: up the stack is centred and goes back to top-3,
     // unless the Toolbar strip owns that row.

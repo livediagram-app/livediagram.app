@@ -1,67 +1,33 @@
-// Shared arrangement for the image reference index readers' tests
-// (db/image-retention.test.ts, db/images.test.ts): a real SQLite with every
-// migration, an R2 stub, and row builders. Not a `.test.ts` file, so vitest
-// doesn't collect it as a suite.
+// Shared arrangement for the image tests (db/image-grants.test.ts, media.test.ts, routes/images.test.ts): a started
+// design (its own `design` row, as a create writes it), the media service's images, and tab builders. Not a
+// `.test.ts` file, so vitest doesn't collect it as a suite.
 
-import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livedesign/design';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { TestMediaService } from '../test-media-service';
 
-export const DAY = 86_400_000;
-export const NOW = 1_800_000_000_000;
-export const CUTOFF = NOW - 30 * DAY;
-export const OLD = CUTOFF - DAY;
-export const YOUNG = CUTOFF + DAY;
-
-type Bucket = { delete: ReturnType<typeof vi.fn> };
-
-// `indexPending` leaves the reference index's backfill to run, as a restart of it does.
-export function setup(opts: { indexPending?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
-  const bucket: Bucket = { delete: vi.fn(async () => {}) };
-  const db = sqliteD1({ IMAGES: bucket } as unknown as Partial<Env>);
-  if (opts.indexPending) {
-    db.sql.exec('UPDATE image_refs_backfill SET cursor = 0, completed_at = NULL');
-  }
-  return { ...db, bucket };
-}
-
-export function linkDesignTab(sql: DatabaseSync, designId: string, tabId: string) {
+// A started design, as its create writes it (test-sqlite-d1.ts `test_designs`).
+export function liveDesign(
+  sql: DatabaseSync,
+  id: string,
+  ownerId = 'owner',
+  teamId: string | null = null,
+) {
   sql
     .prepare(
-      'INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)',
+      'INSERT INTO test_designs (id, owner_id, name, team_id, saved_at, created_at) VALUES (?, ?, ?, ?, 0, 1)',
     )
-    .run(designId, tabId);
+    .run(id, ownerId, id, teamId);
 }
 
-export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
-  sql
-    .prepare(
-      'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
-    )
-    .run(id, ownerId, name);
-}
-
-export function images(sql: DatabaseSync, createdAt: number, ...ids: string[]) {
-  const stmt = sql.prepare(
-    "INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, created_at) VALUES (?, 'owner', 'image/png', 1, 1, 1, ?, ?)",
+// Images in the media service, owned by `owner` as the service names owners (an account's id, a guest's hash:
+// src/media.ts mediaOwner).
+export function mediaImages(media: TestMediaService, owner: string, ids: string[]) {
+  const stmt = media.sql.prepare(
+    `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+     VALUES (?, ?, 'livedesign.app', 'image/png', 4, 1, 1, ?, 1)`,
   );
-  // And whose they are, as the media service's images are known here (src/media.ts), once 0101 has run.
-  const owned = hasTable(sql, 'media_images')
-    ? sql.prepare("INSERT INTO media_images (id, owner_id) VALUES (?, 'owner')")
-    : null;
-  for (const id of ids) {
-    stmt.run(id, id, createdAt);
-    owned?.run(id);
-  }
-}
-
-export function hasTable(sql: DatabaseSync, name: string): boolean {
-  return (
-    sql.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(name) !==
-    undefined
-  );
+  for (const id of ids) stmt.run(id, owner, `sha-${id}`);
 }
 
 export const tabWith = (id: string, ...imageIds: string[]): Tab =>
@@ -70,19 +36,3 @@ export const tabWith = (id: string, ...imageIds: string[]): Tab =>
     name: id,
     elements: imageIds.map((imageId, i) => ({ id: `e${i}`, type: 'image', imageId })),
   }) as unknown as Tab;
-
-export function imageIds(sql: DatabaseSync): string[] {
-  return sql
-    .prepare('SELECT id FROM images ORDER BY id')
-    .all()
-    .map((r) => r.id as string);
-}
-
-export function refsFor(sql: DatabaseSync, imageId: string): number {
-  return Number(
-    sql.prepare('SELECT COUNT(*) AS n FROM image_refs WHERE image_id = ?').get(imageId)!.n,
-  );
-}
-
-export const ids = (prefix: string, n: number) =>
-  Array.from({ length: n }, (_, i) => `${prefix}-${String(i).padStart(5, '0')}`);

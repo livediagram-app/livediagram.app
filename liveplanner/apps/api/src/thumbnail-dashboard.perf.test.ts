@@ -3,7 +3,7 @@ import type { Tab } from '@liveplanner/project';
 import { PLAN_VIEW_IDS, defaultCatalogue, type Item } from '@liveplanner/items';
 import { DASHBOARD_ROWS_MAX, DASHBOARD_SLOTS_MAX } from '@liveplanner/project';
 import { buildTemplateTabs } from '@liveplanner/templates';
-import type { ProjectDTO, Env } from './types';
+import type { PlanEnv, ProjectDTO } from './types';
 
 // docs/specs/013-workspace/live-image-share.md "What a Dashboard draws": a Dashboard's live image draws its metrics and
 // charts from the project's cards, on the Worker's CPU budget. The worst realistic page (the Project Planner's Overview,
@@ -15,13 +15,10 @@ const db = vi.hoisted(() => ({
   listSheets: vi.fn(),
   dashboardSourceTabs: vi.fn(),
   stampTabElementCount: vi.fn(),
-  getThumbRenderedAt: vi.fn(),
-  markThumbRendered: vi.fn(),
-  thumbnailKey: (id: string) => `thumb/${id}`,
 }));
 vi.mock('./db', () => db);
 
-import { getProjectThumbnailSvg } from './thumbnail';
+import { drawPlan } from './thumbnail';
 
 let ids = 0;
 const tabs = buildTemplateTabs({ id: 't0', name: 'Roadmap' }, 'project-planner', () => `t${++ids}`);
@@ -74,16 +71,14 @@ const project = {
 
 async function timed(n: number) {
   db.listItems.mockResolvedValue(cards(n));
-  const env = {
-    SNAPSHOTS: { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined) },
-  } as unknown as Env;
-  // Warm once (module-level caches, the first JIT pass), then time the median of a few renders.
-  await getProjectThumbnailSvg(env, project);
+  const env = {} as unknown as PlanEnv;
+  // The plan's drawing for its preview (its Durable Object draws it, plan-room.ts exportImage). Warm once (module-level caches, the first JIT pass), then time the median of a few renders.
+  await drawPlan(env, project, null);
   const runs: number[] = [];
   let svg = '';
   for (let i = 0; i < 5; i++) {
     const t = performance.now();
-    svg = (await getProjectThumbnailSvg(env, project)) ?? '';
+    svg = (await drawPlan(env, project, null)) ?? '';
     runs.push(performance.now() - t);
   }
   runs.sort((a, b) => a - b);
@@ -93,8 +88,6 @@ async function timed(n: number) {
 beforeEach(() => {
   vi.clearAllMocks();
   db.stampTabElementCount.mockResolvedValue(undefined);
-  db.getThumbRenderedAt.mockResolvedValue(null);
-  db.markThumbRendered.mockResolvedValue(undefined);
   db.getTabBody.mockResolvedValue(stored(dashboard));
   db.listSheets.mockResolvedValue([]);
   db.dashboardSourceTabs.mockResolvedValue(others);

@@ -21,7 +21,6 @@ import {
 import { applyCss } from '@/components/rich-text/rich-text-format';
 import { effectiveRunStyle, labelRunPx } from '@/components/canvas/label-style';
 import { TEXT_HUG_LEADING, textHugFontPx, type MeasureTextBlock } from '@/lib/text-hug';
-import { mindLabelFontPx } from '@/lib/mind-label-fit';
 
 const MEASURER_ATTR = 'data-text-hug-measurer';
 
@@ -120,19 +119,4 @@ export function measureDrawnText(
   tabFinish?: Finish,
 ): (el: TextElement) => MeasureTextBlock {
   return (el) => measureTextHug(el, labelRuns(el), drawnLabelFont(el, tabFont, tabFinish));
-}
-
-// The same for a mind node's label, at the size it draws (or, sized Auto, types) at
-// (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
-export function measureDrawnMindLabel(
-  tabFont: string | undefined,
-  tabFinish?: Finish,
-): (el: ShapeElement) => MeasureTextBlock {
-  return (el) =>
-    measureLabelBlock(
-      el,
-      labelRuns(el),
-      drawnLabelFont(el, tabFont, tabFinish),
-      mindLabelFontPx(el),
-    );
 }

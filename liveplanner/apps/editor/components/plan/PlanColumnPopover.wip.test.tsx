@@ -8,7 +8,9 @@ import { PlanColumnPopover } from './PlanColumnPopover';
 // docs/specs/026-plan/plan-board.md "Column settings": the WIP limit's line names its count ("1 card", not "1 cards").
 const plan = { items: new Map(), statusNames: new Map() };
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 afterEach(cleanup);
 
 function open(wipLimit?: number) {

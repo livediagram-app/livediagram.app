@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@liveplanner/ui';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@liveplanner/project';
-import { isMobileViewportSync } from '@/lib/responsive';
-import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying

@@ -1,5 +1,7 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
+/* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md). */
+@import '@liveworkspace/explorer/explorer.css';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
@@ -21,7 +23,7 @@
 @import './scroll-edge-fade.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
- * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * is PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two state the same query. Phone-only layout uses
  * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
 @custom-variant phone {
   @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
@@ -30,7 +32,7 @@
 }
 
 /* A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and the
- * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two
  * state the same query. */
 @custom-variant landscape-phone {
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
@@ -51,8 +53,15 @@
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
 @source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
+/* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
+@source '../../../../packages/settings-ui/src';
+/* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
+@source '../../../../packages/workbench/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
@@ -73,10 +82,10 @@
 
 @layer base {
   /* The pointer cursor on every enabled button now lives in the shared theme
-   * (@livediagram/tailwind-config), so every app gets it. */
+   * (@liveworkspace/tailwind-config), so every app gets it. */
 
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
-   * (@livediagram/tailwind-config) so every app gets the same branded ring;
+   * (@liveworkspace/tailwind-config) so every app gets the same branded ring;
    * see there for the rationale. */
 
   /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
@@ -168,6 +177,9 @@
   /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
      Looping; reduced motion stops it. */
   --animate-avatar-zz: avatar-zz 3s ease-out infinite;
+  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
+     bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
+  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -208,8 +220,8 @@
   --animate-row-close: row-close var(--transition-duration-long) cubic-bezier(0.4, 0, 0.2, 1)
     forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
-     shared tailwind theme (@livediagram/tailwind-config) so every app's
-     EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
+     shared tailwind theme (@liveworkspace/tailwind-config) so every app's
+     EmptyState animates alike; see ../packages/ui/src/EmptyState.tsx. */
 }
 
 /* The syncing arrows turn about their own centre (transform-box: fill-box). */
@@ -281,6 +293,17 @@
   100% {
     transform: translateY(-4px);
     opacity: 0;
+  }
+}
+
+/* No opacity `to`, like fade-in: the bubble lands on its own resting opacity. */
+@keyframes speech-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
   }
 }
 
@@ -549,6 +572,11 @@
 /* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
    rather than freezing a frame. */
 @media (prefers-reduced-motion: reduce) {
+  /* A speech bubble only fades in: no pop. */
+  .animate-speech-pop {
+    animation-name: fade-in;
+  }
+
   [class*='animate-nudge-'],
   .animate-avatar-sip,
   .animate-avatar-steam,
@@ -898,49 +926,6 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   cursor: none;
 }
 
-/* Timeline event colours (docs/specs/013-workspace/timeline.md §2).
- *
- * Keyed on WHAT HAPPENED, not on which part of the product it happened
- * in: red for destruction and lost access, amber for the shape of
- * things changing (names, teams, sharing), green for the ordinary
- * business of making and editing. Three meanings, because a palette
- * with six is a legend the reader has to learn.
- *
- * The shared <Timeline> reads these through `var(--ld-timeline-<tone>)`
- * with a fallback baked into the package, so it renders standalone.
- * They live here because the palette is a product decision, and because
- * this app has a class-based dark mode: each tone needs a pair, and the
- * package can't know which one is showing.
- *
- * The `-soft` variant is a whole bubble background, so it has to sit
- * quietly under body text at 4.5:1 in both themes rather than compete
- * with it. Hence the low alphas — a saturated tint reads as a status
- * banner, and every row would look urgent. */
-:root {
-  --ld-timeline-danger: #dc2626;
-  --ld-timeline-danger-soft: rgb(220 38 38 / 0.09);
-  --ld-timeline-structural: #b45309;
-  --ld-timeline-structural-soft: rgb(217 119 6 / 0.1);
-  --ld-timeline-create: #047857;
-  --ld-timeline-create-soft: rgb(5 150 105 / 0.09);
-  --ld-timeline-neutral: #64748b;
-  --ld-timeline-neutral-soft: rgb(100 116 139 / 0.07);
-}
-
-/* Dark mode lifts the bold values (a 600-weight hue goes muddy on
- * slate-900) and drops the soft ones, because an alpha tint over a dark
- * surface reads far stronger than the same alpha over white. */
-.dark {
-  --ld-timeline-danger: #f87171;
-  --ld-timeline-danger-soft: rgb(248 113 113 / 0.08);
-  --ld-timeline-structural: #fbbf24;
-  --ld-timeline-structural-soft: rgb(251 191 36 / 0.07);
-  --ld-timeline-create: #34d399;
-  --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
-  --ld-timeline-neutral: #94a3b8;
-  --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
-}
-
 /* The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
    elements"): the canvas's cursor is inherited, and changes on a tool switch, a pan and a stroke
    landing; stopping it here means such a change restyles this one node, not every element. Each
@@ -1016,7 +1001,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   stroke-opacity: 0.88;
 }
 
-/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+/* A Tab Style change (@liveworkspace/workbench/lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
    costs nothing the rest of the time; Reduce motion (above) zeroes it. */
 :root.lvd-style-transition [data-canvas-root],
 :root.lvd-style-transition [data-canvas-root] * {

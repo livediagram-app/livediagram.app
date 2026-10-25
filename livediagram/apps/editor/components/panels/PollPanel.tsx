@@ -17,7 +17,7 @@ import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-sc
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { buttonClassName, CompactEmptyState, HoverCard, lucideGlyph } from '@livediagram/ui';
-import { lucideMessageSquare } from '@livediagram/icons/lucide';
+import { lucideMessageSquare } from '@liveworkspace/icons/lucide';
 
 const AnswerGlyph = lucideGlyph(lucideMessageSquare, 14);
 

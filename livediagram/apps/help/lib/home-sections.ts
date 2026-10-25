@@ -1,20 +1,11 @@
-// The help home page's structure (docs/specs/018-help/help-pages.md "Home page"): which categories each section
-// shows, in order, and the popular topics under the search. Kept apart from the page so a test can hold it to the
+import type { HelpHomeLayout, HomeSection } from '@liveworkspace/help-site/lib/home';
+
+// The help home page's layout (docs/specs/018-help/help-pages.md "Home page"): which categories each section
+// shows, in order, and the popular topics under the search. The shared suite (help-site.test.ts) holds it to the
 // registry: every category in exactly one section, every popular topic a real article.
 
-export interface HomeSection {
-  /** Anchor id and React key. */
-  id: string;
-  /** The small uppercase label above the heading. */
-  eyebrow: string;
-  heading: string;
-  lede: string;
-  /** Category slugs, in the order the section shows them. */
-  categories: string[];
-}
-
 /** The category sections between the hero and the closing band, top to bottom. */
-export const HOME_SECTIONS: HomeSection[] = [
+const sections: HomeSection[] = [
   {
     id: 'editor-guides',
     eyebrow: 'Editor Guides',
@@ -49,7 +40,7 @@ export const HOME_SECTIONS: HomeSection[] = [
 ];
 
 /** The Start here section: the walkthrough's category and the cards beside it. */
-export const START_HERE = {
+const startHere = {
   walkthrough: 'getting-started',
   /** How many of the walkthrough's first guides show as numbered steps. */
   steps: 4,
@@ -57,10 +48,10 @@ export const START_HERE = {
 } as const;
 
 /** The closing band: the category beside the Contact route. */
-export const STILL_STUCK = { category: 'troubleshooting', contact: 'contact' } as const;
+const stillStuck = { category: 'troubleshooting', contact: 'contact' } as const;
 
 /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
-export const POPULAR_TOPICS: { label: string; path: string }[] = [
+const popular: HelpHomeLayout['popular'] = [
   { label: 'Your first diagram', path: 'getting-started/your-first-diagram' },
   { label: 'Sharing', path: 'getting-started/sharing-your-document' },
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
@@ -69,13 +60,4 @@ export const POPULAR_TOPICS: { label: string; path: string }[] = [
   { label: 'Editor modes', path: 'canvas/editor-modes' },
 ];
 
-/** Every category slug the home page shows, in page order. */
-export function homeCategorySlugs(): string[] {
-  return [
-    START_HERE.walkthrough,
-    ...START_HERE.beside,
-    ...HOME_SECTIONS.flatMap((s) => s.categories),
-    STILL_STUCK.category,
-    STILL_STUCK.contact,
-  ];
-}
+export const HOME: HelpHomeLayout = { sections, startHere, stillStuck, popular };

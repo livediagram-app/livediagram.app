@@ -7,8 +7,8 @@
 // drags its corner once the finger moves; a tap on or near it is a tap. While a finger selects, the page never
 // scrolls under it.
 import { useRef } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { Hit } from './sheet-geometry';
 import type { SheetPan } from './useSheetPan';
 

@@ -5,7 +5,7 @@ liveplanner is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork
 ## Lucide
 
 - Source: <https://lucide.dev>, <https://github.com/lucide-icons/lucide>
-- Used for: the chrome icon vocabulary and the canvas Icons catalogue, vendored into `packages/icons` and `packages/ui/src/icons`.
+- Used for: the chrome icon vocabulary and the canvas Icons catalogue, vendored into `../packages/icons` and `packages/ui/src/icons`.
 
 ```text
 ISC License
@@ -56,7 +56,7 @@ SOFTWARE.
 ## Feather
 
 - Source: <https://feathericons.com>, <https://github.com/feathericons/feather>
-- Used for: the original line-art geometry of the canvas Icons catalogue (`packages/icons/src/icon-catalog-1.ts` and `icon-catalog-2.ts`).
+- Used for: the original line-art geometry of the canvas Icons catalogue (`../packages/icons/src/icon-catalog-1.ts` and `icon-catalog-2.ts`).
 
 ```text
 The MIT License (MIT)
@@ -113,7 +113,7 @@ Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>
-- Used for: measuring glyph geometry (ink insets and centring), bundled with `@liveplanner/icons`.
+- Used for: measuring glyph geometry (ink insets and centring), bundled with `@liveworkspace/icons`.
 
 ```text
 BSD 3-Clause License

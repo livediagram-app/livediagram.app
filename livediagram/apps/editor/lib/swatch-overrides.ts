@@ -7,6 +7,7 @@ import {
   type QuickSwatch,
   type QuickSwatchRole,
   type QuickSwatchSlot,
+  isRetiredCustomThemeId,
 } from '@livediagram/document';
 
 export type SwatchOverrideRow = Partial<Record<QuickSwatchSlot, string>>;
@@ -58,7 +59,7 @@ export type ThemeSwatchOverrides = {
 };
 export type SwatchOverrideStore = ThemeSwatchOverrides[];
 
-// A theme id is a built-in id or `custom:<uuid>` (43 chars).
+// A theme id is a built-in id; the cap is generous, since it only bounds a hostile store.
 const SWATCH_OVERRIDE_MAX_THEME_ID = 64;
 export const SWATCH_OVERRIDE_MAX_THEMES = 8;
 // The store's share of the 4 KB preferences blob: recent-exclusions can take
@@ -118,16 +119,6 @@ export function storeWithoutOverride(
   return store.flatMap((e) => (e.t !== themeId ? [e] : empty ? [] : [next]));
 }
 
-// A theme that no longer exists (a deleted custom theme) takes its overrides
-// with it.
-export function pruneSwatchOverrideStore(
-  store: SwatchOverrideStore,
-  keep: (themeId: string) => boolean,
-): SwatchOverrideStore {
-  const next = store.filter((e) => keep(e.t));
-  return next.length === store.length ? store : next;
-}
-
 function parseRow(value: unknown): SwatchOverrideRow | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const kept: SwatchOverrideRow = {};
@@ -152,6 +143,8 @@ export function parseSwatchOverrideStore(value: unknown): SwatchOverrideStore {
     if (typeof t !== 'string' || t.length === 0 || t.length > SWATCH_OVERRIDE_MAX_THEME_ID)
       continue;
     if (out.some((e) => e.t === t)) continue;
+    // A custom theme's swatches (custom themes are gone, docs/specs/011-theme/retired-schemes.md) are dropped on read.
+    if (isRetiredCustomThemeId(t)) continue;
     const entry: ThemeSwatchOverrides = { t };
     for (const role of ROLES) {
       const row = parseRow(raw[KEY[role]]);

@@ -1,14 +1,44 @@
 'use client';
 
-// The deleted state (docs/specs/013-workspace/trash.md, "While a document is
+// The deleted state (docs/specs/013-workspace/trash.md, "While a canvas is
 // in the Trash"): shown when the open document, or the one a link points at,
 // is in the Trash. Someone who may restore it gets Restore right here; a
 // share-link visitor only learns that it was deleted. Same card shape as
 // ApiErrorPage, so it drops into the same status chrome.
 import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livediagram/ui';
-import type { TrashedDocument } from '@livediagram/api-schema';
-import { trashedCardHeading, trashedCardLead } from '@/lib/trash-groups';
+import { EMPTY_DOCUMENT_STALE_DAYS } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';
+import { explorerHref } from '@/lib/explorer-href';
+
+// A canvas in the Trash, as the index says: when it went, and why (deleted, or empty for too long).
+export type TrashedDocument = { trashedAt: number; reason: TrashReason | null };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function trashedCardHeading(row: Pick<TrashedDocument, 'reason'> | null): {
+  label: string;
+  title: string;
+} {
+  return row?.reason === 'empty'
+    ? { label: 'In the Trash', title: 'This canvas is in the Trash' }
+    : { label: 'Deleted', title: 'This canvas was deleted' };
+}
+
+export function daysLeftLabel(trashedAt: number, now: number): string {
+  const days = Math.max(0, Math.ceil((trashedAt + TRASH_RETENTION_MS - now) / DAY_MS));
+  if (days === 0) return 'Removed at the next clean-up';
+  return days === 1 ? '1 day left' : `${days} days left`;
+}
+
+// The deleted card's lead for someone who may restore it, with the days left.
+export function trashedCardLead(row: TrashedDocument, now: number): string {
+  const where =
+    row.reason === 'empty'
+      ? `It was empty for ${EMPTY_DOCUMENT_STALE_DAYS} days, so it moved to the Trash`
+      : 'It is in the Trash';
+  return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
+}
 
 export function DocumentTrashedCard({
   restorable,
@@ -66,7 +96,10 @@ export function DocumentTrashedCard({
               {restoring ? 'Restoring…' : 'Restore'}
             </Button>
           ) : null}
-          <a href="/explorer" className={buttonClassName({ variant: 'secondary', size: 'md' })}>
+          <a
+            href={explorerHref()}
+            className={buttonClassName({ variant: 'secondary', size: 'md' })}
+          >
             Go to Explorer
           </a>
         </div>

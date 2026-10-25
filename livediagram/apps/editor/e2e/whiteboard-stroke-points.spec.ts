@@ -4,9 +4,10 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  mintGuest,
+  documentHeaders,
+  seedDocumentItem,
   seedTab,
   test,
   pageOwnerHeaders,
@@ -185,15 +186,14 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     viewport: { width: 1440, height: 860 },
     colorScheme: 'dark',
   });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -201,19 +201,18 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
 }
 
 test('a peer’s pen stroke reaches the owner live, packed', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers,
-    data: {
-      id,
-      name: 'Board',
-      tabs: [{ id: tabId, name: 'Board', opensIn: 'draw', elements: [] }],
-    },
+  const seeded = await seedDocumentItem(page.request, owner, {
+    id,
+    name: 'Board',
+    tabs: [{ id: tabId, name: 'Board', opensIn: 'draw', elements: [] }],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await documentHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers,
     data: { role: 'edit' },

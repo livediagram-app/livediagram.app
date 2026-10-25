@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   clearTourPending,
   hasTourPending,
@@ -13,17 +13,17 @@ import {
 } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import { computeViewportCenter } from '@/lib/viewport';
+import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
 // Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new

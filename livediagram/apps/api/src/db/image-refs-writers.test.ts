@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, testCopyDocument, type SqliteD1 } from '../test-sqlite-d1';
+import { documentShares } from '../document-room/tab-shares';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
 import { handleDocumentSubresources } from '../routes/document-subresource-routes';
-import { deleteAccount } from './account';
-import { copyDocument, deleteDocument } from './documents';
-import { deleteTabRow, linkTabToDocument, seedTabs, swapTabData, upsertTab } from './tabs';
+import { documentImageIds } from './image-refs';
+import { deleteTabRow, seedTabs, swapTabData, upsertTab } from './tabs';
 import { tabStatsOfData } from './tab-stats';
 
 // Every writer of `tabs.data` keeps `image_refs` in step with the body
-// (docs/specs/009-elements/images.md, "Reference index"). A writer that
-// forgets is how a placed image gets reaped by the retention sweep, so each
+// (docs/specs/009-elements/images.md, "Reference index"), and the document's push hands the media service the
+// whole set (document-outbox.ts pushImageRefs). A writer that forgets is how a placed image gets reaped by the retention sweep, so each
 // path is proven here against a real SQLite with every migration applied.
 
 const T0 = 1_700_000_000_000;
@@ -20,7 +20,7 @@ const T0 = 1_700_000_000_000;
 function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner') {
   sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES (?, ?, ?, ?, ?)',
     )
     .run(id, ownerId, id, T0, T0);
 }
@@ -50,6 +50,11 @@ function allRefs(sql: DatabaseSync): string[] {
     .prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id, image_id')
     .all()
     .map((r) => `${r.tab_id as string}:${r.image_id as string}`);
+}
+
+// The set the document's push hands the media service.
+async function pushedImages(db: SqliteD1, documentId = 'A'): Promise<string[]> {
+  return (await documentImageIds(db.env, documentId)).map((id) => `${documentId}:${id}`);
 }
 
 function withDocument(ownerId = 'owner', id = 'A'): SqliteD1 {
@@ -109,12 +114,12 @@ describe('seedTabs (create, JSON import, Offline Mode sync)', () => {
   });
 });
 
-describe('copyDocument (Copy to my files)', () => {
+describe('a copy (Copy to my files)', () => {
   it("indexes the copy's tabs from the copied bodies", async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
     await upsertTab(db.env, 'A', tabWith('t2', 'img-2'), 1);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await testCopyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs.map((t) => t.id);
     expect(copied).toHaveLength(2);
     expect(copied.flatMap((id) => refs(db.sql, id)).sort()).toEqual(['img-1', 'img-2']);
@@ -124,7 +129,7 @@ describe('copyDocument (Copy to my files)', () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
     db.sql.exec('DELETE FROM image_refs');
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await testCopyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
     expect(refs(db.sql, copy!.tabs[0]!.id)).toEqual(['img-1']);
   });
 });
@@ -161,42 +166,25 @@ describe('swapTabData (Q&A board)', () => {
 });
 
 describe('deleteTabRow', () => {
-  it("prunes a dropped tab's references", async () => {
+  it("prunes a dropped tab's references, here and in what the document pushes", async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'img-2'), 1);
+    expect(await pushedImages(db)).toEqual(['A:img-1', 'A:img-2']);
     await deleteTabRow(db.env, 'A', 't1');
-    expect(allRefs(db.sql)).toEqual([]);
-  });
-
-  it('keeps them while another document still links the tab', async () => {
-    const db = withDocument();
-    liveDoc(db.sql, 'B');
-    await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
-    await linkTabToDocument(db.env, 'B', 't1');
-    await deleteTabRow(db.env, 'A', 't1');
-    expect(refs(db.sql, 't1')).toEqual(['img-1']);
+    expect(allRefs(db.sql)).toEqual(['t2:img-2']);
+    expect(await pushedImages(db)).toEqual(['A:img-2']);
   });
 });
 
-describe('documentRemovalStatements (document delete, Take Offline, account deletion)', () => {
-  it("prunes the dropped tabs' references and keeps a shared tab's", async () => {
+describe('what the document pushes', () => {
+  it('holds each image the document places once, across its tabs', async () => {
     const db = withDocument();
-    liveDoc(db.sql, 'B');
-    await upsertTab(db.env, 'A', tabWith('own', 'img-1'), 0);
-    await upsertTab(db.env, 'A', tabWith('shared', 'img-2'), 1);
-    await linkTabToDocument(db.env, 'B', 'shared');
-    await deleteDocument(db.env, 'A');
-    expect(allRefs(db.sql)).toEqual(['shared:img-2']);
-  });
-
-  it('prunes on account deletion, keeping a tab shared into another owner', async () => {
-    const db = withDocument('leaver');
-    liveDoc(db.sql, 'B', 'stayer');
-    await upsertTab(db.env, 'A', tabWith('own', 'img-1'), 0);
-    await upsertTab(db.env, 'A', tabWith('shared', 'img-2'), 1);
-    await linkTabToDocument(db.env, 'B', 'shared');
-    await deleteAccount(db.env, 'leaver');
-    expect(allRefs(db.sql)).toEqual(['shared:img-2']);
+    await upsertTab(db.env, 'A', tabWith('t1', 'img-1', 'img-2'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'img-1'), 1);
+    expect(await pushedImages(db)).toEqual(['A:img-1', 'A:img-2']);
+    await upsertTab(db.env, 'A', tabWith('t1'), 0);
+    expect(await pushedImages(db)).toEqual(['A:img-1']);
   });
 });
 
@@ -225,5 +213,26 @@ describe('routes that write tabs', () => {
     );
     expect(res?.status).toBe(200);
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
+  });
+});
+
+// A shared tab's copies (docs/specs/006-document/tab-document-many-to-many.md): a later body from another holder
+// replaces the data, and its references with it.
+describe('receiveShares (a shared tab body from another holder)', () => {
+  it('replaces the references on a later body, and keeps them on an earlier one', async () => {
+    const db = withDocument();
+    await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
+    const body = (imageId: string, updatedAt: number) => ({
+      kind: 'body' as const,
+      tabId: 't1',
+      name: 't1',
+      data: JSON.stringify({ elements: [image('el-0', imageId)] }),
+      updatedAt,
+      members: ['B'],
+    });
+    await documentShares.receive(db.env, 'A', 'B', [body('img-0', 1)]);
+    expect(refs(db.sql, 't1')).toEqual(['img-1']);
+    await documentShares.receive(db.env, 'A', 'B', [body('img-2', Date.now() + 60_000)]);
+    expect(refs(db.sql, 't1')).toEqual(['img-2']);
   });
 });

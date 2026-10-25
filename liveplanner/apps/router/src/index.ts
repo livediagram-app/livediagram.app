@@ -6,6 +6,12 @@
 import { applyCachePolicy } from './cache-policy';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
+import {
+  routeToWorkspace,
+  routeToPreviews,
+  forwardToIndex,
+  PRODUCTION_INDEX_ORIGIN,
+} from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -22,13 +28,24 @@ export interface Env {
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
   // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
   // production's, staging and local dev name their own.
   TELEMETRY_DASHBOARD_URL?: string;
+  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's; staging and local dev name their own.
+  INDEX_ORIGIN?: string;
+  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
 
@@ -54,7 +71,7 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 //
 // The list is pinned to the registry's own categories by index.test.ts, so a
 // new category cannot quietly stop redirecting. `explorer` is deliberately
-// absent: the editor app owns that segment (it is matched first either way).
+// absent: liveworkspace's Explorer owns that segment (it is matched first either way).
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
@@ -181,6 +198,18 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // liveworkspace's Explorer under this address, while liveplanner's switch is on (@liveworkspace/sites/workspace-proxy):
+  // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+  const workspace = routeToWorkspace(request, { app: 'liveplanner', origin: env.WORKSPACE_ORIGIN });
+  if (workspace) return workspace;
+  // Every plan's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
+  if (preview) return preview;
+  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
+  // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
+  if (hasPrefix(url.pathname, INDEX_PATH)) {
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.
@@ -202,7 +231,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  // Clean live-app page routes (/project, /explorer, /new, ...) and
+  // Clean live-app page routes (/project, /new, /form, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

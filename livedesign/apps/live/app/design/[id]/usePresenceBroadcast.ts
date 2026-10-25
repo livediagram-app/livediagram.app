@@ -1,9 +1,9 @@
 import { useEffect, type MutableRefObject } from 'react';
-import { useLocalBesideTab } from '@/lib/split-presence';
+import { useLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livedesign/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 interface PresenceBroadcastDeps {
   hydrated: boolean;

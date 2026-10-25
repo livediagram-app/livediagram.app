@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livedocuments/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import {
   APPEARANCE_BOOT_SCRIPT,
   APPEARANCE_STORAGE_KEY,

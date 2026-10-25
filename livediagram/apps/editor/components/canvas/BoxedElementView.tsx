@@ -57,7 +57,7 @@ import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay
 import { SketchFace } from '@/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -78,7 +78,7 @@ import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { isPanThrough } from '@/hooks/canvas/pan-through';
+import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -464,7 +464,7 @@ function BoxedElementViewImpl({
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
-        // A finger on an element too big for the screen pans the canvas instead (hooks/canvas/pan-through.ts).
+        // A finger on an element too big for the screen pans the canvas instead (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);

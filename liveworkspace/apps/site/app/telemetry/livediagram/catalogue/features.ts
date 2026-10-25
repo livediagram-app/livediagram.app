@@ -1,11 +1,12 @@
-// Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
+// Which features carry the work: the photo import, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { isHelpArticleType, isSettingsCategory } from '../opened-types';
+import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
+import { isNonThemePick } from '../palette-types';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
 
 export const LAYERS_RENAMED = chart(
@@ -137,42 +138,6 @@ export const MODE_OPTIONS = chart(
   'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
   { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
 );
-
-// AI assistance (Editing tab). Ask and Clean split AI Requests by mode. The
-// photo import sends AI·Used too, under Photo* types, and has its own stack.
-export const AI_REQUESTS: Metric = {
-  category: 'AI',
-  action: 'Used',
-  typeIn: (type) => type === 'Ask' || type === 'Clean',
-  title: 'AI Requests',
-  blurb:
-    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted.',
-};
-
-export const AI_ASK: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Ask',
-  title: 'Ask Requests',
-  blurb: 'AI requests in Ask mode: read-only questions about the diagram. Part of AI Requests.',
-};
-
-export const AI_CLEAN: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Clean',
-  title: 'Clean Requests',
-  blurb:
-    'AI requests in Clean mode: tidy-the-tab runs, the one mode that changes the canvas. Part of AI Requests.',
-};
-
-export const AI_ASSISTANCE: MetricStack = {
-  stack: true,
-  title: 'AI Assistance',
-  blurb: 'Requests in the editor AI panel, and how they split between Ask and Clean.',
-  members: [AI_REQUESTS, AI_ASK, AI_CLEAN],
-  headline: AI_REQUESTS,
-};
 
 // The photo import (event storming): a wall photo read into sticky notes.
 // Each photo analysed sends which detector found its notes (the model, on
@@ -388,8 +353,7 @@ export const ACTIONS_WONT_DO: Metric = {
   action: 'Resolved',
   type: 'WontDo',
   title: 'Actions Closed as Won’t Do',
-  blurb:
-    'Actions someone decided against: closed without being done.',
+  blurb: 'Actions someone decided against: closed without being done.',
 };
 
 export const FOLDERS_CREATED: Metric = {
@@ -485,31 +449,6 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
-// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their documents. Never a name.
-export const TAGS_CREATED = chart(
-  'Explorer',
-  'Created',
-  'Tags Made',
-  'A tag made, from the tag picker on a document or New Tag on the Tags page.',
-  { types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_APPLIED = chart(
-  'Explorer',
-  'Added',
-  'Tags Put On or Taken Off',
-  'A tag ticked on or off a document in the tag picker.',
-  { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_EDITED = chart(
-  'Explorer',
-  'Renamed',
-  'Tags Renamed, Recoloured or Deleted',
-  'A tag renamed or recoloured, or deleted (which takes it off every document).',
-  { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
-);
-
 // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
 export const DEFAULT_FOLDERS_SET = chart(
   'Folder',
@@ -543,9 +482,6 @@ export const ORGANISATION: MetricStack = {
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
-    TAGS_CREATED,
-    TAGS_APPLIED,
-    TAGS_EDITED,
     DEFAULT_FOLDERS_SET,
     DEFAULT_FOLDERS_CLEARED,
   ],
@@ -958,14 +894,6 @@ export const CANVAS_CONTROLS_TWEAKED = chart(
   { types: NON_PATTERN_CANVAS_TYPES, rising: 'neutral' },
 );
 
-export const CUSTOM_THEMES = chart(
-  'Theme',
-  'Created',
-  'Custom Themes',
-  'The custom-theme builder: created, applied, edited and deleted.',
-  { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
-);
-
 // The quick style panel's own palette (docs/specs/008-canvas/quick-style-panel.md): a swatch replaced with
 // a colour of your own, or put back to the theme's.
 export const CUSTOM_SWATCHES = chart(
@@ -1000,14 +928,13 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles and their own swatches. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
   members: [
     TEMPLATES_USED,
     TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
-    CUSTOM_THEMES,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,

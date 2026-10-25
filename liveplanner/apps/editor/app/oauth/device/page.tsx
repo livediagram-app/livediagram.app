@@ -9,14 +9,17 @@ import { Suspense, use, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
-import { signInEnabled } from '@/lib/auth-config';
 import {
   completeDevice,
   denyDevice,
   fetchDeviceSession,
   userCodeOf,
 } from '@/lib/mcp-device-session';
-import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
+import {
+  handoverFailureCopy,
+  mintAndHandOver,
+  type HandoverFailure,
+} from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { OAUTH_PRIMARY, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
@@ -67,13 +70,6 @@ function Device() {
 
   if (step.kind === 'cancelled')
     return <Message heading="Connection cancelled" body="Your terminal will stop waiting." />;
-  if (!signInEnabled)
-    return (
-      <Message
-        heading="Connecting apps isn’t available"
-        body="This deployment doesn’t have accounts enabled, so there’s nothing to connect to."
-      />
-    );
   if (!authLoaded)
     return (
       <OauthShell>
@@ -122,7 +118,7 @@ function Device() {
   const approve = async (userCode: string, clientName: string) => {
     setStep({ kind: 'consent', userCode, clientName, working: true, failed: null });
     // Checks the code is still waiting before minting, and revokes a token the MCP did not take, so a failed
-    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    // Connect never leaves a six-month token behind (@liveworkspace/workbench/lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchDeviceSession(userCode)) !== null,
       mint: () => apiExchangeOauthToken(accountUserId, clientName, readOnly),

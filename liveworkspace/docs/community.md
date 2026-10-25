@@ -147,8 +147,8 @@ api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
 
 ## First deploy
 
-1. Create the databases and put their ids in `apps/community/wrangler.toml` (they are placeholders):
-   `wrangler d1 create liveworkspace-community` (and `liveworkspace-community-staging`).
+1. The databases exist and their ids are in `apps/community/wrangler.toml`; for a new environment, create
+   one with `wrangler d1 create liveworkspace-community` (and `liveworkspace-community-staging`).
 2. Set one key per app: `openssl rand -hex 32`, then `wrangler secret put COMMUNITY_KEY_LIVEDIAGRAM`
    (and `COMMUNITY_KEY_LIVEPLANNER`). Give the app's api Worker the same value as `COMMUNITY_KEY`
    (livediagram's deploy syncs it from the `COMMUNITY_KEY` / `COMMUNITY_KEY_STAGING` GitHub secrets).

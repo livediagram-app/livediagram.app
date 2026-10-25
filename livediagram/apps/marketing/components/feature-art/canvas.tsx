@@ -65,7 +65,8 @@ const PREVIEWS: { name: string; art: ReactNode }[] = [
     ),
   },
   {
-    name: 'Kanban',
+    // Three columns of notes: Start, Stop, Continue.
+    name: 'Retrospective',
     art: (
       <g>
         {[9, 24, 39].map((x, c) => (
@@ -268,98 +269,6 @@ export function ThemesArt() {
           </g>
         );
       })}
-    </Scene>
-  );
-}
-
-// The custom theme's canvas: [x, y, width, height, label].
-const BRAND_BOXES: [number, number, number, number, string][] = [
-  [146, 28, 38, 20, 'Brand'],
-  [198, 28, 38, 20, 'Voice'],
-  [250, 28, 30, 20, 'Tone'],
-  [146, 62, 38, 18, 'Logo'],
-];
-
-/** A theme of your own: pick a colour in the builder and the canvas takes it. */
-export function CustomThemesArt() {
-  const swatches = ['#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6', '#0ea5e9', '#334155'];
-  return (
-    <Scene>
-      <Panel x={12} y={10} w={112} h={76} />
-      <Glyph x={20} y={17}>
-        <path d="M1 3 h8 M1 7 h8" />
-        <circle cx="3.5" cy="3" r="1.3" className="fill-white dark:fill-slate-800" />
-        <circle cx="6.5" cy="7" r="1.3" className="fill-white dark:fill-slate-800" />
-      </Glyph>
-      <text className={TEXT} x="33" y="24.5" fontSize="7.5" fontWeight="700">
-        My brand
-      </text>
-      {swatches.map((c, i) => {
-        const x = 30 + (i % 3) * 28;
-        const y = 44 + Math.floor(i / 3) * 20;
-        return (
-          <g key={c}>
-            {i === 0 ? (
-              <circle
-                className="fa-a-pop fill-none stroke-slate-700 dark:stroke-slate-200"
-                style={at(0.8)}
-                cx={x}
-                cy={y}
-                r="8"
-                strokeWidth="1.3"
-              />
-            ) : null}
-            <circle cx={x} cy={y} r="6" fill={c} />
-          </g>
-        );
-      })}
-      <Pill x={84} y={15} w={34} label="Save" tone="slate" className="fa-a-out" style={at(0)} />
-      <Pill x={80} y={15} w={38} label="Saved" tone="green" className="fa-a-late" style={at(0)} />
-      <Pointer x={31} y={45} color={YOU} className="fa-a-move" style={from(40, 30, 0)} />
-
-      <rect
-        className="fill-(--art-paper) stroke-slate-200 dark:stroke-slate-700"
-        x="134"
-        y="10"
-        width="154"
-        height="76"
-        rx="6"
-      />
-      <path
-        className="stroke-(--art-arrow)"
-        d="M184 38 H 198 M236 38 H 250 M165 48 V 62"
-        strokeWidth="1.4"
-        fill="none"
-      />
-      <g className="fa-a-out" style={at(0)}>
-        {BRAND_BOXES.map(([x, y, w, h, label]) => (
-          <Box key={label} x={x} y={y} w={w} h={h} label={label} />
-        ))}
-      </g>
-      <g className="fa-a-late" style={at(0)} strokeWidth="1.75">
-        {BRAND_BOXES.map(([x, y, w, h, label]) => (
-          <g key={label}>
-            <rect
-              className="fill-violet-100 stroke-violet-500 dark:fill-violet-500/25 dark:stroke-violet-300"
-              x={x}
-              y={y}
-              width={w}
-              height={h}
-              rx="5"
-            />
-            <text
-              className="fill-violet-800 dark:fill-violet-100"
-              x={x + w / 2}
-              y={y + h / 2 + 2.6}
-              fontSize="7.5"
-              fontWeight="600"
-              textAnchor="middle"
-            >
-              {label}
-            </text>
-          </g>
-        ))}
-      </g>
     </Scene>
   );
 }

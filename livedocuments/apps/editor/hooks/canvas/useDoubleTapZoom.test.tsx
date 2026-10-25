@@ -4,15 +4,20 @@ import { renderHook } from '@testing-library/react';
 import type { Element as CanvasElement } from '@livedocuments/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/viewport-glide', () => ({ glideViewport: vi.fn(() => vi.fn()) }));
+vi.mock('@liveworkspace/workbench/lib/viewport-glide', () => ({
+  glideViewport: vi.fn(() => vi.fn()),
+}));
 vi.mock('@/lib/tab-fit-view', () => ({
   tabFitView: vi.fn(() => ({ zoom: 0.4, offset: { x: 7, y: 9 } })),
 }));
 
 import { track } from '@/lib/telemetry';
-import { glideViewport } from '@/lib/viewport-glide';
+import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
 import { tabFitView } from '@/lib/tab-fit-view';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
 import { useDoubleTapZoom } from './useDoubleTapZoom';
 
 // The hook glides the view to lib/double-tap-zoom's answers (docs/specs/008-canvas/canvas-and-palette.md

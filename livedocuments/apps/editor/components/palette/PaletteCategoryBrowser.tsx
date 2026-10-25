@@ -2,8 +2,12 @@
 
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
 import { NoMatches } from '@livedocuments/ui';
-import { SearchInput } from '@/components/primitives/SearchInput';
-import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
+import {
+  ToolsBreadcrumb,
+  ToolsCategoryGrid,
+  type ToolsCategory,
+} from '@liveworkspace/workbench/components/palette/palette-tools-nav';
 import { track } from '@/lib/telemetry';
 import { PaletteCategoryRail } from './PaletteCategoryRail';
 
@@ -23,12 +27,6 @@ import { PaletteCategoryRail } from './PaletteCategoryRail';
 // tile or a brand mark leaks in.
 
 export type BrowserCategory<T> = ToolsCategory & { items: T[] };
-
-// The group a browse opens on, when its host opened it from one: the Toolbar strip's group tiles for Icons, Stickers
-// and Technology (docs/specs/007-editor/toolbar-layout.md "More"). Null opens the group grid. Read as the browse mounts,
-// so a host shows another group by remounting it. `bare` shows the group's entries alone, without the search or the
-// breadcrumb: the strip's group popover, where the strip itself is the way between groups.
-export const BrowseStartGroup = createContext<{ id: string; bare: boolean } | null>(null);
 
 // The group each browse last had open, by its root ("Icons", "Tech"), for a host that unmounts the browse between
 // visits (the Toolbar strip's popovers): going back to Icons reopens the group you left it on, rather than the grid.
@@ -104,17 +102,12 @@ export function PaletteCategoryBrowser<T>({
   rootLeadIn,
 }: Props<T>) {
   // null = the category grid. Opening the tab starts there, so you see every
-  // category at once rather than one arbitrary group's contents; a strip's group tile opens on its group.
-  // A host's remembered group comes next (BrowseMemory).
-  const startGroup = useContext(BrowseStartGroup);
+  // category at once rather than one arbitrary group's contents, unless its host remembers a group (BrowseMemory).
   const memory = useContext(BrowseMemoryContext);
-  const [openId, setOpenIdState] = useState<string | null>(
-    startGroup?.id ?? memory?.get(root) ?? null,
-  );
+  const [openId, setOpenIdState] = useState<string | null>(memory?.get(root) ?? null);
   const setOpenId = (id: string | null) => {
     setOpenIdState(id);
-    // A bare group popover is the strip's own way between groups, not a visit to remember.
-    if (!startGroup?.bare) memory?.set(root, id);
+    memory?.set(root, id);
   };
   // One 'Searched' event per mount, on the first keystroke — the same
   // engagement-signal pattern as the editor's Search panel.
@@ -123,7 +116,6 @@ export function PaletteCategoryBrowser<T>({
   const matches = q ? search(q) : null;
   const openCategory = categories.find((c) => c.id === openId) ?? null;
   const layout = useContext(BrowseLayoutContext);
-  if (startGroup?.bare && openCategory) return <>{renderItems(openCategory.items)}</>;
   const onSearch = (next: string) => {
     onQueryChange(next);
     if (!searchedRef.current && next.trim()) {

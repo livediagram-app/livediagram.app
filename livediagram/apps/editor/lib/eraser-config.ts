@@ -10,7 +10,7 @@ import {
   pickOption,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export type EraserMode = 'sweep' | 'tap';
 export type EraserSize = 'point' | 'small' | 'medium' | 'large';

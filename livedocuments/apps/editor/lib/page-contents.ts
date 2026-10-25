@@ -94,7 +94,7 @@ const normalise = (text: string) => text.normalize('NFKC').toLowerCase();
 
 /** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to
  *  it. `view` is the canvas's (the centred transform: a canvas x lands at screen
- *  `w/2 + zoom(x + offset.x - w/2)`, lib/viewport.ts) and `screen` the canvas area's size in screen
+ *  `w/2 + zoom(x + offset.x - w/2)`, @liveworkspace/workbench/lib/viewport.ts) and `screen` the canvas area's size in screen
  *  px. `insets` are the screen px the Contents panel covers at the canvas's sides: the middle is the
  *  middle of what shows beside it. */
 export function pageInView(

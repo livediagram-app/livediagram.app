@@ -1,20 +1,13 @@
 // @vitest-environment jsdom
 // The colour wells that used to be the OS colour input, now the one colour picker
-// (docs/specs/004-interface-design/colour-picker.md): the canvas and pattern colours, the custom
-// theme builder's tiles and dots, the pie and legend rows, and the rich-text toolbar's text colour.
+// (docs/specs/004-interface-design/colour-picker.md): the canvas and pattern colours, the pie and
+// legend rows, and the rich-text toolbar's text colour.
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { penColourHex, standardColours } from '@liveplanner/project';
 import { ColorSwatch } from './palette-controls';
-import { ColorDot, ColorTile, type Painter } from './custom-theme-builder-parts';
 import { LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
-
-const painter = (copied: string | null = null): Painter => ({
-  copied,
-  copy: vi.fn(),
-  clear: vi.fn(),
-});
 
 describe('ColorSwatch (canvas and pattern colours)', () => {
   it('opens the picker with soft then strong colours, and a pick closes it', () => {
@@ -46,55 +39,6 @@ describe('ColorSwatch (canvas and pattern colours)', () => {
       'button',
     );
     expect(yours[0]!.getAttribute('aria-label')).toBe('#cbd5e1');
-  });
-});
-
-describe('the custom theme builder', () => {
-  it('a tile opens the picker; its copy button copies without opening it', () => {
-    const onChange = vi.fn();
-    const p = painter();
-    render(<ColorTile label="Fill" value="#123456" onChange={onChange} painter={p} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Copy Fill colour' }));
-    expect(p.copy).toHaveBeenCalledWith('#123456');
-    expect(screen.queryByRole('dialog')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Fill' }));
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Light' })).getByRole('button', {
-        name: 'Green',
-      }),
-    );
-    expect(onChange).toHaveBeenCalledWith(standardColours('soft', 'light')[5]!.hex);
-  });
-
-  it('pastes a copied colour into a tile or a dot instead of opening the picker', () => {
-    const onTile = vi.fn();
-    const onDot = vi.fn();
-    const p = painter('#abcdef');
-    render(
-      <>
-        <ColorTile label="Stroke" value="#000000" onChange={onTile} painter={p} />
-        <ColorDot label="rectangle fill" value="#000000" onChange={onDot} painter={p} />
-      </>,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Paste colour into Stroke' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Paste colour into rectangle fill' }));
-    expect(onTile).toHaveBeenCalledWith('#abcdef');
-    expect(onDot).toHaveBeenCalledWith('#abcdef');
-    expect(p.clear).toHaveBeenCalledTimes(2);
-  });
-
-  it('a dot opens the picker and a pick sets the colour', () => {
-    const onChange = vi.fn();
-    render(
-      <ColorDot label="rectangle text" value="#000000" onChange={onChange} painter={painter()} />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'rectangle text' }));
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Dark' })).getByRole('button', {
-        name: 'Red',
-      }),
-    );
-    expect(onChange).toHaveBeenCalledWith(penColourHex('red', 'light'));
   });
 });
 

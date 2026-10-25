@@ -11,17 +11,17 @@ import {
   lucideLockOpen,
   lucideTrash2,
   lucideSearch,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
 import type { SlideThumb } from '@/lib/slide-thumb';

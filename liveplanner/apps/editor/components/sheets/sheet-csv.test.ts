@@ -11,7 +11,7 @@ import {
   type SheetWrite,
 } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
-import { downloadBlob } from '@/lib/download-blob';
+import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import { SheetStore } from './sheet-store-client';
 import type { SheetController } from './sheet-controller';
 import {
@@ -23,7 +23,7 @@ import {
 } from './sheet-csv';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/download-blob', () => ({ downloadBlob: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/download-blob', () => ({ downloadBlob: vi.fn() }));
 
 const by = { id: 'me', name: 'Me', color: '#000000' };
 let seq = 11;

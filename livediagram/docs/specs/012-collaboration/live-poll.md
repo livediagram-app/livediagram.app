@@ -8,19 +8,19 @@ thing evaporates. Sits beside the timer and dot-vote in the bottom bar's
 ## Why it is NOT a session tool on the Tab
 
 The timer and vote live as `Tab` fields, which is exactly why they survive a
-reload and reach late joiners: they ride the tab-sync pipeline into D1
+reload and reach late joiners: they ride the tab-sync pipeline into the document's store
 ([Session tools (timer + voting)](session-tools.md)). A poll wants the **opposite** guarantee — "no trace of the poll
 (question, options, or responses) is left on the document afterward". Storing it
-on the tab would `PUT` the question and every response to D1 for the duration
+on the tab would `PUT` the question and every response to the stored tab for the duration
 and rely on a delete to clean up.
 
 So a poll lives **only in the realtime room**. It is carried by three new
 `RoomOp` kinds and held in connected clients' memory. Nothing is written to
-D1, nothing is undoable, and no migration or
+the stored document, nothing is undoable, and no migration or
 schema change is needed anywhere.
 
 **The room remembers it while it runs** ([Collaboration race hardening](collab-race-hardening.md)). The Durable Object keeps
-the running poll and every answer in its own storage (never D1) and replays
+the running poll and every answer in its own key-value storage (never the stored tabs) and replays
 them to each session on hello, so:
 
 - **A late joiner is prompted**, and sees the answers so far.

@@ -3,7 +3,7 @@ import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Chart tour (docs/specs/007-editor/element-tours.md "The Chart tour"), on a selected data chart of any of the
 // seven types: how it reads, a mark's readout, Grow previewed on it, its menu, and for a line, area or scatter chart its

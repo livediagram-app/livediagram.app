@@ -48,7 +48,7 @@ metadata), deduped and uploaded to the gallery, or embedded for an
 result is accepted and stored as a bitmap; SVG is still never stored as SVG.
 
 The user's search terms and IP address reach Openverse. The hosted service's
-[Privacy Policy](/help/policies/privacy-policy/) names Openverse as a provider for this feature.
+[Privacy Policy](https://liveworkspace.app/privacy), liveworkspace's shared policy, names Openverse as a provider for this feature.
 
 ## The Search tab
 

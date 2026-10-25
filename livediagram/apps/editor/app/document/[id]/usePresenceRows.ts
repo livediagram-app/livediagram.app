@@ -5,10 +5,12 @@
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
-import { useLocalBesideTab, useRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  useLocalBesideTab,
+  useRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
@@ -104,22 +106,18 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   //
   // Statuses derive from the presence clock (usePresenceState): its tick moves idle peers to away, and a
   // returning peer's first op moves them back at once.
-  // Our own entry shows our picture to us whatever the switch says: it is our screen
-  // (docs/specs/014-identity/profile-picture.md §4).
-  const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
   // Agents fold in after (docs/specs/024-agents/agent-presence.md "In the editor"): their status lines on their
   // owners' rows, or rows of their own; a personal document's stack shows while one is present.
   // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in each person's other pane.
   const remoteBesideTabs = useRemoteBesideTabs();
   const selfBesideTabId = useLocalBesideTab();
-  const shownSelf = ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant;
   const participantsByTab = foldAgentPresence({
     participantsByTab: buildParticipantsByTab({
       documentShareable,
       documentTeamId,
       agentsPresent: liveAgents.length > 0,
       activeId,
-      selfParticipant: shownSelf,
+      selfParticipant,
       tabs,
       remoteTabFocus,
       remoteBesideTabs,
@@ -130,7 +128,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       now: presenceClock.now,
     }),
     agents: liveAgents,
-    selfParticipant: shownSelf,
+    selfParticipant,
     activeId,
     tabIds: tabs.map((tab) => tab.id),
     now: presenceClock.now,

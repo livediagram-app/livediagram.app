@@ -1,27 +1,18 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { ArticleCard } from '@/components/ArticleCard';
-import { getArticlesByCategory } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import {
+  SupportCategoryPage,
+  supportCategoryMetadata,
+} from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
+const COPY = {
   title: 'Privacy and Security',
   description:
     'How your data is handled, what livedocuments collects, and how share links are protected.',
-  path: '/help/privacy-and-security/',
-});
+  lede: 'How your data is handled and how to keep your documents safe.',
+};
+
+export const metadata = supportCategoryMetadata(site, 'privacy-and-security', COPY);
 
 export default function PrivacyAndSecurityPage() {
-  const articles = getArticlesByCategory('privacy-and-security');
-  return (
-    <BrowsePage
-      listing={{ appPath: '/privacy-and-security/', articles: articles }}
-      title="Privacy and Security"
-      lede="How your data is handled and how to keep your documents safe."
-    >
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} />
-      ))}
-    </BrowsePage>
-  );
+  return <SupportCategoryPage site={site} slug="privacy-and-security" copy={COPY} />;
 }

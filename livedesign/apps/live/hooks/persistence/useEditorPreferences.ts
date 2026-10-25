@@ -4,11 +4,11 @@
 // designId, since preferences aren't design-scoped) and mutated through
 // the SettingsDialog. Also owns the two ref mirrors the drag hook reads on
 // every pointer move, and the side effects that apply preference flags
-// (reduce motion, AI panel auto-open).
+// (reduce motion).
 
-import { useCallback, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
-import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
-import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useReduceMotion } from '@liveworkspace/workbench/hooks/ui/useReduceMotion';
+import { usePanelOpacity } from '@liveworkspace/workbench/hooks/ui/usePanelOpacity';
 import {
   autoRebindArrowsEnabled,
   readUserPreferences,
@@ -17,8 +17,8 @@ import {
   STORAGE_KEY,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { readLocalStorageSafe } from '@/lib/local-storage-safe';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { readLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The preferences cached on this device, as an external store: the server
 // and hydration snapshot is empty, so the static export never reads
@@ -56,12 +56,10 @@ type EditorPreferencesDeps = {
   // True while the visitor still faces the share-password gate. No
   // point fetching preferences for someone who hasn't got in yet.
   passwordGated: boolean;
-  // From usePanelLayout: flipping the AI preference on pops the panel.
-  setAiPanelVisible: (visible: boolean) => void;
 };
 
 export function useEditorPreferences(deps: EditorPreferencesDeps) {
-  const { ownerId, passwordGated, setAiPanelVisible } = deps;
+  const { ownerId, passwordGated } = deps;
   // Missing or unparseable entries collapse to `{}`; the per-flag default then
   // depends on the consumer's comparison: `telemetryEnabled` reads via
   // `!== false` so undefined = on, while `autoRebindArrows` (via
@@ -90,10 +88,6 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // point after which a one-way latch such as `powerUserOfferShown` can be
   // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
   const [prefsSettled, setPrefsSettled] = useState(false);
-  const openAiPanel = useEffectEvent(() => setAiPanelVisible(true));
-  useEffect(() => {
-    if (userPreferences.aiAssistanceEnabled) openAiPanel();
-  }, [userPreferences.aiAssistanceEnabled]);
   // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.
@@ -112,8 +106,8 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   const alignmentGuidesRef = useLatest<boolean>(userPreferences.alignmentGuides !== false);
 
   // Server-side preferences sync (docs/specs/007-editor/user-preferences.md). Once the owner id
-  // resolves, fetch the row from D1 and merge it over the
-  // localStorage cache. Server wins for any key present on both
+  // resolves, fetch the stored set (once per page load, shared with the
+  // Explorer) and merge it over the localStorage cache. Server wins for any key present on both
   // sides. The cache read above still lands first so the UI
   // never blocks on this network step; this just reconciles toggles
   // the user made on another device. The merge lands in the cache,

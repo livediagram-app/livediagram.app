@@ -21,7 +21,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
   const session = { Authorization: `Bearer ${jwt}`, Origin: new URL(baseURL).origin };
   await page.request.put(`/api/participants/${userId}`, {
     headers: session,
-    data: { name: 'Webber', color: '#f59e0b' },
+    data: { name: 'Webber Takken', color: '#f59e0b' },
   });
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
@@ -51,12 +51,13 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
     },
   });
   expect(created.ok()).toBe(true);
-  const minted = await page.request.post('/api/tokens', {
-    headers: session,
-    data: { name: 'agent' },
+  // The agent's API token, made on liveworkspace.app: the stack's accounts stand-in keeps it
+  // (scripts/e2e-stack.mjs, packages/auth-client e2e-token-stand-in.ts).
+  const minted = await page.request.post('/e2e/accounts/__seed/token', {
+    data: { userId, email: WEBBER.email, name: 'agent' },
   });
   expect(minted.ok()).toBe(true);
-  const { token } = (await minted.json()) as { token: string };
+  const { secret: token } = (await minted.json()) as { secret: string };
   return { id, tabId, token, session };
 }
 

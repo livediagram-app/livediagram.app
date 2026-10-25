@@ -76,10 +76,10 @@ export function useGallery(session: CommunitySession | null): Gallery {
     [search],
   );
   const mine = filters ? communitySearchMine(filters.q) : false;
-  // My Shares can only load once Clerk has said who is signed in.
+  // My Shares can only load once the session has said who is signed in.
   const sessionReady = !mine || session?.loaded === true;
   const signedOut = mine && session?.loaded === true && !session.signedIn;
-  // The newest getToken without restarting a load each time Clerk republishes the session.
+  // The newest getToken without restarting a load each time the session is republished.
   const sessionRef = useRef(session);
   useEffect(() => {
     sessionRef.current = session;

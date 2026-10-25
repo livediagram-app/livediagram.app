@@ -80,13 +80,13 @@ Items are compared by identity; a caller never passes the same item twice.
 
 ## Testing
 
-| Rule                                                | Test                                             |
-| --------------------------------------------------- | ------------------------------------------------ |
-| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`   |
-| Recent newest first, never one of the most used     | same                                             |
-| Short groups, empty input, `n <= 0`, stable ties    | same                                             |
-| The merge property over two lists                   | same                                             |
-| Jump Back In's split, merge and alternation         | `apps/editor/app/explorer/home/home-model.test.ts` |
+| Rule                                                | Test                                                                                           |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                 |
+| Recent newest first, never one of the most used     | same                                                                                           |
+| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
+| The merge property over two lists                   | same                                                                                           |
+| Jump Back In's split, merge and alternation         | `packages/api-schema` (`withinReach`; the Home view that used it moved to the shared Explorer) |
 
 ## Constants and configuration
 

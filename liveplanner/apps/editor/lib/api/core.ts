@@ -3,14 +3,7 @@
 // shared DELETE shape, and the module-level token / share-password
 // state. The per-domain call collections (projects, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
-import type {
-  ApiToken,
-  CustomTheme,
-  Project,
-  Folder,
-  ShareLink,
-  ShareRole,
-} from '@liveplanner/api-schema';
+import type { ApiToken, Project, Folder, ShareLink, ShareRole } from '@liveplanner/api-schema';
 import {
   BUILD_ID_HEADER,
   PROJECT_FORMAT_HEADER,
@@ -19,11 +12,15 @@ import {
 } from '@liveplanner/api-schema';
 import { noteServerBuild, noteServerProjectFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@liveplanner/project';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
-import { getGuestSelfSig } from '../local-identity';
-import { notifyApiWrite } from './write-signal';
-import { API_BASE } from './base';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
+import { readGuestToken } from '../guest-token';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
+import { withPlanGrant } from './plan-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
 export {
   getWorkbenchConfinement,
@@ -51,18 +48,12 @@ import {
 //      production (router stitches the api worker onto the same
 //      hostname). This is what the deployed editor app uses.
 //
-// All requests carry an `X-Owner-Id` header set to the current
-// participant's id — the API uses it as the project-owner filter and
-// for create-time `owner_id` — unless an account token provider is wired
-// up (see below), in which case a Bearer token replaces it.
-// Where the api lives (lib/api/base.ts).
+// Every request carries the person's Bearer: an account's access token when signed in, else the guest token
+// liveworkspace issued (lib/guest-token.ts).
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
-
-// Hard cap on how long the Explorer's project-list spinner spins before
-// we give up and show whatever we have. Both mount paths that load the
-// list (the editor and the new-project screen) arm this same safety
-// timeout, so it lives here next to the list-load calls.
-export const PROJECT_LIST_LOAD_SAFETY_MS = 10_000;
+// The error every non-2xx response throws (@liveworkspace/workbench/lib/api/api-error.ts).
+export { ApiError };
 
 // How long an autosave write may take before it is abandoned (docs/specs/006-project/per-tab-storage.md "Retrying a
 // failed save"). Each tab's saves run one after another (tab-save-queue.ts), so a save left hanging on a stalled
@@ -98,29 +89,32 @@ export function wsUrl(path: string): string {
   return `${proto}//${window.location.host}${API_BASE}${path}`;
 }
 
-// Every api request goes through here rather than bare `fetch` so a
-// successful WRITE can be announced (write-signal.ts): a project's History
-// and a team's Team Activity re-read themselves off that signal, which is what
-// lets a delete or a rename show up on them without a browser refresh
-// (docs/specs/013-workspace/timeline.md §2.4b). Reads stay silent, and so do
-// the feeds' own endpoints.
-//
-// Transparent otherwise: same arguments, same Response, and a network
-// failure still throws to the caller before any signal is raised.
-export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+// Every api request goes through here rather than bare `fetch`: it carries the plan grant, refuses what a workbench
+// session may not send, reports a network failure, and notes the release signals every response carries. Same
+// arguments, same Response.
+// `planGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself and
+// cannot wait for one (a beforeunload handler runs to its end before anything it awaits).
+export async function apiFetch(
+  input: string,
+  init?: RequestInit,
+  opts: { planGrant?: boolean } = {},
+): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
   // A workbench session's request outside its allow-list is refused unsent, and is no network error.
   const refusal = confinementRefusal(input, init);
   if (refusal) throw refusal;
   let res: Response;
   try {
-    res = await fetch(input, init);
+    // A request about one plan carries the index's grant on it (plan-grants.ts), fetched once per ten minutes.
+    res = await fetch(
+      input,
+      opts.planGrant === false ? init : await withPlanGrant(API_BASE, input, init),
+    );
   } catch (err) {
     // The one place that sees a request fail before any response exists.
     reportNetworkError(method, input, err);
     throw err;
   }
-  if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
   void noteWorkbenchResponse(init, res);
   // The server release signal rides every response: the project format number and the live build
   // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
@@ -129,18 +123,12 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
   return res;
 }
 
-function isTimelinePath(url: string): boolean {
-  return url.startsWith(`${API_BASE}/timeline`);
-}
-
 // Envelope shapes the API wraps payloads in. The canonical inner
 // types come from `@liveplanner/api-schema`, as do the envelopes the
 // MCP server reads too (ProjectResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
-export type CustomThemeResponse = { theme: CustomTheme };
-export type CustomThemesResponse = { themes: CustomTheme[] };
 export type TokensResponse = { tokens: ApiToken[] };
 // POST /api/tokens returns the one-time plaintext secret alongside the new
 // token's public metadata (the secret is never retrievable again).
@@ -177,14 +165,10 @@ export type SharedProjectResolution =
   | { project: Project; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
-// Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
-// registered via `setTokenProvider` and resolves to a non-null account
-// access token, every request goes out with
-// `Authorization: Bearer <jwt>` and NO `X-Owner-Id` — the api worker
-// verifies the token, derives the owner from the `sub` claim, and
-// ignores the legacy header. Without a provider (or when the provider
-// resolves to null — guest, or signed out), requests go out with
-// `X-Owner-Id: <participant-id>` as before.
+// Identity (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"). A signed-in page registers a
+// token provider (`setTokenProvider`) whose account access token goes out as `Authorization: Bearer <jwt>`;
+// without one (a guest, or signed out) the guest token goes out the same way. A link visitor with neither sends
+// only its share code in `X-Share-Code`, which is enough for the index to grant what the link allows.
 //
 // Module-level state (rather than threading a tokenProvider through
 // 22 function signatures) because liveplanner ships only as a static
@@ -192,12 +176,6 @@ export type SharedProjectResolution =
 // per page load. useAccountBootstrap wires it up once in a layout effect
 // (`setTokenProvider((opts) => getToken(opts))`) and clears on unmount.
 // Tests reset between cases via the same setter.
-//
-// Visitors on a share URL include their own participant id PLUS the
-// share code that admitted them in `X-Share-Code` — the api checks
-// the code's role before allowing the write. Share-code visitors who
-// happen to also be signed in send Bearer + X-Share-Code; the
-// per-link role still gates write access.
 //
 // `body: true` adds `Content-Type: application/json` for write
 // requests; GETs / DELETEs omit it.
@@ -282,7 +260,7 @@ export function getSessionSharePassword(): string | null {
 // protection of user data; storing plain text mirrors what the api
 // worker already does in D1. The owner cleartext-reads it on the
 // Share dialog anyway.
-const SHARE_PASSWORD_CACHE_PREFIX = 'liveplanner:share-password:';
+export const SHARE_PASSWORD_CACHE_PREFIX = 'liveplanner:share-password:';
 export function readCachedSharePassword(shareCode: string): string | null {
   const raw = readLocalStorageSafe(`${SHARE_PASSWORD_CACHE_PREFIX}${shareCode}`);
   return raw && raw.length > 0 ? raw : null;
@@ -293,18 +271,9 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
   else writeLocalStorageSafe(key, '');
 }
 
-// Exported for direct testing of the hybrid identity gate (docs/specs/014-identity/auth-and-guest-access.md):
-// Bearer token wins when present, X-Owner-Id is the fallback, and the
-// two MUST NOT coexist on a single request (an api worker that sees
-// both would derive owner from the JWT and silently ignore the header
-// , which is fine for happy paths but leaves a confusing footprint in
-// audit logs). Internal callers still get the same return type, so
-// the export is additive.
 // Thrown instead of sending a request that is certain to be refused: a
 // signed-in client (its owner id is an account id) that has no session
-// token to prove it. The worker rejects an account id in the guest header
-// (401 account_id_not_a_guest_credential), so sending it only turns an auth
-// problem into what looks like a network one.
+// token to prove it.
 export class SessionTokenUnavailableError extends Error {
   constructor() {
     super('no session token for a signed-in owner');
@@ -312,18 +281,21 @@ export class SessionTokenUnavailableError extends Error {
   }
 }
 
-// The identity half of every request, shared by apiHeaders (async) and the
-// unload beacon (sync, off the cached token). Bearer and X-Owner-Id are
-// mutually exclusive, and an account id never rides as the guest header.
+// The identity half of every request, shared by apiHeaders (async) and the unload beacon (sync, off the cached
+// token): the account's token, else the guest's, else nothing (a link visitor). An account id with no account
+// token is refused here rather than sent as a guest.
 export function identityHeaders(ownerId: string, token: string | null): Record<string, string> {
   if (token) return { Authorization: `Bearer ${token}` };
   if (isAccountIdShape(ownerId)) throw new SessionTokenUnavailableError();
-  // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
-  // section 4): the api worker can require a valid signature on owner-scoped
-  // routes, which a harvested id wouldn't have. Absent for legacy unsigned
-  // guests and deployments with signing disabled.
-  const sig = getGuestSelfSig();
-  return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
+  const guest = readGuestToken();
+  return guest ? { Authorization: `Bearer ${guest.token}` } : {};
+}
+
+// The Bearer this page sends, for the index client (@liveworkspace/workbench/lib/index-client.ts): the account's, else the guest's.
+export async function currentBearer(): Promise<string | null> {
+  const token = await resolveToken();
+  lastKnownToken = token;
+  return token ?? readGuestToken()?.token ?? null;
 }
 
 // How long one token request may take (docs/specs/007-editor/load-recovery.md "The load always ends").
@@ -380,31 +352,6 @@ export async function apiHeaders(
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
   return { ...h, ...opts.extra };
-}
-
-// The error every non-2xx response throws. Carries the HTTP `status`
-// AND the api worker's `error` token (`code`) so callers can branch on
-// the specific rule that fired (`forbidden` vs `admin_required`,
-// `password_invalid`, `gallery_full`, …) instead of re-fetching or
-// guessing from the status alone. Before this, every helper threw a
-// bare `Error` whose message embedded the status and DROPPED the
-// `error` field — the api worker's snake_case error envelope
-// (responses.ts) reached the client and went straight in the bin.
-//
-// `message` keeps the exact `${action} failed: ${status}` shape the
-// helpers always threw, so logs and any string-matching callers are
-// unaffected; `status` / `code` are purely additive.
-export class ApiError extends Error {
-  readonly action: string;
-  readonly status: number;
-  readonly code: string | null;
-  constructor(action: string, status: number, code: string | null) {
-    super(`${action} failed: ${status}`);
-    this.name = 'ApiError';
-    this.action = action;
-    this.status = status;
-    this.code = code;
-  }
 }
 
 // The ApiError for a non-2xx, reported to error telemetry on the way out.
@@ -490,12 +437,6 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
-    // When this DELETE ends an entity the event feeds narrate (a project, a
-    // folder, a theme, a team), name it in the feed's terms so the feed
-    // can drop the entity's earlier cards at once, the way the worker's
-    // cascade does server-side (docs/specs/013-workspace/timeline.md §3.5). Omit for a DELETE that
-    // merely changes something (a share link, a favourite).
-    purge?: { sourceType: string; sourceId: string };
   },
 ): Promise<void> {
   const res = await apiFetch(url, {
@@ -510,7 +451,6 @@ export async function apiDelete(
   } else {
     await expectOkVoid(res, opts.action);
   }
-  if (opts.purge && res.ok) notifyApiWrite({ purge: opts.purge });
 }
 
 // Strip fields that ride on the Tab type for the editor's convenience
@@ -518,7 +458,7 @@ export async function apiDelete(
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
 //   - `folder` — per-project membership (docs/specs/006-project/tab-folders.md) that lives on the
-//     project_tabs link, carried via the meta/reorder path. Leaking it
+//     plan_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
 //     every project it's shared into, breaking per-project scope.
 // Shared by apiCreateProject + apiSaveTab.

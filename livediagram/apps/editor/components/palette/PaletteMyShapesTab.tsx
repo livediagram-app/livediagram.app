@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { ShapeLibrary, ShapeLibraryItem } from '@livediagram/api-schema';
 import { NoMatches } from '@livediagram/ui';
-import { SearchInput } from '@/components/primitives/SearchInput';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { LibraryShapeTile } from './LibraryShapeTile';
 

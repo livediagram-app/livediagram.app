@@ -12,7 +12,7 @@
 // blocks (the sides, stretched to the note's height, then the band under the note, at its own size).
 
 import { useSyncExternalStore } from 'react';
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { encodePngRgba } from './png-encode';
 
 export type PeelVariant = {

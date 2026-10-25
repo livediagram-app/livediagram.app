@@ -2,7 +2,7 @@
 // owner id and share code, a tab-scoped session names its tab on every call, named sheets are read 50 a call, and a
 // refusal maps to an ApiError with its code. An offline project never reaches the network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { SheetJson } from '@liveplanner/sheets';
 import { __setOfflineBackend, offlinePutRecord } from '../offline/offline-store';
 import { memBackend, testRecord } from '../offline/offline-test-utils';
@@ -74,7 +74,7 @@ describe('fetchSheets on a cloud project', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]!.url).toBe(`${base}?tabId=t1`);
     expect(calls[0]!.init.method ?? 'GET').toBe('GET');
-    expect(header(calls[0]!, 'X-Owner-Id')).toBe('owner-1');
+    expect(header(calls[0]!, 'X-Owner-Id')).toBeNull();
     expect(header(calls[0]!, 'X-Share-Code')).toBeNull();
   });
 
@@ -172,7 +172,7 @@ describe('writing on a cloud project', () => {
     const c = calls[0]!;
     expect(c.url).toBe(`${base}/sheetAAAA?tabId=tab-x`);
     expect(c.init.method).toBe('DELETE');
-    expect(header(c, 'X-Owner-Id')).toBe('owner-1');
+    expect(header(c, 'X-Owner-Id')).toBeNull();
   });
 
   it('deletes a sheet with its element once nothing references it', async () => {

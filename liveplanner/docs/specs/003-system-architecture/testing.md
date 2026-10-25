@@ -13,11 +13,11 @@ step, and has a Jest-compatible API so tests read conventionally.
 There is **no per-app runner divergence** — every workspace that has tests uses
 Vitest with the same shared config.
 
-## Shared config: `@liveplanner/vitest-config`
+## Shared config: `@liveworkspace/vitest-config`
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
-place: `packages/vitest-config`. It sits alongside the other shared configs
-(`oxlint-config`, `prettier-config`, `tailwind-config`).
+place: the monorepo's `packages/vitest-config`. It sits alongside the other shared configs
+(`oxlint-config`, `prettier-config`; `tailwind-config` is still this product's own).
 
 It exports:
 
@@ -28,7 +28,7 @@ It exports:
 A workspace's `vitest.config.ts` is therefore one line in the common case:
 
 ```ts
-import { defineProject } from '@liveplanner/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 export default defineProject();
 ```
 
@@ -36,7 +36,7 @@ export default defineProject();
 React component tests):
 
 ```ts
-import { defineProject } from '@liveplanner/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 export default defineProject({ test: { environment: 'jsdom' } });
 ```
 
@@ -54,7 +54,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter) measures it with
-  `cpuMsOf` (or `cpuMsOfAsync`) from `@liveplanner/vitest-config/cpu-time`, never
+  `cpuMsOf` (or `cpuMsOfAsync`) from `@liveworkspace/vitest-config/cpu-time`, never
   `performance.now()`. Turbo runs every package's suite at once, and a
   wall-clock budget also counts the time a test waits for a core, which made
   those tests flake on a busy machine. CPU time still catches the regression
@@ -63,10 +63,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **An inline script is tested as the browser runs it.** A boot script ships as a string the page
   inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
   very string with `runInlineScript(source, globals)` from
-  `@liveplanner/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  `@liveworkspace/vitest-config/inline-script`: a classic script in its own realm whose globals are
   the stubs it is handed (`project`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
-- **A stubbed fetch reads what it was sent** through `@liveplanner/vitest-config/sent-request`:
+- **A stubbed fetch reads what it was sent** through `@liveworkspace/vitest-config/sent-request`:
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
   `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
   test rather than read as `[object Blob]`.
@@ -78,7 +78,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
   run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
   `CI=0` is a developer's machine) or the run collects coverage (the shared
-  Vitest config passes `LIVEPLANNER_COVERAGE` to its workers). Three is enough
+  Vitest config passes `LIVEWORKSPACE_COVERAGE` to its workers). Three is enough
   beside a 4x slower runner because each budget keeps its own room over the
   local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
   work measures) needs neither.
@@ -96,11 +96,17 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with a base64 value decodes it, flips a bit, and re-encodes: the last
   base64 character carries padding bits, so editing the text can decode to the
   very same bytes.
-- **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
-  with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
-  in-memory SQLite (`node:sqlite`) with every migration applied and foreign
-  keys on, as D1 has them. Use the second wherever the behaviour lives in the
-  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
+- **The plans' storage in `apps/api` tests.** `src/test-sqlite-d1.ts` is a real
+  in-memory SQLite (`node:sqlite`) with the plans' schema (`plan-room/plan-schema.ts`)
+  and foreign keys on, as in a plan's Durable Object, behind `env.PLAN_DB`. Use it
+  wherever the behaviour lives in the schema: cascades, primary-key collisions,
+  `INSERT OR IGNORE` outcomes. It answers the `PLAN_ROOM` RPCs from the same tables, and `flush` drains
+  what the plans owe the index.
+- **A plan's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
+  `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
+  `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
+  `plan-room/plan-room-store.test.ts` runs the real worker against one real
+  `PlanRoom` per plan, each on its own in-memory SQLite.
 
 ## Scripts
 
@@ -139,13 +145,12 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                               | Why                                                                                                                       |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                       | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                      |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`              | Mint, resolve and revoke the credentials that act as an account                                                           |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                       | Share links, the "shared with you" record, and the one-time realtime room tickets                                         |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/project-share-routes.ts` | The only unauthenticated read path into a project, and the owner-only routes that grant it                                |
-| `src/db/project-removal.ts`                                                         | Decide which tabs and index rows a project delete drops with it, and so whether work another project still shows survives |
+| Files                                                                           | Why                                                                                             |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                   | Decides WHO a request is — access-token and guest-token checks, api tokens, the read/edit gates |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                  | Resolve and revoke the credentials that act as an account                                       |
+| `packages/index-app/src/room-ticket.ts` (repo root), `src/routes/plan-grant.ts` | The index's grant as the room ticket, and settling a request's grant before it reaches the plan |
+| `src/routes/share.ts`                                                           | The only unauthenticated read path into a project                                               |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting work another project still shows: an outcome no amount of production monitoring
@@ -264,19 +269,17 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (account access tokens, guest signatures, project access, tokens),
-    every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `ProjectRoom` Durable Object's rules, ledger
-    and multiplayer paths, every route family (projects, tabs, share, images,
-    thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events), the Timeline's writers and its catalogue
-    against its spec, the image reference index, email lifecycle, the OpenAPI
-    manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
+  - `apps/api`: auth guards (account and guest access tokens, project access, API tokens),
+    every defensive row mapper, the plan's store modules against real SQLite
+    (cascades, schema steps), the `PlanRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (projects, tabs, items, sheets,
+    forms, share, thumbnails, folders, teams, trash, changesets, workbench,
+    OAuth, events), email lifecycle, the OpenAPI
+    manifest ↔ dispatch drift guards, response helpers.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
-  - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
   - `packages/items`: items and the Plan board projection, at 95 % lines
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
@@ -285,18 +288,18 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
     and the Timeline's cards, stacking, grouping, tones and categories, rendered
     in jsdom where they hold state.
-  - `packages/icons`: the icon resolver, catalogues, markup builders, stroke
+  - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
     template builders themselves (`packages/templates`, which has no suite of
     its own) are covered from their callers: `apps/editor`'s template and
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
-  - `packages/tailwind-config`: the theme's budgets, motion and optical
+  - `../packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
   - `packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native
     `title` rules, directives).
-  - `packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+  - `../packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
     TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
@@ -337,15 +340,14 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because real bugs could not be caught without it, both in the
+  This exists because a real bug could not be caught without it, in the
   Timeline, whose state lives in hooks rather than in pure helpers:
   `useTimelineFeed.test.tsx` covers one scope's fetched-period cache leaking
-  into another's ([Timeline](../013-workspace/timeline.md) §3.4), and `useTimelineControls.test.tsx` covers a
-  Clear filters button that cleared only half the filters. Each fails if its
+  into another's ([Timeline](../013-workspace/timeline.md) §3.4). It fails if its
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of
-  `@liveplanner/vitest-config`, one copy for the repo rather than one per
+  `@liveworkspace/vitest-config`, one copy for the repo rather than one per
   workspace — which calls Testing Library's `cleanup` in an `afterEach`,
   guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
   `globals: true`, which this repo does not use, so a file that rendered
@@ -369,9 +371,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 - **Ahead:**
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state, and D1 as either a recorder or in-memory SQLite (see
+    Object state, and each plan's SQLite as in-memory `node:sqlite` (see
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
-    let the D1 binding + Durable Object run in a real `workerd` runtime, but
+    let the Durable Objects run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
 
 Browser end-to-end tests are not part of this gate; they are specified in

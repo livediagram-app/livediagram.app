@@ -14,7 +14,8 @@ described in [liveworkspace's Community](../../../../liveworkspace/docs/communit
 view, the card image and copying). Its pages read the gallery, posts, likes and reports straight from the service,
 for `livediagram.app` posts only; its api publishes, edits and removes a post on the owner's behalf, answers My
 Shares, and tells the service where each published document stands (public, closed, away or gone) right after a
-change and on a one-minute cron. A post hidden after reports closes its link here within that minute.
+change and from each published document's own alarm every ten minutes. A post hidden after reports closes its
+link here within those ten minutes.
 
 ## Why
 
@@ -30,8 +31,8 @@ better start than a blank canvas).
   describe it stay plain descriptions, not second names: the **gallery** is its browsing page (`GalleryView`), the
   landing page **showcases** it (`CommunityShowcase`) and invites people to **Explore the Community**.
 - **Post** (`CommunityPost`): one document published to Community. A document has at most one post.
-- **Author**: the signed-in owner who published the post. Shown by their participant name, colour and picture
-  ([Profile picture](../014-identity/profile-picture.md)); their owner id is never exposed.
+- **Author**: the signed-in owner who published the post. Shown by their participant name and colour; their owner id is never
+  exposed.
   An author may share anonymously, and is then shown as "Anonymous".
 - **Category**: exactly one per post, from a closed set (below). The coarse filter.
 - **Tag**: zero to five per post, free-form but normalised (below). The fine filter.
@@ -55,9 +56,9 @@ A post shows every tab of the document. A document that is empty (its first tab 
   ([Team shared documents](../013-workspace/team-shared-documents.md)) cannot be published: they are not one person's to
   give away. A post its document's current owner did not make (it came with the document from a team library) is not
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
-  document at once give the second **This document is already in the Community.**
+  document at once give the second **This canvas is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
-  Private, Shared and Team; only This Browser beats it), and the Share dialog's status line says the document is public.
+  Private, Shared and Team; only This Browser beats it), and the Share dialog's Community band shows the listed post.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
 - **In the Explorer**: while the post is public, the document's visibility badge on every list row and card (Recent,
@@ -65,7 +66,9 @@ A post shows every tab of the document. A document that is empty (its first tab 
   public (its document in a team library, owned by someone else, or behind a share password) gives no badge: a
   team-library document reads **Team**, or **Shared** with share links. The
   document lists carry only whether the post is listed, never a hidden post's state, so a team member learns nothing
-  the public gallery does not already say.
+  the public gallery does not already say: the canvas's index summary says `public: true` while its post is listed
+  and not hidden (pushed again whenever the post is made, hidden, moved or taken down, `document-outbox.ts`), and the
+  shared Explorer's `VisibilityBadge` reads it.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish). It is the first tab because that tab is the post's card picture; a document with content
   only on later tabs is refused too, and the refusal names the first tab so the owner knows where to add something.
@@ -73,7 +76,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
   ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
   share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
-- **Where**: the Share dialog carries a **Community** tab beside Passes: a short illustrated guide to what publishing means (three steps and four facts: always up to date, anonymous by default, private stays private, yours to take back), then the Community section. Unpublished, it invites the owner
+- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** band below Password Protection (its `appSection`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
 - **The Publish dialog** asks for:
@@ -93,7 +96,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
 - Publishing again on a published document (**Edit Listing**) updates the title, description, category and tags; the
   likes, copies and publish date stay.
 - The publish dialog takes the Share dialog's place while it is open; closing it (Done after publishing, Cancel, or
-  Escape) brings the Share dialog back on its **Community** tab, where it was left.
+  Escape) brings the Share dialog back, so two modals never stack.
 - **Remove From Community** deletes the post, its likes, copies and reports. Copies people already made are theirs and
   are untouched.
 - An owner can have at most 50 posts.
@@ -126,7 +129,7 @@ type) and on the worker (authoritative).
 ## The Community app
 
 `apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry. It talks to the api at
-`/api/community/*` from the browser. Browsing needs no sign-in: the app loads Clerk only for My Shares (below). Pages:
+`/api/community/*` from the browser. Browsing needs no sign-in: the app asks for the session only for My Shares (below). Pages:
 
 ### Gallery (`/community/`)
 
@@ -166,7 +169,7 @@ type) and on the worker (authoritative).
 - Title, author, publish date, category, tags (each opens the gallery with its `#tag` in the search), and the full
   description.
 - The actions, in one panel: **Make a Copy** (opens the document in the editor and copies it into the visitor's own
-  documents in one step) and **Open Document** (the read-only viewer, full screen) side by side at equal size, Make a
+  documents in one step) and **Open Canvas** (the read-only viewer, full screen) side by side at equal size, Make a
   Copy leading in colour; beneath them one strip of equal chips, the **Like** toggle with its count ("3 likes"), the
   copy count ("1 copy") and **Report** at the end.
 - **Layout**: from the `lg` breakpoint, the preview on the left and a sticky column on the right holding the title block
@@ -204,7 +207,7 @@ only two paths; everything else is served straight from the assets.
 - **When the api cannot answer** (no `API` binding, an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
   post page is the shell exactly as built and the sitemap answers 503 with `Retry-After`. Nothing about the page
   depends on the worker: it only adds what crawlers read.
-- **Cost**: each post page view makes one extra api read (an indexed D1 lookup of one post) before the HTML is sent,
+- **Cost**: each post page view makes one extra api read (one post's metadata) before the HTML is sent,
   since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow api can
   add.
 
@@ -233,8 +236,8 @@ ordinary view link in exactly these ways:
   comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
-- It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
-  for editing. The author's Community bar offers **Edit Your Document** (their own document) in place of Make a Copy.
+- It is read-only for **everyone, the author included**: the post page's preview and Open Canvas never open the document
+  for editing. The author's Community bar offers **Edit Your Canvas** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
 not, and the copy carries exactly what the viewer shows: no comments, no people on its actions, and items without
@@ -247,7 +250,11 @@ A copy through a Community link is **named after the post**: its title, as the v
 A name the caller sends still wins, and copies through any other share link keep `Copy of <document name>`.
 
 A share password ([Share password](../013-workspace/share-password.md)) and a post exclude each other: a document with a
-password cannot be published, and a published document cannot be given a password (the Share dialog explains why).
+password cannot be published (the band disables Share to Community: "Remove the share password to share it to the
+Community."), and a listed post locks Password Protection in the same dialog ("Remove it from the Community to set a
+password."; the shared dialog's `passwordLockedReason`). A password already set can still be removed. The post's
+link is a public link at the index: should its document take a password anyway (a hidden post, or through the
+API), the link closes and answers 404, never a password prompt, and the next check closes the listing.
 
 ## Document lifecycle
 
@@ -304,10 +311,9 @@ A signed-in author can narrow the gallery to their own posts, to review them and
 - Signed out, it says **Sign in to see your shares.** with a Sign In button that returns to the same view; with
   nothing shared yet, **You haven't shared anything yet.** with Share Your Own.
 - If sign-in has not loaded after 10 seconds (a blocked script, a network failure), it says **We couldn't load the
-  Community.** with **Try Again**, which reloads the page. A build without sign-in given `is:mine` says **My Shares
-  needs an account.**
-- The rest of the Community needs no identity, so the Community app loads Clerk only once My Shares is on, and a
-  build without a Clerk key does not offer it. The api answers `GET /api/community/mine` (Clerk session
+  Community.** with **Try Again**, which reloads the page.
+- The rest of the Community needs no identity, so the Community app asks for the editor's session only once My Shares is
+  on. The api answers `GET /api/community/mine` (signed-in session
   required, never cached); the public list ignores `is:mine`.
 - Turning it on is tracked as `Community·Selected·Mine`.
 
@@ -328,18 +334,18 @@ for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 - The Explorer panel's footer row of links (Home, Explorer, **Community**, Help).
 - The shared site footer, and the marketing sitemap (`/community/`).
 - The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
-  Community** and **Finding Documents in the Community** under Collaboration, Sharing and Embeds.
+  Community** and **Finding Canvases in the Community** under Collaboration, Sharing and Embeds.
 
 ## Help
 
 Community surfaces deep link those two help articles, each a quiet link with the help glyph (the full placement list
 is in [Contextual help links](../018-help/contextual-help-links.md)):
 
-- The gallery's header: **How the Community Works** (Finding Documents in the Community) as a link ending the lead,
+- The gallery's header: **How the Community Works** (Finding Canvases in the Community) as a link ending the lead,
   and **How Sharing Works** (Sharing to the Community) as a secondary button to the left of Share Your Own (on a
   phone, below it).
 - My Shares' **Your Shares** summary: **Managing Your Shares** (Sharing to the Community).
-- The report dialog: **How Reports Work** (Finding Documents in the Community).
+- The report dialog: **How Reports Work** (Finding Canvases in the Community).
 - The landing page's From the Community section: **How the Community Works** beside Explore the Community.
 - In the editor, the Share dialog's **Community** section label and the **Share to Community** dialog's header carry
   the editor's help link to Sharing to the Community.
@@ -395,9 +401,8 @@ Community needs liveworkspace's Community service, which holds the listings: an 
 the Community off, and `COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` point at the service
 (`liveworkspace/apps/community`). The snapshot cache renders images, the app is static
 behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
-out, the pages are served exactly as built). Nothing is published until someone publishes. Publishing and My Shares need sign-in, so
-a build without a Clerk key offers neither; the Community app reads the same `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` as
-the editor.
+out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, which
+every build offers.
 
 ## Out of scope
 

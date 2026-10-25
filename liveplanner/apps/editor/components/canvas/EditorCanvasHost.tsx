@@ -1,17 +1,14 @@
 'use client';
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
-import { openSearchWithPrefetch } from '@/lib/open-search';
-import { pastePointer } from '@/lib/canvas-pointer';
-import { dropThenDisarm } from '@/lib/palette-drop';
-import { describeOne } from '@/lib/element-names';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
+import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
-import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
@@ -19,11 +16,10 @@ import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
+import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
@@ -31,7 +27,7 @@ import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -49,14 +45,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    formatConfig,
-    onToggleFormatGroup,
-    onSetFormatMode,
-    formatPanelPosition,
-    setFormatPanelPosition,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     voteResults,
     jumpToVoteResult,
     setActiveLayer,
@@ -72,28 +60,9 @@ export function EditorCanvasHost() {
     hideOtherLayersOp,
     layerPreviewId,
     setLayerPreviewId,
-    addAnnotation,
-    addArrow,
-    addAvatar,
-    addBanner,
-    addCallout,
     beginArrowBend,
     beginArrowScale,
-    addHeader,
-    addHero,
-    addIcon,
-    addSticker,
-    addLinkCard,
-    addVideo,
-    addProcess,
-    addFlowchart,
-    addShape,
-    addStatRow,
-    addSticky,
     dropBoardFile,
-    addTable,
-    addTechIcon,
-    addText,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
@@ -104,14 +73,10 @@ export function EditorCanvasHost() {
     beginArrowLabelDrag,
     beginArrowTranslate,
     beginDrag,
-    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginPolygon,
     broadcastCursor,
     canvasPointerRef,
-    cancelConnect,
-    cancelDrawShape,
     cancelEdit,
     canRedo,
     canUndo,
@@ -127,24 +92,13 @@ export function EditorCanvasHost() {
     actionRows,
     commentRows,
     commentsPanelPosition,
-    commitDraw,
-    commitPolygon,
-    styleNewElement,
     commitLabel,
-    createFolder,
     deleteCurvePoint,
-    deleteProject,
-    refreshOwnProjects,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     projectId,
-    projectList,
-    projectListLoading,
     projectName,
-    dismissSharedProject,
-    dropPaletteItem,
-    duplicateProject,
+    nameProject,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -155,11 +109,8 @@ export function EditorCanvasHost() {
     embedMode,
     workbenchMode,
     endVote,
-    exitFormatTool,
     fitToScreen,
-    folders,
     followLink,
-    formatSourceId,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
@@ -176,8 +127,6 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveProjectToFolder,
-    moveProjectTo,
     narrowMultiSelection,
     newProject,
     openActionPopover,
@@ -186,14 +135,11 @@ export function EditorCanvasHost() {
     reopenAction,
     linkedActions,
     openComments,
-    openProject,
     openNote,
     pauseTimer,
-    pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     resetTimer,
     resumeTimer,
     retractVote,
@@ -206,7 +152,6 @@ export function EditorCanvasHost() {
     readSelection,
     selectElement,
     selectMarquee,
-    confirm,
     selfParticipant,
     sessionShareCode,
     pressSessionButton,
@@ -219,45 +164,30 @@ export function EditorCanvasHost() {
     pickerFor,
     collabElements,
     tabs,
-    setCanvasTool,
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setProjectList,
-    setProjectName,
     setEditingId,
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
-    setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
     setSelectedId,
     setPageHeading,
     appendWebRowTo,
-    growMindNode,
-    flowchartActions,
-    entityActions,
-    mindOutline,
-    tidyMindMap,
-    abandonMindNode,
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedProjects,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     startTimer,
     startVote,
     tabSummaries,
-    teamProjects,
-    teamFolders,
-    teams,
-    refreshTeamLibraries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -281,20 +211,6 @@ export function EditorCanvasHost() {
 
   // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
   const sessionTools = useSessionTools();
-  // A stable reference for the list-shaped prop the Explorer takes, so the
-  // (React.memo'd) panel doesn't re-render on every drag frame just because
-  // the editor re-rendered. It recomputes only when its real input changes.
-  const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-projects.md) - see useTeamFolderActions.
-  const viewerId = selfParticipant?.id ?? null;
-  const onTeamFolders = useTeamFolderActions({
-    accountUserId,
-    viewerId,
-    teamFolders,
-    refreshTeamLibraries,
-    confirm,
-  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -385,13 +301,6 @@ export function EditorCanvasHost() {
     setContextMenu,
   });
 
-  // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
-  // preview. Resolved here rather than in the panel so the panel stays a
-  // renderer and never reaches into the tab.
-  const formatSource = formatSourceId
-    ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
-    : null;
-
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md). One bag for their faces;
   // the write handlers drop out
   // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
@@ -444,14 +353,6 @@ export function EditorCanvasHost() {
           setViewportOffset={setViewportOffset}
           elements={canvasElements}
           tabLayers={activeTab.layers}
-          previewDrawnArrow={(intent, startX, startY, endX, endY) =>
-            drawnArrowAsShown(intent, startX, startY, endX, endY, {
-              elements: activeTab.elements,
-              theme: activeTheme,
-              styleNewElement,
-              surface,
-            })
-          }
           layerInertIds={layerInertIds}
           shiftDupGhostIds={shiftDupGhostIds}
           snapGuideStore={snapGuideStore}
@@ -463,7 +364,6 @@ export function EditorCanvasHost() {
           }}
           onSelectMarquee={selectMarquee}
           canvasTool={canvasTool}
-          onSetCanvasTool={setCanvasTool}
           // Session button (docs/specs/012-collaboration/session-button.md) / Picker (docs/specs/012-collaboration/picker.md):
           // see useBehaviourElements — the press resolves what to do from the
           // element and calls the tool that already exists.
@@ -533,46 +433,13 @@ export function EditorCanvasHost() {
           }}
           editingId={editingId}
           editCursorAtEnd={editCursorAtEnd}
-          formatSourceId={formatSourceId}
           canUndo={canUndo && !activeTabLocked}
           canRedo={canRedo && !activeTabLocked}
-          onAddShape={addShape}
-          onAddIcon={addIcon}
-          onAddSticker={addSticker}
-          onAddTechIcon={addTechIcon}
-          onAddTable={addTable}
-          onAddAnnotation={addAnnotation}
-          onAddLinkCard={addLinkCard}
-          onAddVideo={addVideo}
-          onAddBanner={addBanner}
-          onAddHero={addHero}
-          onAddHeader={addHeader}
-          onAddCallout={addCallout}
-          onAddStatRow={addStatRow}
-          onAddProcess={addProcess}
-          onAddFlowchart={addFlowchart}
-          onAddAvatar={addAvatar}
-          onAddText={addText}
-          onAddSticky={addSticky}
           onDropFile={isReadOnly ? undefined : dropBoardFile}
-          onAddArrow={addArrow}
           reshapingArrowId={reshapingArrowId}
-          onBeginPolygon={beginPolygon}
-          pendingDraw={pendingDraw}
-          onCommitDraw={commitDraw}
-          onCommitPolygon={commitPolygon}
           settings={userPreferences}
-          onCancelDraw={cancelDrawShape}
           onUndo={undo}
           onRedo={redo}
-          projectList={projectList}
-          folders={folders}
-          sharedProjects={sharedProjects}
-          teams={explorerTeams}
-          teamFolders={teamFolders}
-          teamProjects={teamProjects}
-          onDismissShared={(id) => void dismissSharedProject(id)}
-          projectListLoading={projectListLoading}
           mapPosition={mapPosition}
           onMoveMap={(x, y) =>
             // Equality-guarded so a drag tick that resolves to the same spot
@@ -584,28 +451,6 @@ export function EditorCanvasHost() {
           activeLayerId={activeLayerId}
           layerCounts={layerCounts}
           sessionTools={sessionTools}
-          userPreferences={userPreferences}
-          onToggleRecentExclusion={toggleRecentExclusion}
-          favouriteIds={favouriteIds}
-          onToggleFavourite={toggleFavourite}
-          formatConfig={formatConfig}
-          onToggleFormatGroup={onToggleFormatGroup}
-          onSetFormatMode={onSetFormatMode}
-          // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
-          // the loaded element's name and the three colours the swatch draws.
-          formatBrushSource={
-            formatSource
-              ? {
-                  name: describeOne(formatSource),
-                  fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                  stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                  textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                }
-              : null
-          }
-          formatPanelPosition={formatPanelPosition}
-          onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
-          onResetFormatPanel={() => setFormatPanelPosition(null)}
           voteResults={voteResults}
           onJumpToVoteResult={jumpToVoteResult}
           isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
@@ -666,7 +511,8 @@ export function EditorCanvasHost() {
                   done ? completeAction(id, actionId) : reopenAction(id, actionId)
           }
           currentProjectId={projectId}
-          onOpenProject={openProject}
+          currentShareCode={sessionShareCode}
+          onRenameCurrentProject={nameProject}
           onNewProject={newProject}
           explorerMenuActions={{
             // The header's Share gate: the owner, or a joined member of the project's team
@@ -688,35 +534,10 @@ export function EditorCanvasHost() {
               track('UI', 'Opened', 'Settings');
             },
           }}
-          onRenameCurrent={(next) => {
-            const prev = projectName.trim();
-            const nextTrim = next.trim();
-            setProjectName(next);
-            if (nextTrim && projectId)
-              setProjectList((prev) =>
-                prev.map((d) => (d.id === projectId ? { ...d, name: nextTrim } : d)),
-              );
-            if (nextTrim && nextTrim !== prev) track('Project', 'Renamed');
-          }}
-          onDeleteProject={(id) => void deleteProject(id)}
-          onLibraryChanged={refreshOwnProjects}
-          onDuplicateProject={(id) => void duplicateProject(id)}
-          onCreateFolder={createFolder}
-          onRenameFolder={renameFolder}
-          onDeleteFolder={(id) => void deleteFolder(id)}
-          onTeamFolders={onTeamFolders}
-          onMoveProjectToFolder={moveProjectToFolder}
-          onMoveProjectTo={moveProjectTo}
           onDeselect={() => {
-            // Clicking empty canvas also cancels an armed arrow-connect, and
-            // wraps up the Format tool — restoring the pre-Format tool — so a
-            // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
-            if (canvasTool === 'format') exitFormatTool();
-            cancelConnect();
             setSelectedId(null);
             setMultiSelectedIds(new Set());
             setEditingId(null);
-            setFormatSourceId(null);
             setContextMenu(null);
           }}
           onSelect={selectElement}
@@ -800,20 +621,12 @@ export function EditorCanvasHost() {
                   })
           }
           onBeginDrag={beginDrag}
-          onPressArmedAction={pressArmedAction}
           onBeginEdit={beginEdit}
           onCommitLabel={commitLabel}
           onAddTableRow={appendTableRowSelected}
           onAddTableColumn={appendTableColumnSelected}
           onSetPageHeading={setPageHeading}
           onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
-          onGrowMindNode={growMindNode}
-          flowchartActions={isReadOnly ? undefined : flowchartActions}
-          entityActions={isReadOnly ? undefined : entityActions}
-          canEditMindOutline={mindOutline.canEdit}
-          onEditMindOutline={mindOutline.open}
-          onTidyMindMap={tidyMindMap}
-          onAbandonMindNode={abandonMindNode}
           chartPalette={themeChartPalette(activeTheme)}
           onCancelEdit={cancelEdit}
           onBeginEndpointDrag={beginEndpointDrag}
@@ -826,7 +639,6 @@ export function EditorCanvasHost() {
           onBeginArrowLabelDrag={beginArrowLabelDrag}
           onBeginArrowElbowDrag={beginArrowElbowDrag}
           onShiftSelect={toggleInMultiSelect}
-          onExitFormatTool={exitFormatTool}
           onSetTextAlign={setTextAlignSelected}
           onFollowLink={followLink}
           onOpenComments={openComments}
@@ -867,7 +679,6 @@ export function EditorCanvasHost() {
           onPrevVoteResult={prevVoteResult}
           onDoneVoteReview={doneVoteReview}
           onToggleAspectLock={toggleAspectLockSelected}
-          onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
           onSpawnConnect={spawnConnectSelected}
           onStartArrow={handleStartArrow}
           onToggleLockSelected={toggleLockSelected}

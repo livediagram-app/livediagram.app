@@ -6,8 +6,8 @@
 import type { ComponentProps } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import { PlanIcon } from '@liveplanner/ui';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { usePlan } from '@/components/plan/PlanContext';
 import { trackSetup } from '@/components/plan/track-board-setup';

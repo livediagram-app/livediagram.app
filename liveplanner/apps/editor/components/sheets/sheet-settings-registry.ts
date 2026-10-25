@@ -6,7 +6,7 @@
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type SheetSettingsEntry = {
   controller: SheetController;

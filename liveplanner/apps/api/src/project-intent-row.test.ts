@@ -28,17 +28,6 @@ describe('readRecordedIntent', () => {
     });
   });
 
-  it.each(['diagram', 'draw', 'workshop', 'pages', 'illustrate', 'infographic', 'facilitate'])(
-    'reads a row opening in the retired %s as Plan',
-    (retired) => {
-      expect(readRecordedIntent(row(retired, 'board', 'kanban'))).toEqual({
-        opensIn: 'plan',
-        tabKind: 'board',
-        templateFamily: 'kanban',
-      });
-    },
-  );
-
   it('reads a diagram or retired event-storming kind as unknown', () => {
     expect(readRecordedIntent(row('plan', 'event-storming', null)).tabKind).toBeNull();
     expect(readRecordedIntent(row('plan', 'diagram', null)).tabKind).toBeNull();
@@ -48,6 +37,8 @@ describe('readRecordedIntent', () => {
     ['no record', row(null, null, null)],
     ['an unknown opens-in with stray values', row(null, 'board', 'kanban')],
     ['an unknown mode', row('pixel', 'board', 'kanban')],
+    // liveplanner never recorded livediagram's modes.
+    ['a livediagram mode', row('diagram', 'board', 'kanban')],
   ])('reads %s as unknown throughout', (_label, stored) => {
     expect(readRecordedIntent(stored)).toEqual({
       opensIn: null,

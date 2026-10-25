@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, useEscape } from '@livediagram/ui';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
-import { CanvasModalCard } from './CanvasModalCard';
+import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { IdentityNameRow } from './IdentityNameRow';
 import { SparkleIcon } from './template-picker-icons';
 
@@ -22,12 +22,12 @@ export function IdentityPrompt({
   participant: Participant;
   // Greets the visitor by the document ("Welcome to 'API sketch'").
   documentName?: string;
-  // The Clerk account's name: the input reads it, locked.
+  // The account's name: the input reads it, locked.
   lockedName?: string | null;
   onJoin: (name: string) => void;
   onCancel: () => void;
 }) {
-  // Over the canvas: silence its shortcut and paste listeners behind it (lib/modal-guard).
+  // Over the canvas: silence its shortcut and paste listeners behind it (@liveworkspace/workbench/lib/modal-guard).
   useModalGuard(true);
   const nameLocked = !!lockedName;
   const [name, setName] = useState(lockedName ?? participant.name);
@@ -41,7 +41,7 @@ export function IdentityPrompt({
   const effectiveName = name.trim() || participant.name;
   const title = documentName?.trim()
     ? `Welcome to '${documentName.trim()}'`
-    : 'Welcome to this document';
+    : 'Welcome to this canvas';
   return (
     <CanvasModalCard label="Confirm your name" width="sm:w-[26rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">
@@ -51,8 +51,8 @@ export function IdentityPrompt({
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {nameLocked
-              ? 'This is the name from your account; others will see it on this document.'
-              : 'Pick the name people will see while you collaborate on this document.'}
+              ? 'This is the name from your account; others will see it on this canvas.'
+              : 'Pick the name people will see while you collaborate on this canvas.'}
           </p>
         </div>
         <button

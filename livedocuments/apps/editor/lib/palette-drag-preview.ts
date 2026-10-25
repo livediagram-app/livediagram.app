@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import type { ShapeKind } from '@livedocuments/document';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A
 // palette tile publishes what it's dragging on `dragstart` so the canvas's
@@ -26,12 +26,6 @@ export function setPaletteDragPreview(next: PaletteDragPreview | null): void {
   current = next;
   listeners.notify();
 }
-
-// The drag in flight, read outside render (a dragover handler), and told when it ends.
-export function getPaletteDragPreview(): PaletteDragPreview | null {
-  return current;
-}
-export const subscribePaletteDragPreview = listeners.subscribe;
 
 export function usePaletteDragPreview(): PaletteDragPreview | null {
   return useSyncExternalStore(

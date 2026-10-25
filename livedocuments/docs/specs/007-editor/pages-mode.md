@@ -11,7 +11,8 @@ The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.t
 `pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link) read through one
 function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
 and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
-reads as nothing. There is no mode switch and no mode step on `/new`.
+reads as nothing. There is no mode switch and no mode step on `/new`, and no surface reads the mode from a
+context: the editor resolves it once (`useEditorMode`) and hands it to the canvas and the tours that ask.
 
 ## The pages
 
@@ -43,10 +44,9 @@ page is and offers; this section is the basics.
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** sits in the gap's width to the right of the
-  last page, level with its middle, adding another page like the last; under it
-  a smaller button opens **Add a Page** to choose a page of any kind
-  ("Adding a page"). The page goes after the last; both
-  are gone at the limit, and the view then frames the new page.
+  last page, level with its middle, adding another page like the last, always of the
+  tab's own kind ("One kind a tab", "Adding a page"). The page goes after the last; the +
+  is gone at the limit, and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's
@@ -87,7 +87,7 @@ page is and offers; this section is the basics.
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                     |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article** or **slide** page.                                         |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article** or **slide** page. Every page of a tab is of one kind.     |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
 | **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
@@ -133,7 +133,8 @@ nothing moves under reduced motion.
 ## Page kinds
 
 A page is one of three kinds (`Page.kind`), chosen when it is made and never changed
-afterwards (the one exception: the first page's own choice, below):
+afterwards (the one exception: the first page's own choice, below). Every page of a tab is of
+one kind ("One kind a tab"):
 
 - **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
   a sheet to lay out elements on, freely, starting from a layout. Everything in this spec applies to it.
@@ -145,26 +146,33 @@ afterwards (the one exception: the first page's own choice, below):
   and no other size. It starts from the **slide layouts** rather than the infographic ones.
   Everything in this spec for infographic pages applies to it except where a rule says otherwise.
 
-**Adding a page**: two buttons sit after the last page, one above the other (centred in the gap
-after it, level with its middle, or, zoomed out so far that the gap is narrower than them, kept 12
-screen px clear of the page), held at one screen size:
+### One kind a tab
 
-- **The +** adds **another page like the last one**, at once: its kind and shape (an infographic
-  page's size and orientation, a slide's size, an article's paper for a new article). It carries the last page's background as every new page
-  does, never its content. Its tooltip and name say what it adds: **Add Another Slide**, **Add
-  Another Infographic Page**, **Add Another Article**.
-- **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
-  compact list, one row per kind, its glyph, its name and a short line, so it stays small however
-  many kinds there are:
-  - **Infographic**: "Lay out icons, charts and media."
-  - **Article**: "Write, flowing onto new pages."
-  - **Slide**: "A widescreen slide for a deck."
+A tab is a deck, an infographic or a set of articles, never a mix: **every page of a tab is of
+the tab's kind**, the kind of its first page (`tabPageKind`, `packages/document/src/page.ts`; an
+unchosen first page reads as infographic). A deck holds only slides, an infographic tab only
+infographic pages, an article tab only articles (one or more, each flowing over its own pages).
 
-  The list hangs beside the button (right of it while there is room, else left), level with it,
-  scrolling inside the window when it cannot fit. Up and Down (Home, End) move between the rows,
-  Enter or a press chooses, Escape or an outside press closes.
+- The kind is set by the first page's choice (below), by the template a tab is made from, or by
+  putting anything on an unchosen first page (which is choosing Infographic by doing). It is never
+  changed afterwards: the first page's choice is offered only while the tab's only page is unchosen
+  and empty.
+- Adding a page (the +, Contents' **Add Page**, an agent's `add`, `write_article`'s new article)
+  only ever adds a page of the tab's kind. A page of any other kind is refused
+  (`kind_not_offered`): someone who wants another kind starts another tab.
+- A duplicate is of its page's kind, so it keeps the rule.
+- A tab stored with pages of more than one kind (made before this rule) opens as it is: nothing
+  is taken away or changed, and a page added to it is of its first page's kind.
 
-The first page's own choice (below) keeps its cards, two by two, arrow keys moving between them. A new
+**Adding a page**: the **+** sits after the last page (centred in the gap after it, level with its
+middle, or, zoomed out so far that the gap is narrower than it, kept 12 screen px clear of the
+page), held at one screen size. It adds **another page like the last one**, at once: its kind and
+shape (an infographic page's size and orientation, a slide's size, an article's paper for a new
+article). It carries the last page's background as every new page does, never its content. Its
+tooltip and name say what it adds: **Add Another Slide**, **Add Another Infographic Page**, **Add
+Another Article**. There is no way to choose another kind: the tab has one ("One kind a tab").
+
+The first page's own choice (below) shows the kinds as cards, two by two, arrow keys moving between them. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
 its orientation after a Fit to Content page, whose sides are that page's alone); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
@@ -183,22 +191,27 @@ slide document's slide (a Blank Slide Deck's, or the first page chosen as a slid
 slide added to a deck carries over the slide before it, as every page does. A new article
 starts on the plain paper as before, and a template that comes with content keeps the paper it
 was designed on. Every path that makes a page lands the same: adding
-one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
-a phone (a bottom sheet). The + already adds another of the last page's kind, so the list keeps one fixed order.
+one, choosing the first page's kind, the template picker and an AI tool's template.
 
 A tab with no pages stored starts with one page, its kind unchosen.
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
-cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
+**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over three
+cards:
+
+- **Infographic**: "A page to lay out: layouts, icons, charts and media."
+- **Article**: "A page to write on, flowing onto new pages as it grows."
+- **Slide**: "A slide for a deck: widescreen, ready to present."
+
+**Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
 choice goes; **Article** makes it the first page of a new article, the caret in its title (a page set to a size
 an article does not offer, the 16:9 Slide, becomes A4);
 **Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
-view, nor on a second page (a page added from the + is chosen in the popover).
+view, nor on a second page (a page added from the + is of the tab's kind).
 The **Project Brief** template (kind `article`) in /new starts a tab with one article.
 
 ## The page panel
@@ -1254,14 +1267,12 @@ Both show the same list:
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
   button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
   control. Up, Down, Home and End move between the rows' buttons.
-- **Adding**: an Editor's footer is the same pair as the canvas's + after the last page ("Adding a
+- **Adding**: an Editor's footer is the canvas's + after the last page ("Adding a
   page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
   tooltip names what it adds, **Add Another Slide**: its kind and
-  shape), and beside it a square button, **Add a Page of
-  Any Kind**, opening Add a Page (the kinds as rows) beside
-  it. A new page lands after the last (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
-  limit both buttons are disabled with the limit in
-  their tooltips. A Participant and a Viewer see the list without the footer.
+  shape), always of the tab's kind ("One kind a tab"). A new page lands after the last (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
+  limit the button is disabled with the limit in
+  its tooltip. A Participant and a Viewer see the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so
@@ -1450,7 +1461,7 @@ is while the rest of the tab is worked on.
   no Undo / Redo), while there are two pages or more: a cluster strip of the cluster's own 44 px
   controls, **Previous page**, the place of the page someone is on ("2 of 5"), **Next page**
   (disabled at either end). An arrow fits that neighbouring page in the view, as a press on its label does, gliding
-  there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `apps/editor/lib/viewport-glide.ts`) so the eye follows the
+  there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `../packages/workbench/src/lib/viewport-glide.ts`) so the eye follows the
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
   the pages; not in zen, and not on a phone, whose bottom row has no room for it (a swipe moves

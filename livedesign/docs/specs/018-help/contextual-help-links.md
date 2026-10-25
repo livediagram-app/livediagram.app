@@ -7,7 +7,7 @@ Status: accepted
 The help centre ([Help app](help-app.md)) holds 130+ articles, but the editor only exposes
 **one** entry point to it: the global Help icon in the editor header
 (`EditorHeader.tsx`, to the right of the Share button). A user looking at a specific dialog (Share expiry, password
-gate, export formats) or a specific toggle (auto-attach arrows, AI assistant)
+gate, export formats) or a specific toggle (auto-attach arrows, alignment guides)
 has no in-context path to the article that explains it; they have to open the
 help centre and search for it by hand.
 
@@ -81,13 +81,13 @@ is.
 Grouped by priority; each links the keyed article.
 
 > **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity (since removed), Comments, and AI panels previously each had a bare-glyph
+> Activity (since removed), Comments, and AI (since removed) panels previously each had a bare-glyph
 > `HelpArticleLink` in their header. These were removed: the editor header
 > already has a prominent global Help icon, and a `?` on every panel made the
 > canvas chrome noisy. Contextual links now live only in dialogs, in-panel
 > settings (the Settings dialog's rows), and **empty-state messages** (the
 > empty-canvas card keeps its link). The articles themselves
-> (`explorerPanel`, `palette`, `comments`, `ai-tools`)
+> (`explorerPanel`, `palette`, `comments`)
 > stay in the registry, reachable from the help centre and the header.
 
 **High priority**
@@ -97,10 +97,6 @@ Grouped by priority; each links the keyed article.
 - Share dialog - header (roles / real-time) -> `sharing`
 - Palette settings - auto-attach arrows -> `auto-attach-arrows`
 - Palette settings - alignment guides -> `alignment-guides`
-- Settings - AI assistant toggle -> `ai-tools`
-- AI panel - **Connect agent** button (on the Ask / Clean row) -> `connect-ai-mcp`. Uses the
-  `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
-  a custom label it still reads "Help").
 - Export dialog header -> `exporting-designs` (isometric toggle -> `isometric-mode`)
 - Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
@@ -109,7 +105,6 @@ Grouped by priority; each links the keyed article.
 
 - Canvas/Theme dialog -> `changing-the-background` / `changing-theme`
 - Link picker -> `links` (tab links -> `linking-tabs`)
-- Themes pane empty state -> `custom-themes`
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`

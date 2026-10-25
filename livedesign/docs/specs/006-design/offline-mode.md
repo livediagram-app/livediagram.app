@@ -93,7 +93,6 @@ _require the server_, which are hidden or gated (not broken) for an offline desi
 | Live presence / realtime                                              | N/A — a private design never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
 | Teams / shared library                                                | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                             |
 | Comments                                                              | Local-only (just you), stored in the design; no cross-user.                                                                                                                                                                                                                   |
-| AI assistance                                                         | Works online — it reads the current canvas, not the stored design ([AI Assistance](../007-editor/ai-assistance.md)); only a lost connection stops it.                                                                                                                         |
 | Duplicate                                                             | Makes **another offline design** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
 | Folders                                                               | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                  |
 | Tab linking ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                      |
@@ -122,13 +121,13 @@ auth has settled, the path names a design registered in the local index
   `'self'` placeholder participant.
 - **Owner-scoped work waits for the real reader.** Under `'self'`, nothing is
   read or written as an owner: the participant record is not saved, preferences
-  stay local (`writeUserPreferences`), and the custom themes,
+  stay local (`writeUserPreferences`), and the
   recent images and Explorer lists load only once the reader is known. Sync
   Design from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
-  `app/design/[id]/resolve-participant.ts`: the account id or signed guest id,
-  then the participant row), followed by the Explorer lists and the guest naming
+  `app/design/[id]/resolve-participant.ts`: the account id or the guest token's id,
+  then the profile), followed by the Explorer lists and the guest naming
   nudge. The design is not reloaded: an offline design is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
@@ -174,19 +173,15 @@ Explorer lists follow after the paint.
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
-- **Explorer.** Offline designs appear in Recent (and the other lists)
-  alongside cloud designs, each with the **This Browser** pill (below) and the
-  fixed offline thumbnail, so a design in This Browser is recognisable at a glance.
-  The Explorer view merges the API-fetched cloud list with the local index of
-  offline designs; offline rows never trigger a server fetch (list, thumbnail,
-  or otherwise).
-- **The reader's own.** An offline design counts as one of the reader's own
-  designs: Space `mine` and owner "You", like a design in My Work
-  ([Explorer structure: designs in This Browser](../013-workspace/explorer-structure.md#designs-in-this-browser)).
-- **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
-  [Explorer structure](../013-workspace/explorer-structure.md)) opens
-  `/explorer/offline`, the list of every offline design, titled **This
-  browser**; the row shows while this browser holds at least one.
+- **Explorer.** The Explorer lists what liveworkspace's index holds, and offline designs never reach it. livedesign
+  keeps a small list of them in this browser (id, title and dates, never their content,
+  `@liveworkspace/explorer/this-browser`), which the Explorer on livedesign's own address reads: a **This Browser**
+  sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
+  place in Home's Jump Back In, each with the **This Browser** pill (below), opening in the editor. Each live row has
+  **Sync Design** for a signed-in person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
+  this browser holds at least one, opening its pane in place, **Sync Design** run there for a signed-in person
+  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
+  `/explorer/offline`, its query kept.
 - **Home.** An offline design's opens are counted in its own local record, never
   sent anywhere, so Home's Jump Back In places it among the reader's other
   designs by the same rule, with the **This Browser** pill on its thumbnail
@@ -229,6 +224,8 @@ Conversion works **both directions**, from the Explorer row menu (in both the
 in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
 the move prompt ([Auth + guest access → Moving designs in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-designs-in-this-browser-after-signing-in)).
+
+On a fresh, unshared design's start screen the **Sync Design to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
 
 ### Sharing a design in This Browser
 
@@ -274,17 +271,35 @@ reload:
 5. **The room opens** (`designServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer's row menu and the move prompt after signing in still reload after a
-sync: the design there is not the one on screen, or several move at once.
+The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+design open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
+once the move settles. Only the move prompt after signing in still reloads, since several move at once.
+
+### Taking offline in place
+
+Take Offline from the start screen's **Sync Design to Server** switch
+([Save Locations → On the start screen](save-locations.md#on-the-start-screen)), `useTakeOfflineInPlace` in
+`app/design/[id]/useTakeOfflineInPlace.ts`, converts the open design without a reload and without the confirmation: the
+switch only shows on a fresh design nobody else has, so there is nothing to lose.
+
+1. **It waits for this browser's last save**, as a sync in place does (`SYNC_SAVE_WAIT_MS`, then
+   `SyncStillSavingError`).
+2. **It closes the room first** (`designServerStored` turns false), so the server delete's echo never reaches the open
+   editor as a deletion. A failure opens it again and the design stays on the server.
+3. **It takes the design offline** with `takeCloudOffline`, exactly as Take Offline below.
+4. **The offline index announces the move**: the header badge and every `useIsOfflineDesign` follow, and every later save
+   goes to IndexedDB by the design's id.
+5. **The template-pick note is dropped** (a template picked now has no server folder to go to), the move prompt after
+   signing in is told the design stays here, and the Explorer list refreshes.
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Design"** (one name everywhere: the Explorer row menu, the
-Share dialog gate and the move prompt after signing in).
+Action: **"Sync Design"** (one name everywhere: the design menu and This Browser's rows in the editor's Explorer panel,
+the Explorer's This Browser view, the Share dialog gate and the move prompt after signing in).
 
 - Uploads the design's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
-  cloud design owned by the current identity (signed-in account, or the guest
-  `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  cloud design owned by the current identity (signed-in account, or the liveworkspace
+  guest if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Images re-home:** each embedded `data:` URI is uploaded to the gallery
   (SHA-256 dedupe server-side, [Image element + per-owner gallery](../009-elements/images.md)) and the element's reference swaps to
   the returned R2 id, so the cloud copy carries real gallery images instead of
@@ -318,14 +333,19 @@ Share dialog gate and the move prompt after signing in).
   of a design while one runs (a second menu, or the Share gate) does nothing; the
   guard lives with the conversion, not with the menu that started it, which closes.
 - On success the **local copy is removed** from IndexedDB so there's one source
-  of truth; the design is now a cloud design (Share / AI / Teams reappear). The
+  of truth; the design is now a cloud design (Share / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
   turns into the cloud design in place ([Syncing in place](#syncing-in-place));
-  from the Explorer it reloads.
+  from the Explorer panel it moves without a reload too.
 
 ### Take offline (Cloud → Offline)
 
-Action: **"Take Offline"**. This is **destructive on the server** and gated by a
+Action: **"Take Offline"**, on a design's menu in the editor's Explorer panel (the shared Explorer's
+`itemMenu`, `hooks/persistence/useOfflineItemMenu.tsx`: only a page on this app's origin reaches the browser's
+store) and in the Explorer on livedesign's address, which hands it to the editor at the design's own address
+(`/design/<id>?convert=take-offline&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts` and the shared `@liveworkspace/explorer/conversion-handoff`): the editor checks the design
+is the person's to move, then asks the same confirmation. It is offered on a design the person can edit in their library or a team's, never on one reached
+through a link. This is **destructive on the server** and gated by a
 confirmation:
 
 - **Confirmation** warns clearly: _"This removes it from your account and every
@@ -447,7 +467,7 @@ covers:
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Design" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
-- What's unavailable offline: sharing, live collaboration, teams, and AI.
+- What's unavailable offline: sharing, live collaboration and teams.
 
 Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Design
 wizard's data-loss warning to this article.
@@ -464,8 +484,7 @@ Track adoption without content, reusing the closed vocabulary:
 - On conversion, a coarse event for each direction, so uptake and the
   destructive take-offline path are visible: `Design`/`Moved` with type
   `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from
-  the shared `useOfflineConversion` handlers before their reload (the telemetry
-  engine's pagehide beacon carries it through), from `useSyncInPlace` for the
+  the shared `useOfflineConversion` handlers, from `useSyncInPlace` for the
   Share dialog, and per design from the move prompt.
 - No design content or ids ever leave (the `type` bound in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) holds).
 

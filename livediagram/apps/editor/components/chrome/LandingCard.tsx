@@ -20,14 +20,6 @@ export function LandingCard({ children }: { children: ReactNode }) {
   );
 }
 
-export function Eyebrow({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-      {children}
-    </p>
-  );
-}
-
 export function Heading({ children }: { children: ReactNode }) {
   return (
     <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-50">{children}</h1>
@@ -43,17 +35,6 @@ export function PrimaryLink({ href, children }: { href: string; children: ReactN
   // anchor escape hatch; Button itself is <button>-only).
   return (
     <a href={href} className={buttonClassName({ size: 'md', className: 'mt-5 px-5' })}>
-      <ButtonContent>{children}</ButtonContent>
-    </a>
-  );
-}
-
-export function SecondaryLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a
-      href={href}
-      className={buttonClassName({ variant: 'secondary', size: 'md', className: 'px-5' })}
-    >
       <ButtonContent>{children}</ButtonContent>
     </a>
   );

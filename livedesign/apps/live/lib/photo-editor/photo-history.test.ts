@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PHOTO_HISTORY_LIMIT, PhotoHistory } from './photo-history';
+import { PHOTO_HISTORY_STEPS } from '@livedesign/photo-engine';
+import { PhotoHistory } from './photo-history';
 
 describe('PhotoHistory', () => {
   it('lists the edits and finds the steps to any of them', () => {
@@ -29,11 +30,11 @@ describe('PhotoHistory', () => {
 
   it('keeps the last fifty', () => {
     const h = new PhotoHistory();
-    for (let i = 1; i <= PHOTO_HISTORY_LIMIT + 5; i++) h.record(`E${i}`, 'p', i);
-    expect(h.entries).toHaveLength(PHOTO_HISTORY_LIMIT);
+    for (let i = 1; i <= PHOTO_HISTORY_STEPS + 5; i++) h.record(`E${i}`, 'p', i);
+    expect(h.entries).toHaveLength(PHOTO_HISTORY_STEPS);
     expect(h.entries[0]!.label).toBe('E6');
-    h.drop(PHOTO_HISTORY_LIMIT + 5);
-    expect(h.entries.at(-1)!.label).toBe(`E${PHOTO_HISTORY_LIMIT + 4}`);
+    h.drop(PHOTO_HISTORY_STEPS + 5);
+    expect(h.entries.at(-1)!.label).toBe(`E${PHOTO_HISTORY_STEPS + 4}`);
     h.drop(999);
     h.clear();
     expect(h.entries).toEqual([]);

@@ -2,7 +2,7 @@
   "name": "@liveplanner/ui",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -11,7 +11,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
   },
@@ -27,8 +26,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -40,12 +39,17 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/project": "workspace:*",
-    "@liveplanner/help-registry": "workspace:*",
-    "@liveplanner/icons": "workspace:^",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/tailwind-config": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/account-menu": "workspace:*",
+    "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
+    "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   }
 }

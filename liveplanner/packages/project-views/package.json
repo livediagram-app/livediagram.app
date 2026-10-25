@@ -2,7 +2,7 @@
   "name": "@liveplanner/project-views",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -19,12 +19,11 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/project": "workspace:*",
-    "@liveplanner/templates": "workspace:*"
+    "@liveplanner/project": "workspace:*"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

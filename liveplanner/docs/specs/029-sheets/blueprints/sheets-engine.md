@@ -529,39 +529,39 @@ Every path is under `packages/sheets/src/`.
 
 ## Constants and configuration
 
-| Constant                | Value                              | Provenance / safe range                                   |
-| ----------------------- | ---------------------------------- | --------------------------------------------------------- |
-| `SHEET_ROWS_NEW`        | 100                                | Spec; a new sheet's rows                                  |
-| `SHEET_COLS_NEW`        | 26                                 | Spec; A to Z                                              |
-| `SHEET_ROWS_MAX`        | 10000                              | Spec; 1,000–50,000 (layout JSON ~70 KB at 10,000)         |
-| `SHEET_COLS_MAX`        | 200                                | Spec; A to GR                                             |
-| `SHEET_CELLS_MAX`       | 50000                              | Spec; bounds the GET and the recalc                       |
-| `SHEET_BYTES_MAX`       | 4194304                            | Spec; 4 MB of stored cells                                |
-| `PROJECT_SHEETS_MAX`   | 200                                | Spec                                                      |
-| `PROJECT_CELLS_MAX`    | 200000                             | Spec                                                      |
-| `INPUT_MAX`             | 10000                              | Spec; characters                                          |
-| `FORMULA_MAX`           | 8000                               | Spec; characters                                          |
-| `FORMULA_DEPTH_MAX`     | 64                                 | Spec; nesting                                             |
-| `SHEET_TITLE_MAX`       | 60                                 | Spec                                                      |
-| `SHEET_FREEZE_ROWS_MAX` | 100                                | Default (D16)                                             |
-| `SHEET_FREEZE_COLS_MAX` | 26                                 | Default (D16)                                             |
-| `SHEET_MERGES_MAX`      | 1000                               | Spec                                                      |
-| `SHEET_SIZED_AXES_MAX`  | 5000                               | Spec                                                      |
-| `SHEET_WRITE_CELLS_MAX` | 5000                               | Spec; a write's cells                                     |
-| `SHEET_WRITE_BYTES_MAX` | 1048576                            | Default (D2); one D1 parameter stays well under D1's 2 MB |
-| `RECALC_READS_MAX`      | 5000000                            | Spec                                                      |
-| `RANGE_CELLS_MAX`       | 1000000                            | Spec                                                      |
-| `ARRAY_CELLS_MAX`       | 100000                             | Default (D3)                                              |
-| `TEXT_RESULT_MAX`       | 10000                              | Matches `INPUT_MAX`                                       |
-| `REGEX_WORK_MAX`        | 10000000                           | Default (D4); about 50 ms of scanning                     |
-| `REGEX_BACKTRACK_MAX`   | 10000000                           | Measured: a few hundred ms at worst (limits.ts)           |
-| `COLUMN_WIDTH_NEW`      | 120                                | Spec; px                                                  |
-| `ROW_HEIGHT_NEW`        | 28                                 | Spec; px                                                  |
-| `COLUMN_WIDTH_MIN`      | 24                                 | Spec                                                      |
-| `ROW_HEIGHT_MIN`        | 18                                 | Spec                                                      |
-| `SHEET_ID_PATTERN`      | `/^[A-Za-z0-9_-]{6,32}$/`          | As items' ids                                             |
-| `AXIS_ID_PATTERN`       | `/^[a-z0-9]{4,12}$/`               | 6-char random base-36 ids by default; collisions refused  |
-| `CURRENCY_SYMBOLS`      | `£ $ € ¥ ₹ ₩ ₽ ₺ ₪ ₫ R$ CHF kr zł` | Common symbols; extendable                                |
+| Constant                | Value                              | Provenance / safe range                                       |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------- |
+| `SHEET_ROWS_NEW`        | 100                                | Spec; a new sheet's rows                                      |
+| `SHEET_COLS_NEW`        | 26                                 | Spec; A to Z                                                  |
+| `SHEET_ROWS_MAX`        | 10000                              | Spec; 1,000–50,000 (layout JSON ~70 KB at 10,000)             |
+| `SHEET_COLS_MAX`        | 200                                | Spec; A to GR                                                 |
+| `SHEET_CELLS_MAX`       | 50000                              | Spec; bounds the GET and the recalc                           |
+| `SHEET_BYTES_MAX`       | 4194304                            | Spec; 4 MB of stored cells                                    |
+| `PROJECT_SHEETS_MAX`    | 200                                | Spec                                                          |
+| `PROJECT_CELLS_MAX`     | 200000                             | Spec                                                          |
+| `INPUT_MAX`             | 10000                              | Spec; characters                                              |
+| `FORMULA_MAX`           | 8000                               | Spec; characters                                              |
+| `FORMULA_DEPTH_MAX`     | 64                                 | Spec; nesting                                                 |
+| `SHEET_TITLE_MAX`       | 60                                 | Spec                                                          |
+| `SHEET_FREEZE_ROWS_MAX` | 100                                | Default (D16)                                                 |
+| `SHEET_FREEZE_COLS_MAX` | 26                                 | Default (D16)                                                 |
+| `SHEET_MERGES_MAX`      | 1000                               | Spec                                                          |
+| `SHEET_SIZED_AXES_MAX`  | 5000                               | Spec                                                          |
+| `SHEET_WRITE_CELLS_MAX` | 5000                               | Spec; a write's cells                                         |
+| `SHEET_WRITE_BYTES_MAX` | 1048576                            | Default (D2); one SQL parameter stays well under the 2 MB cap |
+| `RECALC_READS_MAX`      | 5000000                            | Spec                                                          |
+| `RANGE_CELLS_MAX`       | 1000000                            | Spec                                                          |
+| `ARRAY_CELLS_MAX`       | 100000                             | Default (D3)                                                  |
+| `TEXT_RESULT_MAX`       | 10000                              | Matches `INPUT_MAX`                                           |
+| `REGEX_WORK_MAX`        | 10000000                           | Default (D4); about 50 ms of scanning                         |
+| `REGEX_BACKTRACK_MAX`   | 10000000                           | Measured: a few hundred ms at worst (limits.ts)               |
+| `COLUMN_WIDTH_NEW`      | 120                                | Spec; px                                                      |
+| `ROW_HEIGHT_NEW`        | 28                                 | Spec; px                                                      |
+| `COLUMN_WIDTH_MIN`      | 24                                 | Spec                                                          |
+| `ROW_HEIGHT_MIN`        | 18                                 | Spec                                                          |
+| `SHEET_ID_PATTERN`      | `/^[A-Za-z0-9_-]{6,32}$/`          | As items' ids                                                 |
+| `AXIS_ID_PATTERN`       | `/^[a-z0-9]{4,12}$/`               | 6-char random base-36 ids by default; collisions refused      |
+| `CURRENCY_SYMBOLS`      | `£ $ € ¥ ₹ ₩ ₽ ₺ ₪ ₫ R$ CHF kr zł` | Common symbols; extendable                                    |
 
 ## Named ranges
 

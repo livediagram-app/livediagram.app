@@ -11,7 +11,7 @@ import { themeOptions, type ColourOption } from './colour-options';
 const NONE: readonly ColourOption[] = [];
 
 export function useThemeColours(): readonly ColourOption[] {
-  // Outside the editor (the Explorer's theme builder, a test) there is no active tab, so no group.
+  // Outside the editor (the Explorer, a test) there is no active tab, so no group.
   const editor = useContext(EditorContext);
   const inEditor = editor !== null;
   const themeId = editor?.activeTab?.theme;

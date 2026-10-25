@@ -10,8 +10,6 @@ vi.mock('@/lib/user-preferences', async (importOriginal) => ({
   fetchUserPreferences: (ownerId: string) => fetchUserPreferences(ownerId),
 }));
 
-type Deps = Parameters<typeof useEditorPreferences>[0];
-
 beforeEach(() => fetchUserPreferences.mockResolvedValue(null));
 afterEach(() => {
   window.localStorage.clear();
@@ -23,7 +21,7 @@ describe('useEditorPreferences', () => {
   it('starts from the preferences cached on this device', () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ alignmentGuides: false }));
     const { result } = renderHook(() =>
-      useEditorPreferences({ ownerId: 'self', passwordGated: false, setAiPanelVisible: vi.fn() }),
+      useEditorPreferences({ ownerId: 'self', passwordGated: false }),
     );
     expect(result.current.userPreferences).toEqual({ alignmentGuides: false });
     expect(result.current.alignmentGuidesRef.current).toBe(false);
@@ -32,7 +30,7 @@ describe('useEditorPreferences', () => {
   it('takes a set over the cache', () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ alignmentGuides: false }));
     const { result } = renderHook(() =>
-      useEditorPreferences({ ownerId: 'self', passwordGated: false, setAiPanelVisible: vi.fn() }),
+      useEditorPreferences({ ownerId: 'self', passwordGated: false }),
     );
     act(() => result.current.setUserPreferences({ reduceMotion: true }));
     expect(result.current.userPreferences).toEqual({ reduceMotion: true });
@@ -40,7 +38,7 @@ describe('useEditorPreferences', () => {
 
   it("follows another tab's write after a set, so the next write builds on it", () => {
     const { result } = renderHook(() =>
-      useEditorPreferences({ ownerId: 'self', passwordGated: false, setAiPanelVisible: vi.fn() }),
+      useEditorPreferences({ ownerId: 'self', passwordGated: false }),
     );
     act(() => result.current.setUserPreferences({ reduceMotion: true }));
     // Another tab writes the shared cache: the browser fires `storage` here.
@@ -57,23 +55,10 @@ describe('useEditorPreferences', () => {
   it('merges the server copy once the owner resolves, and settles', async () => {
     fetchUserPreferences.mockResolvedValue({ reduceMotion: true });
     const { result } = renderHook(() =>
-      useEditorPreferences({ ownerId: 'user_1', passwordGated: false, setAiPanelVisible: vi.fn() }),
+      useEditorPreferences({ ownerId: 'user_1', passwordGated: false }),
     );
     await waitFor(() => expect(result.current.prefsSettled).toBe(true));
     expect(fetchUserPreferences).toHaveBeenCalledWith('user_1');
     expect(result.current.userPreferences).toEqual({ reduceMotion: true });
-  });
-
-  it('opens the AI panel when AI assistance turns on, not when its setter changes', () => {
-    const first = vi.fn();
-    const { result, rerender } = renderHook((deps: Deps) => useEditorPreferences(deps), {
-      initialProps: { ownerId: 'self', passwordGated: false, setAiPanelVisible: first },
-    });
-    expect(first).not.toHaveBeenCalled();
-    act(() => result.current.setUserPreferences({ aiAssistanceEnabled: true }));
-    expect(first).toHaveBeenCalledWith(true);
-    const second = vi.fn();
-    rerender({ ownerId: 'self', passwordGated: false, setAiPanelVisible: second });
-    expect(second).not.toHaveBeenCalled();
   });
 });

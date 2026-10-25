@@ -16,6 +16,7 @@ import {
   pageHasOrientation,
   pageKindOf,
   pageSizesFor,
+  tabPageKind,
   withPages,
   type Page,
   type PageBackground,
@@ -48,7 +49,8 @@ export type PageEditRefusal =
   | 'page_limit'
   | 'photo_limit'
   | 'last_page'
-  | 'not_a_wireframe';
+  | 'not_a_wireframe'
+  | 'kind_not_offered';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -195,9 +197,10 @@ export function pageBackgroundStored<T extends PagesTab>(
 const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
 
 /**
- * A new page of a kind after the last: a blank page takes the last blank page's size
- * and orientation (else A4 portrait; A4 after a Fit to Content page); a logo page the
- * 1024 artboard. All on the plain paper.
+ * A new page of a kind after the last: a logo page the 1024 artboard, a wireframe page its device
+ * (else the last wireframe page's), a photo page a blank photo. All on the plain paper, carrying the
+ * last page's background. Only ever of the tab's kind (docs/specs/007-editor/pages-mode.md "One kind
+ * a tab"): any other, and any on a tab whose first page is still blank, is refused.
  */
 export function pageAdded<T extends PagesTab>(
   tab: T,
@@ -209,6 +212,7 @@ export function pageAdded<T extends PagesTab>(
   photoSize?: { width: number; height: number },
 ): PageEdit<T> {
   const pages = pagesOf(tab);
+  if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
   if (kind === 'photo') {
     // A photo page is its picture: never painted, its photo blank until something is put on it.
@@ -245,10 +249,12 @@ export function pageAddedLike<T extends PagesTab>(
   const pages = pagesOf(tab);
   const source = pages.find((p) => p.id === sourceId);
   if (!source) return refused('unknown_page');
-  if (source.kind !== 'wireframe') {
-    // A page whose kind is not chosen yet has no like to add.
-    const kind = pageKindOf(source);
-    if (!kind) return refused('unknown_page');
+  // A page whose kind is not chosen yet has no like to add.
+  const kind = pageKindOf(source);
+  if (!kind) return refused('unknown_page');
+  // One kind a tab: a stored tab mixing kinds adds only its first page's.
+  if (kind !== tabPageKind(pages)) return refused('kind_not_offered');
+  if (kind !== 'wireframe') {
     // A photo page's like is a blank photo of its picture's size.
     if (kind === 'photo') {
       const { width, height } = photoOfPage(tab, sourceId);

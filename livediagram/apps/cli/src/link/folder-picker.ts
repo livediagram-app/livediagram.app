@@ -7,7 +7,7 @@ import type { FolderChoice } from '@livediagram/agent-verbs';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { PICKER_PAGE } from './constants';
 
 export const noFoldersError = (host: string) =>

@@ -4,13 +4,7 @@ import { setPowerUserMode } from '@/lib/power-user-mode';
 
 // The "Set By Power User Mode" readout (docs/specs/007-editor/power-user-mode.md#in-settings).
 
-const ALL = new Set([
-  'alignmentGuides',
-  'autoRebindArrows',
-  'pagesTourSeen',
-  'elementToursSeen',
-  'aiSuggestedPrompts',
-]);
+const ALL = new Set(['alignmentGuides', 'autoRebindArrows', 'pagesTourSeen', 'elementToursSeen']);
 
 describe('presetSummaryLines', () => {
   it('lists every preset setting but Minimal chrome, with its value and home', () => {
@@ -21,7 +15,6 @@ describe('presetSummaryLines', () => {
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Pages Tours', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
-      ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);
   });
@@ -43,10 +36,10 @@ describe('presetSummaryLines', () => {
 
   it('shows a row that is not offered here without a way to it', () => {
     const offered = new Set(ALL);
-    offered.delete('aiSuggestedPrompts');
-    const prompts = presetSummaryLines(setPowerUserMode({}, true).prefs, offered).find(
-      (l) => l.rowKey === 'aiSuggestedPrompts',
+    offered.delete('elementToursSeen');
+    const tours = presetSummaryLines(setPowerUserMode({}, true).prefs, offered).find(
+      (l) => l.rowKey === 'elementToursSeen',
     )!;
-    expect(prompts.reachable).toBe(false);
+    expect(tours.reachable).toBe(false);
   });
 });

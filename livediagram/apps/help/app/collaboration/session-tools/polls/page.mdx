@@ -6,7 +6,7 @@ import { PollPromptSheet, PollResultsPanel } from '@/components/illustrations/po
 export const metadata = helpMetadata({
   title: 'Polls',
   description:
-    'Ask everyone in the document a quick question, see the answers tally live, and keep the results on the canvas if you want them.',
+    'Ask everyone in the canvas a quick question, see the answers tally live, and keep the results on the canvas if you want them.',
   path: '/help/collaboration/session-tools/polls/',
 });
 
@@ -27,7 +27,7 @@ Press the **Poll** button in the bottom bar to open the poll composer above it. 
 </Step>
 
 <Step n={2}>
-  Everyone currently in the document gets the question on a sheet that rises from the bottom of the
+  Everyone currently in the canvas gets the question on a sheet that rises from the bottom of the
   screen. The canvas stays live behind it, so they can look at what they are being asked about. They
   can answer, or press **Skip** (or **Esc**) if they would rather not weigh in.
 </Step>
@@ -46,23 +46,23 @@ Press the **Poll** button in the bottom bar to open the poll composer above it. 
   <PollResultsPanel />
 </Figure>
 
-Only one poll runs at a time in a document, and it goes to everyone in the document, whichever tab they are on. A [session button](/help/palette/behaviour/session-buttons/) on the canvas can carry a ready-made poll, so a template can ask its question with one press.
+Only one poll runs at a time in a canvas, and it goes to everyone in the canvas, whichever tab they are on. A [session button](/help/palette/behaviour/session-buttons/) on the canvas can carry a ready-made poll, so a template can ask its question with one press.
 
 ## Answer styles
 
 - **Yes / No**, and **+ Abstain** when you want to let people sit one out explicitly.
 - **Choices**: between two and ten options you write yourself.
-- **Collaborators**: the people in the document become the answers ("who should present?"). The list is taken when you ask, so anyone who joins afterwards isn't on it, and it needs at least two people.
+- **Collaborators**: the people in the canvas become the answers ("who should present?"). The list is taken when you ask, so anyone who joins afterwards isn't on it, and it needs at least two people.
 - **Rating 1-5**: for confidence, priority, or "how did that go?".
 - **Free text**: short written answers of up to 280 characters, listed in the panel as they arrive.
 
 ## Who can answer, and who can see results
 
-**Everyone who can take part is asked: editors and anyone on a Participant pass.** A Viewer isn't asked and doesn't see the poll or its results, so to hear back from an audience, share a Participant pass with them. Starting and ending a poll still needs edit access (and, while someone is the [facilitator](/help/collaboration/facilitator/), it is theirs), so an audience member can answer but cannot open a poll of their own or close yours. On a document you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
+**Everyone who can take part is asked: editors and anyone on a Participant pass.** A Viewer isn't asked and doesn't see the poll or its results, so to hear back from an audience, share a Participant pass with them. Starting and ending a poll still needs edit access (and, while someone is the [facilitator](/help/collaboration/facilitator/), it is theirs), so an audience member can answer but cannot open a poll of their own or close yours. On a canvas you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
 
 **The results panel is for people who have responded**, plus whoever started the poll. Answering, or pressing **Skip**, is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
 
-**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and the document does not record who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
+**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and the canvas does not record who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
 
 ## Keeping the results
 
@@ -77,7 +77,7 @@ The poll keeps running after you keep its results, so you can keep another snaps
 
 The live session holds on to the poll while it runs, so nobody gets left behind:
 
-- **Someone who opens the document after the poll started is asked too**, and sees the answers so far.
+- **Someone who opens the canvas after the poll started is asked too**, and sees the answers so far.
 - **Refreshing the page keeps you in the poll**, with your answer still counted.
 - **If the host refreshes or reconnects**, they can still end the poll. Anyone else can press **Dismiss** to clear their own results panel (and the button's green dot) without ending it.
 

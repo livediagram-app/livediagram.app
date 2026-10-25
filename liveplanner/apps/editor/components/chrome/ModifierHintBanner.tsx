@@ -4,35 +4,30 @@ import { useCallback, type ComponentProps } from 'react';
 import type { Element } from '@liveplanner/project';
 import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
-import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
+import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 
 // The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what
 // a modifier does right now.
 // The chain / branch / lock / multi-select powers are invisible until tried,
 // and a held modifier nobody has heard of is a feature nobody finds. One
 // concise message, picked most-specific-first; nothing while typing (the hook
-// filters that), while another mode banner owns the slot, or with nothing to
-// act on. Same chrome as the mode banners, minus the action button.
+// filters that) or with nothing to act on. Same chrome as the mode banners, minus the action button.
 export function ModifierHintBanner({
   drag,
   selectedKind,
   hasElements,
-  suppressed,
 }: {
   drag: DragState | null;
   // The primary selection's flavour, for the no-drag hints.
   selectedKind: 'arrow' | 'table' | 'other' | null;
   // False on an empty canvas — nothing to multi-select.
   hasElements: boolean;
-  // True while a mode banner (paint / group / draw) owns the top slot,
-  // or the session is read-only.
-  suppressed: boolean;
 }) {
   const shiftHeld = useShiftHeld();
-  if (suppressed || !shiftHeld) return null;
+  if (!shiftHeld) return null;
   const message = shiftHintMessage(drag, selectedKind, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;

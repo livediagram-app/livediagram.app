@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { AccessLevel, ShareRole } from '@livediagram/api-schema';
 import { ADDER_KEY_LENGTH } from '@livediagram/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/editor-app.md#role-pill): someone whose role allows editing can preview
 // the document as a Participant or as a Viewer, a press stepping Editing, Participating, Viewing and back to Editing.

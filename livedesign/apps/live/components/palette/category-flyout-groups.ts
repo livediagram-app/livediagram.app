@@ -49,7 +49,7 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // The line under a flyout's name: what the category is for, short enough for one line at 26rem. A category not
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
-  popular: 'The tiles a diagram is most often built from.',
+  popular: 'The tiles a page is most often built from.',
   shapes: 'The basics, the flowchart vocabulary and more.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',

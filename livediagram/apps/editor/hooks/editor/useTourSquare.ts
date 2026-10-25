@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 import type { Element, Tab } from '@livediagram/document';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A tour's demonstration elements (docs/specs/007-editor/editor-tour.md "The steps", Element context menu; the Logo
 // tour's Combine): the Diagram tour's square to open the element menu on, the Logo tour's two shapes and what they

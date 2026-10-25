@@ -1,7 +1,7 @@
 import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
-import { createSelectionStore } from '@/lib/selection-store';
-import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@/lib/tab-scope';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is
 // active, what's selected / being edited, the format painter's "source"
@@ -46,7 +46,6 @@ export function useEditorUiState(
   // editor places the caret at the END instead of select-all, so the
   // seeded first character isn't replaced by the next keystroke.
   const [editCursorAtEnd, setEditCursorAtEnd] = useState(false);
-  const [formatSourceId, setFormatSourceId] = useState<string | null>(null);
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
   // selection / its popover / its accordion controls are suppressed. Both
@@ -78,8 +77,6 @@ export function useEditorUiState(
     setEditingId,
     editCursorAtEnd,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,

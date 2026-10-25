@@ -7,9 +7,9 @@
 import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
-// API is optional: the share page's link preview (./share-page.ts) asks it for the document's name, and without it
-// the page is served as built.
-type Env = { ASSETS: AssetsBinding; API?: Fetcher };
+// PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the
+// document's name (liveworkspace/docs/previews.md). Unset means production's; staging names its own.
+type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 
 // Defense-in-depth response headers. None of these block existing
 // functionality; they shut down whole classes of attack surface that
@@ -35,7 +35,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //
 //   - Content-Security-Policy: Trusted Types alone, enforced
 //     (docs/specs/016-platform/trusted-types.md). The rest of a CSP
-//     (script-src for Clerk's external script, the api / R2 origins)
+//     (script-src, the api / R2 origins)
 //     is out of that spec's scope.
 const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': TRUSTED_TYPES_CSP,
@@ -70,16 +70,6 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // /explorer is an index with no content of its own (docs/specs/013-workspace/folders.md):
-    // every section lives at /explorer/<section>, default Home
-    // (docs/specs/013-workspace/timeline.md §8.1). 302 here so the address bar lands on the real
-    // section before any HTML is served; the page's client-side
-    // replace covers dev where this worker isn't in front. The
-    // Location is a clean (`/live`-free) path — the router selects the
-    // editor app for /explorer routes directly (docs/specs/016-platform/router-app.md).
-    if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
-      return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
-    }
     // `/document` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/document/<id>` (that's the whole point of the path
@@ -93,7 +83,9 @@ export default {
         const shell = () => env.ASSETS.fetch(new Request(rewritten.toString(), request));
         // A share link's page names its document for link previews (docs/specs/013-workspace/share-link-previews.md).
         if (isSharePagePath(url.pathname)) {
-          return withSecurityHeaders(await sharePage(request, env.API, shell));
+          return withSecurityHeaders(
+            await sharePage(request, shell, { previewsOrigin: env.PREVIEWS_ORIGIN }),
+          );
         }
         return withSecurityHeaders(await shell());
       }
@@ -113,5 +105,4 @@ export default {
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
-import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
-import { isSharePagePath, sharePage, type Fetcher } from './share-page';
+import { isSharePagePath, sharePage } from './share-page';

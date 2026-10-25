@@ -5,7 +5,7 @@
 // for memory. The copy is made once per picture and size, one picture at a time (decoding two large
 // photos at once is itself the spike this avoids), and kept for whoever shows the same picture next.
 
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The longest side a picture is shown at: a phone or tablet (a coarse pointer, the devices that run
 // out of memory), anything else, and a gallery tile.

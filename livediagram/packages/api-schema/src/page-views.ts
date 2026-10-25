@@ -8,6 +8,8 @@
 // (`/document`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
+  // The guest handoff's way back, /auth/guest (docs/specs/014-identity/auth-and-guest-access.md).
+  'auth',
   'document',
   // The Google Drive mirror's /drive/connected and /drive/open
   // (docs/specs/022-drive-mirror/drive-mirror.md).
@@ -17,13 +19,14 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // A retired form link's page, /form/<code>: old links still arrive, their code is never recorded.
   'form',
   'get-started',
+  // The liveworkspace Explorer's "Import from", /import (docs/specs/013-workspace/folders.md "Import from").
+  'import',
   'join',
   'new',
   'oauth',
+  // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/006-document/offline-mode.md).
+  'offline',
   'sign-in',
-  'sso-callback',
-  // The workbench pairing page, /workbench/pair (docs/specs/013-workspace/workbench-embeds.md "Pairing").
-  'workbench',
 ]);
 
 // Named after the apps (`apps/editor` is the editor).

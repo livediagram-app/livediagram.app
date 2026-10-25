@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 import { TEMPLATES, isBlankTemplate, isPlanTemplate } from '@liveplanner/templates';
 
-import { FAQ_CATEGORIES, faqAnswerText, TEMPLATE_COUNT } from './faq-content';
-import { filterFaq } from './faq-filter';
+import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
+import { FAQ_CATEGORIES, TEMPLATE_COUNT } from './faq-content';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
 

@@ -9,7 +9,7 @@ import {
   type CommunityPost,
   type CommunitySitemapEntry,
 } from '@livediagram/api-schema';
-import { breadcrumbJsonLd } from '@livediagram/ui/seo';
+import { breadcrumbJsonLd } from '@liveworkspace/ui/breadcrumb-json-ld';
 import { SITE_URL } from '@livediagram/ui/site';
 
 // The same title suffix the page sets for itself once the post loads (components/post/PostView.tsx).

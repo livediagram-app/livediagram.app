@@ -25,7 +25,9 @@ import { SheetChartsContext } from './sheet-charts-context';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Off but for the Setup Sheet phone case below.
 let phone = false;
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => phone }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => phone,
+}));
 vi.mock('@/lib/api/sheets', () => ({
   fetchSheets: vi.fn(),
   createSheet: vi.fn(),

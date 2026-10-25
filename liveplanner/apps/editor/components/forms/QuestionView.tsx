@@ -12,7 +12,7 @@ import {
   type PublicQuestion,
 } from '@liveplanner/forms';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideCircleAlert } from '@liveplanner/icons/lucide';
+import { lucideCircleAlert } from '@liveworkspace/icons/lucide';
 import { QuestionControl } from './QuestionControl';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 16);

@@ -2,9 +2,10 @@ import {
   test,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  mintGuest,
+  seedPlan,
+  serverNewUrl,
 } from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
@@ -13,10 +14,9 @@ import {
 // realtime frame; rescoping to All tabs reloads the visitor into every tab.
 
 const SECRET = 'TOP SECRET PRICING';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+test('a tab-scoped link opens its tab and nothing else', async ({ page, browser }) => {
+  const owner = await mintGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
@@ -33,39 +33,32 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
-    data: {
-      id: liveDoc,
-      name: 'Launch plan',
-      tabs: [
-        { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
-        { id: roadmap, name: 'Roadmap', elements: [box('r1', 200, 'Q3 beta')] },
-        { id: hiring, name: 'Hiring', elements: [] },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id: liveDoc,
+    name: 'Launch plan',
+    tabs: [
+      { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
+      { id: roadmap, name: 'Roadmap', elements: [box('r1', 200, 'Q3 beta')] },
+      { id: hiring, name: 'Hiring', elements: [] },
+    ],
   });
   expect(seeded.ok()).toBe(true);
 
   // The owner scopes a new link to Roadmap.
-  await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('liveplanner:v2:self-id', id);
-      if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
-      localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-    },
-    { id: owner, sig: guestSigFor(owner) },
-  );
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => localStorage.setItem('liveplanner:v2:name-confirmed', '1'));
   await page.goto(`/project/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share This Project' });
+  const dialog = page.getByRole('dialog', { name: /^Share / });
   await dialog
-    .getByRole('combobox', { name: 'Tabs this link opens' })
+    .getByRole('region', { name: 'New link' })
+    .getByRole('combobox', { name: 'Opens' })
     .selectOption({ label: 'Roadmap' });
   await dialog.getByRole('button', { name: /create/i }).click();
-  const scopeSelect = dialog.getByRole('combobox', { name: /^Tabs link .+ opens$/ });
+  const link = dialog.getByRole('region', { name: 'Links' }).locator('[data-share-link]').first();
+  const scopeSelect = link.getByRole('combobox', { name: 'Opens' });
   await expect(scopeSelect).toHaveValue(roadmap);
-  const url = await dialog.locator('ul input[readonly]').first().inputValue();
+  const url = (await link.locator('span.font-mono').innerText()).trim();
 
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
@@ -97,7 +90,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every tab.
-  await scopeSelect.selectOption({ label: 'All tabs' });
+  await scopeSelect.selectOption({ label: 'Every tab' });
   await expect(visitor.getByRole('button', { name: /Pricing/ })).toBeVisible({ timeout: 15_000 });
   await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 
@@ -105,7 +98,8 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
 });
 
 test('the owner is never scoped', async ({ page, pageErrors }) => {
-  await page.goto('/new?blank=1');
+  // On liveplanner: a plan in This Browser has no share links to scope.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await expect(page.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);

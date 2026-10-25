@@ -4,7 +4,7 @@
 verified end-to-end from Claude. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
 third-party app authorization" — this spec adds exactly that, scoped to one
-client (an MCP server), reusing the `lvd_` token as the credential it ultimately
+client (an MCP server), reusing the `lwt_` token as the credential it ultimately
 mints. No new authorization model; an OAuth front door onto the existing token.
 
 ## 1. Goal
@@ -19,9 +19,8 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing design — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. We are **not** proxying to the first-party `/api/ai`
-endpoint (`apps/api/src/routes/ai.ts`, OpenAI/`gpt-4o`) — that endpoint is weak
-and may be removed. The user already has a capable model in front of them; the
+load-bearing decision. livedesign runs no model of its own (the in-editor
+AI assistant was removed). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
@@ -52,8 +51,8 @@ stays a pure REST/WS surface.
   schemas.
 - **Talks to `apps/api` over a Cloudflare service binding** (`API`), not public
   DNS. Every tool resolves to one or more `/api/*` calls carrying
-  `Authorization: Bearer lvd_…` — the caller's token, passed straight through.
-  The api worker already accepts `lvd_` tokens on every route
+  `Authorization: Bearer lwt_…` — the caller's token, passed straight through.
+  The api worker already accepts `lwt_` tokens on every route
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
 - **Reuses `packages/design`** headless: element factories, `validate.ts`
@@ -74,14 +73,14 @@ stays a pure REST/WS surface.
 
 The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client
 registration**, so a user gets a one-click "Connect" in their AI tool rather
-than pasting a raw token. The flow **mints an `lvd_` token** under the hood and
+than pasting a raw token. The flow **mints an `lwt_` token** under the hood and
 hands it to the client; from then on every request is just
-`Authorization: Bearer lvd_…`. This deliberately reuses the entire token model
+`Authorization: Bearer lwt_…`. This deliberately reuses the entire token model
 from [Public API and API tokens](public-api-and-tokens.md) — storage, hashing, 6-month expiry,
 per-account cap, revoke, account-deletion cascade, rate limiting — instead of
-inventing a parallel credential. An MCP-minted token is an ordinary API token;
-it appears in the Settings API Tokens category and can be revoked there like any
-other.
+inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
+account token: it is listed on liveworkspace.app and can be revoked there like any
+other, and it works with every liveworkspace app's MCP server.
 
 This implements the OAuth flow Manager Toolkit uses:
 
@@ -95,7 +94,7 @@ This implements the OAuth flow Manager Toolkit uses:
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
    §3.1.2; the rule is `oauthRedirectUrl` in
    `@livedesign/api-schema`), stored in KV with a TTL.
-   Rate-limited per IP. Authorize re-checks the scheme of the requested
+   Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
@@ -125,44 +124,41 @@ This implements the OAuth flow Manager Toolkit uses:
    `apps/live/lib/mcp-consent-session.ts`. The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint** — on approve, `apps/live` calls a **new
-   `POST /api/oauth/exchange`** on the api worker. This is the one api change: an
-   endpoint that requires a verified account identity (gated exactly like
-   `/api/tokens`), and on success **reuses the existing token-mint path**
-   (`generateApiToken` → `hashApiToken` → `createApiToken`,
-   `apps/api/src/auth/api-token.ts` + `db/api-tokens.ts`) to create an `lvd_`
-   token owned by that account, named for the connecting client (e.g. "Claude
-   (MCP)"). It binds the PKCE challenge so only the holder of the verifier can
-   redeem it. A minted token is never left orphaned: the page re-checks the
-   session (`GET /oauth/session/<id>`) before minting, and when the MCP's
-   `/oauth/complete` refuses the token (the session expired or was used, a 429)
-   it revokes it at once (`DELETE /api/tokens/<id>`), so retries never pile up
-   six-month tokens against the per-account cap. The failure line names the
-   cause: an expired request ("This request has expired. Start the connection
-   again from your app."), the token cap (409 `token_limit_reached`: "Your
-   account has reached its limit of API tokens. Revoke one in Settings, under
-   Account › API Tokens, then try again."), or anything else ("Something went
-   wrong. Please try again."). The device page does the same
-   (`apps/live/lib/oauth-handover.ts`).
+4. **Consent + mint** — on approve, `apps/live` calls `POST /api/oauth/exchange`
+   on the api worker with the person's account access token. It asks liveworkspace
+   to mint an `lwt_` account token named for the connecting client (e.g. "Claude
+   (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
+   [Public API and API tokens](public-api-and-tokens.md) §3). It binds the PKCE
+   challenge so only the holder of the verifier can redeem it. A minted token is
+   never left orphaned: the page re-checks the session (`GET /oauth/session/<id>`)
+   before minting, and when the MCP's `/oauth/complete` refuses the token (the
+   session expired or was used, a 429) it revokes it at once by presenting it to
+   `DELETE /api/tokens/current`, so retries never pile up six-month tokens against
+   the per-account cap. The failure line names the cause: an expired request ("This
+   request has expired. Start the connection again from your app."), the token cap
+   (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
+   Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
+   else ("Something went wrong. Please try again."). The device page does the same
+   (`../packages/workbench/src/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
-   `access_token` (= the `lvd_` secret). `expires_in` reflects the token's
+   `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
    remaining 6-month lifetime.
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV — minting stays in D1 via the existing token table.
+needs no KV — minting is liveworkspace's accounts service's (`POST /api/oauth/exchange` asks it).
 
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
 web connectors expects OAuth, and the user chose the OAuth path. Because it still
-resolves to an `lvd_` token, the heavy lifting (verification, gating, revoke,
+resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
 **Sign-in gating.** OAuth depends on the consent page authenticating
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
-same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
-deployment without sign-in: the exchange endpoint rejects every caller and the consent
+same gate as every token's ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
+no-auth self-host: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
@@ -349,7 +345,7 @@ Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint
 ### 4.5a `search_icons`
 
 Finds icons by what they show, best match first, across the icon catalogue: `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
-id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@livedesign/icons`'s
+id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@liveworkspace/icons`'s
 `searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
 api call. Read-only.
 
@@ -565,8 +561,8 @@ and schema resource.
 ### 4.11 Read-only tokens (the one scope)
 
 A trust story for cautious users: the MCP consent screen offers a **"read-only
-access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
-([Public API and API tokens](public-api-and-tokens.md) §3.4, migration 0039), and the api worker rejects every write it
+access"** checkbox. When ticked, the minted `lwt_` token carries the read-only flag
+([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
@@ -586,12 +582,12 @@ binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
 `delete_design` raw-fetch path reports a 5xx too. `<Tool>` is the running
 tool's PascalCase name (`Http503.UpdateDesign`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
-every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
+every handler in (`tool-scope.ts`, over `../packages/mcp-kit/src/tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
 Every post (these reports and `Mcp·Used`) is handed to the request's
-`ctx.waitUntil` (`request-scope.ts`) so it outlives the response, and
+`ctx.waitUntil` (`../packages/mcp-kit/src/request-scope.ts`) so it outlives the response, and
 `Mcp·Used` is sent by `registerTool` only after a tool call succeeds
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Mcp).
 
@@ -600,21 +596,17 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                            |
-| --------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so OAuth callers land on the hosted consent screen unless it is set. Also the host of every tool's `url` and share link           |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) |
+| Name               | Where                          | Absent means                                                                                                                                                                    |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                     |
 
-`INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
-**service binding**, which carries no `CF-Connecting-IP` — so the api's
-`clientIp` fell back to a literal `'anonymous'` and every internal caller in
-the world contended for one 120/min key, the overflow dropped as a 204 this
-worker can't distinguish from success. Since we post one request per tool
-call, that ceiling was roughly two tool calls per second globally: enough to
-make a growing integration read as flat in the very dashboard meant to show
-it growing. The value **must match** the api worker's, and a mismatch is
-silent — the deploy workflow drives both from one GitHub secret for exactly
-that reason. See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
+`TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
+(liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
+lets them speak for livedesign.app. It **must match** the api worker's and the service's
+`TELEMETRY_KEY_LIVEDESIGN`; a mismatch is silent (the posts are simply not stored), so the deploy workflow
+drives both workers from one GitHub secret. `TELEMETRY_URL` names the service (unset is production's).
+See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
 
 ### 4.14 Tool annotations (behaviour hints)
 
@@ -764,7 +756,7 @@ descriptions.
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
-  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@livedesign/icons/resolve`).
+  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
 
 ## 5. Visualise — inline image render
 
@@ -796,7 +788,7 @@ Worker (no DOM, no React).
   preview it can't self-check against. A tab's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
   **Fonts.** The faces a tab uses beyond Inter (its elements', its own) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
-  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`, over `../packages/mcp-kit/src/preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
@@ -813,8 +805,8 @@ Worker (no DOM, no React).
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livedesign/api-schema`, shared with the api worker's
-  snapshot render ([Design SVG snapshots](../006-design/design-snapshots.md)), which passes its own byte source
-  (R2) and a total byte budget.
+  preview drawing ([Design SVG snapshots](../006-design/design-snapshots.md)), which passes its own byte source
+  (the media service) and a total byte budget.
 - **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
   pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
   screenshot 49 MB, four 112 MB, and a flat 8000x8000 PNG of 0.19 MB 461 MB, against a Worker's 128 MB in all. Time
@@ -844,7 +836,7 @@ Worker (no DOM, no React).
   plain boxes / label-only.
 - **Icon elements render their real glyph.** The renderer takes an injected
   `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
-  `resolveIconExportArt` from `@livedesign/icons/resolve` (a static import of
+  `resolveIconExportArt` from `@liveworkspace/icons/resolve` (a static import of
   the catalogue data — fine in a Worker), so line-art icons draw stroke-tinted
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
@@ -861,10 +853,10 @@ Worker (no DOM, no React).
    These are read-only and prove the schema + render path end to end.
 4. **Write tools** — `create_design`, `update_design` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
-5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
-   path, signed-in only like `/api/tokens`); `apps/live` consent page; the MCP
+5. **OAuth** — `/api/oauth/exchange` on the api worker (asking liveworkspace to mint
+   the token, signed-in only); `apps/live` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
-   with a hand-pasted `lvd_` Bearer for development.
+   with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
    `AGENTS.md`):
    - A help article (e.g. `account-and-data/connect-ai-mcp`) — what the MCP is,

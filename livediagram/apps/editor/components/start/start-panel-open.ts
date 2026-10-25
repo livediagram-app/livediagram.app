@@ -2,7 +2,7 @@
 // (docs/specs/007-editor/start-diagramming.md "The tours wait"): the Diagram and Workshop tours hold their offer
 // until it has gone, so the welcome card never lands over the panel. One panel shows at a time (the active tab's).
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let open = false;
 const listeners = createListeners();

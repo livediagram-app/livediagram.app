@@ -13,8 +13,9 @@ what the gesture touches, not the size of the board. The measurements behind it 
   between them, 10% freehand strokes, 10% text, 5% polygons, 5% stickies), spread over an area four
   screens wide and three high, with arrows routed behind boxes by default as drawn. As in real
   diagrams, an arrow joins a shape to one of its nearest neighbours, not to any shape on the board.
-- It is opened twice: as a **whiteboard** tab and as a **diagram** tab, since the two render
-  differently (ink projection, the Quick Style panel).
+- It is opened as a **Plan** tab, the one mode a tab is worked in
+  ([Plan mode](../026-plan/plan-mode.md)); a tab a retired mode made keeps its shapes, ink and arrows and
+  renders them in Plan, so the mix stays the board's.
 
 ## The budget
 
@@ -31,7 +32,7 @@ throttle it ran at.
 | At rest                    | No main-thread work in any frame: no animation-frame loop, no observer that feeds itself |
 | Pan and zoom               | No task over 50 ms; no element view re-renders on a pan                                  |
 | Dragging a selection       | No task over 50 ms; the median frame within 33 ms                                        |
-| Marquee, pen stroke, hover | No task over 50 ms                                                                       |
+| Marquee, hover             | No task over 50 ms                                                                       |
 | Selecting or deselecting   | One task, within 100 ms                                                                  |
 | Opening the board          | Interactive within 3 s of the tab's data arriving                                        |
 
@@ -178,7 +179,7 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 ## Observability
 
 - In development builds a long-task observer logs `[canvas-perf] long task` (debug) with its
-  duration and the gesture in progress (pan, zoom, drag, marquee, stroke, idle), so a regression
+  duration and the gesture in progress (pan, zoom, drag, marquee, idle), so a regression
   is visible while working.
 - Production sends nothing about performance: the anonymous-events schema stays about features
   used.

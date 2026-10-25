@@ -1,6 +1,3 @@
-import type { CSSProperties } from 'react';
-import { topCategorySlug } from '@livediagram/help-registry';
-
 /** Feature slug → accent colour (hex). The home + features grid and the
  *  MDX <Feature> cards tint each feature with a distinct hue so the index
  *  reads as a colourful catalogue, the same way the Manager Toolkit help
@@ -37,7 +34,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   teams: '#a855f7',
   sharing: '#0284c7',
   'zen-mode': '#475569',
-  ai: '#7c3aed',
   'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
@@ -47,7 +43,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
-  'ai-tools': '#7c3aed',
   'auto-align': '#22c55e',
   'auto-layout': '#2563eb',
   about: '#0891b2',
@@ -60,7 +55,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'changing-the-background': '#64748b',
   'changing-theme': '#d946ef',
   'multicolour-themes': '#ec4899',
-  'custom-themes': '#a855f7',
   'multi-select': '#8b5cf6',
   'link-cards': '#10b981',
   'choosing-fonts': '#0284c7',
@@ -216,13 +210,11 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
   'image-gallery': '#ec4899',
-  'themes-library': '#d946ef',
   'tab-folders': '#3b82f6',
   'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',
   'import-tabs': '#0891b2',
   'shape-libraries': '#7c3aed',
-  tags: '#e11d48',
   'drawio-import': '#ea580c',
   'microsoft-whiteboard-import': '#0d9488',
   'export-tabs': '#0284c7',
@@ -263,27 +255,3 @@ export const FEATURE_CATEGORY_HEX: Record<string, string> = {
   'search-panel': '#0891b2',
   'selection-modes': '#8b5cf6',
 };
-
-/** Default colour used when no slug match is found. */
-export const FEATURE_FALLBACK_HEX = '#64748b';
-
-/** The accent for a feature card: the feature's own hue, else its top-level
- *  category's, else the neutral fallback. Mirrors `featureIcon` so a card's
- *  colour and glyph always resolve at the same level of specificity — a
- *  bespoke glyph with a category hue (or the reverse) looked like a mistake. */
-export function featureColour(slug: string, categorySlug?: string): string {
-  return (
-    FEATURE_ENTITY_HEX[slug] ??
-    FEATURE_CATEGORY_HEX[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_FALLBACK_HEX
-  );
-}
-
-/** A feature card's icon tile: the hue at 12% behind a glyph in the hue. In dark mode the glyph
- *  lifts toward white, so the muted hues (slate, indigo) still read on a dark card. */
-export const FEATURE_TILE_CLASS =
-  'text-(--feature) dark:text-[color-mix(in_oklab,var(--feature)_70%,white)]';
-
-export function featureTileStyle(colour: string): CSSProperties {
-  return { backgroundColor: `${colour}1f`, '--feature': colour } as CSSProperties;
-}

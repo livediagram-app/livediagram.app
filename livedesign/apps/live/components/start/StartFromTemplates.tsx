@@ -6,13 +6,19 @@
 import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedesign/ui';
-import { lucideLightbulb, lucidePenTool, lucideShapes, lucideStar } from '@livedesign/icons/lucide';
+import {
+  lucideLightbulb,
+  lucidePenTool,
+  lucideShapes,
+  lucideStar,
+} from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livedesign/design';
 import type { TemplateKind } from '@livedesign/templates';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
+import { StartSaveSwitch } from './StartSaveSwitch';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from './start-panel-open';
 import { startClosedKey } from './start-closed-key';
@@ -101,6 +107,8 @@ export function StartFromTemplates({
       }
       onChoose={(kind) => onTemplate(kind as TemplateKind)}
       onClose={close}
+      // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
+      footer={(palette) => <StartSaveSwitch palette={palette} />}
     />
   );
 }

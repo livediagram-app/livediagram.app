@@ -5,7 +5,7 @@
 // passes. Labels are the real UI strings.
 
 import type { ReactNode } from 'react';
-import { Button, Label, Scene, Shape, TextBar } from './primitives';
+import { Button, Label, Scene, Shape, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 type Role = 'edit' | 'participate' | 'view';
 
@@ -398,7 +398,7 @@ function ShareCard({
         strokeWidth={2}
       />
       <Label x={x + 16} y={y + 20} size={13} weight={700} tone="strong">
-        Share This Document
+        Share This Canvas
       </Label>
       {status ? (
         <g>
@@ -628,10 +628,10 @@ export function SharePasswordGate() {
       <circle cx={210} cy={42} r={18} className="fill-brand-100" />
       <Lock x={203} y={33} className="stroke-brand-600" />
       <Label x={210} y={78} anchor="middle" size={13} weight={700} tone="strong">
-        This document is password-protected
+        This canvas is password-protected
       </Label>
       <Label x={210} y={98} anchor="middle" size={10} tone="body">
-        Enter the password Aria set to open this document.
+        Enter the password Aria set to open this canvas.
       </Label>
       <rect
         x={94}
@@ -648,7 +648,7 @@ export function SharePasswordGate() {
       <Label x={210} y={158} anchor="middle" size={10} weight={500} className="fill-rose-500">
         That password didn&apos;t match. Try again.
       </Label>
-      <Button x={94} y={174} w={232} h={30} label="Open document" variant="primary" />
+      <Button x={94} y={174} w={232} h={30} label="Open canvas" variant="primary" />
     </Scene>
   );
 }

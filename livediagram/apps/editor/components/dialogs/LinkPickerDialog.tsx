@@ -7,11 +7,11 @@ import {
   DialogCloseButton,
   DialogHeader,
 } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import type { ElementLink } from '@livediagram/document';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
@@ -67,7 +67,7 @@ type Mode = 'tab' | 'document' | 'url';
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'document', label: 'Document' },
+  { id: 'document', label: 'Canvas' },
 ];
 
 export function LinkPickerDialog({
@@ -121,9 +121,7 @@ export function LinkPickerDialog({
       <DialogHeader
         title={title}
         subtitle={
-          urlOnly
-            ? urlOnly.subtitle
-            : 'Jump to a tab, open another document, or go to a web address.'
+          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another canvas, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -185,8 +183,8 @@ export function LinkPickerDialog({
             <CompactEmptyState
               className="py-10"
               icon={<DocumentGlyph />}
-              title="No other documents yet"
-              description="Make another document to link to it."
+              title="No other canvases yet"
+              description="Make another canvas to link to it."
             />
           ) : (
             <ul className="flex flex-col gap-1">

@@ -297,15 +297,44 @@ a comment or an action does on an element it does here (threads, mentions, resol
 due dates, Activity, email), because it lives on an element: a **margin note**.
 
 - **Putting one on**: with text selected, the page toolbar's **Comment** (⌘⌥M) or **Assign
-  Action** button. The text is tinted (amber for a comment, sky blue for an action, translucent so
-  it reads on a dark page) and underlined; a marker (`articleNote`, 32 px) appears
-  in the page's right margin, centred in the margin and level with the text's first line; the
-  comment thread opens on it, or the Assign Action dialog. One edit.
-- **The marker** is a small rounded chip in its note's colour: for a comment an amber speech
-  bubble holding the open comment count (a dot before the first comment), for an action a tick
-  in a circle, filled once the action is done. It carries its own count, so no badge strip rides
-  on it. A click on it, or a plain click on its tinted text, opens its thread, or its action (the
-  Assign Action dialog while none is assigned).
+  Action** button. The text is tinted and underlined in its note's colour (translucent, so it
+  reads on a dark page): a comment with a solid underline, an action with a dashed one, so the two
+  differ in the writing without colour too. A marker (`articleNote`, 32 px) appears in the page's
+  right margin, centred in the margin and level with the text's first line; the comment thread
+  opens on it, or the Assign Action dialog. One edit.
+- **Two looks, told apart by more than colour.** A comment and an action differ in colour, in the
+  marker's outline and in its glyph, so either still reads at a small zoom, in greyscale and to a
+  colour-blind eye:
+
+  | Note    | Colour                                                 | Marker                       | Glyph                                                                                                                                                                                             |
+  | ------- | ------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Comment | Indigo (`#4f46e5` ink, `#eef2ff` chip, `#6366f1` rim)  | A round chip                 | A filled speech bubble holding the open comment count (a dot before the first comment); once resolved an outlined bubble holding a tick                                                           |
+  | Action  | Emerald (`#047857` ink, `#ecfdf5` chip, `#059669` rim) | A rounded square, a checkbox | A tick in a ring while open, with the assignee's initials on its corner; once done a solid emerald disc with a white tick; Won't Do a solid slate disc with a white tick, as Collaborate shows it |
+
+  **Why these colours.** The app's chrome is amber (the brand, selection, focus and primary
+  buttons), so neither note is amber: an amber note would read as the app's own accent, and with
+  both notes off it a marker can never be mistaken for chrome. Sky, livediagram's brand, is left
+  out for the same reason across the workspace. Indigo is a
+  cool, quiet colour for talk; emerald is the colour Collaborate already gives a done action, so
+  an action's marker and its row agree. The two sit far apart in hue and in lightness pattern
+  (filled bubble against an outlined ring), so they stay apart under the common colour
+  deficiencies too.
+
+  **Contrast.** The count and the done tick are white on `#4f46e5` (6.3:1) and on `#047857`
+  (5.5:1), past AA for text; each outlined glyph against its chip is 5.6:1 (indigo) and 5.2:1
+  (emerald), past 3:1; each rim is 4.0:1 or more on both a white and a slate-900 page, so the
+  marker's edge holds on any page background or theme. The marker keeps these colours whatever
+  the page, its theme or the app's appearance, as a sticky keeps its own: it is the reader's
+  signal, not the page's palette.
+
+- **The marker** carries its own count, so no badge strip rides on it. A click on it, or a plain
+  click on its tinted text, opens its thread, or its action (the Assign Action dialog while none is
+  assigned). Hovering lifts it with a shadow; selected, it wears the selection ring as any element
+  does. On a touch screen its press area grows past the chip to 44 px wide and 38 px tall at full
+  size (half the 6 px gap above and below), so stacked markers never take each other's presses.
+- **Its name** says which it is and where it stands, for a screen reader: "Comment, 2 open",
+  "Comment, no comments yet", "Comment, resolved"; "Action for Sam Lee", "Action, not assigned yet",
+  "Action for Sam Lee, done", "Action for Sam Lee, won't do".
 - **It stays beside its text**: as the writing moves (typing above it, a new style, a page added),
   the marker moves with the text's first line, onto another page too, settled by the writer as a
   zone is.
@@ -314,7 +343,8 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 - **Deleting the marker** takes the tint off its text. **Deleting the text** (all of it the note
   was on) deletes the marker, and with it the comment thread or action, in the same edit (undo
   brings both back).
-- **Never printed**: exports leave the markers out and the text untinted.
+- **Never printed or presented**: exports (PDF, PNG, SVG) leave the markers out and the text
+  untinted, and while a deck is presented the markers hide and the tint goes.
 - A tint is never taken from a paste.
 
 ## Article style

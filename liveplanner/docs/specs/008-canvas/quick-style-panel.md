@@ -1,6 +1,10 @@
 # Quick style panel
 
-Status: **implemented**.
+Status: **removed from liveplanner** (October 2026). Plan never showed the panel, so its code went: the panel,
+its rows, More colours, placement and the custom swatches. What this spec still governs, and the code still does,
+is **style memory** ("Style memory" below: `lib/style-memory.ts`, `useStyleMemory`), which every style edit
+records and every new element reads, and the quick-swatch bindings the context menu writes. The rest is kept as
+the record of what livediagram ships; the `quickSwatchOverrides` preference is no longer read or written.
 
 While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
@@ -230,18 +234,14 @@ identity otherwise, and into this browser's cache either way.
   in, and switching theme shows that theme's own slots with whatever overrides you set for it,
   and none from other themes.
 - **Per user, not per project.** A palette you build is a working habit that follows you between
-  projects and devices. Colours a project should share with everyone who
-  opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
-  shared colours, not two. Keeping overrides per project and per user would fragment them further,
-  so the same person would rebuild the same palette in every project.
+  projects and devices. Keeping overrides per project would fragment them, so the same person would rebuild the same
+  palette in every project.
 - **Multi-colour themes** work the same way: their six slots are the branch colours, and an
   override replaces one of them in the panel only. The theme's branch colouring of the diagram is
   untouched.
 - **Clear override** removes the entry for that slot in that theme; the swatch shows the colour
   the theme derives for the slot again, and a theme left with no overrides is removed from the
   store. Elements already painted with the custom colour keep it.
-- **A deleted custom theme takes its overrides with it**: when it is deleted, and when your list of
-  custom themes loads without it (deleted on another device). Built-in themes are never pruned.
 - **Limits**, because the whole preferences blob shares the api's 4 KB cap: at most 18 overrides
   per theme (six slots in each of the three colour rows, by construction), at most 8 themes, and at most
   800 bytes in all. Past either limit, the theme edited least recently is dropped first. Colours

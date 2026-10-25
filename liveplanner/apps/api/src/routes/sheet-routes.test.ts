@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@liveplanner/api-schema';
 import { emptyLayout, type SheetWrite } from '@liveplanner/sheets';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -77,7 +79,7 @@ beforeEach(() => {
   n = 7;
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
+  (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (x: string) => x,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -86,16 +88,17 @@ beforeEach(() => {
       },
     }),
   };
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Two', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
   `);
 });
 
@@ -206,7 +209,7 @@ describe('creating and listing sheets', () => {
     for (let i = 0; i < 200; i++)
       sql.sql
         .prepare(
-          `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by) VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, 1, 1, '{}')`,
+          `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by) VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, 1, 1, '{}')`,
         )
         .run(`fill${String(i).padStart(4, '0')}`, `F${i}`);
     expect(await make()).toMatchObject({ status: 413, body: { error: 'sheets_full' } });
@@ -592,7 +595,7 @@ describe('writes', () => {
     sql.sql.prepare(`UPDATE sheets SET cell_bytes = 0 WHERE id = 'sheetA00'`).run();
     sql.sql
       .prepare(
-        `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, created_at, updated_at, updated_by) VALUES ('d1', 'bigsheet', 't2', 'Big', '{"rows":[],"cols":[]}', 0, 200000, 1, 1, '{}')`,
+        `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, created_at, updated_at, updated_by) VALUES ('d1', 'bigsheet', 't2', 'Big', '{"rows":[],"cols":[]}', 0, 200000, 1, 1, '{}')`,
       )
       .run();
     expect(
@@ -654,7 +657,7 @@ describe('deleting, copies and seeds', () => {
       kind: 'cells',
       cells: [{ r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: { n: 9 } }],
     });
-    const copy = await db.copyProject(sql.env, 'd1', 'd2', 'owner', 'Copy');
+    const copy = await testCopyPlan(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(copy).not.toBeNull();
     const copied = await db.listSheets(sql.env, 'd2');
     expect(copied).toHaveLength(1);
@@ -662,7 +665,7 @@ describe('deleting, copies and seeds', () => {
     expect(copied[0]!.tabId).not.toBe('t1');
     expect(copied[0]!.cells).toEqual([{ r: s.layout.rows[0], c: s.layout.cols[0], i: { n: 9 } }]);
     const tab = sql.sql
-      .prepare(`SELECT tab_id FROM project_tabs WHERE project_id = 'd2' AND order_index = 0`)
+      .prepare(`SELECT tab_id FROM plan_tabs WHERE plan_id = 'd2' AND order_index = 0`)
       .get() as { tab_id: string };
     expect(copied[0]!.tabId).toBe(tab.tab_id);
   });

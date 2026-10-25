@@ -5,7 +5,7 @@ import { pageWritingBars } from '@/lib/article/article-export';
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useCallback, useDeferredValue, useMemo, useRef } from 'react';
-import { watchMapBox } from '@/lib/fit-clear-of-panel';
+import { watchMapBox } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -340,7 +340,7 @@ export function Minimap({
   return (
     <MovablePanel
       helpArticle="minimap"
-      // How a fit finds the Map to keep the content clear of it (lib/fit-clear-of-panel.ts).
+      // How a fit finds the Map to keep the content clear of it (@liveworkspace/workbench/lib/fit-clear-of-panel.ts).
       dataTourId="minimap"
       title="Map"
       position={position}

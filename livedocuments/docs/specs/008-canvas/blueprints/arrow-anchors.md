@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/document/src/arrow-types.ts`                          | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
 | `packages/document/src/anchors.ts`                              | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/document/src/shape-outline.ts`                        | Anchoring outlines, outline projection, point-inside test                                          |
-| `packages/document/src/svg-path-outline.ts`                     | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
+| `../packages/model-core/src/svg-path-outline.ts`                | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
 | `packages/document/src/anchor-layouts.ts`                       | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
 | `packages/document/src/geometry.ts`                             | `anchorPosition`                                                                                   |
 | `packages/document/src/anchor-choice.ts`                        | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
@@ -383,7 +383,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 
 ## Data and persistence
 
-- **Persisted.** `Endpoint.anchor` in element JSON: D1 tab storage, IndexedDB offline documents,
+- **Persisted.** `Endpoint.anchor` in element JSON: the document's tab storage, IndexedDB offline documents,
   JSON export, templates. The eight old ids keep their meaning; the eight new ones are additive.
   No migration.
 - **`manual`.** Removed from the type. No code writes it. Stored `manual: true` flags are inert,

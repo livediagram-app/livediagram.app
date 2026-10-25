@@ -7,35 +7,29 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file (all under `apps/api/`):
 
-| File                                   | Role                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------ |
-| `migrations/0050_image_refs.sql`       | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
-| `src/image-refs/extract.ts`            | The JavaScript extractor: what a reference is                                  |
-| `src/db/image-refs.ts`                 | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
-| `src/image-refs/backfill.ts`           | One backfill run                                                               |
-| `src/image-refs/retention.ts`          | The daily image job: backfill, then sweep                                      |
-| `src/db/image-retention.ts`            | The sweep and its tripwire                                                     |
-| `src/db/images.ts`                     | The usage map and the share-read check, reading the index                      |
-| `src/db/tabs.ts`                       | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/documents.ts`                  | `copyDocument` carries index statements                                        |
-| `src/db/document-removal.ts`           | `documentRemovalStatements` prunes the dropped tabs' references                |
-| `src/index.ts`                         | `scheduled()` hands the daily run to `runImageRetention`                       |
-| `src/image-refs/writer-census.test.ts` | Fails when SQL writing `tabs` appears outside the known writers                |
+| File                                    | Role                                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `src/image-refs/extract.ts`             | The JavaScript extractor: what a reference is                                                 |
+| `src/db/image-refs.ts`                  | The writers' statements, and the document's own reads (its set; whether it places an image)   |
+| `src/routes/images.ts`                  | The usage map (`usageOf`): the media service's references, kept to canvases the index answers |
+| `src/db/tabs.ts`                        | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades        |
+| `src/document-room/document-content.ts` | `importDocumentCopy` indexes a copy from its bodies                                           |
+| `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                                 |
+| `src/document-room/document-outbox.ts`  | The push: the placement grants, then the whole set to the media service                       |
+| `src/db/image-grants.ts`                | Placement grants, in the document's own SQLite, through `@liveworkspace/index-app`            |
+| `src/db/documents.ts`                   | `purgeDocumentRows` deletes a purged canvas's cached snapshots                                |
+| `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                               |
 
 ## Domain and naming
 
-| Term               | Identifier                                  | Meaning                                                                     |
-| ------------------ | ------------------------------------------- | --------------------------------------------------------------------------- |
-| Reference          | row of `image_refs` `(tab_id, image_id)`    | Tab `tab_id` places gallery image `image_id`                                |
-| Gallery id         | `isGalleryImageId(value)`                   | A string of 1 to `IMAGE_REF_ID_MAX_LENGTH` characters, not `data:`-prefixed |
-| Reference ids      | `imageRefIds(elements)`                     | Distinct gallery ids of top-level `type: 'image'` elements, document order  |
-| Text scan          | `imageRefIdsFromText(data)`                 | Gallery ids after every `"imageId"` key in a body that isn't valid JSON     |
-| Body ids           | `imageRefIdsFromData(data)`                 | `[]` without `"imageId"` text, else `imageRefIds` of the parse or text scan |
-| Live reference     | a reference whose `tab_id` is in `tabs`     | What the sweep counts                                                       |
-| Dangling reference | a reference whose `tab_id` is not in `tabs` | Never counted; pruned by the delete paths and the sweep                     |
-| Backfill           | `image_refs_backfill` row `id = 1`          | Progress of indexing tabs saved before 0050                                 |
-| Complete           | `completed_at IS NOT NULL`                  | Every tab is indexed; readers trust the index alone                         |
-| Tripwire           | `sweepTripped(old, unused)`                 | The sweep slowing to one capped page on a suspicious share                  |
+| Term          | Identifier                               | Meaning                                                                     |
+| ------------- | ---------------------------------------- | --------------------------------------------------------------------------- |
+| Reference     | row of `image_refs` `(tab_id, image_id)` | Tab `tab_id` places gallery image `image_id` (in the document's own SQLite) |
+| Document set  | `documentImageIds(env, documentId)`      | Every image the document places, each once, from its `image_refs`           |
+| Gallery id    | `isGalleryImageId(value)`                | A string of 1 to `IMAGE_REF_ID_MAX_LENGTH` characters, not `data:`-prefixed |
+| Reference ids | `imageRefIds(elements)`                  | Distinct gallery ids of top-level `type: 'image'` elements, document order  |
+| Text scan     | `imageRefIdsFromText(data)`              | Gallery ids after every `"imageId"` key in a body that isn't valid JSON     |
+| Body ids      | `imageRefIdsFromData(data)`              | `[]` without `"imageId"` text, else `imageRefIds` of the parse or text scan |
 
 Banned synonyms: "image usage table", "image links", "refcount". A reference is never counted, only present or absent.
 
@@ -43,101 +37,51 @@ Banned synonyms: "image usage table", "image links", "refcount". A reference is 
 
 ### Writers
 
-Each writer appends statements to the D1 batch that writes the body.
+Each writer appends statements to the batch that writes the body, one transaction in the document's object.
 
-| Writer                      | Statements, in the body's batch                                                                              |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `upsertTab`                 | after the collab statements: `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                 |
-| `seedTabs`                  | the same, per seeded tab                                                                                     |
-| `copyDocument`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
-| `swapTabData`               | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
-| `deleteTabRow`              | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs]`                                       |
-| `documentRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and documents deletes           |
+| Writer               | Statements, in the body's batch                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `upsertTab`          | `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                                              |
+| `seedTabs`           | the same, per seeded tab                                                                                     |
+| `importDocumentCopy` | per copied tab: `INSERT OR IGNORE` of `imageRefIdsFromData(data)` under the fresh tab id                     |
+| `swapTabData`        | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
+| `deleteTabRow`       | none: the tab's references go with it (`ON DELETE CASCADE`)                                                  |
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:
 
-0. `mediaRefQueueTabStatement(env, tabId, ids, false)`: queues the tab's documents for the media service when
-   the set changes ([Images](images.md#retention)); `imageRefAddStatements` runs it add-only first too.
 1. `DELETE FROM image_refs WHERE tab_id = ?1 AND image_id NOT IN (SELECT value FROM json_each(?2))`
 2. `imageRefAddStatements`: when `ids` is non-empty,
    `INSERT OR IGNORE INTO image_refs (tab_id, image_id) SELECT ?1, value FROM json_each(?2)`
 
-A save whose image set is unchanged deletes nothing and inserts nothing. "Doomed tabs" in `documentRemovalStatements`
-is the same predicate its `DELETE FROM tabs` uses (linked into a doomed document and into nothing else), evaluated first
-while the links still exist; the `DELETE FROM documents` stays last, its `meta.changes` the count callers read.
+A save whose image set is unchanged deletes nothing and inserts nothing, so it keys nothing in the outbox.
 
-### Extraction in SQL
+### The push
 
-`indexTabsSql(tabWhere)` is one `INSERT OR IGNORE INTO image_refs (tab_id, image_id)` over `tabs t` filtered by
-`tabWhere`, joined to `json_each(<source>, '$.elements') e`, keeping rows where `e.type = 'object'`,
-`json_extract(e.value, '$.type') = 'image'`, `json_type(e.value, '$.imageId') = 'text'`, the id's length is 1 to
-`IMAGE_REF_ID_MAX_LENGTH` and it does not start with `data:`. `<source>` is a `CASE` giving `'{}'` when `t.data` lacks
-`"imageId"` (`instr`), is not valid JSON, or has no `elements` array, else `t.data`. The `CASE` is what stops a corrupt
-body failing the statement whatever order SQLite evaluates the join in, and keeps `json_each` off image-free tabs
-(D1 bills each element it walks). Three statements use it:
+A trigger on `image_refs` (insert, delete) and on `document_tabs` (insert, delete; a tab's references find their
+document through its link, which a create writes after the tab and a delete removes before it) keys `images` in the
+document's outbox, in the writer's transaction. The drain (`drainOutbox`) reads the document's set
+(`documentImageIds`), then, in order:
 
-| Statement                        | `tabWhere`                                                                                                         |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `imageRefIndexPageStatement`     | `t.rowid > ?1 AND t.rowid <= ?2`                                                                                   |
-| `imageRefIndexOwnerStatement`    | `t.id IN (SELECT dt.tab_id FROM document_tabs dt JOIN documents d ON d.id = dt.document_id WHERE d.owner_id = ?1)` |
-| `imageRefIndexDocumentStatement` | `t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)`                                                |
-
-### Backfill
-
-States: `settling` (`now - created_at < IMAGE_REFS_BACKFILL_SETTLE_MS`), `running`, `complete`.
-`runImageRefsBackfill(env, now, clock = Date.now)`:
-
-1. Missing row: warn, `restartImageRefsBackfill(env, now)`, return `settling`.
-2. `completed_at` set: return `complete`. Settling: log, return `settling`.
-3. Loop while `clock() - start < IMAGE_REFS_BACKFILL_BUDGET_MS`:
-   1. `max = maxTabRowId(env)` (0 when `tabs` is empty).
-   2. `cursor >= max`: `completeImageRefsBackfill(env, now)`, log, return `complete`.
-   3. `to = min(cursor + IMAGE_REFS_BACKFILL_PAGE_ROWS, max)`.
-   4. Corrupt tabs in `(cursor, to]` that mention `"imageId"`, one at a time (`nextCorruptTabMentioningImages`,
-      keyset on `rowid`, `LIMIT 1`): `imageRefBackfillAddStatements(imageRefIdsFromText(data))` (the inserts
-      without the media queue), warn.
-   5. One batch: `[imageRefIndexPageStatement(cursor, to), imageRefsBackfillAdvanceStatement(to)]`.
-4. Budget spent: log the range, return `running`.
-
-The cursor moves only in the batch that indexes its page, so a failed run redoes that page. `MAX(rowid)` is re-read each
-page, so tabs created meanwhile are reached.
-
-`isImageRefIndexComplete(env)` is true only for a row with `completed_at` set, then memoised in a module variable for
-the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
-
-`runImageRetention(env, now)` (the cron's entry): the backfill, catching and logging a throw; then
-`deleteOldUnusedImages(env, now - UNUSED_IMAGE_RETENTION_MS)`, logging its count or its throw. It never rejects.
+1. `grantPlacedImages(env, documentId, ids, editorKeys, now)`: the placement grants below.
+2. `media.syncRefs`: the whole set (at most `MEDIA_REFS_PER_DOCUMENT_MAX`) to the media service, replacing what it
+   held, so its sweep sees every reference ([Images](images.md#retention)). A purged document sends an empty set.
 
 ### Readers
 
-**Sweep** `deleteOldUnusedImages(env, cutoff)`:
+**Usage** `usageOf` (`routes/images.ts`): the media service's references for the owner (`media.usage`), kept to
+this app's documents, at most `USAGE_DOCUMENTS_MAX`, each named by the index (`USAGE_LOOKUPS_IN_FLIGHT` at a time) and
+dropped when the index does not answer it as the caller's, folded into `Record<imageId, { id, name }[]>`.
 
-1. No `IMAGES` binding: return 0.
-2. Not complete: log, return 0.
-3. One pass: `SELECT COUNT(*) AS old, COALESCE(SUM(NOT live), 0) AS unused FROM images WHERE created_at < ?`.
-4. `unused = 0`: return 0. `sweepTripped(old, unused)`: error-log the tripwire line, then select at most
-   `IMAGE_SWEEP_TRIPPED_MAX` unreferenced old ids `ORDER BY created_at, id`, reap that one page as in step 5 and
-   return its count.
-5. Keyset pages on `id` (`id > last`), `IMAGE_SWEEP_PAGE` at a time, of unreferenced old ids:
-   `DELETE FROM images WHERE id IN (json_each(?)) AND NOT live RETURNING id`; for the returned ids,
-   `DELETE FROM image_refs WHERE image_id IN (…)` then `IMAGES.delete(ids)`; an R2 throw is logged with the ids and
-   the sweep carries on. Stop on an empty or short page.
-6. Return the number of D1 rows deleted.
+**Share read**: the byte route (`routes/images.ts`) resolves the caller's grant from the index, then asks the document
+one RPC, `servesImage(imageId, onlyTabId)`, answered from its own SQLite:
 
-`live` is `EXISTS (SELECT 1 FROM image_refs r JOIN tabs t ON t.id = r.tab_id WHERE r.image_id = images.id)`.
-`sweepTripped(old, unused) = unused > IMAGE_SWEEP_TRIPWIRE_MIN && unused / old > IMAGE_SWEEP_TRIPWIRE_RATIO`.
+- `documentPlacesImage(env, documentId, imageId, onlyTabId)` (`db/image-refs.ts`): the document places the image
+  (`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`), so a placement serves before any push.
+- `documentMayServeImage(env, documentId, imageId)` (`db/image-grants.ts`): `SERVES`, where the image's owner owns
+  the document, is `ENTITLED` (the placement writer's condition below, at the current time), or the document holds
+  an `image_grants` row for it. The owner is as the media service names it, asked once per image and kept in
+  `image_owners` (`''` for an id the service does not know, which serves nowhere).
 
-**Usage** `imageUsageByOwner(env, ownerId)`: when not complete, run `imageRefIndexOwnerStatement` first. Then
-`SELECT DISTINCT r.image_id, d.id, d.name FROM documents d JOIN document_tabs dt ON dt.document_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
-(`D3`), folded into `Record<imageId, { id, name }[]>`.
-
-**Share read** `documentServesImage(env, documentId, imageId, onlyTabId)` (`db/image-grants.ts`): when not
-complete, run `imageRefIndexDocumentStatement` first. Then one query: the document places the image
-(`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`) AND `SERVES`, where
-`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)`,
-`i` being the image's `media_images` row (whose it is, as this api names owners; [Images](images.md#data-and-persistence)).
-An image with no row there serves nowhere and earns no grant until this api meets it (an upload, a gallery list, or
-the first byte read, which fills the row).
 A refusal logs `[images] not servable by document` with the document and image ids.
 
 **Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
@@ -145,30 +89,27 @@ bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads the media service on
 
 ### Placement grants
 
-`image_grants (document_id, image_id, created_at)`, primary key `(document_id, image_id)`, `WITHOUT ROWID`, no
-foreign keys (migration 0075, which also grants every reference that already crossed owners).
+`image_grants (image_id, created_at)` in the document's own SQLite, primary key `image_id`, `WITHOUT ROWID`
+(`@liveworkspace/index-app` `image-grants.ts` holds the rules; `db/image-grants.ts` supplies the media service's
+owner lookup, `mediaOwner` and a team's joined people from liveworkspace accounts).
 
-- **Placement writer** `imageGrantPlacementStatements(env, tabId, ids, now)`, appended after the index statements by
-  `upsertTab`, `seedTabs` and `swapTabData`: `INSERT OR IGNORE` one row per (document holding the tab, placed image)
-  where `i.owner_id <> d.owner_id` AND (a `team_members` row with `team_id = d.team_id`, `user_id = i.owner_id`,
-  `status = 'joined'`, OR a `shared_with` row with `owner_id = i.owner_id`, `document_id = d.id`, `role = 'edit'`).
-  No row for an empty id list.
-- **Copy writer** `imageGrantCopyStatements(env, sourceId, targetId, ids, now)`, per copied tab in `copyDocument`:
-  `INSERT OR IGNORE` the target for each id the source `SERVES`.
-- **Link writer** `imageGrantLinkStatement(env, targetId, tabId, now)`, run by `linkTabToDocument` after the link:
-  `INSERT OR IGNORE` the target for each image the tab places that another holder of the tab `SERVES`.
-- **Removal** `imageGrantRemovalStatement`, in `documentRemovalStatements`, keyed on the doomed documents.
-- I5: a document serves an image only if `SERVES` holds; a grant is written only by the writers above and migration 0075.
+- **Placement writer** `grantPlacedImages(env, documentId, ids, editorKeys, now)`, run by the push with the
+  document's whole set: `INSERT OR IGNORE` one row per placed image whose owner is not the document's owner AND is
+  `ENTITLED`: a joined member of the document's team, or a person who wrote to it since its last push (an edit key in
+  its outbox, `editorKeys`). No row for an empty id list.
+- **Copy writer** `importDocumentCopy` (`document-content.ts`): `INSERT OR IGNORE` the copy's grants for each image
+  its source could serve and its own bodies place.
+- A purged document's grants go with its object.
+- I5: a document serves an image only if `SERVES` holds; a grant is written only by the writers above.
 
 ### Invariants
 
 - I1: after any committed writer batch, the tab's references equal its body ids (replace writers) or include them
   (add-only writers).
-- I2: no reader counts a dangling reference.
-- I3: the sweep deletes nothing while the backfill is incomplete, and at most `IMAGE_SWEEP_TRIPPED_MAX` (the oldest
-  unreferenced) while the tripwire holds; a tripped run never deletes zero when there is something to reap, so the
-  tripwire cannot latch.
-- I4: an image with a live reference at the instant of its `DELETE` statement is not deleted.
+- I2: after a push, the media service holds the document's set as the distinct ids of its references.
+- I3: every change to a document's set keys a push, so the media service, whose sweep reads only what the apps
+  report, hears of every reference (the spec's
+  [Retention](../images.md#retention-unused-image-cleanup)).
 
 ## Interfaces and contracts
 
@@ -182,56 +123,22 @@ export function imageRefIdsFromData(data: string): string[];
 
 // src/db/image-refs.ts
 export function imageRefReplaceStatements(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[];
 export function imageRefAddStatements(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[];
-export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedStatement;
-export function imageRefIndexPageStatement(
-  env: Env,
-  fromRowId: number,
-  toRowId: number,
-): D1PreparedStatement;
-export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement;
-export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement;
-export type ImageRefsBackfillRow = {
-  created_at: number;
-  cursor: number;
-  completed_at: number | null;
-};
-export async function readImageRefsBackfill(env: Env): Promise<ImageRefsBackfillRow | null>;
-export async function restartImageRefsBackfill(env: Env, now: number): Promise<void>;
-export function imageRefsBackfillAdvanceStatement(env: Env, cursor: number): D1PreparedStatement;
-export async function completeImageRefsBackfill(env: Env, now: number): Promise<void>;
-export async function maxTabRowId(env: Env): Promise<number>;
-export async function nextCorruptTabMentioningImages(
-  env: Env,
-  fromRowId: number,
-  toRowId: number,
-): Promise<{ rid: number; id: string; data: string } | null>;
-export async function isImageRefIndexComplete(env: Env): Promise<boolean>;
-export function resetImageRefIndexMemo(): void;
-
-// src/image-refs/backfill.ts
-export type ImageRefsBackfillResult = { state: 'settling' | 'running' | 'complete' };
-export async function runImageRefsBackfill(
-  env: Env,
-  now: number,
-  clock?: () => number,
-): Promise<ImageRefsBackfillResult>;
-
-// src/image-refs/retention.ts
-export const UNUSED_IMAGE_RETENTION_MS: number;
-export async function runImageRetention(env: Env, now: number): Promise<void>;
-
-// src/db/image-retention.ts
-export function sweepTripped(old: number, unused: number): boolean;
-export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<number>;
+export function documentImageIds(env: DocumentEnv, documentId: string): Promise<string[]>;
+export function documentPlacesImage(
+  env: DocumentEnv,
+  documentId: string,
+  imageId: string,
+  onlyTabId?: string | null,
+): Promise<boolean>;
 ```
 
 `imageRefIds` accepts `unknown` and returns `[]` for anything that isn't an array; a non-object entry is skipped. No
@@ -240,130 +147,82 @@ HTTP contract changes: `GET /api/images/usage` and `GET /api/images/:id` keep th
 ## Data and persistence
 
 ```sql
+-- the document's own SQLite (src/document-room/document-schema.ts)
 CREATE TABLE image_refs (
-  tab_id   TEXT NOT NULL,
+  tab_id   TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
   image_id TEXT NOT NULL,
   PRIMARY KEY (tab_id, image_id)
 ) WITHOUT ROWID;
 CREATE INDEX image_refs_image_idx ON image_refs (image_id);
 
-CREATE TABLE image_refs_backfill (
-  id           INTEGER PRIMARY KEY CHECK (id = 1),
-  created_at   INTEGER NOT NULL,
-  cursor       INTEGER NOT NULL DEFAULT 0,
-  completed_at INTEGER
-);
--- one row: created_at = now, cursor 0, completed_at = now only when `tabs` is empty
+-- the same SQLite (@liveworkspace/index-app image-grants.ts)
+CREATE TABLE image_owners (image_id TEXT PRIMARY KEY, owner_id TEXT NOT NULL) WITHOUT ROWID;
+CREATE TABLE image_grants (image_id TEXT PRIMARY KEY, created_at INTEGER NOT NULL) WITHOUT ROWID;
 ```
 
-`now` in SQL is `CAST(strftime('%s', 'now') AS INTEGER) * 1000` (`D1`). Both tables are derived data: rebuildable from
-`tabs.data` by resetting the backfill row (`cursor = 0, completed_at = NULL`). Not owner-keyed, so neither account
-deletion nor owner migration lists them in [Owner-keyed data](../../015-api/api.md#owner-keyed-data). A migration that
-rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades here.
+`image_refs` is derived data, rebuilt from `tabs.data` by the writers; `image_owners` is a cache of the media
+service's answer. None is owner-keyed, so neither account deletion nor an owner change lists them in
+[Owner-keyed data](../../015-api/api.md#owner-keyed-data); each goes with its document's object.
 
 ## Errors and edge cases
 
-| Case                                                   | Handling                                                                  |
-| ------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `imageId` is a `data:` URI or longer than 128          | Not a reference                                                           |
-| Two elements place the same image                      | One row (primary key); `imageRefIds` is distinct                          |
-| `elements` is an object, or missing                    | No references, on both extractors                                         |
-| Corrupt body at backfill                               | Text scan; every id after `"imageId"` counts, image or not (over-keeps)   |
-| Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                    |
-| Corrupt body at the lazy owner / document index        | No references from it; the backfill still covers it                       |
-| Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps  |
-| Backfill races a save                                  | `INSERT OR IGNORE` from an older body: an extra reference until next save |
-| Worker from before 0050 still saving                   | The settle hour; its writes precede the backfill's reads                  |
-| Backfill run fails mid-page                            | Cursor not advanced; the next run redoes the page (idempotent)            |
-| Every tab gone before the backfill runs                | `MAX(rowid)` is 0; completes                                              |
-| State row missing                                      | Never complete; the next run recreates it and starts over                 |
-| Tab deleted, references left behind                    | Dangling; never counted; pruned when its image is swept                   |
-| Image deleted from the gallery, references left behind | Harmless; they go when the element does                                   |
-| Image placed between count and delete                  | The `DELETE` re-checks; it survives                                       |
-| Unused count an exact multiple of the page             | A final empty page ends the loop                                          |
-| R2 delete fails after D1 delete                        | Objects stay (bytes kept); ids logged; next page continues                |
-| Unreferenced share over the tripwire                   | At most one capped page, oldest first; error logged; drains over runs     |
-| No `IMAGES` binding                                    | Sweep is a no-op; the index is still maintained                           |
+| Case                                                   | Handling                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `imageId` is a `data:` URI or longer than 128          | Not a reference                                                          |
+| Two elements place the same image                      | One row (primary key); `imageRefIds` is distinct                         |
+| `elements` is an object, or missing                    | No references, on both extractors                                        |
+| Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                   |
+| Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps |
+| Tab deleted                                            | Its references go with it; the next push sends the smaller set           |
+| Image deleted from the gallery, references left behind | Harmless; they go when the element does                                  |
+| A push fails                                           | Its keys stay; the next drain, a minute later, sends the whole set again |
+| No `MEDIA_KEY`                                         | The index is still maintained; nothing is sent to the media service      |
 
 ## Security and trust
 
 The share-read check authorises bytes to a share visitor, so it must never say yes to an image the document doesn't
 place, nor to one it places but may not serve (an id written into a document its owner has no tie to; see
-[Placement grants](#placement-grants)). The server renderer applies the same rule before reading R2. A reference exists only from a body that placed the image; the add-only writers can leave one behind only when
-a concurrent write or the backfill raced, and only for an id that tab's body carried. Before completion, a share
-visitor's image read writes index rows from that document's own tabs, derived data only. No input reaches SQL unbound:
-ids travel as one bound JSON array read by `json_each`. The modules above are held to 100% coverage
+[Placement grants](#placement-grants)). The server renderer applies the same rule before reading the media service. A
+reference exists only from a body that placed the image; the add-only writers can leave one behind only when a
+concurrent write raced, and only for an id that tab's body carried. No input reaches SQL unbound: ids travel as one
+bound JSON array read by `json_each`. The modules above are held to 100% coverage
 ([Testing](../../003-system-architecture/testing.md)).
 
 ## Performance and limits
 
-D1 bills rows read and written, not bytes; `json_each` rows count as read. Measured through the real functions on
-workerd's local D1 with 5,000 tabs (42.6 MB of bodies, 10% placing 1 to 3 images) and 2,000 images, before (main at
-`402d8019`) and after:
-
-| Operation                        | Before: read / written        | After: read / written |
-| -------------------------------- | ----------------------------- | --------------------- |
-| Daily sweep, deciding            | 7,000 / 0, plus 4.6 MB parsed | 2,597 / 0, no body    |
-| Usage map, one owner             | 61 / 0, plus 221 KB parsed    | 51 / 0                |
-| Share-visitor image read         | 11 / 0, plus 42 KB parsed     | 4 / 0                 |
-| Autosave, image tab, unchanged   | 3 / 5                         | 17 / 5                |
-| Autosave, image-free tab         | 3 / 5                         | 4 / 5                 |
-| Autosave, one image added        | 3 / 5                         | 19 / 7                |
-| Backfill, once, whole store      | none                          | 37,266 / 2,143        |
-| Usage map during backfill (lazy) | as above                      | 261 / 12              |
-
-Asymptotically the sweep goes from `I + T` rows plus every image-mentioning body through one Worker to about
-`I + R` rows and no body; the old sweep also held 200 bodies of up to `MAX_TAB_BYTES` each per page. A backfill page parses at most 100
-bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limit. The sweep holds at most
-`IMAGE_SWEEP_PAGE` ids.
+The writers run in the document's own SQLite, inside the save's one transaction: no network call on a save. Measured
+on a laptop (CPU time, node:sqlite standing in for the object's SQLite; `document-room-store.test.ts` keeps budgets on
+them): a tab placing 500 images saves in about 7 ms, its push takes about 1.5 ms, and a save that keeps the set takes
+about 3 ms and keys no push. The byte endpoint's share read is one index grant and one RPC to the document.
 
 ## Observability
 
-| Fingerprint                                                                                      | Level | When                           |
-| ------------------------------------------------------------------------------------------------ | ----- | ------------------------------ |
-| `image-refs backfill: settling`                                                                  | info  | Run inside the settle hour     |
-| `image-refs backfill: indexed tabs <from>..<to>`                                                 | info  | Budget spent, not yet complete |
-| `image-refs backfill: corrupt tab <id> scanned as text (<n> ids)`                                | warn  | Text scan used                 |
-| `image-refs backfill: state row missing; restarting`                                             | warn  | Row recreated                  |
-| `image-refs backfill: complete at cursor <n>`                                                    | info  | Completion                     |
-| `image-refs backfill failed`                                                                     | error | The run threw                  |
-| `image sweep: paused, reference index backfill incomplete`                                       | info  | Sweep gated                    |
-| `image-sweep-tripwire: <u> of <o> old images unreferenced; deleting at most <cap>, oldest first` | error | Tripwire                       |
-| `image sweep: R2 delete failed`                                                                  | error | R2 threw after the D1 delete   |
-| `image sweep: deleted N images older than <cutoff>`                                              | info  | End of every sweep             |
-| `image sweep failed`                                                                             | error | The sweep threw                |
+| Fingerprint                                                   | Level | When                   |
+| ------------------------------------------------------------- | ----- | ---------------------- |
+| `[images] not servable by document`                           | warn  | The share read refuses |
+| `[media] a document places more images than one sync carries` | error | Set over the sync cap  |
 
 ## Testing
 
-| Rule                                                         | Test                                            |
-| ------------------------------------------------------------ | ----------------------------------------------- |
-| What a reference is                                          | `src/image-refs/extract.test.ts`                |
-| SQL extraction equals the JavaScript extractor               | `src/db/image-refs.test.ts` "the SQL extractor" |
-| Migration on an empty and a populated database               | `src/db/image-refs.test.ts` "migration 0050"    |
-| Each writer maintains the index (I1), routes included        | `src/db/image-refs-writers.test.ts`             |
-| Deleting a tab / document / account prunes; shared tab keeps | `src/db/image-refs-writers.test.ts`             |
-| No unknown writer of `tabs`, code or migration               | `src/image-refs/writer-census.test.ts`          |
-| Backfill states, pages, chase, corrupt body, idempotence     | `src/image-refs/backfill.test.ts`               |
-| Backfill before sweep; failures logged                       | `src/image-refs/retention.test.ts`              |
-| Sweep gate, live vs dangling, tripwire, re-check (I2 to I4)  | `src/db/image-retention.test.ts`                |
-| Usage and share read from the index, lazy index              | `src/db/images.test.ts`                         |
+| Rule                                                   | Test                                            |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| What a reference is                                    | `src/image-refs/extract.test.ts`                |
+| Each writer maintains the index (I1), routes included  | `src/db/image-refs-writers.test.ts`             |
+| The push sends the set (I2) and grants (I3)            | `src/document-room/document-outbox.test.ts`     |
+| Deleting a tab / document / account drops them         | `src/db/image-refs-writers.test.ts`             |
+| No unknown writer of `tabs` anywhere in the apps       | `src/image-refs/writer-census.test.ts`          |
+| Placement grants (I5)                                  | `src/db/image-grants.test.ts`                   |
+| The media service hears of every change (I3)           | `src/media.test.ts`                             |
+| The share read answered by the document, before a push | `src/document-room/document-room-store.test.ts` |
 
-All run against `src/test-sqlite-d1.ts` (real SQLite, every migration); shared arrangement in
-`src/db/test-image-fixtures.ts`.
+All run against `src/test-sqlite-d1.ts` (real in-memory SQLite with the document's schema); shared arrangement
+in `src/db/test-image-fixtures.ts`.
 
 ## Constants and configuration
 
-| Constant                        | Value                     | Provenance                          | Safe range              |
-| ------------------------------- | ------------------------- | ----------------------------------- | ----------------------- |
-| `IMAGE_REF_ID_MAX_LENGTH`       | 128                       | Spec; gallery ids are 36-char UUIDs | 36 to 512               |
-| `IMAGE_REFS_BACKFILL_PAGE_ROWS` | 100                       | Spec                                | 10 to 1000              |
-| `IMAGE_REFS_BACKFILL_SETTLE_MS` | 3 600 000                 | Spec (one hour)                     | ≥ one deploy            |
-| `IMAGE_REFS_BACKFILL_BUDGET_MS` | 60 000                    | Spec (one minute)                   | 1 s to 10 min           |
-| `UNUSED_IMAGE_RETENTION_MS`     | 30 days                   | Spec                                | ≥ 7 days                |
-| `IMAGE_SWEEP_PAGE`              | 1000                      | Spec; R2 `delete()` key limit       | 1 to 1000               |
-| `IMAGE_SWEEP_TRIPPED_MAX`       | 1000 (`IMAGE_SWEEP_PAGE`) | Spec; one R2 call a tripped day     | 1 to `IMAGE_SWEEP_PAGE` |
-| `IMAGE_SWEEP_TRIPWIRE_RATIO`    | 0.5                       | Spec (operator decision)            | 0 to 1                  |
-| `IMAGE_SWEEP_TRIPWIRE_MIN`      | 20                        | Spec (operator decision)            | ≥ 0                     |
+| Constant                  | Value | Provenance                          | Safe range |
+| ------------------------- | ----- | ----------------------------------- | ---------- |
+| `IMAGE_REF_ID_MAX_LENGTH` | 128   | Spec; gallery ids are 36-char UUIDs | 36 to 512  |
 
 ## Defaults ledger
 

@@ -25,7 +25,7 @@ import {
 } from './limits';
 import { ReportTally, type DrawioReport } from './notes';
 import { refusalMessage } from './refusals';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** One library shape, its elements placed from its top-left corner at (0, 0). */
 export type ImportedLibraryItem = {

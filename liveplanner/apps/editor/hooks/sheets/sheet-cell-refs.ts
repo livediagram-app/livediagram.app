@@ -3,7 +3,7 @@
 // once the cell is gone), and listens for the Comments panel asking it to bring a cell into view. A Sheet not drawn
 // yet has no namer, and its cell threads read by the Sheet's title alone.
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type Namer = (cell: string) => string | null;
 

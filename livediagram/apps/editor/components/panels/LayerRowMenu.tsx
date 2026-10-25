@@ -16,8 +16,11 @@ import {
   SoloIcon,
   UnlockIcon,
 } from '@/components/panels/layers-panel-icons';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import {
   MenuTreeContext,

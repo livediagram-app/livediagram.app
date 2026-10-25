@@ -1,5 +1,3 @@
-import type { TelemetrySummary, TelemetryWindow } from '@livediagram/api-schema';
-
 // Events of features that no longer exist (docs/specs/017-telemetry/telemetry.md "Retired features").
 // The stored rows stay in D1 until retention ages them out, but the dashboard
 // treats the feature as gone: these events are dropped from the summary the
@@ -152,7 +150,8 @@ function isPlanModeEvent(category: string, action: string, type: string | null):
   if (category === 'Tab') return PLAN_MODE_TAB_TYPES.has(t);
   if (category === 'Action') return action === 'Linked' && t === 'Board';
   if (category === 'Help') return PLAN_MODE_HELP_IDS.has(t);
-  if (category === 'Mcp' || category === 'Cli') return PLAN_MODE_AGENT_TYPE.test(`${category}|${t}`);
+  if (category === 'Mcp' || category === 'Cli')
+    return PLAN_MODE_AGENT_TYPE.test(`${category}|${t}`);
   if (category === 'UI') {
     if (action === 'Opened' && PLAN_MODE_HELP_IDS.has(t)) return true;
     return PLAN_MODE_UI_TYPE.test(t);
@@ -160,8 +159,48 @@ function isPlanModeEvent(category: string, action: string, type: string | null):
   return false;
 }
 
+// The in-editor AI assistant (removed 2026-10-23, docs/specs/021-event-storming/note-reader.md): its Ask and Clean
+// requests, its Settings switches (the assistant and its suggested prompts), the AI Tools Settings category, and its
+// help article. The sticky-note photo import still sends AI·Used under its Photo* types, and carries on.
+const AI_ASSISTANT_USED_TYPES = new Set(['Ask', 'Clean']);
+const AI_ASSISTANT_HELP_ID = 'ai-tools';
+
+function isAiAssistantEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'AI') return action === 'Toggled' || AI_ASSISTANT_USED_TYPES.has(t);
+  if (category === 'Help') return t === AI_ASSISTANT_HELP_ID;
+  if (category === 'UI' && action === 'Opened')
+    return t === 'SettingsAi' || t === AI_ASSISTANT_HELP_ID;
+  return false;
+}
+
+// Tags (removed 2026-10-23, docs/specs/013-workspace/tags.md): coloured labels people put on their documents. A tag
+// made, put on or taken off, renamed, recoloured or deleted, the sidebar's and the Explorer panel's Tags rows, and
+// the Tags help article. Card tags on a canvas card are a different feature (Element·Changed·TagColour), and carry on.
+const TAG_EXPLORER_TYPES = new Set(['Tag', 'TagColour']);
+const TAG_SIDEBAR_TYPES = new Set([
+  'Sidebar.Tags',
+  'Sidebar.Tag',
+  'ExplorerPanel.Tags',
+  'ExplorerPanel.Tag',
+]);
+const TAGS_HELP_ID = 'tags';
+
+function isTagsEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Explorer') return TAG_EXPLORER_TYPES.has(t);
+  if (category === 'Help') return t === TAGS_HELP_ID;
+  if (category === 'UI') {
+    if (action === 'Selected') return TAG_SIDEBAR_TYPES.has(t);
+    return action === 'Opened' && t === TAGS_HELP_ID;
+  }
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isTagsEvent(category, action, type)) return true;
+  if (isAiAssistantEvent(category, action, type)) return true;
   if (isPagesModeEvent(category, action, type)) return true;
   if (isPlanModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
@@ -179,63 +218,4 @@ export function isRetiredEvent(category: string, action: string, type: string | 
     );
   }
   return false;
-}
-
-function dropFromWindow(window: TelemetryWindow): TelemetryWindow {
-  let dropped = 0;
-  const rows = window.rows.filter((r) => {
-    if (!isRetiredEvent(r.category, r.action, r.type)) return true;
-    dropped += r.count;
-    return false;
-  });
-  return dropped === 0 ? window : { total: window.total - dropped, rows };
-}
-
-const splitKey = (key: string): [string, string, string | null] => {
-  const [category = '', action = '', type = ''] = key.split('|');
-  return [category, action, type === '' ? null : type];
-};
-
-// The summary without any retired event: window rows and totals, the
-// previous windows behind the trend arrows, and the daily series (each
-// retired series also comes off its category's line and the day totals).
-export function dropRetiredEvents(summary: TelemetrySummary): TelemetrySummary {
-  // A deployment with telemetry off answers `{ enabled: false }` and nothing else: there is nothing to drop, and
-  // reading its absent windows threw, which the dashboard took for a failed request ("Couldn't load the
-  // numbers") instead of showing that telemetry is off here.
-  if (!summary.enabled || !summary.windows) return summary;
-  const windows = Object.fromEntries(
-    Object.entries(summary.windows).map(([k, w]) => [k, dropFromWindow(w)]),
-  ) as TelemetrySummary['windows'];
-  const previousWindows = summary.previousWindows
-    ? (Object.fromEntries(
-        Object.entries(summary.previousWindows).map(([k, w]) => [k, dropFromWindow(w)]),
-      ) as TelemetrySummary['previousWindows'])
-    : undefined;
-  let daily = summary.daily;
-  if (daily) {
-    const retired = Object.keys(daily.byMetric).filter((key) => isRetiredEvent(...splitKey(key)));
-    if (retired.length > 0) {
-      const byMetric = { ...daily.byMetric };
-      const byCategory = { ...daily.byCategory };
-      const totals = [...daily.totals];
-      for (const key of retired) {
-        const series = byMetric[key] ?? [];
-        delete byMetric[key];
-        const [category] = splitKey(key);
-        const line = byCategory[category];
-        if (line) byCategory[category] = line.map((n, i) => Math.max(0, n - (series[i] ?? 0)));
-        series.forEach((n, i) => {
-          totals[i] = Math.max(0, (totals[i] ?? 0) - n);
-        });
-      }
-      daily = { ...daily, byMetric, byCategory, totals };
-    }
-  }
-  return {
-    ...summary,
-    windows,
-    ...(previousWindows ? { previousWindows } : {}),
-    ...(daily ? { daily } : {}),
-  };
 }

@@ -1,8 +1,5 @@
 import { withInlineIcon, type Element } from '@liveplanner/project';
 
-import { isTechIconId } from '@/lib/tech-icons';
-import { track } from '@/lib/telemetry';
-
 interface InlineIconMutatorsDeps {
   // True while edits are blocked (read-only share role / locked tab). Every
   // mutator short-circuits on it so the icon attach/detach paths match the
@@ -14,54 +11,13 @@ interface InlineIconMutatorsDeps {
   // The gesture write (no history entry of its own): an icon element dropped at the end of a drag
   // lands inside that drag's one undo step.
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  // The active tab's elements now: whether a drop lands on an icon (a swap) or a shape.
-  elements: readonly Element[];
 }
 
 // Inline-icon attach/detach mutators (docs/specs/008-canvas/canvas-and-palette.md icons). A shape can carry one
-// inline icon (`iconId` + `iconPosition`); these three handlers are the only
+// inline icon (`iconId` + `iconPosition`); these two handlers are the only
 // writers of that pair. Lifted out of useEditorState as a cohesive slice —
-// they close over nothing but `editsBlocked`, the two writes and the elements.
-export function useInlineIconMutators({
-  editsBlocked,
-  commit,
-  tick,
-  elements,
-}: InlineIconMutatorsDeps) {
-  // Drop a palette icon onto a shape (drag-and-drop): set its inline
-  // iconId + the side the icon landed on. History-aware via commit so
-  // it's undoable like any other element edit. Guarded for read-only /
-  // locked tabs and to regular shapes (the dedicated 'icon' shape has no
-  // inline-icon slot).
-  const dropIconOnElement = (
-    elementId: string,
-    iconId: string,
-    position: 'left' | 'right' | 'above' | 'below',
-  ) => {
-    if (editsBlocked) return;
-    const target = elements.find((e) => e.id === elementId);
-    // Onto an icon: the icon becomes the dropped one, keeping its box, place and style.
-    if (target?.type === 'shape' && target.shape === 'icon') {
-      if (target.iconId === iconId) return;
-      commit((els) =>
-        els.map((e) => (e.id === elementId && e.type === 'shape' ? withInlineIcon(e, iconId) : e)),
-      );
-      track('Element', 'Changed', 'IconSwapped');
-      return;
-    }
-    commit((els) =>
-      els.map((e) =>
-        e.id === elementId && e.type === 'shape' && e.shape !== 'icon'
-          ? withInlineIcon(e, iconId, position)
-          : e,
-      ),
-    );
-    // A tech icon reports as `TechIcon`, the same type every other way of
-    // adding one uses (useElementCreation's addTechIcon / palette drop), so
-    // architecture-icon usage doesn't vanish into the line-art `Icon` count.
-    track('Element', 'Added', isTechIconId(iconId) ? 'TechIcon' : 'Icon');
-  };
-
+// they close over nothing but `editsBlocked` and the two writes.
+export function useInlineIconMutators({ editsBlocked, commit, tick }: InlineIconMutatorsDeps) {
   // Remove an inline icon from a shape (drops iconId + iconPosition).
   // To MOVE an icon, just drag another onto a different side — the drop
   // overwrites position; this is the explicit "take it off" path.
@@ -108,5 +64,5 @@ export function useInlineIconMutators({
     // shape. Counting it again made every fold-in a second icon (docs/specs/017-telemetry/telemetry.md).
   };
 
-  return { dropIconOnElement, removeIconFromElement, dropIconElementOnShape };
+  return { removeIconFromElement, dropIconElementOnShape };
 }

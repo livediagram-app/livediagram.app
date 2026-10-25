@@ -8,7 +8,9 @@ import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/canvas/useViewportStore', () => ({ useViewportOf: () => 0.8 }));
+vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
+  useViewportOf: () => 0.8,
+}));
 
 afterEach(() => {
   cleanup();

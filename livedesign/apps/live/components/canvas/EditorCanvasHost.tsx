@@ -3,26 +3,24 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
-import { openSearchWithPrefetch } from '@/lib/open-search';
-import { pastePointer } from '@/lib/canvas-pointer';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
+import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@livedesign/design';
+import { canvasSurface, PEN_INK } from '@livedesign/design';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { presentedPages } from '@/lib/presented-pages';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
-import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
+import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
@@ -74,9 +72,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     setActiveLayer,
     addLayer,
     renameLayer,
@@ -112,13 +107,9 @@ export function EditorCanvasHost() {
     addTable,
     addTechIcon,
     addText,
-    aiCapable,
-    aiPanelPosition,
-    aiPanelVisible,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
-    applyAiElements,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -161,21 +152,14 @@ export function EditorCanvasHost() {
     styleNewElement,
     commitLabel,
     commitTable,
-    createFolder,
     deleteCurvePoint,
-    deleteDesign,
-    refreshOwnDesigns,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     designId,
-    designList,
-    designListLoading,
     designName,
-    dismissSharedDesign,
     dropIconOnElement,
+    nameDesign,
     dropPaletteItem,
-    duplicateDesign,
     duplicateMultiSelected,
     canCombine,
     combineSelected,
@@ -189,7 +173,6 @@ export function EditorCanvasHost() {
     workbenchMode,
     exitFormatTool,
     fitToScreen,
-    folders,
     followLink,
     formatSourceId,
     handleCanvasDoubleClick,
@@ -211,8 +194,6 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDesignToFolder,
-    moveDesignTo,
     narrowMultiSelection,
     newDesign,
     openActionPopover,
@@ -220,28 +201,23 @@ export function EditorCanvasHost() {
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDesign,
     openNote,
     pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     retryActiveTabLoad,
     readSelection,
     selectElement,
     selectMarquee,
-    confirm,
     selfParticipant,
-    setAiPanelPosition,
+    sessionShareCode,
     followMe,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDesignList,
-    setDesignName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -260,15 +236,10 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedDesigns,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     tabSummaries,
-    teamDesigns,
-    teamFolders,
-    teams,
-    refreshTeamLibraries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -307,20 +278,6 @@ export function EditorCanvasHost() {
     at: { x: number; y: number };
     holders: LockHolder[];
   } | null>(null);
-  // A stable reference for the list-shaped prop the Explorer takes, so the
-  // (React.memo'd) panel doesn't re-render on every drag frame just because
-  // the editor re-rendered. It recomputes only when its real input changes.
-  const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-designs.md) - see useTeamFolderActions.
-  const viewerId = selfParticipant?.id ?? null;
-  const onTeamFolders = useTeamFolderActions({
-    accountUserId,
-    viewerId,
-    teamFolders,
-    refreshTeamLibraries,
-    confirm,
-  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/live-app.md). Subscribing to the appearance here is what makes the
@@ -354,12 +311,8 @@ export function EditorCanvasHost() {
     shownElements,
     surface,
     themeViewMap(activeTab.theme, appearance),
-    labelsFollowCanvas(activeTab)
-      ? {
-          stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
-          drawn: backdrop.backgroundColor,
-        }
-      : undefined,
+    // No canvas to re-ink labels against: every tab is pages, each with its own paper.
+    undefined,
     pageView,
   );
   // Lazy per-tab load gate (docs/specs/006-design/per-tab-storage.md): show a blocking loader / error over
@@ -582,14 +535,6 @@ export function EditorCanvasHost() {
               onCancelDraw={cancelDrawShape}
               onUndo={undo}
               onRedo={redo}
-              designList={designList}
-              folders={folders}
-              sharedDesigns={sharedDesigns}
-              teams={explorerTeams}
-              teamFolders={teamFolders}
-              teamDesigns={teamDesigns}
-              onDismissShared={(id) => void dismissSharedDesign(id)}
-              designListLoading={designListLoading}
               mapPosition={mapPosition}
               onMoveMap={(x, y) =>
                 // Equality-guarded so a drag tick that resolves to the same spot
@@ -601,9 +546,6 @@ export function EditorCanvasHost() {
               activeLayerId={activeLayerId}
               layerCounts={layerCounts}
               userPreferences={userPreferences}
-              onToggleRecentExclusion={toggleRecentExclusion}
-              favouriteIds={favouriteIds}
-              onToggleFavourite={toggleFavourite}
               laserPanelPosition={laserPanelPosition}
               spotlightPanelPosition={spotlightPanelPosition}
               eraserPanelPosition={eraserPanelPosition}
@@ -686,7 +628,8 @@ export function EditorCanvasHost() {
                       done ? completeAction(id, actionId) : reopenAction(id, actionId)
               }
               currentDesignId={designId}
-              onOpenDesign={openDesign}
+              currentShareCode={sessionShareCode}
+              onRenameCurrentDesign={nameDesign}
               onNewDesign={newDesign}
               explorerMenuActions={{
                 // The header's Share gate: the owner, or a joined member of the design's team
@@ -708,25 +651,6 @@ export function EditorCanvasHost() {
                   track('UI', 'Opened', 'Settings');
                 },
               }}
-              onRenameCurrent={(next) => {
-                const prev = designName.trim();
-                const nextTrim = next.trim();
-                setDesignName(next);
-                if (nextTrim && designId)
-                  setDesignList((prev) =>
-                    prev.map((d) => (d.id === designId ? { ...d, name: nextTrim } : d)),
-                  );
-                if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-              }}
-              onDeleteDesign={(id) => void deleteDesign(id)}
-              onLibraryChanged={refreshOwnDesigns}
-              onDuplicateDesign={(id) => void duplicateDesign(id)}
-              onCreateFolder={createFolder}
-              onRenameFolder={renameFolder}
-              onDeleteFolder={(id) => void deleteFolder(id)}
-              onTeamFolders={onTeamFolders}
-              onMoveDesignToFolder={moveDesignToFolder}
-              onMoveDesignTo={moveDesignTo}
               onDeselect={() => {
                 // Clicking empty canvas also cancels an armed arrow-connect, and
                 // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -903,19 +827,6 @@ export function EditorCanvasHost() {
               explorerHidden={workbenchMode || landscapePhone}
               workbenchBack={workbenchFrame}
               onToggleZen={embedMode ? undefined : toggleZenMode}
-              aiPanel={
-                aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
-                  ? {
-                      position: aiPanelPosition,
-                      onMove: (x, y) => setAiPanelPosition({ x, y }),
-                      onReset: () => setAiPanelPosition(null),
-                      contextElements: activeTab.elements,
-                      onApplyElements: applyAiElements,
-                      ownerId: selfParticipant.id,
-                      tabId: activeTab.id,
-                    }
-                  : undefined
-              }
             />
             {lockedMenu ? (
               <LockedElementMenu

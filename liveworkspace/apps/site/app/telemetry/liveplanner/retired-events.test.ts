@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { metricKey, type TelemetrySummary } from '@liveplanner/api-schema';
-import { dropRetiredEvents, isRetiredEvent } from './retired-events';
+import { dropRetiredEvents as dropRetired } from '../_shared/retired-events';
+import { isRetiredEvent } from './retired-events';
+
+const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, isRetiredEvent);
 
 // docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never
 // reach a chart.
@@ -83,20 +86,19 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
-  it("retires the Explorer's Timeline section, not the scoped feeds that draw the same events", () => {
-    for (const type of ['Landing', 'Nav', 'Menu'])
+  it("retires the old Timeline's arrivals, not what the shared Explorer's Timeline reports", () => {
+    for (const type of ['Landing', 'Nav'])
       expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(true);
-    expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(true);
-    expect(isRetiredEvent('Timeline', 'Removed', 'Stack')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Timeline')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Timeline')).toBe(true);
-    expect(isRetiredEvent('Page', 'View', '/explorer/timeline')).toBe(true);
-    // A project's History and a team's Activity carry on.
-    expect(isRetiredEvent('Timeline', 'Opened', 'Stack')).toBe(false);
+    for (const type of ['Card', 'Stack', 'Menu'])
+      expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(false);
+    expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(false);
+    expect(isRetiredEvent('Timeline', 'Removed', 'Stack')).toBe(false);
     expect(isRetiredEvent('Timeline', 'Changed', 'Calendar')).toBe(false);
     expect(isRetiredEvent('Timeline', 'Loaded', 'More')).toBe(false);
+    expect(isRetiredEvent('Page', 'View', '/explorer/timeline')).toBe(false);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Inbox')).toBe(false);
-    expect(isRetiredEvent('Page', 'View', '/explorer/home')).toBe(false);
   });
 
   it('retires Pages mode, not the backgrounds that outlive it', () => {
@@ -202,10 +204,37 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepOutro')).toBe(true);
     expect(isRetiredEvent('Tab', 'Started', 'Vote')).toBe(false);
     expect(isRetiredEvent('Tab', 'Started', 'CountdownTimer')).toBe(false);
-    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Temperature')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Picker')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
+  });
+
+  it('retires the Format and Isometric tools, not the isometric image export', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatCopiesFill')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatMode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'TextFormat')).toBe(false);
+  });
+
+  it('retires entity editing, not the elements that carry on', () => {
+    expect(isRetiredEvent('Element', 'Created', 'RelatedEntity')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'EntityField')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Entity')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Cardinality')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Font')).toBe(false);
+  });
+
+  it('retires the custom-theme builder and its help article, not the built-in themes', () => {
+    expect(isRetiredEvent('Theme', 'Created', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'CustomEdited')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Deleted', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'custom-themes')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Default')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'changing-theme')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

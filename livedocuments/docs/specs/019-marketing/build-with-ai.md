@@ -6,7 +6,7 @@ Status: shipped
 
 ## Entry points
 
-- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`) shows it, to the left of Start Blank. It is a quiet ghost link with a sparkles glyph, so the CTA pair stays the loudest thing in the bar. Desktop only (from `lg`): below that the bar is already full with Brand and the CTA pair. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre and telemetry headers do not show it.
+- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`, and `/licences`) shows it to everyone, signed in or not, first on the right of the bar, before Choose Template and Explorer ([Header](marketing-site.md)). It is a quiet ghost link with a sparkles glyph, so Choose Template stays the loudest thing in the bar. Below `lg` it is the sparkles alone in a 40px square, its name kept in the aria-label. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre and telemetry headers do not show it.
 - **The footer's AI & MCP link** (`SiteFooter`) opens `/ai`.
 - **The FAQ's** "Can I connect my own AI assistant" answer links to `/ai` for setup. (Feature cards stay links to their help article, as every feature card is.)
 
@@ -22,7 +22,7 @@ Status: shipped
 
 ## The clients
 
-`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the editor app's consent pages use (`resolveMcpOrigin`, `@livedocuments/api-schema`), so a staging or local build shows its own address and the hosted one shows `https://mcp.livedocuments.app/mcp`.
+The page is one shared body, `BuildWithAi` (`../packages/marketing-site/src/components/ai/BuildWithAi.tsx`), the same in every product; this app's `app/ai/page.tsx` wraps it in its header and footer and hands over its words, art, capabilities, clients and prompts. The clients are data, built for every product by `aiClients` (`../packages/marketing-site/src/lib/ai-clients.ts`) and bound to this one in `lib/ai-clients.ts` (`AI_PRODUCT`: its name, `MCP_URL` and hosted MCP host), which also holds its starter prompts. Each client has an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the editor app's consent pages use (`resolveMcpOrigin`, `@livedocuments/api-schema`), so a self-hosted build shows its own address and the hosted one shows `https://mcp.livedocuments.app/mcp`.
 
 | id            | Name        | Group         | The way in                                                                                                                                                                                                       |
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is `AiChatArt` (CSS keyframes, no JS tick).

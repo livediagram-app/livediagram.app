@@ -33,20 +33,20 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                                                                                        | Re-exports the two new modules                                                                                                                          |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                                                 | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                                                                                  |
 | `packages/design/src/comments.ts`                                                                                         | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                                                                               |
-| `apps/api/migrations/0001_livedesign_baseline.sql`                                                                        | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it                                                                  |
-| `apps/api/src/db/ws-tickets.ts`                                                                                           | `WsAdmission.personTag`; written at mint, returned at consume                                                                                           |
+| apps/api/migrations/0001_livedesign_baseline.sql (removed)                                                                | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it                                                                  |
+| apps/api/src/db/ws-tickets.ts (removed)                                                                                   | `WsAdmission.personTag`; written at mint, returned at consume                                                                                           |
 | `apps/api/src/db/tabs.ts`                                                                                                 | `tabIdsWithComments(env, designId)`                                                                                                                     |
 | `apps/api/src/person-tag.ts`                                                                                              | `personTagFor(designId, ownerId)`                                                                                                                       |
 | `apps/api/src/comments.ts`                                                                                                | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                                        |
 | `apps/api/src/routes/comment-routes.ts` (+ test)                                                                          | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list                                                                      |
 | `packages/design-views/src/comments.ts`                                                                                   | `commentHosts(model)`: the elements holding a thread in outline order, with ref and label                                                               |
-| `apps/api/src/routes/agent-presence-routes.ts` (+ test), `refusal-log.ts` (+ test)                                        | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`; `logRefusal` for both route families                                             |
+| `apps/api/src/routes/agent-presence-routes.ts` (+ test), `../packages/api-kit/src/refusal-log.ts` (+ test)                | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`; `logRefusal` for both route families                                             |
 | `apps/api/src/routes/design-subresource-routes.ts`                                                                        | Dispatches to the two handlers above; loses the inline add and delete-own                                                                               |
 | `apps/api/src/routes/context.ts`                                                                                          | `deniedOnTab` moves here from the subresource routes; `gateParticipate`                                                                                 |
 | `apps/api/src/routes/design-room-routes.ts`                                                                               | The mint stores the person tag; the upgrade sets `X-Verified-Person`                                                                                    |
 | `apps/api/src/room-client.ts`                                                                                             | `putAgentPresence`, `deleteAgentPresence`, `refreshAgentPresence`; `relayElementDelta` logs                                                             |
 | `apps/api/src/room-agent-presence.ts` (+ test)                                                                            | `RoomAgentPresence` (storage, set, refresh, clear, sweep), the pure `agentRosterFor`, `answerAgentPresence`, `clearAgentsForOp`, `agentPresenceWriteOf` |
-| `apps/api/src/design-room.ts`, `room-internal.ts`, `room-roster.ts`                                                       | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke                                                            |
+| `apps/api/src/design-room/design-room.ts`, `room-internal.ts`, `room-roster.ts`                                           | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke                                                            |
 | `apps/api/src/index.ts`                                                                                                   | Unchanged: the choke point already refuses every write from a read-only token                                                                           |
 | `apps/api/src/openapi/manifest.ts`, `schemas.generated.ts`, `apps/api/scripts/gen-openapi-schemas.mjs`                    | Six new routes, `tokenUsable` on the comment routes, the new schemas                                                                                    |
 | `apps/live/lib/api/room.ts`                                                                                               | `onPresence(participants, agents)`                                                                                                                      |
@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
 | `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row; no Follow button on an agent row                                                                                              |
 | `apps/live/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
-| `apps/telemetry/app/catalogue/`                                                                                           | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
+| `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/`                                                          | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
 | `packages/api-schema/src/index.ts`                                                                                        | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
 
 ## Domain and naming
@@ -139,7 +139,7 @@ Client state: `usePresenceState` gains `liveAgents: AgentPresence[]`, replaced o
 
 ### REST
 
-All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed design answers 410 through
+All `guest-or-account`; tab-scoped grants reach their own tab only; a trashed design answers 410 through
 `missingDesign`.
 
 | Method | Path                                                       | Gate                               | Success                                  |
@@ -341,9 +341,9 @@ none, and the room pins it on the session attachment as `personTag`.
 `AgentPresenceRecord = { id, designId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- Migration 0067 (agent changesets) adds the nullable column; existing tickets expire within a minute; no backfill.
+- The person tag comes with the room ticket; no column is stored for it.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
-  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches D1.
+  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches the design's SQLite.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
   a design copy carries it (redacted for every viewer but its author). Account deletion removes the account's
   tokens; a comment's token id then names nothing.
@@ -372,7 +372,7 @@ setAt, expiresAt }`.
 - **E17** A reply that pushes the tab over `MAX_TAB_BYTES`: 413, nothing written, nothing relayed.
 - **E18** A lost compare-and-swap twice: 409 `tab_busy`, nothing written.
 - **E19** A relay that fails: the write stands; `[room-mutation] el-delta did not reach the room` warns (PR26); editors get
-  it from D1 on their next read, and the ledger merge does not apply because the room never saw it.
+  it from the stored tab on their next read, and the ledger merge does not apply because the room never saw it.
 - **E20** A list over a design with no threads: 200 `{ threads: [] }` after one query.
 - **E21** A tab body that fails to parse during the list: skipped, logged `[comment] list skipped tab`.
 
@@ -396,7 +396,7 @@ setAt, expiresAt }`.
 
 ## Performance and limits
 
-- `PUT .../presence`: at most five D1 reads (design meta, grant, tab, participant, a team membership) and one
+- `PUT .../presence`: at most five reads (design meta, grant, tab, participant, a team membership) and one
   room call; the room does one storage write, one `setAlarm` and one roster broadcast.
 - A roster broadcast is O(S x (S + A)) for S sockets and A entries: the person-tag index is built once per frame,
   then each recipient's projection is linear. With A at most 32 and an entry under 3 KiB (20 ids of at most
@@ -458,7 +458,7 @@ the tab pill.
 | `[room-mutation] el-delta did not reach the room`       | api, warn     | designId, tabId, delta (its kind), error           |
 | `[agent-presence] skipped entry`                        | editor, debug | reason (`invalid_shape` with count, `unknown_tab`) |
 
-Refusals are logged once each, at the route family's entry (`logRefusal` in `apps/api/src/routes/refusal-log.ts`), from the
+Refusals are logged once each, at the route family's entry (`logRefusal` in `../packages/api-kit/src/refusal-log.ts`), from the
 answer's status and error code.
 
 Telemetry: `Agent·Present`, type `frontDoorOf(request)`, written with `reportServerEvent` in `waitUntil` when a
@@ -483,11 +483,11 @@ client's copy.
 | Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                  |
 | Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                           |
 | The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                               |
-| Agents cannot be mentioned                                       | `packages/design/src/comment-mentions.test.ts` (closed mention shape)                                                                                                         |
+| Agents cannot be mentioned                                       | `../packages/model-core/src/comment-mentions.test.ts` (closed mention shape)                                                                                                  |
 | Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                         |
 | The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                        |
 | Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                             |
-| Person tag through the ticket                                    | `apps/api/src/db/ws-tickets.test.ts`, `routes/design-room-routes.test.ts`                                                                                                     |
+| Person tag through the ticket                                    | apps/api/src/db/ws-tickets.test.ts (removed), `routes/design-room-routes.test.ts`                                                                                             |
 | OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                               |
 | End to end, dark mode                                            | `apps/live/e2e/signed-in/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
 
@@ -505,7 +505,7 @@ Room and route tests run on the in-memory storage and SQLite fakes with a fixed 
 | `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
 | `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
 
-No new environment variable or binding. Its one migration, the ticket column, landed in 0067.
+No new environment variable or binding.
 
 ## Assets and external resources
 

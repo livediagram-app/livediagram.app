@@ -3,7 +3,7 @@
 // settings-dialog.tsx. Labels are lifted from apps/editor: the quick-add options from
 // components/canvas/quick-connect-options.tsx.
 
-import { Scene, Shape, SelectionBox } from './primitives';
+import { Scene, Shape, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 
 // The four default quick-add options, drawn as the strip's icon buttons (Duplicate, Arrow,
 // Pencil, Text), left to right.

@@ -9,7 +9,7 @@ import { Tooltip } from '@liveplanner/ui';
 import { ColourSwatch } from '@/components/colour/ColourSwatch';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
 import { optionMatches, themeOptions } from '@/components/colour/colour-options';
-import { onColourKeys } from '@/components/colour/useColourKeys';
+import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { getTheme, themePresetColors } from '@/lib/themes';
 

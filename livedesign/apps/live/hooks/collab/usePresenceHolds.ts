@@ -7,7 +7,7 @@
 // presence list takes their hold with them when the caller reads holds by its peers.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RoomOp } from '@livedesign/api-schema';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function usePresenceHolds<H>(opts: {
   peers: readonly { id: string }[];

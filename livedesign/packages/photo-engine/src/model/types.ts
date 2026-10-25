@@ -177,7 +177,6 @@ export type TextLayer = LayerBase & { layerKind: 'text'; text: TextSpec; effects
 export type GroupLayer = LayerBase & { layerKind: 'group'; collapsed?: true };
 
 export type PhotoLayer = PixelLayer | AdjustmentLayer | FillLayer | TextLayer | GroupLayer;
-export type LayerKind = PhotoLayer['layerKind'];
 
 export type Photo = {
   width: number;

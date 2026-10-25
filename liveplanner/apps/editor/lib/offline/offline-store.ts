@@ -36,6 +36,7 @@ import {
   resetOfflineIds,
 } from './offline-ids';
 import { offlineProjectStats } from './offline-stats';
+import { noteThisBrowser } from './this-browser';
 
 // Sentinel owner id stamped on offline projects. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -54,12 +55,8 @@ export type OfflineProjectRecord = {
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline project's tags live in the browser"), by
-  // tag id, for the same reason as the star: project_tags.project_id is a foreign key into `projects`. Optional so
-  // records written before the field existed stay valid.
-  tagIds?: string[];
   // When the project was moved to this browser's local Trash
-  // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
+  // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the project (docs/specs/013-workspace/explorer-home.md "Opens"),
@@ -267,7 +264,11 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
 // Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
 // inside serializeOfflineWrite.
 export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
-  return offlineBackend().update(id, change);
+  // What the change left, for This Browser's list (this-browser.ts).
+  let after: ReturnType<OfflineRecordChange>;
+  return offlineBackend()
+    .update(id, (rec) => (after = change(rec)))
+    .then(() => noteThisBrowser(id, after));
 }
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
@@ -307,8 +308,7 @@ export async function offlineLoadProject(id: string): Promise<Project | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await offlineBackend().get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a project kept in this browser can
-  // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
+  // The offline twin of the api's rowToTab: the same settling every stored tab takes on the way in.
   return tab ? migrateStoredTab(tab) : null;
 }
 
@@ -346,6 +346,7 @@ export async function offlineCreateProject(
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
   return recordToProject(rec);
 }
 
@@ -365,52 +366,6 @@ export async function offlineSaveItemTypes(
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
-}
-
-// Personal-folder placement for an offline project (docs/specs/013-workspace/folders.md). Folders are
-// server-side rows, but an offline record carries a folderId so its row can
-// sit in the Explorer's personal tree like any other.
-export async function offlineSetProjectFolder(
-  id: string,
-  folderId: string | null,
-  now: number,
-): Promise<void> {
-  await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
-}
-
-// Star / un-star an offline project (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
-// alone on purpose: a star is a per-user bookmark, not an edit to the
-// project, and bumping it would reorder Recent on a click that changed
-// nothing about the content.
-export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => (rec ? { ...rec, favourite } : undefined)),
-  );
-}
-
-export async function offlineListFavouriteIds(): Promise<string[]> {
-  const recs = await offlineBackend().all();
-  return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
-}
-
-// Put a tag on / take it off an offline project (docs/specs/013-workspace/tags.md). Like a star, a tag is the
-// reader's own label, not an edit, so savedAt is left alone.
-export async function offlineSetProjectTag(id: string, tagId: string, on: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => {
-      if (!rec) return undefined;
-      const rest = (rec.tagIds ?? []).filter((t) => t !== tagId);
-      return { ...rec, tagIds: on ? [...rest, tagId] : rest };
-    }),
-  );
-}
-
-// Every live offline project's tags, as links.
-export async function offlineListTagLinks(): Promise<{ tagId: string; projectId: string }[]> {
-  const recs = await offlineBackend().all();
-  return recs
-    .filter((r) => r.trashedAt === undefined)
-    .flatMap((r) => (r.tagIds ?? []).map((tagId) => ({ tagId, projectId: r.id })));
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
@@ -433,6 +388,7 @@ export async function offlineDeleteProject(id: string): Promise<void> {
   await serializeOfflineWrite(async () => {
     await offlineBackend().delete(id);
     forgetOfflineId(id);
+    noteThisBrowser(id, 'delete');
   });
 }
 
@@ -469,4 +425,5 @@ export async function offlineGetRecord(id: string): Promise<OfflineProjectRecord
 export async function offlinePutRecord(rec: OfflineProjectRecord): Promise<void> {
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
 }

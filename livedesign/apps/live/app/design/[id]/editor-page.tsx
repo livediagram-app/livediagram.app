@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { DESIGN_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
-import { prefetchWhenIdle } from '@/lib/idle-prefetch';
+import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
   useWorkbenchSession,
   type WorkspaceFrameHooks,
@@ -13,13 +13,11 @@ import {
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
-import { DesignTagsProvider } from '@/components/tags/DesignTagsProvider';
+import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -92,21 +90,6 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     loadError,
     sharePasswordGate,
     loadingDesign,
-    explorerPosition,
-    designList,
-    folders,
-    designListLoading,
-    sharedDesigns,
-    dismissSharedDesign,
-    openDesign,
-    newDesign,
-    deleteDesign,
-    duplicateDesign,
-    createFolder,
-    renameFolder,
-    deleteFolder,
-    moveDesignToFolder,
-    setExplorerPosition,
     designOwnerName,
     setSharePasswordGate,
     setLoadingDesign,
@@ -115,37 +98,6 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
   // which a design in This Browser opens under (docs/specs/006-design/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
-  // The full Explorer panel that sits behind the error / not-found status
-  // screens (identical in both), built once from state. Just a React
-  // element until a branch returns it, so building it on every render is
-  // free when no status screen shows.
-  const fullExplorer = (
-    <LazyExplorer
-      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
-      onToggleRecentExclusion={state.toggleRecentExclusion}
-      favouriteIds={state.favouriteIds ?? new Set()}
-      onToggleFavourite={state.toggleFavourite}
-      position={explorerPosition}
-      designs={designList}
-      ownerId={ownerId}
-      folders={folders}
-      loading={designListLoading}
-      shared={sharedDesigns}
-      onDismissShared={(id) => void dismissSharedDesign(id)}
-      currentDesignId={null}
-      onMoveTo={(x, y) => setExplorerPosition({ x, y })}
-      onReset={() => setExplorerPosition(null)}
-      onOpenDesign={openDesign}
-      onNewDesign={newDesign}
-      onDeleteDesign={(id) => void deleteDesign(id)}
-      onDuplicateDesign={(id) => void duplicateDesign(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={(id) => void deleteFolder(id)}
-      onMoveDesignToFolder={moveDesignToFolder}
-    />
-  );
-
   // The design is in the Trash (docs/specs/013-workspace/trash.md): from the
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.
@@ -160,14 +112,12 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Design deleted" explorer={fullExplorer}>
-        {card}
-      </StatusShell>
+      <StatusShell title="Design deleted">{card}</StatusShell>
     );
   }
 
   // The load FAILED (network / 5xx) rather than 404'd. Retryable, so
-  // show the error card (with the Explorer behind it for navigation)
+  // show the error card
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
     const card = <LoadErrorCard embed={!appChrome} ownerId={ownerId} />;
@@ -176,9 +126,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load design" explorer={fullExplorer}>
-        {card}
-      </StatusShell>
+      <StatusShell title="Couldn’t load design">{card}</StatusShell>
     );
   }
 
@@ -248,45 +196,32 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
-          user's id (account or guest self id) so the theme picker /
-          builder share one source of truth and getTheme resolves saved
-          themes referenced by this design's tabs. */}
-      <CustomThemeProvider
-        ownerId={ownerId}
-        readOnly={workbenchMode}
-        onThemeDeleted={state.resetTabsUsingTheme}
-      >
-        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-        <MentionContext.Provider value={state.commentMentions}>
-          {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
-              the first time one of them shows, so opening a design costs no extra request. */}
-          <DesignTagsProvider ownerId={ownerId} lazy>
-            <EditorView />
-          </DesignTagsProvider>
-        </MentionContext.Provider>
-      </CustomThemeProvider>
+      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+      <MentionContext.Provider value={state.commentMentions}>
+        <EditorView />
+      </MentionContext.Provider>
       {/* Moving this browser's designs in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
+      {/* A Take Offline or Sync the Explorer page handed over in the address. */}
+      <ConversionHandoff />
     </EditorContext.Provider>
   );
 }
 
-// Full-height status chrome (error / not-found / password gate): the
+// Full-height status chrome (deleted / error / not-found / password gate): the
 // editor header (title-only, every action disabled) over a slate surface
-// that holds the status card and, optionally, the Explorer for
-// navigation. Shared by the status branches so the header + main wrapper
-// (and the Explorer behind it) isn't repeated per branch.
+// that holds the status card alone. No Explorer panel and no menu button: the
+// Explorer opens only from the canvas's menu button
+// (docs/specs/007-editor/toolbar-layout.md). Shared by the status branches so
+// the header + main wrapper isn't repeated per branch.
 function StatusShell({
   title,
   showHeader = true,
-  explorer,
   children,
 }: {
   title: string;
   showHeader?: boolean;
-  explorer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -301,10 +236,7 @@ function StatusShell({
           onRename={() => {}}
         />
       ) : null}
-      <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
-        {children}
-        {explorer}
-      </main>
+      <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">{children}</main>
     </div>
   );
 }

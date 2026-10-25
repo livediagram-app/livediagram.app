@@ -4,35 +4,8 @@ import { useLayoutEffect, useState } from 'react';
 import { Portal } from '@liveplanner/ui';
 import type { TextRun } from '@liveplanner/project';
 import { NoteRichText } from '@/components/notes/NoteRichText';
-import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { elementSelector } from '@/lib/canvas-selectors';
-
-// The fixed note glyph inside an annotation marker (docs/specs/009-elements/annotations.md). A small
-// speech bubble with text lines, tinted by the marker's stroke colour.
-// Sized as a fraction of the circle so it stays centred at any zoom (the
-// wrapper handles the scaling). Always the same glyph — annotations are
-// not per-marker icon-pickable, on purpose, so they read uniformly.
-export function AnnotationGlyph({ stroke }: { stroke: string }) {
-  return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <svg
-        width="58%"
-        height="58%"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={stroke}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
-        <path d="M6.5 9.75h11" />
-        <path d="M6.5 12.5h7" />
-      </svg>
-    </div>
-  );
-}
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const GAP = 10;
 const MAX_W = 280;

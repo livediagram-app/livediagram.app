@@ -8,10 +8,10 @@
 // per message"). Syncing is automatic, so there is no Sync now.
 
 import { useEffect, useRef, useState } from 'react';
-import { lucideCloud, lucideTriangleAlert } from '@livediagram/icons/lucide';
+import { lucideCloud, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Button, StableLabel, lucideGlyph } from '@livediagram/ui';
 import { ArrowOutIcon } from '@/components/primitives/HelpArticleLink';
-import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
 import {
@@ -159,7 +159,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const folderLink =
     phase === 'connected' && status.rootName && status.rootFolderId ? (
       <>
-        Your documents are synced to “
+        Your canvases are synced to “
         <a
           href={driveFolderUrl(status.rootFolderId)}
           target="_blank"

@@ -21,8 +21,11 @@ describe('telemetry worker', () => {
           body: JSON.stringify({
             app,
             // Each app's own word for what it makes: liveplanner's is a project.
+            // liveworkspace.app sends only the Explorer's events.
             events: [
-              { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
+              app === 'liveworkspace.app'
+                ? { category: 'UI', action: 'Toggled', type: 'ExplorerViewList' }
+                : { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
             ],
           }),
         }),
@@ -35,17 +38,21 @@ describe('telemetry worker', () => {
     await send('liveplanner.app');
     await send('liveplanner.app');
     await send('livedocuments.app');
+    await send('livedesign.app');
+    await send('liveworkspace.app');
 
     const all = (await (
       await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
-    expect(all.windows.today.total).toBe(4);
+    expect(all.windows.today.total).toBe(6);
     expect(all.windows.today.byApp).toEqual({
       'livediagram.app': 1,
       'liveplanner.app': 2,
       'livedocuments.app': 1,
-      'livedesign.app': 0,
+      'livedesign.app': 1,
+      // The Explorer on liveworkspace.app, filtered to All Apps.
+      'liveworkspace.app': 1,
     });
 
     const one = (await (
@@ -65,6 +72,28 @@ describe('telemetry worker', () => {
       ctx,
     );
     expect(await off.json()).toEqual({ enabled: false });
+  });
+
+  it('answers a summary from the edge cache, whose headers cannot be changed', async () => {
+    const hit = new Response('{"app":"all"}', { headers: { 'Content-Type': 'application/json' } });
+    // As on Cloudflare: a cached answer's headers are immutable.
+    hit.headers.set = () => {
+      throw new TypeError("Can't modify immutable headers.");
+    };
+    const original = (globalThis as { caches?: unknown }).caches;
+    (globalThis as { caches?: unknown }).caches = { default: { match: async () => hit } };
+    try {
+      const res = await worker.fetch(
+        get('/api/telemetry/summary'),
+        testEnv({ ENVIRONMENT: 'production' }),
+        ctx,
+      );
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+      expect(await res.json()).toEqual({ app: 'all' });
+    } finally {
+      (globalThis as { caches?: unknown }).caches = original;
+    }
   });
 
   it("answers nothing outside its API: every page is the static site's", async () => {

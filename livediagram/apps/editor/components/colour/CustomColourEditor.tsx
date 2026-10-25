@@ -9,11 +9,11 @@
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideTriangleAlert } from '@livediagram/icons/lucide';
+import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { penColourHardToSee, readablePenColour } from '@livediagram/document';
-import { hexToHsv, hsvToHex, type Hsv } from '@/lib/hsv';
+import { hexToHsv, hsvToHex, type Hsv } from '@liveworkspace/workbench/lib/hsv';
 import { normaliseHex } from '@/lib/swatch-overrides';
-import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
+import { useEyeDropper } from '@liveworkspace/workbench/hooks/ui/useEyeDropper';
 import { PipetteIcon } from '@/components/palette/context-menu-input-rows';
 
 const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);

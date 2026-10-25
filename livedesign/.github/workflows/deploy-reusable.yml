@@ -8,9 +8,9 @@ name: Deploy (reusable)
 # this workflow's inputs and which secrets the caller hands over.
 #
 # Builds each app, then deploys to Cloudflare Workers in dependency order:
-# marketing + live + telemetry + help + api in parallel → mcp
-# (service binding to api) → router last (service bindings to the five
-# path-routed workers).
+# marketing + live + help + api in parallel → mcp
+# (service binding to api) → router last (service bindings to the four
+# path-routed workers). Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md), not deployed here.
 on:
   workflow_call:
     inputs:
@@ -18,7 +18,7 @@ on:
         description: >-
           Wrangler environment name. Empty deploys the top-level config
           (production). "staging" deploys the `[env.staging]` blocks, which
-          name every worker `-staging` and bind staging's own D1 / R2 / KV.
+          name every worker `-staging` and bind staging's own R2 / KV.
         type: string
         default: ''
       environment_name:
@@ -64,11 +64,9 @@ on:
         required: false
       ACCOUNTS_CLIENT_SECRET:
         required: false
-      GUEST_ID_HMAC_SECRET:
-        required: false
       MEDIA_KEY:
         required: false
-      INTERNAL_EVENTS_KEY:
+      TELEMETRY_KEY:
         required: false
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
@@ -101,7 +99,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           # Full history, without file contents: the help sitemap dates each article by its last
-          # commit (apps/help/lib/article-dates.ts). Commits and trees only, about 8 MB and 2 s;
+          # commit (packages/help-site/src/lib/article-dates.ts). Commits and trees only, about 8 MB and 2 s;
           # a shallow clone would date every article to this one commit, so the sitemap omits
           # dates when it finds one.
           fetch-depth: 0
@@ -125,7 +123,7 @@ jobs:
 
       # The hosted profile's build-time half: NEXT_PUBLIC_TELEMETRY_ENABLED,
       # mirrored from hosted-vars.json so the frontends emit exactly when the api
-      # ingests. On in staging too, against staging's own D1 — that is how you
+      # ingests. On in staging too, against staging's own telemetry service — that is how you
       # verify a new event lands before production sees it. Skipped on a fork,
       # whose frontends then emit nothing unless its own build env opts in.
       - name: Apply hosted profile to the build
@@ -138,12 +136,7 @@ jobs:
           node scripts/hosted-vars.mjs build-env ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} >> "$GITHUB_ENV"
 
       - name: Build all apps
-        # Whether the live app shows sign-in is baked into `next build`
-        # at this step (apps/live/lib/auth-config.ts): on exactly when the
-        # api below is given an accounts client, so the two always agree.
-        # Unset, the live app runs in guest-only mode.
         env:
-          NEXT_PUBLIC_SIGN_IN_ENABLED: ${{ secrets.ACCOUNTS_CLIENT_ID != '' && 'true' || '' }}
           # Which MCP host the live app points at. Empty in production (the
           # app's own default is the hosted one); staging passes
           # mcp-staging.livedesign.app so a staging OAuth flow stays inside
@@ -165,13 +158,6 @@ jobs:
         with:
           name: live-out
           path: apps/live/out
-          retention-days: 1
-
-      - name: Upload telemetry build
-        uses: actions/upload-artifact@v7
-        with:
-          name: telemetry-out
-          path: apps/telemetry/out
           retention-days: 1
 
       - name: Upload help build
@@ -220,43 +206,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-  deploy-telemetry:
-    name: Deploy telemetry
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      WRANGLER_ENV: ${{ inputs.wrangler_env }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref }}
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9.15.0
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Download build
-        uses: actions/download-artifact@v8
-        with:
-          name: telemetry-out
-          path: apps/telemetry/out
-
-      - name: Deploy to Cloudflare Workers
-        working-directory: apps/telemetry
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
-
   deploy-help:
     name: Deploy help
     needs: build
@@ -297,7 +246,7 @@ jobs:
   deploy-live:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
-    # (docs/specs/016-platform/deployment.md, "Renaming migrations").
+    # (docs/specs/016-platform/deployment.md, "Old and new workers side by side").
     needs: [build, deploy-api]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -349,9 +298,8 @@ jobs:
       API_RESOURCE: ${{ secrets.API_RESOURCE }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
       - uses: actions/checkout@v7
@@ -371,11 +319,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # `whoami` prints which Cloudflare account the API token sees,
-      # so when migrations fail with a 7403 "account not authorized"
-      # the log shows immediately whether (a) the token doesn't have
-      # D1 Edit scope, or (b) the token belongs to a different
-      # account than CF_ACCOUNT_ID. Without this the error is too
-      # generic to act on.
+      # so when a deploy fails with a 7403 "account not authorized"
+      # the log shows immediately whether (a) the token lacks a
+      # scope, or (b) the token belongs to a different account than
+      # CF_ACCOUNT_ID. Without this the error is too generic to act on.
       - name: Verify Cloudflare token
         working-directory: apps/api
         env:
@@ -408,35 +355,21 @@ jobs:
               | pnpm exec wrangler secret put "$name" ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
           done
 
-      # Same provisioning story for the guest-id HMAC secret (docs/specs/014-identity/auth-and-guest-access.md):
-      # when present it makes /api/migrate require a signed guest id;
-      # empty/unset leaves the worker on legacy unsigned migrate.
-      - name: Sync GUEST_ID_HMAC_SECRET secret
-        if: ${{ env.GUEST_ID_HMAC_SECRET != '' }}
-        working-directory: apps/api
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: |
-          printf '%s' "$GUEST_ID_HMAC_SECRET" \
-            | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
-
-      # INTERNAL_EVENTS_KEY (docs/specs/017-telemetry/telemetry.md) has to hold the SAME value on the api and
-      # mcp workers, and a mismatch is silent — the MCP's telemetry just lands
-      # back in the throttled anonymous bucket with no error anywhere. Driving
-      # both from one GitHub secret is what makes them agree by construction;
-      # provisioning them by hand in two terminals is exactly how they drift.
+      # TELEMETRY_KEY (docs/specs/017-telemetry/telemetry.md) is livedesign's Worker key for liveworkspace's
+      # central telemetry service, and has to hold the SAME value on the api and mcp workers as the
+      # service's TELEMETRY_KEY_LIVEDESIGN; a mismatch is silent — the posts are simply not stored.
+      # Driving both workers from one GitHub secret is what makes them agree by construction.
       # Unset = both steps skip, which leaves whatever is already on the
       # workers (including a pair set by hand) untouched.
-      - name: Sync INTERNAL_EVENTS_KEY secret
-        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+      - name: Sync TELEMETRY_KEY secret
+        if: ${{ env.TELEMETRY_KEY != '' }}
         working-directory: apps/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+          printf '%s' "$TELEMETRY_KEY" \
+            | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # MEDIA_KEY (liveworkspace/docs/media.md) is livedesign's secret on the liveworkspace media service, which
       # holds it as MEDIA_KEY_LIVEDESIGN. Unset = the step skips, leaving whatever is already on the worker untouched.
@@ -450,41 +383,6 @@ jobs:
           printf '%s' "$MEDIA_KEY" \
             | pnpm exec wrangler secret put MEDIA_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-      # Runs straight before the deploy, after the secret syncs, so the time the
-      # live worker runs against a schema newer than its code is only the deploy
-      # itself (docs/specs/016-platform/deployment.md, "Renaming migrations").
-      # Apply any pending D1 migrations before the new worker code is
-      # deployed. Idempotent: wrangler tracks applied migrations in a
-      # bookkeeping table and skips any it's already run. Has to
-      # happen BEFORE the worker deploy so the new code doesn't
-      # briefly run against a schema it doesn't understand.
-      #
-      # If a migration's bad, this step will fail and the deploy
-      # halts before the worker is updated — that's the desired
-      # safety: we'd rather block the deploy than leave this
-      # environment's database half-migrated.
-      #
-      # This is also the step staging exists for: on the staging
-      # caller it runs against `livedesign-staging`, so every merge
-      # to main rehearses the migration against a real remote D1 one
-      # deploy before it reaches the database holding real diagrams
-      # (docs/specs/016-platform/staging-environment.md).
-      - name: Apply D1 migrations (remote)
-        working-directory: apps/api
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        # Database arg is the binding name (`DB`) — wrangler resolves
-        # it via wrangler.toml, and `--env` decides WHICH database that
-        # binding points at. Wrangler 4 auto-skips the confirmation
-        # prompt in non-interactive CI environments, so no flag is
-        # needed (the `--yes` flag from wrangler 3 was removed).
-        # If this step fails, the most common cause is the CF_API_TOKEN
-        # secret missing the D1: Edit permission on the account that
-        # owns the database — but the `Verify Cloudflare token` step
-        # above is the authoritative diagnostic.
-        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
-
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api
         env:
@@ -492,14 +390,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           # The build id the editor of this run was built with (docs/specs/016-platform/stale-builds.md).
           BUILD_ID: ${{ needs.build.outputs.build_id }}
-        # The D1 binding's `database_id` placeholder in wrangler.toml
-        # must be filled in before the first deploy succeeds. Run
-        # `wrangler d1 create livedesign` locally once and commit the
-        # resulting id — and again as `livedesign-staging` for the
-        # staging environment (docs/specs/016-platform/staging-environment.md "One-time setup"). Migrations
-        # run via `pnpm db:migrate:remote` for ad-hoc local runs; the
-        # deploy applies them automatically in the step above.
-        #
         # On the hosted repository the hosted profile rides along as `--var`
         # flags. Sent on EVERY deploy, because `wrangler deploy` replaces the
         # worker's plain vars with exactly the ones it declares: a value set
@@ -536,7 +426,7 @@ jobs:
     # Lifted to job level for the same reason as deploy-api's: the `secrets`
     # context isn't readable from a step `if:`.
     env:
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
       - uses: actions/checkout@v7
@@ -558,15 +448,15 @@ jobs:
       # The matching half of deploy-api's sync — same GitHub secret, so the two
       # workers can't disagree (docs/specs/017-telemetry/telemetry.md). Skipped when unset, leaving whatever
       # is already on the worker in place.
-      - name: Sync INTERNAL_EVENTS_KEY secret
-        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+      - name: Sync TELEMETRY_KEY secret
+        if: ${{ env.TELEMETRY_KEY != '' }}
         working-directory: apps/mcp
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+          printf '%s' "$TELEMETRY_KEY" \
+            | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/mcp
@@ -579,7 +469,7 @@ jobs:
     name: Deploy router
     # Router has service bindings to all five path-routed workers, so they
     # must exist before it deploys.
-    needs: [deploy-marketing, deploy-live, deploy-api, deploy-telemetry, deploy-help]
+    needs: [deploy-marketing, deploy-live, deploy-api, deploy-help]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the

@@ -31,6 +31,14 @@ function renderSection(state: CommunityOwnPost['state']) {
 
 // docs/specs/025-community/community.md "Reports and moderation": a post hidden by reports is final.
 describe('CommunitySection', () => {
+  it('wears the Public badge while listed, and not once hidden', () => {
+    renderSection('listed');
+    expect(document.querySelector('[data-community-public]')?.textContent).toBe('Public');
+    cleanup();
+    renderSection('hidden');
+    expect(document.querySelector('[data-community-public]')).toBeNull();
+  });
+
   it('offers Edit Listing and Remove for a listed post', () => {
     renderSection('listed');
     expect(screen.getByRole('button', { name: 'Edit Listing' })).toBeTruthy();
@@ -72,7 +80,7 @@ describe('CommunitySection, every face', () => {
     cleanup();
     render(<CommunitySection {...base({ teamDocument: true })} />);
     expect(
-      screen.getByText(/Team library documents can.t be shared to the Community\./),
+      screen.getByText(/Team library canvases can.t be shared to the Community\./),
     ).toBeTruthy();
   });
 
@@ -99,6 +107,17 @@ describe('CommunitySection, every face', () => {
     ).toBeTruthy();
     fireEvent.click(share);
     expect(onPublish).not.toHaveBeenCalled();
+  });
+
+  it('offers the illustrated guide before a first publish, and not once listed', () => {
+    render(<CommunitySection {...base()} />);
+    expect(screen.getByText('What Is the Community?')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Show your board to the world', hidden: true }),
+    ).toBeTruthy();
+    cleanup();
+    renderSection('listed');
+    expect(screen.queryByText('What Is the Community?')).toBeNull();
   });
 
   it('says the Community is public, and holds Share to Community while a password is set', () => {

@@ -26,7 +26,7 @@ function tabAccent(tab: Tab): string {
 }
 
 // Push a colour into the legible half for the current bar surface (white in
-// light mode, slate-900 in dark): a custom theme's white stroke is invisible on
+// light mode, slate-900 in dark): a theme's white stroke is invisible on
 // the light bar, a near-black one on the dark bar. Keep the hue but darken a
 // too-light colour on the light bar, lighten a too-dark one on the dark bar.
 // isLightColor/tint/shade only parse `#rrggbb`, so a non-hex colour (like the

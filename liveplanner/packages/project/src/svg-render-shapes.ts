@@ -5,7 +5,7 @@
 // (svg-shape-fit.ts) with the same fit the canvas uses (stretched for most,
 // `meet` for the proportional actor), so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
-import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
+import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
@@ -15,10 +15,10 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
-import { codeTheme } from './code-themes';
+import { codeTheme } from '@liveworkspace/model-core/code-themes';
 import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { legendFontPx } from './label-font';
+import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   BROWSER_CHROME,
   browserChromeLayout,
@@ -144,7 +144,7 @@ export function svgShapeSilhouette(
 
 // A freehand sketch's real path (normalised points scaled to the box), drawn
 // the way FreehandSvg draws it on the canvas: a pen stroke through the same
-// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/polygon-tool.md) with its straight
+// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/finish.md "Polygons") with its straight
 // edges, and nothing for a lone point. Closed paths fill like the canvas;
 // open ones render stroke-only.
 export function svgFreehandShape(

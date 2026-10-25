@@ -6,7 +6,7 @@
 // popover, the Custom Number Format popover).
 import { lazy, Suspense, useState } from 'react';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideChevronDown } from '@liveplanner/icons/lucide';
+import { lucideChevronDown } from '@liveworkspace/icons/lucide';
 import { cellKey, displayValue, formatA1, validationRuleAt } from '@liveplanner/sheets';
 import { cellBox, mergeAt } from '../sheet-geometry';
 import { useSheetController } from '../sheet-controller';

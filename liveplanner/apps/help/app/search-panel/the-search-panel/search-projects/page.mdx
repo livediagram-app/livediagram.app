@@ -1,55 +1,40 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SearchProjects } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
-  title: 'Finding Plans and Folders',
+  title: 'Finding Plans',
   description:
-    'Search across all your plans and folders, and the plans shared with you, from one box in the editor or the Explorer.',
+    'Search your plans by name from one box in the editor, and use the Explorer to search folders and everything shared with you.',
   path: '/help/search-panel/the-search-panel/search-projects/',
 });
 
 <ArticleLayout
-  title="Finding Plans and Folders"
-  description="The always-on scope of search: your plans, your folders, and anything shared with you."
+  title="Finding Plans"
+  description="The always-on scope of search: your plans, by name."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-projects')}
 >
 
-Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a plan is in. Matching is on the name only, and any part of it will do: `board` finds "Sprint board" and "Onboarding".
-
-<Figure caption="The always-on scope: your plans, plans shared with you, and your folders.">
-  <SearchProjects />
-</Figure>
+Wherever you open the [search panel](/help/search-panel/the-search-panel/), it covers your plans, so you never have to remember which folder a plan is in. Matching is on the name only, and any part of it will do: `board` finds "Sprint board" and "Onboarding".
 
 ## Plans
 
-The **Plans** group matches your own plans by name (a plan you never named is listed as "Untitled plan"). Pick one and it opens, the quickest way back into a plan without scrolling the [Explorer](/help/explorer/explorer-page/). This group is in scope from anywhere: the editor and the Explorer page alike.
+The **Plans** group matches your plans by name, from the 100 you changed most recently (a plan you never named is listed as "Untitled plan"). Pick one and it opens, the quickest way back into a plan without going through the [Explorer](/help/explorer/explorer-page/).
 
-A plan saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries a **This Browser** label in the results, so you can tell it apart from one saved to your account.
+## Folders and shared items
 
-Plans in a team's library are not in this group: they are listed under **Teams**, tagged with their team. See [Searching Teams](/help/search-panel/the-search-panel/search-teams/).
-
-## Shared with You
-
-Once you have opened someone else's plan through a share link, a **Shared with You** group matches it too, marked with a share icon. (It is the same list as [Shared With Me](/help/explorer/shared-with-you/) in the Explorer, so a link you were sent but never opened is not in it yet.) Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders. If the owner turns sharing off, the link expires, or the plan goes to the Trash, it drops out of the results.
-
-## My Work (your folders)
-
-The **My Work** group matches the folders in your personal [folder tree](/help/explorer/folders/) by name. Picking a folder opens it on the Explorer page (from the editor, search takes you there), so search doubles as a way to jump around your folder tree without expanding it by hand. Team folders are listed under **Teams** instead.
+Folders, team libraries and the items shared with you are the Explorer's. To find one, use the search field at the top of the [Explorer page](/help/explorer/explorer-page/#searching), which looks through every item's title and folder, across every liveworkspace app.
 
 ## Limits
 
-Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your plans, shared plans, folders and teams (and, in a plan, its tabs), so you can open it and arrow straight down to one.
+Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your plans (and, in a plan, its tabs), so you can open it and arrow straight down to one.
 
 <Tip>
-  Search is owner-scoped: a guest finds the plans their own browser owns, and the ones it has
-  opened through share links; signing in brings your account's plans into scope. Search only
-  looks at names: it does not look inside other plans, so to find a card, open that plan and
-  use **Find**.
+  Search only looks at names: it does not look inside other plans, so to find a card, open that plan
+  and use **Find**.
 </Tip>
 
 </ArticleLayout>

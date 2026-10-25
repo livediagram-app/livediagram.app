@@ -1,11 +1,9 @@
 // Responses for the media API (liveworkspace/docs/media.md "The API"). Every route is server to
 // server, so there is no CORS: a browser is never let in.
 
-export function json(body: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
-  return new Response(JSON.stringify(body), { ...init, headers });
-}
+import { json } from '@liveworkspace/index-app/worker-http';
+
+export { json };
 
 export const ok = () => json({ ok: true });
 export const notFound = () => json({ error: 'not_found' }, { status: 404 });

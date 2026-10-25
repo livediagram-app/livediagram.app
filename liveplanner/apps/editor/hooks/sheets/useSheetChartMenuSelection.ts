@@ -7,7 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { sheetDrawnChartIds, type Element } from '@liveplanner/project';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 export function useSheetChartMenuSelection({
   elements,

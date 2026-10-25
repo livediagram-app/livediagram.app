@@ -12,8 +12,11 @@ import {
 } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
-import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
+import {
+  HEADER_ACTION_BTN,
+  HeaderGlyph,
+} from '@liveworkspace/workbench/components/chrome/header-action';
+import { explorerHref } from '@/lib/explorer-href';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -129,7 +132,7 @@ export function EditorHeader({
             Hovering it lists liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
         <SiteSwitcher current={SITE_ID}>
           <Brand
-            href={EXPLORER_LANDING_PATH}
+            href={explorerHref()}
             size="md"
             wordmarkClassName="hidden sm:inline"
             className="relative touch-target"
@@ -156,7 +159,7 @@ export function EditorHeader({
               </span>
             ) : (
               <HoverCard
-                title="Rename document"
+                title="Rename canvas"
                 description="Click to edit the name."
                 className="min-w-0"
               >
@@ -187,7 +190,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
-          <HoverCard title="Make a copy" description="Duplicate this document into your own files.">
+          <HoverCard title="Make a copy" description="Duplicate this canvas into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}

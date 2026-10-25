@@ -1,7 +1,7 @@
 // Bring a Dashboard's newly added row into view (docs/specs/026-plan/plan-tabs.md "Dashboard Settings"): Add Row puts
 // it at the foot, often below the fold, so once it has drawn the page scrolls it into view, smoothly (at once under
 // reduced motion). Waits a few frames for the row to appear; gives up quietly if it never does.
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 const ROW_SELECTOR = '[data-dashboard-row]';
 // Frames to wait for the new row to render (a commit, then React's paint).

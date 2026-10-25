@@ -1,0 +1,94 @@
+'use client';
+
+// What the shared Explorer's Inbox (@liveworkspace/explorer `InboxHost`) needs from livedocuments beyond the index:
+// the rows of documents in This Browser, which never reach the index (lib/offline/offline-activity.ts), the help
+// article on actions, and telemetry. The Explorer page and the editor's panel both use it.
+
+import type { ActivityAction, ActivityPlace, ActivityThread } from '@livedocuments/api-schema';
+import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
+import type { InboxHost, InboxLocalRows, InboxTelemetry } from '@liveworkspace/explorer';
+import { helpArticleHref } from './help-articles';
+import { getGuestSelfId } from './local-identity';
+import { readOfflineActivity, type OfflineActivity } from './offline/offline-activity';
+import { track } from './telemetry';
+
+// Each a literal pair, so the telemetry manifest's coverage test sees it (docs/specs/017-telemetry/telemetry.md).
+export const trackInbox: InboxTelemetry = (action, type) => {
+  switch (action) {
+    case 'Opened':
+      return track('Activity', 'Opened', type);
+    case 'Selected':
+      return track('Activity', 'Selected', type);
+    case 'Loaded':
+      return track('Activity', 'Loaded', type);
+  }
+};
+
+type Place = Pick<ActivityPlace, 'documentId' | 'documentName' | 'teamId'>;
+
+const itemOf = (p: Place) => ({
+  app: 'livedocuments' as const,
+  itemId: p.documentId,
+  itemTitle: p.documentName,
+  itemTeamId: p.teamId,
+});
+
+// The offline read's rows in the index's shape. `me` stands in for the reader's ids, which the read already matched.
+export function localInboxRows(local: OfflineActivity, me: string): InboxLocalRows {
+  const action = (a: ActivityAction): InboxAction => ({
+    ...itemOf(a),
+    tabId: a.tabId,
+    tabName: a.tabName,
+    elementId: a.elementId,
+    actionId: a.id,
+    elementLabel: a.elementLabel,
+    name: a.name,
+    description: a.description,
+    status: 'open',
+    assigneeId: a.assignedToMe ? me : a.assignee.userId,
+    assigneeName: a.assignee.name,
+    assignerId: a.createdByMe ? me : a.assigner.id,
+    assignerName: a.assigner.name,
+    teamId: a.teamId,
+    card: null,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+  });
+  const facts = (t: ActivityThread) => ({
+    resolved: false,
+    commentCount: t.commentCount,
+    latestText: t.latest.text,
+    latestAuthorName: t.latest.authorName,
+    latestAuthorColor: t.latest.authorColor,
+    mentionsYou: t.mentionsYou,
+    youCommented: t.youCommented,
+    onYourItem: t.onYourDocument,
+    firstAt: t.firstAt,
+    latestAt: t.latest.at,
+  });
+  const thread = (t: ActivityThread): InboxThread => ({
+    ...itemOf(t),
+    tabId: t.tabId,
+    tabName: t.tabName,
+    elementId: t.elementId,
+    elementLabel: t.elementLabel,
+    card: null,
+    ...facts(t),
+  });
+  return {
+    actions: local.actions.map(action),
+    threads: local.threads.map(thread),
+  };
+}
+
+/** The Explorer's Inbox for this person: their This Browser documents' rows, help and telemetry. */
+export function explorerInboxHost(ownerId: string | null): InboxHost {
+  return {
+    localRows: async () => {
+      if (!ownerId) return { actions: [], threads: [] };
+      return localInboxRows(await readOfflineActivity([ownerId, getGuestSelfId()]), ownerId);
+    },
+    actionsHelpHref: helpArticleHref('assignedActions'),
+    onTelemetry: trackInbox,
+  };
+}

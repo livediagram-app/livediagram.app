@@ -8,7 +8,9 @@ import {
   usePaletteKindMotion,
 } from './usePaletteKindMotion';
 
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduced }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => reduced,
+}));
 let reduced = false;
 
 // A change of the palette's kind (a change of editor mode) cascades in (docs/specs/004-interface-design/motion.md).

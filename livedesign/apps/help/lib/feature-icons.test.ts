@@ -1,14 +1,13 @@
-import { markupBounds } from '@livedesign/icons/centring';
+import { markupBounds } from '@liveworkspace/icons/centring';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from './articles';
-import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS, featureIcon } from './featureIcons';
-import {
-  FEATURE_CATEGORY_HEX,
-  FEATURE_ENTITY_HEX,
-  FEATURE_FALLBACK_HEX,
-  featureColour,
-} from './featureColours';
+import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS } from './featureIcons';
+import { FEATURE_CATEGORY_HEX, FEATURE_ENTITY_HEX } from './featureColours';
+import { FEATURE_FALLBACK_HEX } from '@liveworkspace/help-site/lib/feature-tile';
+import { site } from './help-site';
+
+const { featureColour, featureIcon } = site;
 
 // The feature-card icon + accent resolution (docs/specs/018-help/help-app.md).
 //

@@ -7,7 +7,7 @@
 // title bar shows controls only to someone who may edit, and the button checks the session's
 // `can` itself.
 import { useContext, useEffect, useRef } from 'react';
-import { lucideBrushCleaning } from '@livedocuments/icons/lucide';
+import { lucideBrushCleaning } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedocuments/ui';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import type { PageEdits } from '@/hooks/editor/page-edits';

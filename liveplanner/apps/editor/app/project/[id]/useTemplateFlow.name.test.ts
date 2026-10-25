@@ -33,7 +33,7 @@ async function pick(kind: TemplateKind, projectName: string, onTab = 't1') {
       setSelfParticipant: vi.fn(),
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
-      putToolDown: vi.fn(),
+      returnToHand: vi.fn(),
       markTabLoaded: vi.fn(),
       bringCardTypes: vi.fn(),
       seedCards: vi.fn(),

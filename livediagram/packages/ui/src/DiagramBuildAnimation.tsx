@@ -9,7 +9,7 @@ import {
   glideStops,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is drawing a diagram" loop: a collaborator cursor
 // labelled "You" places a card, drags a connector that draws under it to
@@ -17,8 +17,7 @@ import {
 // then runs along every connector before the diagram dissolves and the
 // loop restarts. It echoes the editor's core gesture (add a shape, wire it
 // up) and its live cursors. Shared by the opening screen (DocumentLoading,
-// docs/specs/007-editor/new-document-route.md), the OAuth completing-sign-in
-// card (/sso-callback) and the MCP consent card. A bare illustration with no
+// docs/specs/007-editor/new-document-route.md) and the MCP consent card. A bare illustration with no
 // surface of its own, so each host composes it into its own card or screen.
 //
 // Pure SVG + CSS keyframes generated once at module load (no JS tick, no

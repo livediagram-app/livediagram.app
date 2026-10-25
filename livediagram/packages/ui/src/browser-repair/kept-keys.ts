@@ -1,6 +1,6 @@
 // What a browser repair never clears (docs/specs/007-editor/load-recovery.md "Repairing a browser").
 // One list for every surface that repairs, the editor's recovery card and the help centre's Repair page,
-// so the two clear exactly the same set. Kept means losing it loses work or identity: the guest id is
+// so the two clear exactly the same set. Kept means losing it loses work or identity: the guest token is
 // the key to every document a guest owns, and the per-browser keys are what past answers and likes are
 // matched against. apps/editor's local-identity test fails if one of its identity keys is not listed here.
 
@@ -9,9 +9,7 @@ export const REPAIR_SCOPE_PREFIXES = ['livediagram:', 'livediagram-'] as const;
 
 /** The guest identity's keys (apps/editor/lib/local-identity.ts, which a test holds to these names). */
 export const GUEST_IDENTITY_KEYS = {
-  selfId: 'livediagram:v2:self-id',
-  selfSig: 'livediagram:v2:self-sig',
-  pendingUpgrade: 'livediagram:v2:pending-signed-id',
+  guestToken: 'livediagram:v2:guest-token',
   nameConfirmed: 'livediagram:v2:name-confirmed',
 } as const;
 

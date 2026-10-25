@@ -309,11 +309,11 @@ for (const theme of THEMES) {
       await page.goto(
         `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, copy))}`,
       );
-      await expect(page.getByRole('button', { name: 'Import as new document' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Import as new canvas' })).toBeVisible();
       await shot(
         page,
         'open-with-2-import-as-new-document',
-        'Open with on a copy made in Drive: Import as new document',
+        'Open with on a copy made in Drive: Import as new canvas',
       );
       const mine = fileNamed('Architecture.livediagram')!;
       await page.goto(

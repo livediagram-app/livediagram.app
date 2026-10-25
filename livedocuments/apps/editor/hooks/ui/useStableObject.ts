@@ -7,7 +7,7 @@
 // when a data field changes or a field comes or goes. Its functions are actions, never read in render.
 
 import { useState } from 'react';
-import { useLatest } from './useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // oxlint-disable-next-line typescript/no-explicit-any
 type AnyFn = (...args: any[]) => unknown;

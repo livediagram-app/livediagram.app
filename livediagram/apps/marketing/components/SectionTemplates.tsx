@@ -1,5 +1,9 @@
-import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import {
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import { TemplateCard } from '@/components/TemplateCard';
 import { sectionTemplates } from '@/lib/section-templates';
 

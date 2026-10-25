@@ -27,6 +27,17 @@ function setNavigatorOnline(online: boolean) {
 }
 
 describe('DesignLoading', () => {
+  // docs/specs/007-editor/new-design-route.md "The opening screen": only the label changes between stages.
+  it('names a design at both stages', () => {
+    const { unmount } = render(<DesignLoading stage="creating" />);
+    expect(screen.getByText('Creating your design')).toBeTruthy();
+    expect(screen.getByText('Setting up a fresh canvas')).toBeTruthy();
+    unmount();
+    render(<DesignLoading />);
+    expect(screen.getByText('Opening your design')).toBeTruthy();
+    expect(screen.getByText('Getting everything in place')).toBeTruthy();
+  });
+
   it('offers Refresh after 10 seconds and reports the slow load', () => {
     render(<DesignLoading stage="opening" />);
     expect(screen.queryByText(/longer than usual/)).toBeNull();

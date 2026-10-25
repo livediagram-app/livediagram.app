@@ -32,7 +32,8 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A **tab kind** is what a tab is. livedesign has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
 - What a **page** is (a logo, a wireframe or a photo) is the page's kind (`PageKind`), not the tab's
-  ([Pages mode](../007-editor/pages-mode.md)). A tab holds pages of any kind.
+  ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
+  (`tabPageKind`), so a logo tab holds only logo pages; a tab whose first page is still blank has no kind yet.
 
 ### Template
 
@@ -78,7 +79,7 @@ The words for a program working on designs for a person ([Agents](../024-agents/
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a design (sharing, delete, move), apart from any level                          | admin, edit level                       |
 
-- **Participant** is the access level; a person's name and colour (the `participants` table) are their
+- **Participant** is the access level; a person's name and colour (their profile, kept by the liveworkspace accounts Worker) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
@@ -149,7 +150,7 @@ A **photo page** is a page of kind `photo`, never a mode, a tab kind or a templa
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's
-error) takes its article from the name: `withArticle` / `indefiniteArticle` in `packages/design/src/indefinite-article.ts`
+error) takes its article from the name: `withArticle` / `indefiniteArticle` in `../packages/model-core/src/indefinite-article.ts`
 (exported by `@livedesign/design`). A vowel sound takes "an" ("Add an emblem", "Create an Emblem"),
 and a vowel said "you" keeps "a" ("a User Persona"). A fixed "a" before an interpolated name is how "Create a Org
 Chart" once reached livediagram's marketing site.

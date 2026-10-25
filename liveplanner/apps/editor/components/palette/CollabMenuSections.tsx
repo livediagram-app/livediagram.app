@@ -18,10 +18,13 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 import { DateInput } from '@liveplanner/ui';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 
 const fieldClass =
   'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';

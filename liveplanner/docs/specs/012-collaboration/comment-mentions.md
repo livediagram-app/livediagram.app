@@ -15,6 +15,8 @@ invited, except yourself. That is exactly the Assign Action picker's rule
 ([Assigned actions](assigned-actions.md) §2), for the same reason: a mention should reach someone
 who can open the project and read the thread, and a teammate on another team
 almost certainly cannot.
+The editor reads them from `GET /api/teams/<teamId>/members` (the team as liveworkspace keeps it, for a caller
+whose token names the team), the same list the Assign Action picker uses.
 
 - On a **personal project** or for a **guest** there is nobody to mention.
   Typing `@` then shows one quiet row, "Mention teammates on a team project",
@@ -89,57 +91,44 @@ is mentioned in it, commented in it, or owns the project, and carries the same `
 
 ## The email
 
-After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ projectId,
-commentText, mentions: [{ userId?, memberId? }] }` for a comment on the canvas, or `{ projectId, itemId,
-commentId }` for a comment on a Plan card. A card's comment is stored before the request goes (the card comment
-add answers the new comment's `commentId`), so the server reads it: `itemId` must name an item of that project,
-and `commentId` a comment on it written by the caller within the last 24 hours (`NOTIFY_EMAIL_DEDUPE_MS`), else
-`404`; a card request without `commentId` is `400`. The email quotes that stored comment's text and goes to its
-stored mentions; a body's `commentText` and `mentions` are ignored for a card. The email's button then opens the
-card. It is signed-in only (the
-teams mutation gate) and best-effort: the comment has already persisted, a
-failure is swallowed, the response is `202`.
+The api sends it when the comment is saved, from what it stored, so the editor asks for nothing: a comment
+posted through the comment routes (on the canvas or on a Plan card) at once, and a canvas comment that reaches
+the plan with a tab save (or an agent-free changeset) with that save. A save emails only about the comments it
+adds that its writer wrote (`newCommentsBy` in `apps/api/src/comments.ts`), never one already stored, and never
+a peer's comment that reached the writer live first. An API token's comment emails nobody. Best-effort, in
+`waitUntil`: the comment has already persisted, and a failure is swallowed.
 
 The server decides everything that matters:
 
-- The caller is a **joined** member of the team, and the team is the
-  project's team (`projects.team_id`), and the caller can access the project.
-  Otherwise `404`, never probing.
-- Each mention resolves to a member of that team (joined or invited) other
-  than the caller; anything else is skipped silently. At most 20.
-- The author name comes from the caller's verified identity (participant
-  profile, else email), and the project name from the project row, never the
-  body.
-- Each recipient's **"Someone Mentions Me in a Comment"** preference
-  (`notifyMentions`, default on) is honoured; an invited member with no
-  account has no preferences and is emailed at their invite address.
-- On the canvas, `commentText` is required, at most 5000 characters; the email
-  quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, project, card, recipient and, for a card, the
-  stored comment's id (on the canvas, the body's text) is sent at most once per 24 hours
-  (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
-  author's action-assigned and mention emails together are capped at 60 an hour
-  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
-  deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
-- A card's comment is claimed by its stored id, so rewording the request cannot
-  send it again; and the comment must be the caller's own and under 24 hours old,
-  so it cannot be sent again once its claim lapses. A canvas comment and an
-  assigned action ([Assigned actions](assigned-actions.md)) keep the exact-text
-  dedupe: neither is stored where the route can read it when the request lands
-  (both reach D1 only with the next tab save), so a client that rewords each
-  request gets past the dedupe, and the hourly cap is the bound.
+- The plan has a team (`plan.team_id`), and the author is a **joined** member of it as liveworkspace keeps the
+  team now (`POST /api/account/internal/teams/members`). Otherwise nobody is emailed.
+- Each mention resolves to a person of that team (joined or invited), by membership row first, then account,
+  other than the author; anything else is skipped silently. At most 20 a comment.
+- The author name comes from the author's profile (else their verified address), and the plan name from the
+  plan, never the comment.
+- Each recipient's **"Someone Mentions Me in a Comment"** setting
+  (`notifyMentions`, default on, shared by every app) is honoured, read with their verified address in one
+  request for everyone a save mentions; an invited member with no account has no settings and is emailed at
+  their invite address.
+- The email quotes the first 280 characters, cut at a word with an ellipsis.
+- Each email is **claimed** before it goes, in the plan's own `notify_claims` table: a hash of the author,
+  plan, card, recipient and the stored comment's id is sent at most once per 24 hours
+  (`NOTIFY_EMAIL_DEDUPE_MS`), so a saved-again comment emails nobody twice, and one
+  author's action-assigned and mention emails are capped at 60 an hour across all their plans
+  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, `@liveworkspace/auth-client`), counted in the author's own per-person store
+  (`@liveworkspace/index-app` `claimNotice`). A refused claim sends nothing, is released so the email may go once
+  the hour allows, and logs `[notify-email] skipped`; a claim past the 24 hours is deleted by the next claim, so the
+  table holds a day at most, and it goes with the plan.
 
 The email reads **"{author} mentioned you in {project}"**, quotes the
-comment, and has one button, **Open the project** (for a card's comment, **Open the card**, linking
+comment, and has one button, **Open the plan** (for a card's comment, **Open the card**, linking
 `/project/<id>#item=<itemId>`). It is sent only when email is
-configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
+configured (`RESEND_API_KEY`, [Transactional email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting
 
-Settings → Email gains **Someone Mentions Me in a Comment** ("When a teammate
-@mentions you in a comment."), signed-in only, like the other email toggles.
+Settings → Notifications has **Someone Mentions Me in a Comment** ("A teammate
+@mentions you in a comment."), signed-in only, like the other email switches.
 
 ## Telemetry
 

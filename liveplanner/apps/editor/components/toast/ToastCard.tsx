@@ -10,7 +10,7 @@ import {
   lucideCircleCheck,
   lucideInfo,
   lucideTriangleAlert,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { CloseIcon, lucideGlyph } from '@liveplanner/ui';
 import type { ToastTone } from './toast-queue';
 

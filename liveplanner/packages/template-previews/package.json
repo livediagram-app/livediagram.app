@@ -2,7 +2,7 @@
   "name": "@liveplanner/template-previews",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -23,16 +23,17 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
-    "@liveplanner/icons": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/templates": "workspace:*",
-    "@liveplanner/ui": "workspace:*"
+    "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

@@ -1,5 +1,13 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test, paletteTile } from './fixtures';
+import { POWER_USER_PRESET } from '../lib/power-user-mode';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+  paletteTile,
+  openContextMenuFromKeyboard,
+} from './fixtures';
 
 // Power user mode and Minimal chrome (docs/specs/007-editor/power-user-mode.md), and the role pill
 // (docs/specs/007-editor/live-app.md#role-pill), in a real browser, dark mode.
@@ -99,7 +107,8 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(11);
+      // One line per preset setting but Minimal Chrome, which is the switch above.
+    ).toHaveCount(Object.keys(POWER_USER_PRESET).length - 1);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -152,13 +161,10 @@ test.describe('Power user mode', () => {
 
     // Panel headers: the title stays for assistive technology only, and the
     // help button goes.
-    await page
-      .getByRole('button', { name: /layers/i })
-      .first()
-      .click();
-    const layersTitle = page.locator('.sr-only', { hasText: /^Layers$/ });
-    await expect(layersTitle).toHaveCount(1);
-    await expect(page.getByRole('link', { name: /learn about layers/i })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Contents', exact: true }).click();
+    const contentsTitle = page.locator('.sr-only', { hasText: /^Contents$/ });
+    await expect(contentsTitle).toHaveCount(1);
+    await expect(page.getByRole('link', { name: /learn about contents/i })).toHaveCount(0);
     // A panel without a ⋯ menu just drops its help; the help centre stays in
     // the Explorer's footer links.
     await page.keyboard.press('Escape');
@@ -243,16 +249,13 @@ test.describe('Power user mode', () => {
     await appearance.click({ button: 'right' });
     await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expect(await painted()).toBe('dark');
-    expect(await page.evaluate(() => localStorage.getItem('livedesign:v2:ui-mode'))).toBe(
-      'system',
-    );
+    expect(await page.evaluate(() => localStorage.getItem('livedesign:v2:ui-mode'))).toBe('system');
     await expect(page.getByRole('menu')).toHaveCount(0);
 
-    // The keyboard reaches System too: Shift+F10 on the focused control.
+    // The keyboard reaches System too: Shift+F10 on the focused control (its macOS stand-in there).
     await appearance.click();
     await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
-    await appearance.focus();
-    await page.keyboard.press('Shift+F10');
+    await openContextMenuFromKeyboard(appearance);
     await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expectNoPageErrors(pageErrors);
   });

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useReportWebVitals } from 'next/web-vitals';
-import type { TimingTrack } from '@livedocuments/telemetry-client';
+import type { TimingTrack } from '@liveworkspace/telemetry-client';
 import { reportWebVital, webVitalApp } from './web-vitals-report';
 
 // The Web Vitals observer (docs/specs/017-telemetry/timing-telemetry.md), loaded lazily by

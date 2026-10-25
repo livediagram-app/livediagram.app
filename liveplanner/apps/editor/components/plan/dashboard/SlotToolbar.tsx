@@ -13,7 +13,7 @@ import {
   lucideEraser,
   lucideExternalLink,
   lucideTrash2,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   dashboardReadingNeighbour,
   moveDashboardSlot,

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
@@ -68,7 +68,7 @@ export function TextImportPanel({
   return (
     <div>
       {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
-          style), the same control the New Document wizard's location step
+          style), the same control the New Canvas wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
       {onBack ? (

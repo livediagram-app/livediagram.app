@@ -6,7 +6,7 @@ import type {
   ReaderRequest,
   ReaderResponse,
 } from './reader-protocol';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The in-browser reader's worker (docs/specs/021-event-storming/event-storming.md Phase 9). The model reads one crop
 // at a time — a full generation each, hundreds on a big wall — and on the

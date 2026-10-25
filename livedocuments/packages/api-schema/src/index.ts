@@ -14,7 +14,7 @@
 
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
-import type { BackgroundPattern, ShapeKind, Tab } from '@livedocuments/document';
+import type { Tab } from '@livedocuments/document';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -193,46 +193,6 @@ export type Folder = {
 };
 
 // ---------------------------------------------------------------------
-// Custom themes (docs/specs/011-theme/custom-themes.md)
-// ---------------------------------------------------------------------
-
-// The themable payload of a custom theme — the same fields a built-in
-// `ThemeDefinition` carries MINUS its `id` / `label` (which live on the
-// row) and the `extra` "show more" flag (custom themes are never
-// gated). Stored as a JSON string in the `custom_themes.definition`
-// column; this is the parsed shape the api emits and the live editor
-// materialises into a full ThemeDefinition. Kept structurally in step
-// with `apps/editor/lib/themes.ts` ThemeDefinition by the editor's
-// `materialiseCustomTheme` helper.
-export type CustomThemeDefinition = {
-  backgroundColor: string;
-  backgroundPattern: BackgroundPattern;
-  patternColor: string;
-  // Pattern opacity 0..1 (the canvas pattern-opacity slider). Optional;
-  // absent / undefined means fully opaque.
-  backgroundOpacity?: number;
-  elementFill: string | null;
-  elementStroke: string | null;
-  elementText: string | null;
-  palette?: { fill: string; stroke: string; text: string }[];
-  rootColor?: { fill: string; stroke: string; text: string };
-  shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string; text?: string }>>;
-};
-
-// A saved custom theme. `id` is `custom:<uuid>` so it can never collide
-// with a built-in ThemeId and is a cheap "is this custom?" check. It is
-// stored on `Tab.theme` like any other theme id. Owner-scoped (docs/specs/014-identity/auth-and-guest-access.md
-// hybrid identity), guests included.
-export type CustomTheme = {
-  id: string;
-  ownerId: string;
-  name: string;
-  definition: CustomThemeDefinition;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// ---------------------------------------------------------------------
 // API tokens (docs/specs/015-api/public-api-and-tokens.md)
 // ---------------------------------------------------------------------
 
@@ -313,14 +273,16 @@ export type TeamMember = {
   updatedAt: number;
 };
 
-// One row of `GET /api/teams/invites`: the caller's own pending
-// member row plus enough of the team to decide (name, organisation,
-// how many people have actually joined).
+// One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
+// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
+// its name and organisation, how many people have joined, the role offered, who invited them and when.
 export type TeamInvite = {
   memberId: string;
   team: Team;
   memberCount: number;
   invitedAt: number;
+  role: TeamRole;
+  invitedByName: string | null;
 };
 
 // The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it
@@ -337,19 +299,6 @@ export type TeamInviteLinkInfo = {
   team: Team;
   memberCount: number;
   alreadyMember: boolean;
-};
-
-// Result of joining via an invite link.
-export type TeamInviteLinkJoin = {
-  teamId: string;
-  alreadyMember: boolean;
-};
-
-// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
-// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
-export type TeamInviteDecline = {
-  teamName: string;
-  status: TeamMemberStatus;
 };
 
 // ---------------------------------------------------------------------
@@ -466,13 +415,19 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 // The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
 export { sha256 } from './sha256-digest';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
@@ -485,20 +440,20 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
   isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
@@ -523,14 +478,8 @@ export type CapabilitiesResponse = {
 // count on the same day. Pre-aggregated server-side so the dashboard
 // can render the sparkline + stacked-area without any client work.
 //
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
+// A link card's unfurl (GET /api/unfurl), every product's (@liveworkspace/api-kit/unfurl).
+export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
 export * from './access-levels';
 export * from './image-limits';
@@ -542,7 +491,7 @@ export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
 export * from './error-telemetry';
-export * from './timeline';
+export * from './document-conversion';
 export * from './activity';
 export * from './responses';
 export * from './trash';
@@ -553,7 +502,6 @@ export * from './document-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
-export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -563,10 +511,9 @@ export {
   type PlacementRejection,
 } from './placement';
 
-// Default folders: the keys in force and the creation intent a create carries
-// (docs/specs/013-workspace/default-folders.md).
+// The creation intent a create carries (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
+// Explorer Home's use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
@@ -579,8 +526,8 @@ export * from './document-views';
 // The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
 export * from './lint';
 export * from './ref-errors';
-// Returning visitor (docs/specs/019-marketing/returning-visitor.md).
-export * from './recent-diagrams';
+// A document snapshot's SVG, for thumbnails (docs/specs/006-document/document-snapshots.md).
+export * from './snapshot-svg';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
 // presented, for `livedocuments auth status`. `role` is `full` or `read-only`.
@@ -592,13 +539,11 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
-export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

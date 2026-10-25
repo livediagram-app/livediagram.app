@@ -7,7 +7,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 /**
  * How a shape is picked on a whiteboard: by its drawn outline alone, or, once selected, by its box

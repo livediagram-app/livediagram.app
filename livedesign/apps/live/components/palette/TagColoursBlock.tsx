@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { tagColourOf, type ShapeElement, type TagColour } from '@livedesign/design';
 import { ColourRow, type ColourPalette } from '@/components/palette/context-menu-input-rows';
-import { MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 
 // The Card section's Tag Colours (docs/specs/009-elements/tag-colours.md "Editing"): one colour row per tag on the card,
 // in the one colour picker. A pick colours that tag across the whole tab; Clear removes it from the map.

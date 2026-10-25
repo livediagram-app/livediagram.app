@@ -9,9 +9,8 @@ import {
   FORM_RESPONSE_LIMIT_MAX,
   MESSAGE_MAX,
 } from '@liveplanner/forms';
-import { TextInput } from '@liveplanner/ui';
+import { TextInput, SwitchRow } from '@liveplanner/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { patchForm } from '@liveplanner/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DraftText } from './DraftText';

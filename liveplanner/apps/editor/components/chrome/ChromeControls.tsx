@@ -1,5 +1,9 @@
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
-import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
+import {
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { SettingsIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { HoverCard } from '@liveplanner/ui';
 

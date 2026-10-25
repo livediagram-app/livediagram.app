@@ -1,6 +1,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
+import { workspaceRouteFor, workspaceRoutes } from '@liveworkspace/sites/workspace-proxy';
 import router, { type Env } from './index';
 
 // Dispatch tests for the router (docs/specs/016-platform/router-app.md): every production request
@@ -26,16 +27,14 @@ function makeEnv() {
   const marketing = mockFetcher();
   const live = mockFetcher();
   const api = mockFetcher();
-  const telemetry = mockFetcher();
   const help = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
-    TELEMETRY: telemetry.fetcher,
     HELP: help.fetcher,
   };
-  return { env, marketing, live, api, telemetry, help };
+  return { env, marketing, live, api, help };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -54,10 +53,8 @@ describe('production dispatch (service bindings)', () => {
     expect(live.urls).toEqual(['https://livedesign.app/_next/static/chunk.js']);
   });
 
-  it('strips the basePath for telemetry and help, keeping the query', async () => {
-    const { env, telemetry, help } = makeEnv();
-    await dispatch('/telemetry/data?window=30', env);
-    expect(telemetry.urls).toEqual(['https://livedesign.app/data?window=30']);
+  it('strips the basePath for help, keeping the query', async () => {
+    const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
     expect(help.urls).toEqual(['https://livedesign.app/canvas/themes/']);
   });
@@ -83,9 +80,27 @@ describe('production dispatch (service bindings)', () => {
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
-    const { env, telemetry } = makeEnv();
-    await dispatch('/telemetry', env);
-    expect(telemetry.urls).toEqual(['https://livedesign.app/']);
+    const { env, help } = makeEnv();
+    await dispatch('/help', env);
+    expect(help.urls).toEqual(['https://livedesign.app/']);
+  });
+
+  it('sends /telemetry and below to the central dashboard, filtered to livedesign', async () => {
+    const { env } = makeEnv();
+    for (const path of ['/telemetry', '/telemetry/', '/telemetry/anything?window=30']) {
+      const res = await dispatch(path, env);
+      expect(res.status, path).toBe(301);
+      expect(res.headers.get('Location'), path).toBe(
+        'https://liveworkspace.app/telemetry?app=livedesign.app',
+      );
+    }
+    const staging = await dispatch('/telemetry', {
+      ...env,
+      TELEMETRY_DASHBOARD_URL: 'https://staging.liveworkspace.app/telemetry',
+    });
+    expect(staging.headers.get('Location')).toBe(
+      'https://staging.liveworkspace.app/telemetry?app=livedesign.app',
+    );
   });
 
   it('forwards the clean live page routes UNstripped', async () => {
@@ -130,10 +145,42 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3403' });
+      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3404' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3403/telemetry/data');
+      expect(req.url).toBe('http://localhost:3404/help/data');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('forwards /api/index/* to the index, path, query, method, body and Authorization kept, cookies dropped', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(
+        new Request('https://livedesign.app/api/index/items/p1/grant?x=1', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer g', 'X-Share-Code': 'C', Cookie: 'a=b' },
+          body: '{"tab":null}',
+        }),
+        { ...env, INDEX_ORIGIN: 'http://127.0.0.1:8793' },
+      );
+      const req = fetchMock.mock.calls[0]![0];
+      expect(req.url).toBe('http://127.0.0.1:8793/api/index/items/p1/grant?x=1');
+      expect(req.method).toBe('POST');
+      expect(req.headers.get('Authorization')).toBe('Bearer g');
+      expect(req.headers.get('X-Share-Code')).toBe('C');
+      expect(req.headers.get('Cookie')).toBeNull();
+      expect(await req.text()).toBe('{"tab":null}');
+      // Never the api worker, and production's index when no origin is named.
+      expect(api.urls).toEqual([]);
+      await dispatch('/api/index/items', env);
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/index/items');
+      // `/api/indexes` is not the index.
+      await dispatch('/api/indexes', env);
+      expect(api.urls).toEqual(['https://livedesign.app/api/indexes']);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -160,6 +207,8 @@ describe('live route drift guard', () => {
     expect(segments.length).toBeGreaterThan(5); // the read is looking at the right place
     const missed: string[] = [];
     for (const segment of segments) {
+      // A path liveworkspace serves under this address (its Explorer) is the router's on purpose.
+      if (workspaceRouteFor(`/${segment}`, workspaceRoutes('livedesign'))) continue;
       const { env, live } = makeEnv();
       await dispatch(`/${segment}/x`, env);
       if (live.urls.length === 0) missed.push(segment);
@@ -199,7 +248,7 @@ describe('bare help-article paths', () => {
       expect(marketing.urls.length, path).toBe(1);
     }
     const { env, live } = makeEnv();
-    await dispatch('/explorer/recent', env);
+    await dispatch('/new', env);
     expect(live.urls.length).toBe(1);
   });
 
@@ -289,9 +338,8 @@ describe('the caching rules', () => {
       MARKETING: answering('<html></html>', html),
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
-      TELEMETRY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
+    for (const page of ['/', '/new', '/help/canvas/']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {
@@ -316,9 +364,7 @@ describe('the caching rules', () => {
       DEPLOY_ENV: 'local',
       LIVE: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
     };
-    expect((await dispatch('/explorer/unsorted', page)).headers.get('Cache-Control')).toBe(
-      'no-store',
-    );
+    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
@@ -342,5 +388,154 @@ describe('the caching rules', () => {
     expect((await dispatch('/api/docs', env)).headers.get('Cache-Control')).toBe(
       'public, max-age=60',
     );
+  });
+});
+
+describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+  it("sends every item's preview and a link's image and card to the previews service, never the api", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(new Request('https://livedesign.app/api/previews/items/d1?v=5'), env);
+      await router.fetch(new Request('https://livedesign.app/api/share/ABC/image.png'), {
+        ...env,
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+      });
+      expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
+        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
+      ]);
+      // What a link opens stays the api's.
+      await router.fetch(new Request('https://livedesign.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://livedesign.app/api/share/ABC']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe("liveworkspace's Explorer under this address (@liveworkspace/sites/workspace-proxy)", () => {
+  const page = () =>
+    new Response('<!doctype html><title>Explorer</title>', {
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=0' },
+    });
+
+  it('serves every /explorer address from liveworkspace.app, path and query kept, the page never cached', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(page()));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, live, marketing } = makeEnv();
+      for (const path of [
+        '/explorer',
+        '/explorer/recent',
+        '/explorer/team?id=t1&folder=f2',
+        '/explorer/profile',
+        '/explorer?settings=notifications',
+        '/explorer/offline',
+      ]) {
+        const res = await router.fetch(new Request(`https://livedesign.app${path}#ignored`), env);
+        expect(res.status).toBe(200);
+        expect(res.headers.get('Cache-Control')).toBe('no-store');
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+      }
+      expect(live.urls).toEqual([]);
+      expect(marketing.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("goes to the origin named (local dev, staging), with the page's payloads and the account reads", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
+      await router.fetch(new Request('https://livedesign.app/explorer/recent.txt?_rsc=x'), local);
+      expect(fetchMock.mock.calls[0]![0].url).toBe(
+        'http://localhost:3000/explorer/recent.txt?_rsc=x',
+      );
+      await router.fetch(
+        new Request('https://livedesign.app/api/workspace/account/people?ids=u1', {
+          headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
+        }),
+        local,
+      );
+      const sent = fetchMock.mock.calls[1]![0];
+      expect(sent.url).toBe('http://localhost:3000/api/account/people?ids=u1');
+      expect(sent.headers.get('Authorization')).toBe('Bearer t');
+      expect(sent.headers.get('Cookie')).toBeNull();
+      expect(api.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("leaves the app's own assets, pages and api where they were", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, live, marketing, api } = makeEnv();
+      await dispatch('/live/_next/static/chunk.js', env);
+      await dispatch('/_next/static/chunk.js', env);
+      await dispatch('/explorers', env);
+      await dispatch('/api/account', env);
+      await dispatch('/new', env);
+      expect(live.urls).toEqual([
+        'https://livedesign.app/_next/static/chunk.js',
+        'https://livedesign.app/new',
+      ]);
+      expect(marketing.urls).toEqual([
+        'https://livedesign.app/_next/static/chunk.js',
+        'https://livedesign.app/explorers',
+      ]);
+      expect(api.urls).toEqual(['https://livedesign.app/api/account']);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('keeps a redirect on this address', async () => {
+    const fetchMock = vi.fn((_req: Request) =>
+      Promise.resolve(
+        new Response(null, {
+          status: 307,
+          headers: { Location: 'https://liveworkspace.app/explorer/recent' },
+        }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const res = await dispatch('/explorer/recent/', makeEnv().env);
+      expect(res.status).toBe(307);
+      expect(res.headers.get('Location')).toBe('/explorer/recent');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('never loops: an origin naming this router, or a request already forwarded, is refused', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(page()));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env } = makeEnv();
+      const self = await router.fetch(new Request('https://livedesign.app/explorer'), {
+        ...env,
+        WORKSPACE_ORIGIN: 'https://livedesign.app',
+      });
+      expect(self.status).toBe(508);
+      const again = await router.fetch(
+        new Request('https://livedesign.app/explorer', {
+          headers: { 'X-Liveworkspace-Proxy': 'livedesign' },
+        }),
+        env,
+      );
+      expect(again.status).toBe(508);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

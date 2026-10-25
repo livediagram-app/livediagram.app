@@ -112,7 +112,7 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   vi.useRealTimers();
-  setActiveTour('welcome', false);
+  setActiveTour('form', false);
   setActiveTour('plan', false);
   document.body.innerHTML = '';
 });
@@ -168,15 +168,15 @@ describe('PlanTourHost offer', () => {
     expect(offered()).toBe(false);
   });
 
-  it('waits while the Diagram tour is on screen, then follows it', () => {
-    setActiveTour('welcome', true);
+  it('waits while the Form tour is on screen, then follows it', () => {
+    setActiveTour('form', true);
     editor();
     render(<PlanTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
-    act(() => setActiveTour('welcome', false));
+    act(() => setActiveTour('form', false));
     act(() => {
       vi.advanceTimersByTime(800);
     });

@@ -2,7 +2,7 @@
 // the commit choke point passes each edit of the guarded tab (the active one, in Pages mode)
 // through guardLockedPages, and says once in a while why something was held back.
 import { guardLockedPages, pagesOf, type Tab } from '@livedesign/design';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // `onBlocked` is called inside the commit's state update: it must defer anything that sets state.
 export type PageLockGuard = { tabId: string; onBlocked: () => void };

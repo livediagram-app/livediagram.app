@@ -108,10 +108,12 @@ describe('photo page edits', () => {
       roomForPhotoPage,
       blankPhoto,
       photosOf,
+      newPhotoPage,
     } = await import('./index');
+    // A photo tab: every page of a tab is one kind (docs/specs/007-editor/pages-mode.md).
     const base: { elements: never[]; pages: Page[]; photos?: Record<string, unknown> } = {
       elements: [],
-      pages: [{ id: 'p0', orientation: 'portrait' as const, kind: 'logo' as const }],
+      pages: [newPhotoPage('p0')],
     };
     const added = pageAdded(base, 'photo', 'p1', undefined, { width: 4000, height: 2000 });
     if (!('tab' in added)) throw new Error('refused');
@@ -133,7 +135,12 @@ describe('photo page edits', () => {
       orientation: 'portrait',
       fit: { width: 1000, height: 2000 },
     });
-    expect(withPhoto(copy.tab, 'p0', blankPhoto())).toBe(copy.tab);
+    const logos = {
+      elements: [],
+      pages: [{ id: 'l', orientation: 'portrait' as const, kind: 'logo' as const }],
+    };
+    expect(withPhoto(logos, 'l', blankPhoto())).toBe(logos);
+    expect(pageAdded(logos, 'photo', 'n')).toEqual({ refused: 'kind_not_offered' });
     expect(withPhoto(copy.tab, 'p1', photoOfPage(copy.tab, 'p1')).pages).toBe(copy.tab.pages);
     expect(Object.keys(photosOf(withoutPhoto(copy.tab, 'p1')))).toEqual(['p2']);
     expect(withoutPhoto(withoutPhoto(copy.tab, 'p1'), 'p2')).not.toHaveProperty('photos');

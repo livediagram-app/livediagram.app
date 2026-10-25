@@ -3,14 +3,14 @@
 // Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
 import { sankeyFrame, type ShapeElement } from '@livedocuments/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
-import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
+import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from './sankey-flows-tour-steps';
 import { inTheMenu } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
 import { TARGET_WAIT_MS } from './useTourEngine';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Sankey tour runs on the shared element tour facade.
 export type SankeyElementTourApi = ElementTourApi;

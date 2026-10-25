@@ -1,17 +1,20 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
-import { lucideCheck } from '@livediagram/icons/lucide';
+import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
+import type { Metadata } from 'next';
 import { type CSSProperties, Fragment } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Apps } from '@/components/landing/Apps';
 import { HeroActions } from '@/components/landing/HeroActions';
 import { HubArt } from '@/components/landing/HubArt';
-import { Journey } from '@/components/landing/Journey';
+import { Promises } from '@/components/landing/Promises';
 import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 // What each app is for, in the order work moves through them, for the hero's one sentence.
 const STEPS: Partial<Record<SiteId, string>> = {
@@ -29,15 +32,15 @@ export default function Home() {
   const apps = listedApps();
   return (
     <>
-      <Header />
+      <Header share />
       <main>
         <section className="relative overflow-hidden">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_60%_at_15%_0%,rgb(14_165_233/0.12),transparent_70%),radial-gradient(60%_60%_at_95%_30%,rgb(139_92_246/0.12),transparent_70%)] dark:bg-[radial-gradient(70%_60%_at_15%_0%,rgb(14_165_233/0.16),transparent_70%),radial-gradient(60%_60%_at_95%_30%,rgb(139_92_246/0.18),transparent_70%)]"
           />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-14 pb-20 sm:px-6 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:pt-24 lg:pb-28">
-            <div className="lw-rise">
+          <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pt-14 pb-20 sm:px-6 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:pt-24 lg:pb-28">
+            <div className="lw-rise text-center sm:text-left">
               <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 py-1 pr-3.5 pl-1.5 text-sm font-medium text-slate-600 backdrop-blur dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
                 <span className="flex size-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                   <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />
@@ -51,7 +54,7 @@ export default function Home() {
                 </span>{' '}
                 in one workspace.
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300">
+              <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed sm:mx-0 text-slate-600 sm:text-xl dark:text-slate-300">
                 liveworkspace is a family of real-time apps.{' '}
                 {apps.map((app, i) => (
                   <Fragment key={app.id}>
@@ -70,7 +73,7 @@ export default function Home() {
                 already in it.
               </p>
               <HeroActions />
-              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm sm:justify-start text-slate-500 dark:text-slate-400">
                 {PROMISES.map((p) => (
                   <li key={p} className="flex items-center gap-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">
@@ -81,17 +84,17 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <div className="lw-rise [animation-delay:150ms]">
+            <div className="lw-rise hidden [animation-delay:150ms] sm:block">
               <HubArt />
             </div>
           </div>
         </section>
 
         <Apps />
-        <Journey />
+        <Promises />
 
         <section className="px-4 py-20 sm:px-6 sm:py-28">
-          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center sm:px-12 sm:py-20">
+          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center sm:px-12 sm:py-20">
             <div
               aria-hidden
               className="absolute inset-0 bg-[radial-gradient(50%_70%_at_0%_100%,rgb(14_165_233/0.35),transparent_70%),radial-gradient(50%_70%_at_100%_0%,rgb(139_92_246/0.4),transparent_70%)]"

@@ -6,7 +6,14 @@
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Label, Dialog, Cursor } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Label,
+  Dialog,
+  Cursor,
+} from '@liveworkspace/help-site/art/primitives';
 import { Glyph } from './element-indicators';
 
 // --- Tab-bar building blocks -------------------------------------------------
@@ -429,7 +436,7 @@ export function TabMenu() {
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = ['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear'];
+  const rows = ['Add to Folder', 'Add to Another Canvas', null, 'Import', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -692,7 +699,7 @@ export function AddToDocumentMenu() {
   const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Document" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Another Canvas" sceneW={W} sceneH={H}>
         <rect
           x={dx + 16}
           y={dy + 48}
@@ -703,7 +710,7 @@ export function AddToDocumentMenu() {
           strokeWidth={1.5}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
-          Filter documents…
+          Filter canvases…
         </Label>
         {docs.map((d, i) => {
           const tx = dx + 16 + i * 112;
@@ -790,7 +797,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear']}
+        rows={['Add to Folder', 'Add to Another Canvas', null, 'Import', 'Export', 'Clear']}
         highlight="Import"
       />
     </Scene>

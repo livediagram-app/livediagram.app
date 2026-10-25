@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 
 /** The regions, in screen order. */
 export const EDITOR_REGIONS = ['header', 'palette', 'canvas', 'controls', 'tabs'] as const;
-export type EditorRegion = (typeof EDITOR_REGIONS)[number];
 
 const FOCUSABLE =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -16,8 +15,7 @@ const FOCUSABLE =
 const shown = (el: HTMLElement): boolean =>
   el.getClientRects().length > 0 && !el.closest('.hidden, [hidden], [aria-hidden="true"]');
 
-/** The roots of the regions on screen, in screen order (a region's first shown root: the Palette is the strip or
- *  the Draw dock, whichever the tab has). */
+/** The roots of the regions on screen, in screen order (a region's first shown root). */
 export function shownRegions(doc: Document): HTMLElement[] {
   const out: HTMLElement[] = [];
   for (const name of EDITOR_REGIONS) {

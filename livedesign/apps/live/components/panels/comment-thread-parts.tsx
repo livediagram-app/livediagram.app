@@ -5,7 +5,7 @@
 // control. The canvas's comment popover and a Plan card's item panel both compose them; the panel draws them
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
 import { useRef, useState, type RefObject } from 'react';
-import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
+import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import {
   Button,
   CheckIcon,

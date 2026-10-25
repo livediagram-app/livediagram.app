@@ -13,7 +13,7 @@
 // bodyExceedsCap at the bottom of this file.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
-// A single tab's data (the element + comment tree), held to D1's row cap less headroom
+// A single tab's data (the element + comment tree), held to a SQLite row's cap in a Durable Object, less headroom
 // (docs/specs/015-api/api.md "Tab size"). Defined in @liveplanner/api-schema, so the editor checks
 // the same number before it sends. The body cap above bounds one request; this bounds one tab.
 export { MAX_TAB_BYTES, tabDataBytes } from '@liveplanner/api-schema';
@@ -21,7 +21,7 @@ import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@liveplanner/api-schema';
 
 /**
  * A tab write refused for size at the storage layer (db/tabs.ts): every route that stores a tab
- * catches it and answers the named 413, so nothing reaches D1 that D1 would refuse.
+ * catches it and answers the named 413, so nothing reaches storage that storage would refuse.
  */
 /** The one log line for a tab refused for size: `[tab-size] refused`, its write, bytes and cap. */
 export function logTabRefused(write: string, tabId: string, bytes: number): void {
@@ -57,16 +57,10 @@ export class TabTooLargeError extends Error {
 // NAME_MAX_LENGTH instead (names.ts, docs/specs/006-project/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A custom theme's JSON definition (palette + per-shape colours).
-export const MAX_THEME_DEF_BYTES = 256 * 1024;
-
 // The client-claimed project-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
 export const MAX_PARTICIPANT_KEY_LEN = 64;
-
-// Share-link password.
-export const MAX_PASSWORD_LEN = 256;
 
 // UTF-8 byte length of a string, for size-gating JSON payloads (a char count
 // would under-count multi-byte content).

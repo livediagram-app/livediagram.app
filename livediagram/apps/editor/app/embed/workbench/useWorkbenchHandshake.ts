@@ -9,7 +9,7 @@ import { useEffect, useReducer, useRef, useState, type Dispatch } from 'react';
 import { WORKBENCH_HANDSHAKE_MS, type HelloAckMessage } from '@livediagram/api-schema';
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
 import { createWorkbenchPort, type WorkbenchPort } from '@/lib/workbench/workbench-port';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { takeTicketFromAddress } from './workbench-fragment';
 import {
   INITIAL_WORKBENCH_PHASE,

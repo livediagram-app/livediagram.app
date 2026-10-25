@@ -3,9 +3,10 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
-//   - D1 (`user_preferences` table) is the authoritative store, fetched
-//     once at editor mount via fetchUserPreferences() so a signed-in
-//     user's flags follow them across devices.
+//   - liveworkspace keeps the authoritative copy (the api's /api/preferences), fetched
+//     once per page load via fetchUserPreferences() so a person's flags follow them
+//     across devices, and the shared ones (ALL_SETTING_KEYS) across apps. A deployment
+//     without liveworkspace keeps none: the cache below is then the only copy.
 //   - `localStorage` under `livediagram:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
@@ -15,10 +16,10 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // event on STORAGE_KEY. Same-tab writes also fire a window event
 // `livediagram:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
-// in-memory gate cache) still refresh promptly. Every write sends the
-// WHOLE blob, so a change is built on the cache, never on a render's
-// snapshot (see rebaseUserPreferences): another tab's write since that
-// render would otherwise be undone.
+// in-memory gate cache) still refresh promptly. Every write stores the
+// WHOLE blob in the cache, so a change is built on the cache, never on a
+// render's snapshot (see rebaseUserPreferences): another tab's write since
+// that render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { ElementTourKind } from './element-tours';
@@ -26,11 +27,20 @@ import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
-import { apiGetPreferences } from './api-client';
-import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
+import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
+import {
+  fitPreferences,
+  markPreferencesLocalOnly,
+  preferencesUnsynced,
+  rememberServerPreferences,
+  savePreferences,
+} from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
-import { debugLog } from './debug-log';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
@@ -46,7 +56,7 @@ export type UserPreferences = {
   telemetryEnabled?: boolean;
   // DEAD as of docs/specs/008-canvas/two-pens.md: shape recognition is now which pen you picked
   // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
-  // more. It stays in the type because it is already stored in D1 for
+  // more. It stays in the type because it is already stored for
   // existing users, and removing it would make a stored preference fail to
   // parse rather than simply be ignored.
   recogniseShapes?: boolean;
@@ -79,17 +89,6 @@ export type UserPreferences = {
   collaboratePanelEnabled?: boolean;
   // Quick style: the selection's style panel. Style memory stays.
   quickStylePanelEnabled?: boolean;
-  // AI Assistance panel (docs/specs/007-editor/ai-assistance.md). When `true`, the AI panel is
-  // rendered in the editor. Defaults to false (opt-in). Only
-  // surfaced in Settings when the api worker reports aiEnabled:true
-  // (i.e. a model key is configured). Missing / undefined / false
-  // === panel hidden.
-  aiAssistanceEnabled?: boolean;
-  // Show the quick suggested-prompt chips in the AI panel (docs/specs/007-editor/ai-assistance.md).
-  // Handy but they take vertical space, so the AI panel's settings
-  // popover can hide them. Missing / undefined / true === shown (the
-  // default); an explicit false hides them.
-  aiSuggestedPrompts?: boolean;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
@@ -184,10 +183,6 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
-  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
-  // always sees their own picture whatever this says.
-  showProfilePicture?: boolean;
   // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
   // until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
@@ -211,14 +206,6 @@ export type UserPreferences = {
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
   elementToursSeen?: boolean;
-  // Documents this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
-  // is your view of your own work, and on a shared document one
-  // collaborator hiding it must not hide it from everyone else.
-  //
-  // Ids only, so the list stays small; the whole preferences blob has a
-  // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
-  // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
@@ -228,7 +215,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  recentExcludedIds?: string[];
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores
   // the preset, recorded in `powerUserBaseline` while the mode is on.
@@ -262,22 +248,6 @@ export type UserPreferences = {
   presentation?: Record<string, unknown>;
 };
 
-// How many excluded ids we keep. A document id is a 36-char UUID, so 200
-// of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
-// the serialised preferences blob, which would start rejecting EVERY
-// preference write, not just this one. 60 is far more than anyone will
-// hide by hand and leaves plenty of room for the other flags.
-export const RECENT_EXCLUDED_LIMIT = 60;
-
-// Flip a document's Recent exclusion, returning the NEXT id list. Newest
-// exclusions are kept at the front so the cap drops the oldest choice
-// rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, documentId: string): string[] {
-  const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(documentId)) return current.filter((id) => id !== documentId);
-  return [documentId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
-}
-
 // Re-exported under this module's own name because everything here reads it
 // as "the preferences key". It's DEFINED in telemetry-client because the help
 // centre reads the telemetry field out of this same blob and must never get
@@ -289,14 +259,6 @@ export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 // default, so only an explicit `false` turns the on-move rebind off. The
 // single home for the default: the Settings row and the editor-preferences
 // hook both call this instead of re-deriving it.
-/** The switch's default (docs/specs/014-identity/profile-picture.md §4): on, by operator decision. */
-export const SHOW_PROFILE_PICTURE_DEFAULT = true;
-
-/** Whether collaborators may see this account's profile picture. */
-export function showProfilePictureEnabled(prefs: UserPreferences): boolean {
-  return prefs.showProfilePicture ?? SHOW_PROFILE_PICTURE_DEFAULT;
-}
-
 export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
   return prefs.autoRebindArrows !== false;
 }
@@ -324,7 +286,7 @@ export function readUserPreferences(): UserPreferences {
 // Write preferences back. Best-effort: a quota / private-window
 // failure is swallowed (the dialog state still applies in-memory
 // for the session; the user just loses the persistence). The
-// network sync to D1 runs in the background when `ownerId` is supplied
+// network sync to the api runs in the background when `ownerId` is supplied
 // (lib/preferences-sync): the cache write happens synchronously so the
 // UI updates without waiting. Callers without an ownerId (e.g. unit
 // tests, the editor before identity resolves) skip the network step.
@@ -379,11 +341,22 @@ export function commitUserPreferences(
   return rebased;
 }
 
-// Fetch preferences from D1, merge over the localStorage cache, and
+// Owners whose server preferences this page has already merged: a second caller (the explorer,
+// then the editor it opens) reads the cache rather than asking again, so a page load costs one
+// accounts read, and a later change made here is never reverted by an older server copy.
+const fetched = new Set<string>();
+
+// Test seam.
+export function __resetFetchedPreferences(): void {
+  fetched.clear();
+}
+
+// Fetch preferences from the api, merge over the localStorage cache, and
 // dispatch `livediagram:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
-// when the fetch failed; the caller can treat that as "stick with
-// the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.
+// when the fetch failed, or this deployment keeps none; the caller treats
+// that as "stick with the cache"). Called at editor mount per
+// docs/specs/007-editor/user-preferences.md's sync flow, once per page load.
 //
 // Server-wins on conflict: the server holds the most-recently-saved
 // state across all of this owner's devices, so any key present on
@@ -392,10 +365,21 @@ export function commitUserPreferences(
 // are preserved by the spread order below. The exception is a device
 // whose last save was never confirmed (lib/preferences-sync): the
 // server's blob is older than the cache there, so the cache wins and
-// is sent again.
+// what differs is sent again.
 export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  if (fetched.has(ownerId)) return readUserPreferences();
+  fetched.add(ownerId);
   const remote = await apiGetPreferences(ownerId);
-  if (remote === null) return null;
+  if (remote === PREFERENCES_LOCAL_ONLY) {
+    debugLog('[preferences] kept in this browser only');
+    markPreferencesLocalOnly(ownerId);
+    return null;
+  }
+  if (remote === null) {
+    fetched.delete(ownerId);
+    return null;
+  }
+  rememberServerPreferences(ownerId, remote);
   const local = readUserPreferences();
   const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);

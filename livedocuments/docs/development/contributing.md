@@ -39,7 +39,7 @@ pnpm build
 
 CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
 
-Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
+Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `../packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
 
 ### Security alerts and `pnpm.overrides`
 
@@ -55,9 +55,9 @@ Drop an entry once an upstream release makes it redundant.
 
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.livedocuments.app](https://staging.livedocuments.app), a complete copy of the
-platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
-presses anything. Within a few minutes your change is running somewhere public, and any
-D1 migration in it has been applied to a real remote database.
+platform with its own Durable Objects and liveworkspace's staging index ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
+presses anything. Within a few minutes your change is running somewhere public, against
+real remote Workers and Durable Objects.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.
@@ -78,17 +78,17 @@ Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go 
 TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
 - **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
-- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@livedocuments/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
+- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveworkspace/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
 The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livedocuments/api gen:openapi` and its drift test.
 
-`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `livedocumentsNextConfig()` from `@livedocuments/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
+`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 
 ## Tests
 
-Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@livedocuments/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
+Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@liveworkspace/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
 
 `pnpm install` installs a pre-push hook (`.githooks/pre-push`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
 
@@ -113,12 +113,6 @@ The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so 
 ```sh
 pnpm --filter @livedocuments/editor build:signed-in
 pnpm --filter @livedocuments/editor test:e2e:signed-in
-```
-
-The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3317`):
-
-```sh
-pnpm --filter @livedocuments/editor test:e2e:armed
 ```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3302` is already taken (a second checkout, a worktree):
@@ -151,7 +145,7 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 - **Database access goes through the api worker**, never from the browser.
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
-- **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `livedocumentsNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and `packages/next-config/apps-use-shared.test.js` lists the app.
+- **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveworkspaceNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and the monorepo's `packages/next-config/apps-use-shared.test.js` finds the app and holds it to that.
 - **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@livedocuments/ui`, and only for markup our own escaping builders made, and nothing parses with `DOMParser`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
 
 ## Reporting issues

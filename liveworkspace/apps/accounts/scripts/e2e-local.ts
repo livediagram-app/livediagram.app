@@ -70,7 +70,12 @@ const register = await fetch(`${ACCOUNTS}/api/auth/internal/clients`, {
     'content-type': 'application/json',
     authorization: `Bearer ${process.env.ADMIN_TOKEN ?? 'local-admin-token'}`,
   },
-  body: JSON.stringify({ name: 'e2e', redirectUris: [REDIRECT], resource: RESOURCE }),
+  body: JSON.stringify({
+    name: 'e2e',
+    redirectUris: [REDIRECT],
+    resource: RESOURCE,
+    app: 'liveplanner.app',
+  }),
 });
 const client = (await register.json()) as { client_id: string; client_secret: string };
 assert(register.ok && client.client_id && client.client_secret, 'registered a client');
@@ -372,7 +377,12 @@ const otherRegister = await fetch(`${ACCOUNTS}/api/auth/internal/clients`, {
     'content-type': 'application/json',
     authorization: `Bearer ${process.env.ADMIN_TOKEN ?? 'local-admin-token'}`,
   },
-  body: JSON.stringify({ name: 'e2e other', redirectUris: [REDIRECT], resource: RESOURCE }),
+  body: JSON.stringify({
+    name: 'e2e other',
+    redirectUris: [REDIRECT],
+    resource: RESOURCE,
+    app: 'livediagram.app',
+  }),
 });
 const other = (await otherRegister.json()) as { client_id: string; client_secret: string };
 assert(

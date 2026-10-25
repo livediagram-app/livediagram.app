@@ -12,7 +12,7 @@ import {
   type TableElement,
   plural,
 } from '@livedesign/design';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {
   TableAxisMenuPortal,
@@ -28,7 +28,7 @@ import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useTableAnimation } from '@/components/canvas/useTableAnimation';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned
 // size, `minmax(0, 1fr)` for the rest, so unpinned tracks share the

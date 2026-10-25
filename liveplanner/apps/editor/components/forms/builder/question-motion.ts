@@ -2,7 +2,7 @@
 // question list, the leave a deleted question plays before it goes, and the grow a question plays as it opens for
 // editing or closes again. Reduced motion plays nothing.
 import type { FlipListOptions } from '@/hooks/ui/useFlipList';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // The leave's length (forms.css .form-q-leave), and a little over it in case its end never fires (a hidden tab).
 const LEAVE_MS = 160;

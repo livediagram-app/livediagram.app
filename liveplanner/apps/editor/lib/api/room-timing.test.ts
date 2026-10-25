@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PROJECT_TRASHED_CLOSE } from '@liveplanner/api-schema';
-import type { TimingTrack } from '@liveplanner/telemetry-client';
+import type { TimingTrack } from '@liveworkspace/telemetry-client';
 import { resetTimingForTests, setTimingTrack } from '../timing';
 import { connectRoom } from './room';
 

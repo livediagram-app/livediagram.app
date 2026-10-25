@@ -1,11 +1,11 @@
 'use client';
 
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livediagram/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Wheel + touch viewport gestures on the canvas:
 //   - Pinch-to-zoom on touch screens + trackpad pinch / Ctrl- or

@@ -15,7 +15,6 @@
 // is both invisible and costly, are pinned separately in
 // packages/api-schema's PALETTE_TELEMETRY_TYPES.
 export const EMITTED_EVENT_PAIRS: readonly string[] = [
-  'AI·Toggled',
   'AI·Used',
   'Action·Changed',
   'Action·Created',
@@ -24,12 +23,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox. 'Opened'
-  // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
-  // click, 'Loaded'/'Retry' after a failed read.
-  'Activity·Loaded',
-  'Activity·Opened',
-  'Activity·Selected',
   'Agent·Opened',
   'Canvas·Changed',
   'Canvas·Used',
@@ -50,6 +43,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
+  // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
+  // kind), 'Loaded' a failed read retried.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
@@ -57,8 +55,10 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Loaded',
   'Document·Moved',
   'Document·Redone',
+  // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
+  // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
   // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
   // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
@@ -76,16 +76,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Drive·Unlinked',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
   'Editor·Changed',
-  // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
-  'Explorer·Selected',
-  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a document, renamed,
-  // recoloured, deleted. Never its name.
-  'Explorer·Added',
-  'Explorer·Changed',
-  'Explorer·Created',
-  'Explorer·Deleted',
-  'Explorer·Removed',
-  'Explorer·Renamed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
@@ -112,6 +102,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // The hosted reader's budget was spent and the photo import failed over to
   // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
   'Error·Warning',
+  // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
+  'Explorer·Selected',
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
   // question is whether rooms use the role at all, never who held it.
   'Facilitator·Changed',
@@ -174,37 +166,20 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Unlocked',
   'Tab·Voted',
   'Team·Added',
-  'Team·Changed',
-  'Team·Created',
-  // The recipient turned an invitation down — the counterpart to Team·Joined,
-  // and distinct from Team·Removed·Invite (an Admin withdrawing one). docs/specs/013-workspace/teams.md.
-  'Team·Declined',
-  'Team·Deleted',
-  'Team·Joined',
   'Team·Moved',
   'Team·Removed',
-  'Team·Shared',
   'Template·Used',
   'Theme·Changed',
-  'Theme·Created',
-  'Theme·Deleted',
-  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
-  // — the first two measure the landing-page change, the third tells us
-  // whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (docs/specs/013-workspace/timeline.md §2.9).
+  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
+  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card, a Stack or a card's
+  // Menu), Removed (an Entry or a whole Stack taken off the reader's own Timeline).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
   'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
-  // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
-  'Token·Linked',
-  'Token·Removed',
-  // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
-  // document restored / deleted for good / a group emptied, typed by which Trash.
+  // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
   'Trash·Cleared',
   'Trash·Deleted',
   'Trash·Opened',

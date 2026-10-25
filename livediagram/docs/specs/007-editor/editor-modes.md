@@ -73,7 +73,7 @@ where it is and changes only how the next mark is made.
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
   - Workshop: "Run a live session: timers, votes, polls and reveals."
-- **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are
+- **One switch:** every start panel's rail carries the same chip and menu. The New Canvas wizard's mode cards are
   a choice of what to make, not a switch.
 - **One mode chosen:** Diagram, Draw or Workshop.
   Exactly one is active.
@@ -336,8 +336,6 @@ mode until it moved out into its own product, liveplanner (https://liveplanner.a
   ordinary Diagram tab (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and
   `opensIn` go, with its Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps
   the data it last read and loses its `chartSource`. The tab is saved without them the next time it is saved.
-- The Plan tables in D1 (items, sheets, sheet cells and refs, board statuses, form links, reports and reads) stay in
-  place, unread, so the drop can be undone; a later migration may drop them.
 - The help articles about Plan, boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
   liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.
 - Workshop's Q&A board and the diagram [card](../009-elements/card.md) are not Plan, and stay.
@@ -392,17 +390,17 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
 - The template card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
-  Blank Whiteboard, Blank Session), one per mode, that lead Popular
+  Blank Whiteboard, Blank Workshop), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.
 - **Workshop** is the mode for running a session ([Workshop mode](../012-collaboration/workshop-mode.md)), its name
-  everywhere: the switch, Settings, the New Document wizard, help, the marketing site and the agents' tools. Its
+  everywhere: the switch, Settings, the New Canvas wizard, help, the marketing site and the agents' tools. Its
   template start is **Start a Workshop** and its tour **The Workshop Tour**. It was called **Facilitate**. Every
   stored trace of the old name reads as Workshop: `opensIn: 'facilitate'`, a recorded creation intent, a create's
   intent, a `/new?mode=` link and a recently opened document's mode (`parseEditorMode`), an `opens-in:facilitate`
-  Explorer filter, and a default-folder key `mode:facilitate` (`parsePlacementDefaultKey`; clearing the default
-  clears both names). Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
-  `workshopTourSeen` (migration 0098 in D1, `upgradeLegacyPreferences` for any older copy), and telemetry history
+  Explorer filter, and a default-folder key `mode:facilitate`, which liveworkspace's index, now keeping default folders,
+  reads. Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
+  `workshopTourSeen` (`upgradeLegacyPreferences` upgrades any older copy), and telemetry history
   moves to the new event names and help slugs. The help articles moved to `/help/canvas/workshop-mode/`, the
   `/help/canvas/facilitate-mode/` addresses redirecting. The **facilitator** keeps its name.
 

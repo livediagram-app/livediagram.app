@@ -91,7 +91,7 @@ A new presence RoomOp, ephemeral exactly like `cursor` / `laser` / `viewport`:
 
 Never logged, never ordered (no `seq`), never replayed to a reconnecting client.
 A "look at this" that arrives after the moment has passed is noise, so a late
-joiner is not told about one, and it reaches D1 and undo
+joiner is not told about one, and it reaches the stored document and undo
 precisely never.
 
 It carries **no sender name**: the room envelope already identifies the sender,

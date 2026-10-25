@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PathElement, PathNode } from './element-types';
-import { isCompoundPath, pathContours, pathElementD, pathOfContours } from './path-element';
+import { isCompoundPath, pathContours, pathElementD } from './path-element';
 import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
 import { pathTouchesBrush } from './whiteboard-stroke';
@@ -64,18 +64,5 @@ describe('combined paths', () => {
     expect(elementValidationIssue({ ...ring, subpaths: [many, many, many] })?.field).toBe(
       'subpaths',
     );
-  });
-});
-
-describe('pathOfContours', () => {
-  it('wraps every contour in one box, each normalised to it', () => {
-    const line = (x: number) => [
-      { x, y: 0, mode: 'corner' as const },
-      { x: x + 10, y: 20, mode: 'corner' as const },
-    ];
-    const p = pathOfContours({ id: 'p', type: 'path', closed: false }, [line(0), line(90)]);
-    expect(p).toMatchObject({ x: 0, y: 0, width: 100, height: 20 });
-    expect(p.nodes[1]).toMatchObject({ nx: 0.1, ny: 1 });
-    expect(p.subpaths![0]![0]).toMatchObject({ nx: 0.9, ny: 0 });
   });
 });

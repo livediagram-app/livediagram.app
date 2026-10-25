@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
   chairSeatFill,
   FURNITURE_ART,

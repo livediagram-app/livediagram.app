@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 import type { Command } from 'prosemirror-state';
 import type { Node as PMNode } from 'prosemirror-model';
 import type { ArticleSelectionState } from './article-commands';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Where a zone is moved to: the block boundary nearest a canvas point, or one block up or down.
 export type ZoneMoveTo = { x: number; y: number } | { by: -1 | 1 };

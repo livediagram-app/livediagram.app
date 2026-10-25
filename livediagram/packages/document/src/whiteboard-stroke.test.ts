@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
 import { freehandPressures } from './freehand-points';
-import { STROKE_POINT_MAX_ERROR, STROKE_PRESSURE_MAX_ERROR } from './stroke-points';
+import {
+  STROKE_POINT_MAX_ERROR,
+  STROKE_PRESSURE_MAX_ERROR,
+} from '@liveworkspace/model-core/stroke-points';
 import type { FreehandElement } from './index';
 import {
   eraseStrokePart,

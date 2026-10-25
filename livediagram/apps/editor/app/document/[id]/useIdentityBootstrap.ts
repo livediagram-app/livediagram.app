@@ -10,26 +10,24 @@ import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
 import type { CommunitySession } from './editor-realtime';
 import {
-  apiListShareLinks,
   apiLoadDocument,
   apiLoadShared,
   getSessionSharePassword,
   readCachedSharePassword,
   setSessionSharePassword,
   writeCachedSharePassword,
-  type ShareLink,
-  type SharedWithItem,
   type ShareRole,
 } from '@/lib/api-client';
 import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveParticipant } from './resolve-participant';
 import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
-import { isDocumentTrashedError } from '@/lib/document-trashed';
+import { isDocumentTrashedError, isTrashedInIndex } from '@/lib/document-trashed';
+import { documentGrant } from '@/lib/api/document-grants';
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
@@ -51,7 +49,7 @@ function guardRun<T extends object>(fns: T, live: () => boolean): T {
   });
 }
 
-// One-shot identity + document hydration (Clerk gate -> guest id ->
+// One-shot identity + document hydration (auth gate -> guest id ->
 // participant -> document/share/password resolution -> tab seeding),
 // lifted out of editor-page.tsx verbatim. The most entangled effect in
 // the page: it reads/writes ~25 state slices, so the setters + the
@@ -62,8 +60,8 @@ export function useIdentityBootstrap(opts: {
   authLoaded: boolean;
   passwordRetry: number;
   hydrated: boolean;
-  clerkUserId: string | null | undefined;
-  clerkDisplayName: string | null | undefined;
+  accountUserId: string | null | undefined;
+  accountDisplayName: string | null | undefined;
   // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
   embed: boolean;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
@@ -71,8 +69,6 @@ export function useIdentityBootstrap(opts: {
   workbench: WorkbenchDocumentSession | null;
   activeId: string;
   selfParticipant: Participant;
-  refreshDocumentList: (ownerId: string) => void;
-  refreshSharedList: (ownerId: string) => void;
   resetTabs: Dispatch<SetStateAction<Tab[]>>;
   refs: {
     lastPersistedSelfRef: MutableRefObject<{ name: string; color: string } | null>;
@@ -110,9 +106,6 @@ export function useIdentityBootstrap(opts: {
     setSessionCommunity: SetState<CommunitySession | null>;
     // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
     setSessionTabScope: (scope: string | null) => void;
-    setSharedDocuments: SetState<SharedWithItem[]>;
-    setShareLinks: SetState<ShareLink[]>;
-    setSharePasswordSet: SetState<boolean>;
     setSharePasswordGate: SetState<{ invalid: boolean } | null>;
     setIdentityPromptOpen: SetState<boolean>;
   };
@@ -121,8 +114,8 @@ export function useIdentityBootstrap(opts: {
     authLoaded,
     passwordRetry,
     hydrated,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     embed,
     workbench,
     activeId,
@@ -146,21 +139,17 @@ export function useIdentityBootstrap(opts: {
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
     if (hydrated) return;
-    // Wait for Clerk to determine the auth state before bootstrapping.
-    // Otherwise a signed-in user lands here with `clerkUserId === null`
+    // Wait for the session to determine the auth state before bootstrapping.
+    // Otherwise a signed-in user lands here with `accountUserId === null`
     // briefly, we mint a guest id, and the participant record + every
     // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded && !early) return;
-    // A later run (auth settling twice: Clerk answering after the guest timeout, then a guest migration) supersedes
+    // A later run (auth settling twice: sign-in answering after the guest timeout, then a guest migration) supersedes
     // this one: a superseded run's writes are dropped, so a stale guest-identity load never overwrites the newer one.
     const generation = ++runRef.current;
     const live = () => runRef.current === generation;
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
-    const { refreshDocumentList, refreshSharedList } = guardRun(
-      { refreshDocumentList: opts.refreshDocumentList, refreshSharedList: opts.refreshSharedList },
-      live,
-    );
     const {
       setActiveId,
       setDocumentId,
@@ -187,9 +176,6 @@ export function useIdentityBootstrap(opts: {
       setSessionShareCode,
       setSessionCommunity,
       setSessionTabScope,
-      setSharedDocuments,
-      setShareLinks,
-      setSharePasswordSet,
       setSharePasswordGate,
       setIdentityPromptOpen,
     } = guardRun(set, live);
@@ -225,7 +211,7 @@ export function useIdentityBootstrap(opts: {
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
-    if (!early) trackDailyReturn(!!clerkUserId);
+    if (!early) trackDailyReturn(!!accountUserId);
     // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
     // the load-error screen (after one self-healing reload per tab), and a load that lands after it
     // replaces that screen with the editor.
@@ -349,8 +335,8 @@ export function useIdentityBootstrap(opts: {
       } else {
         // Two ways in (docs/specs/014-identity/auth-and-guest-access.md): see resolve-participant.ts.
         self = await resolveParticipant({
-          clerkUserId,
-          clerkDisplayName,
+          accountUserId,
+          accountDisplayName,
           onParticipantStep: () => setLoadStep('participant'),
         });
         // The document-write key (docs/specs/012-collaboration/participant-responses.md) is stamped onto the LOCAL
@@ -363,26 +349,12 @@ export function useIdentityBootstrap(opts: {
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
 
-      // The NotFound / load-error pages render the Explorer panel behind
-      // the status card so the user can still navigate to their other
-      // documents — which only works if those early-return paths fetch the
-      // Explorer's lists too. Called on each of them below; the success
-      // path keeps its own calls at the end of this effect (AFTER the
-      // share-visit registration, so refreshSharedList sees the new row).
-      const seedExplorerLists = () => {
-        // An early open's lists wait for the real participant (settleEarlyIdentity).
-        if (early) return;
-        refreshDocumentList(self.id);
-        refreshSharedList(self.id);
-      };
-
       // An address that names no document and carries no share link (docs/specs/007-editor/new-document-route.md
       // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
       // mistyped or retired page opened the New Document wizard with no word of what went wrong.
       if (!id && !shareCodeParam) {
         debugLog('[load] not an editor address, showing not found');
         setDocumentNotFound(true);
-        seedExplorerLists();
         setHydrated(true);
         setLoadingDocument(false);
         setNameConfirmed(hasConfirmedName());
@@ -402,10 +374,7 @@ export function useIdentityBootstrap(opts: {
         // rejects the cached value we'll clear the entry below.
         const cachedPassword = readCachedSharePassword(shareCodeParam);
         if (cachedPassword) setSessionSharePassword(cachedPassword);
-        // Pass the visitor's owner id so the api worker can record
-        // their visit into shared_with — without it the server can't
-        // identify the visitor and the "Shared with you" list stays
-        // empty forever.
+        // The visitor's Bearer rides the resolve, so the index records their visit (their Shared With Me).
         setLoadStep('share');
         let resolution;
         try {
@@ -418,7 +387,6 @@ export function useIdentityBootstrap(opts: {
           // visitor sees that it was deleted.
           if (isDocumentTrashedError(err)) setDocumentTrashed(true);
           else setLoadError(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingDocument(false);
           setNameConfirmed(hasConfirmedName());
@@ -432,7 +400,6 @@ export function useIdentityBootstrap(opts: {
           // silent blank canvas (which used to read as "the
           // document loaded but is empty").
           setDocumentNotFound(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingDocument(false);
           setNameConfirmed(hasConfirmedName());
@@ -506,37 +473,11 @@ export function useIdentityBootstrap(opts: {
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
           // the "you're joining X's document" context; the name input
-          // is locked downstream when they have a Clerk identity so
+          // is locked downstream when they have an account identity so
           // they can't pretend to be someone else.
           const isOwnerVisit = session.isOwner;
           if (!isOwnerVisit && !viaCommunity && !hasConfirmedName()) {
             setIdentityPromptOpen(true);
-          }
-          // Optimistically add the current document to the shared-with
-          // list so it appears in the Explorer immediately, before the
-          // refreshSharedList network round-trip completes. The server
-          // fetch will replace this with the full list; deduplicate so
-          // returning visitors don't see a duplicate row.
-          if (!isOwnerVisit && !viaCommunity) {
-            setSharedDocuments((prev) =>
-              prev.some((d) => d.id === fetched.id)
-                ? prev
-                : [
-                    {
-                      id: fetched.id,
-                      name: fetched.name,
-                      savedAt: fetched.savedAt,
-                      role,
-                      shareCode: shareCodeParam,
-                      tabId: scopeTabId,
-                      ownerName: fetched.ownerName ?? null,
-                      ownerColor: fetched.ownerColor ?? null,
-                      // Not known from the tab summaries: ask for the thumbnail, as the server list will say.
-                      empty: false,
-                    },
-                    ...prev,
-                  ],
-            );
           }
           // Document·Joined is counted by the api worker when it resolves
           // the share code, once per (visitor, document) (docs/specs/017-telemetry/telemetry.md). Emitting
@@ -556,7 +497,6 @@ export function useIdentityBootstrap(opts: {
           setDocumentId(id);
           if (isDocumentTrashedError(err)) setDocumentTrashed(true);
           else setLoadError(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingDocument(false);
           setNameConfirmed(hasConfirmedName());
@@ -566,10 +506,11 @@ export function useIdentityBootstrap(opts: {
           // URL had a ?d=<id> but the API didn't return anything for
           // us — either the document doesn't exist or we don't own it.
           // Surface a NotFound page instead of dropping the user into
-          // the new-document welcome flow.
+          // the new-document welcome flow. A canvas in the Trash has no grant, so the api cannot tell it from a
+          // missing one; the index can (its item outlives the trashing), and then it gets the deleted card.
           setDocumentId(id);
-          setDocumentNotFound(true);
-          seedExplorerLists();
+          if (await isTrashedInIndex(id)) setDocumentTrashed(true);
+          else setDocumentNotFound(true);
           setHydrated(true);
           setLoadingDocument(false);
           setNameConfirmed(hasConfirmedName());
@@ -589,38 +530,22 @@ export function useIdentityBootstrap(opts: {
         // Every server-stored document has a room, personal ones included (docs/specs/024-agents/
         // agent-changesets.md "Rooms for personal documents"); an offline one has none.
         setDocumentServerStored(!offline);
-        setIsOwner(offline || fetched.ownerId === self.id);
+        // The owner's chrome goes to whoever holds edit on the canvas without a link: its owner, or a member of the
+        // team that owns it. The index decides that, so a guest's canvases stay theirs once the guest becomes an
+        // account.
+        setIsOwner(offline || (await documentGrant(fetched.id))?.level === 'edit');
         setSessionRole('edit');
-        // A team document opened here was let in as owner or joined member, and every joined
-        // member may share it (mayShareDocument), so they get the list too.
-        if (offline || fetched.ownerId === self.id || fetched.teamId) {
-          // Prefetch the share-link list so the dialog opens
-          // populated — cloud only; an offline document has nothing
-          // on the server to share.
-          if (!offline) {
-            apiListShareLinks(self.id, fetched.id)
-              .then(({ links, passwordSet }) => {
-                setShareLinks(links);
-                setSharePasswordSet(passwordSet);
-              })
-              .catch(() => {});
-          }
-        }
         // Owner branch (`?d=<id>` / `/document/<id>`): a signed-in
         // user is by definition the owner here and their identity is
         // settled — skip the identity prompt entirely. Guests fall
         // back to the legacy localStorage gate so they still get the
         // one-time naming nudge.
-        if (!early && !clerkUserId && !hasConfirmedName()) {
+        if (!early && !accountUserId && !hasConfirmedName()) {
           setIdentityPromptOpen(true);
         }
         setDocumentId(id);
       }
       setNameConfirmed(hasConfirmedName());
-      seedExplorerLists();
-      // Folder list is auto-loaded by the useFolders hook once
-      // selfParticipant.id transitions off the placeholder — no
-      // manual fetch needed here.
       setHydrated(true);
       setLoadingDocument(false);
       // A load that outlived its watchdog replaces the load-error screen it put up.
@@ -644,18 +569,16 @@ export function useIdentityBootstrap(opts: {
     debugLog('[load] early open of a document in This Browser');
     bootstrap(true);
   });
-  // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,
+  // Once auth answers after an early open: who is reading and the guest naming nudge,
   // all in the background of a document already on screen.
   const settleEarlyIdentity = useEffectEvent(() => {
     void (async () => {
-      const self = await resolveParticipant({ clerkUserId, clerkDisplayName });
+      const self = await resolveParticipant({ accountUserId, accountDisplayName });
       opts.set.setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
       lastPersistedSelfRef.current = { name: self.name, color: self.color };
-      trackDailyReturn(!!clerkUserId);
-      if (!clerkUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
+      trackDailyReturn(!!accountUserId);
+      if (!accountUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
       opts.set.setNameConfirmed(hasConfirmedName());
-      opts.refreshDocumentList(self.id);
-      opts.refreshSharedList(self.id);
     })().catch((err: unknown) => console.warn('[load] resolving the reader failed', err));
   });
   useLayoutEffect(() => {

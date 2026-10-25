@@ -20,22 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { sendEmail } from './client';
-import {
-  type RenderedEmail,
-  accountDeletedEmail,
-  activationEmail,
-  commentNotificationEmail,
-  projectJoinedEmail,
-  firstShareEmail,
-  inviteResponseEmail,
-  milestoneEmail,
-  teamInviteEmail,
-  tokenExpiringEmail,
-  week1Email,
-  week2Email,
-  welcomeEmail,
-  winBackEmail,
-} from './templates';
+import { type RenderedEmail, accountDeletedEmail, commentNotificationEmail } from './templates';
 
 function devVars(): Record<string, string> {
   try {
@@ -70,23 +55,10 @@ const env = {
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
   const cases: Record<string, RenderedEmail> = {
-    // Onboarding series
-    welcome: welcomeEmail(env),
-    'week1-explorer': week1Email(env),
-    'week2-teams': week2Email(env),
-    activation: activationEmail(env),
-    'win-back': winBackEmail(env),
-    milestone: milestoneEmail(env, 10),
-    'first-share': firstShareEmail(env),
-    // Transactional
-    'team-invite': teamInviteEmail(env, 'Acme Inc'),
+    // Transactional (the onboarding series is the liveworkspace accounts Worker's)
     'account-deleted': accountDeletedEmail(env),
-    'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
-    'project-joined': projectJoinedEmail(env, 'Q3 Roadmap', 'Anna'),
-    'invite-accepted': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', true),
-    'invite-declined': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', false),
   };
   for (const [name, msg] of Object.entries(cases)) {
     it(`sends ${name} to ${TO}`, async () => {

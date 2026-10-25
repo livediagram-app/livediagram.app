@@ -3,7 +3,7 @@
 // long stroke is kept rather than lost on release. Pure.
 
 import { simplifyPolylineSurvival } from './polyline';
-import { MAX_FREEHAND_POINTS } from './stroke-points';
+import { MAX_FREEHAND_POINTS } from '@liveworkspace/model-core/stroke-points';
 
 type Point = { x: number; y: number };
 

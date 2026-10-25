@@ -1,4 +1,3 @@
-import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@livedocuments/document';
 import type { EmbedProvider } from '@livedocuments/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
@@ -82,9 +81,6 @@ export function tileHandler(
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
-    case 'open':
-      // Off the strip (which opens its popover itself) an opener moves the palette to its category.
-      return () => requestPaletteCategory(a.category);
   }
 }
 

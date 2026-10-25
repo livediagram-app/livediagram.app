@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { dressFlowchartConnector, dressFlowchartStep } from '@/lib/flowchart-dress';
 import { lockedElementIds } from '@/lib/tab-cleanup';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { HandoffActions } from '@/lib/mind-handoff';
 import {
   labelled,
@@ -22,7 +22,7 @@ import {
   type GrowthHookOpts,
 } from './useGrowthLanding';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Flowchart growth in the editor (docs/specs/009-elements/flowchart.md). Tab adds the next step,
 // Enter a parallel one, from the keyboard (the label editor or a selected step), the toolbar or the

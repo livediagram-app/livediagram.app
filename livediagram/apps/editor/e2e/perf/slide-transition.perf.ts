@@ -1,6 +1,13 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { firefox, webkit, type Browser, type CDPSession, type Page } from '@playwright/test';
-import { expect, guestSigFor, mintSignedGuest, ownerHeaders, test } from '../fixtures';
+import {
+  expect,
+  guestTokenFor,
+  mintGuest,
+  ownerHeaders,
+  seedDocumentItem,
+  test,
+} from '../fixtures';
 import { benchmarkInPage, calibratedThrottle } from './calibrate';
 import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from './trace-tasks';
@@ -14,7 +21,6 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const VARIANT = process.env.SLIDE_VARIANT ?? 'current';
 const VIEW = { width: 1440, height: 900 };
 const CANVAS = '[data-canvas-a11y-root]';
@@ -61,15 +67,16 @@ async function seedDeck(page: Page, baseURL: string, owner: string, size: Size):
     tabId,
     elementIds: board.slice(i * per, (i + 1) * per).map((el) => el.id),
   })).filter((s) => s.elementIds.length > 0);
-  const res = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
-    data: {
+  const res = await seedDocumentItem(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
+    {
       id,
       name: `Slide probe (${size})`,
       tabs: [{ id: tabId, name: 'Slides', elements: board }],
       presentation: JSON.stringify({ decks: [{ slides }] }),
     },
-  });
+  );
   expect(res.ok(), `seeding the ${size} deck`).toBe(true);
   return id;
 }
@@ -89,9 +96,8 @@ async function openDeck(
     baseURL: process.env.E2E_BASE_URL,
   });
   await ctx.addInitScript(
-    ({ o, sig, transition }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token, transition }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
       localStorage.setItem(
         'livediagram:v2:presentation-config',
@@ -110,7 +116,7 @@ async function openDeck(
       addEventListener('error', (e) => w.__errors.push(String(e.message)));
       addEventListener('unhandledrejection', (e) => w.__errors.push(String(e.reason)));
     },
-    { o: owner, sig: guestSigFor(owner), transition },
+    { token: guestTokenFor(owner), transition },
   );
   const page = await ctx.newPage();
   // Chromium only: the trace and the CPU throttle (throttle 0 is another engine, untraced).
@@ -221,7 +227,7 @@ test('slide transitions, measured', async ({ page, browser, baseURL }) => {
     await p.close();
   }
   const rate = FIXED_THROTTLE || calibratedThrottle(Math.min(...benches)).rate;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const decks = {
     small: await seedDeck(page, baseURL!, owner, 'small'),
     large: await seedDeck(page, baseURL!, owner, 'large'),
@@ -286,7 +292,7 @@ for (const engine of (process.env.SLIDE_ENGINES ?? '').split(',').filter(Boolean
   test(`slide moves land in ${engine}`, async ({ page, baseURL }) => {
     test.setTimeout(3 * 60_000);
     const launcher = engine === 'webkit' ? webkit : firefox;
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     const id = await seedDeck(page, baseURL!, owner, 'large');
     const other = await launcher.launch();
     const report: Record<string, unknown> = { variant: VARIANT, engine };
@@ -328,13 +334,12 @@ for (const engine of (process.env.SLIDE_ENGINES ?? '').split(',').filter(Boolean
 // Editing never starts a View Transition: only a slide move may (the canvas's boundary animates nothing else).
 test('editing starts no view transitions', async ({ page, browser, baseURL }) => {
   mkdirSync(OUT, { recursive: true });
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = await seedDeck(page, baseURL!, owner, 'small');
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark', baseURL });
   await ctx.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
       const w = window as unknown as { __vt: number };
       w.__vt = 0;
@@ -345,7 +350,7 @@ test('editing starts no view transitions', async ({ page, browser, baseURL }) =>
           return start.apply(this, args as never);
         } as typeof start;
     },
-    { o: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   const p = await ctx.newPage();
   await p.goto(`/document/${id}`);

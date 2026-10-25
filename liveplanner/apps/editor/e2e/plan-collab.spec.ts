@@ -3,9 +3,10 @@ import { defaultCatalogue, presetSetup } from '@liveplanner/items';
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  mintGuest,
+  planHeaders,
+  seedPlan,
   test,
 } from './fixtures';
 
@@ -23,19 +24,16 @@ async function openAs(
   owner: string | null,
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
-      if (o) {
-        localStorage.setItem('liveplanner:v2:self-id', o);
-        if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
-        localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-      }
+    ({ o }) => {
+      if (o) localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       localStorage.setItem(
         'liveplanner:user-preferences:v1',
         JSON.stringify({ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }),
       );
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -67,49 +65,45 @@ test('two people renaming different columns of one board both keep their rename'
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: {
-      id,
-      name: 'Board room',
-      // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
-      itemTypes: defaultCatalogue(),
-      tabs: [
-        {
-          id: tabId,
-          name: 'Board',
-          // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
-          kind: 'board',
-          elements: [
-            {
-              id: 'board',
-              type: 'shape',
-              shape: 'plan-board',
-              x: 100,
-              y: 100,
-              width: 1100,
-              height: 560,
-              planBoard: presetSetup('kanban'),
-            },
-          ],
-        },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Board room',
+    // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+    itemTypes: defaultCatalogue(),
+    tabs: [
+      {
+        id: tabId,
+        name: 'Board',
+        // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
+        kind: 'board',
+        elements: [
+          {
+            id: 'board',
+            type: 'shape',
+            shape: 'plan-board',
+            x: 100,
+            y: 100,
+            width: 1100,
+            height: 560,
+            planBoard: presetSetup('kanban'),
+          },
+        ],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
   const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
-    headers,
+    headers: await planHeaders(page.request, owner, id, { Origin: new URL(baseURL!).origin }),
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
   const a = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await a.locator(CANVAS).waitFor();
-  const b = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
+  const b = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
   await b.getByRole('button', { name: /^join$/i }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
@@ -150,41 +144,37 @@ test('someone who joins after a card was opened sees it held', async ({
 }) => {
   // Two browsers, a share-link join and a held card: more than the default 30 seconds on a slow runner.
   test.setTimeout(60_000);
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: {
-      id,
-      name: 'Held card',
-      // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
-      itemTypes: defaultCatalogue(),
-      tabs: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Board',
-          // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
-          kind: 'board',
-          elements: [
-            {
-              id: 'board',
-              type: 'shape',
-              shape: 'plan-board',
-              x: 100,
-              y: 100,
-              width: 1100,
-              height: 560,
-              planBoard: presetSetup('kanban'),
-            },
-          ],
-        },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Held card',
+    // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+    itemTypes: defaultCatalogue(),
+    tabs: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Board',
+        // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
+        kind: 'board',
+        elements: [
+          {
+            id: 'board',
+            type: 'shape',
+            shape: 'plan-board',
+            x: 100,
+            y: 100,
+            width: 1100,
+            height: 560,
+            planBoard: presetSetup('kanban'),
+          },
+        ],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
   const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
-    headers,
+    headers: await planHeaders(page.request, owner, id, { Origin: new URL(baseURL!).origin }),
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
@@ -204,7 +194,7 @@ test('someone who joins after a card was opened sees it held', async ({
   await expect(a.getByRole('dialog')).toBeVisible();
 
   // B joins late, and sees A's tag on that card without A doing anything more.
-  const b = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
+  const b = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
   await b.getByRole('button', { name: /^join$/i }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(b);

@@ -14,7 +14,7 @@ import {
   safeJson,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import {
   DEFAULT_PEN_CURSOR,
   PEN_CURSOR_VARIANTS,

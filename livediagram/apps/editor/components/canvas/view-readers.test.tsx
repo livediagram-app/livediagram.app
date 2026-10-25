@@ -5,7 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ViewZoomControls } from './view-readers';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/canvas/useViewportStore', () => ({ useViewportOf: () => 0.8 }));
+vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
+  useViewportOf: () => 0.8,
+}));
 
 afterEach(() => {
   cleanup();

@@ -1,87 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityCard, ActivityPlace } from '@liveplanner/api-schema';
-import { cardDeepLinkHref, collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
+import { parseCollabDeepLink } from './collab-deep-link';
 
-// Both halves of the element deep link (docs/specs/013-workspace/inbox.md §1): the Explorer
-// builds it, the editor reads it, and they share this module so the
-// parameter names cannot drift. The round trip is the contract.
+// The editor's half of the element deep link (docs/specs/013-workspace/inbox.md §1): the shared Explorer builds it,
+// the editor reads it back.
 
-const place: ActivityPlace = {
-  projectId: 'd 1',
-  projectName: 'Payments',
-  teamId: null,
-  via: 'own',
-  shareCode: null,
-  tabId: 'tab/1',
-  tabName: 'Flow',
-  elementId: 'el&1',
-  elementLabel: 'Checkout',
-};
-
-describe('collabDeepLinkHref', () => {
-  it('builds the owned-project form with an encoded fragment', () => {
-    expect(collabDeepLinkHref(place, 'action')).toBe(
-      '/project/d%201#t=tab%2F1&el=el%261&open=action',
-    );
-  });
-
-  it('uses the visitor URL for a project shared with the reader', () => {
-    expect(collabDeepLinkHref({ ...place, via: 'shared', shareCode: 'c/1' }, 'comments')).toBe(
-      '/project/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
-    );
-  });
-
-  it('never appends a share code to an owned or team project', () => {
-    expect(
-      collabDeepLinkHref({ ...place, via: 'team', shareCode: 'leak' }, 'action'),
-    ).not.toContain('?s=');
-  });
-
-  it('round-trips through the parser', () => {
-    const href = collabDeepLinkHref(place, 'comments');
-    const hash = href.slice(href.indexOf('#'));
-    expect(parseCollabDeepLink(hash)).toEqual({
+describe('parseCollabDeepLink', () => {
+  it('reads an encoded element link with its popover', () => {
+    expect(parseCollabDeepLink('#t=tab%2F1&el=el%261&open=comments')).toEqual({
       at: { tabId: 'tab/1', elementId: 'el&1' },
       open: 'comments',
       itemId: null,
     });
   });
-});
 
-describe('cardDeepLinkHref', () => {
-  const card: ActivityCard = {
-    projectId: 'd1',
-    projectName: 'Roadmap',
-    teamId: null,
-    via: 'own',
-    shareCode: null,
-    board: { tabId: 'tab/1', tabName: 'Plan', elementId: 'b1', title: 'Sprint' },
-    id: 'it&1',
-    key: 4,
-    type: 'task',
-    title: 'Write it',
-    status: 'todo',
-    updatedAt: 1,
-  };
-
-  it('lands on the card’s board and names the card, round-tripping', () => {
-    const href = cardDeepLinkHref(card);
-    expect(href).toBe('/project/d1#t=tab%2F1&el=b1&item=it%261');
-    expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
+  it('reads a card on its board, and a card no board shows', () => {
+    expect(parseCollabDeepLink('#t=tab%2F1&el=b1&item=it%261')).toEqual({
       at: { tabId: 'tab/1', elementId: 'b1' },
       open: null,
       itemId: 'it&1',
     });
-  });
-
-  it('names only the card when no board shows it, through the visitor URL when shared', () => {
-    const href = cardDeepLinkHref({ ...card, board: null, via: 'shared', shareCode: 'c1' });
-    expect(href).toBe('/project/d1?s=c1#item=it%261');
-    expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
-      at: null,
-      open: null,
-      itemId: 'it&1',
-    });
+    expect(parseCollabDeepLink('#item=it%261')).toEqual({ at: null, open: null, itemId: 'it&1' });
   });
 });
 

@@ -14,10 +14,10 @@ import {
   type TextElement,
 } from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { PreviewSliderRow, SliderRowAction } from '@/components/primitives/PreviewSliderRow';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { WordmarkPatch } from '@/lib/style-presets';
 
 const WEIGHTS: { value: FontWeight; label: string }[] = [

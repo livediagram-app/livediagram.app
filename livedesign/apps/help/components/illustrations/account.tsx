@@ -2,7 +2,7 @@
 // identity, and signing in and migrating guest work. Composed only from the shared primitives so the house style
 // holds.
 
-import { Scene, Shape, Arrow, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 /** A browser window holding a per-browser guest id that owns the designs it
  *  created, with no sign-in required. */

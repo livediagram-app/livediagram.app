@@ -63,7 +63,7 @@ type TechIconDef = {
 - **The heavy data loads async.** `tech-icons.ts` is the synchronous API
   surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
   the per-icon colour + glyph markup lives in
-  `packages/icons/src/tech-icon-catalog.ts` (the shared `@livedesign/icons`
+  `../packages/icons/src/tech-icon-catalog.ts` (the shared `@liveworkspace/icons`
   package) and is dynamic-imported (together with the line-art catalogue) by
   `apps/live/lib/icon-registry.ts`, keeping ~25 kB of source out of the
   editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId` —
@@ -145,7 +145,7 @@ and the glyph is white.
 **The glyph stroke is the chrome weight for the tile's rendered size**
 ([Iconography](../004-interface-design/iconography.md)): 1.25px on screen, 1px at
 12px or less, expressed in tile-box units by `techGlyphStrokeUnits(sizePx)`
-(`@livedesign/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
+(`@liveworkspace/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
 96px); in the palette it is the thumbnail size (18px category and strip tiles,
 22px picker tiles). The stroke scales with the tile, so canvas zoom, or a box too
 small for its preset, shrinks the mark as one picture, and the export draws the
@@ -157,7 +157,7 @@ whitespace around the mark, but the tile itself stays the same size — an
 architecture diagram's brand marks read as a uniform set of chips, not blobs
 that grow with their boxes. The size comes from an optional `iconSize` preset
 on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
-`ICON_SIZE_PX` in `packages/design/src/icon-size.ts`), defaulting to `md`
+`ICON_SIZE_PX` in `../packages/model-core/src/icon-size.ts`), defaulting to `md`
 (48 px); the tile clamps to the element box when the box is smaller than the
 preset. Layout: with a label the mark centres inside the band **opposite the
 caption's alignment**, so moving the text never stacks it over the mark. A
@@ -169,7 +169,7 @@ right-aligned caption flips it horizontally instead** — left caption → mark
 in the right half, right caption → left half — and the mark stays on the
 caption's row (top / middle / bottom) so the pair reads as one line. Without
 a label the mark centres in the whole box. `iconBandBounds` / `techIconMarkBounds`
-(`packages/design/src/icon-size.ts`) are the single source of this geometry;
+(`../packages/model-core/src/icon-size.ts`) are the single source of this geometry;
 the editor overlay's CSS bands (`iconBandClass`) mirror their numbers.
 **Line-art icons share the same inverse band**: the glyph keeps scaling with
 its box (no fixed pixel preset), but a captioned glyph scales into the band
@@ -181,7 +181,7 @@ The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same band geometry so a captioned icon exports exactly as drawn.
 
 **The caption is confined to its own band too** (`iconCaptionBand` in
-`packages/design/src/icon-size.ts`, mirrored by the editor's
+`../packages/model-core/src/icon-size.ts`, mirrored by the editor's
 `captionBandClass`). The caption used to align over the WHOLE element box
 while only the glyph moved bands, which broke several alignment combos: a
 centre/middle caption sat at 50% height — inside the glyph's bottom band, on
@@ -234,7 +234,7 @@ the mark and the element edge on its side, so the anchors on that side push
 out to the element edge — a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
-(their glyph scales with the box). The design package reads `isTechIconId` from `@livedesign/icons`
+(their glyph scales with the box). The design package reads `isTechIconId` from `@liveworkspace/icons`
 (tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
 
 **The format painter carries the icon fields.** Painting from one icon to
@@ -263,7 +263,7 @@ fallback (which remains the output for an unknown id or a resolver-less
 caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
 registry (`resolveIconArtLoaded`, awaited via `ensureIconCatalogs` in the
 Export dialog); the api worker's live image / Explorer thumbnail and the MCP
-worker's inline render resolve via `@livedesign/icons/resolve` (a static
+worker's inline render resolve via `@liveworkspace/icons/resolve` (a static
 import of the catalogue data).
 
 ## Telemetry

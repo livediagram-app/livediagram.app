@@ -1,19 +1,27 @@
 'use client';
 
-// Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see lib/clerk-config.ts): a
-// signed-in session without Clerk, for the opt-in Google Drive e2e
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing"). The test
-// mints a JWT against a JWKS it serves itself, which the api worker verifies
-// exactly as it verifies Clerk's, and puts it in localStorage; this publishes
-// it as the session. Without one the page is a settled guest.
+// Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see lib/auth-config.ts): a
+// signed-in session without the accounts Worker, for the signed-in e2e specs
+// (docs/specs/003-system-architecture/e2e-smoke.md) and the opt-in Google Drive e2e
+// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing"). The e2e
+// stack mints an access token against a JWKS it serves itself, which the api
+// worker verifies exactly as it verifies the accounts Worker's; the test puts it
+// in localStorage and this publishes it as the session. Without one the page is
+// a settled guest.
 
 import { useEffect } from 'react';
-import { readLocalStorageSafe, safeJson } from '@/lib/local-storage-safe';
+import { readLocalStorageSafe, safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
 export const E2E_SESSION_KEY = 'livediagram:e2e:session';
 
-type E2ESession = { token: string; userId: string; email: string; firstName: string };
+type E2ESession = {
+  token: string;
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName?: string | null;
+};
 
 function readSession(): E2ESession | null {
   const raw = readLocalStorageSafe(E2E_SESSION_KEY);
@@ -34,12 +42,11 @@ export function E2EAuthBridge({ onState }: { onState: (state: DeferredAuthState)
       user: {
         id: session.userId,
         firstName: session.firstName,
-        lastName: null,
-        fullName: session.firstName,
+        lastName: session.lastName ?? null,
+        fullName: [session.firstName, session.lastName].filter(Boolean).join(' '),
         username: null,
         email: session.email,
         createdAt: null,
-        pictureUrl: null,
       },
       getToken: async () => readSession()?.token ?? null,
       signOut: async () => {

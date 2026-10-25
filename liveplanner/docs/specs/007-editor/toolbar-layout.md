@@ -171,7 +171,10 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
 the top-left corner of the canvas toggles the real Explorer open as a
-popover hanging under it, and closed again. The popover hangs from the
+popover hanging under it, and closed again. It starts closed on every page and is never
+reopened from a remembered state; pressing the button is the only thing that opens it. A press
+outside, Esc, the button again or opening an item closes it. The status screens (deleted,
+couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
@@ -214,7 +217,7 @@ better layout. Its parts went with it:
 
 A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one held sideways:
 844 × 390 was laid out as a desktop, its panels covering the 286px canvas).
-`PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
+`PHONE_MEDIA_QUERY` (`../packages/workbench/src/lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
 button always was. It gets the same chrome as a desktop ([Editor app](editor-app.md)):
@@ -257,8 +260,7 @@ their bottom-row buttons. What changes to fit the width:
   (timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
-  mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
-  the format painter) and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
+  mode banners: a tile in hand, "Select the board column you want this card to appear in") and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
   under it as pills:
   - One shared look, the **palette tray**: the strip's own surface (white, hairline border, dark in dark mode),
     no top border, so it joins the strip's bottom edge with no gap; its bottom corners round as the strip's do,

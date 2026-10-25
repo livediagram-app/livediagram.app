@@ -1,5 +1,5 @@
 import type { Element, Tab } from '@livedesign/design';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { track } from '@/lib/telemetry';
 
 type SetState<T> = (value: T) => void;

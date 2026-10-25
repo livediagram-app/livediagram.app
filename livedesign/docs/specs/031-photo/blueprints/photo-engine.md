@@ -63,8 +63,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
 - **`packages/api-schema`**: the `photo` room op in `room-messages.ts` (`MUTATION_OP_KINDS`), `photo-frames.ts`
   (`tabPhotoOps(before, after)`), the blob-batch framing (`photo-blob-batch.ts`: `encodeBlobBatch`,
   `decodeBlobBatch`), and the route DTOs.
-- **`apps/api`**: the `photo_blobs` and `photo_blob_refs` tables in the baseline migration; `src/db/photo-blobs.ts`; `src/routes/photo-blob-routes.ts`
-  (dispatched from `design-subresource-routes.ts`); `src/photo-sweep.ts` (from `scheduled()`); copy support in
+- **`apps/api`**: the `photo_blob_refs` table in the design's schema (`design-schema.ts`); `src/db/photo-blobs.ts`; `src/routes/photo-blob-routes.ts`
+  (dispatched from `design-subresource-routes.ts`); the design's own daily upkeep, which drops unnamed photo blobs (`src/design-room/design-room.ts`); copy support in
   the design copy path; `PHOTO_MAX_BYTES_PER_TAB` in `types.ts`, `.env.example`, `hosted-vars.json`; the
   thumbnail renderer's photo preview embed.
 - **`apps/live`**:
@@ -223,7 +223,7 @@ type Photo = {
 
 - WebGL 2, one context per photo surface (`apps/live/lib/photo-editor/gl/gl-compositor.ts`): an RGBA8 texture per (layer, tile),
   mipmapped (`LINEAR_MIPMAP_LINEAR` down, `NEAREST` up from `HARD_EDGES_FROM` screen px a photo px, `LINEAR`
-  under it), uploaded again only when its tile changed; the least recently drawn go past `GPU_TILE_BYTES_*`.
+  under it), uploaded again only when its tile changed; the least recently drawn go past `GPU_TILE_BYTES_DESKTOP`, or `GPU_TILE_BYTES_COARSE` on a coarse pointer (`apps/live/lib/photo-editor/coarse-pointer.ts`).
 - Each frame: per layer in stack order, its visible tiles drawn into a layer buffer (with mask and clip), then a
   full-screen blend pass onto the accumulator with the blend mode's GLSL (`apps/live/lib/photo-editor/gl/shaders.ts`, the same formulas as
   `blend.ts`, `HARD_MIX_GIVE` included), opacity and dissolve noise; adjustment layers run on the accumulator
@@ -254,7 +254,7 @@ params) }`; `FILTERS[id] = { id, name, category, params: ParamSpec[], margin(par
 
 ## Data and persistence
 
-- `Tab.photos` is stored in the tab body (D1 `tabs.data`). Each layer's tile maps are small: 610 tile keys at most.
+- `Tab.photos` is stored in the tab body (`tabs.data`, in the design's own SQLite). Each layer's tile maps are small: 610 tile keys at most.
 - `photo_blobs (id TEXT PRIMARY KEY, content_type TEXT NOT NULL, byte_size INTEGER NOT NULL, created_at INTEGER
 NOT NULL)`; `photo_blob_refs (tab_id TEXT NOT NULL, blob_id TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY
 KEY (tab_id, blob_id)) WITHOUT ROWID`; indexes `photo_blob_refs_blob_idx (blob_id)` and `photo_blob_refs_created_idx
@@ -288,9 +288,7 @@ KEY (tab_id, blob_id)) WITHOUT ROWID`; indexes `photo_blob_refs_blob_idx (blob_i
 - Bytes are sniffed by magic number; no SVG or other active content is accepted; served with
   `X-Content-Type-Options: nosniff`.
 - The batch decoder bounds every length against the body before reading.
-- EXIF: a source picture is re-encoded in the browser before upload (decoding drops metadata), except a JPEG source
-  passes through the same APP-segment strip as gallery uploads (`stripJpegMetadata`, shared from the api into
-  `@livedesign/api-schema` if needed, else re-encoded).
+- EXIF: a source picture, a JPEG included, is re-encoded in the browser before upload (decoding drops metadata).
 
 ## Performance and limits
 
@@ -344,7 +342,7 @@ Log fingerprints (`debugLog`, `console.info`, unless stated): `[photo] session-o
 tiles=<n>`, `[photo] commit failed` (warn), `[photo] upload-batch n=<n> bytes=<b>`, `[photo] upload-failed`
 (warn), `[photo] tile-missing` (warn), `[photo] preview-missing` (warn), `[photo] gl-lost` (warn),
 `[photo] gl-unavailable`, `[photo] remote-tiles-held`, `[photo] frame-wait`, `[photo] framed`, `[photo] clipboard` (warn), `[photo-blobs] refused
-<reason>` (api), `photo sweep: removed <n> refs, deleted <m> blobs` (api), `photo sweep: R2 delete failed` (api,
+<reason>` (api), `[photo-blobs] sweep` with its counts (api), `[photo-blobs] release failed` (api,
 error).
 
 ## Testing

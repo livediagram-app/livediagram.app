@@ -127,7 +127,7 @@ export const CANVAS_TOOLS: {
   needsContent?: boolean;
   // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
-  // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
+  // Edits the tab's elements, so it goes on a locked tab, as in the dropdown.
   editsElements?: boolean;
   desktopOnly?: boolean;
 }[] = [

@@ -6,7 +6,9 @@ import { AddCardPopover } from './AddCardPopover';
 
 // docs/specs/026-plan/plan-board.md "Working on a board": Add a card closes on a press anywhere else (the canvas
 // cancels its own pointerdown, so no mousedown ever comes) and on a wheel or trackpad pan outside it.
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 afterEach(cleanup);
 
 function menu() {

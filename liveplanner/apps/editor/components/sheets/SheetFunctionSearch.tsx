@@ -6,8 +6,8 @@
 import { useMemo, useState } from 'react';
 import { NoMatches, TextInput } from '@liveplanner/ui';
 import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@liveplanner/sheets';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
-import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 import { FUNCTION_FAMILY_ICONS } from './sheet-icons';
 

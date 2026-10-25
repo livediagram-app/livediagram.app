@@ -14,7 +14,7 @@ import {
   scalarOf,
 } from '@liveplanner/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useSheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 

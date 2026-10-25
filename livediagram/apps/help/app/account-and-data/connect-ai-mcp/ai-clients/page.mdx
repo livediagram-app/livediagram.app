@@ -35,14 +35,14 @@ The first time your tool connects, it opens a livediagram page in your browser:
   access will be sent to. Only continue if you recognise that site.
 </Step>
 <Step n={3}>
-  Switch on **Read-only access** if the tool should only find and read your documents, never change
+  Switch on **Read-only access** if the tool should only find and read your canvases, never change
   them.
 </Step>
 <Step n={4}>
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.
 </Step>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke from **Settings**, **Account**, **API Tokens** to disconnect it. It lasts six months; reconnect the tool after that.
+Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens) to disconnect it. It lasts six months; reconnect the tool after that.
 
 ## Claude
 
@@ -68,7 +68,7 @@ If you'd rather use an API token than sign in through the browser, pass it as a 
 
 ```bash
 claude mcp add --transport http livediagram https://mcp.livediagram.app/mcp \
-  --header "Authorization: Bearer lvd_..."
+  --header "Authorization: Bearer lwt_..."
 ```
 
 For coding agents working in a repository, the [livediagram CLI](/help/developers/cli/) is an alternative to the MCP server: both use the same API and the same kind of token.
@@ -90,7 +90,7 @@ Add livediagram to Cursor's MCP configuration: `~/.cursor/mcp.json` for every pr
 Cursor then lists livediagram in its MCP settings and offers to sign in to it, which opens the livediagram approval page. To use an API token instead, add a `headers` entry beside `url`:
 
 ```json
-"headers": { "Authorization": "Bearer lvd_..." }
+"headers": { "Authorization": "Bearer lwt_..." }
 ```
 
 ## ChatGPT
@@ -106,24 +106,24 @@ Any tool that supports remote MCP servers can connect. Add a remote server (HTTP
 Some tools can't sign in to a server, or you may want to set one up from a script or a config file. Instead of approving the connection in the browser, you can give the tool an API token as a header on every request:
 
 ```text
-Authorization: Bearer lvd_...
+Authorization: Bearer lwt_...
 ```
 
 <Step n={1}>
-  Create a token in **Settings**, **Account**, **API Tokens** (see [API
-  Tokens](/help/account-and-data/api-tokens/)), and copy its secret: it is shown once.
+  Create a token on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens) (see
+  [API Tokens](/help/account-and-data/api-tokens/)), and copy its secret: it is shown once.
 </Step>
 <Step n={2}>
   In your tool, add the MCP server with the address above, and set the `Authorization` header to
   `Bearer` followed by a space and the secret.
 </Step>
 
-A token you create in Settings always has full read and write access, so there is no read-only option on this path: approve the connection in the browser instead when you want **Read-only access**. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
+Switch on **Read-only** when you create the token if the tool only needs to look. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
 
 ## If It Doesn't Connect
 
 - **The page says "This link has expired" or "This request has expired"**: a connection request lasts ten minutes. Start the connection again from your tool.
-- **It says your account has reached its limit of API tokens**: you can have ten unexpired tokens. Revoke one in **API Tokens**, then connect again.
+- **It says your account has reached its limit of API tokens**: you can have 20 unexpired tokens. Revoke one on liveworkspace.app, then connect again.
 - **The tool keeps asking you to sign in**: the token it held may have expired or been revoked. Remove the connection in the tool and add it again.
 
 </ArticleLayout>

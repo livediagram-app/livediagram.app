@@ -10,7 +10,7 @@ import {
   pickOption,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export type SpotlightSize = 'small' | 'medium' | 'large';
 export type SpotlightDim = 'soft' | 'normal' | 'dark' | 'blackout';

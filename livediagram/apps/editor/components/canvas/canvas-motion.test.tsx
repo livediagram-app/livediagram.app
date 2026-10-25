@@ -6,7 +6,7 @@ import type { BoxedElement } from '@livediagram/document';
 import { createElement, type ReactNode } from 'react';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';
 import { CanvasStillProvider } from './CanvasStillContext';
-import { CanvasArrivalProvider } from './CanvasArrivalContext';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):
 // a newly added element keeps its own 360ms spring (app/canvas-motion.test.ts)

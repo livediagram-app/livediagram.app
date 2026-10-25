@@ -6,7 +6,7 @@
 // (docs/specs/008-canvas/arrow-bending.md "Stored bends").
 
 import type { Element } from './index';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 /** The most bend points an arrow holds: far past any drawn curve, short of an abuse payload. */
 export const MAX_CURVE_POINTS = 5_000;
 

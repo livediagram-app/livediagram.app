@@ -178,31 +178,6 @@ export function NewFolderTile({
   );
 }
 
-// The space overview's "start a team here" (docs/specs/013-workspace/teams.md, docs/specs/006-document/save-locations.md). Signed-in
-// only: the host passes the handler only when teams are on, so a guest
-// never sees a tile that would lead to a 401.
-export function NewTeamTile({
-  onCreate,
-  layout,
-  enterIndex,
-}: {
-  onCreate: (name: string) => Promise<boolean>;
-  layout?: PlacementLayout;
-  enterIndex?: number;
-}) {
-  return (
-    <InlineCreateTile
-      onCreate={onCreate}
-      icon={<TeamPlaceIcon />}
-      label="New Team"
-      sub="Create a New Team"
-      placeholder="Team name"
-      layout={layout}
-      enterIndex={enterIndex}
-    />
-  );
-}
-
 function NewFolderIcon() {
   return (
     <Glyph size={20} units={20}>
@@ -295,42 +270,10 @@ export function PlacementCard({
 }
 
 // Tile glyphs, sized to sit above the card label.
-export function PersonalSpaceIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <path d="M3.5 8.5 10 3l6.5 5.5" />
-      <path d="M5 7.5V16a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7.5" />
-      <path d="M8 17v-4.5h4V17" />
-    </Glyph>
-  );
-}
-
 export function FolderPlaceIcon() {
   return (
     <Glyph size={20} units={20}>
       <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
-    </Glyph>
-  );
-}
-
-// A folder with a smaller folder tucked inside: the "has subfolders" marker
-// on drill-in cards, distinct from the plain FolderPlaceIcon leaf.
-export function FolderStackIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
-      <path d="M6.5 12.9v-2.6c0-.44.36-.8.8-.8h1.5l.9 1h2.5c.44 0 .8.36.8.8v1.6c0 .44-.36.8-.8.8H7.3a.8.8 0 0 1-.8-.8Z" />
-    </Glyph>
-  );
-}
-
-export function TeamPlaceIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <circle cx="7.5" cy="7" r="2.6" />
-      <path d="M3 16c.5-2.8 2.2-4.2 4.5-4.2S11.5 13.2 12 16" />
-      <circle cx="13.8" cy="7.8" r="2" />
-      <path d="M13.2 11.6c1.9.2 3.2 1.5 3.7 3.9" />
     </Glyph>
   );
 }

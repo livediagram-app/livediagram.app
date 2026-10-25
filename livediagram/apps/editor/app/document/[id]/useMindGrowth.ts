@@ -15,7 +15,7 @@ import {
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { fitMindLabel } from '@/lib/mind-label-fit';
 import { measureDrawnMindLabel } from '@/components/canvas/text-hug-measure';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { HandoffActions } from '@/lib/mind-handoff';
 import {
   labelled,
@@ -25,7 +25,7 @@ import {
   type GrowthHookOpts,
 } from './useGrowthLanding';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Mind-map growth in the editor (docs/specs/009-elements/mind-node.md). Tab grows a child, Enter a
 // sibling, from the keyboard (the label editor or a selected node) or the "+"

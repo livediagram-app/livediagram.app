@@ -2,13 +2,18 @@
 
 import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { shareUrl } from '@/lib/explorer-host';
+import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
+import { randomName } from '@/lib/identity';
+import { useToast } from '@/hooks/ui/useToast';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -18,12 +23,17 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The Share dialog with its Community band (docs/specs/025-community/community.md "Publishing").
+// The shared Explorer's Share dialog (@liveworkspace/explorer), with livediagram's Community band
+// (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
 const ShareDialog = dynamic(
   () =>
     import('@/components/dialogs/community/ShareDialogWithCommunity').then(
       (m) => m.ShareDialogWithCommunity,
     ),
+  { ssr: false },
+);
+const ShareOfflineGate = dynamic(
+  () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
 );
 
@@ -48,22 +58,15 @@ export function EditorTabDialogs() {
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
-    shareLinks,
-    sharePasswordSet,
-    shareUrlFor,
-    clerkUserId,
-    clerkDisplayName,
+    setSelfParticipant,
+    accountUserId,
+    accountDisplayName,
     documentId,
     documentTeamId,
-    updateParticipantName,
-    createShareLink,
-    revokeShareLink,
-    extendShareLink,
-    rescopeShareLink,
-    setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
   } = useEditorContext();
+  const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -76,7 +79,7 @@ export function EditorTabDialogs() {
   );
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
-  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // owner's account; the Share dialog says so and offers Sync Canvas, which converts the open document
   // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
   // early open runs under: the gate waits for the reader (`syncReady`).
   const isOffline = useIsOfflineDocument(documentId);
@@ -112,30 +115,47 @@ export function EditorTabDialogs() {
           onClose={() => setImportOpen(false)}
         />
       ) : null}
-      {shareDialogOpen ? (
-        <ShareDialog
-          participant={selfParticipant}
-          links={shareLinks}
-          sharePasswordSet={sharePasswordSet}
-          shareUrlFor={shareUrlFor}
-          tabs={tabs}
-          // Signed-in via Clerk → name is locked to the account
-          // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
-          // Guests pass undefined so the input + shuffle stay live.
-          lockedName={clerkUserId ? clerkDisplayName : null}
-          onSaveName={updateParticipantName}
-          onCreateLink={createShareLink}
-          onRevokeLink={revokeShareLink}
-          onRescopeLink={rescopeShareLink}
-          onExtendLink={extendShareLink}
-          onSetPassword={setDocumentSharePassword}
-          offline={isOffline}
+      {shareDialogOpen && isOffline ? (
+        <ShareOfflineGate
           onSyncToCloud={syncToCloud}
-          syncReady={readerKnown}
-          documentId={documentId}
+          ready={readerKnown}
+          onClose={() => setShareDialogOpen(false)}
+        />
+      ) : shareDialogOpen && documentId ? (
+        <ShareDialog
+          client={indexClient}
+          item={{
+            id: documentId,
+            app: 'livediagram',
+            kind: 'canvas',
+            sharedVia: null,
+            title: documentName,
+            teamId: documentTeamId,
+          }}
+          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          shareUrl={shareUrl}
+          handOver={documentHandOver}
+          helpHref={shareHelpHref}
+          onTelemetry={trackShare}
+          notify={(text, tone) => toast[tone](text)}
+          // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
+          identity={
+            accountUserId
+              ? undefined
+              : {
+                  name: selfParticipant.name,
+                  color: selfParticipant.color,
+                  randomName,
+                  onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
+                }
+          }
+          ownerId={selfParticipant.id}
           documentName={documentName}
-          signedIn={!!clerkUserId}
-          teamDocument={!!documentTeamId}
+          signedIn={!!accountUserId}
+          author={{
+            name: (accountUserId ? accountDisplayName : null) || selfParticipant.name,
+            color: selfParticipant.color,
+          }}
           // Known only for the open tab (the editor holds its elements); another first tab is left to the server.
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0

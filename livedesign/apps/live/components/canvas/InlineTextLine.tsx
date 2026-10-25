@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 
 // One line of plain text, edited in place on the canvas: a page's masthead
 // (docs/specs/009-elements/page-element.md), and every secondary line of the web components (docs/specs/009-elements/web-components-and-no-groups.md) — a

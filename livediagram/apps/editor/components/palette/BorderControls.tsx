@@ -7,7 +7,7 @@ import {
   BorderStyleIcon,
 } from '@/components/palette/palette-style-previews';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
 // The Border category's three grids: Strength, Pattern, and Radius.
 //

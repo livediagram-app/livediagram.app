@@ -3,61 +3,32 @@ import {
   isLegacyDocumentsPath,
   toLegacyResponse,
 } from './legacy-documents-alias';
-import { flushMediaRefs } from './media';
-import { runTabStatsBackfill } from './tab-stats-backfill';
-import { getClerkIdentity } from './auth/clerk';
-import { noteAuthSighting } from './auth/session-telemetry';
-import { emailEnabled } from './email/client';
-import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
-import { runTokenExpirySweep } from './email/token-expiry';
-import { runTeamInviteSweep } from './email/team-invite-reminders';
-import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
-import { runTimelineExpirySweep } from './timeline';
-import { runImageRetention } from './image-refs/retention';
-import {
-  deleteOldEvents,
-  deleteOldChangesets,
-  deleteOldNotifyEmailClaims,
-  deleteOldSessionSightings,
-  deleteOldTimelineEvents,
-  purgeExpiredTrash,
-  resolveApiToken,
-  trashEmptyDocuments,
-} from './db';
-import {
-  apiRouteLabel,
-  CHANGESET_RETENTION_MS,
-  bearerTokenOf,
-  errorTypeToken,
-  isClerkIdShape,
-  TIMELINE_RETENTION_MS,
-} from '@livediagram/api-schema';
+import { getPersonIdentity } from './auth/accounts';
+import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
+import { handleAuth } from './routes/auth';
+import { resolveApiToken } from './db';
+import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-schema';
 import {
   API_TOKEN_PREFIX,
   isApiTokenFormat,
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_PREFIX,
 } from '@livediagram/api-schema';
-import { verifyOwnerId } from './auth/owner-signature';
-import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
+import { PersonStore } from './person-store/person-store';
+import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { deleteOldDocumentOpens } from './db/document-opens';
 import { reportServerEvent } from './server-telemetry';
-import { clientIp, clientRateKey } from './client-ip';
-import { communityNetwork } from '@livediagram/api-schema';
-import { syncCommunity } from './community-service';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
-import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
-import { handleCustomThemes } from './routes/custom-themes';
 import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
@@ -65,30 +36,19 @@ import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
-import { handleMigrate } from './routes/migrate';
-import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
-import { handleFavourites } from './routes/favourites';
-import { handleTags } from './routes/tags';
-import { handlePlacementDefaults } from './routes/placement-defaults';
-import { handleTimeline } from './routes/timeline';
-import { handleActivity } from './routes/activity';
-import { handleHome } from './routes/home';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
-import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
-import { handleShared } from './routes/shared';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
-import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
-import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
+import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
 import type { Env } from './types';
 
-export { DocumentRoom };
+export { DocumentRoom, PersonStore };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -100,10 +60,6 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
   return !result.success;
 }
-
-// Owners whose first-sighting write already ran in this isolate — see
-// the welcomeOnSighting call below.
-const sightedThisIsolate = new Set<string>();
 
 // Every request the worker answers; `fetch` below stamps the document format number on it.
 async function routeApiRequest(
@@ -126,53 +82,63 @@ async function routeApiRequest(
   const segments = url.pathname.replace(/^\//, '').split('/');
   if (segments[0] !== 'api') return notFound();
 
-  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify a Clerk Bearer token once at
-  // the top of the handler — null when `CLERK_JWKS_URL` is unset,
-  // no Bearer was sent, or the token failed verification. Every
-  // dispatch site below uses `resolveOwner()` instead of the legacy
-  // `ownerOf(request)`, so a signed-in user's documents come back
-  // under their Clerk userId and guests keep working via the
-  // legacy `X-Owner-Id` header.
-  const clerkIdentity = await getClerkIdentity(env, request);
-  const clerkUserId = clerkIdentity?.userId ?? null;
-  // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
-  // `email` claim from the JWKS-checked session token is trusted —
-  // never a client-supplied header. A `X-Owner-Email` fallback used to
-  // exist here, but it let a signed-in caller forge another address and
-  // claim that address's pending team invites (join the team + read its
-  // private library). Invite auto-connection now degrades gracefully to
-  // off when the deployment hasn't added the email claim to the Clerk
-  // session token (dashboard → Sessions → Customize session token →
-  // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
-  const clerkEmail = clerkIdentity?.email ?? null;
-  // docs/specs/017-telemetry/telemetry.md: Session·SignedUp / SignedIn are counted here, server-side, on
-  // the first request of each new Clerk session, so every auth method
-  // (email code, Google OAuth) counts once. Off the response path.
-  noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
-  // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
-  // sighting + welcome run in the background) so it never delays the response;
-  // a no-op when RESEND_API_KEY is unset.
-  if (clerkUserId && clerkEmail && emailEnabled(env) && !sightedThisIsolate.has(clerkUserId)) {
-    // Once per isolate, not per request: a signed-in editor autosaves
-    // every ~600ms, and each request was scheduling a (no-op after the
-    // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
-    // writes a minute. The INSERT stays idempotent, so a cold isolate
-    // simply pays it once more.
-    sightedThisIsolate.add(clerkUserId);
-    executionCtx?.waitUntil(welcomeOnSighting(env, clerkUserId, clerkEmail));
+  // Signing in (routes/auth.ts) carries no Bearer, so it is answered before identity and the
+  // per-owner write limit, which would otherwise put every sign-in on one 'anonymous' bucket.
+  if (segments[1] === 'auth') {
+    return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
   }
-  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lvd_…` resolves to its owner — always a
-  // Clerk account — via the hashed-token lookup. Only consulted when no Clerk
-  // JWT verified (a token and a JWT can't both be the bearer). The resolved
-  // owner is the token's Clerk userId, so a token request flows through the
+
+  // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
+  // own key, never a person's identity, so answered before identity and the per-owner limits.
+  if (segments[1] === 'internal')
+    return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
+
+  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/workbench.md): the router sends
+  // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
+  // forwarded the same way, as livediagram, before identity, since accounts checks the credential.
+  if (segments[1] === 'workbench') {
+    const forwarded = env.ACCOUNTS_URL
+      ? routeToWorkspace(request, {
+          app: 'livediagram',
+          origin: env.ACCOUNTS_URL,
+          routes: [WORKBENCH_ROUTE],
+        })
+      : null;
+    return forwarded ?? json({ error: 'accounts_unavailable' }, { status: 503 });
+  }
+
+  // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
+  // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent
+  // (a link visitor with no identity yet), or the token failed verification.
+  const person = await getPersonIdentity(env, request);
+  const account = person?.kind === 'account' ? person : null;
+  const accountUserId = account?.userId ?? null;
+  // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
+  // `email` claim from the checked access token is trusted, never a client-supplied header.
+  const accountEmail = account?.email ?? null;
+  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
+  // account — via the hashed-token lookup. Only consulted when no account
+  // access token verified (a token and a JWT can't both be the bearer). The resolved
+  // owner is the token's account id, so a token request flows through the
   // exact same ownership / gate checks as a signed-in one.
-  let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
-  if (!clerkUserId) {
+  let tokenAuth: ResolvedApiToken | null = null;
+  if (!person) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
-    // copy-paste slip): it is refused as one below, never read as a guest or handed to the Clerk path.
+    // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
     if (bearer?.startsWith(API_TOKEN_PREFIX)) {
-      tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
+      // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
+      // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
+      // than drops its credential.
+      try {
+        tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
+      } catch (err) {
+        if (!(err instanceof AccountsUnavailable)) throw err;
+        return json(
+          { error: 'accounts_unavailable' },
+          { status: 503, headers: { 'Retry-After': '5' } },
+        );
+      }
       // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
       // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
       if (!tokenAuth) {
@@ -185,18 +151,34 @@ async function routeApiRequest(
     }
   }
   // Workbench session (docs/specs/013-workspace/workbench-embeds.md): a `Bearer lvw_…` is a person's editor
-  // on one document, minted from their token's ticket. Consulted only when neither a Clerk JWT nor a token
+  // on one document, minted from their token's ticket. Consulted only when neither an account access token nor a token
   // resolved. A session-shaped bearer that does not resolve is refused, never read as a guest. A resolved one
   // is confined at once (auth/workbench-confinement.ts): another document reads as absent, any route outside
   // the allow-list is refused, and a view session writes nothing.
   let workbench: WorkbenchContext | null = null;
-  if (!clerkUserId && !tokenAuth) {
+  if (!person && !tokenAuth) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
       // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
-      const resolved = isWorkbenchSessionFormat(bearer)
-        ? await resolveWorkbenchSession(env, bearer, Date.now())
-        : ({ ok: false, reason: 'malformed', sessionPrefix: '' } as const);
+      // When liveworkspace can't answer, the session is neither good nor bad: 503, as for a token.
+      let resolved:
+        | Awaited<ReturnType<typeof resolveWorkbenchSession>>
+        | {
+            ok: false;
+            reason: 'malformed';
+            sessionPrefix: string;
+          };
+      try {
+        resolved = isWorkbenchSessionFormat(bearer)
+          ? await resolveWorkbenchSession(env, bearer)
+          : { ok: false, reason: 'malformed', sessionPrefix: '' };
+      } catch (err) {
+        if (!(err instanceof AccountsUnavailable)) throw err;
+        return json(
+          { error: 'accounts_unavailable' },
+          { status: 503, headers: { 'Retry-After': '5' } },
+        );
+      }
       if (!resolved.ok) {
         console.warn('[workbench] bearer-refused', {
           reason: resolved.reason,
@@ -212,73 +194,25 @@ async function routeApiRequest(
       if (refusal) return refusal;
     }
   }
-  // An empty guest header is no identity at all: as '' it would be one shared,
-  // writable owner namespace (and one shared rate-limit bucket) for everyone.
+  const guestId = person?.kind === 'guest' ? person.guestId : null;
+  // The caller's id: an account (signed in, or behind an API token or a workbench session), else a guest.
   const resolveOwner = (): string | null =>
-    clerkUserId ??
-    tokenAuth?.ownerId ??
-    workbench?.ownerId ??
-    (request.headers.get('X-Owner-Id') || null);
-  // Server-verified Clerk account id from either credential (session JWT
+    accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? guestId;
+  // Server-verified account id from either credential (session JWT
   // or API token). Feeds the team-membership content gates + teams-surface
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
-  // reading `clerkUserId` directly.
-  const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
-
-  // A Clerk account id presented as the GUEST header is always a replay of
-  // a harvested id, never a real client (see auth/guest-rest.ts): the guest
-  // credential is a server-minted UUID, and a signed-in caller sends
-  // `Authorization` instead. Refused unconditionally, BEFORE the signature
-  // gate below, because that gate is off until an operator arms it — and
-  // this shape needs no grace window, having never been legitimate.
-  // `share` is included even though it is not owner-scoped: its resolver
-  // compares the header with the document's owner to decide redaction.
-  if (
-    !clerkUserId &&
-    !tokenAuth &&
-    !workbench &&
-    (OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') || segments[1] === 'share')
-  ) {
-    const headerOwner = request.headers.get('X-Owner-Id');
-    if (headerOwner && isClerkIdShape(headerOwner)) {
-      return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
-    }
-  }
-
-  // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4). On owner-scoped routes, a
-  // presented `X-Owner-Id` must carry a valid HMAC signature once
-  // enforcement is on — so a harvested owner id (a guest UUID, or a
-  // signed-up user's Clerk `sub` slipped into the header) can't be used as a
-  // credential. Skipped for Clerk / token callers (they aren't on the guest
-  // path) and during the grace window. A request with NO `X-Owner-Id` is
-  // untouched (it just resolves to no owner), so public reads still work.
-  if (
-    !clerkUserId &&
-    !tokenAuth &&
-    !workbench &&
-    OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
-    guestSignatureEnforced(env, Date.now())
-  ) {
-    const headerOwner = request.headers.get('X-Owner-Id');
-    if (
-      headerOwner &&
-      !(await verifyOwnerId(
-        env.GUEST_ID_HMAC_SECRET,
-        headerOwner,
-        request.headers.get('X-Owner-Sig'),
-      ))
-    ) {
-      return json({ error: 'signature_required' }, { status: 401 });
-    }
-  }
+  // reading `accountUserId` directly. A guest is never one.
+  const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
+  // Teams are run on liveworkspace.app; the caller's token carries the teams they're in (no copy here).
+  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? workbench?.teams ?? null;
 
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
   // pacing under Cloudflare's DDoS threshold still can't spam
   // document / image creation through to D1 / R2 quota
-  // exhaustion. Reads pass through untouched. When neither a
-  // Clerk token nor X-Owner-Id resolves the caller, fall back to
-  // a literal 'anonymous' key so one unauthenticated client still
+  // exhaustion. Reads pass through untouched. When no token
+  // resolves the caller (a link visitor), fall back to a per-network
+  // 'anonymous' key so one unauthenticated client still
   // can't burn the global quota. The telemetry relay (/api/events)
   // is deliberately exempt: it's anonymous, high-frequency, and
   // must never compete with a user's real document writes for the
@@ -289,19 +223,12 @@ async function routeApiRequest(
   // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
   // only GET/HEAD. Reject every write it presents at this single choke point
   // — so no write route can be reached, present or future, with no per-route
-  // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
-  // or readOnly false). Guest header requests carry no tokenAuth either.
+  // changes. signed-in sessions and full tokens are unaffected (tokenAuth is null
+  // or readOnly false). A guest's requests carry no tokenAuth either.
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  // Opening and pairing a workbench write nothing a read-only token could misuse: its ticket is minted view-only, so
-  // a view token gives a read-only frame (docs/specs/013-workspace/workbench-embeds.md).
-  const isWorkbenchAsk =
-    request.method === 'POST' &&
-    segments.length === 3 &&
-    segments[1] === 'workbench' &&
-    (segments[2] === 'tickets' || segments[2] === 'pairing-requests');
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isWorkbenchAsk) {
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
@@ -334,26 +261,16 @@ async function routeApiRequest(
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
   // ...but not unthrottled: each mint is a D1 write. Its own bucket per
-  // caller network (the owner id is caller-chosen for a guest), so a flood is
-  // bounded without touching anyone's autosave budget.
+  // caller network, so a flood is bounded without touching anyone's autosave budget.
   if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
-  // limited per network, reads and declines on one key, apart from everyone's document writes.
-  const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
-  if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
-    const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
-      key: `invite-decline:${communityNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isInviteDecline) {
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
-    // A caller with no identity yet (minting a guest id) is keyed on its
+    // A caller with no identity (a link visitor) is keyed on its
     // network, not one global 'anonymous' bucket every new visitor shares.
     // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
     const key = tokenAuth
@@ -374,12 +291,10 @@ async function routeApiRequest(
   // Throttle blind share-code / password guessing on the share-resolve
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
-  // write limiter above. Per-IP. Absent binding → allow.
-  // A link preview's two reads (docs/specs/013-workspace/share-link-previews.md) take their own bucket, so a room
-  // of people opening one link together never spends the editor's share resolve on previews.
+  // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // A link's previews are liveworkspace's (liveworkspace/docs/previews.md), so only the resolve itself counts here.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
-    const ip = clientRateKey(request);
-    const key = isSharePreviewPath(segments) ? `share-preview:${ip}` : ip;
+    const key = clientRateKey(request);
     if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
   }
 
@@ -393,12 +308,21 @@ async function routeApiRequest(
     env,
     url,
     segments,
-    clerkUserId,
+    accountUserId,
     verifiedUserId,
-    clerkEmail,
+    accountEmail,
     resolveOwner,
-    token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
+    token: tokenAuth
+      ? {
+          id: tokenAuth.tokenId,
+          readOnly: tokenAuth.readOnly,
+          name: tokenAuth.name,
+          expiresAt: tokenAuth.expiresAt,
+        }
+      : null,
     workbench,
+    bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
+    teams: teamsClaim,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {
@@ -414,9 +338,7 @@ async function routeApiRequest(
       case 'unfurl':
         return await handleUnfurl(ctx);
       case 'ai':
-        // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
-        // assistant at /api/ai, and the crop reader one segment deeper.
-        if (segments[2] === undefined) return await handleAi(ctx);
+        // The one model route, the sticky-note crop reader (docs/specs/021-event-storming/note-reader.md).
         if (segments[2] === 'read-notes' && segments.length === 3)
           return await handleAiReadNotes(ctx);
         return notFound();
@@ -426,16 +348,12 @@ async function routeApiRequest(
         return await handleShare(ctx);
       case 'community':
         return await handleCommunity(ctx);
-      case 'shared':
-        return await handleShared(ctx);
       case 'images':
         return await handleImages(ctx);
       case 'documents':
         return await handleDocuments(ctx);
       case 'folders':
         return await handleFolders(ctx);
-      case 'custom-themes':
-        return await handleCustomThemes(ctx);
       case 'shape-libraries':
         return await handleShapeLibraries(ctx);
       case 'teams':
@@ -446,33 +364,14 @@ async function routeApiRequest(
         return await handleOauthExchange(ctx);
       case 'account':
         return await handleAccount(ctx);
-      case 'favourites':
-        return await handleFavourites(ctx);
-      // Per-person document tags (docs/specs/013-workspace/tags.md).
-      case 'tags':
-        return await handleTags(ctx);
-      case 'placement-defaults':
-        return await handlePlacementDefaults(ctx);
       case 'trash':
         return await handleTrash(ctx);
-      case 'timeline':
-        return await handleTimeline(ctx);
-      case 'activity':
-        return await handleActivity(ctx);
-      case 'home':
-        return await handleHome(ctx);
       case 'preferences':
         return await handlePreferences(ctx);
-      case 'migrate':
-        return await handleMigrate(ctx);
-      case 'guest-id':
-        return await handleGuestId(ctx);
       case 'participants':
         return await handleParticipants(ctx);
       case 'drive':
         return await handleDrive(ctx);
-      case 'workbench':
-        return await handleWorkbench(ctx);
     }
   } catch (err) {
     // Log the real error server-side, but don't echo its message to the
@@ -497,174 +396,6 @@ const worker = {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
   },
-
-  // Scheduled handler. Wired to the cron schedule in wrangler.toml.
-  // One worker invocation per `triggers.crons` entry; dispatch on
-  // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
-  // fires independent retention sweeps:
-  //   - events,     60-day floor: the retired table drains (docs/specs/017-telemetry/telemetry.md
-  //                 "Where events are stored").
-  //   - images,     30-day floor, unused only, after the reference-index backfill
-  //                 (docs/specs/009-elements/images.md "Retention").
-  //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
-  //   - empty,      documents empty and unsaved for 30 days move to the Trash
-  //                 (docs/specs/013-workspace/empty-document-cleanup.md).
-  // All are no-ops when nothing is over the floor; all use
-  // `ctx.waitUntil` so they run concurrently and the worker can
-  // exit as soon as the schedule callback returns.
-  async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    if (event.cron === '0 3 * * *') {
-      const now = Date.now();
-      scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
-      // docs/specs/017-telemetry/telemetry.md: session ids seen for the sign-in count (auth/session-telemetry.ts).
-      scheduleSweep(
-        ctx,
-        env,
-        'auth_sessions',
-        'rows',
-        now - AUTH_SESSION_RETENTION_MS,
-        deleteOldSessionSightings,
-      );
-      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
-      scheduleSweep(
-        ctx,
-        env,
-        'timeline',
-        'events',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldTimelineEvents,
-      );
-      // docs/specs/013-workspace/explorer-home.md "Opens": an open older than the Timeline's year
-      // is forgotten, the same retention as the events it sits beside.
-      scheduleSweep(
-        ctx,
-        env,
-        'home_opens',
-        'rows',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldDocumentOpens,
-      );
-      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a document (CS28).
-      scheduleSweep(
-        ctx,
-        env,
-        'changesets',
-        'rows',
-        now - CHANGESET_RETENTION_MS,
-        deleteOldChangesets,
-      );
-      // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
-      // decides nothing any more.
-      scheduleSweep(
-        ctx,
-        env,
-        'notify_email_claims',
-        'rows',
-        now - NOTIFY_EMAIL_DEDUPE_MS,
-        deleteOldNotifyEmailClaims,
-      );
-      // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
-      // No-op when RESEND_API_KEY is unset.
-      ctx.waitUntil(runLifecycleSweep(env));
-      // docs/specs/013-workspace/teams.md "Reminders and expiry": expire invites nobody answered in 28 days
-      // (always), then send the 1 / 7 / 21-day reminders (email only). Logs its own outcome.
-      ctx.waitUntil(
-        runTeamInviteSweep(env, now)
-          .then(() => undefined)
-          .catch((err) => console.error('[team-invites] sweep failed', err)),
-      );
-      // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
-      ctx.waitUntil(runTokenExpirySweep(env));
-      // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
-      // the email sweep above because that one no-ops without a Resend
-      // key, and a deployment with no email provider still needs to know
-      // its integration is about to break.
-      ctx.waitUntil(
-        runTimelineExpirySweep(env)
-          .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
-          .catch((err) => console.error('timeline expiry sweep failed', err)),
-      );
-      // docs/specs/013-workspace/trash.md: purge what has been in the Trash for
-      // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
-      ctx.waitUntil(
-        purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} documents`))
-          .catch((err) => console.error('trash sweep failed', err)),
-      );
-      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
-      // unsaved for 30 days to the Trash, stamped `now`, so the purge above
-      // never takes one this run: it waits its full 30 days there.
-      ctx.waitUntil(
-        trashEmptyDocuments(env, now)
-          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
-          .catch((err) => console.error('empty sweep failed', err)),
-      );
-      // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
-      // then reap unused images. runImageRetention logs its own outcome.
-      ctx.waitUntil(runImageRetention(env, now));
-      // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
-      // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
-      ctx.waitUntil(
-        runTabStatsBackfill(env)
-          .then(() => undefined)
-          .catch((err) => console.error('tab-stats: backfill failed', err)),
-      );
-      // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
-      // sessions past their grace, pairings of tokens no longer live.
-      ctx.waitUntil(
-        sweepWorkbench(env, now)
-          .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
-          .catch((err) => console.error('workbench sweep failed', err)),
-      );
-    }
-    // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
-    // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.
-    if (event.cron === COMMUNITY_SYNC_CRON) ctx.waitUntil(syncCommunity(env));
-    // liveworkspace/docs/media.md "References": every minute, the documents whose images changed go to the
-    // media service; the daily run also says nothing is left, when nothing is.
-    if (event.cron === COMMUNITY_SYNC_CRON || event.cron === '0 3 * * *') {
-      ctx.waitUntil(
-        flushMediaRefs(env, event.cron === '0 3 * * *')
-          .then(() => undefined)
-          .catch((err) => console.error('[media] refs sync failed', err)),
-      );
-    }
-  },
 } satisfies ExportedHandler<Env>;
 
-const COMMUNITY_SYNC_CRON = '* * * * *';
-
 export default worker;
-
-// Run one daily retention sweep in the background: delete rows older than
-// `cutoff`, then log the count (or the failure) to `wrangler tail`. The
-// retention sweeps (events / sessions / timeline / opens) share this exact waitUntil +
-// then/catch shape; `label` + `unit` keep each log line reading naturally. A
-// zero is the normal case most days — observability without a metrics pipeline.
-function scheduleSweep(
-  ctx: ExecutionContext,
-  env: Env,
-  label: string,
-  unit: string,
-  cutoff: number,
-  deleteOlderThan: (env: Env, cutoff: number) => Promise<number>,
-): void {
-  ctx.waitUntil(
-    deleteOlderThan(env, cutoff)
-      .then((count) => {
-        console.log(`${label} sweep: deleted ${count} ${unit} older than ${cutoff}`);
-      })
-      .catch((err) => {
-        console.error(`${label} sweep failed`, err);
-      }),
-  );
-}
-
-// 90 days in ms: how long a seen Clerk session id is kept for the sign-in
-// count (docs/specs/017-telemetry/telemetry.md). Longer than any session Clerk keeps alive by default.
-const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
-
-// 60 days in ms: the retention the retired events table's rows were collected under
-// (docs/specs/017-telemetry/telemetry.md "Retention").
-const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;

@@ -3,12 +3,7 @@
 // A template's picture (Start Planning's Inspiration, the Explorer's welcome): its preview, light-canvas art on a re-lit
 // tile, so a template looks the same wherever it is shown.
 import { TemplatePreview } from '@liveplanner/template-previews';
-import { TEMPLATES, type TemplateDescriptor, type TemplateKind } from '@liveplanner/templates';
-
-const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
-
-/** The catalogue's entry for a template. */
-export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
+import { type TemplateKind } from '@liveplanner/templates';
 
 export function TemplatePicture({ kind }: { kind: TemplateKind }) {
   return (

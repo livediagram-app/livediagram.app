@@ -41,9 +41,9 @@ import {
 } from '@liveplanner/items';
 import { Button, CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { FIELD_GLYPHS } from './card-field-glyphs';
 import { CARD_FIELD_LABELS } from './board-setup-edits';
 import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
@@ -164,7 +164,7 @@ const DROP_MARKER = (
     key="drop-marker"
     data-drop-marker=""
     aria-hidden
-    className="h-5 w-[3px] shrink-0 self-center rounded-full bg-brand-500 shadow-[0_0_0_2px_rgba(14,165,233,0.2)] dark:bg-brand-400"
+    className="h-5 w-[3px] shrink-0 self-center rounded-full bg-brand-500 shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand-500)_20%,transparent)] dark:bg-brand-400"
   />
 );
 

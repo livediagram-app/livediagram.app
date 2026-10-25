@@ -17,8 +17,8 @@ describe('tabKindOf', () => {
     expect(tabKindOf({ kind: 'event-storming' })).toBe('diagram');
   });
 
-  // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
-  // 'whiteboard' is migrated on read (./legacy-whiteboard-tab); a reader alone sees a general tab.
+  // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): an unknown kind reads as a
+  // general tab.
   it('reads the former whiteboard kind as an ordinary diagram', () => {
     expect(tabKindOf({ kind: 'whiteboard' })).toBe('diagram');
   });

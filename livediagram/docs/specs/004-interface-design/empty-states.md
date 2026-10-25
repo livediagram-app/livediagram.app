@@ -8,7 +8,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
 
 - The heading always names what is missing, in the plural, and starts **"No <things>"**: "No icons",
   "No settings", never "Nothing matches", "No matches" or "No results". A search across several kinds names them
-  ("No documents, folders or help articles match “x”").
+  ("No canvases, folders or help articles match “x”").
 - The heading is a sentence (it can quote the person's own words), so it is written in sentence case with no full
   stop. Its action button is Title Case, as every button is.
 - **A search found nothing**: "No <things> match “<words>”". The words are the trimmed query, cut to
@@ -29,7 +29,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
   heading, a 12px line, centred, with 16px of padding.
 - **Small** (`size="small"`): inside a popover, a menu, a dropdown list or a palette tab. A 28px brand badge, a 12px
   semibold heading, an 11px line, centred, with 12px of padding.
-- **Page** (`EmptyState` in `@livediagram/ui`): a page-sized list (the Explorer's views, the Trash), with the floating badge and its rings. Same copy rules.
+- **Page** (`EmptyState` in `@liveworkspace/ui`): a page-sized list (the Explorer's views, the Trash), with the floating badge and its rings. Same copy rules.
 - **In place of one item.** Where a list's items are cards or rows on a known surface (Home's Jump back in), the empty state takes the size and place of one item, so an empty list looks like a list with one thing
   in it rather than a large centred message.
 - The badge holds the surface's own glyph; a search's empty state defaults to the search glyph.

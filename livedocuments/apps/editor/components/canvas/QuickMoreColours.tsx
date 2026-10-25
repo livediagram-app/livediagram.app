@@ -2,7 +2,7 @@
 
 // A Quick Style colour row's last target (docs/specs/004-interface-design/colour-picker.md
 // "Skins"): More colours, a swatch button opening the full colour picker, with the row's own
-// colours as its Theme Palette (Diagram mode), the standard colours and Custom colours.
+// colours as its Theme Palette, the standard colours and Custom colours.
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';

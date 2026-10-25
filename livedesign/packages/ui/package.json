@@ -10,7 +10,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
   },
@@ -26,8 +25,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@livedesign/oxlint-config": "workspace:*",
-    "@livedesign/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -40,9 +39,16 @@
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/design": "workspace:*",
-    "@livedesign/help-registry": "workspace:*",
-    "@livedesign/icons": "workspace:^",
     "@livedesign/tailwind-config": "workspace:*",
-    "@livedesign/telemetry-client": "workspace:*"
+    "@livedesign/telemetry-client": "workspace:*",
+    "@liveworkspace/account-menu": "workspace:*",
+    "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/icons": "workspace:^",
+    "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   }
 }

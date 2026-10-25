@@ -15,7 +15,7 @@ import {
   type SheetCellRef,
 } from '@liveplanner/sheets';
 import type { SheetMetricContent } from '@liveplanner/project';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useSheetRead } from './useSheetReader';
 import {
   DONE,

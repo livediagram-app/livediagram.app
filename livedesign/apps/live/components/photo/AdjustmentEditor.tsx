@@ -18,7 +18,7 @@ import { track } from '@/lib/telemetry';
 import { histogramPath } from './usePhotoHistogram';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {
   ADJUST_SPECS,
   getPath,

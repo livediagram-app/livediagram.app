@@ -1,6 +1,6 @@
 // Feature illustrations for the breadth of the canvas: notes, borders, arrows, shape recognition,
-// alignment guides and backdrops (the shape library lives in ./versatility-shapes, and the AI
-// assistant, rotation and sizing, Zen mode, fonts, and Markdown and Mermaid in ./diagram-text,
+// alignment guides and backdrops (the shape library lives in ./versatility-shapes, and
+// rotation and sizing, Zen mode, fonts, and Markdown and Mermaid in ./diagram-text,
 // both re-exported here). Each is a small
 // mock of the editor surface its card describes, drawn on the full-width 300 by 96 card stage from
 // the parts in ./versatility-parts with a light and a dark half, and moving with the shared fa-*
@@ -29,7 +29,7 @@ import {
 } from './versatility-parts';
 
 export { ShapesArt } from './versatility-shapes';
-export { AiAssistArt, FontsArt, RotateArt, ZenModeArt } from './versatility-more';
+export { FontsArt, RotateArt, ZenModeArt } from './versatility-more';
 export { MarkdownImportArt, MermaidArt } from './diagram-text';
 
 /* ──────────────── Shapes, notes, borders, arrows ──────────────── */

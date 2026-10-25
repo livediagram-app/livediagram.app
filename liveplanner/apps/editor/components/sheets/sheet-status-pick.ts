@@ -1,8 +1,12 @@
 // Which totals the status bar shows (docs/specs/029-sheets/sheet.md "Selection"): the viewer's own pick, kept in their
 // browser and shared by every Sheet on the page, set from the bar's own menu or the Sheet's settings.
 import { useSyncExternalStore } from 'react';
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
-import { createListeners } from '@/lib/listeners';
+import {
+  readLocalStorageSafe,
+  safeJson,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export const STATS = ['Sum', 'Average', 'Count', 'Min', 'Max'] as const;
 export type Stat = (typeof STATS)[number];

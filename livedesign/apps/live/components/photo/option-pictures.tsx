@@ -14,7 +14,7 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { blendSwatch, SWATCH_H, SWATCH_W } from '@/lib/photo-editor/blend-swatch';
 

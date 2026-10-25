@@ -16,31 +16,32 @@ Owners sometimes want to show one tab of a design, not the whole thing: the road
 
 ## Data model
 
-The baseline migration, `0001_livedesign_baseline.sql`:
+Share links are liveworkspace's index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access"):
 
-- `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs. Existing rows are NULL, so every existing link keeps its meaning.
-- `shared_with.tab_id TEXT NULL`: the scope the visitor was last granted, written alongside `role` on every share resolve (last visit wins, the rule `role` already follows).
-- `ws_tickets.tab_scope TEXT NULL` and `ws_tickets.share_code TEXT NULL`: a room ticket carries the scope and the admitting code from the mint to the upgrade (see [Realtime](#realtime)).
+- A link's `tabId`: the tab it is scoped to; null = All tabs.
+- The Shared with me row keeps the scope the visitor was last granted, as it keeps their level (last visit wins).
+- The index's grant names the scope, so every request and the room ticket (sealed from the grant, `?t=` on the
+  upgrade) carry it from the link to the room (see [Realtime](#realtime)).
 
-The `ShareLink` DTO gains `tabId: string | null`, and `SharedWithItem` gains `tabId: string | null`.
+The `ShareLink` DTO has `tabId: string | null`, and `SharedWithItem` has `tabId: string | null`.
 
 ## Access
 
 A scoped link grants its role **on its tab only**. The worker enforces this in one place, the design access resolution: it answers not just "may this caller read/edit" but "with what tab scope". Every route applies the scope:
 
-| Door                                                          | Scoped visitor gets                                                                                                                                                          |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/share/:code`                                        | `{ design, role, tabId }`, with the design redacted (see [Redaction](#redaction)).                                                                                       |
-| `GET /api/designs/:id`                                      | The same redacted design.                                                                                                                                                  |
-| `PUT /api/designs/:id` (rename, reorder, tab folders, deck) | 403. The design's structure isn't theirs to change.                                                                                                                        |
+| Door                                                        | Scoped visitor gets                                                                                                                                                          |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/share/:code`                                      | `{ design, role, tabId }`, with the design redacted (see [Redaction](#redaction)).                                                                                           |
+| `GET /api/designs/:id`                                      | The same redacted design.                                                                                                                                                    |
+| `PUT /api/designs/:id` (rename, reorder, tab folders, deck) | 403. The design's structure isn't theirs to change.                                                                                                                          |
 | `GET/PUT/DELETE /api/designs/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
-| Comment `POST`/`DELETE`                                       | Their tab only; otherwise 404.                                                                                                                                               |
+| Comment `POST`/`DELETE`                                     | Their tab only; otherwise 404.                                                                                                                                               |
 | `POST /api/designs/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
-| `GET /api/designs/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
-| `GET /api/images/:id?d=`                                      | Only images referenced by their tab.                                                                                                                                         |
+| The design's preview (`GET /api/previews/items/:id`)        | Their tab's image, not the first tab's: the index names the link's tab to liveworkspace's previews.                                                                          |
+| `GET /api/images/:id?d=`                                    | Only images referenced by their tab.                                                                                                                                         |
 | Design timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
-| `GET /api/share/:code/image.svg`                              | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
-| Room ticket / WS upgrade                                      | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
+| `GET /api/share/:code/image.svg`                            | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
+| Room ticket / WS upgrade                                    | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
 
 Holding several links is never merged: each request is judged on the code it carries.
 
@@ -58,9 +59,9 @@ A scoped visitor's copy of the design:
 
 ### Shared with you and the Inbox
 
-- `GET /api/shared` returns, for each row, the link the visitor came in through while it is live and still matches their recorded role **and scope** (`share_links.tab_id IS shared_with.tab_id`), never one broader than what they were given ([Share roles](share-roles.md#share-links): a revoked link ends the visits it granted). It returns `tabId` too.
+- The index's Shared with me list returns, for each row, the link the visitor came in through while it is live and still matches their recorded role **and scope**, never one broader than what they were given ([Share roles](share-roles.md#share-links): a revoked link ends the visits it granted). It returns `tabId` too.
 - The [Inbox](inbox.md) picks share codes the same way, and lists a scoped visitor's actions and threads on their tab only.
-- Copy's `shared_with` leg honours the recorded scope, as the share-code leg does.
+- A copy through Shared with me honours the recorded scope, as the share-code leg does.
 
 ## Realtime
 
@@ -107,7 +108,7 @@ A session's scope and code come from its room ticket, minted a moment before the
 ## API
 
 - `POST /api/designs/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this design, is `400 invalid tab`.
-- `PUT /api/designs/:id/share/:code` (owner, or a joined team member on a team design), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
+- Rescoping a link is the index's (`PATCH /share/:code`, the owner or a joined team member on a team design), from the shared Share dialog; the index tells the api, which sends the link's visitors into what it now opens.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
 
 ## Testing

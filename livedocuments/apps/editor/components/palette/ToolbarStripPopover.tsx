@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { uiUnscaleStyle } from '@/lib/ui-scale';
+import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 
 // A popover hanging under the strip (docs/specs/007-editor/toolbar-layout.md): a category's flyout
 // and Search. Both are strip menus, so they share how they open, where they hang and how they close.
@@ -115,7 +115,7 @@ export function StripPopover({
   // No padding: the body lays out its own edges.
   bare?: boolean;
   // A tile is being dragged out of it: faded, and a drop on it lands on the canvas beneath (`data-drop-through`,
-  // which the canvas's drop guard reads, lib/canvas-pointer `overFloatingPanel`). Not `pointer-events: none`: the
+  // which the canvas's drop guard reads, @liveworkspace/workbench/lib/canvas-pointer `overFloatingPanel`). Not `pointer-events: none`: the
   // dragged tile is inside it, and taking hit-testing from a drag's own source stalls the drag.
   seeThrough?: boolean;
   children: ReactNode;

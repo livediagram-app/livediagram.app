@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  serverNewUrl,
+  test,
+} from './fixtures';
 
 // docs/specs/008-canvas/corner-radius.md: a small rounded square stays a rounded square (corners never
 // past a quarter of its side). Dark mode; synthesised board.
@@ -28,7 +35,8 @@ async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
   // Wide enough for the whole board.
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto('/new?blank=1');
+  // On livedocuments, not This Browser: seedTab writes the board through the api.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

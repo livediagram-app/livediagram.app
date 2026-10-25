@@ -64,8 +64,8 @@ export function useCollabElements({
   // is no second control to find.
   //
   // Keyed on `participantKey`, NOT on `selfParticipant.id`. The id is our
-  // OWNER id: writing it into a shared project publishes an `X-Owner-Id`
-  // credential to every co-viewer, and it is also unjoinable — peers see us
+  // OWNER id: writing it into a shared project publishes the person's guest or
+  // account id to every co-viewer, and it is also unjoinable — peers see us
   // under the room's per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6), never under this.
   const respond = (element: ShapeElement, value: string) => {
     if (editsBlocked) return;

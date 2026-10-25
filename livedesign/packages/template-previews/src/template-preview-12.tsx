@@ -31,10 +31,38 @@ export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null 
             strokeDasharray="2 1.4"
           />
           <g className="pv-pulse" style={pv({ '--pv-at': '700ms' })}>
-            <rect x="29" y="8" width="22" height="16" rx="1.5" fill="rgb(240 249 255)" />
-            <circle cx="35" cy="16" r="4" fill="none" stroke="rgb(125 211 252)" strokeWidth="2" />
-            <rect x="42" y="17" width="2" height="4" rx="0.4" fill="rgb(125 211 252)" />
-            <rect x="45" y="14" width="2" height="7" rx="0.4" fill="rgb(56 189 248)" />
+            <rect
+              x="29"
+              y="8"
+              width="22"
+              height="16"
+              rx="1.5"
+              style={{ fill: 'var(--color-brand-50)' }}
+            />
+            <circle
+              cx="35"
+              cy="16"
+              r="4"
+              fill="none"
+              strokeWidth="2"
+              style={{ stroke: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="42"
+              y="17"
+              width="2"
+              height="4"
+              rx="0.4"
+              style={{ fill: 'var(--color-brand-300)' }}
+            />
+            <rect
+              x="45"
+              y="14"
+              width="2"
+              height="7"
+              rx="0.4"
+              style={{ fill: 'var(--color-brand-400)' }}
+            />
           </g>
           <g className="pv-pulse" style={pv({ '--pv-at': '1500ms' })}>
             {[28, 31, 34, 37].map((y, i) => (
@@ -49,7 +77,7 @@ export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null 
               />
             ))}
           </g>
-          <circle cx="40" cy="42.5" r="2" fill="rgb(14 165 233)" />
+          <circle cx="40" cy="42.5" r="2" style={{ fill: 'var(--color-brand-500)' }} />
           <path d="M40 41.4 V43.6 M38.9 42.5 H41.1" stroke="white" strokeWidth="0.6" />
         </svg>
       );

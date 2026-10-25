@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { metricKey, type TelemetrySummary } from '@livediagram/api-schema';
-import { dropRetiredEvents, isRetiredEvent } from './retired-events';
+import { dropRetiredEvents as dropRetired } from '../_shared/retired-events';
+import { isRetiredEvent } from './retired-events';
+
+const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, isRetiredEvent);
 
 // docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never
 // reach a chart.
@@ -56,7 +59,35 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModeDraw')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
+  });
+
+  it('retires the in-editor AI assistant, not the photo import', () => {
+    expect(isRetiredEvent('AI', 'Used', 'Ask')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Clean')).toBe(true);
+    expect(isRetiredEvent('AI', 'Toggled', 'AiOn')).toBe(true);
+    expect(isRetiredEvent('AI', 'Toggled', 'AiSuggestedPromptsOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'ai-tools')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'PhotoNotes')).toBe(false);
+    expect(isRetiredEvent('AI', 'Used', 'PhotoDetectClassicalNoWorker')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'connect-ai-mcp')).toBe(false);
+  });
+
+  it('retires document tags, not card tags or the Explorer filters', () => {
+    expect(isRetiredEvent('Explorer', 'Created', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Added', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Removed', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Renamed', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Changed', 'TagColour')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Deleted', 'Tag')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Tags')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Tags')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'tags')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'tags')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TagColour')).toBe(false);
+    expect(isRetiredEvent('Explorer', 'Selected', 'Text')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Library')).toBe(false);
+    expect(isRetiredEvent('Community', 'Selected', 'Tag')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

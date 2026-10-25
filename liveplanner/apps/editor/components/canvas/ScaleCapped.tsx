@@ -5,7 +5,7 @@
 // so it never blocks the view; zoomed in past SCREEN_SCALE_MAX it stops growing, so it never reads as comically
 // large. The scale is measured as drawn, so a maximised element (drawn at screen size) is left alone.
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { useCanvasZoom } from './CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // How large such a screen may draw, as a multiple of its own size.
 export const SCREEN_SCALE_MAX = 1;

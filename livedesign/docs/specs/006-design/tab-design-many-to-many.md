@@ -1,18 +1,18 @@
 # Tab ↔ design many-to-many
 
-## Why
+## Status
 
-Originally every `tabs` row carried a single `design_id` FK — one tab belonged to one design. That worked for the editor's "tabs are folders inside a design" mental model, but it forecloses a category of features the user has flagged for the next phase:
-
-- **Copy a tab between designs** without duplicating the content (so an edit in one tab propagates to the other).
-- **A reference tab** that lives in several designs at once — e.g. a glossary, a shared timeline, a brand's logo pages that are part of two product lines' workspaces.
-- **Change log without per-design scoping** (paired with item #14; the change log itself was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md)): once a tab can live in multiple designs, attributing a change to a single `(design_id, tab_id)` pair stops being meaningful. The change should be on the tab; consumers join through the link table when they care which designs it surfaces in.
-
-The migration sequences as items #13 → #14 → #15 → #16 in the post-prototype haul. #13 adds the link table; #14 drops the now-redundant `change_log.design_id`; #15 denormalises participant metadata out of `change_log`; #16 ages out old `change_log` rows on a cron. (Migration 0064 later dropped `change_log` outright along with the Activity panel.)
+Shipped. One tab can sit in several of a person's designs at once: **Add to Design** puts the active tab into
+another design, and an edit to it in either reaches the other. Each design's content lives in its own
+SQLite-backed Durable Object ([API app, Storage](../015-api/api.md#storage)), so every design holding a shared tab
+keeps its own copy of it under the same tab id, and the designs keep their copies in step. The mechanism is
+shared with livediagram, liveplanner and livedocuments (`@liveworkspace/index-app` `tab-shares.ts` and `tab-link.ts`);
+`apps/api/src/design-room/tab-shares.ts` is livedesign's part of it: how a tab taken in is stored, what a body
+keeps beside it, and the images and photo blobs it carries.
 
 ## Data model
 
-New table:
+In each design's own SQLite (`apps/api/src/design-room/design-schema.ts`):
 
 ```sql
 CREATE TABLE design_tabs (
@@ -20,67 +20,102 @@ CREATE TABLE design_tabs (
   tab_id      TEXT    NOT NULL,
   order_index INTEGER NOT NULL,
   added_at    INTEGER NOT NULL,
+  folder      TEXT,
   PRIMARY KEY (design_id, tab_id),
-  FOREIGN KEY (design_id) REFERENCES diagrams(id) ON DELETE CASCADE,
-  FOREIGN KEY (tab_id)     REFERENCES tabs(id)     ON DELETE CASCADE
+  FOREIGN KEY (design_id) REFERENCES design (id) ON DELETE CASCADE,
+  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
 
-CREATE INDEX design_tabs_by_design ON design_tabs(design_id, order_index);
-CREATE INDEX design_tabs_by_tab     ON design_tabs(tab_id);
+-- The OTHER designs holding each shared tab (@liveworkspace/index-app tabSharesSchema, so `item_id`).
+CREATE TABLE tab_shares (
+  tab_id  TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, item_id)
+) WITHOUT ROWID;
+
+-- What this design owes the other holders: a tab's body, a join, a leave.
+CREATE TABLE share_outbox (
+  id INTEGER PRIMARY KEY, kind TEXT NOT NULL, tab_id TEXT NOT NULL,
+  to_item TEXT NOT NULL, member TEXT NOT NULL DEFAULT '',
+  UNIQUE (kind, tab_id, to_item, member)
+);
 ```
 
-`order_index` lives on the link, not on the tab — two designs that share a tab can order it independently. `added_at` lets us surface "added to this design on date X" later. A later migration (0018, [Tab folders](tab-folders.md)) adds a nullable `folder` column to this table for the same reason: tab-folder membership is per-design, so a shared tab can be foldered in one design and loose in another.
+`design_tabs` holds the tab's place in its design: `order_index`, and the per-design `folder`
+([Tab folders](tab-folders.md)). Both stay per design, so each design can order and file a shared tab its own
+way. `tabs` holds the body ([Per-tab storage](per-tab-storage.md)).
 
-The link is the only place a tab meets a design. `tabs` holds the body (`id, name, data, updated_at`, [Per-tab storage](per-tab-storage.md)) and no pointer to any design: migration 0049 dropped the original `tabs.design_id` and `tabs.order_index`, which 0011 had backfilled `design_tabs` from. That column's `ON DELETE CASCADE` meant deleting the design a tab was created in destroyed the tab in every other design, even after it had been removed from that first design.
+## Keeping the copies in step
 
-### Tab lifecycle
+- **A write** to a shared tab (a save, a rename, an agent's changeset) fills `share_outbox` with a
+  `body` key per other holder, from a trigger on `tabs`, so no write path can forget it. The room's alarm sends
+  them a few seconds after the design goes quiet (`FLUSH_IDLE_MS`), each a `receiveShares` call to the holder's
+  Durable Object carrying the tab's current name and body, its write time, and the holders the sender knows. It is
+  not held to the outbox push's once a minute: it is a call between designs, not a push to the index.
+- **The later write wins.** A holder takes a body only when it is later than its own copy, by write time, then (two
+  holders writing in the same millisecond) by content, so every holder settles on the same one. A copy taken in
+  updates the tab's stats, image references and the design's outbox push as a local write does.
+- **No echo.** A holder taking a copy sends it on only to holders the sender did not list; that is also how a
+  holder that joined a moment ago hears of a write made by one that has not yet heard of it.
+- **Images.** A body carries the images it places that the sending design may serve, and the design taking it
+  in is granted those ([Images, Placement grants](../009-elements/images.md)), as a copy is.
+- **Photos.** A body carries the photo blobs its photo layers use ([Photo store](../031-photo/photo-store.md)), and the design taking it
+  in records them as its own references, so a photo shows in every design holding the tab and its blob is kept while
+  any of them uses it.
+- **Joining.** `POST /api/designs/:target/tabs/:tabId/link` with `{ from }` runs in the target's object. It reads
+  the tab and its holders from `from` (`sharedTabCopy`), stores the copy at the end of the target's tab order, dated
+  as the copy, then has `from` record the join (`shareJoined`): `from` lists the target, sends the other holders a
+  `join`, and sends the target the tab again if it changed meanwhile.
+- **Leaving.** Removing the tab from one design (`deleteTabRow`) sends the other holders a `leave` and drops
+  nothing of theirs. Purging a design (the [Trash](../013-workspace/trash.md) purge, Take Offline, account
+  deletion) sends each holder of each of its shared tabs a `leave` first. A holder that misses one answers `gone`
+  the next time it is sent the tab, and is dropped then; so is any holder that no longer holds it.
+- **Trash.** Trashing a design changes none of this: its shared tabs stay in step until it is purged.
+- **Failures.** A send that fails stays in `share_outbox` and is retried a minute later.
 
-- **Create tab** — insert one row into `tabs`, one row into `design_tabs` pointing it at the owning design.
-- **Add tab to another design** — `INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)`. No change to `tabs`. Edits to the tab propagate to every design referencing it.
-- **Remove tab from a design** — `DELETE FROM design_tabs WHERE design_id = ? AND tab_id = ?`. If no rows remain referencing the tab, the `tabs` row AND every collaboration-index and `image_refs` row keyed by that tab id are dropped in the same call (atomic on the server). When other designs still link the tab, the body stays, so any design that still surfaces the tab still surfaces its content. The server handles it with full knowledge of the link-count.
-- **Delete a design** — the design-scoped form of removing a tab, in one atomic batch (`designRemovalStatements`, `apps/api/src/db/design-removal.ts`): every tab linked into the design that no other design links is dropped with its collaboration-index and `image_refs` rows, then the design row goes and `ON DELETE CASCADE` from `designs` removes its link rows. A tab another design still links survives whole there: body, index rows, and its order and folder in that design. Every path that removes a design takes this route: the [Trash](../013-workspace/trash.md) purge (a delete first moves the design to the Trash, touching no tab, and removal happens 30 days later, or at once on Delete permanently / Empty Trash / `?permanent=true`), Take Offline ([Offline Mode](offline-mode.md)), and account deletion (which keeps a tab shared into a design another owner holds). While a design waits in the Trash its tabs stay where they are, so a tab it shares carries on in the other design as before.
+Cross-design realtime is not part of this: a design open in another window shows another holder's write on
+reload, as it always did.
 
 ### Shared-tab notice
 
-A **shared tab** is a tab linked into more than one design. Removing a design is safe for its shared tabs, but the user cannot see that from the design alone, so the Take Offline confirmation says it first. (A delete asks nothing: it goes to the Trash with an Undo, and a restore brings back the design's links to its tabs.) `GET /api/designs/:id/shared-tabs` answers `{ sharedTabs: { tabs, designs } }`: how many of the design's tabs are also linked elsewhere, and how many distinct other designs hold them. It answers exactly the callers who may delete the design (owner, or a joined member of its team; `mayDeleteDesign`), in the DELETE's order: 400 with no caller, 404 when missing, 403 otherwise.
+`GET /api/designs/:id/shared-tabs` answers `{ sharedTabs: { tabs, designs } }`: how many of the design's tabs
+are also in other designs, and how many designs, read from its `tab_shares`
+(`sharedTabsSummary`, `apps/api/src/design-room/tab-shares.ts`). The Take Offline confirmation
+(`fetchSharedTabsNotice`, `apps/live/lib/shared-tabs-notice.ts`, waiting at most 1.5 s for it) adds a sentence
+saying those tabs stay in the other designs. Delete asks nothing: it moves the design to the Trash, where its
+shared tabs stay in step, and Undo brings it back. It answers exactly the callers who may delete the design, in the DELETE's order: 400 with no
+caller, 404 when missing, 403 otherwise.
 
-The confirmation reads the counts before it opens (`fetchSharedTabsNotice`, `apps/live/lib/shared-tabs-notice.ts`) and, when `tabs` is above zero, adds one sentence:
+## Add to Design
 
-- **Take Offline** ([Offline Mode](offline-mode.md)): _"2 of its tabs are also used in 1 other design; they stay there, and the copies in this browser no longer share edits with them."_
+The tab menu's **Add to Design** row opens `AddTabToDesignDialog`, a filterable tile grid of the caller's other
+designs with their snapshot previews ([Design SVG snapshots](design-snapshots.md)). Picking one calls
+`apiLinkTab` (`apps/live/lib/api/tabs.ts`), the link route above with this design as `from`. The route answers
+`{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
+(`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
+each (the request's for the target, one fetched for `from`) that no share link gave and no tab scope narrows, and not
+from a workbench session; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a design
+they cannot edit: 403 otherwise, 404 for a tab or `from` that is not there, 400 with no `from` or `from` the target
+itself, 409 (`too_many_holders`) when the tab is already in 20 designs (`MAX_TAB_HOLDERS`). The row is offered for the designs `addToDesignTargets` lists
+(`apps/live/lib/add-to-design-targets.ts`).
 
-Singular forms read _"1 of its tabs is ... it stays there"_ and _"1 other design"_. An offline design has no shared tabs and makes no request. The read waits at most `SHARED_TABS_NOTICE_TIMEOUT_MS` (1500 ms); when it fails or runs out of time the confirmation opens without the sentence (the api client reports the failure), since the server keeps shared tabs either way and the notice is information, not the safeguard. The counts are read before the dialog renders so its content never changes under the pointer.
+### Cost
 
-## API impact
+A save of a shared tab costs what any save does (the trigger's `tab_shares` check is a primary-key read). A tab is
+held by at most 20 designs, so one write fans out to at most 19 calls. Sending a 1 MB tab to 19 holders measured
+about 54 ms of CPU in the tests, every receiver included (`design-room-store.test.ts`, budget 2 s). Opening a
+design costs nothing more for its shared tabs: each holder reads its own copy. Each join tells every earlier
+holder, so a tab shared into _n_ designs has sent about n²/2 small `join` messages over its life (171 at the cap);
+a drain sends at most 50 messages, and a body goes once per drain however many holders it is for.
 
-`GET /api/designs/:id` returns the design with its tab summaries — the join now goes through `design_tabs`:
+## Copies
 
-```sql
-SELECT t.id, t.name, dt.order_index
-  FROM design_tabs dt
-  JOIN tabs t ON t.id = dt.tab_id
- WHERE dt.design_id = ?
- ORDER BY dt.order_index ASC
-```
-
-`PUT /api/designs/:id/tabs/:tabId` (tab body write) is unchanged on the surface but the implementation no longer scopes by `design_id` to find the row — the tab id is globally unique. The caller's permission to edit the tab is still gated by their permission on at least one design that contains it (owner of any containing design, OR an edit-role share code for any containing design).
-
-`POST /api/designs/:id/tabs/:tabId/link` adds an existing tab into the target design. Idempotent: same `(design_id, tab_id)` pair returns 200 without duplicating the link row (`ON CONFLICT DO NOTHING`). Auth: caller must own the target design AND own at least one design that already contains the tab (so a stranger can't graft a tab they have no read access to). Returns the resulting tab summary. The tab menu's **Add to Design** row opens a centred modal (`AddTabToDesignDialog`): a filterable tile grid of the caller's other designs, replacing the old in-menu list; each tile shows the destination design's cached snapshot preview ([Design SVG snapshots](design-snapshots.md), the same `DesignThumbnail` the Explorer rows use, versioned by `savedAt`) over its name, so the user picks by recognising the canvas rather than parsing a list of near-identical names; picking one calls this endpoint. Because only the design's owner can make the link, the row offers no destinations, and so is disabled, on a design the caller doesn't own (an Editor on someone else's link), in an offline design and in a workbench (`addToDesignTargets`, `apps/live/lib/add-to-design-targets.ts`); it never offers a call that can only fail. Subsequent edits on either side write to the same `tabs.data` row, so changes propagate.
-
-`DELETE /api/designs/:id/tabs/:tabId` now removes the link row first, then drops the underlying `tabs` row only when no other `design_tabs` entries reference it. Unlinking a shared tab from one design leaves the body intact for the others.
-
-`POST /api/designs/:id/copy` (item #9) copies tab bodies into freshly minted tab rows — that doesn't change. The new tab rows get fresh ids and their own `design_tabs` entries pointing at the new design, and any tab / element link, and any Tab Window's tab, in a copied body is re-pointed from the source tab id to its copy's (`remapTabLinks`, `@livedesign/design`). Cloning vs linking is a deliberate distinction: copy = independent content, link = shared content.
-
-## Phasing
-
-This spec describes the destination. The implementation lands in stages so each can be tested in isolation:
-
-1. **Migration 0011** — add `design_tabs`, backfill from `tabs.design_id` / `tabs.order_index`. Reads go through the link table; writes update both the link table AND the legacy columns. No surface change.
-2. **Item #14 — drop `change_log.design_id`** — change_log entries already key by `tab_id`; the `design_id` was just denormalisation. Migration drops the column, queries that filtered by `design_id` now derive the design set via `design_tabs`.
-3. **Item #15 — drop denormalised participant metadata from `change_log`** — `participant_name` and `participant_color` columns were copy-on-write snapshots for offline-friendly reads. Drop and join through `participants` on read instead.
-4. **Item #16 — 90-day `change_log` cron** — daily worker cron deletes `change_log` rows older than 90 days. Capacity guard against unbounded growth as collab traffic ramps up.
-5. **Migration 0049 — drop `tabs.design_id` + `tabs.order_index`.** A table rebuild; `tabs` is a parent table, so the migration parks and restores every `design_tabs`, `change_log` and collaboration-index row across the drop. Design deletion became link-aware first ("Delete a design" above), since with the column gone nothing else removes a tab its last design leaves behind.
+`POST /api/designs/:id/copy` copies the tab bodies into fresh tab rows of the new design, shared with nothing, in one transaction in
+the new design's object (`importDesignCopy`, `apps/api/src/design-room/design-content.ts`), and re-points
+any tab or element link, and any Tab Window's tab, from the source tab id to its copy's (`remapTabLinks`,
+`@livedesign/design`).
 
 ## Cross-references
 
-- [API app](../015-api/api.md) — endpoint dispatch + the underlying schema overview. Updated alongside the migration in #13.
-- [Per-tab storage](per-tab-storage.md) — the per-tab storage rationale. Still applies; the link table is orthogonal to where the tab body lives.
+- [API app](../015-api/api.md): the Storage section and the endpoint table.
+- [Per-tab storage](per-tab-storage.md): why a tab body is a row of its own.

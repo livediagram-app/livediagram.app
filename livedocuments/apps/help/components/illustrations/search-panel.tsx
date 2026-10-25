@@ -5,7 +5,7 @@
 // every article fills with different result rows.
 
 import type { ReactNode } from 'react';
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared pieces -----------------------------------------------------------
 
@@ -179,7 +179,7 @@ function SearchOverlay({
 
 const GLYPH = 'fill-none stroke-slate-500';
 
-/** A document glyph: a small framed canvas with two nodes. */
+/** A document glyph: a small framed page with two blocks. */
 function DocumentIcon() {
   return (
     <g>

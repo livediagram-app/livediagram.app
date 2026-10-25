@@ -6,11 +6,11 @@
 import { useEffect } from 'react';
 import { isInMenuSurface } from '@livediagram/ui';
 import type { Reaction } from '@livediagram/document';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import type { AvatarReactionKind } from '@/lib/avatar-reactions';
-import { isTypingTarget } from '@/lib/typing-target';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useAvatarActionKeys({
   active,

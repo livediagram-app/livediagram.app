@@ -1,627 +1,79 @@
-// diagrams — metadata row (name, owner, sharing flag, folder,
-// timestamps) plus the copy operation. Tab content lives in tabs.ts;
-// the read DTO joins owner display info from participants.
+// A plan as this api knows it (liveworkspace/docs/one-explorer.md): its content and what it knows of itself (name,
+// owner, team, provenance, creation intent) live in its Durable Object's own SQLite (plan-room/plan-schema.ts,
+// the `plan` row). Where it is filed, who may open it, its sharing and its Trash state are the index's; this
+// module never answers them. The read adds the owner's display name, from their profile at the liveworkspace
+// accounts Worker (person/profiles.ts).
 
-import {
-  itemIdsShownOnTab,
-  readItemTypeCatalogue,
-  type ItemTypeCatalogue,
-  type TabItemElement,
-} from '@liveplanner/items';
-import { copyItemsStatements, listItems } from './items';
-import { copySheetsStatements } from './sheets';
-import { remapTabLinks, type Element } from '@liveplanner/project';
-import { rowToTabSummary, type TabRow } from '../tab-row';
-import type { ProjectDTO, ProjectSummary, Env, TabSummaryDTO } from '../types';
-import { getParticipant } from './participants';
-import { collabIndexCopyStatements } from './collab-index';
-import { redactTabDataAuthors } from '../comments';
-import { sheetRefCopyStatement } from './sheet-refs';
-import { projectRemovalStatements } from './project-removal';
-import { purgeRooms } from '../room-purge-client';
-import { firstTabCountSql, isEmptyCount } from './tabs';
-import { projectStatsSql, readProjectStats, tabStatsOfData, tabStatsStatement } from './tab-stats';
-import type { RecordedIntent } from '@liveplanner/api-schema';
-import { readRecordedIntent, type RecordedIntentRow } from '../project-intent-row';
+import type { ProjectDTO, Env } from '../types';
+import { getParticipant } from '../person/profiles';
+import { readRecordedIntent } from '../project-intent-row';
+import { planRoom } from '../plan-client';
+import { isProjectSource } from '@liveplanner/api-schema';
+import type { PlanMeta, PlanOutline } from '../plan-room/plan-content';
+import { mediaClient } from '../media';
 
-type ProjectRow = {
-  id: string;
-  owner_id: string;
-  name: string;
-  shareable: number;
-  folder_id: string | null;
-  team_id: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'mcp' / 'cli' = generated.
-  source: string | null;
-  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
-  item_types: string | null;
-  item_types_rev?: number;
-  saved_at: number;
-  created_at: number;
-  // Derived via subquery in the SELECT; first (oldest) share_links
-  // row for this project, or NULL when no share links exist.
-  share_code: string | null;
-} & RecordedIntentRow;
-
-export type SummaryRow = ProjectRow & { first_tab_count: number | null; doc_stats: string | null };
-
-async function listTabSummariesFor(env: Env, projectId: string): Promise<TabSummaryDTO[]> {
-  // Read through the project_tabs link table
-  // (docs/specs/006-project/tab-project-many-to-many.md) — order_index now lives on the link, not on the tab,
-  // so two projects that share a tab can order it independently.
-  const result = await env.DB.prepare(
-    `SELECT t.id, dt.project_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
-       FROM project_tabs dt
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.project_id = ?
-      ORDER BY dt.order_index ASC`,
-  )
-    .bind(projectId)
-    .all<TabRow>();
-  return (result.results ?? []).map(rowToTabSummary);
-}
-
-async function rowToProject(env: Env, row: ProjectRow): Promise<ProjectDTO> {
-  // Join owner participant info onto the response so visitors can
-  // render "Owner: <name>" without waiting for the owner to come
-  // online in the realtime room. Null when the owner has no
-  // participant row yet (e.g. a signed-in owner who's never set a
-  // name on a project); the UI hides the badge in that case.
-  // The participant lookup and the tab-summary read are independent,
-  // so issue them concurrently rather than paying two serial round
-  // trips on every project fetch (this path is hit by nearly every
-  // owned-project / share / WS-upgrade request).
-  const [ownerParticipant, tabs] = await Promise.all([
-    getParticipant(env, row.owner_id),
-    listTabSummariesFor(env, row.id),
-  ]);
+function projectOf(
+  id: string,
+  outline: PlanOutline,
+  meta: PlanMeta,
+  owner: { name: string | null; color: string | null } | null,
+): ProjectDTO {
   return {
-    id: row.id,
-    ownerId: row.owner_id,
-    name: row.name,
-    tabs,
-    shareable: row.shareable === 1,
-    shareCode: row.share_code,
-    folderId: row.folder_id,
-    teamId: row.team_id ?? null,
-    source: (row.source as ProjectDTO['source']) ?? null,
-    itemTypes: readItemTypeCatalogue(row.item_types ?? null),
-    itemTypesRev: row.item_types_rev ?? 0,
-    savedAt: row.saved_at,
-    createdAt: row.created_at,
-    ownerName: ownerParticipant?.name ?? null,
-    ownerColor: ownerParticipant?.color ?? null,
-    ...readRecordedIntent(row),
+    id,
+    ownerId: meta.ownerId,
+    name: meta.name,
+    tabs: outline.tabs,
+    // Sharing is the index's (its share links); a plan read says nothing of it.
+    shareable: false,
+    shareCode: null,
+    folderId: null,
+    teamId: meta.teamId,
+    source: isProjectSource(meta.source) ? meta.source : null,
+    itemTypes: outline.itemTypes,
+    itemTypesRev: outline.itemTypesRev,
+    savedAt: outline.savedAt,
+    createdAt: meta.createdAt,
+    ownerName: owner?.name ?? null,
+    ownerColor: owner?.color ?? null,
+    ...readRecordedIntent({
+      opens_in: meta.opensIn,
+      tab_kind: meta.tabKind,
+      template_family: meta.templateFamily,
+    }),
   };
 }
 
-// Derives the primary share code via a correlated subquery on
-// share_links. ORDER BY created_at ASC + LIMIT 1 keeps the result
-// stable across calls; "primary" is the oldest link the owner has
-// minted for the project.
-const SHARE_CODE_EXPR =
-  '(SELECT code FROM share_links WHERE share_links.project_id = projects.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-// `opens_in`, `tab_kind`, `template_family`: the recorded creation intent.
-const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const PROJECT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
-// The list projection deliberately omits `item_types`: listing 100 projects
-// has no use for 100 catalogues.
-export const PROJECT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('projects.id')}, ${projectStatsSql('projects.id')}`;
+// The plan's outline (one call to its Durable Object, a local call inside it) and its owner's profile,
+// one after the other. Null for a plan never started (nothing has created or opened it).
+export async function getProject(env: Env, id: string): Promise<ProjectDTO | null> {
+  const outline = await planRoom(env, id).outline();
+  const meta = outline.meta;
+  if (!meta) return null;
+  const owner = await getParticipant(env, meta.ownerId);
+  return projectOf(id, outline, meta, owner);
+}
 
-// Gate-only projection: the columns access checks need (owner + team +
-// name for notifications) in ONE query — no participant join, no tab
-// summaries, no share-code subquery. getProject costs 3 queries; the
-// room-ticket mint and WS upgrade run on every room join and use none
-// of the extra data.
-//
-// Both project reads see LIVE projects only: a trashed one reads as missing
-// (docs/specs/013-workspace/trash.md, "fail closed"). A door that owes an
-// authorised caller the deleted state asks getTrashedProjectMeta on a miss.
+// What the gates and notices need (owner, team, name) without the owner's profile.
 export async function getProjectMeta(
   env: Env,
   id: string,
 ): Promise<{ id: string; ownerId: string; teamId: string | null; name: string } | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, team_id, name FROM projects WHERE id = ? AND trashed_at IS NULL',
-  )
-    .bind(id)
-    .first<{ id: string; owner_id: string; team_id: string | null; name: string }>();
-  return row
-    ? { id: row.id, ownerId: row.owner_id, teamId: row.team_id ?? null, name: row.name }
-    : null;
+  const meta = (await planRoom(env, id).outline()).meta;
+  return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// Thumbnail projection (docs/specs/006-project/project-snapshots.md): what the
-// snapshot route needs to gate access AND decide cache freshness, in ONE
-// query. getProject (3 queries) plus a separate thumb_rendered_at read put
-// four dependent D1 round trips in front of every Explorer preview, even a
-// fresh cache hit; this is one.
-export type ProjectThumbMeta = {
-  id: string;
-  ownerId: string;
-  teamId: string | null;
-  name: string;
-  savedAt: number;
-  thumbRenderedAt: number | null;
-};
-
-export async function getProjectThumbMeta(env: Env, id: string): Promise<ProjectThumbMeta | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, team_id, name, saved_at, thumb_rendered_at FROM projects WHERE id = ? AND trashed_at IS NULL',
-  )
-    .bind(id)
-    .first<{
-      id: string;
-      owner_id: string;
-      team_id: string | null;
-      name: string;
-      saved_at: number;
-      thumb_rendered_at: number | null;
-    }>();
-  return row
-    ? {
-        id: row.id,
-        ownerId: row.owner_id,
-        teamId: row.team_id ?? null,
-        name: row.name,
-        savedAt: row.saved_at,
-        thumbRenderedAt: row.thumb_rendered_at ?? null,
-      }
-    : null;
-}
-
-// A project's card types alone, for a snapshot that draws its cards (a board, a Sheet's CARD formulas): the
-// thumbnail route's one read (getProjectThumbMeta) leaves the catalogue out, as most previews are cache hits that
-// never draw. Null for a project with no catalogue, or none at all.
-export async function getProjectItemTypes(env: Env, id: string): Promise<ItemTypeCatalogue | null> {
-  const row = await env.DB.prepare('SELECT item_types FROM projects WHERE id = ?')
-    .bind(id)
-    .first<{ item_types: string | null }>();
-  return readItemTypeCatalogue(row?.item_types ?? null);
-}
-
-export async function getProject(env: Env, id: string): Promise<ProjectDTO | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${PROJECT_COLS} FROM projects WHERE id = ? AND trashed_at IS NULL`,
-  )
-    .bind(id)
-    .first<ProjectRow>();
-  return row ? rowToProject(env, row) : null;
-}
-
-export function rowToSummary(row: SummaryRow): ProjectSummary {
-  return {
-    id: row.id,
-    ownerId: row.owner_id,
-    name: row.name,
-    shareable: row.shareable === 1,
-    shareCode: row.share_code,
-    folderId: row.folder_id,
-    teamId: row.team_id ?? null,
-    source: (row.source as ProjectSummary['source']) ?? null,
-    ...readRecordedIntent(row),
-    savedAt: row.saved_at,
-    createdAt: row.created_at,
-    empty: isEmptyCount(row.first_tab_count),
-    stats: readProjectStats(row.doc_stats),
-  };
-}
-
-// Personal library only (docs/specs/013-workspace/team-shared-projects.md): a project moved into a team's
-// shared library leaves the owner's personal lists and renders on
-// the team page instead.
-export async function listProjectsByOwner(env: Env, ownerId: string): Promise<ProjectSummary[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${PROJECT_SUMMARY_COLS} FROM projects WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NULL ORDER BY saved_at DESC`,
-  )
-    .bind(ownerId)
-    .all<SummaryRow>();
-  return (result.results ?? []).map(rowToSummary);
-}
-
-// One team's shared library (docs/specs/013-workspace/team-shared-projects.md), any owner.
-export async function listProjectsByTeam(env: Env, teamId: string): Promise<ProjectSummary[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${PROJECT_SUMMARY_COLS} FROM projects WHERE team_id = ? AND trashed_at IS NULL ORDER BY saved_at DESC`,
-  )
-    .bind(teamId)
-    .all<SummaryRow>();
-  return (result.results ?? []).map(rowToSummary);
-}
-
-// Metadata upsert only — project name, sharing state, owner id, and
-// timestamps. Tabs live in their own table now (see upsertTab /
-// reorderTabs / deleteTab). Used both by the new metadata-only PUT
-// /projects/:id and by the create endpoint.
-// Write-side meta upsert. Read-derived fields (`tabs`, `ownerName`,
-// `ownerColor`) are pruned from the input shape since none of them
-// are stored on the projects row directly — tabs live in their own
-// table, owner info comes via a participants join on read.
-export async function upsertProjectMeta(
-  env: Env,
-  // The recorded creation intent (docs/specs/013-workspace/default-folders.md "Recorded intent")
-  // rides the same shape: written by the INSERT, never by the update.
-  d: Omit<ProjectDTO, 'tabs' | 'ownerName' | 'ownerColor' | keyof RecordedIntent> &
-    Partial<RecordedIntent>,
-): Promise<void> {
-  // `shareCode` is intentionally absent from the INSERT — it now
-  // lives only in share_links. The DTO field is read-only (derived
-  // via subquery on selects).
-  // `source` (provenance, docs/specs/013-workspace/folders.md) is written on INSERT but deliberately
-  // absent from the DO UPDATE SET, so it's set once at create time and
-  // never rewritten by a later metadata upsert (rename / autosave / move).
-  // `item_types` likewise: a create carries the catalogue a copy
-  // or a sync brings (docs/specs/026-plan/item-types.md); after that only
-  // setProjectItemTypes writes it.
-  // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
-  // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
-  // re-commit keeps its place, and moving is setProjectFolder's job.
-  // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
-  // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
-  await env.DB.prepare(
-    `INSERT INTO projects (id, owner_id, name, shareable, folder_id, team_id, source, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET
-       owner_id = excluded.owner_id,
-       name = excluded.name,
-       saved_at = excluded.saved_at`,
-  )
-    .bind(
-      d.id,
-      d.ownerId,
-      d.name,
-      d.shareable ? 1 : 0,
-      d.folderId,
-      d.teamId ?? null,
-      d.source ?? null,
-      d.itemTypes ? JSON.stringify(d.itemTypes) : null,
-      d.savedAt,
-      d.createdAt,
-      d.opensIn ?? null,
-      d.tabKind ?? null,
-      d.templateFamily ?? null,
-    )
-    .run();
-}
-
-// Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
-// folder / team placement has one, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
-// default types. Raises the catalogue's revision; with `expectedRev` it lands only while the stored
-// revision is that one. Returns the new revision, or null when the stored one had moved on.
-export async function setProjectItemTypes(
-  env: Env,
-  id: string,
-  itemTypes: ItemTypeCatalogue | null,
-  expectedRev?: number,
-): Promise<number | null> {
-  const row = await env.DB.prepare(
-    `UPDATE projects SET item_types = ?, item_types_rev = item_types_rev + 1, saved_at = ?
-      WHERE id = ? AND (? IS NULL OR item_types_rev = ?) RETURNING item_types_rev`,
-  )
-    .bind(
-      itemTypes ? JSON.stringify(itemTypes) : null,
-      Date.now(),
-      id,
-      expectedRev ?? null,
-      expectedRev ?? null,
-    )
-    .first<{ item_types_rev: number }>();
-  return row?.item_types_rev ?? null;
-}
-
-// Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-projects.md): folder and team scope move
-// together in one UPDATE so a project can never point at a folder in
-// a scope it isn't in. `newOwnerId` transfers ownership in the same
-// write: a joined member moving a team project out into their own
-// personal library becomes its owner (docs/specs/013-workspace/team-shared-projects.md), and folders are
-// owner-scoped so the row must follow them. Omit to keep the owner.
-//
-// The folder's existence and scope are checked INSIDE the UPDATE, not only by the caller's read
-// beforehand: a folder deleted (or moved to the other space) between that read and this write would
-// otherwise leave the project filed under a folder that is gone. Answers whether the row changed;
-// false means the folder (or the project) is not there any more, and the caller answers 404.
-export async function setProjectFolder(
-  env: Env,
-  id: string,
-  folderId: string | null,
-  teamId: string | null = null,
-  newOwnerId?: string,
-): Promise<boolean> {
-  const owner = newOwnerId ?? null;
-  const update = env.DB.prepare(
-    `UPDATE projects SET folder_id = ?2, team_id = ?3, owner_id = COALESCE(?4, owner_id)
-     WHERE id = ?1
-       AND (?2 IS NULL OR EXISTS (
-         SELECT 1 FROM folders f
-         WHERE f.id = ?2
-           AND f.team_id IS ?3
-           AND (?3 IS NOT NULL OR f.owner_id = COALESCE(?4, projects.owner_id))
-       ))`,
-  ).bind(id, folderId, teamId, owner);
-  const res = await update.run();
-  return (res.meta.changes ?? 0) > 0;
-}
-
-// Toggle the shareable flag on a project. The actual codes live in
-// share_links (managed by createShareLink / deleteShareLink); this
-// helper only flips the boolean that gates the realtime room + the
-// share-code resolver.
-export async function setProjectShare(env: Env, id: string, shareable: boolean): Promise<void> {
-  await env.DB.prepare('UPDATE projects SET shareable = ? WHERE id = ?')
-    .bind(shareable ? 1 : 0, id)
-    .run();
-}
-
-// Share password (docs/specs/013-workspace/share-password.md). The column holds a PBKDF2 hash
-// (auth/share-password-hash.ts), or a plain-text value saved before hashing
-// shipped, which the first correct entry rewrites. NULL / empty means the
-// project has no password. Kept OUT of the project DTO columns
-// (PROJECT_COLS) and never returned by any route; only the share-access
-// check reads it.
-export async function getProjectSharePassword(env: Env, id: string): Promise<string | null> {
-  const row = await env.DB.prepare('SELECT share_password FROM projects WHERE id = ?')
-    .bind(id)
-    .first<{ share_password: string | null }>();
-  const value = row?.share_password ?? null;
-  // An all-whitespace value counts as "no password" so a stray space
-  // can't lock a project in a way the owner can't see in the dialog.
-  return value && value.trim() ? value : null;
-}
-
-// `stored` is what the column should hold: a hash from hashSharePassword, or
-// null to clear. The route hashes; this layer never sees a plain password.
-export async function setProjectSharePassword(
-  env: Env,
-  id: string,
-  stored: string | null,
-): Promise<void> {
-  await env.DB.prepare('UPDATE projects SET share_password = ? WHERE id = ?')
-    .bind(stored, id)
-    .run();
-}
-
-// Rewrite a legacy plain-text value as its hash, only if the column still
-// holds that exact value: an owner who changed the password meanwhile wins.
-export async function upgradeProjectSharePassword(
-  env: Env,
-  id: string,
-  from: string,
-  to: string,
-): Promise<void> {
-  await env.DB.prepare('UPDATE projects SET share_password = ? WHERE id = ? AND share_password = ?')
-    .bind(to, id, from)
-    .run();
-}
-
-// The immediate hard delete of one project, which only Take Offline uses now:
-// every other delete moves the project to the Trash, and its purge runs
-// purgeProjects (docs/specs/013-workspace/trash.md). A tab another project
-// still holds survives either.
-export async function deleteProject(env: Env, id: string): Promise<void> {
-  await env.DB.batch(projectRemovalStatements(env, { column: 'id', value: id }));
-  // The room's storage too: an Offline project keeps nothing on the server. Best effort.
-  await purgeRooms(env, [id]);
-  // Drop the cached SVG snapshot (docs/specs/006-project/project-snapshots.md) alongside the row so a
-  // deleted project doesn't leave an orphaned R2 object behind. Best
-  // effort: a missing binding or a missing object is a no-op, and a
-  // failure here must never fail the delete itself.
-  if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id)).catch(() => {});
-}
-
-// R2 object key for a project's cached SVG snapshot (docs/specs/006-project/project-snapshots.md). Shared by
-// the render-cache (which writes it) and deleteProject (which clears it)
-// so the key shape lives in exactly one place.
-export function thumbnailKey(projectId: string): string {
-  return `thumb/${projectId}`;
-}
-
-// The share card a link preview shows (docs/specs/013-workspace/share-link-previews.md): the first-tab snapshot drawn
-// as a 1200 x 630 PNG.
-export function shareCardKey(projectId: string): string {
-  return `og/${projectId}`;
-}
-
-// Every cached snapshot a project can have, for the paths that delete it.
-export function snapshotKeys(projectId: string): string[] {
-  return [thumbnailKey(projectId), shareCardKey(projectId)];
-}
-
-// When the cached snapshot was last rendered (docs/specs/006-project/project-snapshots.md), or null when it
-// never has been. The render-on-read path compares this against the
-// project's saved_at to decide whether the R2 object is still fresh.
-export async function getThumbRenderedAt(env: Env, id: string): Promise<number | null> {
-  const row = await env.DB.prepare('SELECT thumb_rendered_at FROM projects WHERE id = ?')
-    .bind(id)
-    .first<{ thumb_rendered_at: number | null }>();
-  return row?.thumb_rendered_at ?? null;
-}
-
-// Stamp the snapshot as freshly rendered (docs/specs/006-project/project-snapshots.md). Called after a
-// successful R2 write so the next read streams the cached bytes instead
-// of re-rendering.
-export async function markThumbRendered(env: Env, id: string, now: number): Promise<void> {
-  await env.DB.prepare('UPDATE projects SET thumb_rendered_at = ? WHERE id = ?')
-    .bind(now, id)
-    .run();
-}
-
-// "Copy this project to my own files" — duplicates the source project
-// under a brand-new id owned by `newOwnerId`. Carries the project
-// meta (name with "Copy of " prefix unless the caller overrides) and
-// every tab's content; deliberately does NOT copy share_links or the
-// shareable flag. The new project starts private so the visitor's
-// copy reads as their own clean workspace, not a clone of the host's
-// collab setup.
-//
-// Caller is expected to have already authorised the copy (the index
-// handler checks ownership / share_code / shared_with). This helper
-// just performs the write.
-export async function copyProject(
-  env: Env,
-  sourceId: string,
-  newId: string,
-  newOwnerId: string,
-  newName: string,
-  // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md) takes their tab only.
-  onlyTabId: string | null = null,
-  // A copy by anyone but the source's owner: its comments keep only the copier's own author ids, as
-  // the tab read serves them (redactCommentAuthorIds). An author id is a guest's credential.
-  redactAuthorsFor: string | null = null,
-): Promise<ProjectDTO | null> {
-  const source = await getProject(env, sourceId);
-  if (!source) return null;
-  const now = Date.now();
-  // The copy carries the source's recorded creation intent, read in the same statement, never
-  // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
-  await env.DB.prepare(
-    `INSERT INTO projects (id, owner_id, name, shareable, folder_id, saved_at, created_at, item_types, ${INTENT_COLS})
-     SELECT ?, ?, ?, 0, NULL, ?, ?, item_types, ${INTENT_COLS} FROM projects WHERE id = ?`,
-  )
-    .bind(newId, newOwnerId, newName, now, now, sourceId)
-    .run();
-  // Walk the source's tab rows via the link table and re-insert
-  // each under the new project id with a freshly minted tab id.
-  // Preserves order_index verbatim so the cloned project opens to
-  // the same tab layout the visitor was looking at. Skipping
-  // share_links is by design — they don't survive
-  // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-project/tab-project-many-to-many.md)
-  // are deliberate: edits to the copy stay isolated from the source.
-  const tabRows = await env.DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
-       FROM project_tabs dt
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.project_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
-      ORDER BY dt.order_index ASC`,
-  )
-    .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
-    .all<{
-      id: string;
-      name: string;
-      order_index: number;
-      data: string;
-      element_count: number | null;
-    }>();
-  // Mint every fresh tab id up front so a tab / element link on one tab
-  // can be re-pointed at its sibling's copy (the Explorer duplicate does
-  // the same walk through the shared remapTabLinks). Without it the copy's
-  // links still named the SOURCE project's tabs, which the copy doesn't
-  // have. Only a tab whose data carries a tab id at all pays for a parse.
-  const rows = tabRows.results ?? [];
-  const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
-  // One batch instead of 2N sequential round trips: collect both
-  // inserts for every source tab and submit them together.
-  const inserts = rows.flatMap((row) => {
-    const freshTabId = tabIdMap.get(row.id)!;
-    const remapped = remapTabDataLinks(row.data, tabIdMap);
-    const data =
-      redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped;
-    return [
-      // Link remapping rewrites ids inside elements, never their number, so the count carries over.
-      env.DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)`,
-      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
-      env.DB.prepare(
-        `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at)
-         VALUES (?, ?, ?, ?)`,
-      ).bind(newId, freshTabId, row.order_index, now),
-      // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
-      tabStatsStatement(env, freshTabId, tabStatsOfData(data).stats, now),
-      // The copy carries the source's actions + threads inside its
-      // data, so its index rows are copied the same way, without a
-      // parse (docs/specs/013-workspace/inbox.md §2.1).
-      ...collabIndexCopyStatements(env, row.id, freshTabId),
-      // The copy's Sheets reference the copied sheets, which keep their ids (sheet-refs.ts).
-      sheetRefCopyStatement(env, row.id, freshTabId),
-    ];
-  });
-  // The items go in the same batch as the tabs (two statements that copy nothing from a store without
-  // items), so a copy pays no extra round trip for them; a tab-scoped copy first works out which.
-  const itemCopies = copyItemsStatements(
-    env,
-    sourceId,
-    newId,
-    await copiedItemIds(env, sourceId, rows, onlyTabId),
-  );
-  // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
-  const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);
-  await env.DB.batch([...inserts, ...itemCopies, ...sheetCopies]);
-  return await getProject(env, newId);
-}
-
-// The items a copy takes: all of them, or for a tab-scoped copy the items its one tab shows.
-async function copiedItemIds(
-  env: Env,
-  sourceId: string,
-  rows: { data: string }[],
-  onlyTabId: string | null,
-): Promise<string[] | null> {
-  if (onlyTabId === null) return null;
-  const elements = rows.flatMap((row) => {
-    try {
-      const parsed = JSON.parse(row.data) as { elements?: unknown };
-      return Array.isArray(parsed.elements) ? (parsed.elements as TabItemElement[]) : [];
-    } catch {
-      return [];
-    }
-  });
-  return [...itemIdsShownOnTab(elements, await listItems(env, sourceId))];
-}
-
-// Re-point the tab / element links inside one tab's stored `data` JSON at
-// the copy's tab ids. The data is only parsed when it mentions a tab id, so
-// the common link-free tab is copied byte for byte as before.
-export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
-  // A tab or element link, or a Tab Window's tab: nothing to re-point without one.
-  if (!data.includes('"tabId"') && !data.includes('"windowTabId"')) return data;
+// What liveworkspace keeps of a plan's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// (routes/internal-items.ts): its previews go too. Its form links and reports are in its own Durable Object (wiped
+// with it), and the index's form row and code cascade with the item. Workbench tickets and sessions scoped to it are
+// liveworkspace's: a ticket lapses in a minute, and a session's every request is gated on the
+// plan's grant, which a purged plan never gets again. Best effort: a preview the purge misses is unreachable (every
+// read asks the index).
+export async function purgePlanPreviews(env: Env, id: string): Promise<void> {
+  const media = mediaClient(env);
+  if (!media) return;
   try {
-    const parsed = JSON.parse(data) as { elements?: Element[] };
-    if (!Array.isArray(parsed.elements)) return data;
-    return JSON.stringify({ ...parsed, elements: remapTabLinks(parsed.elements, tabIdMap) });
-  } catch {
-    return data;
+    await media.deletePreviews(id);
+  } catch (err) {
+    console.warn('[purge] previews not dropped', { projectId: id, error: String(err) });
   }
-}
-
-// docs/specs/014-identity/transactional-email.md (#6): total projects owned by `ownerId`, for the milestone check on
-// create. Counts all of an owner's projects (a cheap indexed COUNT).
-export async function countProjectsByOwner(env: Env, ownerId: string): Promise<number> {
-  const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM projects WHERE owner_id = ?')
-    .bind(ownerId)
-    .first<{ n: number }>();
-  return row?.n ?? 0;
-}
-
-// docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new comment
-// on this project, at most once per window. Atomic conditional UPDATE so a burst
-// of concurrent comment saves can't each fire an email. `cutoff` = now - window;
-// returns false when we already emailed within the window.
-export async function claimCommentNotify(
-  env: Env,
-  projectId: string,
-  now: number,
-  cutoff: number,
-): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE projects SET comment_notified_at = ? WHERE id = ? AND (comment_notified_at IS NULL OR comment_notified_at < ?)',
-  )
-    .bind(now, projectId, cutoff)
-    .run();
-  return res.meta.changes === 1;
-}
-
-// docs/specs/014-identity/profile-and-email-notifications.md (a) throttle: claim the right to email the owner that
-// someone joined this project, at most once per window. The same atomic conditional UPDATE as
-// claimCommentNotify, on its own column, so a join and a comment never spend each other's window.
-export async function claimJoinNotify(
-  env: Env,
-  projectId: string,
-  now: number,
-  cutoff: number,
-): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE projects SET join_notified_at = ? WHERE id = ? AND (join_notified_at IS NULL OR join_notified_at < ?)',
-  )
-    .bind(now, projectId, cutoff)
-    .run();
-  return res.meta.changes === 1;
 }

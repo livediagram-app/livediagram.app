@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMask } from '@livedesign/photo-engine';
-import { getAnnouncementSnapshot } from '../announcer';
+import { getAnnouncementSnapshot } from '@liveworkspace/workbench/lib/announcer';
 import { harness, photoOf, pixelLayer } from './photo-test-utils';
 import { announceCommit, selectionWords, watchSelection } from './photo-announce';
 

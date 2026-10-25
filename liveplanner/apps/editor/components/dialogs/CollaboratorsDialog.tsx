@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { Button, DialogHeader, DialogCloseButton } from '@liveplanner/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { useAppearance } from '@/hooks/ui/useAppearance';

@@ -3,7 +3,7 @@
 // moved to the Trash, as the type editor's Delete Type does. A refusal before the save saves nothing. The save names
 // the catalogue's revision it read; when someone else's change landed first, the plan is read again and the changes
 // applied to it (CARD_TYPES_SAVE_ATTEMPTS), so neither change overwrites the other.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import type { ItemResponse, ItemTypesRequest } from '@liveplanner/api-schema';
 import {
   applyCardTypeChanges,

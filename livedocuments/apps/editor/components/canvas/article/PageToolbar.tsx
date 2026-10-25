@@ -25,7 +25,7 @@ import {
   lucidePlus,
   lucideType,
   lucideUnderline,
-} from '@livedocuments/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { ChevronDownIcon, lucideGlyph, Tooltip, Portal } from '@livedocuments/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
@@ -35,7 +35,7 @@ import {
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
 import { useCanvasGesture } from '@/lib/canvas-gesture';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
   requestStylePanel,

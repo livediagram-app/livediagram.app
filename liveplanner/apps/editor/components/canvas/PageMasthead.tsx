@@ -2,7 +2,7 @@
 
 import { PAGE_HEADING_MAX, type ShapeElement } from '@liveplanner/project';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A Page's fixed masthead (docs/specs/009-elements/page-element.md): a heading and a subtitle above the body,
 // separated by a hairline rule.

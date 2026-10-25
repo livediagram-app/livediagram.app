@@ -407,20 +407,3 @@ export function captureCandidate(
   }
   return best;
 }
-
-// The lanes whose BAND intersects a canvas-space viewport, in order. The stack
-// is infinite, so this is what bounds any drawing of it. A viewport sitting
-// entirely inside a gap sees no lane at all, which is the truth.
-export function visibleLaneIndices(
-  viewport: { top: number; bottom: number },
-  timeline: EsTimeline,
-): number[] {
-  const first = Math.floor((viewport.top - timeline.originY) / ES_LANE_PITCH);
-  const last = Math.ceil((viewport.bottom - timeline.originY) / ES_LANE_PITCH);
-  const out: number[] = [];
-  for (let i = first; i <= last; i += 1) {
-    const top = laneTop(i, timeline);
-    if (top <= viewport.bottom && top + ES_LANE_HEIGHT >= viewport.top) out.push(i);
-  }
-  return out;
-}

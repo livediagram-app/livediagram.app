@@ -6,7 +6,7 @@
 // it is the same message as a top-centre pill below the top chrome, as a mode banner falls back to (ModeBanner).
 // Either way it steps aside while a mode's message is up, which takes the same place.
 import { lucideGlyph } from '@livedocuments/ui';
-import { lucideSparkles } from '@livedocuments/icons/lucide';
+import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import {
   PaletteTray,
   PaletteTrayAction,

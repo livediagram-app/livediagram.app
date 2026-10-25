@@ -4,12 +4,16 @@
 // Both read the same outline so an anchor always sits exactly on the edge
 // the trigger measures against.
 
-import { isTechIconId } from '@livedocuments/icons';
+import { isTechIconId } from '@liveworkspace/icons';
 import type { BoxedElement } from './index';
-import { techIconMarkBounds } from './icon-size';
-import { distToSegment, rotatePoint, type Point } from './geometry-primitives';
+import { techIconMarkBounds } from '@liveworkspace/model-core/icon-size';
+import {
+  distToSegment,
+  rotatePoint,
+  type Point,
+} from '@liveworkspace/model-core/geometry-primitives';
 import { shapePathData, shapePolygonVertices } from './shape-geometry';
-import { sampleSvgPath } from './svg-path-outline';
+import { sampleSvgPath } from '@liveworkspace/model-core/svg-path-outline';
 import type { ShapeKind } from './shape-kind';
 
 // Half circles (a stadium's ends) and half ellipses (a cylinder's caps) are

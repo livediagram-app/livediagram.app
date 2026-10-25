@@ -7,7 +7,7 @@ import type { renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
 import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
-import { svgFrameOf } from '@/lib/svg-frame';
+import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';

@@ -78,11 +78,6 @@ describe('parseRecentDiagrams', () => {
     expect(parseRecentDiagrams(raw).map((d) => d.teamName)).toEqual(['Design', null, null]);
   });
 
-  it('reads a retired mode as Plan', () => {
-    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"facilitate"}]}';
-    expect(parseRecentDiagrams(raw)[0]?.mode).toBe('plan');
-  });
-
   it('drops an unknown mode to null', () => {
     const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"bogus"}]}';
     expect(parseRecentDiagrams(raw)[0]?.mode).toBeNull();

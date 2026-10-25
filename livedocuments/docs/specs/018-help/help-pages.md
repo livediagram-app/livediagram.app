@@ -16,7 +16,7 @@ path that fits who they are (new, stuck, managing data, building on the API), an
 
 Every page wears the marketing site's language, so moving between `/` and `/help` reads as one product:
 
-- **The canvas wash.** A page's header band (`components/HelpHero.tsx`) is the marketing hero's band: its colours
+- **The canvas wash.** A page's header band (`../packages/help-site/src/components/HelpHero.tsx`) is the marketing hero's band: its colours
   and the canvas's dot grid fading out at its foot come from one stylesheet, `packages/ui/hero-band.css`, which
   both apps import. It replaces the flat tinted band the article and category headers had.
 - **Display headings.** Page titles are bold, tight-tracked and dark ink (`slate-900`, `slate-50` in dark); the
@@ -27,7 +27,8 @@ Every page wears the marketing site's language, so moving between `/` and `/help
 ## Category art
 
 Every category has one **category scene**: a large SVG illustration of that area of the product at work, drawn from
-the help illustration kit (`components/illustrations/primitives.tsx`) so it shares the in-article figures' house
+the help illustration kit (`../packages/help-site/src/art/primitives.tsx`, with the stage and its motifs in
+`../packages/help-site/src/art/parts.tsx`) so it shares the in-article figures' house
 style and dark appearance. A scene is a composed moment, not a row of glyphs: real labels lifted from the editor
 (panel names, menu items, element text), people where the area is about people, and at least two accent hues
 beside the brand. It is drawn on a 400 by 220 stage. The scene always shows whole, and the stage's dotted ground runs far past
@@ -39,8 +40,41 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
   Contact (which has no card) has its own scene; an unknown slug renders nothing rather than a stand-in.
 - The art shows in two places: on a category's card (across its top, or beside the copy on a `wide` card), and
   on the right of the category page's header from `lg` up.
+- Each help centre tells its own story, in its own brand colours (`brand-*` classes and `var(--color-brand-*)`, so
+  a scene follows the product's hue). A scene is never copied from another product's help centre. A scene whose
+  story is the same in every product (the policies, a share link's safeguards, a page that would not load, one
+  piece of work on three devices, one search box, the API from outside, the keyboard) is drawn once, in
+  `../packages/help-site/src/art/scenes/<slug>.tsx`, and takes the product's content as props: its words, its
+  share host, its formats, its work drawn on each screen. The app's `components/category-art/<slug>.tsx` binds it.
+  Every other scene is the product's own. The Getting Started scene in particular tells this product's first
+  three steps, on three numbered cards.
 - Labels in a scene are the editor's own (real shortcuts, real API fields), checked against the articles.
 - The art is decorative (`aria-hidden`); the card's title and description say what the picture shows.
+
+livedocuments's scenes:
+
+| Scene                | Where                | What it shows                                                                                               |
+| -------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Getting Started      | own                  | a first document: an article, slide or infographic page, writing on it, the share link                      |
+| About                | own                  | three windows: a slide, an article and an infographic                                                       |
+| Pages                | own                  | an article page, a slide and an infographic, labelled the way the editor labels them                        |
+| Canvas               | own                  | a slide on the canvas, its title selected with the Quick Style panel, the alignment guide, undo and zoom    |
+| Palette              | own                  | the strip on a slide (Write first), the Components category open, a Callout dropped on the slide            |
+| Selection Modes      | own                  | the tool picker's three bands with Select chosen, and the spotlight and laser on a slide                    |
+| Collaboration        | own                  | two people writing one article: cursors, a highlighted line, a comment thread, Share                        |
+| Explorer             | own                  | My Work and a grid of articles, slides and posters                                                          |
+| Tabs                 | own                  | one document's tabs stacked behind the tab bar, a pitch deck's slides in front                              |
+| User Interface       | own                  | the editor with numbered callouts: the menu, the palette strip, the bottom-right buttons, the tab bar       |
+| Tools                | shared, with its own | Markdown Import turning `#` and `-` lines into an article, beside the shared appearance switch and Zen mode |
+| Tips and Tricks      | shared, with its own | the command palette (Slide Deck, Fit to Screen, Zen mode) and T, N and 9                                    |
+| Search Panel         | shared, with its own | "roadmap" finding a document, a tab, a sticky note and a guide                                              |
+| Supported Devices    | shared, with its own | an article page on a laptop, a tablet and a phone                                                           |
+| Developers           | shared, with its own | `POST /api/documents` with the `slide-deck` template, and the slide it makes                                |
+| Account and Data     | shared, with its own | a profile, synced documents (an article and a deck), and PDF, PNG, SVG and JSON                             |
+| Troubleshooting      | shared, with its own | a document that didn't load and the checklist fixing it                                                     |
+| Privacy and Security | shared, with its own | a livedocuments.app share link with its safeguards                                                          |
+| Self-Hosting         | shared, with its own | `~/livedocuments` deploying api, editor and router to your own domain                                       |
+| Policies             | shared, the same     | the terms and the privacy policy, sealed                                                                    |
 
 ## Home page
 
@@ -51,8 +85,9 @@ Top to bottom:
    link straight to the articles most readers come for (Working with Pages, Sharing Your Document, Keyboard
    Shortcuts, Templates, Exporting Pages, Slide Pages). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
-2. **Start here.** A full-width card, the Getting Started scene beside the first four Getting Started guides as
-   numbered steps and a link to the rest, then About livedocuments and Tips and Tricks as two wide cards.
+2. **Start here.** A full-width card: livedocuments's own Getting Started scene (a first document: an article, slide or infographic page, writing on it, and the share link) beside
+   four numbered steps (Your First Document, Working with Pages, Writing Articles, Sharing Your Document), named in `startHere.steps` in `lib/home-sections.ts`, and a
+   link to every Getting Started guide; then About livedocuments and Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
 5. **Developers.** Developers, as a wide card.
@@ -111,7 +146,7 @@ across title and keywords ([Help app](help-app.md), "Out of scope").
 ## In-article figures
 
 The figures inside articles keep the illustration kit and its house style ([Help app](help-app.md),
-"In-article illustrations"); their frame (`components/Figure.tsx`) matches the cards, rounded with a soft
+"In-article illustrations"); their frame (`../packages/help-site/src/components/Figure.tsx`) matches the cards, rounded with a soft
 shadow. No figure's text may run outside its scene. A browser sweep of every article found the shared palette
 strip (`Strip` in `components/illustrations/toolbar-layout.tsx`) running past its 420-wide scenes in eleven
 figures, cutting off Media and Search, so the strip is spaced to fit beside the menu card.

@@ -1,49 +1,30 @@
-// What a tab save needs of its design (docs/specs/015-api/api.md "Tab save"), in one query. The save ran the
-// full getDesign (the row with its share-code subquery, then the owner's participant and
-// the tab summaries) and used eight fields of it, two sequential round trips before anything else on every
-// autosave (~600 ms while someone edits). Live designs only, like every design read.
+// What a tab save needs of its design (docs/specs/015-api/api.md "Tab save"): the design's own row and tab count from
+// its store, nothing from elsewhere. It runs on every autosave.
 
-import type { DesignDTO, Env } from '../types';
+import type { DesignDTO, DesignEnv } from '../types';
+import { readDesignMeta } from '../design-room/design-content';
 
-export type TabSaveDesign = Pick<
-  DesignDTO,
-  'id' | 'ownerId' | 'teamId' | 'name' | 'createdAt' | 'ownerName' | 'ownerColor'
-> & {
+export type TabSaveDesign = Pick<DesignDTO, 'id' | 'ownerId' | 'teamId' | 'name' | 'createdAt'> & {
   // How many tabs the design holds: where a new tab lands.
   tabCount: number;
 };
 
-type Row = {
-  id: string;
-  owner_id: string;
-  team_id: string | null;
-  name: string;
-  created_at: number;
-  owner_name: string | null;
-  owner_color: string | null;
-  tab_count: number;
-};
-
-export async function getDesignForSave(env: Env, id: string): Promise<TabSaveDesign | null> {
-  const row = await env.DB.prepare(
-    `SELECT d.id, d.owner_id, d.team_id, d.name, d.created_at,
-            p.name AS owner_name, p.color AS owner_color,
-            (SELECT COUNT(*) FROM design_tabs dt WHERE dt.design_id = d.id) AS tab_count
-       FROM designs d
-       LEFT JOIN participants p ON p.id = d.owner_id
-      WHERE d.id = ? AND d.trashed_at IS NULL`,
-  )
-    .bind(id)
-    .first<Row>();
-  if (!row) return null;
+// Runs inside the design's Durable Object. Null for a design never started.
+export async function getDesignForSave(env: DesignEnv, id: string): Promise<TabSaveDesign | null> {
+  // Both reads start before either is awaited; the count is its own async step so a throw while preparing it
+  // rejects with the meta read settled, never leaving that one unhandled.
+  const countTabs = async () =>
+    env.DESIGN_DB.prepare('SELECT COUNT(*) AS n FROM design_tabs WHERE design_id = ?')
+      .bind(id)
+      .first<{ n: number }>();
+  const [meta, count] = await Promise.all([readDesignMeta(env, id), countTabs()]);
+  if (!meta) return null;
   return {
-    id: row.id,
-    ownerId: row.owner_id,
-    teamId: row.team_id ?? null,
-    name: row.name,
-    createdAt: row.created_at,
-    ownerName: row.owner_name ?? null,
-    ownerColor: row.owner_color ?? null,
-    tabCount: row.tab_count,
+    id,
+    ownerId: meta.ownerId,
+    teamId: meta.teamId,
+    name: meta.name,
+    createdAt: meta.createdAt,
+    tabCount: count?.n ?? 0,
   };
 }

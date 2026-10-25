@@ -4,7 +4,8 @@
 // page kept across what shows. Pure: usePageSnap measures the canvas and hands it in.
 import type { LaidOutPage } from '@livedocuments/document';
 import { pageInView } from './page-contents';
-import { READING_TOP_ROOM, type Offset } from './viewport';
+import { READING_TOP_ROOM } from './reading-frame';
+import type { Offset } from '@liveworkspace/workbench/lib/viewport';
 
 export type SnapFrame = { zoom: number; offset: Offset };
 

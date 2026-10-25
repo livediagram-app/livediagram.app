@@ -91,7 +91,7 @@ Reserved for status — never used decoratively.
 
 ## Dark palette (Steel)
 
-Dark mode is its own palette, not the light one with the lights off. It lives in `packages/tailwind-config/theme.css`
+Dark mode is its own palette, not the light one with the lights off. It lives in `../packages/tailwind-config/theme.css`
 under `.dark` and **retargets tokens only**: every `slate-*` / `brand-*` utility keeps its name, and light mode keeps
 every colour it has. The canvas half of the palette (backdrop, grid, element ink, arrows, selection) belongs to the
 Default colour scheme's dark half, specified in [Canvas and palette](../008-canvas/canvas-and-palette.md).
@@ -110,7 +110,7 @@ The lighter stops (`slate-50`…`slate-700`) keep Tailwind's values: they carry 
 
 **slate-800 is a surface, not an edge.** It sits one step off slate-900, so a slate-900 card outlined in
 slate-800 shows no edge in dark. A card on a slate-900 or slate-950 band takes a **slate-700** border; slate-800 stays
-for hover surfaces, inputs and rules inside a card. On the marketing site `apps/marketing/lib/dark-card-borders.test.ts`
+for hover surfaces, inputs and rules inside a card. On the marketing site `../packages/marketing-site/src/guards/source-guards.test.ts`
 fails on a rounded, bordered slate-900 card outlined in slate-800 (the hero's editor mocks and the feature-card art are
 exempt: they draw the editor's own chrome).
 
@@ -209,7 +209,7 @@ Explorer panel and every other page keep Steel.
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
-  (marketing, help, community, telemetry), the New Document wizard and the editor's small and uppercase labels follow
+  (marketing, help, community, telemetry), the New Canvas wizard and the editor's small and uppercase labels follow
   it ([#863](https://github.com/livediagram-app/livediagram.app/issues/863)), held by
   `apps/editor/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
@@ -217,7 +217,7 @@ Explorer panel and every other page keep Steel.
   it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/editor/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/editor/e2e/contrast-audit.spec.ts`) walks every visible
-  text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
+  text node on the New Canvas wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74).
@@ -227,11 +227,11 @@ Explorer panel and every other page keep Steel.
 
 ## Tailwind integration
 
-The palette is exposed as a Tailwind v4 theme in `packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
+The palette is exposed as a Tailwind v4 theme in `../packages/tailwind-config/theme.css`. Apps consume it by importing the package alongside Tailwind itself in their `globals.css`:
 
 ```css
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 ```
 
 The package's `theme.css` declares the brand ramp as CSS variables inside a `@theme` block, which Tailwind v4 turns into the `brand-50`…`brand-950` utility classes automatically:

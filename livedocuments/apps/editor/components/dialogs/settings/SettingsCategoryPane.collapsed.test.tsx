@@ -7,7 +7,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { SettingsCategoryPane } from './SettingsCategoryPane';
+import { SettingsCategoryPane } from './test-pane';
 
 afterEach(cleanup);
 // Landing on a row scrolls it into view, which jsdom does not lay out.

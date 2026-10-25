@@ -1,37 +1,45 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // E2E smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Chromium only; deliberately small. Runs
-// against the real production build + api worker (scripts/e2e-stack.mjs),
+// against the real production build + api worker + liveworkspace's local index (scripts/e2e-stack.mjs; the
+// default stack's index on :8119),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
 const isCI = !!process.env.CI;
 const CI_WORKERS = 4;
-// The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
-// the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
-// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3102 is never
+// The signed-in specs (e2e/signed-in/, docs/specs/003-system-architecture/e2e-smoke.md) need
+// the signed-in export (`pnpm build:signed-in`). They run as their own invocation
+// (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3102 is never
 // mistaken for it.
-const clerkStub = process.env.E2E_CLERK_STUB === '1';
-const STUB_PORTS = { live: '3115', api: '8115', marketing: '3116' };
-// The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
-// signatures") need guest signature enforcement on, so they run as their own invocation
-// (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
-const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
-const ARMED_PORTS = { live: '3117', api: '8117', marketing: '3118' };
+const signedIn = process.env.E2E_SIGNED_IN === '1';
+const SIGNED_IN_PORTS = {
+  live: '3115',
+  api: '8115',
+  marketing: '3116',
+  index: '8117',
+  media: '8116',
+};
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
-// NEXT_PUBLIC_E2E_AUTH export and the stack acting as Clerk, so it runs as its own invocation
-// (`pnpm test:e2e:workbench`) on its own ports.
+// NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
+// (`pnpm test:e2e:workbench`) on its own ports. Pairing, tickets and sessions are liveworkspace's now
+// (liveworkspace/docs/workbench.md), so the suite also needs liveworkspace's accounts Worker and site, which the
+// stack does not start yet: until it does, the suite stops at its first mint.
 const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = { live: '3121', api: '8121', marketing: '3122' };
+const WORKBENCH_PORTS = {
+  live: '3121',
+  api: '8121',
+  marketing: '3122',
+  index: '8118',
+  media: '8122',
+};
 const BASE_URL =
   process.env.E2E_BASE_URL ??
-  (clerkStub
-    ? `http://localhost:${STUB_PORTS.live}`
-    : armed
-      ? `http://localhost:${ARMED_PORTS.live}`
-      : workbench
-        ? `http://localhost:${WORKBENCH_PORTS.live}`
-        : 'http://localhost:3102');
-const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : workbench ? '-workbench' : '';
+  (signedIn
+    ? `http://localhost:${SIGNED_IN_PORTS.live}`
+    : workbench
+      ? `http://localhost:${WORKBENCH_PORTS.live}`
+      : 'http://localhost:3102');
+const runName = signedIn ? '-signed-in' : workbench ? '-workbench' : '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -76,8 +84,7 @@ export default defineConfig({
       // The Drive, signed-in and sites suites need their own builds and stacks; see below.
       testIgnore: [
         /drive-(mirror|shots)\.spec\.ts/,
-        /clerk-stub\//,
-        /armed\//,
+        /signed-in\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
         /workbench-(embed|workspace)\.spec\.ts/,
@@ -119,21 +126,12 @@ export default defineConfig({
           },
         ]
       : []),
-    ...(clerkStub
+    ...(signedIn
       ? [
           {
-            name: 'clerk-stub',
+            name: 'signed-in',
             use: { ...devices['Desktop Chrome'] },
-            testMatch: /clerk-stub\/.*\.spec\.ts/,
-          },
-        ]
-      : []),
-    ...(armed
-      ? [
-          {
-            name: 'armed',
-            use: { ...devices['Desktop Chrome'] },
-            testMatch: /armed\/.*\.spec\.ts/,
+            testMatch: /signed-in\/.*\.spec\.ts/,
           },
         ]
       : []),
@@ -175,28 +173,23 @@ export default defineConfig({
     timeout: 180_000,
     stdout: 'pipe',
     stderr: 'pipe',
-    env: clerkStub
+    env: signedIn
       ? {
-          E2E_EDITOR_OUT: '.next/out-clerk-stub',
-          E2E_EDITOR_PORT: STUB_PORTS.live,
-          E2E_API_PORT: STUB_PORTS.api,
-          E2E_MARKETING_PORT: STUB_PORTS.marketing,
-          // The stack stands in for Clerk: it mints the stub's session tokens and the api verifies them.
-          E2E_CLERK_JWKS: '1',
+          E2E_EDITOR_OUT: '.next/out-signed-in',
+          E2E_EDITOR_PORT: SIGNED_IN_PORTS.live,
+          E2E_API_PORT: SIGNED_IN_PORTS.api,
+          E2E_MARKETING_PORT: SIGNED_IN_PORTS.marketing,
+          E2E_INDEX_PORT: SIGNED_IN_PORTS.index,
+          E2E_MEDIA_PORT: SIGNED_IN_PORTS.media,
         }
-      : armed
+      : workbench
         ? {
-            E2E_EDITOR_PORT: ARMED_PORTS.live,
-            E2E_API_PORT: ARMED_PORTS.api,
-            E2E_MARKETING_PORT: ARMED_PORTS.marketing,
-            E2E_GUEST_SIG_ENFORCE: '1',
+            E2E_EDITOR_PORT: WORKBENCH_PORTS.live,
+            E2E_API_PORT: WORKBENCH_PORTS.api,
+            E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
+            E2E_INDEX_PORT: WORKBENCH_PORTS.index,
+            E2E_MEDIA_PORT: WORKBENCH_PORTS.media,
           }
-        : workbench
-          ? {
-              E2E_EDITOR_PORT: WORKBENCH_PORTS.live,
-              E2E_API_PORT: WORKBENCH_PORTS.api,
-              E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
-            }
-          : {},
+        : {},
   },
 });

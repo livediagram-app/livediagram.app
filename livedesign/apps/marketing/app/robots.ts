@@ -23,7 +23,7 @@ export const dynamic = 'force-static';
 //
 // allow: ['/'] keeps the marketing surface (/, /faq,
 // /sitemap.xml, /robots.txt) discoverable. (/terms and /privacy are
-// now noindex redirects to the help-centre Policies articles.)
+// now noindex redirects to liveworkspace.app's terms and privacy policy.)
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

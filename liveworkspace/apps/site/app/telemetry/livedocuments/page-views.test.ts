@@ -1,6 +1,10 @@
 import type { TelemetryCount } from '@livedocuments/api-schema';
 import { describe, expect, it } from 'vitest';
-import { pageViewRows } from './page-views';
+import { pageViewRows as rowsFor } from '../_shared/page-views';
+import { LIVEDOCUMENTS as APP } from './config';
+
+const pageViewRows = (rows: TelemetryCount[], app: string) =>
+  rowsFor(rows, app, APP.pageViews.appOf);
 
 // The Pages tab's arithmetic (docs/specs/017-telemetry/page-view-telemetry.md): only page views count, split by the
 // app that serves each path.

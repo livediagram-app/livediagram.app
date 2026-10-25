@@ -1,14 +1,14 @@
 'use client';
 
-// Who a comment can @-mention, and the notify that follows a mention
-// (docs/specs/012-collaboration/comment-mentions.md). The candidates are the members of the team whose library
-// holds this document, joined and invited, except yourself: the Assign Action
-// picker's rule, for the same reason (a mention should reach someone who can
-// open the document). A personal document or a guest has none.
+// Who a comment can @-mention, and what follows a mention (docs/specs/012-collaboration/comment-mentions.md). The
+// candidates are the people of the team whose library holds this document, joined and invited, except yourself: the
+// Assign Action picker's rule, for the same reason (a mention should reach someone who can open the document). A
+// personal document or a guest has none. The team is one the account's token names (liveworkspace/docs/accounts.md
+// "Teams"); its people come from the api, which reads them from liveworkspace.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { assignHandles, type CommentMention } from '@livediagram/document';
-import { apiGetTeam, apiNotifyMention, type TeamListItem } from '@/lib/api-client';
+import { apiNotifyMention, apiTeamMembers } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { teamMemberRows } from './team-member-rows';
 
@@ -24,7 +24,7 @@ export function useCommentMentions({
 }: {
   // The signed-in account; null for a guest (no teams, no mentions).
   ownerId: string | null;
-  teams: TeamListItem[];
+  teams: readonly { id: string; name: string }[];
   documentTeamId: string | null;
   documentId: string | null;
 }) {
@@ -35,17 +35,14 @@ export function useCommentMentions({
   const key = team && ownerId ? `${ownerId}:${team.id}` : null;
   const [loaded, setLoaded] = useState<{ key: string; list: MentionCandidate[] } | null>(null);
 
-  // One load per (account, team). A failure leaves the list empty: nobody to
-  // suggest, and the comment still posts as plain text.
+  // One load per (account, team). A failure leaves the list empty: nobody to suggest, and the comment still
+  // posts as plain text.
   useEffect(() => {
     if (!key || !team || !ownerId) return;
     let cancelled = false;
-    void apiGetTeam(ownerId, team.id)
-      .then((detail) => {
-        const rows = teamMemberRows(detail.members, team, ownerId).map((m) => ({
-          ...m,
-          name: m.name.trim() || m.email || 'Teammate',
-        }));
+    void apiTeamMembers(ownerId, team.id)
+      .then((members) => {
+        const rows = teamMemberRows(members, team, ownerId);
         const list = assignHandles(rows).map((m): MentionCandidate => ({
           userId: m.userId,
           memberId: m.memberId!,
@@ -65,8 +62,8 @@ export function useCommentMentions({
 
   const candidates = loaded && loaded.key === key ? loaded.list : NONE;
 
-  // After a comment with mentions lands: count it, and ask the api to email
-  // them. Fire-and-forget; the comment has already persisted locally.
+  // After a comment with mentions lands: count it, and ask the api to email them. Fire-and-forget; the comment has
+  // already persisted locally.
   const notifyMentioned = useCallback(
     (text: string, mentions: readonly CommentMention[]) => {
       if (mentions.length === 0) return;

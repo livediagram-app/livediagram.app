@@ -2,10 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/account-api';
-import { BUTTON, ErrorNote, INPUT, Panel } from './AccountShell';
+import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
 import { useAccountData } from './useAccountData';
 
-// The API tokens page (liveworkspace/docs/site.md "Your account"): making a token, seeing it once,
+// The Settings panel's API Tokens (liveworkspace/docs/site.md "Settings"): making a token, seeing it once,
 // and revoking it. A token is the account's, so it works on every app's API and MCP server; the AI
 // tools connected in an app show up here too.
 export function TokensPanel() {
@@ -13,7 +13,7 @@ export function TokensPanel() {
   const [made, setMade] = useState<(ApiToken & { secret: string }) | null>(null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <CreateToken
         onCreated={async (token) => {
           setMade(token);
@@ -23,7 +23,7 @@ export function TokensPanel() {
       {made && <Reveal token={made} onDone={() => setMade(null)} />}
 
       <section aria-labelledby="your-tokens">
-        <h2 id="your-tokens" className="text-xl font-semibold text-slate-900 dark:text-white">
+        <h2 id="your-tokens" className="text-base font-semibold text-slate-900 dark:text-white">
           Your tokens
         </h2>
         {load.state === 'loading' && (
@@ -79,7 +79,7 @@ function CreateToken({
   return (
     <Panel>
       <form onSubmit={(event) => void submit(event)}>
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Make a token</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Make a token</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           For your own scripts and tools. It acts as you in every app, for six months.
         </p>

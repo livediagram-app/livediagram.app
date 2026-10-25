@@ -3,7 +3,7 @@
 //
 // The mirror itself runs in the user's browser, straight against Google. The
 // worker only brokers tokens (the refresh token never leaves it) and stores a
-// few small rows per user. Signed-in only, and only through a Clerk session:
+// few small rows per user. Signed-in only, and only through a signed-in session:
 // neither the guest header nor an API token reaches any of this.
 
 import {
@@ -146,9 +146,9 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
   if (!route) return notFound();
   const mode = driveMode(env);
   if (mode === 'off') return driveError(503, 'drive_not_configured');
-  // A Clerk session only: never the unsigned guest header, and never an API
+  // A signed-in session only: never the unsigned guest header, and never an API
   // token (docs/specs/022-drive-mirror/drive-mirror.md, "Tokens").
-  const owner = ctx.clerkUserId;
+  const owner = ctx.accountUserId;
   if (!owner) return signInRequired();
   const now = Date.now();
 

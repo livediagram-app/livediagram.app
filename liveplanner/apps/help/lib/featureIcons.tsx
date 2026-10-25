@@ -3,7 +3,6 @@ import {
   lucideClock,
   lucideFilePlus,
   lucideFolder,
-  lucidePalette,
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucideSearch,
@@ -11,8 +10,7 @@ import {
   lucideTimer,
   lucideUsers,
   lucideVote,
-} from '@liveplanner/icons/lucide';
-import { topCategorySlug } from '@liveplanner/help-registry';
+} from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 
@@ -381,15 +379,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 15.5h4.5" />
     </Glyph>
   ),
-  // A hierarchy whose branches are tinted differently — the whole feature.
-  'custom-themes': (
-    <Glyph>
-      <rect x="3" y="5" width="6" height="6" rx="1.5" />
-      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <path d="M14 14v6M11 17h6" />
-    </Glyph>
-  ),
   // Two elements, both with handles on them: many things selected at once.
   undo: (
     <Glyph>
@@ -431,26 +420,27 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 7.5 11 10l4.5-5" />
     </Glyph>
   ),
+  // A spine with two events on it and their lines of text: what happened, in order (the Explorer sidebar's mark).
+  // A funnel: a list, narrowed.
+  filters: (
+    <Glyph>
+      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
+    </Glyph>
+  ),
+  timeline: (
+    <Glyph>
+      <path d="M6 3.5v17" />
+      <circle cx="6" cy="7.5" r="1.6" />
+      <circle cx="6" cy="16.5" r="1.6" />
+      <path d="M10 7.5h9M10 16.5h6M10 12h4.2" />
+    </Glyph>
+  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>
       <path d="M2.5 6.5A1.5 1.5 0 014 5h3.5L9 6.5h4A1.5 1.5 0 0114.5 8v2" />
       <path d="M2.5 6.5v10A1.5 1.5 0 004 18h4" />
       <path d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z" />
-    </Glyph>
-  ),
-  // A new project dropping into its folder: where things go without being told.
-  'default-folders': (
-    <Glyph>
-      <path d="M3 10.5A1.5 1.5 0 014.5 9h3L9 10.5h10.5A1.5 1.5 0 0121 12v6.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z" />
-      <path d="M12 3v8.5" />
-      <path d="M9 8.5l3 3 3-3" />
-    </Glyph>
-  ),
-  // A funnel: a list, narrowed.
-  filters: (
-    <Glyph>
-      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
     </Glyph>
   ),
   // An account, not a person in a list: the head sits in its avatar ring.
@@ -485,11 +475,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="9" cy="9" r="3" />
       <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
       <path d="M16 6.5a3 3 0 0 1 0 5.8M17 19a5.5 5.5 0 0 0-3-4.9" />
-    </Glyph>
-  ),
-  'themes-library': (
-    <Glyph>
-      <Prims prims={lucidePalette} />
     </Glyph>
   ),
   // Tabs guides.
@@ -662,14 +647,3 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
   ),
   // A marquee with a pointer: choosing things is the whole category.
 };
-
-/** The glyph for a feature card: the feature's own icon, else its top-level
- *  category's, else the canvas frame. One resolver so the card, the category
- *  index, and the MDX `<Feature>` tile can't disagree about the order. */
-export function featureIcon(slug: string, categorySlug?: string): ReactNode {
-  return (
-    FEATURE_ICONS[slug] ??
-    FEATURE_CATEGORY_ICONS[topCategorySlug(categorySlug ?? '')] ??
-    FEATURE_FALLBACK_ICON
-  );
-}

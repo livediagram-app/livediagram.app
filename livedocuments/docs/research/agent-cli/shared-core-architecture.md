@@ -28,8 +28,8 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 | `find-documents.ts`                                                    | 72    | Personal + team library sweep, name match, ranking                                                                     | **Move server-side** as `GET /api/documents?query=` (one round trip instead of 2 + N teams)                                                                                              |
 | `tool-annotations.ts`                                                  | 110   | `registerTool` wrapper: required behaviour + outputSchema, telemetry, legacy names                                     | **Stays** (MCP adapter); reads behaviour from the catalogue                                                                                                                              |
 | `tool-helpers.ts`, `tool-scope.ts`, `request-scope.ts`                 | ~120  | Result shaping, token guard, AsyncLocalStorage scopes                                                                  | **Stays** (MCP adapter)                                                                                                                                                                  |
-| `api.ts`                                                               | 103   | Service-binding fetch, `ApiError`, 5xx telemetry                                                                       | **Generalise** into `@livedocuments/api-client` with an injected `fetch` (service binding in the worker, global `fetch` in the CLI)                                                      |
-| `render.ts`, `image-result.ts`                                         | 106   | resvg-wasm + embedded Inter, image prefetch                                                                            | **Extract** the rasteriser to `@livedocuments/render-png` (wasm init injected: Worker `Data` module vs Node `readFile`); image prefetch already sits on `embedTabImages` in `api-schema` |
+| `api.ts`                                                               | 103   | Service-binding fetch, `ApiError`, 5xx telemetry                                                                       | **Generalise** into `@liveworkspace/api-client` with an injected `fetch` (service binding in the worker, global `fetch` in the CLI)                                                      |
+| `render.ts`, `image-result.ts`                                         | 106   | resvg-wasm + embedded Inter, image prefetch                                                                            | **Extract** the rasteriser to `@liveworkspace/render-png` (wasm init injected: Worker `Data` module vs Node `readFile`); image prefetch already sits on `embedTabImages` in `api-schema` |
 | `oauth.ts`                                                             | 278   | OAuth 2.1 AS: discovery, DCR, authorize, session read, token                                                           | **Stays in `apps/mcp`** for now; two changes for the CLI (§6). Becomes `@livedocuments/oauth-server` only if a second host appears                                                       |
 | `prompts.ts`, `server.ts`, `legacy-tool-names.ts`, `created-folder.ts` |       | MCP-only                                                                                                               | **Stays**                                                                                                                                                                                |
 
@@ -37,7 +37,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 
 - `@livedocuments/document` is already the isomorphic core: types, `isValidTab`, `autoLayoutElements`, `graphToElements` (`graph-authoring.ts`, whose header already says "the public API can adopt it"), `parseMermaid`, `mermaid-serialise.ts` (elements to Mermaid), `renderElementsToSvg`, `element-ops.ts` (`diffToElementOps`, `applyElementOp`), `element-deltas.ts`, `comments.ts`, `element-display-label.ts`, `element-kind-label.ts`. Nothing in it touches the DOM. It is the right home for the moved MCP logic.
 - `@livedocuments/api-schema` holds the wire DTOs, `DOCUMENT_FORMAT` (2) and its header `X-Livedocuments-Format`, `BUILD_ID_HEADER`, telemetry enums, `embedTabImages`, `bearerTokenOf`, `isLoopbackHostname`. The CLI consumes it unchanged.
-- `@livedocuments/templates` and `@livedocuments/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
+- `@livedocuments/templates` and `@liveworkspace/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
 - **One piece lived in the wrong app:** `tabToMarkdownText` (the Markdown outline) was in the editor app. It is the seed of the outline view; it now lives in `packages/document/src/export-tab-text.ts`, and the outline view itself in `document-views`.
 - **Packaging fact that shapes distribution:** every internal package is `private` and exports raw TypeScript (`"main": "./src/index.ts"`). Nothing can be published as is; the CLI must be **bundled** (esbuild / tsdown) so internal packages are inlined. Source size: `document` 2.8 MB, `templates` 800 KB, `icons` 280 KB of TS, tree-shaken in the bundle.
 
@@ -106,7 +106,7 @@ Rules that keep them honest:
 ### 4.3 Rendering
 
 - SVG is pure (`renderElementsToSvg`) and already runs in the api for thumbnails and `/share/{code}/image.svg`. Add a per-tab `render.svg` route so every front-end can fetch the exact server render.
-- PNG stays at the edge. resvg-wasm (about 2.5 MB) plus Inter is already in `apps/mcp`; the CLI bundles the same wasm (works in Node and in Bun-compiled binaries) behind `@livedocuments/render-png`, whose only seam is "how do I load the wasm and the font bytes". Keeping it out of the api worker keeps the api bundle and CPU budget small.
+- PNG stays at the edge. resvg-wasm (about 2.5 MB) plus Inter is already in `apps/mcp`; the CLI bundles the same wasm (works in Node and in Bun-compiled binaries) behind `@liveworkspace/render-png`, whose only seam is "how do I load the wasm and the font bytes". Keeping it out of the api worker keeps the api bundle and CPU budget small.
 - Agents in a repo (Claude Code, Codex) can open a PNG file: `livedocuments tab render <doc> --png out.png` writes a file and prints its path, never base64 to stdout.
 
 ## 5. The operation catalogue
@@ -130,7 +130,7 @@ export interface Operation<I extends z.ZodType, O extends z.ZodType> {
 }
 
 export interface OperationContext {
-  api: ApiClient; // @livedocuments/api-client, fetch injected
+  api: ApiClient; // @liveworkspace/api-client, fetch injected
   signal: AbortSignal;
 }
 ```

@@ -39,7 +39,7 @@ static export.
 
 ## Dark appearance
 
-- Draw in the light ramp only. In dark, [`app/help-art.css`](../../app/help-art.css) re-points the
+- Draw in the light ramp only. In dark, [`../packages/help-site/src/help-art.css`](../../../../../packages/help-site/src/help-art.css) re-points the
   light tokens inside `Scene` so the art shows the editor's dark chrome with no `dark:` classes.
 - Something that looks the same in both appearances (a code window, the presenter HUD, the light
   half of a light/dark comparison, theme swatches) goes in a `<g className="help-art-as-drawn">`.

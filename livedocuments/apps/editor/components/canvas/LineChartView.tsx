@@ -20,8 +20,8 @@ import {
   type ShapeElement,
 } from '@livedocuments/document';
 import { useChartAnim, chartFrame } from '@/lib/chart';
-import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartReadout } from '@/components/primitives/ChartReadout';
+import { useChartHover } from '@liveworkspace/workbench/hooks/canvas/useChartHover';
+import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
 import { ChartValues } from '@/components/primitives/ChartValues';
 

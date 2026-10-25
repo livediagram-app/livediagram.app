@@ -1,7 +1,7 @@
 // Stroke geometry for the whiteboard eraser (docs/specs/023-draw-mode/draw-mode.md "Eraser"): whether a
 // brush swept along a segment touches a stroke's INK (not its bounding box),
 // and the pieces of a stroke that survive a Partial erase. Pure; canvas coords.
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveworkspace/model-core/border-style';
 import { createFreehand } from './factories';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';

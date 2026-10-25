@@ -1,25 +1,24 @@
 import type { CtaSurface } from '@livedesign/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
-import { BuildWithAiLink } from './BuildWithAiLink';
+import { BuildWithAiLink } from '@liveworkspace/ui';
+import { ExplorerLink } from './ExplorerLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
-import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
+import { SiteAccount } from './SiteAccount';
+import { SITE_ID } from './site';
+import { SiteSwitcher } from './SiteSwitcher';
 import { StartBlankLink } from './StartBlankLink';
 
 // The public site header shared by the marketing landing page, the telemetry
-// dashboard and the help centre so the three read as one product. Brand +
-// apps-menu dropdown on the left, the CTA pair on the right (a secondary
+// dashboard and the help centre so the three read as one product. The logo on the left (hover it for
+// liveworkspace's other sites, SiteSwitcher), the CTA pair on the right (a secondary
 // "Start Blank", a plain link to the wizard whose chosen mode opens with no start
 // screen (StartBlankLink), beside the primary "Choose Template", /new), with the
-// ShareRail pinned to the page edge below. Cross-surface navigation (Help,
-// Explorer, Telemetry, ...) lives in the apps menu, so the header itself
-// carries just those CTAs. The Appearance toggle is never here
+// ShareRail pinned to the page edge below. The Appearance toggle is never here
 // (docs/specs/004-interface-design/appearance.md): it sits on the page-edge rail (xl+), and where there is
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
-// `productNav` is the current section key for the apps-menu dropdown next to
-// the logo (the landing page passes 'home', which reads as "Home").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
@@ -36,34 +35,43 @@ import { StartBlankLink } from './StartBlankLink';
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
 //
-// `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
-// 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
+// `buildWithAi` makes it a marketing page's bar (docs/specs/019-marketing/marketing-site.md "Header"): the same
+// for everyone, signed in or not, Build with AI, Choose Template and Explorer in that order (MarketingActions),
+// with no Start Blank and no Open Explorer swap. 'link' on a marketing page, 'current' on /ai itself
+// (docs/specs/019-marketing/build-with-ai.md "Entry points").
+//
+// Without it (help, the dashboard, Community) the bar carries the Explorer link (ExplorerLink) left of the CTA
+// pair, so a new visitor can reach Explorer too; signed in, the primary Open Explorer covers it.
+//
+// `account` ends the bar with the signed-in person's account menu (SiteAccount; marketing pages only,
+// docs/specs/019-marketing/marketing-site.md "Header"). A visitor sees nothing there.
 export function SiteHeader({
-  productNav,
   ctaSurface,
   center,
   actions,
   buildWithAi,
   shareRail = true,
   wide = false,
+  account = false,
 }: {
-  productNav?: ProductNavKey;
   ctaSurface?: CtaSurface;
   center?: ReactNode;
   actions?: ReactNode;
   buildWithAi?: 'link' | 'current';
   shareRail?: boolean;
   wide?: boolean;
+  account?: boolean;
 }) {
   return (
     <>
       <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80 [view-transition-name:site-header]">
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
-            Brand + the apps-menu dropdown + CTA otherwise sit flush). Mobile
-            also trims the side padding to reclaim width, and the CTA is shrink-0
-            so it never squishes. The dropdown drops its text label on mobile
-            (see ProductNav) so the three never crowd. */}
+            the logo and CTA otherwise sit flush). Mobile also trims the side
+            padding to reclaim width, and the CTA is shrink-0 so it never squishes. What makes the
+            bar fit a phone beside the longest wordmark (livedocuments): the primary drops its verb
+            below 430px, the Explorer link is a 40px folder below `sm`, and below 360px the logo is
+            the mark alone (a marketing bar has its own steps, MarketingActions). */}
         <div
           className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
             wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
@@ -72,17 +80,35 @@ export function SiteHeader({
           {/* The bar's controls are under 44px tall; on a touch screen each tap area reaches to 44px
               vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
           <div className="flex shrink-0 items-center gap-2.5">
-            <Brand href="/" size="md" className="relative touch-target-y" />
-            {productNav ? <ProductNav current={productNav} showOnMobile /> : null}
+            <SiteSwitcher current={SITE_ID}>
+              {/* The mark alone below 360px (a 320px phone), or below 480px on a marketing page, whose bar holds
+                  three links and the account menu; its name is kept in the link's aria-label. */}
+              <Brand
+                href="/"
+                size="md"
+                className="relative touch-target-y"
+                wordmarkClassName={buildWithAi ? 'max-[479px]:hidden' : 'max-[359px]:hidden'}
+              />
+            </SiteSwitcher>
           </div>
           {center ? (
             <div className="hidden min-w-0 flex-1 justify-center sm:flex">
               <div className="w-full max-w-sm">{center}</div>
             </div>
           ) : null}
-          <div className="flex shrink-0 items-center gap-2">
-            {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
-            {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
+          {/* A marketing bar's gaps halve below 360px, so the account menu still fits a 320px phone. */}
+          <div
+            className={`flex shrink-0 items-center gap-2 ${buildWithAi ? 'max-[359px]:gap-1' : ''}`}
+          >
+            {buildWithAi ? (
+              <MarketingActions ctaSurface={ctaSurface} current={buildWithAi === 'current'} />
+            ) : (
+              <>
+                <ExplorerLink />
+                {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
+              </>
+            )}
+            {account ? <SiteAccount /> : null}
           </div>
         </div>
       </header>
@@ -92,7 +118,7 @@ export function SiteHeader({
   );
 }
 
-// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the primary already fill a
+// The default CTA pair. Start Blank is hidden on mobile: the logo + the primary already fill a
 // narrow bar, and the wizard's own Skip covers the escape. `max-sm:hidden` (a variant, so it wins over the base
 // inline-flex). Beside a centre slot (help's search) it waits for `md`, so the search box keeps room to read on a
 // small tablet. Signed in, the primary is Open Explorer instead (HeaderPrimaryCta).
@@ -104,6 +130,21 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
         className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
       />
       <HeaderPrimaryCta ctaSurface={ctaSurface} />
+    </>
+  );
+}
+
+// A marketing page's three links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header").
+// Build with AI and Choose Template are quiet links, Explorer the one filled button, last (into the app), so the
+// bar ends on its strongest control rather than breaking in the middle. Every one stays on a phone, only
+// shorter: below `lg` the two links are their glyphs alone, and below 360px every link and gap tightens a
+// little, so with the account menu the bar fits a 320px phone.
+function MarketingActions({ ctaSurface, current }: { ctaSurface?: CtaSurface; current: boolean }) {
+  return (
+    <>
+      <BuildWithAiLink current={current} />
+      <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
+      <ExplorerLink always solid />
     </>
   );
 }

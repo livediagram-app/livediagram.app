@@ -11,7 +11,7 @@ import type {
   TeamListItem,
   TeamsResponse,
 } from '@liveplanner/api-schema';
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 
 type TeamLibrary = { teamName: string; projects: ProjectSummary[] };
 

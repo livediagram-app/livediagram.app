@@ -23,22 +23,13 @@ const ERROR_SCHEMA: JsonSchema = {
 };
 
 const SECURITY_SCHEMES: Record<string, JsonSchema> = {
-  // A account access token OR an API token (`lvd_…`), both presented as
+  // A account access token OR an API token (`lwt_…`), both presented as
   // `Authorization: Bearer <credential>` (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/public-api-and-tokens.md).
   Bearer: {
     type: 'http',
     scheme: 'bearer',
     description:
-      'A account access token or an API token (`lvd_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
-  },
-  // The guest path: an unsigned per-browser owner id (docs/specs/014-identity/auth-and-guest-access.md). First-party
-  // app use; an `X-Owner-Sig` HMAC is also required once enforcement is on.
-  GuestId: {
-    type: 'apiKey',
-    in: 'header',
-    name: 'X-Owner-Id',
-    description:
-      'Per-browser guest owner id. First-party app path; external callers use a Bearer token.',
+      'An account access token, a guest token, or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
   },
 };
 
@@ -48,10 +39,11 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
       // Explicit empty requirement = "no auth needed" (and satisfies tooling
       // that wants every operation's security stated).
       return [];
-    case 'clerk':
+    case 'account':
       return [{ Bearer: [] }];
-    case 'guest-or-clerk':
-      return [{ Bearer: [] }, { GuestId: [] }];
+    case 'guest-or-account':
+      // A guest is a Bearer too: the guest token liveworkspace mints (liveworkspace/docs/accounts.md "Guests").
+      return [{ Bearer: [] }];
   }
 }
 
@@ -192,7 +184,6 @@ const TAGS = [
     description: 'Deleted designs, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
-  { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
     name: 'Workbench',
@@ -202,8 +193,10 @@ const TAGS = [
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
-  { name: 'AI', description: 'Optional AI design assistant.' },
-  { name: 'Telemetry', description: 'Anonymous first-party usage events and the public summary.' },
+  {
+    name: 'Telemetry',
+    description: 'Anonymous first-party usage events, passed on to liveworkspace.',
+  },
   { name: 'Meta', description: 'Capabilities, link unfurl, and this design.' },
 ];
 
@@ -224,7 +217,7 @@ export function buildOpenApiDesign(): OpenApiDesign {
       description:
         'The REST API behind livedesign. The same surface the web editor uses, callable ' +
         'programmatically. External callers authenticate with an API token ' +
-        '(`Authorization: Bearer lvd_…`); see the "API tokens" help article to create one. ' +
+        '(`Authorization: Bearer lwt_…`); see the "API tokens" help article to create one. ' +
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
         'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },

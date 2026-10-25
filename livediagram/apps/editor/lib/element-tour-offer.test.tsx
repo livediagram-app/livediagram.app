@@ -6,7 +6,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { elementTourOffer, setElementTourOffer, useElementTourOffer } from './element-tour-offer';
-import { setSankeyTourFocus, useSankeyTourFocus } from './sankey-tour-focus';
+import {
+  setSankeyTourFocus,
+  useSankeyTourFocus,
+} from '@liveworkspace/workbench/lib/sankey-tour-focus';
 
 afterEach(() => {
   act(() => setElementTourOffer(null));

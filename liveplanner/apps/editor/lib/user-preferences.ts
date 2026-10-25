@@ -3,32 +3,41 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
-//   - D1 (`user_preferences` table) is the authoritative store, fetched
-//     once at editor mount via fetchUserPreferences() so a signed-in
-//     user's flags follow them across devices.
+//   - The liveworkspace accounts database is the authoritative store (through the api's
+//     /api/preferences), read once a page load via fetchUserPreferences() so a person's flags
+//     follow them across devices, and those every app shares (ALL_SETTING_KEYS in
+//     @liveworkspace/settings) across apps too. A deployment without liveworkspace accounts keeps
+//     none, and the flags live in this browser only.
 //   - `localStorage` under `liveplanner:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
-//     are synchronous; writes go to BOTH localStorage and the api
-//     (one PUT at a time, latest wins, lib/preferences-sync). Last-write-wins per device.
+//     are synchronous; writes go to localStorage at once and to the api as
+//     a debounced patch of what changed (lib/preferences-sync).
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
 // `liveplanner:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
-// in-memory gate cache) still refresh promptly. Every write sends the
+// in-memory gate cache) still refresh promptly. Every write starts from the
 // WHOLE blob, so a change is built on the cache, never on a render's
 // snapshot (see rebaseUserPreferences): another tab's write since that
 // render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 import type { PlanTourTrack } from './plan-tour';
-import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import { apiGetPreferences } from './api-client';
-import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
+import {
+  fitPreferences,
+  keepPreferencesLocally,
+  preferencesUnsynced,
+  savePreferences,
+  setServerPreferences,
+} from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
-import { debugLog } from './debug-log';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
@@ -176,24 +185,14 @@ export type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // Projects this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the project: your Recent
-  // is your view of your own work, and on a shared project one
-  // collaborator hiding it must not hide it from everyone else.
-  //
-  // Ids only, so the list stays small; the whole preferences blob has a
-  // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
-  // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the project, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
-  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
-  // swatches"): per theme, which of a row's six slots you replaced with a
-  // colour of your own. Read and written through lib/swatch-overrides, which
-  // validates it and keeps it inside its share of the 4 KB cap.
-  quickSwatchOverrides?: SwatchOverrideStore;
-  recentExcludedIds?: string[];
+  // DEAD: the quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
+  // swatches") went with the panel. Nothing reads or writes this any more; it stays in the type because it is
+  // already stored for existing users.
+  quickSwatchOverrides?: unknown;
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores
   // the preset, recorded in `powerUserBaseline` while the mode is on.
@@ -207,26 +206,7 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // DEAD: the retired Draw mode's backdrop pattern (docs/specs/007-editor/editor-modes.md "Retired modes").
-  // Nothing reads or writes it; it stays in the type because it may already be stored.
-  drawPattern?: 'blank' | 'grid' | 'graph';
 };
-
-// How many excluded ids we keep. A project id is a 36-char UUID, so 200
-// of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
-// the serialised preferences blob, which would start rejecting EVERY
-// preference write, not just this one. 60 is far more than anyone will
-// hide by hand and leaves plenty of room for the other flags.
-export const RECENT_EXCLUDED_LIMIT = 60;
-
-// Flip a project's Recent exclusion, returning the NEXT id list. Newest
-// exclusions are kept at the front so the cap drops the oldest choice
-// rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, projectId: string): string[] {
-  const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(projectId)) return current.filter((id) => id !== projectId);
-  return [projectId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
-}
 
 // Re-exported under this module's own name because everything here reads it
 // as "the preferences key". It's DEFINED in telemetry-client because the help
@@ -257,7 +237,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
+    return parsed;
   } catch {
     return {};
   }
@@ -321,11 +301,11 @@ export function commitUserPreferences(
   return rebased;
 }
 
-// Fetch preferences from D1, merge over the localStorage cache, and
+// Fetch preferences from the api, merge over the localStorage cache, and
 // dispatch `liveplanner:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
 // when the fetch failed; the caller can treat that as "stick with
-// the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.
+// the cache"). Called by the editor and the Explorer at mount, docs/specs/007-editor/user-preferences.md's sync flow.
 //
 // Server-wins on conflict: the server holds the most-recently-saved
 // state across all of this owner's devices, so any key present on
@@ -335,11 +315,37 @@ export function commitUserPreferences(
 // whose last save was never confirmed (lib/preferences-sync): the
 // server's blob is older than the cache there, so the cache wins and
 // is sent again.
-export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+//
+// Once a page load per owner: the Explorer and the editor both ask, and share the one read.
+const loads = new Map<string, Promise<UserPreferences | null>>();
+
+export function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  const known = loads.get(ownerId);
+  if (known) return known.then((merged) => (merged === null ? null : readUserPreferences()));
+  const load = loadUserPreferences(ownerId);
+  loads.set(ownerId, load);
+  // A failed read may be tried again.
+  void load.then((merged) => {
+    if (merged === null) loads.delete(ownerId);
+  });
+  return load;
+}
+
+// Test seam: forget the page's reads.
+export function __forgetPreferenceLoads(): void {
+  loads.clear();
+}
+
+async function loadUserPreferences(ownerId: string): Promise<UserPreferences | null> {
   const remote = await apiGetPreferences(ownerId);
+  if (remote === 'local') {
+    keepPreferencesLocally();
+    return null;
+  }
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote) as UserPreferences;
+  const server = remote as UserPreferences;
+  setServerPreferences(ownerId, remote);
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

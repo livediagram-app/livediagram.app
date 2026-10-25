@@ -1,0 +1,65 @@
+'use client';
+
+import { ApiErrorPage } from '../chrome/ApiErrorPage';
+import { Glyph } from '@liveworkspace/ui';
+
+// Blocking overlay shown over the canvas while the ACTIVE tab's content
+// is still being fetched (docs/specs/006-document/per-tab-storage.md lazy per-tab load), or after that
+// fetch failed. It must BLOCK interaction rather than just decorate, for
+// two reasons:
+//   1. Until the GET lands, local state holds an empty-elements
+//      placeholder. Without this overlay the user sees the "Empty
+//      canvas" prompt and assumes their document was lost.
+//   2. If they then add an element to that placeholder, the autosave
+//      persists the empty-plus-new tab and WIPES the real server row.
+//      An opaque, pointer-capturing backdrop makes that impossible.
+// It renders as the last child of the canvas <main> (which is
+// `relative`), so `absolute inset-0` covers the whole surface including
+// the floating palette. The header + TabBar live outside <main>, so they
+// stay live — the user can still switch tabs or navigate away.
+//
+// z-overlay, NOT z-modal: everything this must cover inside <main>
+// (panels / toolbars / chrome) sits at 40 or below, while the
+// EditorHeader is z-modal — an equal z-modal here let this later-DOM
+// overlay paint over the header's site switcher, so the one menu
+// that navigates away from a failed load opened invisibly behind it.
+export function TabLoadOverlay({
+  state,
+  onRetry,
+}: {
+  state: 'loading' | 'error';
+  onRetry: () => void;
+}) {
+  if (state === 'error') {
+    // The opaque backdrop both hides the misleading empty canvas behind
+    // it and captures pointer events (default pointer-events: auto), so
+    // clicks can't reach the palette / canvas. ApiErrorPage supplies the
+    // card + Retry on top.
+    return (
+      <div className="absolute inset-0 z-[var(--z-overlay)] bg-slate-50 dark:bg-slate-950">
+        <ApiErrorPage
+          onRetry={onRetry}
+          title="Couldn’t load this tab"
+          message="We couldn’t reach the server to load this tab’s contents. Your work is safe. Check your connection and try again."
+          retryLabel="Retry"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="absolute inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col items-center gap-3">
+        <Glyph
+          size={32}
+          units={32}
+          className="animate-spin text-brand-500 dark:text-brand-400"
+          strokeLinejoin="miter"
+        >
+          <circle cx="16" cy="16" r="12" strokeOpacity="0.18" />
+          <path d="M28 16a12 12 0 0 0-12-12" />
+        </Glyph>
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading tab…</p>
+      </div>
+    </div>
+  );
+}

@@ -30,7 +30,10 @@ import {
   IconAnimationPreview,
 } from '@/components/palette/animation-previews-existing';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import {
+  onMouseHover,
+  useRevertOnUnmount,
+} from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { IconPrims } from '@/components/primitives/icon-glyph';
 import { Glyph } from '@livedesign/ui';
 

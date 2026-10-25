@@ -8,8 +8,8 @@ import {
   lucideSquarePlus,
   lucideUsers,
   lucideZap,
-} from '@livedesign/icons/lucide';
-import type { IconPrim } from '@livedesign/icons';
+} from '@liveworkspace/icons/lucide';
+import type { IconPrim } from '@liveworkspace/icons';
 import type { SearchResultItem } from '@/lib/search';
 import { DesignIcon } from '@/components/primitives/explorer-icons';
 import { Glyph, Prims } from '@livedesign/ui';

@@ -9,8 +9,8 @@
 // the page passes those setters in. Verbatim relocation — no
 // behaviour change.
 
-import type { Selection } from '@/lib/selection-store';
-import { haptic } from '@/lib/haptics';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   arrowReferencesAny,
   createText,
@@ -26,7 +26,7 @@ import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 
 type EditorSelectionActionsDeps = {

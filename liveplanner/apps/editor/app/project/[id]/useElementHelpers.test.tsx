@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createArrow, type Element, type StickyElement, type Tab } from '@liveplanner/project';
-import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
+import { type Element, type StickyElement, type Tab } from '@liveplanner/project';
 import { useElementHelpers } from './useElementHelpers';
 
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
@@ -28,14 +27,10 @@ function harness(elements: Element[] = ROW) {
       activeId: 't1',
       activeTab: tab,
       editsBlocked: false,
-      formatSourceId: null,
-      formatConfig: { mode: 'keep', groups: {} } as never,
       getViewportCenter: () => ({ x: 0, y: 0 }),
-      commit: vi.fn(),
       commitTabs,
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
-      setFormatSourceId: vi.fn(),
     }),
   );
   return { helpers: result.current, commitTabs, tab };
@@ -50,62 +45,5 @@ describe('addBoxedAt', () => {
     const next = updater([{ id: 't1', name: 'Tab 1', elements: ROW }]);
     expect(next[0]!.elements.map((el) => el.id)).toEqual(['a', 'b', 'c', 'new']);
     expect((next[0]!.elements[3] as StickyElement).x).toBe(272);
-  });
-});
-
-describe('applyFormatFromSource', () => {
-  function paintHarness(mode: FormatMode, source = 'a') {
-    const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: [...ROW, line] };
-    const commit = vi.fn();
-    const setFormatSourceId = vi.fn();
-    const { result } = renderHook(() =>
-      useElementHelpers({
-        readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
-        activeId: 't1',
-        activeTab: tab,
-        editsBlocked: false,
-        formatSourceId: source,
-        formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
-        getViewportCenter: () => ({ x: 0, y: 0 }),
-        commit,
-        commitTabs: vi.fn(),
-        setSelectedId: vi.fn(),
-        setEditingId: vi.fn(),
-        setFormatSourceId,
-      }),
-    );
-    return { paint: result.current.applyFormatFromSource, commit, setFormatSourceId };
-  }
-
-  it('keeps the brush loaded in Keep painting', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('keep');
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-  });
-
-  it('empties the brush after one paint in Paint once', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once');
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-    expect(setFormatSourceId).toHaveBeenCalledWith(null);
-  });
-
-  it('keeps a Paint once brush loaded on a tap that paints nothing', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once');
-    telemetry.track.mockClear();
-    paint('a'); // the source itself
-    paint('line'); // the other kind: a note's look onto an arrow
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-    expect(telemetry.track).not.toHaveBeenCalled();
-  });
-
-  it('empties the brush once its source is gone', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('keep', 'deleted');
-    paint('b');
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).toHaveBeenCalledWith(null);
   });
 });

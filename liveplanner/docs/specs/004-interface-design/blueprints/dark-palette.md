@@ -9,20 +9,21 @@ The Charcoal migration has its own blueprint ([Retired schemes](../../011-theme/
 
 Scope, by file:
 
-| File                                                  | Role                                                                                     |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                  | `.dark` surface + Steel tokens                                                           |
-| `packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
-| `packages/ui/src/Brand.tsx`                           | Wordmark accent `dark:text-violet-400`                                                      |
-| `packages/project/src/canvas-colors.ts`              | Dark canvas + pattern constants                                                          |
-| `packages/project/src/colors.ts`                     | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/project/src/svg-render-arrows.ts`          | Export caption colour through `defaultArrowLabelColor`                                   |
-| `packages/template-previews/src/preview-art-tile.css` | Editor `.dark` tile rule landing on the canvas colour                                    |
+| File                                                    | Role                                                                                     |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `../packages/tailwind-config/theme.css`                 | `.dark` surfaces (the shared theme)                                                      |
+| `packages/tailwind-config/theme.css`                    | `.dark` Steel brand tokens, in violet (this product's palette)                           |
+| `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
+| `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-violet-400`                                                   |
+| `../packages/model-core/src/canvas-colors.ts`           | Dark canvas + pattern constants                                                          |
+| `packages/project/src/colors.ts`                        | `DARK_INK`, `defaultArrowLabelColor`                                                     |
+| `packages/project/src/svg-render-arrows.ts`             | Export caption colour through `defaultArrowLabelColor`                                   |
+| `packages/template-previews/src/preview-art-tile.css`   | Editor `.dark` tile rule landing on the canvas colour                                    |
 | `apps/editor/components/canvas/ArrowView.tsx`           | Canvas caption colour through `defaultArrowLabelColor`                                   |
 | `apps/editor/components/canvas/element-variant.ts`      | `DARK_SELECTION_RING` on every single selection                                          |
 | `apps/editor/components/canvas/element-parts.tsx`       | `RESIZE_HANDLE_CLASS`                                                                    |
 | `apps/editor/hooks/ui/editor-accent.ts`                 | `editorAccentCss`: tint selectors that outrank the Steel base                            |
-| `packages/ui/src/identity-fill.ts`                    | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
+| `packages/ui/src/identity-fill.ts`                      | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
 | `apps/editor/components/chrome/TabPill.tsx`             | Active pill's dark surface as `var(--color-slate-800)`                                   |
 | `apps/editor/app/dark-palette.test.ts`                  | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
 | `apps/editor/e2e/contrast.ts`, `contrast-audit.spec.ts` | Runtime contrast guard, dark mode                                                        |
@@ -36,7 +37,7 @@ Scope, by file:
 | Dark surfaces       | `--color-slate-800/900/950` under `.dark`                | The blue-slate chrome                                         |
 | Solid brand fill    | `SOLID_BRAND_DARK`                                       | `dark:bg-brand-600`, a static fill under white text           |
 | Solid brand control | `SOLID_BRAND_DARK_CONTROL`                               | `dark:bg-brand-600 dark:hover:bg-brand-700`, a clickable fill |
-| Wordmark accent     | `dark:text-violet-400` on the "live" span                   | The one vivid note in dark chrome                             |
+| Wordmark accent     | `dark:text-violet-400` on the "live" span                | The one vivid note in dark chrome                             |
 | Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                           | `#0d121a`                                                     |
 | Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                              | `#1c2735`, the opaque blend of `#2e4057` at 45 %              |
 | Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)  | Unpainted element colours on dark paper                       |
@@ -77,7 +78,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/ui/src/brand-classes.ts
+// ../packages/ui/src/brand-classes.ts
 export const SOLID_BRAND_DARK = 'dark:bg-brand-600';
 export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-700';
 
@@ -130,7 +131,7 @@ mode (their backdrop). Tabs holding the previous dark half are migrated on read;
 ## Security and trust
 
 No trust boundary: static tokens and pure colour functions. `editorAccentCss` and `identityVars` interpolate colours
-that are either built-in or validated hex (custom themes validate on save); the ramp and shade functions only emit
+that are built-in; the ramp and shade functions only emit
 `#rrggbb`, and a custom property value cannot break out of its declaration in React's style serialisation.
 
 ## Performance and limits
@@ -188,22 +189,22 @@ The Charcoal migration logs as its blueprint states.
 
 ## Testing
 
-| Rule                                                         | Test                                                                       |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| Dark canvas, blended pattern, ink values                     | `packages/project/src/canvas-ink.test.ts`, `default-scheme.test.ts`       |
-| Stroke >= 3:1 on canvas and fill; text >= 4.5:1              | `canvas-ink.test.ts`, "dark ink contrast"                                  |
-| Caption colour (B3, I4)                                      | `canvas-ink.test.ts`, "defaultArrowLabelColor"                             |
-| Export caption uses the same colour                          | `svg-render.test.ts`, "caption colour on dark paper"                       |
+| Rule                                                         | Test                                                                         |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Dark canvas, blended pattern, ink values                     | `packages/project/src/canvas-ink.test.ts`, `default-scheme.test.ts`          |
+| Stroke >= 3:1 on canvas and fill; text >= 4.5:1              | `canvas-ink.test.ts`, "dark ink contrast"                                    |
+| Caption colour (B3, I4)                                      | `canvas-ink.test.ts`, "defaultArrowLabelColor"                               |
+| Export caption uses the same colour                          | `svg-render.test.ts`, "caption colour on dark paper"                         |
 | Surface + Steel tokens; light ramp unchanged (I1)            | `apps/editor/app/dark-palette.test.ts`, "the dark palette tokens"            |
-| Wordmark accent dark-only                                    | `dark-palette.test.ts`, "the wordmark"                                     |
-| I2 solid fills, I3 brand text                                | `dark-palette.test.ts`, "solid brand fills", "brand-coloured text"         |
-| I5 identity colours                                          | `dark-palette.test.ts`, "white text on an identity colour"                 |
+| Wordmark accent dark-only                                    | `dark-palette.test.ts`, "the wordmark"                                       |
+| I2 solid fills, I3 brand text                                | `dark-palette.test.ts`, "solid brand fills", "brand-coloured text"           |
+| I5 identity colours                                          | `dark-palette.test.ts`, "white text on an identity colour"                   |
 | `identityDeep` at AA on every colour; fallback; pass-through | `apps/editor/lib/identity-fill.test.ts`                                      |
 | Tint outranks base (B2)                                      | `apps/editor/hooks/ui/editor-accent.test.ts`                                 |
 | Selection ring + glow dark-only, every kind                  | `apps/editor/components/canvas/element-variant.test.ts`                      |
 | Handle dark classes; light classes unchanged                 | `apps/editor/components/canvas/element-parts.test.ts`, "RESIZE_HANDLE_CLASS" |
 | Tile lands on canvas; marketing rule unchanged               | `apps/editor/app/dark-mode-coverage.test.ts`                                 |
-| No slate-500 text in dark (I6)                               | `dark-palette.test.ts`, "secondary text in dark mode"                      |
+| No slate-500 text in dark (I6)                               | `dark-palette.test.ts`, "secondary text in dark mode"                        |
 | Real screens meet AA in dark                                 | `apps/editor/e2e/contrast-audit.spec.ts`                                     |
 | Default tab paints the new dark canvas + ink                 | `apps/editor/e2e/appearance.spec.ts`                                         |
 

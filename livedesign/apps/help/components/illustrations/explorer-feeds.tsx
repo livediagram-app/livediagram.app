@@ -1,12 +1,10 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
-// happened), the Timeline feed and its stacking, the Inbox, Recent, Shared With Me,
-// and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
-// (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @livedesign/ui timeline).
-// Composed from the shared primitives plus the Explorer parts, so the house style holds.
+// Happened), and the Timeline feed and its stacking. Drawn from the real labels in the shared
+// Explorer (@liveworkspace/explorer's HomePane and timeline). Composed from the shared primitives,
+// so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Avatar, Label, Scene, Tabs } from './primitives';
-import { SidebarGlyph, SidebarRow } from './explorer-parts';
+import { Avatar, Label, Scene, Tabs } from '@liveworkspace/help-site/art/primitives';
 
 // --- Local parts -------------------------------------------------------------
 
@@ -238,8 +236,8 @@ function FeedCard({
   );
 }
 
-/** A large stroked glyph for a pictureless card: people (a team), a folder, a pencil (edits). */
-function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: Tone }) {
+/** A large stroked glyph for a pictureless card: people (a team), a pencil (edits). */
+function BigGlyph({ kind, tone }: { kind: 'team' | 'pencil'; tone: Tone }) {
   const cls = `${TONE[tone].ink} fill-none`;
   if (kind === 'team') {
     return (
@@ -251,16 +249,6 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
       </g>
     );
   }
-  if (kind === 'folder') {
-    return (
-      <path
-        d="M-12 -8 h8 l3 4 h13 v13 h-24 Z"
-        className={cls}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-    );
-  }
   return (
     <g className={cls} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <path d="M-9 9 L-8 3 L5 -10 L10 -5 L-3 8 Z" />
@@ -268,137 +256,6 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
     </g>
   );
 }
-
-/** The row of the Inbox: kind glyph, title (and hint), the design chip and where, the person. */
-function InboxRow({
-  y,
-  kind,
-  title,
-  hint,
-  chip,
-  where,
-  who,
-  colour,
-  time,
-}: {
-  y: number;
-  kind: 'action' | 'comment' | 'card';
-  title: string;
-  hint?: string;
-  chip: string;
-  where: string;
-  who: string;
-  colour: 'brand' | 'emerald' | 'violet' | 'amber';
-  time: string;
-}) {
-  const chipW = chip.length * 5.6 + 12;
-  return (
-    <g>
-      <rect
-        x={32}
-        y={y}
-        width={356}
-        height={34}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1}
-      />
-      <g
-        transform={`translate(46 ${y + 12})`}
-        className="stroke-slate-400"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinejoin="round"
-      >
-        {kind === 'action' && (
-          <g>
-            <rect x={-5} y={-6} width={10} height={12} rx={1.5} />
-            <path d="M-2 -6 V-8 H2 V-6 M-2.5 0 L-0.5 2 L2.5 -1.5" />
-          </g>
-        )}
-        {kind === 'comment' && <path d="M-6 -5 H6 V3 H-1 L-4 6 V3 H-6 Z" />}
-        {kind === 'card' && <rect x={-5} y={-5} width={10} height={10} rx={2} />}
-      </g>
-      <Label x={60} y={y + 11} size={10.5} weight={600} tone="strong">
-        {title}
-      </Label>
-      {hint && (
-        <g>
-          <rect
-            x={60 + title.length * 5.9 + 6}
-            y={y + 4}
-            width={hint.length * 6.2 + 10}
-            height={14}
-            rx={7}
-            className="fill-amber-50 stroke-amber-400"
-            strokeWidth={1}
-          />
-          <Label
-            x={60 + title.length * 5.9 + 11}
-            y={y + 11}
-            size={10}
-            weight={600}
-            className="fill-amber-600 dark:fill-amber-300"
-          >
-            {hint}
-          </Label>
-        </g>
-      )}
-      <rect x={60} y={y + 19} width={chipW} height={12} rx={6} className="fill-slate-100" />
-      <Label x={66} y={y + 25.5} size={10} weight={600} tone="body">
-        {chip}
-      </Label>
-      <Label x={60 + chipW + 6} y={y + 25.5} size={10} tone="muted">
-        {where}
-      </Label>
-      <Avatar cx={372} cy={y + 13} r={8} initial={who} colour={colour} />
-      <Label x={358} y={y + 13} size={10} tone="muted" anchor="end">
-        {time}
-      </Label>
-    </g>
-  );
-}
-
-/** A section heading of the Inbox with its count. */
-function InboxSectionTitle({ y, title, count }: { y: number; title: string; count: number }) {
-  const w = title.length * 7;
-  return (
-    <g>
-      <Label x={34} y={y} size={10} weight={700} tone="muted">
-        {title}
-      </Label>
-      <rect
-        x={34 + w + 4}
-        y={y - 7}
-        width={16}
-        height={14}
-        rx={7}
-        className="fill-slate-200 dark:fill-(--help-art-slate-800)"
-      />
-      <Label x={34 + w + 12} y={y} anchor="middle" size={10} weight={700} tone="muted">
-        {count}
-      </Label>
-    </g>
-  );
-}
-
-/** A small folder chip beside a design's name on Recent. */
-function FolderChip({ x, y, label }: { x: number; y: number; label: string }) {
-  const w = label.length * 5.6 + 24;
-  return (
-    <g>
-      <rect x={x} y={y - 7} width={w} height={14} rx={7} className="fill-slate-100" />
-      <g transform={`translate(${x + 9} ${y}) scale(0.7)`}>
-        <SidebarGlyph kind="folder" />
-      </g>
-      <Label x={x + 17} y={y + 0.5} size={10} tone="body">
-        {label}
-      </Label>
-    </g>
-  );
-}
-
-// --- Scenes ------------------------------------------------------------------
 
 /** Home: Jump Back In (most used on top, last used below) and What Happened, with a summary entry. */
 export function HomeOverview() {
@@ -497,11 +354,11 @@ export function TimelineFeed() {
       <FeedCard
         x={284}
         y={82}
-        subject="Old drafts"
-        reason="Folder Deleted"
+        subject="Old project"
+        reason="Team Deleted"
         meta="08:15 · You"
         tone="danger"
-        preview={{ glyph: <BigGlyph kind="folder" tone="danger" /> }}
+        preview={{ glyph: <BigGlyph kind="team" tone="danger" /> }}
         dimmed
       />
     </Scene>
@@ -571,286 +428,6 @@ export function TimelineStack() {
         tone="create"
         preview={{ motif: 1 }}
       />
-    </Scene>
-  );
-}
-
-/** The Inbox: Assigned to You, You Assigned, then Open Comment Threads, each with a count. */
-export function InboxSections() {
-  return (
-    <Scene w={420} h={274} bg="plain">
-      <Pane h={250} />
-      <Label x={32} y={30} size={12} weight={700} tone="strong">
-        Inbox
-      </Label>
-      <line x1={16} y1={42} x2={404} y2={42} className="stroke-slate-200" strokeWidth={1.5} />
-      <InboxSectionTitle y={56} title="ASSIGNED TO YOU" count={2} />
-      <InboxRow
-        y={64}
-        kind="action"
-        title="Confirm the retry budget"
-        chip="Payments"
-        where="Checkout · Flow"
-        who="Y"
-        colour="brand"
-        time="2h"
-      />
-      <InboxRow
-        y={102}
-        kind="card"
-        title="#12 Add the audit table"
-        chip="Ledger"
-        where="Sprint board · Plan"
-        who="Y"
-        colour="brand"
-        time="1d"
-      />
-      <InboxSectionTitle y={152} title="YOU ASSIGNED" count={1} />
-      <InboxRow
-        y={160}
-        kind="action"
-        title="Draft the rollout note"
-        chip="Payments"
-        where="Release · Plan"
-        who="S"
-        colour="emerald"
-        time="3d"
-      />
-      <InboxSectionTitle y={208} title="OPEN COMMENT THREADS" count={1} />
-      <InboxRow
-        y={216}
-        kind="comment"
-        title="Checkout"
-        hint="Mentioned You"
-        chip="Payments"
-        where="Checkout · Flow"
-        who="P"
-        colour="violet"
-        time="5m"
-      />
-    </Scene>
-  );
-}
-
-/** Recent: Home › Recent, newest first, each row naming where the design lives. */
-export function RecentView() {
-  const rows: { name: string; chip?: string; meta: string }[] = [
-    { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },
-    { name: 'Onboarding flow', chip: 'My Work', meta: '1h ago' },
-    { name: 'Incident runbook', chip: 'Platform team', meta: 'yesterday' },
-    { name: 'Hiring plan', meta: '2 days ago' },
-  ];
-  return (
-    <Scene w={420} h={214} bg="plain">
-      <Pane h={190} />
-      <Label x={32} y={30} size={11} weight={600} tone="accent">
-        Home
-      </Label>
-      <Label x={68} y={30} size={11} tone="muted">
-        ›
-      </Label>
-      <Label x={80} y={30} size={11} weight={700} tone="strong">
-        Recent
-      </Label>
-      <line x1={16} y1={44} x2={404} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
-      {rows.map((r, i) => {
-        const y = 54 + i * 36;
-        return (
-          <g key={r.name}>
-            <rect
-              x={32}
-              y={y}
-              width={356}
-              height={30}
-              rx={6}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1}
-            />
-            <Snapshot x={38} y={y + 5} w={30} h={20} motif={i} />
-            <Label x={76} y={y + 15.5} size={10.5} weight={600} tone="strong">
-              {r.name}
-            </Label>
-            {r.chip && <FolderChip x={76 + r.name.length * 6 + 8} y={y + 15} label={r.chip} />}
-            <Label x={364} y={y + 15.5} size={10} tone="muted" anchor="end">
-              {r.meta}
-            </Label>
-            <g className="fill-slate-400">
-              <circle cx={378} cy={y + 11} r={1.3} />
-              <circle cx={378} cy={y + 15} r={1.3} />
-              <circle cx={378} cy={y + 19} r={1.3} />
-            </g>
-          </g>
-        );
-      })}
-    </Scene>
-  );
-}
-
-/** Shared With Me: a table of name, owner, role, last update, and the dismiss cross. */
-export function SharedWithMeTable() {
-  const rows = [
-    { name: 'Sprint board', owner: 'Maya Patel', role: 'Edit', at: '2h ago' },
-    { name: 'System map', owner: 'Alex Kim', role: 'View', at: 'yesterday' },
-    { name: 'Hiring plan', owner: 'Rosa Diaz', role: 'Edit', at: '3 days ago' },
-  ];
-  return (
-    <Scene w={420} h={196} bg="plain">
-      <Pane h={172} />
-      <g transform="translate(40 30)">
-        <SidebarGlyph kind="shared" active />
-      </g>
-      <Label x={54} y={30} size={12} weight={700} tone="strong">
-        Shared With Me
-      </Label>
-      <line x1={16} y1={44} x2={404} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
-      <rect x={28} y={52} width={364} height={20} rx={4} className="fill-slate-50" />
-      {(
-        [
-          ['NAME', 40],
-          ['OWNER', 196],
-          ['ROLE', 276],
-          ['UPDATED', 318],
-        ] as const
-      ).map(([h, x]) => (
-        <Label key={h} x={x} y={62.5} size={10} weight={700} tone="muted">
-          {h}
-        </Label>
-      ))}
-      {rows.map((r, i) => {
-        const y = 76 + i * 34;
-        return (
-          <g key={r.name}>
-            <Snapshot x={38} y={y + 5} w={30} h={22} motif={i + 1} />
-            <Label x={76} y={y + 16.5} size={10.5} weight={600} tone="strong">
-              {r.name}
-            </Label>
-            <Label x={196} y={y + 16.5} size={10} tone="body">
-              {r.owner}
-            </Label>
-            <rect
-              x={276}
-              y={y + 9}
-              width={30}
-              height={15}
-              rx={7.5}
-              className="fill-emerald-50 stroke-emerald-400"
-              strokeWidth={1}
-            />
-            <Label
-              x={291}
-              y={y + 17}
-              anchor="middle"
-              size={10}
-              weight={600}
-              className="fill-emerald-600 dark:fill-emerald-300"
-            >
-              {r.role}
-            </Label>
-            <Label x={318} y={y + 16.5} size={10} tone="muted">
-              {r.at}
-            </Label>
-            <path
-              d={`M380 ${y + 12.5} l7 7 M387 ${y + 12.5} l-7 7`}
-              className="stroke-slate-400"
-              strokeWidth={1.5}
-              strokeLinecap="round"
-            />
-            {i < rows.length - 1 && (
-              <line
-                x1={28}
-                y1={y + 33}
-                x2={392}
-                y2={y + 33}
-                className="stroke-slate-200"
-                strokeWidth={1}
-              />
-            )}
-          </g>
-        );
-      })}
-    </Scene>
-  );
-}
-
-/** The sidebar's Spaces group when signed in: My Work, each team (expandable to its shared
- *  folders, with a member count), Invites while one waits, and New Team. */
-export function TeamSpacesSidebar() {
-  const x = 100;
-  const w = 220;
-  const chevron = (cx: number, cy: number, open: boolean) => (
-    <path
-      d={open ? `M${cx - 3} ${cy - 1.5} l3 3 l3 -3` : `M${cx - 1.5} ${cy - 3} l3 3 l-3 3`}
-      className="stroke-slate-400"
-      strokeWidth={1.5}
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  );
-  return (
-    <Scene w={420} h={232} bg="plain">
-      <rect
-        x={x}
-        y={12}
-        width={w}
-        height={208}
-        rx={10}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + 18} y={30} size={10} weight={700} tone="muted">
-        SPACES
-      </Label>
-      {chevron(x + w - 18, 49, false)}
-      <SidebarRow x={x} y={38} w={w - 20} label="My Work" glyph="folder" />
-      {chevron(x + w - 18, 73, true)}
-      <SidebarRow x={x} y={62} w={w - 20} label="Platform team" glyph="team" count={5} active />
-      <SidebarRow x={x} y={86} w={w - 20} label="Roadmaps" glyph="folder" indent={16} />
-      <SidebarRow x={x} y={110} w={w - 20} label="Runbooks" glyph="folder" indent={16} />
-      {chevron(x + w - 18, 145, false)}
-      <SidebarRow x={x} y={134} w={w - 20} label="Design team" glyph="team" count={3} />
-      {/* Invites: an envelope glyph, with the waiting count. */}
-      <g transform={`translate(${x + 16} 169)`}>
-        <rect
-          x={-6}
-          y={-4.5}
-          width={12}
-          height={9}
-          rx={1.5}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.6}
-        />
-        <path
-          d="M-6 -3.5 L0 1 L6 -3.5"
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-          strokeLinejoin="round"
-        />
-      </g>
-      <Label x={x + 32} y={169} size={10} weight={500} tone="body">
-        Invites
-      </Label>
-      <rect
-        x={x + w - 50}
-        y={162}
-        width={22}
-        height={14}
-        rx={7}
-        className="fill-slate-200 dark:fill-(--help-art-slate-800)"
-      />
-      <Label x={x + w - 39} y={169} anchor="middle" size={10} weight={700} tone="muted">
-        1
-      </Label>
-      {/* New Team: a plus, last in Spaces. */}
-      <path
-        d={`M${x + 16} 188 v10 M${x + 11} 193 h10`}
-        className="stroke-slate-400"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-      <Label x={x + 32} y={193} size={10} weight={500} tone="body">
-        New Team
-      </Label>
     </Scene>
   );
 }

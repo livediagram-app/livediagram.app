@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
+vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -21,7 +21,8 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
-const { HEADER_ICON_SLOT_PX } = await import('./header-action');
+const { HEADER_ICON_SLOT_PX } =
+  await import('@liveworkspace/workbench/components/chrome/header-action');
 
 afterEach(cleanup);
 
@@ -192,12 +193,12 @@ describe('EditorHeader Present button', () => {
     const button = screen.getByRole('button', { name: 'Starting' });
     expect(button).toHaveProperty('disabled', true);
   });
+});
 
-  it('links the logo to the Explorer home, not the homepage', () => {
+describe('EditorHeader logo', () => {
+  it('links the logo to the Explorer, not the homepage', () => {
     renderHeader();
-    expect(screen.getByRole('link', { name: 'livedesign' }).getAttribute('href')).toBe(
-      '/explorer/home',
-    );
+    expect(screen.getByRole('link', { name: 'livedesign' }).getAttribute('href')).toBe('/explorer');
   });
 });
 

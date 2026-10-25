@@ -9,7 +9,7 @@ import { LEFTOVER_SHEET_RETRY_MS, usePlanTourLeftovers } from './usePlanTourLeft
 // What an older Plan tour cut short left behind, swept on the next visit to that project with no history.
 
 const debugLog = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/debug-log', () => ({ debugLog }));
+vi.mock('@liveworkspace/workbench/lib/debug-log', () => ({ debugLog }));
 
 function setup(over: { status?: 'loading' | 'ready'; attached?: boolean } = {}) {
   let tabs: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [{ id: 'old-board' }] as Element[] }];

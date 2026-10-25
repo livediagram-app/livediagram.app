@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from '@liveplanner/api-schema';
-import { expect, expectNoPageErrors, startBlankProject, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankProject, test } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the project format number every
@@ -10,7 +10,8 @@ import { expect, expectNoPageErrors, startBlankProject, test } from './fixtures'
 const CANVAS = '[data-canvas-a11y-root]';
 const prompt = (page: Page) =>
   page.getByRole('status').filter({ hasText: /new version|Saving|saved yet/ });
-const notes = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sticky note/ });
+const squares = (page: Page) =>
+  page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });
 
 // Every api response says the server's format is one ahead of this editor; optionally, saves fail.
 async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
@@ -35,17 +36,16 @@ async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await startBlankProject(page);
-  await page.locator(CANVAS).waitFor({ timeout: 30_000 });
+  await seedTab(page, [
+    { id: 'seed', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+  ]);
 }
 
-// N arms a sticky note; a tap drops it, each one a little further along. Escape first, so N never
-// types into the note just placed.
-let placed = 0;
-async function addNote(page: Page) {
+// An edit: the seeded square duplicated (Cmd/Ctrl+D), so each one adds a square.
+async function addEdit(page: Page) {
   await page.keyboard.press('Escape');
-  await page.keyboard.press('n');
-  placed += 1;
-  await page.mouse.click(400 + placed * 160, 450);
+  await squares(page).last().click();
+  await page.keyboard.press('ControlOrMeta+d');
 }
 
 test.describe('new version prompt', () => {
@@ -58,7 +58,7 @@ test.describe('new version prompt', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await addNote(page);
+    await addEdit(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);
@@ -70,19 +70,19 @@ test.describe('new version prompt', () => {
   }) => {
     await openBoard(page);
     await serveNewerFormat(page);
-    await addNote(page);
+    await addEdit(page);
     await expect(prompt(page)).toContainText('A new version of liveplanner is ready.');
     await page.screenshot({ path: test.info().outputPath('offered.png') });
     // It never takes focus; the keyboard reaches it.
     const reload = prompt(page).getByRole('button', { name: 'Reload' });
     await expect(reload).not.toBeFocused();
-    await addNote(page);
+    await addEdit(page);
     const reloaded = page.waitForEvent('load');
     await reload.focus();
     await page.keyboard.press('Enter');
     await reloaded;
     await page.locator(CANVAS).waitFor();
-    await expect(notes(page)).toHaveCount(2);
+    await expect(squares(page)).toHaveCount(3);
     expectNoPageErrors(pageErrors);
   });
 
@@ -90,7 +90,7 @@ test.describe('new version prompt', () => {
     test.setTimeout(45_000);
     await openBoard(page);
     await serveNewerFormat(page, { failSaves: true });
-    await addNote(page);
+    await addEdit(page);
     await expect(prompt(page)).toBeVisible();
     let reloads = 0;
     page.on('load', () => reloads++);
@@ -102,17 +102,17 @@ test.describe('new version prompt', () => {
     );
     await page.screenshot({ path: test.info().outputPath('unsaved.png') });
     expect(reloads).toBe(0);
-    await expect(notes(page)).toHaveCount(1);
+    await expect(squares(page)).toHaveCount(2);
   });
 
   test('steps aside on Not now', async ({ page, pageErrors }) => {
     await openBoard(page);
     await serveNewerFormat(page);
-    await addNote(page);
+    await addEdit(page);
     await expect(prompt(page)).toBeVisible();
     await prompt(page).getByRole('button', { name: 'Not now' }).click();
     await expect(prompt(page)).toHaveCount(0);
-    await addNote(page);
+    await addEdit(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);

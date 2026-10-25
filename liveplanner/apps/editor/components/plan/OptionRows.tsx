@@ -12,7 +12,7 @@
 // colours given a `palette` (Setup Board), else the menu's.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { CheckIcon, useMenuKind } from '@liveplanner/ui';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { PlanPalette } from './plan-palette';
 
 export type OptionRow = {

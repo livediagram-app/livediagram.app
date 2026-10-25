@@ -1,7 +1,7 @@
 // Which tabs' empty-tab cards this browser has closed (docs/specs/007-editor/new-document-route.md "The empty-canvas
 // hint"): a closed card never shows again on that tab, for this person on this device. Kept in localStorage, the
 // newest EMPTY_CARD_DISMISSED_MAX tab ids, so the list stays small however many tabs are closed over time.
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export const EMPTY_CARD_DISMISSED_KEY = 'livediagram:v2:empty-card-dismissed';
 export const EMPTY_CARD_DISMISSED_MAX = 200;

@@ -5,7 +5,7 @@
 
 import { type ReactNode } from 'react';
 
-import { Scene, Shape, Arrow, Panel, Label } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { BAR, BarGlyph } from './toolbar-layout';
 
 // A tiny stand-in flow drawn at any origin / scale, so the same diagram can sit

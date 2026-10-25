@@ -56,7 +56,7 @@ undo stack) or re-established by the reconnect itself (presence, cursors). A
 page reload threw all of it away, and with it any edit not yet autosaved —
 exactly the worry the issue raised.
 
-`useRoomResync` re-fetches the loaded tabs from D1 and merges them through
+`useRoomResync` re-fetches the loaded tabs from the plan's store and merges them through
 `applyRemoteTabs`, the same path a peer's edit takes, which preserves undo/redo
 rather than clearing it.
 

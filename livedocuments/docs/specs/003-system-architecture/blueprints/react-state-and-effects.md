@@ -27,10 +27,8 @@ page) never suspends whole: its URL reads use an external store whose server sna
 
 | Site                                                                              | Reads                               | Becomes                                                                           |
 | --------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/editor/app/explorer/useExplorerState.ts`                                    | the URL, preferences                | `use(browser())`; no hydration flag                                               |
 | `apps/editor/app/oauth/consent/page.tsx`, `apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
 | `apps/editor/app/new/page.tsx` (`initialPlacement`)                               | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
-| `apps/editor/components/panels/TeamSharedDocuments.tsx` (`spot`)                  | `location.search`                   | `use(browser())` before the state                                                 |
 | `ShareDialog`, `TeamInviteLinkDialog`                                             | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
 | `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
@@ -61,13 +59,12 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 | ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
 | `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
-Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
-ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`) and
-`packages/ui/src/timeline/TimelineCalendarView.tsx` (the component's own box).
+Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
+ones among them) and `../packages/help-site/src/components/ArticleShell.tsx` (reads `textContent`).
 
 ### The React Compiler's reach
 
-`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livedocuments/next-config` when an app
+`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@liveworkspace/next-config` when an app
 passes `reactCompiler: true`, which only `apps/editor/next.config.ts` does
 ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)).
 
@@ -143,7 +140,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 | Constant                 | Value                                       | Provenance                         | Safe range        |
 | ------------------------ | ------------------------------------------- | ---------------------------------- | ----------------- |
-| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@livedocuments/next-config` `env` | A four-digit year |
+| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@liveworkspace/next-config` `env` | A four-digit year |
 
 ## Defaults ledger
 

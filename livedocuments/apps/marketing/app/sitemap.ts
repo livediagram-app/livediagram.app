@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next';
 
+import { comparisonSitemap } from '@liveworkspace/comparisons';
+
+import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@livedocuments/ui';
 
@@ -64,8 +67,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    // /terms and /privacy are intentionally omitted: both legal pages moved
-    // into the help centre (its own sitemap lists the canonical articles), and
+    // /terms and /privacy are intentionally omitted: the terms and privacy policy
+    // are liveworkspace's, on liveworkspace.app (its sitemap lists them), and
     // each marketing route is now a noindex redirect there.
     // Operational surfaces reachable from the footer (docs/specs/019-marketing/marketing-site.md). Lower
     // priority than the marketing content above: they're transparency
@@ -88,6 +91,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.2,
-    },
+    }, // The comparisons (packages/comparisons/README.md "Metadata"): the hub and one page per
+    // competitor, from the same list as the routes, dated by their last review rather than the build.
+    ...comparisonSitemap(COMPARISONS),
   ];
 }

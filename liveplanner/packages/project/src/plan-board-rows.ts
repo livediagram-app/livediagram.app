@@ -58,3 +58,53 @@ export function planBoardRowsFromElements(elements: readonly Element[]): PlanBoa
   }
   return rows;
 }
+
+export type CardBoard = { tabId: string; tabName: string; elementId: string; title: string };
+
+export type CardPlaces = {
+  // The board a card in `status` opens on: one holding its status, then an All Cards board, then any board, by
+  // tab, board and column order. Null when the plan shows no board.
+  boardFor(status: string | undefined): CardBoard | null;
+  // Whether `status` is past a board's Done column: such a card is no longer waiting on anyone.
+  isDone(status: string | undefined): boolean;
+};
+
+/** Where a plan's cards open, from its tabs in order: the Inbox's card rows, in the browser (This Browser's plans)
+ *  and in the plan's Durable Object (what it pushes to the index) alike. */
+export function cardPlacesOf(
+  tabs: readonly { id: string; name: string; elements: readonly Element[] }[],
+): CardPlaces {
+  const boards: (PlanBoardStatusRow & { tabId: string; tabName: string; tabOrder: number })[] = [];
+  tabs.forEach((tab, tabOrder) => {
+    for (const b of planBoardRowsFromElements(tab.elements))
+      boards.push({ ...b, tabId: tab.id, tabName: tab.name, tabOrder });
+  });
+  const done = new Set(boards.filter((b) => b.done).map((b) => b.status));
+  const fit = (s: string, status: string | undefined) =>
+    s === status ? 0 : s === ALL_CARDS_STATUS ? 1 : 2;
+  return {
+    boardFor(status) {
+      let best: (typeof boards)[number] | undefined;
+      for (const b of boards) {
+        if (
+          !best ||
+          fit(b.status, status) < fit(best.status, status) ||
+          (fit(b.status, status) === fit(best.status, status) &&
+            (b.tabOrder - best.tabOrder ||
+              b.boardOrder - best.boardOrder ||
+              b.position - best.position) < 0)
+        )
+          best = b;
+      }
+      return best
+        ? {
+            tabId: best.tabId,
+            tabName: best.tabName,
+            elementId: best.elementId,
+            title: best.boardTitle,
+          }
+        : null;
+    },
+    isDone: (status) => status !== undefined && done.has(status),
+  };
+}

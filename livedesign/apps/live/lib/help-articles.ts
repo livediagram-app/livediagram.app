@@ -39,23 +39,18 @@ export const HELP_ARTICLES = {
   formatPainter: 'selection-modes/format-painter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
-  aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingDiagrams: 'account-and-data/exporting-designs',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
-  customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
   pagesTour: 'pages/pages-tour',
@@ -68,7 +63,6 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
-  imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
@@ -77,6 +71,10 @@ export const HELP_ARTICLES = {
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -169,10 +167,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Slide Deck',
     description: 'Tips for building and presenting slides from your design.',
   },
-  aiTools: {
-    title: 'Learn about the AI tools',
-    description: 'What the Ask and Clean modes do, and how to get the most from them.',
-  },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
     description: 'Drive your designs from Claude, Cursor, and other AI tools over MCP.',
@@ -197,22 +191,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
-  },
-  customThemes: {
-    title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across designs.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -246,10 +231,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
   },
-  imageGallery: {
-    title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across designs.',
-  },
   timeline: {
     title: 'Learn about Home and the Timeline',
     description: 'Jump Back In, what others did while you were away, and your own Timeline.',
@@ -262,10 +243,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Recent',
     description: 'Your most recently opened designs, personal and team, in one list.',
   },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related designs across folders and teams.',
-  },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
     description: 'Designs other people have shared with you, collected here.',
@@ -274,9 +251,21 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about folders',
     description: 'Tips for organising designs into a nestable tree of folders.',
   },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Every design you made, in folders or none.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'The designs and folders a team shares.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'Find, open and organise every design.',
+  },
   defaultFolders: {
     title: 'Learn about default folders',
-    description: 'Where new diagrams, whiteboards and boards land when you pick no place.',
+    description: 'Where new designs land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',

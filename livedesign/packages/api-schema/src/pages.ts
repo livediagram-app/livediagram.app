@@ -130,6 +130,7 @@ const PAGES_REFUSAL_CODES = [
   'page_limit',
   'photo_limit',
   'last_page',
+  'kind_not_offered',
 ] as const;
 
 export type PagesRefusalCode = (typeof PAGES_REFUSAL_CODES)[number];

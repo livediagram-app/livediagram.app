@@ -36,7 +36,7 @@ are, the panel draws them.
 - **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
   picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
-  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
+  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `../packages/workbench/src/lib/typing-target.ts`); once something
   is typed in it they undo the typing, as in any text box.
   A **paste** of canvas content reaches the editor the same way: elements copied from another tab (or an image)
   pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the search. Pasted
@@ -66,13 +66,12 @@ Illustration is not offered: closing the panel leaves the same empty tab.
 While one of the palette's popovers is open (a category's flyout or Search), the start **steps aside**: it
 stays mounted, so its search, its group and its scroll are kept, but is hidden, and the tiles hang over a clear
 canvas. Closing the popover brings it back as it was; using a tile closes the popover, and the content it lands
-hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides
+hides the start for good. The palette publishes the state in `../packages/workbench/src/lib/palette-popover-open.ts`, and `StartPanel` hides
 its own root. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents`
 wrapper has no box to picture.
 
-A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
-route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer, and a Participant (who adds nothing), that
-the owner can build it out.
+A **Participant** or **Viewer** never sees a start: they see the empty page ([New document
+route](new-document-route.md) "The empty-canvas hint").
 
 A new tab opens on its start (`newTabOpening` in `apps/editor/lib/new-tab-seed.ts`).
 
@@ -120,12 +119,20 @@ A `/new?q=<words>` link (the marketing site's **Build yours**, a gallery search)
 new document's start, so the templates it meant are the ones shown. They are kept for the browser tab only and read
 once (`start-query.ts`).
 
+## Where it is saved
+
+Under the choices, a quiet strip holds the **Sync Document to Server** switch: where this document is saved, with a line that
+says what that means, and the switch to move it while it is still empty
+([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)).
+It shows only on a fresh document that is the reader's alone; anywhere else the strip is not drawn. The panel draws it
+through its `footer`, in the panel's own colours.
+
 ## Look
 
 - **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus
   ring, a card's hover) the theme's stroke and its ink the theme's text, kept readable on the paper
   (`start-palette.ts`, `useStartPalette`). A theme with no colours of its own (Default) leaves the app's light or dark
-  look. The Pages tour wears the same palette.
+  look, its accent the app's brand colour (`BRAND_APPS` in `../packages/brand/src/apps.ts`). The Pages tour wears the same palette.
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,

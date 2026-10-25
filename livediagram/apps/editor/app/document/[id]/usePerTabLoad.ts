@@ -8,10 +8,10 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
-import { isTabOutOfScope } from '@/lib/tab-scope';
+import { isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { track } from '@/lib/telemetry';
 import { startEditorTiming } from '@/lib/timing';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Lazy per-tab content load (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx.
 // Hydration seeds the first tab; switching to a never-opened tab fires a

@@ -5,15 +5,15 @@
 // reaches the page: it lives in an HttpOnly cookie on /api/auth, and the page
 // asks POST /api/auth/token for a short-lived access token, which it holds in
 // memory and sends as `Authorization: Bearer` (docs/specs/014-identity/auth-and-guest-access.md).
-// A browser with no `lp_signed_in` hint is a guest and asks nothing.
+// A browser with no `ldes_signed_in` hint is a guest and asks nothing.
 //
-// Loaded lazily by AuthProvider, like the Clerk bridge it replaced, so the
+// Loaded lazily by AuthProvider, so the
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 
 import { useEffect } from 'react';
-import { API_BASE } from '@/lib/api/base';
-import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { forgetRecentDesigns } from '@/lib/recent-designs-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
@@ -68,7 +68,7 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
 
 async function endSession(): Promise<void> {
   current = null;
-  await forgetRecentDiagrams();
+  await forgetRecentDesigns();
   await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
     () => {},
   );
@@ -109,14 +109,14 @@ function stateOf(session: Session | null): DeferredAuthState {
       createdAt: null,
     },
     getToken,
-    // The landing page sign-out returns to must not show the account's recent diagrams
+    // The landing page sign-out returns to must not show the account's recent designs
     // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       await endSession();
       window.location.assign(opts?.redirectUrl ?? '/');
     },
-    // The api has already deleted this account's livedesign data (DeleteAccountDialog); the
-    // liveworkspace account itself stays, since other apps share it.
+    // The api has already deleted this account's livedesign data and closed its liveworkspace
+    // account (DeleteAccountDialog); what is left is this tab's session.
     deleteAccount: endSession,
   };
 }

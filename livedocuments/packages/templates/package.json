@@ -8,7 +8,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./page-layout-build": "./src/page-layout-build.ts"
+    "./page-layout-build": "./src/page-layout-build.ts",
+    "./welcome.json": "./welcome.json"
   },
   "scripts": {
     "lint": "oxlint",
@@ -21,8 +22,8 @@
     "@livedocuments/document": "workspace:*"
   },
   "devDependencies": {
-    "@livedocuments/oxlint-config": "workspace:*",
-    "@livedocuments/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

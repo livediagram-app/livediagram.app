@@ -7,25 +7,25 @@ import { sqliteD1 } from '../test-sqlite-d1';
 import { cellsNamedBy, readCells } from './sheets';
 
 describe('cells named by key', () => {
-  it('are sought by (project, sheet, row, column)', () => {
+  it('are sought by (plan, sheet, row, column)', () => {
     const { sql } = sqliteD1();
     const plan = sql
       .prepare(
         `EXPLAIN QUERY PLAN SELECT * FROM sheet_cells
-          WHERE project_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
+          WHERE plan_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
       )
       .all('d', 's', '[]')
       .map((row) => String(row['detail']));
-    expect(plan.join('\n')).toContain('(project_id=? AND sheet_id=? AND row_id=? AND col_id=?)');
+    expect(plan.join('\n')).toContain('(plan_id=? AND sheet_id=? AND row_id=? AND col_id=?)');
   });
 
   it('match exactly the keys given, splitting each at its first colon', async () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO projects (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
+      `INSERT INTO test_plans (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
     );
     sql.exec(
-      `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
        VALUES ('d', 's', 't', 'S', '{}', 1, 1, 1, 'o')`,
     );
     for (const [r, c] of [
@@ -35,7 +35,7 @@ describe('cells named by key', () => {
     ])
       sql
         .prepare(
-          `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input) VALUES ('d', 's', ?, ?, '"x"')`,
+          `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d', 's', ?, ?, '"x"')`,
         )
         .run(r!, c!);
     const cells = await readCells(env, 'd', 's', ['r1:c2', 'r2:c1', 'r9:c9']);

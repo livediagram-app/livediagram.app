@@ -3,9 +3,10 @@ import {
   dismissQuickTour,
   expect,
   test,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  mintGuest,
+  adoptGuest,
+  planHeaders,
+  seedPlan,
 } from './fixtures';
 
 // Two people dragging ONE element at the same moment (docs/specs/012-collaboration/realtime-conflict-resolution.md
@@ -17,15 +18,14 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 async function openAs(browser: Browser, baseURL: string, url: string, owner: string | null) {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o }) => {
       if (o) {
-        localStorage.setItem('liveplanner:v2:self-id', o);
-        if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
         localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -56,9 +56,8 @@ test('two peers dragging the same element at once end on the same position', asy
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const square = (elId: string, x: number) => ({
     id: elId,
     type: 'shape',
@@ -68,21 +67,21 @@ test('two peers dragging the same element at once end on the same position', asy
     width: 160,
     height: 100,
   });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: {
-      id,
-      name: 'Room',
-      tabs: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Board',
-          elements: [square('a', 500), square('still', 1000)],
-        },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Room',
+    tabs: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Board',
+        elements: [square('a', 500), square('still', 1000)],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await planHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
@@ -91,7 +90,7 @@ test('two peers dragging the same element at once end on the same position', asy
 
   const ownerPage = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
-  const peerPage = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
+  const peerPage = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
   for (const p of [ownerPage, peerPage]) {

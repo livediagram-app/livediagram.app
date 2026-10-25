@@ -9,9 +9,10 @@
 // `Participant`/`Returned` and ignoring the type sums both cohorts.
 //
 // Called from every app-open bootstrap (editor `useIdentityBootstrap`,
-// `/new`, `/explorer`). The date gate makes calling from several entry
-// points safe — the first open of the day wins and the rest no-op, so a
-// user who lands on the Explorer and then the editor still counts once.
+// `/new`). The date gate makes calling from several entry points safe —
+// the first open of the day wins and the rest no-op. The Explorer at
+// /explorer is liveworkspace's page, so a visit there alone counts no
+// return here.
 //
 // A browser's FIRST observed day only seeds the key and emits nothing:
 // a first-ever visit is a new visitor (`Participant`/`Created`), not a

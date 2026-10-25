@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, GlyphDisc, SOLID_BRAND_DARK } from '@livedesign/ui';
-import { SettingsRowShell } from './SettingsRowShell';
+import { Button } from '@livedesign/ui';
+import { ProfileHeaderCard, SettingsRowShell } from '@liveworkspace/settings-ui';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { accountInitial } from '@/lib/account-avatar';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page
@@ -19,60 +19,30 @@ const DeleteAccountDialog = dynamic(
   { ssr: false },
 );
 
-// The identity card's avatar diameter.
-const IDENTITY_AVATAR_PX = 44;
-
 // Identity, read from the account. Never written here: names and emails are managed
-// on the liveworkspace accounts site, so this is a card, not a form.
+// on the liveworkspace accounts site, so this is a card, not a form. The card is the shared Profile's header
+// (@liveworkspace/settings-ui ProfileHeaderCard; liveworkspace/docs/site.md "Settings", "Profile"): the avatar,
+// name, email and when they joined; a guest gets the guest card and the way in.
 export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
   const { authLoaded, isSignedIn, user } = useDeferredAuth();
+  const { signInHref, signUpHref } = useAuthHrefs();
   const signedIn = Boolean(authLoaded && isSignedIn && user);
-  const name = user?.fullName ?? user?.username ?? user?.email ?? 'Your account';
-  const joined = user?.createdAt
-    ? user.createdAt.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null;
-
-  // Signed in, the row IS the account: the initial, the name, the email and when it joined.
-  // A guest gets the guest row and the way in.
-  const shown = signedIn
-    ? {
-        ...row,
-        helpArticle: undefined,
-        label: name,
-        description: [user?.email, joined ? `Joined ${joined}` : null].filter(Boolean).join(' · '),
-      }
-    : row;
   return (
-    <SettingsRowShell
-      row={shown}
-      leading={
-        signedIn ? (
-          <GlyphDisc
-            size={IDENTITY_AVATAR_PX}
-            aria-hidden
-            className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
-          >
-            {accountInitial(user)}
-          </GlyphDisc>
-        ) : null
-      }
-      descriptionContent={
-        signedIn ? undefined : (
-          <>
-            {GUEST_IDENTITY}
-            <SettingsSignInLink />
-          </>
-        )
-      }
-    />
+    <div data-settings-cell={row.key} className="rounded-[inherit]">
+      {signedIn && user ? (
+        <ProfileHeaderCard
+          identity={{
+            name: user.fullName ?? user.username ?? user.email ?? 'Your account',
+            email: user.email,
+            joined: user.createdAt,
+          }}
+        />
+      ) : (
+        <ProfileHeaderCard guest={{ signInHref, signUpHref, things: 'designs' }} />
+      )}
+    </div>
   );
 }
-
-const GUEST_IDENTITY = 'Your designs live in this browser. Sign in to keep them across devices.';
 
 // Delete account. Signed-in only, and not because of the UI: the api's
 // DELETE /api/account is signed-in only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
@@ -81,7 +51,7 @@ const GUEST_IDENTITY = 'Your designs live in this browser. Sign in to keep them 
 // The row still renders for guests, saying why, rather than vanishing, so the
 // answer to "can I delete my data?" is in the panel either way.
 export const DELETE_ACCOUNT_SIGNED_IN =
-  'Permanently removes your livedesign designs (the Trash included), folders and settings, then signs you out. Your liveworkspace sign-in stays. There is no undo: you type your email to confirm.';
+  'Permanently removes your livedesign designs (the Trash included), folders and settings, closes your liveworkspace account for every app, then signs you out. There is no undo: you type your email to confirm.';
 export const DELETE_ACCOUNT_GUEST =
   'Available once you sign in: a guest browser has no verified account to delete.';
 

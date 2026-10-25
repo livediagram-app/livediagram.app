@@ -30,18 +30,13 @@ describe('driveMode (docs/specs/022-drive-mirror/drive-mirror.md)', () => {
   });
 });
 
-describe('aiEnabled (docs/specs/007-editor/ai-assistance.md)', () => {
+describe('aiEnabled (docs/specs/021-event-storming/note-reader.md)', () => {
   it('is off with no model key', async () => {
     expect((await capabilities({})).aiEnabled).toBe(false);
   });
 
   it('is on with one key', async () => {
     expect((await capabilities({ GOOGLE_AI_STUDIO_API_KEY: 'g' })).aiEnabled).toBe(true);
-  });
-
-  it('stays on with both named keys: they split the features, they do not cancel out', async () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' };
-    expect((await capabilities(both)).aiEnabled).toBe(true);
   });
 });
 
@@ -75,7 +70,8 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
 
   it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
     const caps = await capabilities({
-      CLERK_JWKS_URL: 'https://clerk/jwks',
+      ACCOUNTS_URL: 'https://accounts.example',
+      API_RESOURCE: 'https://livediagram.example/api',
       OAUTH_ISSUER: 'https://mcp.livediagram.app/',
       CLI_MIN_VERSION: ' 1.2.3 ',
     });

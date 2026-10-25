@@ -91,7 +91,7 @@ export async function answerInternal(
     return new Response(null, { status: 204 });
   }
   // Internal: a tab's collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3), which the
-  // api merges into a save before writing D1 so a stale snapshot can't
+  // api merges into a save before writing it so a stale snapshot can't
   // erase an answer the room has seen. Same trust argument as /broadcast:
   // only the worker can reach it.
   // Internal: every selection on a tab, for the api's held check

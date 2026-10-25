@@ -20,10 +20,13 @@ import {
   type StatItem,
   type WebRows,
 } from '@livedocuments/document';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
-import { moveRow } from '@/lib/move-row';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
+import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
 // checklist's and the entity's: a stat row's cards, a process's steps and a

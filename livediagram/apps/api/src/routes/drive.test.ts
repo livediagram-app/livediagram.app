@@ -1,16 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livediagram/vitest-config/sent-request';
+import { sentForm } from '@liveworkspace/vitest-config/sent-request';
 import {
   bytesToBase64,
   DRIVE_ACCOUNT_SWITCH_TTL_MS,
   type DriveItem,
 } from '@livediagram/api-schema';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 as bareD1, testDocument, type SqliteD1 } from '../test-sqlite-d1';
+import type { testPersonStores } from '../test-person-store';
 import { getSealedRefreshToken } from '../db/drive';
 import { signDriveState } from '../drive/state';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDrive } from './drive';
+
+// The mirror asks the index which canvases and folders still exist (db/drive.ts removedItems).
+vi.mock('../index-service', async (original) => ({
+  ...(await original<typeof import('../index-service')>()),
+  indexFor: (await import('../test-sqlite-d1')).testIndexFor,
+}));
 
 // /api/drive/* (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Routes").
 
@@ -58,22 +65,39 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// A database holding the canvases and folders the tests' items mirror (an item whose canvas or folder is gone is
+// dropped when the list is read), and each person's store as a node:sqlite database.
+function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
+  const db = bareD1(base);
+  for (const id of ['d1', 'd2']) testDocument(db, id, 'user_a', { name: id });
+  db.sql
+    .prepare(
+      "INSERT INTO test_folders (id, owner_id, team_id, parent_id, name) VALUES ('fo', 'user_a', NULL, NULL, 'F')",
+    )
+    .run();
+  return db;
+}
+
+function storeOf(db: SqliteD1, owner = 'user_a') {
+  return (db.env.PERSON_STORE as unknown as ReturnType<typeof testPersonStores>).databaseOf(owner)!;
+}
+
 function call(
   db: SqliteD1,
   method: string,
   path: string,
   opts: {
     body?: unknown;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     owner?: string | null;
     verifiedUserId?: string | null;
   } = {},
 ) {
-  const clerkUserId = opts.clerkUserId === undefined ? 'user_a' : opts.clerkUserId;
+  const accountUserId = opts.accountUserId === undefined ? 'user_a' : opts.accountUserId;
   return handleDrive(
     makeTestRouteContext(method, `/api/drive${path}`, {
-      owner: opts.owner ?? clerkUserId,
-      clerkUserId,
+      owner: opts.owner ?? accountUserId,
+      accountUserId,
       ...(opts.verifiedUserId !== undefined ? { verifiedUserId: opts.verifiedUserId } : {}),
       body: opts.body,
       env: db.env,
@@ -91,17 +115,17 @@ async function connect(db: SqliteD1, owner = 'user_a', refreshToken = 'rt-1') {
     status: 200,
     body: { access_token: 'at', refresh_token: refreshToken, expires_in: 3600 },
   });
-  return call(db, 'POST', '/connect', { body: { code: 'code-1', state }, clerkUserId: owner });
+  return call(db, 'POST', '/connect', { body: { code: 'code-1', state }, accountUserId: owner });
 }
 
 // The account columns of user_a's connection row.
 function accountRow(db: SqliteD1) {
-  return db.sql
+  return storeOf(db)
     .prepare(
       `SELECT google_account_id, pending_google_account_id, pending_refresh_token_enc, pending_expires_at
-         FROM drive_connections WHERE owner_id = ?`,
+         FROM drive_connections`,
     )
-    .get('user_a');
+    .get();
 }
 
 // Which refresh token the broker mints access tokens from now.
@@ -145,14 +169,14 @@ describe('gates', () => {
 
   it('refuses a guest (X-Owner-Id) with 401', async () => {
     const db = sqliteD1(BROKER);
-    const res = await call(db, 'GET', '/connection', { clerkUserId: null, owner: 'guest-uuid' });
+    const res = await call(db, 'GET', '/connection', { accountUserId: null, owner: 'guest-uuid' });
     expect(res.status).toBe(401);
   });
 
   it('refuses an API token caller (verified id without a Clerk session)', async () => {
     const db = sqliteD1(BROKER);
     const res = await call(db, 'GET', '/connection', {
-      clerkUserId: null,
+      accountUserId: null,
       owner: 'user_a',
       verifiedUserId: 'user_a',
     });
@@ -297,7 +321,7 @@ describe('reconnecting with another Google account', () => {
     const db = sqliteD1(BROKER);
     await connect(db);
     await mirrorState(db);
-    db.sql.exec('UPDATE drive_connections SET google_account_id = NULL');
+    storeOf(db).exec('UPDATE drive_connections SET google_account_id = NULL');
     as('google-2');
     await connect(db);
     expect(await connection(db)).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a' });
@@ -392,7 +416,7 @@ describe('account switch', () => {
   it('an expired switch is not shown, refuses confirm with 409, and is dropped', async () => {
     const db = sqliteD1(BROKER);
     await pendingSwitch(db);
-    db.sql.exec(`UPDATE drive_connections SET pending_expires_at = ${Date.now() - 1}`);
+    storeOf(db).exec(`UPDATE drive_connections SET pending_expires_at = ${Date.now() - 1}`);
     expect(
       (
         await body<{ connection: { pendingAccountSwitch: unknown } }>(
@@ -627,7 +651,7 @@ describe('items', () => {
     await call(db, 'PUT', '/connection', { body: {} });
     await call(db, 'PUT', '/items', { body: { items: [item()] } });
     const other = await body<{ items: unknown[] }>(
-      await call(db, 'GET', '/items', { clerkUserId: 'user_b' }),
+      await call(db, 'GET', '/items', { accountUserId: 'user_b' }),
     );
     expect(other.items).toEqual([]);
   });

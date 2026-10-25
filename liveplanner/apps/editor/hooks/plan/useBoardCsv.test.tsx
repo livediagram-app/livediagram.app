@@ -6,7 +6,7 @@ import { ITEMS_MAX, type Item, type ItemTypeDef, type PlanBoardSetup } from '@li
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 
-vi.mock('@/lib/download-blob', () => ({ downloadBlob: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/download-blob', () => ({ downloadBlob: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const picked = { current: null as { text: string; tooBig?: true } | null };
 vi.mock('@/lib/import-tab', () => ({ pickTabFile: vi.fn(async () => picked.current) }));

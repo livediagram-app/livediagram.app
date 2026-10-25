@@ -12,22 +12,22 @@ import { PostSkeleton } from '@/components/post/PostStates';
 // The Open Graph block is restated without a url for the same reason: the
 // gallery's og:url would tell link previews every post IS the gallery.
 const POST_DESCRIPTION =
-  'A document shared to the livediagram Community. Open it to explore every tab, then make your own copy to edit.';
+  'A canvas shared to the livediagram Community. Open it to explore every tab, then make your own copy to edit.';
 export const metadata: Metadata = {
-  title: 'Community Document',
+  title: 'Community Canvas',
   description: POST_DESCRIPTION,
   alternates: {},
   openGraph: {
     type: 'article',
     siteName: 'livediagram Community',
-    title: 'Community Document | livediagram',
+    title: 'Community Canvas | livediagram',
     description: POST_DESCRIPTION,
     locale: 'en_GB',
     images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Community Document | livediagram',
+    title: 'Community Canvas | livediagram',
     description: POST_DESCRIPTION,
     images: [BRAND_TWITTER_IMAGE],
   },

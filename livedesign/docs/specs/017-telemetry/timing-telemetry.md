@@ -28,7 +28,7 @@ A timing is an ordinary telemetry event: **`Timing` · `Measured` · `<Metric>.<
 
 The duration is **bucketed in the browser**; the raw number never leaves it. Carrying it in the `type`
 rather than a new numeric column means it rides the whole existing pipeline unchanged (the buffered
-emitter, the opt-out, the ingest's abuse controls, the events table, the 60-day retention, the summary's
+emitter, the opt-out, the central ingest's abuse controls, liveworkspace's events table, the 60-day retention, the summary's
 per-window counts and per-metric 30-day series), and a bucket is a closed token, so nothing about a
 timing can identify a person or a device.
 
@@ -134,7 +134,6 @@ Not built yet; each fits the same `Timing·Measured` event with a new metric on 
 - **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest
   "how quickly does someone get going" number.
 - **Export**: PNG, SVG and PDF export, from the click to the file handed over, typed by format.
-- **AI Ask answer**: asking the AI panel to the first token of its answer.
 - **Sign-in round trip**: submitting the sign-in or sign-up code to the editor signed in.
 - **Image upload**: dropping an image to it showing on the canvas from the server.
 - **Server-side api latency**: the api worker timing its own design reads and writes, reported with

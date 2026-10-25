@@ -4,9 +4,12 @@
 // bottom-right cluster, right of Undo / Redo, while the tab has two pages or more: previous, the
 // place of the page someone is on ("2 of 5"), next. An arrow fits the neighbouring page in the view,
 // as a press on its label does. For everyone who can see the pages.
-import { lucideChevronLeft, lucideChevronRight } from '@livedocuments/icons/lucide';
+import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedocuments/ui';
-import { CLUSTER_CONTROL_REST, CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
+import {
+  CLUSTER_CONTROL_REST,
+  CLUSTER_STRIP,
+} from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { useCurrentPageId } from '@/lib/current-page-kind';
 
 const Prev = lucideGlyph(lucideChevronLeft, 18);

@@ -1,5 +1,5 @@
 import type { UserPreferences } from './user-preferences';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Power user mode (docs/specs/007-editor/power-user-mode.md): a preset of recommended settings,
 // written once when the mode switches on. Switching off puts back the values
@@ -12,7 +12,6 @@ export const POWER_USER_PRESET = {
   drawTourSeen: { drawTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
-  aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
 

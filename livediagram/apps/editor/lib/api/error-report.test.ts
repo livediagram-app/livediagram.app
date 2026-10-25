@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
-import { ERROR_EMIT_CAP_PER_TYPE } from '@livediagram/telemetry-client';
+import { ERROR_EMIT_CAP_PER_TYPE } from '@liveworkspace/telemetry-client';
 import {
   apiErrorType,
   networkErrorType,
@@ -75,7 +75,7 @@ describe('apiErrorType', () => {
   // snake_case token is vocabulary; prose is left out.
   it('ignores an error body that is prose, not a token', () => {
     expect(
-      apiErrorType(400, 'save tab', 'authentication required: send a valid Clerk Bearer token'),
+      apiErrorType(400, 'save tab', 'authentication required: send a valid account access token'),
     ).toBe('Http400.SaveTab');
     expect(apiErrorType(400, 'save tab', null)).toBe('Http400.SaveTab');
   });

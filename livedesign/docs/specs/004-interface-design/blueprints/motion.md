@@ -7,9 +7,9 @@ Scope, by file:
 
 | File                                                                    | Role                                                                               |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                                    | The motion tokens, the shared `fade-in`, the cascade tokens, the shared keyframes  |
-| `packages/tailwind-config/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
-| `packages/tailwind-config/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
+| `../packages/tailwind-config/theme.css`                                 | The motion tokens, the shared `fade-in`, the cascade tokens, the shared keyframes  |
+| `../packages/style-guards/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
+| `../packages/style-guards/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
 | `apps/live/app/globals.css`                                             | Editor chrome motion only                                                          |
 | `apps/live/app/canvas-motion.css`                                       | Editor canvas motion, moved out of `globals.css` unchanged                         |
@@ -78,11 +78,11 @@ drifting.
 ### Cascades
 
 - **CSS cascades** read `min(calc(var(--stagger-i, 0) * var(--motion-cascade-step)), var(--motion-cascade-cap))`.
-  They're `.stagger-enter`, `.lvd-menu-stagger > *`, `.lvd-cascade > *`, and the Timeline fans
-  `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
+  They're `.stagger-enter`, `.lvd-menu-stagger > *`, `.lvd-cascade > *`, and `.tl-fan-out` /
+  `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
+- **JS cascades** call `cascadeDelayMs`.
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
 - `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
@@ -131,29 +131,29 @@ board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/c
 chrome markers and never the canvas world: the board appears at once (spec, "Editor
 arrival").
 
-### Shared theme (`packages/tailwind-config/theme.css`)
+### Shared theme (`../packages/tailwind-config/theme.css`)
 
 | Rule                    | Before                    | After                        |
 | ----------------------- | ------------------------- | ---------------------------- |
-| `.tl-fan-out(-up)`      | 420ms                     | `micro`                      |
 | `.lvd-cascade > *`      | 320ms, 35ms step to 700ms | `micro`, 10ms step to 100ms  |
-| `.tl-date-pulse`        | 0.7s × 2                  | unchanged: ambient indicator |
 | `empty-float` / `-ring` | loops                     | unchanged: ambient indicator |
+
+The Timeline's `.tl-fan-out(-up)` (`micro`) lives with the one surface that still draws it, liveworkspace.app's
+telemetry dashboard (`liveworkspace/apps/site/app/telemetry/timeline-motion.css` in the monorepo); the Explorer
+keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explorer`'s `explorer.css`).
 
 ### Component classes
 
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/live`**
-  - `micro`: `RecentDesignsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
-    `TimelineLanesOverlay`, and the `MovablePanel` fade.
+  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
-    `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar and `NoteBox`.
+    `MovablePanel` rows, `AnimatedHeightBox`, and the `PortalMenu` body and chevron.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
-- **`packages/ui`**: `ProductNav` takes `micro` for the chevron and dropdown. `Brand` takes
+- **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes
   `micro` for the colour and the hover rotate.
 - **`apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,
   `ArticleCard`, the contact cards, `SearchInput`, `BackToTop`, the `ArticlePager` cards and the `ArticleShell` feedback
@@ -163,7 +163,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   transition takes 260ms. `.enter` takes 310ms with `animation-delay: var(--enter-delay, 0ms)`.
   `FeatureCategoryHero` sets `--enter-delay` to `min(index × ENTER_BEAT_MS, 130)`, where
   `ENTER_BEAT_MS` is 35.
-- **`apps/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
+- **`liveworkspace/apps/site/app/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
   `StickyWindowBar` takes `short`. `MetricCards` staggers its expansion with `cascadeDelayMs`,
   and `fade-in` comes from the shared theme. The data-viz reveals are content (spec, "Content
   pacing"), in `dataviz-motion.css`, which is listed as a content stylesheet:
@@ -338,14 +338,13 @@ logging, because motion isn't a decision point.
 
 | Rule                                         | Test                                                                                        |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                               |
-| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                               |
-| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
-| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
+| Tokens match their constants                 | `../packages/tailwind-config/src/motion.test.ts`                                            |
+| `cascadeDelayMs` caps and clamps             | `../packages/tailwind-config/src/motion.test.ts`                                            |
+| Bounds for literals, `var`, `min`, `calc`    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
+| Stylesheet: ceiling, hover, ambient, delay   | `../packages/style-guards/src/motion-budget.test.ts`                                        |
+| Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
+| The shared theme is within budget            | `../packages/tailwind-config/src/theme-budget.test.ts`                                      |
+| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, ui and template-previews                  |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
 | Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
 | Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |

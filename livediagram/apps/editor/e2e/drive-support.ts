@@ -1,10 +1,11 @@
 // Support for the Google Drive mirror e2e (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Testing"): a throwaway RSA key and JWKS the api worker verifies sessions
-// against (CLERK_JWKS_URL, set by scripts/e2e-stack.mjs under E2E_DRIVE=1),
+// "Testing"): a throwaway RSA key and JWKS standing in for the accounts Worker,
+// which the api worker verifies access tokens against (ACCOUNTS_URL and
+// API_RESOURCE, set by scripts/e2e-stack.mjs under E2E_DRIVE=1),
 // the fake Google served over HTTP for the worker's OAuth calls, and the
 // browser's Google traffic routed into the same fake.
 
-import { generateKeyPairSync, randomUUID, sign, type KeyObject } from 'node:crypto';
+import { generateKeyPairSync, sign, type KeyObject } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import type { Page, Route } from '@playwright/test';
 import { FakeGoogle } from '@livediagram/fake-google';
@@ -14,6 +15,9 @@ import { serveFakeGoogle } from '@livediagram/fake-google/server';
 const JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);
 const GOOGLE_PORT = Number(process.env.E2E_DRIVE_GOOGLE_PORT ?? 8796);
 const KID = 'e2e-drive';
+// The issuer and audience scripts/e2e-stack.mjs gives the api worker (ACCOUNTS_URL + /api/auth, API_RESOURCE).
+const ISSUER = `http://127.0.0.1:${JWKS_PORT}/api/auth`;
+const AUDIENCE = 'https://e2e.livediagram.test/api';
 
 const b64url = (data: Buffer | string) => Buffer.from(data).toString('base64url');
 
@@ -27,15 +31,18 @@ export class TestIdentity {
     this.jwk = { ...publicKey.export({ format: 'jwk' }), kid: KID, alg: 'RS256', use: 'sig' };
   }
 
-  // A session JWT shaped like Clerk's: RS256, `sub`, `sid`, an hour to live.
+  // An access token shaped like the accounts Worker's: RS256, `sub`, a verified email, its issuer and
+  // this API's audience, an hour to live.
   token(userId: string, email: string): string {
     const now = Math.floor(Date.now() / 1000);
     const header = b64url(JSON.stringify({ alg: 'RS256', kid: KID, typ: 'JWT' }));
     const payload = b64url(
       JSON.stringify({
         sub: userId,
-        sid: `sess_${randomUUID()}`,
+        iss: ISSUER,
+        aud: AUDIENCE,
         email,
+        email_verified: true,
         iat: now,
         nbf: now - 5,
         exp: now + 3600,

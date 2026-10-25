@@ -22,7 +22,7 @@ import {
   pickOption,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export type LaserWidth = 'fine' | 'medium' | 'bold';
 export type LaserTrail = 'quick' | 'normal' | 'long';

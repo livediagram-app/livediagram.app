@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { QuickStylePanelScene } from '@/components/illustrations/style-panels';
+import { QuickStylePanelScene } from '@liveworkspace/help-site/art/illustrations/style-panels';
 
 export const metadata = helpMetadata({
   title: 'Quick Style Panel',
@@ -30,7 +30,7 @@ From top to bottom:
 - **Stroke**: seven colours for the outline or line, then **Ink**. The first is the theme's own default.
 - **Background**: seven colours for a shape's fill.
 - **Text colour**, for text elements: seven colours for the words, then **Ink**. The first is the theme's own text colour.
-- Every colour row ends with **More colours**, which opens the full colour picker: the row's theme colours, the same ten colours every picker offers, the colours already used in this document, and **Add a custom colour** (four coloured dots) for any colour of your own. (A shape's label colour is in the right-click menu's Colours section.)
+- Every colour row ends with **More colours**, which opens the full colour picker: the row's theme colours, the same ten colours every picker offers, the colours already used in this canvas, and **Add a custom colour** (four coloured dots) for any colour of your own. (A shape's label colour is in the right-click menu's Colours section.)
 - **Stroke width**: thin, medium or thick.
 - **Stroke style**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click. A selection mixing shapes and arrows gets the shape set.
 - **Corners**, in Draw mode only: none, small, medium or large, for rectangles and the other shapes with square corners.
@@ -52,7 +52,7 @@ Switch the theme later and colours picked here move with it: a shape you made gr
 
 Right-click any of the six theme colours in a row (or focus it and press **Shift+F10** or the context-menu key) to open the custom colour picker. Press **Use** and the colour is saved into that swatch, replacing the theme's colour there, and a small dot in its corner marks it as yours. Screen readers and the tooltip name it too, for example "Custom orange, in place of Green".
 
-Picking a colour only changes the swatch; click it afterwards to use it. **Clear override** in the same popover brings the theme's colour back, and anything you already painted keeps its colour. Your swatches belong to you and to the theme you made them in: they follow you to other documents and devices, and switching to another theme shows that theme's own colours (and any you changed there). The first swatch, the theme default, always stays the theme's, and so does Ink. A custom colour does not follow later theme changes. For colours a whole diagram should share, make a [custom theme](/help/canvas/themes/).
+Picking a colour only changes the swatch; click it afterwards to use it. **Clear override** in the same popover brings the theme's colour back, and anything you already painted keeps its colour. Your swatches belong to you and to the theme you made them in: they follow you to other canvases and devices, and switching to another theme shows that theme's own colours (and any you changed there). The first swatch, the theme default, always stays the theme's, and so does Ink. A custom colour does not follow later theme changes. For colours a whole diagram should share, pick a [theme](/help/canvas/themes/).
 
 ## Styling many at once
 
@@ -62,7 +62,7 @@ Select several shapes and arrows, even of different kinds, and a choice applies 
 
 When you change a shape's colours, width, style or alignment, from this panel or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes, and text elements remember their colour. Picking the theme default again forgets that choice.
 
-This only applies to shapes and arrows you draw yourself, from the palette, a tool or a quick-connect plus. Pasted, duplicated and templated elements keep their own looks. The memory belongs to the document and stays in this browser.
+This only applies to shapes and arrows you draw yourself, from the palette, a tool or a quick-connect plus. Pasted, duplicated and templated elements keep their own looks. The memory belongs to the canvas and stays in this browser.
 
 ## Clear Styles
 

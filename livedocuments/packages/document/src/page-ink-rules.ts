@@ -1,7 +1,7 @@
 // Which colours of an element re-inking measures, and how (docs/specs/007-editor/
 // pages-mode.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
 // shape kinds each rule reaches, and the elements left as they are. Pure.
-import { isLegacyEmojiIconId, isTechIconId } from '@livedocuments/icons';
+import { isLegacyEmojiIconId, isTechIconId } from '@liveworkspace/icons';
 import { defaultFillColor, defaultStrokeColor, type CanvasSurface } from './colors';
 import { isOpaqueHex } from './page-ink-contrast';
 import type { BoxedElement, Element } from './index';

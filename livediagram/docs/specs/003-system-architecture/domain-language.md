@@ -84,7 +84,7 @@ The words for a program working on documents for a person ([Agents](../024-agent
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
 
-- **Participant** is the access level; a person's name, colour and picture (the `participants` table) are their
+- **Participant** is the access level; a person's name and colour (the `participants` table) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
@@ -169,9 +169,24 @@ The words for the public gallery of published documents ([Community](../025-comm
   mode.
 - A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
 
+## Canvas
+
+What people see a livediagram item called is a **Canvas** (plural **canvases**), as the platform names it
+(liveworkspace's one-explorer spec: livediagram makes Canvases, liveplanner Plans, livedocuments Documents and
+livedesign Designs). Copy follows the app's casing: **New Canvas**, **Share This Canvas**, "Untitled canvas", "your
+canvases". The shared Explorer takes the word from `KIND_WORDS` in `packages/explorer/src/words.ts`, never from copy
+of its own. Only what people see is renamed: code, types, API routes, URL paths (`/document/<id>`), MCP tool names
+(`create_document`), CLI commands (`document ls`), storage keys, telemetry events and database columns still say
+**document**, and specs that describe them do too. Search keywords keep "document" beside "canvas", so an old search
+still finds the command or article. Canvases stored as "Untitled document" still count as untitled. "Canvas" also
+stays the word for the drawing surface of a tab; a sentence that would say both reads as "your work" instead. The tab
+menu's item for putting a tab into another canvas is **Add to Another Canvas**, apart from the palette's **Add to
+canvas**, which puts an element on the drawing surface. The flowchart **Document** shape is a shape, not an item, and
+keeps its name.
+
 ## This Browser
 
-**This Browser** is the one name for a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
+**This Browser** is the one name for a canvas saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
 the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
 mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.

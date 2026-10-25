@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import type { NewProjectSettings } from './new-project-settings';
 import { ProjectLoading } from '@/components/chrome/ProjectLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
@@ -26,9 +26,12 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestToken } from '@/lib/guest-token';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { handTemplatePick } from '@liveworkspace/explorer';
 import {
+  isBlankTemplate,
   templateFamilyOf,
   untitledNameForTemplate,
   type TemplateKind,
@@ -40,13 +43,11 @@ import {
   newProjectQuery,
   placementParamsFromSearch,
 } from '@/lib/new-project-params';
-import { backOutTarget } from '@/lib/back-out';
-import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
+import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@liveplanner/templates';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
 
 // In-place handoff (docs/specs/007-editor/new-project-route.md): once a project is created, this page
@@ -104,8 +105,7 @@ export default function NewProjectPage() {
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
+    // string, not ThemeId: the picker hands back a theme id as a plain string.
     // Where it goes (new-project-settings.ts): store and placement, decided at commit.
     settings: NewProjectSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).
@@ -188,7 +188,7 @@ export default function NewProjectPage() {
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
     // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };
@@ -209,11 +209,11 @@ export default function NewProjectPage() {
     // Save location (docs/specs/006-project/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { projectId, tabId } = createIdsFor(retrying);
-    // A blank in the cloud: the template picked later on Start Planning may move it to that template's default folder
-    // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
+    // A blank in the cloud: the template picked later on Start Planning may move it to that template's default
+    // folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(
       !offline && (!templateKind || isBlankTemplate(templateKind))
-        ? { projectId, tabId, placementChosen: settings.placementChosen === true }
+        ? { itemId: projectId, tabId, placementChosen: settings.placementChosen === true }
         : null,
     );
     // A Retry re-runs the create, not the preference write below.
@@ -223,22 +223,28 @@ export default function NewProjectPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A project in This Browser has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
-    // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
-    const cloudOwner = offline ? null : await settleIdentity();
-    if (offline) {
-      void settleIdentity().catch((err: unknown) =>
-        debugLog(`[new] background identity failed: ${String(err)}`),
-      );
-    }
-    // The template's tabs, card types and example cards, or one blank tab (lib/new-project-content.ts).
-    const { tabs, tab, itemTypes, seedItems } = await newProjectContent({
-      templateKind,
-      themeId,
-      tabId,
-      via: 'new',
-    });
     try {
+      // A project in This Browser has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
+      // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
+      // Inside the try: signing the guest id and loading a template's seeds can both fail, and either
+      // failure must reach the error card, never leave /new on "Creating" for good.
+      const cloudOwner = offline ? null : await settleIdentity();
+      if (offline) {
+        // Except a first visit's guest token (offline-mode.md "Instant open"): fetching one leaves the page for the
+        // accounts site and comes back to this /new address, so a create begun first would run again on the way back.
+        // Taken first, the plan is made once; a returning guest's token is already here and this answers at once.
+        await ensureGuestToken();
+        void settleIdentity().catch((err: unknown) =>
+          debugLog(`[new] background identity failed: ${String(err)}`),
+        );
+      }
+      // The template's tabs, card types and example cards, or one blank tab (lib/new-project-content.ts).
+      const { tabs, tab, itemTypes, seedItems } = await newProjectContent({
+        templateKind,
+        themeId,
+        tabId,
+        via: 'new',
+      });
       if (offline) {
         // Offline Mode (docs/specs/006-project/offline-mode.md): create the project in IndexedDB only. This
         // also registers its id so every later load / save routes local. A template's Sheets are made with it, as
@@ -311,10 +317,10 @@ export default function NewProjectPage() {
     setOpenedId(projectId);
   };
 
-  // Every create from /new goes where new projects go by default (docs/specs/007-editor/new-project-route.md): the
-  // store for who is creating, decided now (a guest at once, a signed-in browser once identity settles), and the
-  // /new?folder= / ?team= context when there is one; without one it carries no placement, so a default folder may
-  // answer (docs/specs/013-workspace/default-folders.md "Precedence").
+  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): This
+  // Browser for a guest, liveplanner for a signed-in person or anyone with a /new?folder= / ?team= context
+  // (docs/specs/006-project/save-locations.md), and that context when there is one; without one the index files it at
+  // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);

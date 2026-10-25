@@ -4,14 +4,13 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
+import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
-import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import { debugLog } from '@/lib/debug-log';
-import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -22,18 +21,14 @@ const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
 // How presses on the bare canvas surface route between the tools
-// (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
-// intercepts (middle-mouse pan,
-// draw-to-size), the background context menu, and the outer <main> +
-// inner wrapper pointerdowns that arm the long-press menu, the
-// isometric orbit, and the pan-vs-marquee choice. Canvas mounts the
+// (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
+// intercepts (middle-mouse pan), the background context menu, and the outer <main> +
+// inner wrapper pointerdowns that arm the long-press menu and the pan-vs-marquee choice. Canvas mounts the
 // returned handlers verbatim; every piece of state they drive stays
-// owned by its existing hook (pan / marquee, iso camera,
-// the draw gesture).
+// owned by its existing hook (pan / marquee).
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
-  pendingDraw,
   viewportOffset,
   viewportZoom,
   mainRef,
@@ -41,8 +36,6 @@ export function useCanvasSurfaceGestures({
   spaceHeldRef,
   setPan,
   setMarquee,
-  isoCamera,
-  beginPendingDrawGesture,
   interceptPress,
   onCanvasContextMenu,
   onDeselect,
@@ -51,7 +44,6 @@ export function useCanvasSurfaceGestures({
   canvasTool: CanvasProps['canvasTool'];
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
-  pendingDraw: CanvasProps['pendingDraw'];
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
@@ -59,10 +51,6 @@ export function useCanvasSurfaceGestures({
   spaceHeldRef: PanAndMarquee['spaceHeldRef'];
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
-  isoCamera: ReturnType<typeof useIsometricCamera>;
-  // Starts the queued draw-to-size gesture; true when it
-  // claimed the press (see useCanvasDrawGesture).
-  beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
   // A tool that owns a primary press on the canvas (the Format tool on a page's paper); true when
   // it claimed the press.
   interceptPress?: (e: ReactPointerEvent) => boolean;
@@ -102,7 +90,7 @@ export function useCanvasSurfaceGestures({
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {
-    const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'isometric';
+    const wantsPan = spaceHeldRef.current || canvasTool === 'pan';
     if (wantsPan) {
       startPan(e);
     } else {
@@ -166,18 +154,6 @@ export function useCanvasSurfaceGestures({
       });
       return;
     }
-    // Draw-to-size intercept must run in the capture phase so a
-    // queued draw can begin ON TOP of an existing element. An
-    // element's own bubble-phase pointerdown selects / drags it and
-    // stops propagation, which would otherwise make it impossible
-    // to draw a new element over another. Capturing here lets the
-    // draw win regardless of what's under the pointer; the
-    // background bubble handlers still cover the rect-less edge
-    // case where this returns false.
-    if (e.button === 0 && pendingDraw) {
-      focusCanvas();
-      if (beginPendingDrawGesture(e)) e.stopPropagation();
-    }
   };
 
   // Right-clicking (or long-pressing) the empty canvas deselects, then opens
@@ -219,9 +195,6 @@ export function useCanvasSurfaceGestures({
     // canvas background clicks. Suppress the browser context
     // menu and open a tab-level context menu instead.
     e.preventDefault();
-    // Isometric (docs/specs/008-canvas/isometric-view.md): right-click-drag orbits the camera, so the
-    // canvas / tab menu must never open in that tool or it interrupts the orbit gesture.
-    if (canvasTool === 'isometric') return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
     // pointerdown already armed a marquee (or pan) whose release would
     // deselect, and deselecting closes the menu this click is opening.
@@ -234,7 +207,7 @@ export function useCanvasSurfaceGestures({
 
   const onPointerDown = (e: ReactPointerEvent) => {
     // A finger on a board's empty space, or on an element too big for the screen, pans, whatever the tool, and
-    // never opens the canvas menu (hooks/canvas/pan-through.ts).
+    // never opens the canvas menu (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
     if (isPanThrough(e)) {
       startPan(e, panThroughTap(e));
       return;
@@ -243,15 +216,6 @@ export function useCanvasSurfaceGestures({
     // (touch has no right-click). Armed before the marquee / pan logic;
     // a finger that moves cancels it, so it never fights a drag.
     canvasLongPress.onPointerDown(e);
-    // Isometric (docs/specs/008-canvas/isometric-view.md): holding the RIGHT button and dragging orbits
-    // the camera too — a mouse-only alternative to Shift-drag / the orbit
-    // button. The canvas / tab context menu is suppressed wholesale while
-    // the isometric tool is active (see onContextMenu above), so a
-    // right-press starts an orbit without ever popping a menu.
-    if (canvasTool === 'isometric' && e.button === 2) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     // Primary button only. A right- (or middle-) click must fall
     // through to onContextMenu untouched: it opens the menu, and if
     // we also armed a marquee here the matching pointerup would fire
@@ -269,16 +233,6 @@ export function useCanvasSurfaceGestures({
     // clipboard-image paste works after the user has interacted
     // with the canvas at least once.
     focusCanvas();
-    // Draw-to-size intercept: when an intent is pending, this
-    // pointer-down starts the size-drag instead of falling
-    // through to pan / marquee. Coords convert immediately to
-    // canvas coords so the rest of the gesture (the window-
-    // level move + up listeners) operates in one space.
-    // Usually the capture-phase intercept above has already started
-    // the gesture (and stopped propagation); this is the fallback
-    // for the rect-less edge case where it didn't. A press on the corner cluster's strip frames
-    // (which don't stop it) bubbles here, and is chrome, not a draw.
-    if (pendingDraw && !inCornerCluster(e.target) && beginPendingDrawGesture(e)) return;
     // Auto-fit on load can scale the wrapper below 1, which
     // shrinks its hit region inside `main`. Without this mirror
     // handler, clicks in the "outside the shrunken wrapper but
@@ -286,13 +240,6 @@ export function useCanvasSurfaceGestures({
     // Restrict to direct hits on `main` so element clicks (which
     // bubble up here) don't also trigger.
     if (e.target !== e.currentTarget) return;
-    // Isometric (docs/specs/008-canvas/isometric-view.md): Shift-drag orbits the camera (spin + tilt)
-    // instead of panning, so the plain drag stays a pan. Self-contained
-    // in the camera hook; take it before the pan branch below.
-    if (canvasTool === 'isometric' && e.shiftKey) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     routePanOrMarquee(e);
   };
 
@@ -309,16 +256,6 @@ export function useCanvasSurfaceGestures({
     // doesn't bubble through the outer onPointerDown's
     // currentTarget gate) still leaves the canvas focused.
     focusCanvas();
-    // Draw-to-size intercept (mirror of the outer handler).
-    // beginPendingDrawGesture branches on `freehand` internally:
-    // a freehand intent seeds the polyline accumulator, every
-    // other intent seeds the box / line drag. (An earlier inline
-    // version always started a drawDrag, so a pen click landed
-    // BOTH a penPoints state and a drawDrag and mis-routed into
-    // createImage; the shared helper has the single correct
-    // branch.) Usually the capture-phase intercept has already
-    // handled this; kept as the rect-less fallback.
-    if (pendingDraw && beginPendingDrawGesture(e)) return;
     routePanOrMarquee(e);
   };
 
@@ -340,11 +277,9 @@ export function useCanvasSurfaceGestures({
 
   // The bare surface around the content layer: the layer is scaled with the zoom, so zoomed out (a phone's usual
   // view) most of the empty canvas is <main> itself. Only a finger's double-tap means anything there: it zooms
-  // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom"). The isometric view, which makes the layer
-  // inert, gives every press on <main> a meaning of its own.
+  // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
   const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget || !pressedByFinger()) return;
-    if (canvasTool === 'isometric') return;
     const at = doublePressAt(e);
     if (at) onCanvasDoubleClick(at.x, at.y, true);
   };

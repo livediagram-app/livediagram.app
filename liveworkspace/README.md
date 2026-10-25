@@ -16,7 +16,7 @@ is `https://liveworkspace.app/api/auth`.
 apps/site              liveworkspace.app: every page, the sign-in pages included (a Next static export)
 apps/accounts          the accounts API at liveworkspace.app/api/auth: codes, Google, tokens, JWKS
 packages/auth-client   what each app imports: sign-in redirect, code swap, refresh, token check
-docs/                  the site, adding an app, moving off Clerk, every product's comparison pages
+docs/                  the site, adding an app, moving off Clerk
 ```
 
 Every app's logo lists liveworkspace's sites on hover: see [docs/site-switcher.md](docs/site-switcher.md).
@@ -30,7 +30,17 @@ hosts its own Community pages, which read it. See [docs/community.md](docs/commu
 
 And it keeps every app's uploaded images, its API at liveworkspace.app/api/media, so a person's
 pictures follow them from app to app. Each app still decides who may see one and serves the bytes
-itself. See [docs/media.md](docs/media.md).
+itself. See [docs/media.md](docs/media.md). The same service keeps and serves every app's previews (Explorer
+thumbnails, live images and share cards) at liveworkspace.app/api/previews, which each app's router forwards on
+its own address; the apps only draw them. See [docs/previews.md](docs/previews.md).
+
+And it runs the One Explorer's index, its API at liveworkspace.app/api/index: where every Canvas, Plan,
+Document and Design is and who can reach it, with the grants that let an app open one. See
+[docs/index-service.md](docs/index-service.md).
+
+And it pairs every app's API tokens with workbenches (developer tools that frame an app's editor beside an
+agent), and holds the tickets and sessions those open, in the accounts Worker. See
+[docs/workbench.md](docs/workbench.md).
 
 ## How signing in works
 
@@ -39,7 +49,9 @@ cookie. Each app sends the browser to the accounts site and gets it back with a 
 
 1. The app redirects to `liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
 2. Not signed in there yet? The person continues with Google, or types their email, gets a
-   6-digit code, and enters it. liveworkspace.app now has its own first-party cookie.
+   6-digit code, and enters it, on the app's own address (`livediagram.app/sign-in`, served by the
+   app's router). One quick hop to liveworkspace.app then gives it its own first-party cookie
+   ([docs/accounts.md](docs/accounts.md#signing-in-on-the-apps-own-address)).
 3. The browser lands on the app's `/auth/callback?code=…`. The app's Worker swaps the code for
    an access token, a refresh token and an ID token.
 4. The app's API checks access tokens locally against the published keys
@@ -102,9 +114,17 @@ corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 ```
 
 `dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
-(8790) and the Community Worker (8791) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
-accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
+(8790), the Community Worker (8791), the media Worker (8792) and the index Worker (8793) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
+accounts Worker (and `/api/previews/*` to the media Worker), so the pages and the API share one origin, as on liveworkspace.app. That origin,
 `http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
+
+The index's schema is one baseline migration, `apps/index/migrations/0001_index.sql`, edited in place
+until launch, so `wrangler d1 migrations apply` sees nothing new when it changes. A local index
+database built before a change misses its tables: one built before `0e171391c` has no `use_days`, and
+every open fails with a D1 error. Rebuild it (`rm -rf apps/index/.wrangler/state/v3/d1`, then
+`corepack pnpm db:migrate:local` in `apps/index`), which drops your local index rows, or keep them by
+running just the new statements against the local file (`sqlite3
+apps/index/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/<hash>.sqlite < statements.sql`).
 
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
 uses Cloudflare's always-pass test keys.
@@ -126,13 +146,15 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
    `wrangler d1 create liveworkspace-accounts` (and `liveworkspace-accounts-staging`).
 2. Verify `liveworkspace.app` as a sending domain in Resend, the provider every app emails
    through, and create an API key with sending access for it.
-3. Create a Turnstile widget for `liveworkspace.app` and put its site key in
+3. Create a Turnstile widget for `liveworkspace.app` and every app's hostnames
+   ([docs/accounts.md](docs/accounts.md#before-deploy)), and put its site key in
    `TURNSTILE_SITE_KEY`.
 4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
    `ADMIN_TOKEN` (`openssl rand -hex 32`) and `RESEND_API_KEY`.
 5. For Google: create an OAuth client (Web application) in Google Cloud with
    `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one
-   for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. For Google on the apps'
+   own addresses, add theirs too ([docs/accounts.md](docs/accounts.md#before-deploy)).
 6. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`.
 7. Register each app (below).
 
@@ -146,10 +168,18 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
    ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
      --accounts https://liveworkspace.app \
      --name livediagram \
+     --app livediagram.app \
      --redirect https://www.livediagram.app/auth/callback \
      --redirect https://livediagram.app/auth/callback \
+     --redirect https://livediagram.app/auth/guest \
      --resource https://livediagram.app/api
    ```
+
+   `https://<app>/auth/guest` is where the guest hand-off returns
+   ([docs/accounts.md](docs/accounts.md#guests)); an app registered before it needs it added to its
+   client's `redirectUris`. `--app` is the app the client is, which keeps it to that app's own
+   settings and records ([docs/accounts.md](docs/accounts.md#which-app-a-client-is)); a client
+   registered without one is given it with `scripts/map-clients.ts`.
 
 3. Wire the app up: [docs/integrating-an-app.md](docs/integrating-an-app.md).
 
@@ -167,6 +197,13 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
   Clerk id, and livediagram's guard against an account id sent as a guest id keeps working.
 - **Closing an account** needs an app's client secret and an access token issued to that app.
 - **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
+- **Signing in on an app's address:** the hand-off that brings the session to liveworkspace.app is
+  single-use, lasts 60 seconds, is stored hashed, is bound to the browser that started the sign-in
+  (a nonce cookie) and returns only to the app's own registered redirect URIs. The sign-in's
+  cookies on the app's address are renamed, scoped to `/api/workspace/auth` and gone within 15
+  minutes. The code limit per IP counts the address the app's router names
+  (`X-Liveworkspace-Client-IP`): a caller going straight to the Worker could name any address
+  there, but sending a code still needs Turnstile and the per-email limit holds.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile (the site's Trusted Types policy).
 

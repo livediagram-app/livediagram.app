@@ -77,25 +77,6 @@
   }
 }
 
-/* The teammate's cursor on the page: it comes in from the right, settles on the chart, and stays. */
-.hm-cursor {
-  opacity: 0;
-  animation: hm-cursor 0.8s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
-}
-@keyframes hm-cursor {
-  from {
-    opacity: 0;
-    transform: translate(var(--sx), var(--sy));
-  }
-  20% {
-    opacity: 1;
-  }
-  to {
-    opacity: 1;
-    transform: translate(var(--cx), var(--cy));
-  }
-}
-
 .hero-static .hm-pop,
 .hero-static .hm-draw,
 .hero-static .hm-wipe,
@@ -104,9 +85,6 @@
   opacity: 1;
   transform: none;
   stroke-dashoffset: var(--to, 0);
-}
-.hero-static .hm-cursor {
-  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .hm-pop,
@@ -117,11 +95,6 @@
     opacity: 1;
     transform: none;
     stroke-dashoffset: var(--to, 0);
-  }
-  .hm-cursor {
-    animation: none;
-    opacity: 1;
-    transform: translate(var(--cx), var(--cy));
   }
 }
 

@@ -10,7 +10,7 @@
 // skipped, so tabbing through cells leaves no empty undo steps.
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';
 import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
@@ -24,12 +24,12 @@ import {
   type SankeyNodeStyle,
   type ShapeElement,
 } from '@livedesign/design';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
 import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';
 import { SankeyNodeStrip } from '@/components/dialogs/SankeyNodeStrip';
-import { DialogTabs } from '@/components/dialogs/DialogTabs';
+import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import {
   SankeyFlowsShowMeButton,
   SankeyFlowsTourStage,

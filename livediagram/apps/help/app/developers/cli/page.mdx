@@ -5,18 +5,18 @@ import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
 export const metadata = helpMetadata({
   title: 'The livediagram CLI',
   description:
-    'Install the livediagram CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
+    'Install the livediagram CLI from npm, sign in by browser, device code or API token, then read, build, edit and export canvases from a terminal or agent.',
   path: '/help/developers/cli/',
 });
 
 <ArticleLayout
   title="The livediagram CLI"
-  description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and profiles for other servers."
+  description="Read, build, edit and discuss canvases from a terminal: install, sign in, the commands, and self-hosting."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-`livediagram` is a command line for the livediagram API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+`livediagram` is a command line for the livediagram API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding canvases, reading a tab as text, changing it with edit operations, answering comments, and syncing canvases to files.
 
 It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
 
@@ -47,7 +47,7 @@ You need a livediagram account: the CLI acts as you, through an API token, and n
 livediagram auth login
 ```
 
-The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livediagram CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livediagram CLI**. Leave **Read-only access** off to let the CLI change canvases, or switch it on so it can find and view canvases but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
 
 <Figure
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
@@ -74,10 +74,10 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 
 ### With an API Token
 
-For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, under **Account**, then **API Tokens**, and either set it for the commands you run:
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), and either set it for the commands you run:
 
 ```bash
-export LIVEDIAGRAM_TOKEN=lvd_your_token_here
+export LIVEDIAGRAM_TOKEN=lwt_your_token_here
 ```
 
 or store it for this machine, reading it from stdin:
@@ -95,15 +95,15 @@ livediagram auth status    # host, account, token name, role, expiry, and where 
 livediagram auth logout    # revoke the stored token and forget it
 ```
 
-`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livediagram, so it stops working everywhere at once. It will not revoke a token from `LIVEDIAGRAM_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **API Tokens**.
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livediagram, so it stops working everywhere at once. It will not revoke a token from `LIVEDIAGRAM_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token on liveworkspace.app.
 
-The browser and device sign-ins create an ordinary API token named **livediagram CLI**. It appears in **API Tokens** beside any others (with a **Read-only** badge if you chose that), lasts six months, and counts towards your ten. Signing in again on the same machine replaces it and revokes the old one.
+The browser and device sign-ins create an ordinary API token named **livediagram CLI**. It appears with your other tokens on liveworkspace.app (marked read-only if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
 
 ## Where Your Token Is Kept
 
 A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livediagram/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
 
-## Find and Read Documents
+## Find and Read Canvases
 
 Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
 
@@ -116,11 +116,11 @@ livediagram tab lint "Auth flow"              # what is wrong with how it is dra
 livediagram tab render "Auth flow" --png auth.png
 ```
 
-`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livediagram link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a canvas, you can give its **name**, the start of its **id**, or a pasted **livediagram link**; a share link acts through that link. A name that matches more than one canvas is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
 `tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
-A few commands read livediagram's catalogues rather than your documents, which helps before writing anything:
+A few commands read livediagram's catalogues rather than your canvases, which helps before writing anything:
 
 ```bash
 livediagram template ls                       # the templates a document or tab can start from
@@ -143,7 +143,7 @@ livediagram tab rm "Auth flow" Scratch                      # delete one tab; th
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livediagram guide edit` explains how edit operations read.
 
-`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
+`document rm` moves a canvas to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
 ## Comments and Waiting
 
@@ -154,7 +154,7 @@ livediagram wait "Shop" --for comment --timeout 600
 livediagram watch "Shop"                         # stream changes until you stop it
 ```
 
-`wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
+`wait` blocks until someone comments or the canvas changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
 ## Files, Exports and Pictures
 
@@ -168,7 +168,7 @@ livediagram graph render flow.mmd --png flow.png
 
 To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the canvas in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the canvas lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or canvas is ever deleted by a push. `export --all` writes every canvas you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
 ## Help, Guides and the Agent Skill
 
@@ -192,7 +192,7 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `0`       | Done                                                       |
 | `1`       | Refused: the input was understood but not accepted         |
 | `2`       | Usage: the command line does not parse                     |
-| `3`       | Not found, or ambiguous: a document, tab or element        |
+| `3`       | Not found, or ambiguous: a canvas, tab or element          |
 | `4`       | Not signed in, or not allowed (a read-only token's writes) |
 | `5`       | Conflict: the tab changed since you read it; read, retry   |
 | `6`       | Rate limited                                               |
@@ -219,14 +219,14 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your canvases or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDIAGRAM_TOKEN` out of source control and logs, and
-  revoke a token from **API Tokens** (or with `livediagram auth logout`) the moment you no longer
+  revoke a token on liveworkspace.app (or with `livediagram auth logout`) the moment you no longer
   need it or think it may have leaked.
 </Note>
 

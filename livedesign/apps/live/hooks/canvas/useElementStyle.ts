@@ -18,7 +18,7 @@
 // Keeping that policy in one file makes it auditable.
 
 import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   bringElementsToFrontLayer,
   isBoxed,

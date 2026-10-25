@@ -9,8 +9,8 @@
 // the page passes those setters in. Verbatim relocation — no
 // behaviour change.
 
-import type { Selection } from '@/lib/selection-store';
-import { haptic } from '@/lib/haptics';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   arrowReferencesAny,
   createText,
@@ -28,7 +28,7 @@ import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 import type { SheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 
@@ -47,7 +47,6 @@ type EditorSelectionActionsDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
-  setFormatSourceId: (id: string | null) => void;
   // True when another participant has the element selected (concurrent-
   // selection lock, docs/specs/007-editor/editor-app.md). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
@@ -75,7 +74,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
-    setFormatSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
@@ -191,7 +189,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       setMultiSelectedIds(ids);
     }
     setEditingId(null);
-    setFormatSourceId(null);
   };
 
   // Toggle lock across every multi-selected element. If any member is

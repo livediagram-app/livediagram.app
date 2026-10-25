@@ -8,17 +8,7 @@
 // historically imported from here. The canonical definitions live in
 // `@liveplanner/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
-export type {
-  Folder,
-  ShareLink,
-  ShareLinkExpiry,
-  ShareRole,
-  TeamInvite,
-  TeamListItem,
-  TeamMember,
-  TeamMemberStatus,
-  TeamRole,
-} from '@liveplanner/api-schema';
+export type { ShareLink, ShareLinkExpiry, ShareRole } from '@liveplanner/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers
@@ -31,7 +21,6 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter, setApiWarningReporter } from './api/error-report';
 export {
   API_BASE,
-  PROJECT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   registerTokenProvider,
   setSessionSharePassword,
@@ -44,21 +33,12 @@ export * from './api/projects';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
-export * from './api/folders';
-export * from './api/custom-themes';
-export * from './api/teams';
-export * from './api/tokens';
-export * from './api/oauth';
+export * from '@liveworkspace/workbench/lib/api/tokens';
+export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
-export * from './api/favourites';
-export * from './api/placement-defaults';
-export * from './api/timeline';
-export * from './api/activity';
-export * from './api/home';
 export * from './api/preferences';
 export * from './api/capabilities';
-export * from './api/unfurl';
-export * from './api/trash';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
+export * from './api/team-people';

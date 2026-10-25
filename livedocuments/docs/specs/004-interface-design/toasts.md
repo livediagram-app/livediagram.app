@@ -35,15 +35,16 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
 “Plans”. Try again.", "“Slides” added to “Roadmap”".
 
 - **The name is in curly quotes**, its whitespace collapsed to single spaces.
-- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/editor/lib/toast-name.ts`), cut
+- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `../packages/workbench/src/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
   ceiling; where they would not, the advice is dropped first ("Could not add “Slides” to “Roadmap”.").
 - **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the
   team library".
-- The wording lives in one place per family, so every surface says the same: `apps/editor/lib/document-toast-copy.ts`
-  (delete, restore, move, duplicate) and `apps/editor/lib/write-failure-copy.ts` (a failed folder or document write).
+- The wording lives in one place per family, so every surface says the same: `apps/editor/lib/write-failure-copy.ts`
+  (a failed document write). The Explorer's toasts (delete, restore, move, duplicate, a failed folder write) are the
+  shared Explorer's (`@liveworkspace/explorer`).
 
 ## Tones
 
@@ -93,7 +94,7 @@ lists its decline before its confirm.
   where that is wider, so it is easy to read and to tap.
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
-  bottom-right cluster (Undo, Layers, Zoom), the Explorer's bottom bar, and the
+  bottom-right cluster (Undo, Layers, Zoom), and the
   [sign-in banner](../014-identity/sign-in-encouragement.md). It lifts 8px clear of the highest of those that
   overlaps its column, measured as they move or resize, so a toast never lands on a button or on a banner's words.
   Chrome off to the side of the column (the cluster on a wide desktop) does not lift it.

@@ -13,9 +13,9 @@ describe('createFailureCopy', () => {
     expect(createFailureCopy(new TypeError('Failed to fetch'))).toEqual({
       action: 'retry',
       eyebrow: 'Connection error',
-      title: 'Couldn’t create the document',
+      title: 'Couldn’t create the canvas',
       message:
-        'We couldn’t reach the server to create your document. Check your connection and try again.',
+        'We couldn’t reach the server to create your canvas. Check your connection and try again.',
       actionLabel: 'Try again',
     });
   });
@@ -28,7 +28,7 @@ describe('createFailureCopy', () => {
     [
       'team_forbidden',
       403,
-      'You’re not a member of that team, so the document can’t be filed in its library.',
+      'You’re not a member of that team, so the canvas can’t be filed in its library.',
     ],
     ['folder_not_found', 404, 'That folder no longer exists, or isn’t yours.'],
     [
@@ -36,12 +36,12 @@ describe('createFailureCopy', () => {
       400,
       'That folder belongs to a different space from the one you chose.',
     ],
-    ['placement_invalid', 400, 'That isn’t a place a document can be filed.'],
+    ['placement_invalid', 400, 'That isn’t a place a canvas can be filed.'],
   ])('says why a %s placement was refused', (code, status, message) => {
     expect(createFailureCopy(refused(code, status))).toEqual({
       action: 'choose',
       eyebrow: 'Placement refused',
-      title: 'Couldn’t file the document there',
+      title: 'Couldn’t file the canvas there',
       message,
       actionLabel: 'Choose another place',
     });

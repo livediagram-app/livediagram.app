@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backOutTarget } from './back-out';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 
 // docs/specs/007-editor/new-design-route.md "Escape backs out".
 describe('backOutTarget', () => {

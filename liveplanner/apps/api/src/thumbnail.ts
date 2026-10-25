@@ -1,16 +1,8 @@
-// Project SVG snapshot render-cache (docs/specs/006-project/project-snapshots.md). One cached SVG per
-// project, stored in R2 (key `thumb/<projectId>`), refreshed lazily on
-// read: if the cache is fresh (rendered at or after the project's last
-// save) we stream the stored bytes; otherwise we render the first tab
-// with the shared DOM-free renderer, write it back, and stamp it fresh.
-//
-// Two delivery paths share this one artifact (the whole point of the
-// design): the owner-authed Explorer thumbnail (GET
-// /api/projects/:id/thumbnail) and the public, share-code-scoped live
-// image (GET /api/share/:code/image.svg). Rendering on read — rather
-// than on every save — means a project nobody looks at never costs a
-// render, and every write path (editor, collaborators, MCP, API token)
-// invalidates the snapshot uniformly because they all bump saved_at.
+// A plan drawn as an SVG, for its preview (liveworkspace/docs/previews.md): the first tab, or one tab, with the shared
+// DOM-free renderer, its icons drawn as their glyphs, its boards, sheets and dashboards from the plan's own cards.
+// Drawn in the plan's Durable Object, where the content is, when liveworkspace's previews service asks the export
+// door (plan-room.ts `exportImage`); the platform stores it, decides when it is stale and serves it, so nothing here
+// caches or writes a picture. Rendering on request means a plan nobody looks at never costs a render.
 
 import {
   drawnCount,
@@ -26,123 +18,47 @@ import { formArt } from '@liveplanner/plan-art';
 import { cardSourceOf, typesOf } from '@liveplanner/items';
 import { renderModelsForTab, sheetFramesOf } from '@liveplanner/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
-// elements render their real glyph in the snapshot / live image instead of
+// elements render their real glyph in the preview instead of
 // the renderer's box-with-label fallback.
-import { resolveIconExportArt, resolveStickerArt } from '@liveplanner/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import {
-  getProjectItemTypes,
   getTab,
   getTabBody,
-  getThumbRenderedAt,
-  markThumbRendered,
   stampTabElementCount,
-  thumbnailKey,
   type StoredTabBody,
   listItems,
   listSheets,
 } from './db';
-import type { ProjectDTO, Env } from './types';
+import { getPlanItemTypes } from './plan-room/plan-content';
+import type { ProjectDTO, PlanEnv } from './types';
 import { dashboardImageOf } from './thumbnail-dashboard';
 
-// Content type for the cached SVG snapshot. Local to this module — the
-// HTTP responses set their own header (responses.ts); this only stamps
-// the R2 object's metadata on write.
-const THUMBNAIL_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
-
-// The project fields a snapshot needs. `thumbRenderedAt` is optional: a
-// caller that already read it alongside the project row (the Explorer
-// thumbnail route, via getProjectThumbMeta) passes it and saves a query;
-// one that didn't leaves it out and it is read here.
-// `itemTypes` likewise: a caller that read them passes them; one that did not (the Explorer thumbnail route, whose
-// one read leaves the catalogue out) leaves them out, and they are read only when a render draws cards. Never
-// defaulted to none: a board then takes no type and draws no card.
-export type ThumbnailSubject = Pick<ProjectDTO, 'id' | 'name' | 'savedAt'> & {
+// The plan fields a drawing needs. `itemTypes`: a caller that read them passes them; one that did not leaves them
+// out, and they are read only when a drawing draws cards. Never defaulted to none: a board then takes no type and
+// draws no card.
+export type DrawSubject = Pick<ProjectDTO, 'id' | 'name'> & {
   itemTypes?: ProjectDTO['itemTypes'];
-  thumbRenderedAt?: number | null;
 };
 
-// `defer` hands the cache write (R2 put + freshness stamp) to the
-// request's waitUntil, so a stale snapshot's response goes out as soon as
-// it is rendered instead of after two more round trips. Without it the
-// write is awaited inline, as before.
-export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
+// `defer` hands the count stamp (below) to a waitUntil, so the drawing goes out as soon as it is drawn.
+export type DrawOptions = { defer?: (write: Promise<unknown>) => void };
 
-// Resolve a project's cached SVG snapshot, rendering + caching it first
-// if stale. Returns null — caller should 404 / fall back to an icon —
-// when there's nothing to show: no R2 binding (a deployment without
-// storage), no tab, or an empty / unparseable first tab.
-export async function getProjectThumbnailSvg(
-  env: Env,
-  liveDoc: ThumbnailSubject,
-  opts: ThumbnailOptions = {},
+// The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
+export async function drawPlan(
+  env: PlanEnv,
+  plan: DrawSubject,
+  tabId: string | null,
+  opts: DrawOptions = {},
 ): Promise<string | null> {
-  // No object store: nothing to cache into or read from. The endpoints
-  // 404 and the Explorer row keeps its generic icon on a binding-less deploy.
-  if (!env.SNAPSHOTS) return null;
-  const key = thumbnailKey(liveDoc.id);
-
-  // Fresh = rendered at or after the last save. saved_at is bumped by
-  // every tab write, so any content change makes the snapshot stale.
-  const renderedAt =
-    liveDoc.thumbRenderedAt !== undefined
-      ? liveDoc.thumbRenderedAt
-      : await getThumbRenderedAt(env, liveDoc.id);
-  if (renderedAt !== null && renderedAt >= liveDoc.savedAt) {
-    const cached = await env.SNAPSHOTS.get(key);
-    // A present object is the happy path. A miss here means the object
-    // was evicted / never written despite the freshness stamp, so we
-    // fall through and re-render rather than 404 a project that has
-    // content.
-    if (cached) return await cached.text();
-  }
-
-  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts);
-  if (svg == null) return null;
-
-  // Best effort: a write failure (R2 hiccup) must not fail the read —
-  // we still return the freshly rendered SVG, just without caching it,
-  // so the next read renders again. Only stamp the row as fresh once the
-  // object is actually in R2, or a later read would trust a stale/absent
-  // object and skip the re-render.
-  const bucket = env.SNAPSHOTS;
-  const write = (async () => {
-    try {
-      await bucket.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
-      await markThumbRendered(env, liveDoc.id, Date.now());
-    } catch {
-      // Swallow: the SVG is still returned to the caller below.
-    }
-  })();
-  if (opts.defer) opts.defer(write);
-  else await write;
-  return svg;
-}
-
-// Live image for a SPECIFIC tab (docs/specs/013-workspace/live-image-share.md's per-tab picker, now surfaced
-// in the Share dialog). Rendered on read and deliberately NOT written to
-// the R2 snapshot cache: `thumb/<projectId>` is the first-tab artifact
-// shared with the Explorer thumbnail (docs/specs/006-project/project-snapshots.md) and carries a single
-// per-project freshness stamp, so it has no room for a second tab. A
-// non-default tab is a niche embed, and the endpoint's short
-// stale-while-revalidate Cache-Control keeps repeat views cheap without
-// a persistent cache. Returns null (caller 404s) when there's no object
-// store, the tab isn't in the project, or the tab is empty / unparseable.
-export async function getProjectTabImageSvg(
-  env: Env,
-  liveDoc: ThumbnailSubject,
-  tabId: string,
-): Promise<string | null> {
-  // Gate on the same optional R2 binding as the cached path, so the
-  // whole live-image feature is uniformly off on a binding-less deploy.
-  if (!env.SNAPSHOTS) return null;
-  return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId));
+  const body = tabId ? await getTabBody(env, plan.id, tabId) : await getTabBody(env, plan.id);
+  return renderTabBodyToSvg(env, plan, body, opts);
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
-// CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too; an image element
+// CLI's pull --svg and tab render, and any script. Unlike a preview it draws an empty tab too; an image element
 // draws its placeholder. Null when the tab is not in the project or its body does not parse.
 export async function renderTabSvg(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
 ): Promise<string | null> {
@@ -165,10 +81,10 @@ export async function renderTabSvg(
 // from the parse a render does anyway, so the lists know an empty project after one ask. Best effort:
 // a failed stamp leaves the count unknown, which only means the row asks again.
 function stampUnknownCount(
-  env: Env,
+  env: PlanEnv,
   body: StoredTabBody,
   count: number,
-  opts: ThumbnailOptions,
+  opts: DrawOptions,
 ): Promise<void> | undefined {
   if (body.elementCount !== null) return undefined;
   const stamp = stampTabElementCount(env, body.id, count).catch((error: unknown) => {
@@ -181,15 +97,14 @@ function stampUnknownCount(
   return stamp;
 }
 
-// Turn a stored tab body into an SVG, shared by the first-tab snapshot and
-// the per-tab live image. A Form tab draws its form. Null when the body is
+// Turn a stored tab body into an SVG, for the first tab or one tab. A Form tab draws its form. Null when the body is
 // absent, unparseable, or has nothing to draw (an empty canvas has no
 // meaningful thumbnail; the row shows its icon instead).
 async function renderTabBodyToSvg(
-  env: Env,
-  liveDoc: ThumbnailSubject,
+  env: PlanEnv,
+  liveDoc: DrawSubject,
   body: StoredTabBody | null,
-  opts: ThumbnailOptions = {},
+  opts: DrawOptions = {},
 ): Promise<string | null> {
   if (!body) return null;
   let parsed: Partial<Tab>;
@@ -245,9 +160,7 @@ async function renderTabBodyToSvg(
     plan || sheetCards
       ? await Promise.all([
           listItems(env, liveDoc.id).then((all) => new Map(all.map((i) => [i.id, i]))),
-          liveDoc.itemTypes !== undefined
-            ? liveDoc.itemTypes
-            : getProjectItemTypes(env, liveDoc.id),
+          liveDoc.itemTypes !== undefined ? liveDoc.itemTypes : getPlanItemTypes(env, liveDoc.id),
         ])
       : [undefined, null];
   const sheets = frames.length

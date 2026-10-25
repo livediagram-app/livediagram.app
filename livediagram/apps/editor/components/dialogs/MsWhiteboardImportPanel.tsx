@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { pickExport, readDrop } from '@/lib/pick-folder';
-import { ImportChecklist } from './ImportChecklist';
+import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -116,7 +116,7 @@ function PickStep({
     <>
       <p className="mb-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
         Pick a Microsoft Whiteboard board export: a board folder, a folder of boards, or their .zip.
-        Each board becomes its own document with one whiteboard tab, named and dated as the board;
+        Each board becomes its own canvas with one whiteboard tab, named and dated as the board;
         nothing here changes.
       </p>
       <ImportDropZone

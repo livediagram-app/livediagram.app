@@ -4,7 +4,7 @@
 // canvas. Picked once, when the editor opens; any tool can be picked after.
 import { useEffect, useRef } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 
 export function modeDefaultTool(mobile: boolean): CanvasTool {
   return mobile ? 'pan' : 'select';

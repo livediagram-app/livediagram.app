@@ -1,5 +1,9 @@
 import { PreviewFan } from '@liveplanner/template-previews';
-import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
+import {
+  BAND_CARD,
+  BAND_CONTROL_HOVER,
+  BAND_LABEL,
+} from '@liveworkspace/marketing-site/lib/band-classes';
 import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
 // The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card

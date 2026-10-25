@@ -5,7 +5,7 @@
 
 import type { RoomOp } from '@livedesign/api-schema';
 import { parseDragPreviewPatches } from '@livedesign/api-schema';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearPeerPreview, peerPreviewIds, setPeerPreview } from '@/lib/drag-preview';
 
 export const PEER_PREVIEW_EXPIRY_MS = 2000;

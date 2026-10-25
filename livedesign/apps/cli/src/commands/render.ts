@@ -4,7 +4,7 @@
 import { tabOf, tabPath, type VerbContext } from '@livedesign/agent-verbs';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { pictureLine, writePicture } from '../render/png';
 
 type PictureFlags = { png?: string; svg?: string };

@@ -1,4 +1,4 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -7,7 +7,7 @@ import {
 } from '@livedocuments/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 
@@ -124,8 +124,8 @@ export function CanvasGuideOverlay({
                       cx={x}
                       cy={y}
                       r={t.active ? 5 : 3.5}
-                      fill={t.active ? 'rgb(14, 165, 233)' : 'white'}
-                      stroke="rgb(14, 165, 233)"
+                      fill={t.active ? 'var(--color-brand-500)' : 'white'}
+                      stroke="var(--color-brand-500)"
                       strokeWidth={t.active ? 2 : 1.5}
                     />
                   );
@@ -154,7 +154,7 @@ export function CanvasGuideOverlay({
                   cx={x}
                   cy={y}
                   r={3.5}
-                  fill="rgb(14, 165, 233)"
+                  fill="var(--color-brand-500)"
                   stroke="white"
                   strokeWidth={1.5}
                 />

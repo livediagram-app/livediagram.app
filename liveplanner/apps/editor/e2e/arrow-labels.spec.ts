@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { DOUBLE_PRESS_MS } from '../lib/double-press';
+import { DOUBLE_PRESS_MS } from '@liveworkspace/workbench/lib/double-press';
 import { expect, expectNoPageErrors, seedTab, startBlankProject, test } from './fixtures';
 
 // Arrow labels on the line and bending by the line, end to end
@@ -182,7 +182,6 @@ test.describe('arrow labels and bending', () => {
     ]);
     const label = page.getByText('calls', { exact: true });
     const toolbar = page.getByTestId('selection-popover');
-    const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true });
     for (let step = 0; step < 8; step += 1) {
       const p = await onLine(page, 'ar', 0.2);
       await page.mouse.click(p.x, p.y);
@@ -194,7 +193,8 @@ test.describe('arrow labels and bending', () => {
         t.x < l.x + l.width && l.x < t.x + t.width && t.y < l.y + l.height && l.y < t.y + t.height;
       expect(overlaps, `toolbar covers the label at zoom step ${step}`).toBe(false);
       await page.keyboard.press('Escape');
-      await zoomIn.click();
+      // The canvas zooms by keyboard (its corner zoom buttons are a Sheet's alone).
+      await page.keyboard.press('ControlOrMeta+=');
     }
     expectNoPageErrors(pageErrors);
   });

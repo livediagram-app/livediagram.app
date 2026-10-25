@@ -14,7 +14,7 @@ import {
   SelectionGripsLayer,
   type SelectionGripHosts,
 } from './SelectionGripsLayer';
-import { CanvasZoomProvider } from './CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // The handles are always on top (docs/specs/008-canvas/canvas-and-palette.md "Resize"): every grip
 // renders in the one grips layer drawn after the elements, never inside an element's own box, so no

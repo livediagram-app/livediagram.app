@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
-import { useLatest } from './useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The host side of `requestOpenSettings` (lib/open-settings.ts): whichever
 // surface owns the Settings dialog (the Explorer, the editor) calls `open`

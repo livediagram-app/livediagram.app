@@ -66,7 +66,7 @@ const { default: Page, metadata } = await import('./page');
 const core = await import('@/lib/api/core');
 
 const SESSION: WorkbenchDocumentSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'document',
   documentId: 'doc-1',
   folderId: null,
@@ -74,7 +74,7 @@ const SESSION: WorkbenchDocumentSessionResponse = {
   origin: 'https://127.0.0.1:5175',
   role: 'edit',
   expiresAt: Date.now() + 60_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 function fakePort(): WorkbenchPort {

@@ -1,4 +1,4 @@
-import { defineProject } from '@livedocuments/vitest-config';
+import { defineProject } from '@liveworkspace/vitest-config';
 
 // The engine is pure: every line and branch is covered (docs/specs/024-agents/blueprints/edit-operations.md).
 export default defineProject({

@@ -8,7 +8,7 @@
 import type { ChairSitterFacing } from './collab-shapes';
 import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
 import type { ShapeKind } from './shape-kind';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 export type OfficeKind =
   'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';

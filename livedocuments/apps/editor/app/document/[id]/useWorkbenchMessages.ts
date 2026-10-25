@@ -18,7 +18,7 @@ import { selectionReference } from '@livedocuments/document-views';
 import { setAppearanceOverride } from '@livedocuments/ui';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import type { RevealStore } from '@/lib/changeset-reveals';
-import { selectionIds, type SelectionStore } from '@/lib/selection-store';
+import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 export function useWorkbenchMessages(opts: {
   workbench: WorkbenchDocumentSession | null;

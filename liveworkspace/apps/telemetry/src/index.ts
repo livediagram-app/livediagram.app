@@ -9,9 +9,7 @@ import type { Env } from './env';
 import { handleIngest } from './ingest';
 import { handleSummary } from './summary';
 import { API_PATH, CORS, RETENTION_MS } from './config';
-
-const under = (pathname: string, base: string) =>
-  pathname === base || pathname.startsWith(`${base}/`);
+import { under } from '@liveworkspace/index-app/worker-http';
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -47,7 +45,9 @@ async function api(
   if (path === TELEMETRY_SUMMARY_PATH) {
     if (request.method !== 'GET')
       return new Response(null, { status: 405, headers: { Allow: 'GET' } });
-    const res = await handleSummary(request, env, ctx);
+    const summary = await handleSummary(request, env, ctx);
+    // A copy: an answer from the edge cache has headers that can't be changed.
+    const res = new Response(summary.body, summary);
     // Public numbers, so any page may read them.
     res.headers.set('Access-Control-Allow-Origin', '*');
     return res;

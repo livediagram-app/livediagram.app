@@ -10,7 +10,7 @@
 import { useEffect } from 'react';
 
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 
 export function useDesktopOnlyToolExit(
   canvasTool: CanvasTool,

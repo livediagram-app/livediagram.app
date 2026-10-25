@@ -15,11 +15,14 @@ import {
   SITE_TITLE,
   WebVitalsBoot,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@livediagram/ui';
-import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
-import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
+import { NON_MARKETING_SEGMENTS } from '@livediagram/api-schema';
+import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
+import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
+
+// Skips a view transition into this product's other apps (viewTransitionGuardScript).
+const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -32,14 +35,8 @@ const TITLE = SITE_TITLE;
 const DESCRIPTION = SITE_DESCRIPTION;
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
-// (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -3,12 +3,8 @@ import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDocument,
-  apiCreateShareLink,
-  apiRescopeShareLink,
   apiDeleteImage,
-  apiDeleteShareLink,
   apiDeleteTab,
-  apiDismissSharedWith,
   apiFetchImageBlobUrl,
   releaseImageBlobUrl,
   apiListImages,
@@ -24,6 +20,33 @@ import {
 } from './api-client';
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
 import { resetDisplayCacheForTests } from './image-display';
+
+// A canvas's grant and the index are their own modules (document-grants.test.ts, the index client's tests): here
+// every request goes straight to the stubbed fetch.
+vi.mock('./api/document-grants', () => ({
+  withDocumentGrant: async (_base: string, _input: string, init?: RequestInit) => init,
+  heldDocumentGrant: () => null,
+  seedDocumentGrant: () => {},
+  documentGrant: async () => null,
+  documentGrantRefusal: () => null,
+}));
+const index = vi.hoisted(() => ({
+  recordOpen: vi.fn(async () => {}),
+  createItem: vi.fn(async (input: { id: string; title?: string }) => ({
+    item: { id: input.id, title: input.title ?? '' },
+    grant: { grant: 'g', level: 'edit', tabId: null, expiresAt: Date.now() + 600_000 },
+  })),
+  updateItem: vi.fn(async () => ({ item: {} })),
+}));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: index,
+  INDEX_BASE: '/api/index',
+}));
+
+// A guest holds liveworkspace's guest token (lib/guest-token.ts), sent as the Bearer.
+vi.mock('./guest-token', () => ({
+  readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
+}));
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -46,38 +69,30 @@ async function call(...args: Parameters<typeof apiHeaders>): Promise<Record<stri
 }
 
 describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md)', () => {
-  it('guest path: no provider, no token, emits X-Owner-Id', async () => {
+  it("guest path: no provider, sends the guest token's Bearer", async () => {
     const h = await call('guest-uuid-1');
-    expect(h['X-Owner-Id']).toBe('guest-uuid-1');
-    expect(h.Authorization).toBeUndefined();
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
-  it('guest path: provider returning null falls back to X-Owner-Id', async () => {
-    // Signed-out Clerk session: useAuth().getToken() resolves to
-    // null, so the provider is registered but currently inert. The
-    // request must still carry the X-Owner-Id header (the editor
-    // stays usable for signed-out visitors).
+  it("guest path: provider returning null falls back to the guest token's Bearer", async () => {
+    // Signed-out session: useAuth().getToken() resolves to null, so the
+    // provider is registered but currently inert. The request still
+    // carries the guest token (the editor stays usable for signed-out
+    // visitors).
     setTokenProvider(async () => null);
     const h = await call('guest-uuid-2');
-    expect(h['X-Owner-Id']).toBe('guest-uuid-2');
-    expect(h.Authorization).toBeUndefined();
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
-  it('bearer path: provider returning a token emits Authorization and drops X-Owner-Id', async () => {
-    // The invariant that matters: a request must NOT carry both
-    // headers simultaneously. The api worker would prefer the JWT
-    // (verifies it, derives the owner from sub) but the duplicate
-    // owner signal would leave a confusing trail in any per-request
-    // audit. Bearer-only is the only correct shape.
+  it("bearer path: provider returning a token sends the account's Bearer, not the guest's", async () => {
     setTokenProvider(async () => 'jwt-token-abc');
     const h = await call('client-passed-id-ignored');
     expect(h.Authorization).toBe('Bearer jwt-token-abc');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('body opt adds Content-Type: application/json on guest path', async () => {
     const h = await call('guest-uuid-3', { body: true });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-3');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['Content-Type']).toBe('application/json');
   });
 
@@ -86,25 +101,24 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     const h = await call('ignored', { body: true });
     expect(h.Authorization).toBe('Bearer jwt-token-def');
     expect(h['Content-Type']).toBe('application/json');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('share opt adds X-Share-Code', async () => {
     const h = await call('guest-uuid-4', { share: 'ABCD2345' });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-4');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['X-Share-Code']).toBe('ABCD2345');
   });
 
   it('share + body together emit all three headers', async () => {
     const h = await call('guest-uuid-5', { share: 'EFGH6789', body: true });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-5');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['X-Share-Code']).toBe('EFGH6789');
     expect(h['Content-Type']).toBe('application/json');
   });
 
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
-    // Clerk identity) AND X-Share-Code (the link's role gates write
+    // account identity) AND X-Share-Code (the link's role gates write
     // access on the document they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."
@@ -112,7 +126,6 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     const h = await call('ignored', { share: 'IJKL0123' });
     expect(h.Authorization).toBe('Bearer jwt-token-xyz');
     expect(h['X-Share-Code']).toBe('IJKL0123');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('share: null is treated as absent (no X-Share-Code header)', async () => {
@@ -122,7 +135,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     // mis-parse as a share visit. Verifies the truthy guard.
     const h = await call('guest-uuid-6', { share: null });
     expect(h['X-Share-Code']).toBeUndefined();
-    expect(h['X-Owner-Id']).toBe('guest-uuid-6');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
   it('attaches X-Share-Password once a session password is set (docs/specs/013-workspace/share-password.md)', async () => {
@@ -174,39 +187,6 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
 });
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: minting and rescoping carry the tab.
-describe('share-link scope calls', () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  it('mints a link scoped to a tab', async () => {
-    stubFetch(201, { link: { code: 'C', tabId: 't2' } });
-    await apiCreateShareLink('owner-1', 'd1', 'view', 'never', 't2');
-    const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share');
-    expect(JSON.parse(init!.body as string)).toEqual({
-      role: 'view',
-      expiry: 'never',
-      tabId: 't2',
-    });
-  });
-
-  it('mints an All-tabs link by default', async () => {
-    stubFetch(201, { link: { code: 'C', tabId: null } });
-    await apiCreateShareLink('owner-1', 'd1', 'view');
-    const init = vi.mocked(fetch).mock.calls[0]![1]!;
-    expect(JSON.parse(init.body as string)).toHaveProperty('tabId', null);
-  });
-
-  it('rescopes a link with a PUT and hands back the link', async () => {
-    stubFetch(200, { link: { code: 'C', tabId: null } });
-    const link = await apiRescopeShareLink('owner-1', 'd1', 'C', null);
-    const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share/C');
-    expect(init!.method).toBe('PUT');
-    expect(JSON.parse(init!.body as string)).toEqual({ tabId: null });
-    expect(link.tabId).toBeNull();
-  });
-});
-
 // Helper to stub the global fetch with a one-shot mocked Response.
 // Each test reaches for its own fixture so the cases don't leak
 // state through the shared Response object. `body` is plain JSON
@@ -236,29 +216,21 @@ describe('response helpers (observed through api callers)', () => {
     vi.unstubAllGlobals();
   });
 
-  describe('expectOk (via apiCreateShareLink)', () => {
+  describe('expectOk (via apiSharedTabs)', () => {
     it('returns the parsed body on 200', async () => {
-      const link = {
-        code: 'ABCD2345',
-        role: 'edit' as const,
-        createdAt: 0,
-        documentId: 'diag-1',
-      };
-      stubFetch(200, { link });
-      const got = await apiCreateShareLink('owner-1', 'diag-1', 'edit');
-      expect(got).toEqual(link);
+      const sharedTabs = { tabs: 1, documents: 2 };
+      stubFetch(200, { sharedTabs });
+      expect(await apiSharedTabs('owner-1', 'diag-1')).toEqual(sharedTabs);
     });
 
     it('throws "<action> failed: <status>" on 500', async () => {
       // The thrown message is what the editor surfaces through the
-      // generic error toast. Locking the shape ("create share link
+      // generic error toast. Locking the shape ("shared tabs
       // failed: 500") ensures a regression in `expectOk` (e.g.
       // dropping the status) doesn't quietly remove the diagnostic
       // signal users see when they report an issue.
       stubFetch(500);
-      await expect(apiCreateShareLink('owner-1', 'diag-1', 'edit')).rejects.toThrow(
-        'create share link failed: 500',
-      );
+      await expect(apiSharedTabs('owner-1', 'diag-1')).rejects.toThrow('shared tabs failed: 500');
     });
   });
 
@@ -321,27 +293,23 @@ describe('response helpers (observed through api callers)', () => {
     });
   });
 
-  describe('expectOkOr404Void (via apiDeleteShareLink)', () => {
+  describe('expectOkOr404Void (via apiDeleteTab)', () => {
     it('resolves on 200', async () => {
       stubFetch(200);
-      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).resolves.toBeUndefined();
+      await expect(apiDeleteTab('owner', 'd-1', 't-1')).resolves.toBeUndefined();
     });
 
     it('resolves on 404 (idempotent: concurrent delete already cleared the row)', async () => {
-      // The tolerance is the whole point of this helper. "Delete
-      // this share link" is a fire-and-forget gesture; another
-      // collaborator clicking revoke at the same time, or the
-      // share link already being gone, must not surface as an
-      // error toast in the UI.
+      // The tolerance is the whole point of this helper. Deleting a
+      // tab another collaborator deleted at the same moment must not
+      // surface as an error toast in the UI.
       stubFetch(404, {});
-      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).resolves.toBeUndefined();
+      await expect(apiDeleteTab('owner', 'd-1', 't-1')).resolves.toBeUndefined();
     });
 
     it('still throws on a non-200 non-404 (500, etc.)', async () => {
       stubFetch(500);
-      await expect(apiDeleteShareLink('owner', 'd-1', 'ABCD2345')).rejects.toThrow(
-        'delete share link failed: 500',
-      );
+      await expect(apiDeleteTab('owner', 'd-1', 't-1')).rejects.toThrow('delete tab failed: 500');
     });
   });
 });
@@ -371,17 +339,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
   });
 
   describe('allow404 default vs opt-out', () => {
-    it('apiDismissSharedWith (allow404:false) throws on 404', async () => {
-      // Strict mode: the caller explicitly opted out of the
-      // idempotent-delete contract, so a 404 must NOT collapse to a
-      // silent resolve. The thrown message includes the action label
-      // so the existing error toast still says something useful.
-      stubFetch(404, {});
-      await expect(apiDismissSharedWith('owner', 'diag-404')).rejects.toThrow(
-        'dismiss shared failed: 404',
-      );
-    });
-
     it('apiDeleteImage (allow404:false) throws on 404', async () => {
       stubFetch(404, {});
       await expect(apiDeleteImage('owner', 'img-404')).rejects.toThrow('delete image failed: 404');
@@ -390,16 +347,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
     it('apiDeleteImage resolves on 200 (smoke check the happy path still works)', async () => {
       stubFetch(200);
       await expect(apiDeleteImage('owner', 'img-200')).resolves.toBeUndefined();
-    });
-
-    it('apiDeleteShareLink (allow404:true) STILL tolerates 404 after the refactor', async () => {
-      // Cross-check against the apiDelete extraction at a078e62:
-      // the prior expectOkOr404Void inline call path collapsed to
-      // `allow404: true` (the helper's default), so a regression to
-      // `false` here would surface as a thrown error toast in the
-      // share-revoke UI.
-      stubFetch(404, {});
-      await expect(apiDeleteShareLink('owner', 'd-1', 'CODE2345')).resolves.toBeUndefined();
     });
   });
 
@@ -432,23 +379,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
       );
       vi.stubGlobal('fetch', fetchSpy);
       await apiDeleteTab('owner', 'diag-1', 'tab-1', null);
-      const [, init] = fetchSpy.mock.calls[0] as [unknown, RequestInit];
-      const headers = init.headers as Record<string, string>;
-      expect(headers['X-Share-Code']).toBeUndefined();
-    });
-
-    it('apiDeleteShareLink (no share-code param at all) never sets X-Share-Code', async () => {
-      // The endpoint takes the share code IN THE URL path, never
-      // in the header. The helper must not invent a share-header
-      // out of `code` (the path segment).
-      const fetchSpy = vi.fn().mockResolvedValue(
-        new Response('{}', {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      );
-      vi.stubGlobal('fetch', fetchSpy);
-      await apiDeleteShareLink('owner', 'diag-1', 'CODE2345');
       const [, init] = fetchSpy.mock.calls[0] as [unknown, RequestInit];
       const headers = init.headers as Record<string, string>;
       expect(headers['X-Share-Code']).toBeUndefined();
@@ -488,6 +418,34 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(body.tabs[0]).toMatchObject({ id: 't1', name: 'Tab' });
     expect(out).toEqual({ id: 'd1' });
   });
+
+  // liveworkspace/docs/one-explorer-contracts.md "Items": the index makes the item first, and its grant lets the
+  // content in; the placement is the index's, never the api's.
+  it('creates the item at the index, then the content with its grant', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(Response.json({ document: { id: 'd2' } }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await apiCreateDocument('owner', {
+      id: 'd2',
+      name: 'N',
+      tabs: [],
+      folderId: 'f1',
+      teamId: 'team1',
+    });
+    expect(index.createItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'd2',
+        app: 'livediagram',
+        title: 'N',
+        folderId: 'f1',
+        teamId: 'team1',
+      }),
+    );
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(new Headers(init.headers).get('X-Index-Grant')).toBe('g');
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body).not.toHaveProperty('folderId');
+    expect(body).not.toHaveProperty('teamId');
+  });
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
@@ -503,9 +461,13 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     return JSON.parse(init.body as string) as Record<string, unknown>;
   };
 
-  it('carries the team and folder in the create body', async () => {
+  it('files the team and folder at the index, not in the content body', async () => {
     const body = await sentBody({ id: 'd1', name: 'N', teamId: 't1', folderId: 'f1' });
-    expect(body).toMatchObject({ teamId: 't1', folderId: 'f1' });
+    expect(index.createItem).toHaveBeenLastCalledWith(
+      expect.objectContaining({ teamId: 't1', folderId: 'f1' }),
+    );
+    expect(body).not.toHaveProperty('teamId');
+    expect(body).not.toHaveProperty('folderId');
   });
 
   it('leaves placement out when none is chosen', async () => {
@@ -514,16 +476,25 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('folderId');
   });
 
-  it('sends a null folder as the root chosen on purpose (docs/specs/013-workspace/default-folders.md)', async () => {
-    const body = await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
-    expect(body).not.toHaveProperty('teamId');
-    expect(body).toHaveProperty('folderId', null);
+  it('sends a null folder to the index as the root chosen on purpose (docs/specs/013-workspace/default-folders.md)', async () => {
+    await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
+    const input = index.createItem.mock.lastCall![0] as Record<string, unknown>;
+    expect(input).not.toHaveProperty('teamId');
+    expect(input).toHaveProperty('folderId', null);
   });
 
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' } as const;
+    const intent = {
+      mode: 'diagram',
+      tabKind: 'diagram',
+      templateFamily: 'retrospective',
+    } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
+    // The index files by the intent's words (its default folders key on them).
+    expect(index.createItem).toHaveBeenLastCalledWith(
+      expect.objectContaining({ intent: 'diagram:diagram:retrospective' }),
+    );
   });
 
   it('leaves the intent out when the create keeps a place', async () => {
@@ -531,14 +502,21 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('intent');
   });
 
-  it('sends markUsed: false for a making that is no use (docs/specs/015-api/api.md)', async () => {
+  it('records no use for a making that is no use (docs/specs/015-api/api.md)', async () => {
+    index.recordOpen.mockClear();
     const body = await sentBody({ id: 'd1', name: 'N', markUsed: false });
-    expect(body).toHaveProperty('markUsed', false);
+    expect(body).not.toHaveProperty('markUsed');
+    expect(index.recordOpen).not.toHaveBeenCalled();
   });
 
-  it('leaves markUsed out for a making that counts, the server default', async () => {
-    expect(await sentBody({ id: 'd1', name: 'N', markUsed: true })).not.toHaveProperty('markUsed');
-    expect(await sentBody({ id: 'd1', name: 'N' })).not.toHaveProperty('markUsed');
+  it('records a use at the index for a making that counts', async () => {
+    index.recordOpen.mockClear();
+    await sentBody({ id: 'd1', name: 'N', markUsed: true });
+    await sentBody({ id: 'd2', name: 'N' });
+    expect(index.recordOpen.mock.calls).toEqual([
+      ['d1', null],
+      ['d2', null],
+    ]);
   });
 
   it('throws the refusal token for a refused placement', async () => {
@@ -553,6 +531,24 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     await expect(
       apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
     ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
+  });
+});
+
+// liveworkspace/docs/one-explorer-contracts.md "Items": the index holds the canvas's title, and a meta save tells it
+// only when the name changed.
+describe('apiSaveDocumentMeta renames at the index', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('tells the index a new name once, and nothing for a save that only carries it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}', { status: 200 })),
+    );
+    index.updateItem.mockClear();
+    await apiSaveDocumentMeta('owner', { id: 'rn1', name: 'First' });
+    await apiSaveDocumentMeta('owner', { id: 'rn1', name: 'First', tabs: [] });
+    await apiSaveDocumentMeta('owner', { id: 'rn1', tabs: [] });
+    expect(index.updateItem.mock.calls).toEqual([['rn1', { title: 'First' }]]);
   });
 });
 

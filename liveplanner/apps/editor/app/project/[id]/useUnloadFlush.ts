@@ -11,11 +11,11 @@ import { flushSync } from 'react-dom';
 import type { Tab } from '@liveplanner/project';
 import { flushProjectSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isProjectDeleted } from '@/lib/project-tombstones';
-import { commitOpenEdit } from '@/lib/open-edit';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { commitOpenEdit } from '@liveworkspace/workbench/lib/open-edit';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
-import { isSaveFailing, isTabTooLarge } from '@/lib/save-health';
+import { isSaveFailing, isTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 
 /** Whether leaving now asks first: changes the server has not taken, while the last save failed or the browser is
  *  offline. */
@@ -96,7 +96,7 @@ export function useUnloadFlush(opts: {
       });
     };
     // The page going: a label still being typed commits on blur, which this never fires, so commit it first, and
-    // synchronously, so the tabs the flush reads hold it (lib/open-edit.ts). Not on unmount below: that runs inside
+    // synchronously, so the tabs the flush reads hold it (@liveworkspace/workbench/lib/open-edit.ts). Not on unmount below: that runs inside
     // React's commit, where flushSync cannot, and a click away from the editor has already blurred it.
     const leave = () => {
       flushSync(() => commitOpenEdit());

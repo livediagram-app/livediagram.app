@@ -3,12 +3,12 @@
 // any other verb given one exits 2. No host, profile or credential is read.
 
 import { resolveTab, tabListOf, type Verb } from '@liveplanner/agent-verbs';
-import { ApiError } from '@liveplanner/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { headerFactsOf, overviewView, renderView } from '@liveplanner/project-views';
 import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@liveplanner/api-schema';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parsePullFile, PULL_FILE_SUFFIX, type PullFile } from '../sync/pull-file';
 
 const READABLE = ['project.view', 'tab.ls', 'tab.view'];

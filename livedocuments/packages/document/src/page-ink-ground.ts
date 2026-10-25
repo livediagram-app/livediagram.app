@@ -6,7 +6,7 @@
 import { mixHex } from './page-ink-contrast';
 import type { Page, PageRect } from './page';
 import { pageFillTone } from './page-content';
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 // The plain paper, measured as printed and exported.
 export const PAPER_TONE = '#ffffff';

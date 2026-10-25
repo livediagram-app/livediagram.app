@@ -45,7 +45,7 @@ import {
   lucideDices,
   lucideShapes,
   lucideFunnel,
-} from '@livedesign/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import type { AdjustmentId, FilterCategory } from '@livedesign/photo-engine';
 

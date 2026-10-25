@@ -5,8 +5,8 @@
 // the editor as it changes. A module store, so the panel never re-renders for the
 // editor's own churn and no prop runs through the chrome to reach it.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { createListeners } from '@/lib/listeners';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type DocumentVisibility = {
   shareable: boolean;

@@ -5,7 +5,7 @@
 // every article fills with different result rows.
 
 import type { ReactNode } from 'react';
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared pieces -----------------------------------------------------------
 
@@ -301,7 +301,7 @@ export function SearchOverview() {
       query="check"
       groups={[
         {
-          title: 'Documents',
+          title: 'Canvases',
           rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
         },
         {
@@ -331,7 +331,7 @@ export function SearchDocuments() {
       query="onboarding"
       groups={[
         {
-          title: 'Documents',
+          title: 'Canvases',
           rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
@@ -395,7 +395,7 @@ export function SearchAddToCanvas() {
       query="cylinder"
       groups={[
         {
-          title: 'Documents',
+          title: 'Canvases',
           rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
         },
         {

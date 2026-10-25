@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next';
 
+import { comparisonSitemap } from '@liveworkspace/comparisons';
+
+import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@livedesign/ui';
 
@@ -11,9 +14,9 @@ export const dynamic = 'force-static';
 // Next.js convention: app/sitemap.ts → /sitemap.xml at build time.
 // See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
-// Lists the indexable pages on the marketing origin, plus the two
-// public operational surfaces (/telemetry, /status) that hang off the
-// footer. The editor (/live/*) and API (/api/*) live on the same
+// Lists the indexable pages on the marketing origin, plus the public
+// operational surface (/status) that hangs off the footer. (/telemetry is a
+// redirect to liveworkspace's central dashboard now, so it isn't listed.) The editor (/live/*) and API (/api/*) live on the same
 // domain but aren't public-content surfaces, so they don't belong in
 // the sitemap (robots.ts Disallows them too).
 //
@@ -64,23 +67,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    // /terms and /privacy are intentionally omitted: both legal pages moved
-    // into the help centre (its own sitemap lists the canonical articles), and
-    // each marketing route is now a noindex redirect there.
+    // /terms and /privacy are intentionally omitted: both legal pages are
+    // liveworkspace's (liveworkspace.app lists them), and each marketing route
+    // is now a noindex redirect there.
     // Operational surfaces reachable from the footer (docs/specs/019-marketing/marketing-site.md). Lower
     // priority than the marketing content above: they're transparency
     // pages, not landing destinations, but they're public + indexable
     // (each sets robots index:true and a self-canonical), so listing
     // them lets crawlers find them without relying on footer links
-    // alone. Build-time `now`: /telemetry reflects live event data and
-    // /status reflects the latest deployed state, so both are "fresh as
-    // of this build" rather than carrying a tracked revision constant.
-    {
-      url: `${base}/telemetry`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.4,
-    },
+    // alone. Build-time `now`: /status reflects the latest deployed state,
+    // so it is "fresh as of this build" rather than carrying a tracked
+    // revision constant.
     {
       url: `${base}/status`,
       lastModified: now,
@@ -94,6 +91,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.2,
-    },
+    }, // The comparisons (packages/comparisons/README.md "Metadata"): the hub and one page per
+    // competitor, from the same list as the routes, dated by their last review rather than the build.
+    ...comparisonSitemap(COMPARISONS),
   ];
 }

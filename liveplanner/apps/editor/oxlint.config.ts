@@ -1,5 +1,5 @@
 import { defineConfig } from 'oxlint';
-import config from '@liveplanner/oxlint-config';
+import config from '@liveworkspace/oxlint-config';
 
 export default defineConfig({
   ...config,

@@ -1,8 +1,8 @@
 // What every Plan write reads first (docs/specs/026-plan/plan-agents.md "Cost"): the items and the plan, in
 // parallel, once per call however many changes it carries.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import type { ItemsResponse, PlanResponse } from '@liveplanner/api-schema';
-import { ApiError } from '@liveplanner/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { Item } from '@liveplanner/items';
 import { itemsPath } from '../verbs/shared';
 

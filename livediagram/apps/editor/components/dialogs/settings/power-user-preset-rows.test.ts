@@ -13,7 +13,6 @@ const ALL = new Set([
   'avatarTourSeen',
   'pagesTourSeen',
   'elementToursSeen',
-  'aiSuggestedPrompts',
 ]);
 
 describe('presetSummaryLines', () => {
@@ -28,7 +27,6 @@ describe('presetSummaryLines', () => {
       ['Draw Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
-      ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);
   });
@@ -50,10 +48,10 @@ describe('presetSummaryLines', () => {
 
   it('shows a row that is not offered here without a way to it', () => {
     const offered = new Set(ALL);
-    offered.delete('aiSuggestedPrompts');
-    const prompts = presetSummaryLines(setPowerUserMode({}, true).prefs, offered).find(
-      (l) => l.rowKey === 'aiSuggestedPrompts',
+    offered.delete('elementToursSeen');
+    const showMe = presetSummaryLines(setPowerUserMode({}, true).prefs, offered).find(
+      (l) => l.rowKey === 'elementToursSeen',
     )!;
-    expect(prompts.reachable).toBe(false);
+    expect(showMe.reachable).toBe(false);
   });
 });

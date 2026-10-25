@@ -19,7 +19,7 @@ import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
-import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
+import { useArrivesWithBoard } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered

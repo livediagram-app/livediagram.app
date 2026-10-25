@@ -4,7 +4,7 @@
 // for each drink.
 
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 const answered = new Map<string, number>();
 const listeners = createListeners();

@@ -10,8 +10,12 @@ import type { QuickStylePanel as QuickStylePanelComponent } from '@/components/c
 import { loadQuickStylePanel } from '@/lib/editor-deferred-code';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useQuickStyle, type QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
-import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
-import { publishClearStyles } from '@/lib/clear-styles-store';
+import {
+  sameMembers,
+  selectionIds,
+  type Selection,
+} from '@liveworkspace/workbench/lib/selection-store';
+import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 
 // Shown once something is selected; its code is fetched once the editor is idle (lib/editor-deferred-code.ts).
 const QuickStylePanel = dynamic(loadQuickStylePanel, { ssr: false });

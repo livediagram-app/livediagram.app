@@ -19,7 +19,7 @@ import {
   type FormatGroup,
   type FormatMode,
 } from '@/lib/format-config';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
+import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { HoverCard } from '@livedesign/ui';
 

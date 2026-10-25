@@ -7,15 +7,14 @@
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
 import { isBoxed, type BoxedElement, type Element } from '@liveplanner/project';
-import { Tooltip } from '@liveplanner/ui';
+import { Glyph, Tooltip } from '@liveplanner/ui';
 import {
   ActionMenuIcon,
   CommentMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
-import { useClearStyles } from '@/lib/clear-styles-store';
+import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };
@@ -131,5 +130,16 @@ export function ElementMenuQuickBar({
         </Tooltip>
       ) : null}
     </div>
+  );
+}
+
+// Clear Styles: an eraser over a baseline.
+function ClearStylesGlyph() {
+  return (
+    <Glyph size={14} units={16}>
+      <path d="M9.5 2.5 13.5 6.5 7 13H3.5L2 11.5z" />
+      <path d="M6 6l4 4" />
+      <path d="M8 13h6" />
+    </Glyph>
   );
 }

@@ -1,7 +1,7 @@
 // Global keyboard shortcuts for the editor route, lifted out of
 // editor-page.tsx so the page file stays focused on orchestration.
 //
-// The callbacks (undo, redo, deleteSelected, copy, paste, setCanvasTool,
+// The callbacks (undo, redo, deleteSelected, copy, paste,
 // add*, beginEdit, etc.) and the per-render selection / isReadOnly /
 // editingId state are all closures over editor-page state, so they
 // get fresh identity on every render. The hook stashes the whole
@@ -18,17 +18,16 @@
 
 import { useEffect } from 'react';
 import { isInMenuSurface, isPressableControl } from '@liveplanner/ui';
-import { anyModalOpen } from '@/lib/modal-guard';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import {
   runModShortcut,
   coveredKeyRole,
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
-import { altGraphHeld } from '@/lib/composed-key';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
+import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -39,61 +38,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // callback. This is the React canon for "I want fresh references
   // but I don't want to re-attach the listener on every render."
   const liveRef = useLatest(deps);
-
-  // Escape cancels whichever transient editor mode is active:
-  // format-painter, or a pending draw-to-size shape.
-  // Keeping the narrow deps means the listener only attaches while
-  // one of those modes is on, so we pay nothing in the idle case.
-  // The setters come through the ref so the same-render values apply.
-  useEffect(() => {
-    const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
-    if (!enabled) return;
-    if (
-      formatSourceId === null &&
-      pendingDraw === null &&
-      canvasTool !== 'format' &&
-      canvasTool !== 'isometric'
-    )
-      return;
-    const onKey = (e: KeyboardEvent) => {
-      // A modal dialog owns the keyboard while open (its own Escape
-      // closes it); cancelling canvas modes behind it double-acts.
-      if (anyModalOpen()) return;
-      // A menu holding focus owns the keyboard (docs/specs/004-interface-design/menus.md).
-      if (isInMenuSurface(e.target)) return;
-      // A closer handler already claimed this keystroke (e.g. the table's
-      // selected-cell layer) — don't double-act on it.
-      if (e.defaultPrevented) return;
-      if (e.key === 'Escape') {
-        const live = liveRef.current;
-        // Claim the key when it cancelled something, so a later listener
-        // knows it's spoken for.
-        if (
-          live.formatSourceId !== null ||
-          live.pendingDraw !== null ||
-          live.canvasTool === 'format' ||
-          live.canvasTool === 'isometric'
-        ) {
-          e.preventDefault();
-        }
-        liveRef.current.setFormatSourceId(null);
-        // Persistent Format tool: Escape exits the tool entirely (back to
-        // Select) from either phase, not just disarming the base.
-        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
-        // Isometric: Escape leaves the view back to the normal editing tool —
-        // Select on desktop, Hand (pan) on touch where Select isn't the
-        // default.
-        if (liveRef.current.canvasTool === 'isometric') {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
-        }
-        if (liveRef.current.pendingDraw !== null) {
-          liveRef.current.onCancelDraw();
-        }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -126,7 +70,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // checks: even Delete / Backspace bail BEFORE preventDefault
       // when read-only so the browser's default behaviour for
       // those keys stays intact.
-      // AltGr's Ctrl is not one the person pressed (lib/composed-key.ts): AltGr+E types € into a label.
+      // AltGr's Ctrl is not one the person pressed (@liveworkspace/workbench/lib/composed-key.ts): AltGr+E types € into a label.
       const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
       const key = e.key;
       const lower = key.toLowerCase();
@@ -150,36 +94,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
-      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
-      // Tab adds a child, Enter a sibling, both off the selected mind node.
-      // Placed before every other branch because Tab is otherwise the
-      // browser's focus key: left to bubble it would walk the chrome behind
-      // the canvas, which is never what someone mid-mind-map wants.
-      //
-      // Only ever fires with a single mind node selected and no editor open,
-      // so Tab keeps its normal meaning everywhere else in the app.
-      if (
-        (key === 'Tab' || key === 'Enter') &&
-        !inText &&
-        !mod &&
-        !e.shiftKey &&
-        (!live.isReadOnly || live.participant) &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
-        return;
-      }
-
       // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
-      // and with nothing MORE transient to peel first: an active mode
-      // (format / draw / isometric — the narrow effect above
-      // owns those) or a live selection each take their own Escape, so
+      // and with nothing MORE transient to peel first: a live selection
+      // takes its own Escape, so
       // one press exits exactly one layer instead of snapping the whole
       // stack back at once.
       if (
@@ -187,10 +106,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.zenMode &&
         !inText &&
         live.editingId === null &&
-        live.formatSourceId === null &&
-        live.pendingDraw === null &&
-        live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
         selectedId === null &&
         multiSelectedIds.size === 0
       ) {
@@ -199,35 +114,13 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // --- Escape drops an empty, just-grown mind node ---
-      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
-      if (
-        key === 'Escape' &&
-        !inText &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.onEscapeMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        return;
-      }
-
       // --- Escape clears the selection ---
-      // When Escape has no transient mode to cancel (the narrow first
-      // effect above owns format / pending-draw / Format /
-      // Isometric) and the user isn't typing, a live selection is
-      // dropped, mirroring a click on empty canvas. Guarded on the same
-      // mode flags so a single Escape does one thing: cancel the mode
-      // OR deselect, never both.
+      // When the user isn't typing, a live selection is dropped,
+      // mirroring a click on empty canvas.
       if (
         key === 'Escape' &&
         !inText &&
         live.editingId === null &&
-        live.formatSourceId === null &&
-        live.pendingDraw === null &&
-        live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();

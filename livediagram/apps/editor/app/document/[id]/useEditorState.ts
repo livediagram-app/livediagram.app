@@ -6,12 +6,12 @@ import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
-import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
-import { openSearchWithPrefetch } from '@/lib/open-search';
+import { usePublishTabName, usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
-import type { View } from '@/lib/viewport-store';
-import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
+import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
   useEffect,
@@ -46,7 +46,7 @@ import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
@@ -60,7 +60,7 @@ import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -77,9 +77,7 @@ import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
-import { useCommentPicturesLoader } from '@/lib/comment-pictures';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useBoardSceneInsert } from '@/hooks/canvas/useBoardSceneInsert';
 import { useLibraryShapeInsert } from '@/hooks/canvas/useLibraryShapeInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
@@ -92,24 +90,17 @@ import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
-import { useBurstCheckpoint } from '@/hooks/canvas/useBurstCheckpoint';
+import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
-import { useFolders } from '@/hooks/persistence/useFolders';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import {
-  commitUserPreferences,
-  readUserPreferences,
-  toggleRecentExcluded,
-  writeUserPreferences,
-} from '@/lib/user-preferences';
+import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { PollCandidate } from '@/lib/poll-collaborators';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useLivePoll } from '@/hooks/collab/useLivePoll';
-import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
@@ -125,11 +116,8 @@ import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
-import { useShareLinks } from '@/hooks/persistence/useShareLinks';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
-import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useVoteReview } from '@/hooks/canvas/useVoteReview';
-import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
 import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
@@ -142,20 +130,18 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
+import { useDocumentList } from '@/hooks/persistence/useDocumentList';
+import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
+import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
 } from '@/components/panels/CollaboratePanel';
 
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
-import {
-  autosaveReadOnly,
-  createTab,
-  deriveTabLoadState,
-  mergeAiElements,
-  patchTab,
-} from './editor-page-helpers';
+import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
+import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -194,7 +180,7 @@ import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { activeElementsCommit } from './active-elements-commit';
@@ -216,13 +202,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
   // exactly one site, so an embed render can't be double-counted.
 
-  // Clerk wiring (token provider + guest→authed migration). One hook
-  // does both — see `hooks/useClerkApiBootstrap.ts`. The values it
+  // Sign-in wiring (token provider + guest→authed migration). One hook
+  // does both — see `hooks/useAccountBootstrap.ts`. The values it
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
-  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(workbenchMode ? null : clerkUserId);
+  const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
 
   const {
     tabs,
@@ -522,7 +506,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDocumentShareable,
     documentTeamId,
     setDocumentTeamId,
-    documentShareCode,
     setDocumentShareCode,
     setIsOwner,
     setDocumentOwnerId,
@@ -530,8 +513,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDocumentOwnerColor,
     copying,
     setCopying,
-    setShareLinks,
-    setSharePasswordSet,
     passwordRetry,
     sharePasswordGate,
     setSharePasswordGate,
@@ -554,9 +535,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
-  const mentionNotifyRef = useRef<
-    (text: string, mentions: CommentMention[]) => void
-  >(() => {});
+  const mentionNotifyRef = useRef<(text: string, mentions: CommentMention[]) => void>(() => {});
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
   // action callbacks bind to the selection popover + the popover
@@ -592,27 +571,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorPreferences({
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
-    setAiPanelVisible: panelLayout.setAiPanelVisible,
   });
-
-  // Hide / show a document in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
-  // Read-modify-writes from the CACHE, not the React snapshot: the PUT
-  // sends the whole preferences blob, so a stale snapshot would clobber
-  // flags another tab wrote.
-  // Per-user document stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
-  // Not for the pre-hydration placeholder id, like the folders and preferences
-  // hooks: that fetched the stars once for "self" and again for the real id.
-  const { favouriteIds, toggleFavourite } = useFavourites(
-    selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id,
-  );
-
-  const toggleRecentExclusion = (documentId: string) => {
-    const latest = readUserPreferences();
-    setUserPreferences({
-      ...latest,
-      recentExcludedIds: toggleRecentExcluded(latest, documentId),
-    });
-  };
 
   // Per-element note popover (state + open/close/setNote handlers)
   // lives in useEditorNotes. Invoked further down, after `commit`
@@ -626,18 +585,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // handlers live in useElementLinks. Invoked further down, after
   // `openDocument` + the selection helpers exist.
 
-  // Folders for the owner — state + the mutation triple
-  // (create / rename / delete) come from the shared useFolders
-  // hook so editor-page, /new, and /explorer all share the same
-  // behaviour. The hook handles its own autoLoad fetch on
-  // mount, so we don't have to manually pull /api/folders here
-  // anymore.
-  const {
-    folders,
-    createFolder,
-    renameFolder,
-    deleteFolder: hookDeleteFolder,
-  } = useFolders(selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id);
   const confirm = useConfirm();
   const toast = useToast();
   // Persistence-facing state: autosave status pill + savedAt, document
@@ -654,13 +601,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDocumentName,
     documentPresentation,
     setDocumentPresentation,
-    documentList,
-    setDocumentList,
-    sharedDocuments,
-    setSharedDocuments,
     setImportError,
-    refreshDocumentList,
-    refreshSharedList,
   } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
   // / laser trails / tab focus). See usePresenceState; the room writes it
@@ -752,11 +693,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Saves are gated on `hydrated` so we never overwrite stored data
   // with the empty initial render.
   const [documentId, setDocumentId] = useState<string | null>(null);
+  // The document's links are the index's: the badge and the presence stack read them from there.
+  useDocumentShareState({
+    documentId,
+    serverStored: realtime.documentServerStored,
+    sessionShareCode,
+    shareDialogOpen: dialogs.shareDialogOpen,
+    setShareable: setDocumentShareable,
+  });
   const [hydrated, setHydrated] = useState(false);
+  // The person's documents, for the pickers that name another document: read from the index once the document is open and the
+  // browser idle (useDocumentList), never inside a workbench, which reaches its one document only.
+  const { documentList, refreshDocumentList } = useDocumentList(
+    hydrated && !workbenchMode && !embedMode,
+    selfParticipant.id,
+  );
   // The deleted state (docs/specs/013-workspace/trash.md): the document is in
   // the Trash. Set by the load, the room and the autosave.
   const documentTrashed = useDocumentTrashed({
-    ownerId: selfParticipant.id,
     documentId,
     viaShareLink: sessionShareCode !== null,
   });
@@ -876,12 +830,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDocumentList,
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
   });
-  // Sync Document from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // Sync Canvas from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
   // in place").
   const syncToCloud = useSyncInPlace({
     documentId,
@@ -890,7 +843,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     resetTabs,
     lastSavedTabsRef,
     setDocumentServerStored: realtime.setDocumentServerStored,
-    refreshDocumentList,
+    refreshDocumentList: () => refreshDocumentList(),
+  });
+  // Take Offline in place, for the start screen's switch (docs/specs/006-document/offline-mode.md "Taking offline in place").
+  const takeOfflineInPlace = useTakeOfflineInPlace({
+    documentId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    setDocumentServerStored: realtime.setDocumentServerStored,
+    refreshDocumentList: () => refreshDocumentList(),
   });
 
   // Persist self only when name or color actually changed. Without
@@ -907,14 +868,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     authLoaded,
     passwordRetry,
     hydrated,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     embed: embedMode,
     workbench,
     activeId,
     selfParticipant,
-    refreshDocumentList,
-    refreshSharedList,
     resetTabs,
     refs: {
       lastPersistedSelfRef,
@@ -949,9 +908,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSessionShareCode,
       setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
-      setSharedDocuments,
-      setShareLinks,
-      setSharePasswordSet,
       setSharePasswordGate,
       setIdentityPromptOpen,
     },
@@ -1185,36 +1141,23 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
   // guest sessions and non-searching sessions never pay the request;
-  // guests can't have teams, so the gate also requires a Clerk id.
+  // guests can't have teams, so the gate also requires an account id.
   // Signed-in only (guests can't have teams). Loaded for the whole
   // session, not just while search is open, because the floating
   // Explorer panel now surfaces teams + their documents (a Teams
   // accordion, team rows in Recent, the current team document —
   // docs/specs/013-workspace/team-shared-documents.md), so the data has to be present whenever the panel is.
-  const { teams } = useTeams(clerkUserId ?? null, {
-    enabled: !!clerkUserId && !workbenchMode,
-  });
+  const teams = useTokenTeams(!!accountUserId && !workbenchMode);
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the document team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
     // A workbench reads no team and notifies no one.
-    ownerId: workbenchMode ? null : (clerkUserId ?? null),
+    ownerId: workbenchMode ? null : (accountUserId ?? null),
     teams,
     documentTeamId,
     documentId,
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
-  // Their libraries (docs/specs/013-workspace/team-shared-documents.md): one sweep per team. Feeds the search
-  // panel's folder group AND the Explorer popover (team folder
-  // tree + team documents in Recent + the current team document).
-  const {
-    teamFolders,
-    teamDocuments,
-    refresh: refreshTeamLibraries,
-  } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
-    enabled: !!clerkUserId && !workbenchMode,
-  });
-
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
@@ -1230,8 +1173,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const drawMode = editorMode.mode === 'draw';
   // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
-  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
-  useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so
@@ -1576,11 +1517,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(focusInvite.receiveFocusHere);
 
-  // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
-  // whether the AI panel option is shown in Settings and rendered.
+  // Server capabilities. Fetched once at mount; `aiEnabled` decides whether the sticky-note photo
+  // import reads on the server or in the browser (docs/specs/021-event-storming/note-reader.md).
   const capabilities = useCapabilities(sharePasswordGate === null);
   const { emailEnabled } = capabilities;
-  // A workbench offers no AI: the person's agent sits beside it.
+  // A workbench offers no photo reading: the person's agent sits beside it.
   const aiCapable = capabilities.aiEnabled && !workbenchMode;
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
@@ -1714,12 +1655,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
-      userId: clerkUserId ?? (hydrated ? selfParticipant.id : null),
-      name: clerkDisplayName ?? (hydrated ? selfParticipant.name : null),
+      userId: accountUserId ?? (hydrated ? selfParticipant.id : null),
+      name: accountDisplayName ?? (hydrated ? selfParticipant.name : null),
     },
     notify: (input) => {
-      if (!clerkUserId || !documentId) return;
-      void apiNotifyActionAssigned(clerkUserId, input.teamId, {
+      if (!accountUserId || !documentId) return;
+      void apiNotifyActionAssigned(accountUserId, input.teamId, {
         assigneeUserId: input.assigneeUserId,
         assigneeMemberId: input.assigneeMemberId,
         documentId,
@@ -1737,8 +1678,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     const boxed: BoxedElement[] = activeTab.elements.filter((el): el is BoxedElement =>
       isBoxed(el),
     );
-    return actionRowsFromElements(boxed, clerkUserId ?? selfParticipant.id);
-  }, [activeTab.elements, clerkUserId, selfParticipant.id]);
+    return actionRowsFromElements(boxed, accountUserId ?? selfParticipant.id);
+  }, [activeTab.elements, accountUserId, selfParticipant.id]);
 
   // The visitor name prompt drives the chrome hide rule (palette / explorer / dock / tab bar all suppressed so the
   // visitor's focus is on it). Gated on `hydrated` so it only shows once the post-mount useLayoutEffect has replaced
@@ -1966,17 +1907,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   usePruneInertSelection(layerInertIds, selectionStore);
 
-  // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
-  // Generate handles both modifications and additions in one pass:
-  //   - Elements whose ID matches an existing element → replace in place
-  //   - Elements with a new ID → append; deduplicate if the AI reused a
-  //     short ID (e.g. "ai-001") from a previous generation, remapping
-  //     arrow endpoints to keep connections intact.
-  // Clean always gets the full element list back so it replaces everything.
-  const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
-    commit((existingEls) => mergeAiElements(existingEls, elements, mode));
-  };
-
   const tourSquare = useTourSquare({ activeId, tickTabs });
 
   // Undo / redo handlers. See useEditorHistory.
@@ -2125,11 +2055,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    refreshDocumentList,
+    refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,
   });
-  // The menu box renames the open tab on a click on its name (active-tab-name-store).
+  // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
+  usePublishTabName(activeTab.name);
   usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
@@ -2148,37 +2079,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // full-page-load helpers). Operates on whole documents + the Explorer
   // list, distinct from per-tab lifecycle in useTabActions. See
   // useDocumentActions.
-  const {
-    deleteDocument,
-    deleteFolder,
-    moveDocumentToFolder,
-    moveDocumentTo,
-    duplicateDocument,
-    dismissSharedDocument,
-    newDocument,
-    openDocument,
-    makeCopy,
-  } = useDocumentActions({
+  const { deleteDocument, newDocument, openDocument, makeCopy } = useDocumentActions({
     documentId,
     documentName,
-    documentList,
-    setDocumentList,
     confirm,
-    ownerId: selfParticipant.id,
-    hookDeleteFolder,
-    folders,
-    sharedDocuments,
-    setSharedDocuments,
     copying,
     setCopying,
     sessionShareCode,
-    refreshTeamLibraries,
-    refreshDocumentList: () => refreshDocumentList(selfParticipant.id),
-    // Keep the header's Private / Team badge honest when the OPEN document
-    // changes scope via the move picker (docs/specs/013-workspace/team-shared-documents.md).
-    onDocumentScopeChanged: (id, teamId) => {
-      if (id === documentId) setDocumentTeamId(teamId);
-    },
   });
 
   // Mark the participant's name as "confirmed" — they explicitly
@@ -2196,37 +2103,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (wasOpen) track('UI', 'Closed', 'Welcome');
   };
 
-  // Share-dialog actions (create / revoke link, build the visitor URL,
-  // save the participant name). The share-link list + shareable flags
-  // stay as page state since the hydration / save effects also write
-  // them; the hook reconciles via the setters. See useShareLinks.
-  const {
-    updateParticipantName,
-    createShareLink,
-    extendShareLink,
-    rescopeShareLink,
-    revokeShareLink,
-    setDocumentSharePassword,
-    shareUrlFor,
-  } = useShareLinks({
-    documentId,
-    selfParticipant,
-    setSelfParticipant,
-    setShareLinks,
-    setSharePasswordSet,
-    setDocumentShareable,
-    setDocumentShareCode,
-    documentShareCode,
-    confirmName,
-  });
-
   // Name the open document: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
   // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
   // a still-untitled document after itself.
   const nameDocument = (name: string) => {
     setDocumentName(name);
-    if (name && documentId)
-      setDocumentList((prev) => prev.map((d) => (d.id === documentId ? { ...d, name } : d)));
   };
 
   // Template and identity actions. See useTemplateFlow. confirmName
@@ -2267,7 +2148,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTabDefaultTextSize,
     setBackgroundPattern,
     setTheme,
-    resetTabsUsingTheme,
     setBackgroundColor,
     setBackgroundOpacity,
     setPatternColor,
@@ -3293,6 +3173,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
     syncToCloud,
+    takeOfflineInPlace,
+    // Whether sign-in has answered, so the start screen's switch never words a signed-in person as a guest.
+    authLoaded,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,
@@ -3303,11 +3186,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId,
-    // Re-sweep the team libraries after a team-folder mutation made from
-    // the Explorer panel (docs/specs/013-workspace/team-shared-documents.md), and the confirm dialog its delete uses.
-    refreshTeamLibraries,
-    // Refetch the reader's own document list: the Explorer panel's Trash restored or deleted one.
-    refreshOwnDocuments: () => refreshDocumentList(selfParticipant.id),
     confirm,
     // Clipboard copy, also exposed to the event-storming note menu (docs/specs/021-event-storming/event-storming.md),
     // plus paste + its enabled flag for the canvas menu's Paste row.
@@ -3407,9 +3285,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     addTab,
     addText,
-    aiCapable,
     anyWelcomeOpen,
-    applyAiElements,
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
@@ -3479,8 +3355,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginErase,
     chooseTemplate,
     clearTabContent,
-    clerkDisplayName,
-    clerkUserId,
+    accountDisplayName,
+    accountUserId,
     closeComments,
     closeContextMenu,
     closeImagePicker,
@@ -3497,11 +3373,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTable,
     commitHeaderSize,
     contextMenu,
-    createFolder,
-    createShareLink,
     deleteComment,
     deleteDocument,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     deleteTab,
@@ -3509,9 +3382,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentNotFound,
     loadError,
     documentTrashed,
-    dismissSharedDocument,
     spawnConnectSelected,
-    duplicateDocument,
     duplicateMultiSelected,
     duplicateSelected,
     // Intra-layer z-order for the selection popover (docs/specs/006-document/layers.md).
@@ -3519,10 +3390,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedBack,
     duplicateTab,
     embedMode,
-    extendShareLink,
-    rescopeShareLink,
     fitToScreen,
-    folders,
     followLink,
     handleCanvasDoubleClick,
     hydrated,
@@ -3569,8 +3437,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     loadedTabIds,
     loadingDocument,
     makeCopy,
-    moveDocumentToFolder,
-    moveDocumentTo,
     nameConfirmed,
     voteReview,
     voteResults,
@@ -3593,7 +3459,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
-    renameFolder,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
@@ -3670,11 +3535,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitInlineIcon,
     resolveThread,
     retryActiveTabLoad,
-    revokeShareLink,
     lockedByOther,
     selectElement,
     selectMarquee,
     selfParticipant,
+    // The Share dialog's "Sharing as" renames a guest.
+    setSelfParticipant,
     sendSelectedToBack,
     setArrowEndsSelected,
     setArrowStrokeStyleSelected,
@@ -3793,7 +3659,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onSetFormatMode: formatSettings.setMode,
     pressModeButton,
     setContextMenu,
-    setDocumentSharePassword,
     setFillColorSelected,
     setLinkPickerOpenForId,
     setLoadingDocument,
@@ -3815,11 +3680,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTextColorSelected,
     setTextSizeSelected,
     setTheme,
-    resetTabsUsingTheme,
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    shareUrlFor,
     shortcutsEnabled,
     confirmIdentity,
     cancelIdentity,
@@ -3846,9 +3709,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     reopenAction,
     wontDoAction,
     saveAction,
-    teamFolders,
-    teamDocuments,
     teams,
+    documentList,
     toggleActiveTabLock,
     toggleZenMode,
     toggleAspectLockSelected,
@@ -3858,14 +3720,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toggleTextStyleSelected,
     undo,
     unresolveThread,
-    updateParticipantName,
     userPreferences,
     // The server copy merged in (or failed to arrive): a once-ever offer (the tours) waits for it, so a
     // returning user on a new device is not offered what another device already answered.
     prefsSettled,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     viewport,
     writeUserPreferences,
   };

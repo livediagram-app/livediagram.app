@@ -5,7 +5,7 @@
 // three modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import { ModeMark, type Mode } from './mode-mark';
 
 // The modes in the switch's order (the catalogue's), each with its tint in the menu.

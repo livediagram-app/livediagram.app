@@ -3,7 +3,7 @@
 // its element's ref, resolved over the plain tab (CLI78).
 
 import { z } from 'zod';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import {
   COMMENT_LIST_STATUSES,
   type CommentListStatus,

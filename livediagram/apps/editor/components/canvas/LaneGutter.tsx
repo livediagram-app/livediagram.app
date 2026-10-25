@@ -9,7 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/document';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.

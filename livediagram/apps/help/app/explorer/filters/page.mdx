@@ -1,67 +1,64 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { FilterSearchResults } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
-  title: 'Search and Filter Documents',
+  title: 'Search and Filter Canvases',
   description:
-    'Filter Explorer lists with search and chips (Opens in, Kind, Template, Made by AI, Edited, People, Space) or type filters like made-by:ai into the search.',
+    'Filter Explorer lists with search and chips (Opens in, Template, Made by AI, Edited, People, Space) or type filters like made-by:ai into the search.',
   path: '/help/explorer/filters/',
 });
 
 <ArticleLayout
-  title="Search and Filter Documents"
-  description="Narrow any list of documents with a few words, a chip, or a typed filter, and share the result as a link."
+  title="Search and Filter Canvases"
+  description="Narrow any list of canvases with a few words, a chip, or a typed filter, and share the result as a link."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-Every list of documents in the [Explorer](/explorer) can be narrowed. Type a few words of a document's name into the **Search or filter documents** field in the top bar, or pick a **filter chip** under the page title. Both edit the same search, so a chip you pick shows up in the field, and a filter you type lights its chip. On a phone the field sits on its own row under the logo.
+Every list of canvases in the [Explorer](/explorer) can be narrowed. Type a few words into the search field in the top bar, the one that reads “Search or filter canvases”, or pick a **filter chip** under the page title. Both edit the same search, so a chip you pick shows up in the field as a pill, and a filter you type lights its chip.
 
-Words match the document's name, ignoring capitals and accents ("cafe" finds "Café"). With several words, a document has to contain all of them.
-
-<Figure caption="Search results narrowed by a typed Made by AI filter and a word: the pill sits in the field, its chip is lit, and only matching documents remain.">
-  <FilterSearchResults />
-</Figure>
+Words match a canvas's name or the name of the folder it is in, ignoring capitals. With several words, a canvas has to match all of them. Accents count, so "cafe" does not find "Café".
 
 ## Where it works
 
-- **My Work, a folder, a team, and This Browser.** The search stays inside the place you are in, and reaches into every folder below it: the list shows each matching document once, with the folder it lives in beside its name. Folders step aside while a search is set and come back when you clear it.
-- **Recent, Favourites, Shared With Me and Search results** gather documents from everywhere, so they add a **Space** chip: My Work, Shared With Me, or one of your teams.
-- **Home, Inbox, Timeline, Invites, the Library pages and Trash** have no list of documents to narrow. Typing in the field there opens **Search results**, every document you can open, narrowed by what you typed.
+- **My Work, a folder and a team.** The search stays inside the place you are in, and reaches into every folder below it: the list shows each matching canvas once, with the folder it lives in beside its name. Folders step aside while a search is set and come back when you clear it.
+- **Recent, Favourites, Shared With Me and Search results** gather canvases from everywhere, so they add a **Space** chip: My Work, Shared With Me, or one of your teams.
+- **Home, Inbox, Timeline and Trash** have no list of canvases to narrow. Typing in the field there opens **Search results**, every canvas you can open, narrowed by what you typed.
 
 ## The chips
 
-| Chip       | Keeps documents that                                                                     |
+| Chip       | Keeps canvases that                                                                      |
 | ---------- | ---------------------------------------------------------------------------------------- |
-| Opens in   | Were created to open in Diagram, Draw or Workshop mode                                   |
-| Kind       | Were created as an Event Storming board                                                  |
-| Template   | Were made from a Retrospective or Kanban template                                        |
+| Opens in   | Open in livediagram, livedocuments, liveplanner or livedesign (on All Apps only)         |
+| Template   | Were made from a Retrospective template                                                  |
 | Made by AI | An AI tool made for you; they also carry a **Made by AI** badge wherever they are listed |
 | Edited     | Were last edited today, in the last 7, 30 days or 12 months, or this year                |
 | People     | You own (Me), or someone else owns (Others)                                              |
 | Space      | Live in My Work, are shared with you, or are in a team (gathered lists only)             |
 
-Click a chip to open its list and tick values; **Any** at the top unsets it. **Made by AI** has only one value, so it is a simple on/off toggle. A chip can hold several values: picking Retrospective and Kanban keeps both. Different chips narrow together: Template and Edited keeps the retrospectives you edited in the last 7 days. **Clear** at the end of the row empties the search.
+Click a chip to open its list and tick values; **Any** at the top unsets it. **Made by AI** has only one value, so it is a simple on/off toggle. A chip can hold several values: picking Me and Others under People keeps both. Different chips narrow together: Made by AI and Edited keeps what an AI tool made for you that was edited in the last 7 days. **Clear** at the end of the row empties the search.
 
-A document made before livediagram recorded how it was created has no Opens in, Kind or Template, so setting one of those chips hides it; it shows again once they are back on Any. Documents in **Shared With Me** don't carry that information either, so the Opens in, Kind, Template and Made by AI chips leave them out of a gathered list.
+While the switch at the top right of the page is on **All Apps**, showing every app's items, the **Opens in** chip narrows them to the apps you pick; on **Canvases**, showing livediagram's own, it is not offered.
 
 ## Typing filters
 
 The field takes filters as words too, the way the chips write them:
 
 - `made-by:ai` keeps what an AI made.
-- `template:retrospective,kanban` keeps both template families.
+- `opens-in:canvas,document` keeps what opens in livediagram or livedocuments.
+- `template:retrospective` keeps what was made from a Retrospective template.
 - `edited:7d` keeps what you edited in the last 7 days; `today`, `30d`, `12m` and `this-year` work too.
-- `opens-in:draw` (or `diagram`, `workshop`, `pages`, `plan`), `kind:event-storming`, `people:me` or `people:others`, and `space:mine` or `space:shared` work the same way. A team is offered by name as you type `space:`.
+- `people:me` or `people:others`, and `space:mine` or `space:shared`, work the same way. A team is offered by name as you type `space:`.
 
-As you type, suggestions appear under the field: use **Down** and **Up** to move through them, **Enter** or **Tab** to take one, and **Esc** to close the list. A suggestion marked **No matches** would leave nothing in the list on its own. A finished filter becomes a pill in the field, with a **×** to remove it; **Backspace** at the start of the words selects the last pill, and a second **Backspace** removes it.
+As you type, suggestions appear under the field: use **Down** and **Up** to move through them, **Enter** or **Tab** to take one, and **Esc** to close the list. When the whole list is loaded, a suggestion marked **No matches** would leave nothing in it on its own. A finished filter becomes a pill in the field, with a **×** to remove it; **Backspace** at the start of the words selects the last pill, and a second **Backspace** removes it.
 
-A word that looks like a filter but isn't one, such as `colour:red` or `edited:yesterday`, is searched as plain text, and the Explorer says so under the chips, so a typo never hides documents silently. A **Space** filter typed on My Work, a folder, a team or This Browser does nothing there, because the place you are in already sets the space; the note under the chips says so. The search reads at most 512 characters.
+A word that looks like a filter but isn't one, such as `colour:red` or `edited:yesterday`, is searched as plain text, and the Explorer says so under the chips, so a typo never hides canvases silently. A **Space** filter typed on My Work, a folder or a team does nothing there, because the place you are in already sets the space; the note under the chips says so. The search reads at most 512 characters.
+
+When the filters leave nothing, the list says so and offers **Clear Filters**. A screen reader hears how many canvases are left once the list has loaded; while more pages are still to come, it says "or more".
 
 ## Share a search
 
-The search lives in the page's address, so copying the link shares exactly what you are looking at. Moving between Recent, Favourites, Shared With Me and Search results keeps your search; opening a folder or a team starts afresh. A search is not remembered for next time.
+The search lives in the page's address, so copying the link shares exactly what you are looking at. Typing changes the address in place rather than adding a step to Back for every letter. Moving between Recent, Favourites, Shared With Me and Search results keeps your search; opening a folder or a team starts afresh. A search is not remembered for next time.
 
 <Tip>
   Looking for everything an AI tool made for you? Pick **Made by AI** on Recent or Search results,

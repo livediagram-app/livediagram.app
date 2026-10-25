@@ -2,7 +2,7 @@
 
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from './TabPresenceStack';
 

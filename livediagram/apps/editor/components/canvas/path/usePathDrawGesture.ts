@@ -1,8 +1,8 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } from 'react';
 import { isCommittablePath, type Element, type PathAnchor } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { announce } from '@/lib/announcer';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {
   PATH_NODE_HIT_PX,
@@ -26,7 +26,7 @@ import {
   withAnchor,
   type PathDraft,
 } from '@/lib/path-draw';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

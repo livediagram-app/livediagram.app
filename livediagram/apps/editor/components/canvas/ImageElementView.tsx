@@ -21,7 +21,7 @@ import { Glyph } from '@livediagram/ui';
 // up the element's pan + zoom for free; this component only worries
 // about loading the bytes + showing the empty / broken states.
 //
-// Auth: `<img src>` can't send Authorization / X-Owner-Id headers, so
+// Auth: `<img src>` can't send an Authorization header, so
 // the bytes flow through `apiFetchImageBlobUrl`, which fetches via
 // the same authenticated client used everywhere else and hands back
 // a blob URL. The URL is revoked on unmount + on `imageId` change so
@@ -35,7 +35,7 @@ type ImageElementViewProps = {
   element: ImageElement;
   // Owner identifying the requester. Either the document owner (when
   // viewing one of their own documents) or a share-link visitor; the
-  // api-client picks Authorization vs X-Owner-Id internally.
+  // api-client picks the account's or the guest's Bearer internally.
   ownerId: string;
   // Document the element lives on; required for share-code reads so
   // the API can verify the document references this image.

@@ -2,9 +2,9 @@
 // its exit code, a stable code, one line, candidates and a runnable fix. Never a stack trace.
 
 import { AddressError, VerbRefusal } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { CliError, type CliFailure } from './cli-error';
-import { EXIT, exitCodeForStatus } from './exit-codes';
+import { EXIT, exitCodeForStatus } from '@liveworkspace/cli-kit/exit-codes';
 
 // A request that never got an answer: no connection, a timeout, an abort.
 export const isNetworkFailure = (err: unknown): err is Error =>

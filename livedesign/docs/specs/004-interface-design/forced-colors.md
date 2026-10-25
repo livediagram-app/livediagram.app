@@ -44,7 +44,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 
 ## How
 
-- `packages/tailwind-config/theme.css`, `@media (forced-colors: active)`, unlayered so it outranks the utilities that
+- `../packages/tailwind-config/theme.css`, `@media (forced-colors: active)`, unlayered so it outranks the utilities that
   paint a control's chosen state: the ARIA-state Highlight rule and the switch rule.
 - `packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/live/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,

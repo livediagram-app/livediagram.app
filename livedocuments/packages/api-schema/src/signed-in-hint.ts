@@ -5,7 +5,7 @@
 // location from it, the site header its primary link, and the Repair page reports it. It only ever
 // picks a default; every request still authenticates the real way.
 
-export const SIGNED_IN_HINT_COOKIE = 'lp_signed_in';
+export const SIGNED_IN_HINT_COOKIE = 'ldoc_signed_in';
 
 /** True / false from the hint in a `document.cookie` string, null when the browser has none. */
 export function signedInHintOf(cookie: string): boolean | null {

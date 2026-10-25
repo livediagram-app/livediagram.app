@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Every product's api and mcp Workers import it, and its CLI the runtime-neutral modules (bytes, oauth,
+    // api-token): those stay on Web APIs only, and the Workers-only ones (unfurl-fetch, testing/) name it.
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

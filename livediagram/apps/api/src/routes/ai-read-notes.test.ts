@@ -35,7 +35,7 @@ function makeCtx(
   opts: {
     env?: Partial<Env>;
     origin?: string | null;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     owner?: string | null;
     method?: string;
     body?: unknown;
@@ -56,12 +56,12 @@ function makeCtx(
   });
   return {
     request,
-    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
+    env: { GOOGLE_AI_STUDIO_API_KEY: 'test-key', ...opts.env } as Env,
     url: new URL(request.url),
     segments: ['api', 'ai', 'read-notes'],
-    clerkUserId: opts.clerkUserId ?? null,
-    verifiedUserId: opts.clerkUserId ?? null,
-    clerkEmail: null,
+    accountUserId: opts.accountUserId ?? null,
+    verifiedUserId: opts.accountUserId ?? null,
+    accountEmail: null,
     resolveOwner: () => (opts.owner === null ? null : (opts.owner ?? 'owner-anon')),
   };
 }
@@ -69,8 +69,8 @@ function makeCtx(
 const answer = async (res: Response) => await res.json<{ texts: NoteText[] }>();
 
 describe('the shared gate still guards this route', () => {
-  it('503 without a key — the default when unset', async () => {
-    const res = await handleAiReadNotes(makeCtx({ env: { OPENAI_API_KEY: undefined } }));
+  it('503 without a key — the self-host default', async () => {
+    const res = await handleAiReadNotes(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: undefined } }));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'ai_not_configured' });
   });
@@ -86,7 +86,7 @@ describe('the shared gate still guards this route', () => {
   });
 
   it('401 on the guest path when the deployment is Clerk-only', async () => {
-    const res = await handleAiReadNotes(makeCtx({ env: { AI_REQUIRE_CLERK: 'true' } }));
+    const res = await handleAiReadNotes(makeCtx({ env: { AI_REQUIRE_SIGN_IN: 'true' } }));
     expect(res.status).toBe(401);
   });
 
@@ -118,7 +118,7 @@ describe('the shared gate still guards this route', () => {
   });
 
   it('never calls the provider when the gate refuses', async () => {
-    await handleAiReadNotes(makeCtx({ env: { OPENAI_API_KEY: undefined } }));
+    await handleAiReadNotes(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: undefined } }));
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });
@@ -283,11 +283,8 @@ describe('the answer shape the provider is held to', () => {
     };
   };
 
-  it.each([
-    ['google', { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'k' }],
-    ['openai', {}],
-  ])('asks %s for a strict schema of the answer', async (_name, env) => {
-    const sent = await sentBody(env);
+  it('asks Google for a strict schema of the answer', async () => {
+    const sent = await sentBody({ GOOGLE_AI_STUDIO_API_KEY: 'k' });
     expect(sent.response_format.type).toBe('json_schema');
     expect(sent.response_format.json_schema?.strict).toBe(true);
     expect(JSON.stringify(sent.response_format.json_schema?.schema)).toContain('legible');
@@ -295,10 +292,10 @@ describe('the answer shape the provider is held to', () => {
 
   it('keeps JSON mode for a generic endpoint, whose support is unknown', async () => {
     const sent = await sentBody({
-      OPENAI_API_KEY: undefined,
+      GOOGLE_AI_STUDIO_API_KEY: undefined,
       AI_API_KEY: 'k',
       AI_BASE_URL: 'http://localhost:8080/v1',
-      AI_MODEL: 'local',
+      AI_VISION_MODEL: 'local',
     });
     expect(sent.response_format).toEqual({ type: 'json_object' });
   });
@@ -323,9 +320,7 @@ describe('what leaves this worker', () => {
 
   it('asks the vision model when one is named', async () => {
     globalThis.fetch = providerSays({ texts: [] });
-    await handleAiReadNotes(
-      makeCtx({ env: { AI_MODEL: 'flash', AI_VISION_MODEL: 'flash-vision' } }),
-    );
+    await handleAiReadNotes(makeCtx({ env: { AI_VISION_MODEL: 'flash-vision' } }));
     const sent: unknown = JSON.parse(
       (vi.mocked(globalThis.fetch).mock.calls[0]![1] as RequestInit).body as string,
     );
@@ -334,19 +329,15 @@ describe('what leaves this worker', () => {
 
   it('goes wherever the KEY says — a Google key reaches Google', async () => {
     globalThis.fetch = providerSays({ texts: [] });
-    await handleAiReadNotes(
-      makeCtx({ env: { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'g' } }),
-    );
+    await handleAiReadNotes(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: 'g' } }));
     expect(vi.mocked(globalThis.fetch).mock.calls[0]![0]).toBe(
       'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     );
   });
 
-  it('reads with Google when an OpenAI key sits beside it, never with AI_MODEL', async () => {
+  it('reads with Google on its reader default when no model is named', async () => {
     globalThis.fetch = providerSays({ texts: [] });
-    const res = await handleAiReadNotes(
-      makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: 'g', AI_MODEL: 'gpt-4.1' } }),
-    );
+    const res = await handleAiReadNotes(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: 'g' } }));
     expect(res.status).toBe(200);
     const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
     expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');

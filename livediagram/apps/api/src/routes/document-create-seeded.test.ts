@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { getDocument, getTab, listDocumentsByOwner } from '../db';
+import { getDocument, getTab } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
-import { asUser } from './placement-test-support';
-import { compileSeededTabs } from './document-seed';
+import { asUser } from './test-route-context';
+import { compileSeededTabs, seedIntentOf } from './document-seed';
+import { indexIntentOf } from '@livediagram/api-schema';
 
 // A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
@@ -56,25 +57,33 @@ describe('seeded tabs compiled on create', () => {
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
   });
 
-  it('builds a template tab and derives the intent from it when none is given, a retro opening in Workshop', async () => {
+  // The intent is the index's (it files the create by it, docs/specs/013-workspace/default-folders.md): what the
+  // api owns is working it out from the create.
+  it('builds a template tab and derives the intent the index files it by, a retro by its family', async () => {
     expect(
       (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
     ).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
-    const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
-    expect(summary).toMatchObject({
-      opensIn: 'workshop',
-      tabKind: 'diagram',
-      templateFamily: 'retrospective',
+    expect(seedIntentOf([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).toBe(
+      'retrospective',
+    );
+    expect(
+      compileSeededTabs([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], 'd1'),
+    ).toMatchObject({
+      intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
     });
   });
 
-  it('keeps an intent the create gives', async () => {
-    await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], {
-      intent: { mode: 'draw' },
+  it('keeps an intent the create gives', () => {
+    expect(indexIntentOf({ mode: 'draw', tabKind: 'diagram' })).toBe('draw:diagram');
+  });
+
+  it('refuses a malformed intent, writing nothing', async () => {
+    const res = await create([{ id: 't1', name: 'Plain', elements: [] }], {
+      intent: { mode: 'nope' },
     });
-    const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
-    expect(summary).toMatchObject({ opensIn: 'draw', templateFamily: null });
+    expect(res.status).toBe(400);
+    expect(await getDocument(db.env, 'd1')).toBeNull();
   });
 
   it('refuses the whole create by the tab the engine refused, writing nothing', async () => {

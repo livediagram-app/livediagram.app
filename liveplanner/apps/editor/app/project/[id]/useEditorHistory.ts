@@ -1,5 +1,5 @@
 import type { Element, Tab } from '@liveplanner/project';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { track } from '@/lib/telemetry';
 
 type SetState<T> = (value: T) => void;
@@ -24,13 +24,12 @@ export function useEditorHistory(opts: {
   set: {
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
-    setFormatSourceId: SetState<string | null>;
   };
 }) {
   const { activeId, editsBlocked, tabLocked, tickTabs, undoHistory, redoHistory, set } = opts;
   const canUndo = opts.canUndo && !tabLocked;
   const canRedo = opts.canRedo && !tabLocked;
-  const { setSelectedId, setEditingId, setFormatSourceId } = set;
+  const { setSelectedId, setEditingId } = set;
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
     if (editsBlocked) return;
@@ -42,7 +41,6 @@ export function useEditorHistory(opts: {
   const clearFocus = () => {
     setEditingId(null);
     setSelectedId(null);
-    setFormatSourceId(null);
   };
 
   const undo = () => {

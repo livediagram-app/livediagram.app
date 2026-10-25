@@ -44,6 +44,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livediagram/apps/**",
         "$TURBO_ROOT$/livediagram/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -74,6 +76,50 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
     },
+    // The telemetry dashboard's emitter checks (app/telemetry) scan every product's apps and packages and the
+    // shared code that sends in their names, so those sources are inputs: a new or moved emitter must never
+    // replay a cached pass.
+    "@liveworkspace/site#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livediagram/apps/**",
+        "$TURBO_ROOT$/livediagram/packages/**",
+        "$TURBO_ROOT$/liveplanner/apps/**",
+        "$TURBO_ROOT$/liveplanner/packages/**",
+        "$TURBO_ROOT$/livedocuments/apps/**",
+        "$TURBO_ROOT$/livedocuments/packages/**",
+        "$TURBO_ROOT$/livedesign/apps/**",
+        "$TURBO_ROOT$/livedesign/packages/**",
+        "$TURBO_ROOT$/liveworkspace/apps/accounts/src/**",
+        "$TURBO_ROOT$/packages/help-site/src/**",
+        "$TURBO_ROOT$/packages/telemetry-client/src/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**"
+      ]
+    },
+    // The shared marketing guards read every product's marketing app (src/guards/targets.ts), so their
+    // sources are inputs too: a change in one app must never replay a cached pass.
+    "@liveworkspace/marketing-site#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livediagram/apps/marketing/**",
+        "$TURBO_ROOT$/liveplanner/apps/marketing/**",
+        "$TURBO_ROOT$/livedocuments/apps/marketing/**",
+        "$TURBO_ROOT$/livedesign/apps/marketing/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/generated/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**"
+      ]
+    },
     // The help app's guards (repo paths and spec links quoted in docs and code) read every tracked
     // file, so every tracked file is an input: a docs-only change must never replay a cached pass
     // (docs/specs/003-system-architecture/testing.md "Before a push").
@@ -82,6 +128,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livediagram/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -100,6 +148,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livediagram/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -137,6 +187,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/liveplanner/apps/**",
         "$TURBO_ROOT$/liveplanner/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -157,6 +209,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -175,6 +229,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -193,7 +249,6 @@
         "^build",
         "@livedesign/live#build",
         "@livedesign/help#build",
-        "@livedesign/telemetry#build",
         "@livedesign/api#build",
         "@livedesign/mcp#build",
         "@livedesign/router#build"
@@ -204,6 +259,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livedesign/apps/**",
         "$TURBO_ROOT$/livedesign/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -225,6 +282,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livedesign/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -243,6 +302,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livedesign/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -271,6 +332,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livedocuments/apps/**",
         "$TURBO_ROOT$/livedocuments/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -292,6 +355,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livedocuments/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -310,6 +375,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livedocuments/**",
+        // The shared help centre, whose catalogue suite these tests run.
+        "$TURBO_ROOT$/packages/help-site/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",

@@ -19,8 +19,8 @@
     "@livediagram/sticky-vision": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@tensorflow/tfjs": "4.22.0",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",

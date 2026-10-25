@@ -18,7 +18,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - An agent at work appears in the tab's presence stack as its owner, with an optional status line ("adding payment
   service"). When the owner also has the tab open, the stack shows them once and the status line beside them.
 - The status line shows in the avatar's hover card, its row in the Collaborators modal and its accessible name, never
-  as text in the tab pill. An agent's avatar carries the owner's name and colour, never a profile picture.
+  as text in the tab pill. An agent's avatar carries the owner's name and colour.
 - The owner sees their own agent's status on their own avatar when both are on the tab, and as an avatar in their
   name on any other tab.
 - Two tokens of one owner on one tab show as one avatar, with the status set last.

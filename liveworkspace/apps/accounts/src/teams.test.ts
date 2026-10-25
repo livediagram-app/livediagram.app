@@ -10,10 +10,10 @@ import {
   listMyTeams,
   MAX_TEAMS_PER_ACCOUNT,
   removeMember,
-  renameTeam,
   setMemberRole,
   teamChanges,
   teamsClaim,
+  updateTeam,
   type Actor,
 } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
@@ -102,7 +102,7 @@ describe('teams', () => {
 
   it('keeps the running of a team to its admins', async () => {
     const teamId = await teamWith(BEA);
-    expect(await renameTeam(db, BEA, teamId, 'Mine')).toMatchObject({
+    expect(await updateTeam(db, BEA, teamId, { name: 'Mine' })).toMatchObject({
       ok: false,
       error: 'admin_only',
     });
@@ -111,8 +111,8 @@ describe('teams', () => {
       error: 'admin_only',
     });
     expect(await deleteTeam(db, BEA, teamId)).toMatchObject({ ok: false, error: 'admin_only' });
-    expect(await renameTeam(db, CY, teamId, 'Mine')).toMatchObject({ ok: false, status: 404 });
-    expect(await renameTeam(db, ADA, teamId, 'Studio')).toMatchObject({ ok: true });
+    expect(await updateTeam(db, CY, teamId, { name: 'Mine' })).toMatchObject({ ok: false, status: 404 });
+    expect(await updateTeam(db, ADA, teamId, { name: 'Studio' })).toMatchObject({ ok: true });
   });
 
   it('never leaves a team without an admin', async () => {

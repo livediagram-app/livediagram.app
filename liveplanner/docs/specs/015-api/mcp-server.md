@@ -93,7 +93,7 @@ This implements the OAuth flow Manager Toolkit uses:
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
    §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
    `@liveplanner/api-schema`), stored in KV with a TTL.
-   Rate-limited per IP. Authorize re-checks the scheme of the requested
+   Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
@@ -138,7 +138,7 @@ This implements the OAuth flow Manager Toolkit uses:
    (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
    Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
    else ("Something went wrong. Please try again."). The device page does the same
-   (`apps/editor/lib/oauth-handover.ts`).
+   (`../packages/workbench/src/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
@@ -146,7 +146,7 @@ This implements the OAuth flow Manager Toolkit uses:
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV — minting stays in D1 via the existing token table.
+needs no KV — minting is the liveworkspace accounts Worker's (`POST /api/oauth/exchange` asks it).
 
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
@@ -243,7 +243,7 @@ canvas overrides; the model then personalises labels via `update_project`'s
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build projects alike.
    Making a project is a use of it, so it joins the user's
-   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-project));
+   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-project-used)) for a model making many projects in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
@@ -552,12 +552,12 @@ binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
 `delete_project` raw-fetch path reports a 5xx too. `<Tool>` is the running
 tool's PascalCase name (`Http503.UpdateProject`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
-every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
+every handler in (`tool-scope.ts`, over `../packages/mcp-kit/src/tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
 Every post (these reports and `Mcp·Used`) is handed to the request's
-`ctx.waitUntil` (`request-scope.ts`) so it outlives the response, and
+`ctx.waitUntil` (`../packages/mcp-kit/src/request-scope.ts`) so it outlives the response, and
 `Mcp·Used` is sent by `registerTool` only after a tool call succeeds
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Mcp).
 
@@ -732,7 +732,7 @@ descriptions.
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
-  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveplanner/icons/resolve`).
+  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
 
 ## 5. Visualise — inline image render
 
@@ -770,7 +770,7 @@ Worker (no DOM, no React).
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
 - **Fonts.** The faces a tab uses beyond Inter (its elements', its own and a sheet's cells') are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
-  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`, over `../packages/mcp-kit/src/preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
@@ -798,7 +798,7 @@ Worker (no DOM, no React).
   plain boxes / label-only.
 - **Icon elements render their real glyph.** The renderer takes an injected
   `resolveIconArt(iconId)` (like `resolveImageHref`); the MCP worker supplies
-  `resolveIconExportArt` from `@liveplanner/icons/resolve` (a static import of
+  `resolveIconExportArt` from `@liveworkspace/icons/resolve` (a static import of
   the catalogue data — fine in a Worker), so line-art icons draw stroke-tinted
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the

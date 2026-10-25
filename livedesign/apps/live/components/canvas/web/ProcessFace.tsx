@@ -1,8 +1,8 @@
 import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livedesign/design';
-import { capBandBaselineY } from '@livedesign/icons';
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Process steps (docs/specs/009-elements/web-components-and-no-groups.md): numbered accent circles spread across the width,
 // joined by arrows, with a caption under each edited in place. The numbers

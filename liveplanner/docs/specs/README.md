@@ -13,12 +13,12 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./003-system-architecture/README.md - when touching source layout, the test setup, console logging, or cross-cutting code structure
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
-- ./006-project/README.md - when working on the project model: tabs, tab kinds, layers, per-tab storage, snapshots, offline projects, name length
+- ./006-project/README.md - when working on the project model: tabs, tab kinds, layers, per-tab storage, previews, offline projects, name length
 - ./007-editor/README.md - when working on the live editor shell: routes, the one editor mode (Plan), the start panel, templates, side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
 - ./008-canvas/README.md - when working on the canvas host under every tab (viewport, selection, history, performance), or on livediagram's drawing code still in the tree
 - ./009-elements/README.md - when changing an element kind: the charts Dashboards use, or the diagram kinds whose code is still in the tree
 - ./010-palette/README.md - when a code comment cites the palette: Plan shows none; its code and catalogues are still in the tree
-- ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
+- ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes, and retired schemes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, share links, the Trash or the empty project clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email

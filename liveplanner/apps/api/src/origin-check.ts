@@ -3,7 +3,7 @@
 // header is present and isn't the api worker's own origin so casual
 // drive-by cross-site posters can't inflate the public usage chart,
 // but local dev legitimately serves two different ports (the live
-// editor on :3102 / the telemetry dashboard on :3103 posting to the
+// editor on :3202 / the marketing site on :3201 posting to the
 // api worker on :8887), and those should be allowed through. This
 // helper widens the filter to treat any localhost-to-localhost pair
 // as same-origin enough for dev. Production never sees a localhost

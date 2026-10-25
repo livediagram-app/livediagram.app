@@ -2,11 +2,11 @@
 // phone"), as a tap on a page does in Pages: the view glides to fit the column, header to the board's foot,
 // below the top strip. The column's box is read off the screen and turned into canvas coordinates through the
 // board element's own place and size (the board is never rotated), then fitted as a page is (computeFitBelow).
-import { computeFitBelow } from '@/lib/viewport';
-import { glideViewport } from '@/lib/viewport-glide';
+import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
+import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
 import { topStripInset } from '@/lib/top-strip-inset';
-import { debugLog } from '@/lib/debug-log';
-import type { ViewportStore } from '@/lib/viewport-store';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 type Box = { left: number; top: number; width: number; height: number };
 

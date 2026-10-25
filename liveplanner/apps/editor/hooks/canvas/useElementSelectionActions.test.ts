@@ -51,7 +51,6 @@ function setup(
     setSelectedId: () => {},
     setEditingId: () => {},
     setMultiSelectedIds: () => {},
-    setFormatSourceId: () => {},
     lockedByOther: () => false,
     layerLockedIds: new Set<string>(),
     layerInertIds: new Set<string>(),

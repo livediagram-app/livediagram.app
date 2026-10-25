@@ -1,39 +1,51 @@
 // The account pages' side of the account API (liveworkspace/apps/accounts src/account-api.ts), on
 // this same origin under /api/account: the signed-in person's teams and API tokens.
 
+import { pageApp } from './explorer/page-app';
+
 export const ACCOUNT_API = '/api/account';
 
 export type TeamRole = 'admin' | 'member';
 
+// One of the first few members a team's card shows.
+export interface MemberPreview {
+  id: string;
+  name: string | null;
+  email: string;
+  role: TeamRole;
+}
+
 export interface MyTeam {
   id: string;
   name: string;
+  organisation: string | null;
   role: TeamRole;
   memberCount: number;
+  // Invitations still waiting.
+  invitedCount: number;
+  // Up to four joined members, admins first.
+  members: MemberPreview[];
 }
 
 export interface Invitation {
   id: string;
   teamId: string;
   teamName: string;
+  organisation: string | null;
+  memberCount: number;
   role: TeamRole;
   invitedByName: string | null;
   createdAt: number;
 }
 
-export interface Member {
-  id: string;
-  userId: string | null;
-  email: string;
-  name: string | null;
-  role: TeamRole;
-  status: 'invited' | 'joined';
-  createdAt: number;
-}
-
-export interface TeamDetail {
-  team: { id: string; name: string; myRole: TeamRole; myMemberId: string };
-  members: Member[];
+// What a join link opens onto (GET /join/:token), signed in or not.
+export interface JoinPreview {
+  teamId: string;
+  teamName: string;
+  organisation: string | null;
+  memberCount: number;
+  alreadyMember: boolean;
+  signedIn: boolean;
 }
 
 export interface ApiToken {
@@ -53,7 +65,9 @@ export async function accountApi<T>(
   body?: unknown,
 ): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(ACCOUNT_API + path, {
+    // On an app's own address (the Explorer, served there) through the app's router, with the page's token.
+    const send = pageApp() ? (await import('./explorer/token')).accountFetch : fetch;
+    const response = await send(ACCOUNT_API + path, {
       method,
       headers: { accept: 'application/json', 'content-type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -82,6 +96,9 @@ const MESSAGES: Record<string, string> = {
   admin_only: 'Only the team’s admins can do that.',
   email_unverified: 'Sign in with the invited address to answer this.',
   not_found: 'That’s no longer there. It may have changed elsewhere.',
+  invite_not_found: 'This link isn’t valid any more. Ask the team for a new one.',
+  already_joined: 'You’re already in this team.',
+  rate_limited: 'Too many tries just now. Wait a minute and try again.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
 };

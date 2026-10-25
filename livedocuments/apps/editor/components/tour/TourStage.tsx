@@ -6,9 +6,9 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourBanner } from './TourBanner';
 import { TourPopover } from './TourPopover';
 import { WELCOME_TOUR_COPY, type TourCardCopy } from './tour-card-copy';
-import { TOUR_DIM } from './tour-motion';
+import { TOUR_DIM } from '@liveworkspace/workbench/components/tour/tour-motion';
 import { TourSpotlight } from './TourSpotlight';
-import { TourShield } from './TourShield';
+import { TourShield } from '@liveworkspace/workbench/components/tour/TourShield';
 import { useTourGlide } from './useTourGlide';
 import type { TourEngine } from './useTourEngine';
 

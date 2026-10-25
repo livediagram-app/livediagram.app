@@ -1,11 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ApiTokensList } from '@/components/illustrations/account-settings';
 
 export const metadata = helpMetadata({
   title: 'API Tokens',
   description:
-    'Create an API token to call the livediagram API from your own scripts. A signed-in-only feature: tokens act as your account and last six months.',
+    'Create an API token on liveworkspace.app to call the livediagram API from your scripts. Tokens act as your account and last six months.',
   path: '/help/account-and-data/api-tokens/',
 });
 
@@ -16,27 +15,25 @@ export const metadata = helpMetadata({
   categorySlug="account-and-data"
 >
 
-An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. A token carries your account's **full read and write access**, so treat it like a password.
+An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API and MCP server of every liveworkspace app, livediagram included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
 
 To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livediagram CLI](/help/developers/cli/) when you sign in with `livediagram auth login`.
 
 ## You need an account
 
-API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time collaboration all stay account-free for guests, but tokens require [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/). Programmatic API access is an advanced, opt-in capability, so needing an account for it is a fair trade.
+API tokens are a **signed-in-only** feature. The editor, sharing, and real-time collaboration all stay account-free for guests, but tokens require [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/).
 
 ## Creating a token
 
-Open **Settings** (the gear near the end of the bottom bar, just before the Appearance toggle, in the editor or the Explorer) and choose **Account**, then **API Tokens** beneath it. You can also get there from **Manage API Tokens** in the AI Tools category, where that category is shown.
+Tokens are made on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens). In livediagram, open **Settings** (the gear near the end of the bottom bar), choose **Account**, then **API Tokens**, and choose **Manage API Tokens** to get there.
 
-The first time, the form to create one is already open; after that, choose **New** beside the **API Tokens** title. Name it under **What Is It For?** (up to 60 characters, or pick a suggestion: Claude, Cursor, CI Bot or Local Script), and choose **Create Token**. The form shows the date the token will expire before you create it. The meter at the top shows how many of your ten slots are in use.
-
-The token's secret is shown **once**, right after you create it. Copy it then with the copy button at the end of the field, because for your security it is never displayed again, here or anywhere else. Choose **Done** when you have it. If you lose the secret, revoke the token and create a new one.
+Name the token, switch on **Read-only** if it only needs to look, and create it. Its secret is shown **once**, right after you create it: copy it then, because it is never displayed again. If you lose the secret, revoke the token and create a new one.
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's full read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you switch on **Read-only access** on the approval page, and such tokens show a **Read-only** badge in the list here.
-- **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
-- **Limit:** you can have up to **10** tokens at once. Revoke one to free a slot. An expired token stays in the list until you revoke it, and Settings still counts it toward the ten, so revoke expired tokens to make room.
+- **Access:** a token has your account's read + write access to canvases and folders, including your [teams'](/help/collaboration/teams/) shared libraries, or read access only if it is read-only. It can't manage teams or your account: those are done on liveworkspace.app, signed in.
+- **Lifetime:** every token lasts **six months**, then expires. Rotate by creating a fresh token before the old one lapses.
+- **Limit:** you can have up to **20** tokens at once, across every liveworkspace app. Revoke one to free a slot.
 
 ## Using a token
 
@@ -45,25 +42,16 @@ Send the token as a **bearer header** to the API, which lives under `/api` on yo
 ```bash
 # List your documents
 curl https://livediagram.app/api/documents \
-  -H "Authorization: Bearer lvd_your_token_here"
+  -H "Authorization: Bearer lwt_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a document's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a canvas's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
 
 For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-documents/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
 
 ## Viewing and revoking tokens
 
-Every token you haven't revoked is listed in the same **API Tokens** category, newest first, with when it was created and when it was last used (a green dot means in the last day; **Never used** until its first request). A bar under each one shows how much of its six months has passed, with **Active**, **Expires soon** in amber once it has under two weeks left, or **Expired** in red. Workbenches paired with a token are listed on its card, where you can unpair them. To revoke one, choose the bin at the end of its card (its tooltip says **Revoke**) and confirm.
-
-<Figure
-  caption="Each token shows its dates, a Read-only badge when it has one, and a bar for how much of its six months has passed."
-  width="narrow"
->
-  <ApiTokensList />
-</Figure>
-
-Revocation is immediate: the next request that token makes is rejected. In the last week before a token expires, an email reminds you once (where the deployment sends email), and a note appears on your Explorer Timeline. Deleting your account also removes all of your tokens, along with the rest of your data.
+Your tokens are listed on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livediagram stops accepting it within a minute, and ends any workbench pairing made with it within a few minutes. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

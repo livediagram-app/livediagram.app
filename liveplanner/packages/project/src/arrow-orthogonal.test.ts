@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { curveAnchorPoints } from './arrow-path';
-import { orthogonalBends, withFacingBends, withOrthogonalBends } from './arrow-orthogonal';
+import { orthogonalBends, withFacingBends } from './arrow-orthogonal';
 import { createPinnedArrow, createShape } from './factories';
 import type { ArrowElement, Element } from './index';
 
@@ -27,13 +27,6 @@ describe('orthogonal bends', () => {
       { x: 50, y: 130 },
       { x: 350, y: 130 },
     ]);
-  });
-
-  it('turns an angled arrow with lined-up ends straight', () => {
-    const els = [box('p', 0, 0), box('c', 0, 200), angled('p', 'c')];
-    const out = withOrthogonalBends(els, 'TB');
-    expect(out[2]).toMatchObject({ arrowStyle: 'straight' });
-    expect((out[2] as ArrowElement).curvePoints).toBeUndefined();
   });
 
   it('bends once out of a side across the flow, then along it into the other end', () => {

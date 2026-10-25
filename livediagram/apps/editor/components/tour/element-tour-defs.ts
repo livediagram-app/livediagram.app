@@ -38,7 +38,7 @@ import {
   sankeyTourParts,
 } from './sankey-element-tour-steps';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
 type ElementTourEnv = {

@@ -35,7 +35,7 @@ await chmod(outfile, 0o755);
 // The PNG renderer's files, under the names the CLI reads them by (CLI31); `from` is the name the licences table
 // knows each by.
 const requireHere = createRequire(import.meta.url);
-const fonts = join(repo, 'packages/render-png/fonts');
+const fonts = dirname(requireHere.resolve('@liveworkspace/render-png/fonts/Inter-Regular.ttf'));
 const ASSETS = [
   { from: requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'), to: 'resvg.wasm' },
   { from: join(fonts, 'Inter-Regular.ttf'), to: 'Inter-Regular.ttf' },
@@ -114,7 +114,7 @@ await writeFile(
       name: source.name,
       version: source.version,
       description: 'Read, build, edit and discuss liveplanner plans from the terminal.',
-      license: 'UNLICENSED',
+      license: 'MIT',
       type: 'module',
       bin: { liveplanner: 'liveplanner.mjs' },
       files: [

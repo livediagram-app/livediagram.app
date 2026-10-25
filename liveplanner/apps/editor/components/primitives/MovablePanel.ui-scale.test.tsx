@@ -7,7 +7,9 @@ import { cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 // jsdom has no ResizeObserver; the panel's measuring is not under test here.
 vi.stubGlobal(
   'ResizeObserver',
@@ -18,7 +20,10 @@ vi.stubGlobal(
 );
 
 import { MovablePanel } from './MovablePanel';
-import { UiScaleProvider, useUiScale } from '@/components/providers/ui-scale';
+import {
+  UiScaleProvider,
+  useUiScale,
+} from '@liveworkspace/workbench/components/providers/ui-scale';
 
 afterEach(cleanup);
 

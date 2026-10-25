@@ -2,7 +2,7 @@
 // a Form tab open, the header's Share button is the form's Share Form, so the page never shows two share buttons. The
 // Form page says it is there (and whether its link is published); the header asks it to open its dialog.
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type FormShareHost = { published: boolean; open: () => void };
 

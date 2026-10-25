@@ -11,7 +11,7 @@ import { HeartIcon, MineIcon } from '../shared/icons';
 // altogether, over all of them whatever the search narrows to.
 export function MineSummary({ totals }: { totals: CommunityMineTotals }) {
   const stats = [
-    { icon: <MineIcon />, n: totals.posts, one: 'document shared', many: 'documents shared' },
+    { icon: <MineIcon />, n: totals.posts, one: 'canvas shared', many: 'canvases shared' },
     { icon: <HeartIcon />, n: totals.likes, one: 'like', many: 'likes' },
     { icon: <CopyIcon size={15} />, n: totals.copies, one: 'copy made', many: 'copies made' },
   ];

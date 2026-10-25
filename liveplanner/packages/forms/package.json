@@ -2,7 +2,7 @@
   "name": "@liveplanner/forms",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/page-background": "workspace:*",
-    "@liveplanner/sheets": "workspace:*"
+    "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*"
   },
   "devDependencies": {
-    "@liveplanner/oxlint-config": "workspace:*",
-    "@liveplanner/vitest-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -7,13 +7,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8987
 
-# Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livedocuments.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
@@ -30,51 +23,19 @@ globs = ["**/*.ttf", "**/*.otf"]
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
-# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
-# never only in the dashboard: every `wrangler deploy` replaces the worker's
-# plain vars with the ones this file declares, so a dashboard-only value is
-# silently wiped by the next deploy.
-#
-# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
-# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
-# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
-# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
-# whose participant row is older may still run its one-time upgrade unsigned.
-#
-# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call,
-# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
-# regression fails the suite; re-arming production is Tom's or Webber's call
-# (docs/specs/015-api/public-api-and-tokens.md §6).
-# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
-# can predate their local signing secret and would be locked out of their own
-# test data.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+# The central index (liveworkspace/docs/one-explorer.md): where every document is filed and who may open it. The
+# grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
+# there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
+INDEX_ORIGIN = "https://liveworkspace.app"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedocuments.app"
 
-# D1 database holding documents + participants. The local binding name
-# (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
-# is the Cloudflare-side name (must be created via `wrangler d1 create
-# livedocuments` or the dashboard). `database_id` is filled in after the
-# database is created — until then deploys will fail loudly.
-[[d1_databases]]
-binding = "DB"
-database_name = "livedocuments"
-database_id = "00000000-0000-4000-8000-000000000001"
-migrations_dir = "migrations"
-
-# R2 bucket holding document snapshots and share cards (thumb/<documentId>, og/<documentId>,
-# docs/specs/006-document/document-snapshots.md). Uploaded images live in liveworkspace's media service
-# (MEDIA_KEY below), not here. Created out of band via `wrangler r2 bucket create livedocuments-images`.
-[[r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livedocuments-images"
+# No R2 bucket: uploaded images live in liveworkspace's media service (MEDIA_KEY below), and a document's previews
+# (its Explorer picture, live image and share card) are liveworkspace's too, drawn on request through the export
+# door (liveworkspace/docs/previews.md).
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -102,34 +63,23 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# The document's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per document
+# id, holding the document's content (tabs, the slide deck, changesets, image references) in its own SQLite and
+# running its realtime room (presence + ordered ops over hibernating WebSockets).
 [[durable_objects.bindings]]
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
+# livedocuments has never been deployed, so the classes start SQLite-backed with no rename history.
 [[migrations]]
 tag = "v1"
-new_classes = ["DocumentRoom"]
+new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
 
-# Scheduled jobs the worker handles via the `scheduled` export. One
-# entry per cron; each fires the same handler with `event.cron` set
-# to the matching pattern so the body can dispatch.
-#
-# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md; unused
-# images are swept by liveworkspace's media service). Plus the
-# docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
-# RESEND_API_KEY is unset.
-#
-# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
-# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
-#
-# `* * * * *`: every minute, the documents whose images changed go to liveworkspace's media service
-# (src/media.ts, liveworkspace/docs/media.md "References").
-[triggers]
-crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -162,42 +112,13 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-# Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
-# docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
-# reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
-# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
-# Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
-# Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-# email"): GET and POST /api/teams/invite-decline/<token>, keyed invite-decline:<network> (an IPv4 /24 or IPv6 /56).
-# Open doors, so the owner-keyed write limiter would put every caller on one key. 20 / 60s is far above one
-# person declining. Separate namespace. Absent binding → allow.
-[[unsafe.bindings]]
-name = "TEAM_INVITE_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1012"
-simple = { limit = 20, period = 60 }
-
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
-# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
-# lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
-# the whole email feature inert — no sends, and the email_lifecycle table
-# is never touched, so a deployment with email off does zero extra work:
+# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional email
+# (docs/specs/014-identity/transactional-email.md); the onboarding series is liveworkspace's. All
+# optional; an absent RESEND_API_KEY makes the whole email feature inert — no sends, so a deployment
+# with email off does zero extra work:
 #
 #   - RESEND_API_KEY: worker secret. Local dev: drop
 #     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
@@ -220,7 +141,7 @@ simple = { limit = 20, period = 60 }
 #   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
-#     AUTH_ORIGIN=http://localhost:3200 so the callback comes back
+#     AUTH_ORIGIN=http://localhost:3300 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
 #   - Production: Cloudflare Worker secrets. The deploy workflow pulls
 #     each from the GitHub repo secret of the same name and pipes it into
@@ -228,19 +149,16 @@ simple = { limit = 20, period = 60 }
 #     editing the GitHub secret. Secrets persist across deploys
 #     independently of this file.
 #
-# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
-# pure-guest mode and trusts `X-Owner-Id` exclusively
-# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
-# The client id and secret come from registering livedocuments with the
-# accounts Worker (liveworkspace/docs/integrating-an-app.md).
+# ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name livedocuments's client at the
+# liveworkspace accounts Worker (liveworkspace/docs/integrating-an-app.md): every caller, a guest included, is a
+# token it minted (docs/specs/014-identity/auth-and-guest-access.md). Unset, nobody is signed in or a guest, and
+# only share links open documents.
 #
-# GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
-# `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
-# secret in prod; never in [vars] — it's secret material). When set, the
-# worker mints signed guest ids and /api/migrate requires a valid
-# signature, closing the "observe a guest id, claim its data" hole
-# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest local dev).
+# INDEX_KEY is livedocuments's key at the central index (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
+# what the document rooms push their summaries with, what the api asks for an API token's grants with, and what the
+# index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-livedocuments-index-key` in
+# `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
+# livedocuments. Unset, no document opens.
 
 # TELEMETRY_KEY is livedocuments' Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
@@ -273,14 +191,14 @@ simple = { limit = 20, period = 60 }
 # `wrangler deploy --env staging`.
 #
 # Everything below is restated ON PURPOSE. Wrangler does NOT inherit
-# bindings into a named environment: `vars`, `d1_databases`, `r2_buckets`,
+# bindings into a named environment: `vars`, `r2_buckets`,
 # `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
 # block omitted here is a binding MISSING from the deployed staging worker,
-# with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
+# with no warning. Only `main`, `compatibility_date` and `rules`
 # carry over from the production config above.
 #
-# The values that genuinely differ from production are the D1 database, the
-# R2 bucket, and the email vars that name the public origin. Everything
+# The values that genuinely differ from production are the
+# origins the api names (the index, the media service, the email vars). Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
 
@@ -298,29 +216,11 @@ name = "livedocuments-api-staging"
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livedocuments staging <hello@livedocuments.app>"
 
-# Guest signature enforcement, matching production (see the top-level [vars]).
-# Staging's own database dates from 2026-09-17 and signs with its own secret;
-# its test guests take the same dates rather than drift from production.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+# Staging's own index (see the top-level [vars]).
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedocuments.app"
-
-# Own database, created 2026-09-17. Empty until the first staging deploy
-# applies the migrations in `migrations/` against it — which is the whole
-# reason this environment exists (docs/specs/016-platform/staging-environment.md).
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "livedocuments-staging"
-database_id = "00000000-0000-4000-8000-000000000002"
-migrations_dir = "migrations"
-
-# Own bucket: `wrangler r2 bucket create livedocuments-images-staging`. Sharing
-# production's would let staging's snapshots overwrite production's.
-[[env.staging.r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livedocuments-images-staging"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livedocuments-api-staging` is a different
@@ -356,24 +256,6 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-[[env.staging.unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "WORKBENCH_TICKET_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1010"
-simple = { limit = 30, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "TEAM_INVITE_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1012"
-simple = { limit = 20, period = 60 }
-
 # A different script is a different Durable Object namespace, so staging's
 # DOCUMENT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
@@ -383,15 +265,13 @@ class_name = "DocumentRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["DocumentRoom"]
+new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
 
-# The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
-# staging too, against staging's own data. Restated rather than inherited so
-# that reading this block tells you what the staging worker actually does.
-[env.staging.triggers]
-crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
 
-# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET,
+# The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY,
 # TELEMETRY_KEY and MEDIA_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
 # hand exactly as it is for production:

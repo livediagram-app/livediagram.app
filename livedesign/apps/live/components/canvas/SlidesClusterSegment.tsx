@@ -1,7 +1,7 @@
 'use client';
 
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { ClusterPopoverSegment } from './ClusterPopoverButton';
+import { ClusterPopoverSegment } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // The Slides button in the bottom-right cluster, in Pages mode (docs/specs/007-editor/
 // pages-mode.md "Slides"): a design is likely to be presented, so its deck sits one press

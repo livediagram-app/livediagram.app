@@ -1,11 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ExplorerPanelLayout } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Explorer Panel',
   description:
-    'Your whole library without leaving the editor: the Explorer panel opens from the menu button with a rail of sections beside a pane that shows each one.',
+    'Your whole library without leaving the editor: the Explorer panel opens from the menu button with a rail of sections beside a list that shows each one.',
   path: '/help/explorer/explorer-panel/',
 });
 
@@ -16,32 +15,27 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The **Explorer panel** is the Explorer inside the editor. Press the **menu button** (☰) at the top left of the tab, beside its title, and it opens under the button; press the button again, or click anywhere outside, and it closes. It holds the same sections as the [full-page Explorer](/help/explorer/explorer-page/), so you can browse your library, catch up on what happened and open another plan without leaving the plan you are on.
+The **Explorer panel** is the Explorer inside the editor. Press the **menu button** (☰) at the top left of the tab, beside its title, and it opens under the button; press the button again, or click anywhere outside, and it closes. It reads the same library as the [full-page Explorer](/help/explorer/explorer-page/), so you can browse your library, catch up on what happened and open another plan without leaving the one you are on.
 
 ## What the panel shows
 
-- **Current Plan** at the top is the plan you are in: its thumbnail, its name, when it was last saved, its visibility badge (**Private**, **Shared**, **Team** or **This Browser**) at the right, and its **⋯** menu. **Click the name to rename it** in place: Enter saves, Escape keeps the old name. Hover the badge to see who can see the plan.
-- **The rail** down the left lists every section, grouped as on the Explorer page: **Overview** (Home, Inbox, Shared With Me), **Spaces** (My Work and each team) and **More** (This Browser, when plans are saved only here, then [Tags](/help/explorer/tags/), Library and Trash).
-- **The pane** on the right shows the section you pick. Nothing sends you away from the editor: **Home**, the **Inbox**, the **Library** (Image gallery and Themes) and the **Trash** all open right there. **My Work**, each team, **This Browser** and **Shared With Me** list their folders and plans, each plan with its thumbnail and when it was last updated; a folder opens right there in the pane, with a path above it back to where you started, and picking a plan opens it in the editor. **Open Page** at the top of the pane takes that section to the full Explorer, and **New Folder** makes a folder in My Work or the team you are looking at.
-- The panel opens on **Home** (the plans you were last in, and what others did since) and then remembers the section you last picked.
-- Along the foot are the product's other places: **Home**, **Explorer** and **Help**.
+- **The current plan** at the top: its name, its visibility badge (**Private**, **Shared**, **Team** or **This Browser**) and its **⋯** menu. **Click the name to rename it** in place: Enter saves, Escape keeps the old name.
+- **The rail** down the left lists every section, grouped as on the Explorer page: **Overview** (Home, Inbox, Timeline, Shared With Me), **Spaces** (My Work and each of your teams) and **More** (Favourites and Trash).
+- **The pane** on the right shows the section you pick, a page at a time; **Show more** loads the next page. **Home** shows the plans you were last in, and the **Inbox**, the **Timeline** (what happened, by day, with **Show more** for earlier days) and the **Trash** open right there too. **My Work** and each team list their folders and plans; a folder opens right there in the pane, and picking a plan opens it in the editor, while an item from another liveworkspace app opens on that app's site. **Open Page** at the top of the pane takes that section to the full Explorer, where Recent and Favourites live, and **New Folder** makes a folder in My Work or the team you are looking at.
+- The panel opens on **Home** and then remembers the section you last picked.
+- **This Browser**, near the foot, shows how many plans are saved only in this browser and opens their page ([Offline Mode](/help/privacy-and-security/offline-mode/)). It appears only while there is at least one.
+- Along the foot are liveplanner's other places: **Home**, **Explorer** and **Help**.
 
-<Figure caption="The Explorer panel open under the menu button: the Current Plan card, the rail of sections, and My Work in the pane.">
-  <ExplorerPanelLayout />
-</Figure>
-
-It is the same data as the full page: folders, ownership, and sharing all behave identically. Each plan has the plan menu from its **⋯** button, a right-click, or **Shift+F10**, so **Change Folder**, **Favourite** and **Hide from Recent** work here as well. A plan saved only in this browser carries the **This Browser** pill ([Offline Mode](/help/privacy-and-security/offline-mode/)). Drag one of your own plans onto one of your folders to file it, or onto **My Work** in the rail to put it back at the root.
-
-The keyboard works as on the Explorer page: in the rail, **Up** and **Down** move between sections and **Enter** picks one; in the pane, **Up** and **Down** move between rows and **Enter** opens one. Answering team invites and creating a team happen in the full Explorer.
+It is the same data as the full page: a rename or a star shows in both at once. Each plan has the same menu as on the Explorer page, from its **⋯** button or a right-click, so **Change Folder**, **Share**, **Add to Favourites**, **History** (the plan's own Timeline) and the rest work here too. Drag one of your own plans onto a folder in the pane, or onto **My Work** or a team in the rail, to file it there; rest it on a section in the rail for a moment and that section opens.
 
 The **⋯** button in the panel's header, beside the help button, opens a menu with **New Plan** and **Open Explorer** (the full-page library), then **Share** and **Export** for the plan you are in, then **Search**, **Licences** and **Settings**. With [power user mode](/help/user-interface/power-user-mode/)'s Minimal chrome on, the help button moves into this menu as **Help**.
 
 ## When you will see it
 
 - **In the editor**, to jump to another plan without going back to the library. [Zen mode](/help/tools/zen-mode/) hides the menu button with the rest of the chrome.
-- **On a phone**, the panel opens under the menu button across the screen: the sections become a row of chips you swipe sideways, with the picked one's pane beneath. Held sideways, a phone has no menu button and no Explorer; turn it upright to open the Explorer.
+- **On a phone**, the panel opens under the menu button across the screen: the sections become a row of chips over the pane.
 - **When a plan can't be opened**, it stays available beside the error screen, so you can pick another plan.
 
-Like everywhere else in the Explorer, the panel works whether or not you are signed in, showing the plans your browser or account owns.
+Like everywhere else in the Explorer, the panel works whether or not you are signed in.
 
 </ArticleLayout>

@@ -7,7 +7,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@liveplanner/project';
 import { SequenceDialog, type SequenceRows } from './SequenceDialog';
 import { sequenceDialog } from '@/lib/sequence-dialog-handle';
-import { setActiveTour } from '@/lib/tour-active';
 
 afterEach(cleanup);
 
@@ -157,10 +156,8 @@ describe('SequenceDialog', () => {
   });
 });
 
-// The Sequence element tour runs steps inside this dialog (docs/specs/007-editor/element-tours.md "The Sequence tour").
-describe('SequenceDialog under the element tour', () => {
-  afterEach(() => setActiveTour('element', false));
-
+// The marks and the handle a tour drives this dialog through (lib/sequence-dialog-handle.ts).
+describe('SequenceDialog tour marks and handle', () => {
   it('marks what the tour points at', () => {
     open();
     for (const id of [
@@ -187,13 +184,5 @@ describe('SequenceDialog under the element tour', () => {
     expect(onCommit).toHaveBeenCalled();
     cleanup();
     expect(() => sequenceDialog.close()).not.toThrow();
-  });
-
-  it('keeps Escape from closing it while the element tour runs', () => {
-    act(() => setActiveTour('element', true));
-    const { onClose } = open();
-    fireEvent.keyDown(document, { key: 'Escape' });
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(onClose).not.toHaveBeenCalled();
   });
 });

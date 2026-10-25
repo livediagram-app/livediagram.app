@@ -34,7 +34,7 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
-import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
@@ -49,8 +49,8 @@ import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
@@ -163,7 +163,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, beginAnchorDrag, pressArmedAction } = useBoxedDragHandlers({
+  const { beginDrag, beginAnchorDrag } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
@@ -822,7 +822,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
-    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,

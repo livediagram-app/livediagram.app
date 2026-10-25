@@ -5,9 +5,9 @@
 // the zoom so they read the same on screen at any zoom, so they read it themselves: a zoom re-renders
 // them, not the note (docs/specs/008-canvas/canvas-performance.md).
 
-import { ICON_STROKE_PX_SMALL } from '@livediagram/icons';
+import { ICON_STROKE_PX_SMALL } from '@liveworkspace/icons';
 import { Glyph, Tooltip } from '@livediagram/ui';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A dashed accent frame just outside the paper, in the alignment guides' own language, saying "this
 // one came from the photo and has not been accepted yet". Drawn rather than tinted, because a

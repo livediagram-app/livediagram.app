@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { readForm } from '@liveplanner/forms';
 import type { FormMetricContent } from '@liveplanner/project';
 import { Select, lucideGlyph } from '@liveplanner/ui';
-import { lucideClipboardList } from '@liveplanner/icons/lucide';
+import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import { useFormBoard } from '@/components/forms/form-board-context';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';

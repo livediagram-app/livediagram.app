@@ -1,0 +1,34 @@
+{
+  "name": "@liveworkspace/render-png",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker.ts",
+    "./fonts/Inter-Regular.ttf": "./fonts/Inter-Regular.ttf",
+    "./fonts/Inter-Bold.otf": "./fonts/Inter-Bold.otf"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

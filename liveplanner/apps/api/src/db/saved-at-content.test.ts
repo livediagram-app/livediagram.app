@@ -1,15 +1,41 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveplanner/items';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { T0, insert, liveDoc } from './test-trash-fixtures';
 import { deleteItemRow, insertItems, updateItemAtRev, updateItemsAtRev } from './items';
 import { projectSavedStatement, headWriteStatement } from './sheets';
 
 // A card or a Sheet's cells are part of the project (docs/specs/006-project/project-snapshots.md): a write to
-// either marks it saved, as a tab write does, so the Explorer's "Updated" line and its snapshot follow it. Only a
+// either marks it saved, as a tab write does, so the Explorer's "Updated" line and its preview follow it. Only a
 // write that landed does.
 
+const T0 = 1_700_000_000_000;
 const NOW = T0 + 60_000;
+
+function insert(
+  sql: ReturnType<typeof sqliteD1>['sql'],
+  table: string,
+  row: Record<string, string | number | null>,
+) {
+  const cols = Object.keys(row);
+  sql
+    .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`)
+    .run(...Object.values(row));
+}
+
+// A started plan's own row.
+function liveDoc(
+  sql: ReturnType<typeof sqliteD1>['sql'],
+  id: string,
+  opts: { savedAt?: number } = {},
+) {
+  insert(sql, 'test_plans', {
+    id,
+    owner_id: 'owner',
+    name: `Project ${id}`,
+    saved_at: opts.savedAt ?? T0,
+    created_at: opts.savedAt ?? T0,
+  });
+}
 const PERSON = { id: 'p1', name: 'Ali', color: '#ff0000' };
 
 const item = (id: string, key: number, rev = 1): Item => ({
@@ -25,8 +51,10 @@ const item = (id: string, key: number, rev = 1): Item => ({
   updatedBy: PERSON,
 });
 
+// The plan's own saved time, in the same transaction as the write; D1's follows with the plan's push
+// (plan-room/plan-outbox.ts).
 const savedAt = (db: ReturnType<typeof sqliteD1>) =>
-  (db.sql.prepare("SELECT saved_at FROM projects WHERE id = 'd1'").get() as { saved_at: number })
+  (db.sql.prepare("SELECT saved_at FROM plan WHERE id = 'd1'").get() as { saved_at: number })
     .saved_at;
 
 beforeEach(() => {
@@ -74,7 +102,7 @@ describe('sheet writes', () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'd1');
     insert(db.sql, 'sheets', {
-      project_id: 'd1',
+      plan_id: 'd1',
       id: 's1',
       tab_id: 't1',
       title: 'Sheet',
@@ -85,7 +113,7 @@ describe('sheet writes', () => {
       updated_by: JSON.stringify(PERSON),
     });
     const write = (fromRev: number, nonce: string, now: number) =>
-      db.env.DB.batch([
+      db.env.PLAN_DB.batch([
         headWriteStatement(db.env, 'd1', 's1', fromRev, nonce, now, PERSON, {}),
         projectSavedStatement(db.env, 'd1', 's1', nonce, now),
       ]);

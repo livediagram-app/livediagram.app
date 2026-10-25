@@ -4,17 +4,17 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 
 ## Domain and naming
 
-| Spec term            | Identifier                                                                                                                                                                                      |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                                 |
-| swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                                   |
-| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/design/src/standard-colours.ts`)                                                                                      |
-| tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                             |
-| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                               |
+| Spec term            | Identifier                                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                         |
+| swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                           |
+| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/design/src/standard-colours.ts`)                                                                                |
+| tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                     |
+| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                         |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/design`), `designColours(...)` (`apps/live/lib/design-colours.ts`), `useDesignColours()` (`apps/live/hooks/ui/`) |
-| custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
-| skins                | inline `ColourPicker`; row (`ColourRow`, `LaserColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                              |
-| no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
+| custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                             |
+| skins                | inline `ColourPicker`; row (`ColourRow`, `LaserColourRow`); `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                     |
+| no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                      |
 
 Grey is a **neutral stock colour**: `GREY_PEN_COLOUR = 'grey'`, `PenColourName = 'ink' | 'grey' | HuedPenColourName`.
 It is not in `PEN_COLOURS` (the hued list the snap measures hues against), so snapping is unchanged.
@@ -64,8 +64,6 @@ ColourPicker({
   leave out any colour the Theme Palette (or any other group) already offers.
 - `ColourPopover({ anchor, onClose, ...picker })`: an `AnchoredPopover` of `COLOUR_POPOVER_WIDTH`
   (`COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2`), focusing the picker's Tab stop a frame after opening.
-- `ColourField({ swatch, name, none?, id?, disabled?, ...picker })`: h-8 trigger (chip, name, chevron); Arrow Up or
-  Down opens it; a pick closes it and refocuses the trigger.
 - `ColourSwatchButton({ swatch, none?, children?, preserveFocus?, onOpenChange?, triggerProps?, className?, ...picker })`:
   `preserveFocus` prevents mousedown focus (rich text keeps its selection) and skips the refocus.
 - Builders (`colour-options.ts`): `standardOptions(tone, appearance, by: 'hex' | 'name')`, `standardGroup(...)`
@@ -74,16 +72,16 @@ ColourPicker({
 
 ### Surfaces
 
-| Surface                        | File                                                                                                         | Leading                     | Standard                                                                                                                                         | Value                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
-| Element menu colour rows       | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                               | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`        |
-| Quick Style More colours       | `components/canvas/QuickMoreColours.tsx`                                                                     | none                        | strong by name (soft hex on Background)                                                                                                          | `setColour(role, id)`, `setPenColour` |
-| Quick Style custom swatch      | `components/canvas/SwatchOverridePopover.tsx`                                                                | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                  |
-| Page background                | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`)         | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                |
-| Laser                          | `components/panels/LaserColourRow.tsx`                                                                       | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex               |
-| Canvas, pattern, theme builder | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`), `custom-theme-builder-parts.tsx` | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
-| Rich-text colour               | `components/canvas/RichTextToolbar.tsx`                                                                      | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
-| Pie and legend rows            | `components/palette/context-menu-data-editors.tsx`                                                           | none                        | strong light hex                                                                                                                                 | hex                                   |
+| Surface                   | File                                                                                                 | Leading                     | Standard                                                                                                                                         | Value                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| Element menu colour rows  | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                       | `transparent` "No … colour" | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`        |
+| Quick Style More colours  | `components/canvas/QuickMoreColours.tsx`                                                             | none                        | strong by name (soft hex on Background)                                                                                                          | `setColour(role, id)`, `setPenColour` |
+| Quick Style custom swatch | `components/canvas/SwatchOverridePopover.tsx`                                                        | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                  |
+| Page background           | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                |
+| Laser                     | `components/panels/LaserColourRow.tsx`                                                               | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex               |
+| Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                           | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                   |
+| Rich-text colour          | `components/canvas/RichTextToolbar.tsx`                                                              | none                        | strong hex for the canvas                                                                                                                        | hex                                   |
+| Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                                                   | none                        | strong light hex                                                                                                                                 | hex                                   |
 
 ## Behaviour and state
 
@@ -174,13 +172,13 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 | Rule                                                      | Test                                                                                              |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `packages/design/src/standard-colours.test.ts`                                                  |
-| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                       |
+| ten standard colours, both tones, readable                | `packages/design/src/standard-colours.test.ts`                                                    |
+| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                         |
 | one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                               |
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                           |
 | preview and revert                                        | `ColourPicker.test.tsx`                                                                           |
 | skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                            |
-| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`          |
+| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`              |
 | no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                  |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                             |
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`               |

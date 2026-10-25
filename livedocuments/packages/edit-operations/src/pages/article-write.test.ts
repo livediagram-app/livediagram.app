@@ -66,12 +66,10 @@ describe('a new article', () => {
   });
 
   it('goes after the last page otherwise, on the paper asked for', () => {
-    const tab = tabOf({
-      pages: [page('p1', { kind: 'slide', size: 'slide', orientation: 'landscape' })],
-    });
-    const out = write(tab, { markdown: 'Hi', size: 'letter', orientation: 'landscape' });
+    const tab = withArticle('f', { blocks: [para('b', 'Old', 'title')] });
+    const out = write(tab, { markdown: 'Hi', new: true, size: 'letter', orientation: 'landscape' });
     const pages = pagesOf(out.tab);
-    expect(pages.map((p) => p.id)).toEqual(['p1', 'pg-1']);
+    expect(pages.map((p) => p.id)).toEqual(['a1', 'pg-1']);
     expect(pages[1]).toMatchObject({ kind: 'article', size: 'letter', orientation: 'landscape' });
   });
 
@@ -85,14 +83,32 @@ describe('a new article', () => {
     expect(refusal(tabOf(), { markdown: 'x', size: 'slide' }).code).toBe('size_not_offered');
     expect(refusal(tabOf(), { markdown: 'x', size: 'fit' }).code).toBe('size_not_offered');
     const full = tabOf({
-      pages: Array.from({ length: MAX_PAGES }, (_, i) => page(`p${i}`, { kind: 'infographic' })),
+      pages: Array.from({ length: MAX_PAGES }, (_, i) =>
+        page(`a${i}`, { kind: 'article', flow: 'f' }),
+      ),
+      articles: { f: { blocks: [para('b', 'Old', 'title')] } },
     });
-    expect(refusal(full, { markdown: 'x' }).code).toBe('page_limit');
+    expect(refusal(full, { markdown: 'x', new: true }).code).toBe('page_limit');
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('one kind a tab: refuses a new article on a deck or an infographic', () => {
+    const deck = tabOf({
+      pages: [page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })],
+    });
+    const r = refusal(deck, { markdown: 'x', size: 'letter' });
+    expect(r.code).toBe('kind_not_offered');
+    expect(r.message).toBe(
+      'This tab holds slide pages: every page of a tab is one kind. Put article pages in a tab of their own (add_tab).',
+    );
+    const infographic = tabOf({ pages: [page('p', { kind: 'infographic' })] });
+    expect(refusal(infographic, { markdown: 'x' }).code).toBe('kind_not_offered');
   });
 
   it('appends onto a new article without its placeholder title', () => {
-    const out = write(tabOf({ pages: [page('p', { kind: 'infographic' })] }), {
+    const out = write(withArticle('f', { blocks: [para('b', 'Old', 'title')] }), {
       markdown: 'Only',
+      new: true,
       mode: 'append',
     });
     expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Only']);
@@ -101,8 +117,9 @@ describe('a new article', () => {
 
 describe('fresh ids', () => {
   it('mints its own page and article ids when none are given', () => {
-    const out = applyArticleWrite(tabOf({ pages: [page('p', { kind: 'infographic' })] }), {
+    const out = applyArticleWrite(withArticle('f', { blocks: [para('b', 'Old', 'title')] }), {
       markdown: 'x',
+      new: true,
     });
     if ('refusal' in out) throw new Error('refused');
     expect(out.flow).toMatch(/^art-/);

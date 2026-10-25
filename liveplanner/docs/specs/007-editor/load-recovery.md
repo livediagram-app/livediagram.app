@@ -5,7 +5,7 @@ Status: accepted
 ## Problem
 
 A person opening a project can sit on the opening screen ("Opening your
-project", [New project route](new-project-route.md) "The opening screen")
+plan", [New project route](new-project-route.md) "The opening screen")
 forever while a colleague opens the same project fine. Nothing in the load
 ever gave up: no step had a time limit, and a step that threw outside the
 handled branches left the screen up with no error. The only way out was the
@@ -95,12 +95,12 @@ holding identifiers and states only, never project content:
     help page, which has no session loaded, reads the api's readable
     `lp_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
-  - **Guest id in this browser:** only its first 8 characters (a full guest id
-    is an `X-Owner-Id` credential) and whether it is signed, or "none".
-  - **Identity upgrade pending:** yes or no.
-  - When signed in with a guest id still present: "Guest projects moved to
-    the account: NOT YET". Signing in moves a guest's projects and then
-    clears the guest id, so one still there means the move has not happened,
+  - **Guest id in this browser:** only the first 8 characters of the id the
+    guest token names (the token itself is a credential), or "none".
+  - When signed in with a guest token still present: "Guest plans moved to
+    the account: NOT YET (guest token still present)". Signing in moves a
+    guest's plans and then clears the guest token, so one still there means
+    the move has not happened,
     the usual cause of "my projects went missing after I signed in";
 - the load: the step it reached (`identity`, `participant`, `project`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;
@@ -149,9 +149,9 @@ It lives there, not only in the editor, because every app shares one origin:
 the help page can repair the editor's storage even when the editor itself
 cannot start. The page lists what is cleared and kept, runs the browser checks
 and the identity lines on open and shows both, and offers Copy Diagnostics
-(identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your project
+(identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your plan
 again." with a link to the Explorer. The "A Project Will Not Load" article
-gains two sections: "Stuck on "Opening your project"" (the escalation above)
+gains two sections: "Stuck on "Opening your plan"" (the escalation above)
 and "It opens for a colleague but not for you" (account first, then the share
 link, the repair, another browser or network).
 

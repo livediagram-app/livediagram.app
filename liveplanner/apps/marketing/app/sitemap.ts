@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next';
 
+import { comparisonSitemap } from '@liveworkspace/comparisons';
+
+import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@liveplanner/ui';
 
@@ -24,8 +27,7 @@ export const dynamic = 'force-static';
 // `lastModified` per page reflects the truth of when that page's
 // content last changed. The landing + FAQ pages update with most
 // product releases, so they use the build-time `now`. The Terms and
-// Privacy Policy moved into the help centre (its own sitemap lists the
-// canonical articles), so they are not listed here.
+// Privacy Policy live on liveworkspace.app, so they are not listed here.
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -64,9 +66,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    // /terms and /privacy are intentionally omitted: both legal pages moved
-    // into the help centre (its own sitemap lists the canonical articles), and
-    // each marketing route is now a noindex redirect there.
+    // /terms and /privacy are intentionally omitted: both legal pages live on
+    // liveworkspace.app (they cover every liveworkspace app), and each
+    // marketing route is now a noindex redirect there.
     // Operational surfaces reachable from the footer (docs/specs/019-marketing/marketing-site.md). Lower
     // priority than the marketing content above: they're transparency
     // pages, not landing destinations, but they're public + indexable
@@ -88,6 +90,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.2,
-    },
+    }, // The comparisons (packages/comparisons/README.md "Metadata"): the hub and one page per
+    // competitor, from the same list as the routes, dated by their last review rather than the build.
+    ...comparisonSitemap(COMPARISONS),
   ];
 }

@@ -19,13 +19,13 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@livediagram/* && rm -rf node_modules",
-    "icons:vendor": "pnpm --filter @livediagram/icons vendor:lucide",
+    "icons:vendor": "pnpm --filter @liveworkspace/icons vendor:lucide",
     "icons:sheet": "pnpm --filter @livediagram/editor icons:sheet",
     "icons:brand": "pnpm --filter @livediagram/editor icons:brand"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/prettier-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",

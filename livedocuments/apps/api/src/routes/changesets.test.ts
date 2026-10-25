@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livedocuments/vitest-config/sent-request';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livedocuments/api-schema';
 import { elementFingerprint, type Element } from '@livedocuments/document';
-import { createShareLink } from '../db/share';
+import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -76,10 +78,9 @@ async function setUp(
     DOCUMENT_ROOM: r.binding,
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
-  sent = stubTelemetry();
-  db.sql.exec(
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
-  );
+  sent = captureTelemetry();
+  clearTestProfiles();
+  setTestProfile(OWNER, 'Webber', '#123456');
   const created = await call(db, 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',
@@ -100,7 +101,7 @@ const stored = (db: SqliteD1, tab = 't1') =>
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
 // The Agent events posted to the telemetry service since setUp.
-let sent: ReturnType<typeof stubTelemetry> = [];
+let sent: ReturnType<typeof captureTelemetry> = [];
 const events = () =>
   sent.filter((e) => e.category === 'Agent').map((e) => ({ action: e.action, type: e.type }));
 
@@ -192,21 +193,6 @@ describe('submitting a changeset', () => {
       op: { tab?: { name: string } };
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
-
-    await call(db, 'POST', '/api/documents', {
-      id: 'E',
-      name: 'Other',
-      tabs: [{ id: 'theirs', name: 'T', elements: [] }],
-    });
-    const taken = await call(
-      db,
-      'POST',
-      '/api/documents/D/tabs/theirs/changesets',
-      { replace: { elements: [] } },
-      { token: true },
-    );
-    expect(taken.status).toBe(409);
-    expect(await taken.json()).toMatchObject({ error: 'tab_id_taken' });
   });
 
   it('writes nothing on any refusal, and says why', async () => {
@@ -319,8 +305,8 @@ describe('submitting a changeset', () => {
   it('lets an edit share link submit, and refuses a view link', async () => {
     quiet();
     const { db } = await setUp();
-    await createShareLink(db.env, 'D', 'EDITCODE', 'edit');
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'EDITCODE', 'edit');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const edit = await submit(
       db,
       { operations: [{ op: 'rm', target: 'b' }] },
@@ -438,7 +424,7 @@ describe('the history and one changeset', () => {
       summary: 'drop b',
       agent: true,
     });
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const theirs = (await (
       await call(db, 'GET', '/api/documents/D/changesets?limit=1', undefined, {
         owner: 'guest',
@@ -526,7 +512,7 @@ describe('reverting', () => {
     const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
       changeset: { id: string };
     };
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const viewer = await call(
       db,
       'POST',

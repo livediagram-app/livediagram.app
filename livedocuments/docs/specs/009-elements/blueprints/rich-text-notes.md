@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                           | Role                                                                             |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/rich-text.ts`                           | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
+| `../packages/model-core/src/rich-text.ts`                      | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
 | `packages/document/src/element-types.ts`                       | `note?` + `noteRich?` on every boxed element                                     |
 | `apps/editor/lib/note-value.ts`                                | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
 | `apps/editor/hooks/canvas/useEditorNotes.ts`                   | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useRichTextSession.ts`          | Label session (`collapsedScope: 'all'`)                                          |
 | `apps/editor/components/canvas/label-style.ts`                 | `effectiveRunStyle`: label headings in `em`                                      |
 | `apps/editor/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [QD7]                   |
-| `apps/editor/lib/url-safety.ts`                                | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
+| `../packages/workbench/src/lib/url-safety.ts`                  | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming
 
@@ -142,7 +142,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
   (0.65): `effectiveRunStyle` (`opacity`), `svgRichWrappedLabel` (`fill-opacity`), the PNG drawer
   (`ctx.globalAlpha`). Carried on the editor's spans as `data-rt-muted` and read back; `ExportRun.muted` keeps a
   muted fragment from merging with a plain one.
-- `applyTitleCaption(runs)` (`packages/document/src/title-caption.ts`): clears headings and list markers, appends
+- `applyTitleCaption(runs)` (`../packages/model-core/src/title-caption.ts`): clears headings and list markers, appends
   `\nCaption` to a one-line label, then line 0 `{ bold: true, size: undefined, muted: undefined }` and every later
   line `{ bold: false, size: 'sm', muted: true }`; normalised.
 - `useRichTextFormatActions.applyTitleCaptionPreset` applies it to the whole label (one block apply, caret parked at
@@ -156,7 +156,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/rich-text.ts
+// ../packages/model-core/src/rich-text.ts
 export type RunHeading = 1 | 2 | 3;
 export type TextRun = {
   text: string;
@@ -211,7 +211,7 @@ response.
 
 ## Data and persistence
 
-- **Persisted:** `note`, `noteRich` on the element, in the tab JSON (D1 or IndexedDB), through the
+- **Persisted:** `note`, `noteRich` on the element, in the tab JSON (the document's store or IndexedDB), through the
   normal tab sync.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
 - **Readers of the mirror:** the note indicator's has-a-note test (`buildIndicatorItems`), the menu's Add / Edit Note
@@ -247,7 +247,7 @@ response.
   `textContent`; paste reads `text/plain` only.
 - **Links.** `target="_blank"` with `rel="noopener noreferrer"`; a click stops propagation so it
   never doubles as a canvas gesture.
-- **Size.** A note is bounded only by `MAX_TAB_BYTES` (just under 2 MB, D1's row cap) at the api.
+- **Size.** A note is bounded only by `MAX_TAB_BYTES` (just under 2 MB, a SQLite row's cap) at the api.
 
 ## Performance and limits
 
@@ -319,9 +319,9 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 | `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/editor/lib/note-value.test.ts`                            |
 | Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/editor/lib/note-value.test.ts`                            |
 | Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/editor/lib/note-value.test.ts`                            |
-| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `packages/document/src/rich-text.test.ts`                       |
-| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `packages/document/src/rich-text.test.ts`                       |
-| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `packages/document/src/rich-text.test.ts`                       |
+| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `../packages/model-core/src/rich-text.test.ts`                  |
+| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `../packages/model-core/src/rich-text.test.ts`                  |
+| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `../packages/model-core/src/rich-text.test.ts`                  |
 | Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/editor/components/notes/note-run-style.test.ts`           |
 | Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/editor/components/notes/note-run-style.test.ts`           |
 | Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/editor/components/notes/note-run-style.test.ts`           |
@@ -342,16 +342,16 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 ## Constants and configuration
 
-| Name                    | Value                                        | Provenance / safe range                                  | Home                       |
-| ----------------------- | -------------------------------------------- | -------------------------------------------------------- | -------------------------- |
-| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`          |
-| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`          |
-| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`          |
-| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `lib/clamp-to-viewport.ts` |
-| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                     | `NoteRichTextEditor.tsx`   |
-| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                           | `note-run-style.ts`        |
-| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                     | `note-run-style.ts`        |
-| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; D80 for 3                              | `note-run-style.ts`        |
-| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | D84; each level above the next, all above 1em            | `label-style.ts`           |
-| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`             | `lib/url-safety.ts`        |
-| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                               | `block-type.ts`            |
+| Name                    | Value                                        | Provenance / safe range                                  | Home                                                 |
+| ----------------------- | -------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
+| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`                                    |
+| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`                                    |
+| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`                                    |
+| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `../packages/workbench/src/lib/clamp-to-viewport.ts` |
+| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                     | `NoteRichTextEditor.tsx`                             |
+| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                           | `note-run-style.ts`                                  |
+| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                     | `note-run-style.ts`                                  |
+| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; D80 for 3                              | `note-run-style.ts`                                  |
+| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | D84; each level above the next, all above 1em            | `label-style.ts`                                     |
+| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`             | `../packages/workbench/src/lib/url-safety.ts`        |
+| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                               | `block-type.ts`                                      |

@@ -5,7 +5,7 @@ import {
   lucideKey,
   lucideMail,
   lucideUsers,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { Prims } from '@liveplanner/ui';
 import { Glyph } from './featureIcons';
@@ -13,7 +13,7 @@ import { Glyph } from './featureIcons';
 /**
  * Article slug → icon (full <svg>) for the **support** categories (About,
  * Getting Started, Tips, Account, Privacy, Troubleshooting),
- * whose cards render through {@link ../components/ArticleCard}. Feature
+ * whose cards render through ArticleCard (@liveworkspace/help-site). Feature
  * landings get their icons from {@link ./featureIcons} (FEATURE_ICONS); this
  * map covers the standalone support articles so every card carries a glyph.
  *
@@ -189,20 +189,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
 
   // ---- Policies ----
-  terms: (
-    <Glyph>
-      <path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-      <path d="M14 3v4h4" />
-      <path d="M9 13h6M9 16.5h4" />
-    </Glyph>
-  ),
-  'privacy-policy': (
-    <Glyph>
-      <path d="M12 3l8 3v5.5c0 4.7-3.4 7.8-8 9-4.6-1.2-8-4.3-8-9V6z" />
-      <rect x="9" y="11" width="6" height="5" rx="1" />
-      <path d="M10 11V9.5a2 2 0 0 1 4 0V11" />
-    </Glyph>
-  ),
   // A bug caught under a magnifying glass: a flaw found and handed in.
   'report-a-vulnerability': (
     <Glyph>

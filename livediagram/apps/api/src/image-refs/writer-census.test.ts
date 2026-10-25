@@ -10,7 +10,6 @@ import { describe, expect, it } from 'vitest';
 // (and its test in db/image-refs-writers.test.ts) before the count is raised.
 
 const APPS = fileURLToPath(new URL('../../../', import.meta.url).href);
-const MIGRATIONS = join(APPS, 'api/migrations');
 
 const WRITES_TABS =
   /\b(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|UPDATE|DELETE\s+FROM|REPLACE\s+INTO|DROP\s+TABLE)\s+tabs\b/gi;
@@ -19,24 +18,22 @@ const WRITES_TABS =
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
   // tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs, deleteTabRow, swapTabData; and
-  // stampTabElementCount and renameTab, which write element_count or the name, never `data`, so
-  // they have no image reference to keep.
+  // renameTab and stampTabElementCount, which write the name or the count, never `data`, so they have no image
+  // reference to keep.
   'api/src/db/tabs.ts': 6,
-  // copyDocument
-  'api/src/db/documents.ts': 1,
-  // documentRemovalStatements
-  'api/src/db/document-removal.ts': 1,
+  // importDocumentCopy (a copy lands in its new document's own store)
+  'api/src/document-room/document-content.ts': 1,
+  // anonymiseDocument: a closed account's name off the comments in a body; it changes no image id, so the body's
+  // references stay as they were.
+  'api/src/document-room/document-anonymise.ts': 1,
+  // A shared tab's copies (docs/specs/006-document/tab-document-many-to-many.md): @liveworkspace/index-app takes
+  // one in through tabWriteStatements (the app's insertTab), and a later body from another holder replaces the data
+  // in the same batch as this file's bodyTaken, which stamps the element count and replaces its references.
+  'api/src/document-room/tab-shares.ts': 1,
+  // The test database's stand-in for a document's purge (its object deletes everything it stores); the
+  // references go with the tabs by their foreign key.
+  'api/src/test-sqlite-d1.ts': 1,
 };
-
-// The last migration that wrote `tabs` without having to think about the
-// index; anything after it must maintain `image_refs` and be listed here.
-const LAST_UNINDEXED_MIGRATION = '0050';
-const KNOWN_MIGRATION_WRITERS: string[] = [
-  // Rewrites element links to another document ({"kind":"diagram","documentId":…} to
-  // {"kind":"document","documentId":…}); no image reference changes, so the index stays exact.
-  '0055_documents.sql',
-];
-
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
@@ -63,14 +60,5 @@ describe('writers of tabs', () => {
       }
     }
     expect(found).toEqual(KNOWN_WRITERS);
-  });
-
-  it('include no migration after the index without it being listed', () => {
-    const late = readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith('.sql') && f.slice(0, 4) > LAST_UNINDEXED_MIGRATION)
-      .filter(
-        (f) => (readFileSync(join(MIGRATIONS, f), 'utf8').match(WRITES_TABS)?.length ?? 0) > 0,
-      );
-    expect(late).toEqual(KNOWN_MIGRATION_WRITERS);
   });
 });

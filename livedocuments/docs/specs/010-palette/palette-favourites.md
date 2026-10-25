@@ -24,7 +24,7 @@ What went with it:
   which searches every tile.
 - Its events, retired on the telemetry dashboard
   ([Telemetry, "Retired features"](../017-telemetry/telemetry.md#retired-features)).
-- Its help article: `palette/favourites` redirects to `palette/toolbar-layout`.
+- Its help article. livedocuments never had it, so there is no redirect for its old address.
 
 What stays: tile ids are still stable (`palette-tile-defs`), since palette
 layouts, the Search panel and the Toolbar strip address tiles by id.

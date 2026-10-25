@@ -6,7 +6,6 @@
 // forgotten in a branch. "Ordinary tab" is a thing the model can say.
 
 // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
-// 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
 // Board, Sheet and Dashboard are the Plan tab kinds (docs/specs/026-plan/plan-tabs.md), and Form
 // (docs/specs/030-forms/forms.md).
 export type TabKind = 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form';

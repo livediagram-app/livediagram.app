@@ -3,8 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // A workspace session at the front door (docs/specs/013-workspace/blueprints/workbench-embeds.md "The choke point
 // by scope"): every route class the Explorer uses reaches its route as the person, and every account class is
 // refused before any route runs. Each route module is a stub that answers 204, so reaching it is the proof.
-vi.mock('./auth/accounts', () => ({ getAccountIdentity: async () => null }));
-vi.mock('./db', () => ({ resolveApiToken: vi.fn(), deleteOldEvents: async () => {} }));
+vi.mock('./auth/accounts', () => ({
+  getPersonIdentity: async () => null,
+  accountCredentials: () => null,
+}));
+vi.mock('./db', () => ({ resolveApiToken: vi.fn() }));
 
 // One stub per route module the dispatch names: it records the context it was handed and answers 204.
 const { resolveWorkbenchSessionMock, reached, stub } = vi.hoisted(() => {
@@ -26,38 +29,23 @@ vi.mock('./auth/workbench-session', async (original) => ({
 }));
 
 vi.mock('./routes/account', () => stub('handleAccount'));
-vi.mock('./routes/ai', () => stub('handleAi'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
-vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
 vi.mock('./routes/designs', () => stub('handleDesigns'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
-vi.mock('./routes/forms', () => stub('handleForms'));
-vi.mock('./routes/images', () => stub('handleImages'));
-vi.mock('./routes/migrate', () => stub('handleMigrate'));
-vi.mock('./routes/guest-id', () => stub('handleGuestId'));
 vi.mock('./routes/participants', () => stub('handleParticipants'));
-vi.mock('./routes/favourites', () => stub('handleFavourites'));
-vi.mock('./routes/tags', () => stub('handleTags'));
-vi.mock('./routes/placement-defaults', () => stub('handlePlacementDefaults'));
-vi.mock('./routes/timeline', () => stub('handleTimeline'));
-vi.mock('./routes/activity', () => stub('handleActivity'));
-vi.mock('./routes/home', () => stub('handleHome'));
 vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
 vi.mock('./routes/teams', () => stub('handleTeams'));
-vi.mock('./routes/shared', () => stub('handleShared'));
-vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
-vi.mock('./routes/workbench', () => stub('handleWorkbench'));
 
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import type { Env } from './types';
 
-const LVW = `lvw_${'w'.repeat(43)}`;
+const LVW = `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`;
 const SESSION: WorkbenchContext = {
   sessionId: 'abcdef12-0000-4000-8000-000000000000',
   ownerId: 'user_1',
@@ -99,29 +87,15 @@ describe('a workspace session at the front door', () => {
     ['POST', 'designs', 'handleDesigns'],
     ['GET', 'designs/any-doc', 'handleDesigns'],
     ['PUT', 'designs/any-doc/tabs/t1', 'handleDesigns'],
-    ['PUT', 'designs/any-doc/folder', 'handleDesigns'],
     ['POST', 'designs/any-doc/copy', 'handleDesigns'],
     ['POST', 'designs/any-doc/share', 'handleDesigns'],
     ['DELETE', 'designs/any-doc', 'handleDesigns'],
     ['POST', 'designs/any-doc/room-ticket', 'handleDesigns'],
     ['GET', 'folders', 'handleFolders'],
-    ['POST', 'folders', 'handleFolders'],
-    ['DELETE', 'folders/f1', 'handleFolders'],
-    ['GET', 'shared', 'handleShared'],
-    ['PUT', 'favourites/doc1', 'handleFavourites'],
-    ['GET', 'tags', 'handleTags'],
-    ['GET', 'home', 'handleHome'],
-    ['GET', 'timeline', 'handleTimeline'],
-    ['GET', 'activity', 'handleActivity'],
     ['GET', 'trash', 'handleTrash'],
     ['POST', 'trash/doc1/restore', 'handleTrash'],
-    ['GET', 'placement-defaults', 'handlePlacementDefaults'],
-    ['GET', 'images', 'handleImages'],
-    ['POST', 'images', 'handleImages'],
-    ['POST', 'custom-themes', 'handleCustomThemes'],
     ['GET', 'teams', 'handleTeams'],
     ['GET', 'teams/team1/library', 'handleTeams'],
-    ['DELETE', 'workbench/sessions/current', 'handleWorkbench'],
   ])('lets %s %s reach its route as the person', async (method, path, handler) => {
     const res = await call(method, path);
 
@@ -143,13 +117,9 @@ describe('a workspace session at the front door', () => {
     ['GET', 'tokens'],
     ['POST', 'tokens'],
     ['DELETE', 'tokens/current'],
-    ['GET', 'workbench/pairings'],
-    ['DELETE', 'workbench/pairings/p1'],
-    ['POST', 'workbench/tickets'],
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
-    ['POST', 'ai'],
     ['POST', 'oauth'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],
@@ -166,11 +136,19 @@ describe('a workspace session at the front door', () => {
     expect(reached).not.toHaveBeenCalled();
   });
 
-  it('refuses the guest header but lets a share link reach the route', async () => {
-    const guest = await call('GET', 'designs/any-doc', { 'X-Owner-Id': 'guest-1' });
+  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): /api/workbench/* goes there before the
+  // session is looked at, and accounts takes a session for nothing but ending itself.
+  it('leaves /api/workbench/* to liveworkspace without resolving the session', async () => {
+    const res = await call('GET', 'workbench/pairings');
+
+    expect(res.status).toBe(503);
+    expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
+    expect(reached).not.toHaveBeenCalled();
+  });
+
+  it('lets a share link reach the route', async () => {
     const link = await call('GET', 'designs/any-doc', { 'X-Share-Code': 'CODE2345' });
 
-    expect(guest.status).toBe(403);
     expect(link.status).toBe(204);
   });
 
@@ -180,11 +158,10 @@ describe('a workspace session at the front door', () => {
       workbench: { ...SESSION, level: 'view' },
     });
 
-    const write = await call('POST', 'folders');
-    const list = await call('GET', 'designs/any-doc/share');
+    const write = await call('POST', 'designs/any-doc/copy');
     const read = await call('GET', 'designs');
 
-    expect([write.status, list.status, read.status]).toEqual([403, 403, 204]);
+    expect([write.status, read.status]).toEqual([403, 204]);
     expect(await write.json()).toEqual({ error: 'workbench_read_only' });
   });
 });

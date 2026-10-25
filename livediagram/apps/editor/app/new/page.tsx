@@ -12,7 +12,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import { NewDocumentWizard } from '@/components/palette/NewDocumentWizard';
 import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
@@ -20,7 +20,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
 import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import {
@@ -30,16 +30,18 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
-import { isOfflineLocation } from '@/lib/save-locations';
+import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
 import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
+import { NewSaveSwitch } from './NewSaveSwitch';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
-import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { useGuestId } from '@/hooks/persistence/useGuestId';
+import { handTemplatePick } from '@liveworkspace/explorer';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -55,13 +57,12 @@ import {
   wizardPresetQuery,
   wizardStartsBlank,
 } from '@/lib/new-document-params';
-import { backOutTarget } from '@/lib/back-out';
-import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
+import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
 import { isBlankTemplate } from '@livediagram/templates';
 import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
 
@@ -84,6 +85,13 @@ const presetModeFromUrl = () => wizardPresetMode(window.location.search);
 const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
 const noPreset = () => null;
 const noBypass = () => null;
+// A `/new?folder=` / `?team=` context names a server place, so the wizard offers no save switch.
+const placedFromUrl = () => {
+  const p = placementParamsFromSearch(window.location.search);
+  return !!(p.folderId || p.teamId);
+};
+const onClient = () => true;
+const onServer = () => false;
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
 // Owns identity bootstrap, the mode choice (a one-step wizard),
 // and the actual "commit a new document" handoff. Once the user picks (or
@@ -101,21 +109,21 @@ const PENDING_SELF: Participant = {
 export default function NewDocumentPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once the identity has resolved.
-  // Clerk wiring (token provider + guest to authed migration), the same
-  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+  // Sign-in wiring (the token provider), the same
+  // hook as the editor route; see hooks/useAccountBootstrap.ts.
+  const { authLoaded, accountUserId } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
-  // The base is the Clerk id once auth has settled, else the guest id read from its store, with a name and
+  // The base is the account id once auth has settled, else the guest id read from its store, with a name and
   // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
   // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
-  // A guest's id is the SIGNED one, resolved before any owner-scoped call
-  // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids"): until then `self` stays
+  // A guest's id is their guest token's, resolved before any owner-scoped call
+  // (docs/specs/014-identity/auth-and-guest-access.md): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
+  const guestId = useGuestId(authLoaded, accountUserId);
   const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
   const [selfOverride, setSelf] = useState<Participant | null>(null);
-  const baseId = authLoaded ? (clerkUserId ?? guestId) : null;
+  const baseId = authLoaded ? (accountUserId ?? guestId) : null;
   const self: Participant =
     selfOverride && (baseId === null || selfOverride.id === baseId)
       ? selfOverride
@@ -139,8 +147,6 @@ export default function NewDocumentPage() {
   const explicitBlank = useRef(false);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
     // Where it goes (new-document-settings.ts): store and placement, decided at commit.
     settings: NewDocumentSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).
@@ -168,7 +174,13 @@ export default function NewDocumentPage() {
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
+  const { resolveSaveLocation, signedIn } = useNewDocumentLocation({ authLoaded, accountUserId });
+  // The wizard's Sync Canvas to Server switch (save-locations.md "On the start screen"): null until flipped, so
+  // the create follows the default. Drawn only once the page runs in the browser: the prerender knows no sign-in,
+  // and a switch that flipped on at hydration would jolt.
+  const [chosenLocation, setChosenLocation] = useState<SaveLocationId | null>(null);
+  const placedByUrl = useSyncExternalStore(subscribeNever, placedFromUrl, onServer);
+  const hydratedPage = useSyncExternalStore(subscribeNever, onClient, onServer);
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -198,7 +210,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New Document | livediagram';
+    document.title = 'New Canvas | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -232,14 +244,14 @@ export default function NewDocumentPage() {
   }, [bypassKind]);
 
   useLayoutEffect(() => {
-    // Wait for Clerk to settle so guest vs signed-in is known.
+    // Wait for auth to settle so guest vs signed-in is known.
     if (!authLoaded) return;
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
     // gated inside the helper.
-    trackDailyReturn(!!clerkUserId);
-  }, [authLoaded, clerkUserId]);
-  // The stored profile, once the id is known: the Clerk one, or a guest's signed one.
-  const selfId = authLoaded ? (clerkUserId ?? guestId) : null;
+    trackDailyReturn(!!accountUserId);
+  }, [authLoaded, accountUserId]);
+  // The stored profile, once the id is known: the account's, or a guest's signed one.
+  const selfId = authLoaded ? (accountUserId ?? guestId) : null;
   useEffect(() => {
     if (!selfId) return;
     const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
@@ -257,14 +269,14 @@ export default function NewDocumentPage() {
       cancelled = true;
     };
   }, [selfId, seed]);
-  // Identity for the commit path. Clerk's chunk loads deferred, so a fast
+  // Identity for the commit path. The session's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
   // Creating then would file the document under the literal owner "pending":
   // a shared id every raced visitor collides on, and one the editor route
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
-  // 5 s Clerk timeout at the latest), then fall back to the guest id.
+  // 5 s auth timeout at the latest), then fall back to the guest id.
   const selfRef = useLatest(self);
   const resolveSelf = async (): Promise<Participant> => {
     const deadline = Date.now() + 8000;
@@ -272,8 +284,8 @@ export default function NewDocumentPage() {
       await new Promise((r) => setTimeout(r, 100));
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
-    // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    // Still pending (auth never settled): resolve the guest's id here.
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };
@@ -300,7 +312,7 @@ export default function NewDocumentPage() {
     // default folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(
       !offline && templateKind && isBlankTemplate(templateKind)
-        ? { documentId, tabId, placementChosen: settings.placementChosen === true }
+        ? { itemId: documentId, tabId, placementChosen: settings.placementChosen === true }
         : null,
     );
     // A Retry re-runs the create, not the preference write below.
@@ -391,10 +403,11 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "One-step wizard"): the store for who is creating, decided now (a guest at once, a signed-in browser once identity
-  // settles), and the /new?folder= / ?team= context when there is one; without one it carries no placement, so a
-  // default folder may answer (docs/specs/013-workspace/default-folders.md "Precedence"). `blank` opens it with its
-  // start closed (Skip, Start Blank, a blank's link). The ref holds a second choice off while the store resolves.
+  // "One-step wizard"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
+  // ?team= context (docs/specs/006-document/save-locations.md), and that context when there is one;
+  // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
+  // "Precedence"). `blank` opens it with its start closed (Skip, Start Blank, a blank's link). The ref holds a second
+  // choice off while the create runs.
   const [preparing, setPreparing] = useState(false);
   const creating = useRef(false);
   const createByDefault = async (kind: TemplateKind, blank: boolean) => {
@@ -404,7 +417,7 @@ export default function NewDocumentPage() {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
     try {
-      const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+      const saveLocation = await resolveSaveLocation(placed, resolveSelf, chosenLocation);
       explicitBlank.current = blank;
       await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
     } finally {
@@ -440,7 +453,7 @@ export default function NewDocumentPage() {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
-          documentName="New document"
+          documentName="New canvas"
           hideTitle
           showShare={false}
           shareable={false}
@@ -496,7 +509,7 @@ export default function NewDocumentPage() {
       <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
       <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
-        documentName="New document"
+        documentName="New canvas"
         hideTitle
         showShare={false}
         shareable={false}
@@ -524,6 +537,15 @@ export default function NewDocumentPage() {
             // Escape backs out to the page that opened /new, creating nothing
             // (docs/specs/007-editor/new-document-route.md "Escape backs out").
             onBackOut={backOut}
+            saveSwitch={
+              hydratedPage && !placedByUrl ? (
+                <NewSaveSwitch
+                  chosen={chosenLocation}
+                  signedIn={signedIn}
+                  onChoose={setChosenLocation}
+                />
+              ) : undefined
+            }
           />
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):

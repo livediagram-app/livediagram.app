@@ -3,7 +3,7 @@ import { ctaHref, type CtaSource } from '@livediagram/api-schema';
 import { templateCreateHref } from '@livediagram/templates';
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import type { GalleryTemplate } from '@/lib/template-gallery';
-import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
+import { BAND_CARD, BAND_CONTROL_HOVER } from '@liveworkspace/marketing-site/lib/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // One template as a card that creates that document straight away and opens it in the editor

@@ -9,7 +9,7 @@ import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
-import type { useTabReorderDrag } from './useTabReorderDrag';
+import type { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import type { CanvasMenuActions } from './TabBar';
 import type { AccessLevel } from '@livedesign/api-schema';
 

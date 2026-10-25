@@ -21,12 +21,12 @@ Scope, by file:
 | `packages/project/src/element-fingerprint.ts`                                     | `canonicalElementJson`, `elementFingerprint`                                                                                    |
 | `packages/project/src/comments.ts`                                                | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op                                   |
 | `packages/project/src/element-ops.ts`                                             | `invertElementOps(before, ops)`, shared by the engine and the revert                                                            |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                               | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                        |
+| `apps/api/src/plan-room/plan-schema.ts`                                           | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                        |
 | `apps/api/src/tab-row.ts`                                                         | `TabRow.rev`; `rowToTab` returns it                                                                                             |
 | `apps/api/src/db/tabs.ts`                                                         | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab`                      |
 | `apps/api/src/db/projects.ts`                                                     | The copy's tab insert starts at `rev` 1                                                                                         |
 | `apps/api/src/db/changesets.ts`                                                   | Record and part statements; reads for the merge, the list, one changeset, the revert; the sweep                                 |
-| `apps/api/src/db/account.ts`, `account-owner-columns.test.ts`                     | `agent_changesets.author_id` on deletion and guest migration                                                                    |
+| `apps/api/src/db/account.ts`, `account-owner-columns.test.ts`                     | `agent_changesets.author_id` on account deletion                                                                                |
 | `apps/api/src/changesets/changeset-id.ts`                                         | `mintChangesetId`                                                                                                               |
 | `apps/api/src/changesets/base-check.ts`                                           | `checkBase`, pure                                                                                                               |
 | `apps/api/src/changesets/held-check.ts`                                           | `heldTargets`, pure                                                                                                             |
@@ -47,28 +47,28 @@ Scope, by file:
 | `apps/api/src/index.ts`                                                           | The daily sweep                                                                                                                 |
 | `apps/api/src/room-client.ts`                                                     | `roomStubFor(env, projectId)` for every project; `relayChangeset`, `relayTabRename`, `relayProjectRename`, `readRoomSelections` |
 | `apps/api/src/room-selections.ts`                                                 | `RoomSelectionStore`: each session's selection in DO storage                                                                    |
-| `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/project-room-routes.ts` | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                          |
-| `apps/api/src/project-room.ts`, `room-internal.ts`                                | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                              |
+| `apps/api/src/person-tag.ts`, `routes/project-room-routes.ts`                     | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                          |
+| `apps/api/src/plan-room/plan-room.ts`, `room-internal.ts`                         | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                              |
 | `apps/api/src/responses.ts`                                                       | CORS allows `X-Changeset-Seen`, `X-Liveplanner-Client`; exposes `ETag`                                                          |
 | `apps/api/src/openapi/{manifest,project}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                         |
 | `apps/mcp/src/changeset-client.ts`                                                | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                               |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                | `add_tab`, `update_project` on changesets; `rename_project` on the name route; `rev`; the client header                         |
-| `apps/editor/lib/api/tabs.ts`                                                       | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                                              |
-| `apps/editor/lib/api/changesets.ts`                                                 | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                                      |
-| `apps/editor/app/project/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`        | `projectServerStored`, the room gate                                                                                            |
-| `apps/editor/app/project/[id]/useRoomConnection.ts`                                 | Room for every server-stored project; the `changeset` branch                                                                    |
-| `apps/editor/app/project/[id]/usePresenceBroadcast.ts`                              | `select` (with `elementIds`) and `tab-focus` for every open room                                                                |
-| `apps/editor/app/project/[id]/room-op-apply.ts`                                     | `applyRoomOpToTabs` case `changeset`                                                                                            |
-| `apps/editor/app/project/[id]/changeset-seen.ts`                                    | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                      |
-| `apps/editor/app/project/[id]/changeset-toast.ts`                                   | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                                            |
-| `apps/editor/app/project/[id]/useChangesetSeen.ts`                                  | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                       |
-| `apps/editor/app/project/[id]/useChangesetFeed.ts`                                  | Gap refetch, the join check, reveal state, toast, Show, Undo                                                                    |
-| `apps/editor/lib/changeset-reveals.ts`                                              | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                                             |
-| `apps/editor/app/project/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                                            |
-| `apps/editor/app/project/[id]/useAutosave.ts`                                       | Passes the seen revision per tab                                                                                                |
-| `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`   | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                           |
-| `apps/editor/e2e/signed-in/agent-changesets.spec.ts`                                | The end-to-end spec, signed in (only an account mints a token)                                                                  |
-| `apps/editor/hooks/ui/useToast.tsx`                                                 | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                    |
+| `apps/editor/lib/api/tabs.ts`                                                     | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                                              |
+| `apps/editor/lib/api/changesets.ts`                                               | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                                      |
+| `apps/editor/app/project/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`      | `projectServerStored`, the room gate                                                                                            |
+| `apps/editor/app/project/[id]/useRoomConnection.ts`                               | Room for every server-stored project; the `changeset` branch                                                                    |
+| `apps/editor/app/project/[id]/usePresenceBroadcast.ts`                            | `select` (with `elementIds`) and `tab-focus` for every open room                                                                |
+| `apps/editor/app/project/[id]/room-op-apply.ts`                                   | `applyRoomOpToTabs` case `changeset`                                                                                            |
+| `apps/editor/app/project/[id]/changeset-seen.ts`                                  | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                      |
+| `apps/editor/app/project/[id]/changeset-toast.ts`                                 | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                                            |
+| `apps/editor/app/project/[id]/useChangesetSeen.ts`                                | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                       |
+| `apps/editor/app/project/[id]/useChangesetFeed.ts`                                | Gap refetch, the join check, reveal state, toast, Show, Undo                                                                    |
+| `apps/editor/lib/changeset-reveals.ts`                                            | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                                             |
+| `apps/editor/app/project/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`     | Record each loaded tab's `rev`; resync of named tabs                                                                            |
+| `apps/editor/app/project/[id]/useAutosave.ts`                                     | Passes the seen revision per tab                                                                                                |
+| `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer` | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                           |
+| `apps/editor/e2e/signed-in/agent-changesets.spec.ts`                              | The end-to-end spec, signed in (only an account mints a token)                                                                  |
+| `apps/editor/hooks/ui/useToast.tsx`                                               | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                    |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/collaboration.ts` | The `Agent` stack                                                                                                               |
 
 ## Domain and naming
@@ -124,7 +124,7 @@ Inputs: the project (`getProject`), the tab id, the parsed `ChangesetRequest`, t
 6. **No-op.** No element op and no new tab: answer 200 with `changeset: null`; nothing is written (CS11).
 7. **Bound.** `CHANGESET_MAX_OPERATIONS` is checked before compile; after it, each part against
    `CHANGESET_PART_MAX_BYTES` (CS43) and the tab through `storeTab`, all `too_large`.
-8. **Write and record** in one D1 batch: `upsertTabAtRev(env, projectId, tab, orderIndex, stored?.rev ?? 0)`,
+8. **Write and record** in one batch in the plan's store: `upsertTabAtRev(env, projectId, tab, orderIndex, stored?.rev ?? 0)`,
    `insertChangesetStatement(...)` and three `insertChangesetPartStatement(...)`. The trigger aborts the batch
    when the row moved (`tab_rev_stale`).
 9. **Lost race.** On `tab_rev_stale`, or a primary-key or unique failure on a create, repeat from step 1 once;
@@ -224,7 +224,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 ### Rooms for every server-stored project
 
 - `roomStubFor(env, projectId)` returns a stub for every project; the `shareable`/`teamId` gate goes. Its
-  callers (`fetchRoomLedger`, `relayElementDelta`, `broadcastProjectTrashed`, `relayChangeset`,
+  callers (`fetchRoomLedger`, `relayElementDelta`, `relayChangeset`,
   `readRoomSelections`) take the project id; `relayTabRename` is a rename's.
 - The editor opens its room when `hydrated && projectId && projectServerStored`, where
   `projectServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
@@ -285,7 +285,7 @@ editor`; the toast then reads the outcome.
 
 | Method | Path                                               | Gate                                   | Success                                              | Failures                                                                                                                                                                                                                      |
 | ------ | -------------------------------------------------- | -------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/projects/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`, `tab_id_taken`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
+| POST   | `/api/projects/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
 | GET    | `/api/projects/:id/changesets[?tab=&limit=]`       | `gateRead`; a scoped link its tab only | 200 `{ changesets: ChangesetSummary[] }`             | 400 bad `limit`; 404; 410                                                                                                                                                                                                     |
 | GET    | `/api/projects/:id/changesets/:changesetId`        | `gateRead` on the record's tab         | 200 `{ changeset: ChangesetSummary, results, text }` | 404 (no record for this project, or its tab outside a scoped link); 410                                                                                                                                                       |
 | POST   | `/api/projects/:id/changesets/:changesetId/revert` | `gateEdit` on the record's tab         | 200 `RevertResponse`                                 | 403; 404 (no record for this project, or tab unlinked); 409 `tab_busy`; 410                                                                                                                                                   |
@@ -379,7 +379,7 @@ the room records `elementIds` whenever it is non-empty, a multi-selection withou
 Internal: `POST /mutation { op }` accepts `changeset` and `tab-meta`; `GET /selections` above. The person tag
 on the attachment comes from the ticket as the [agent presence blueprint](agent-presence.md) describes it
 (`personTagFor`, the mint storing it for a verified account, the upgrade forwarding `X-Verified-Person`); it is built
-with this file, its column `ws_tickets.person_tag` in the baseline migration, since the held check needs it.
+with this file, worked out at the upgrade rather than stored, since the held check needs it.
 
 ### Shared functions
 
@@ -424,7 +424,7 @@ theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structur
 
 ## Data and persistence
 
-The baseline migration (CS1) gives `tabs` a `rev INTEGER NOT NULL DEFAULT 0` column and creates:
+The plan's schema (`plan-schema.ts`, CS1) gives `tabs` a `rev INTEGER NOT NULL DEFAULT 0` column and creates:
 
 ```sql
 CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
@@ -466,8 +466,8 @@ CREATE TABLE agent_changeset_parts (
 | `agent_changesets.id`         | identity           | `cs_` + 10                                                               |
 | `project_id`, `tab_id`, `rev` | reference          | `(tab_id, rev)` unique: one changeset per revision                       |
 | `base_rev`                    | audit              | Null without a base                                                      |
-| `author_id`                   | personal           | Owner-keyed; deleted with the account, moved by guest migration (CS27)   |
-| `author_name`, `author_color` | personal, snapshot | From `participants` at write; fallback CS16                              |
+| `author_id`                   | personal           | Owner-keyed; goes with the account's plans, else ages out (CS27)         |
+| `author_name`, `author_color` | personal, snapshot | From the profile at write; fallback CS16                                 |
 | `token_id`                    | audit              | Null for a person; never on the wire except to the author                |
 | `summary`                     | content            | At most 80 characters                                                    |
 | `fingerprints`                | derived            | JSON `{ before, after, beforeOrder? }`: fingerprints by id, order (CS17) |
@@ -493,8 +493,8 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 ## Errors and edge cases
 
 - **E1** Submit to a trashed project: 410 through `missingProject`. A stranger: 404.
-- **E2** `replace` on a tab id this project lacks but `tabs` holds (another project's tab): `409 tab_id_taken`;
-  an id over 128 characters: 422 `invalid_value` (CS31).
+- **E2** `replace` on a tab id this project lacks makes that tab here (a tab id is the project's own, so another
+  project holding the same id is no conflict); an id over 128 characters: 422 `invalid_value` (CS31).
 - **E3** Both `operations` and `replace`, or neither: `400 invalid_body`. More than `CHANGESET_MAX_OPERATIONS`
   operations (comment lines excluded; a `replace` counts as one): 413 `too_large` before compile.
 - **E4** Engine refusal: nothing written; codes and the engine's text returned; `[changeset] rejected` logged.
@@ -539,7 +539,7 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 - Submit and revert pass `gateEdit` with the tab, so a tab-scoped link writes its own tab only; the token's role is
   applied inside the gate ([share roles blueprint](../../013-workspace/blueprints/share-roles.md)).
 - A token can never reach the whole-tab PUT: 405 before any read.
-- Agent attribution comes only from the server: `author_*` from the resolved owner's participant row, `token_id`
+- Agent attribution comes only from the server: `author_*` from the resolved owner's profile, `token_id`
   from `ctx.token.id`. Nothing in the body names an author.
 - `changeset` is a system kind: the room drops it from any client socket, and `/mutation` is reachable only through
   the worker's stub.
@@ -556,8 +556,8 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 
 ## Performance and limits
 
-- Submit, worst case: 5 D1 reads (project, gate, tab, last revision, participant), one room fetch, the engine over
-  500 operations on a tab at the byte cap, one D1 batch (tab, link, `saved_at`, collaboration index, image
+- Submit, worst case: 5 reads (project, gate, tab, last revision, participant), one room fetch, the engine over
+  500 operations on a tab at the byte cap, one batch (tab, link, `saved_at`, collaboration index, image
   refs, record, three parts), one relay. Twice on a lost race. The route adds no pass over the tab beyond
   fingerprinting the targets (O(targets)).
 - Tab PUT adds one indexed read (`agent_changesets_tab_rev`) that returns nothing in the common case, and the
@@ -565,7 +565,7 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 - Merge on save, worst case: an editor offline for the retention period on a busy tab. Records stream in pages of
   20 with their `ops` part; one page holds at most 20 x `CHANGESET_PART_MAX_BYTES`, about 40 MB, under the 128 MB
   isolate (CS18). Fingerprints are computed only for elements a record names.
-- Rows: each part at most `CHANGESET_PART_MAX_BYTES` (1,991,808), so every row fits D1's 2,000,000 bytes; only the
+- Rows: each part at most `CHANGESET_PART_MAX_BYTES` (1,991,808), so every row fits a Durable Object SQLite row's 2,000,000 bytes; only the
   tab cap bounds a changeset.
 - Room: each `changeset` takes one of the 256 catch-up slots; at most 192 KiB each, the log holds at most 48 MiB,
   inside the 64 MiB a log of maximum `tab` ops already allows. Selection writes: one DO storage put per selection
@@ -677,7 +677,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Rooms for every server-stored project, none offline                                                           | `room-client.test.ts` "stub for a personal project"; `useRoomConnection` gate test                                        |
 | Revert: inverse as a new changeset, kept list, twice, created tab                                             | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                                          |
 | One changeset read                                                                                            | `changesets.test.ts` "GET one answers results and text"                                                                   |
-| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/signed-in/agent-changesets.spec.ts` "Ctrl+Z leaves it"                        |
+| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/signed-in/agent-changesets.spec.ts` "Ctrl+Z leaves it"                      |
 | Revertable while the record exists                                                                            | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                                    |
 | Anyone with edit may revert                                                                                   | `changesets.test.ts` "team member reverts", "viewer refused"                                                              |
 | Applies as a peer's and folds into the baseline                                                               | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                                         |
@@ -712,7 +712,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_REVEAL_MS`            | 2,000                  | Spec                                                 | 1,000 to 5,000    |
 | `CHANGESET_TOAST_COALESCE_MS`    | 10,000                 | Spec                                                 | 2,000 to 60,000   |
 | `CHANGESET_SUMMARY_MAX`          | 80                     | Spec                                                 | 40 to 200         |
-| `CHANGESET_PART_MAX_BYTES`       | 1,991,808              | `MAX_TAB_BYTES`: one D1 row per part (CS43)          | fixed by D1       |
+| `CHANGESET_PART_MAX_BYTES`       | 1,991,808              | `MAX_TAB_BYTES`: one row per part (CS43)             | fixed by SQLite   |
 | `CHANGESET_MERGE_PAGE`           | 20                     | CS18                                                 | 5 to 50           |
 | `CHANGESET_LIST_DEFAULT`, `_MAX` | 20, 100                | CS26                                                 | 10 to 500         |
 | `CHANGESET_ID_LENGTH`            | 10                     | Spec; 50 bits                                        | 10 to 16          |
@@ -724,7 +724,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`     | Spec                                                 | fixed             |
 | `CLIENT_HEADER`                  | `X-Liveplanner-Client` | CS25                                                 | fixed             |
 
-No new binding or environment variable; a deployment needs only the migration. Staging needs no `[env.staging]`
+No new binding or environment variable; the plan's schema holds the tables. Staging needs no `[env.staging]`
 change.
 
 ## Defaults ledger

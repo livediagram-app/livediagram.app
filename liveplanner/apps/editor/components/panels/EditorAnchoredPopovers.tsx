@@ -2,7 +2,7 @@
 
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
-import { apiSetProjectFolder } from '@/lib/api-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { elementActions, isBoxed, threadAt } from '@liveplanner/project';
 
 import { track } from '@/lib/telemetry';
@@ -225,7 +225,7 @@ export function EditorAnchoredPopovers() {
                 onMoveToTeam={async (teamId) => {
                   if (!accountUserId || !projectId) return false;
                   try {
-                    await apiSetProjectFolder(accountUserId, projectId, null, teamId);
+                    await indexClient.updateItem(projectId, { teamId, folderId: null });
                   } catch {
                     return false;
                   }

@@ -17,13 +17,10 @@ describe('the document page’s first load', () => {
     ['app/document/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
     ['components/chrome/EditorPhotoImport.tsx', '@/components/chrome/PhotoReviewOverlay'],
     ['components/chrome/EditorPhotoImport.tsx', '@/lib/photo-detect'],
-    ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
-    ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
-    ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/collab/CollabFaceRouter'],
@@ -45,5 +42,13 @@ describe('the document page’s first load', () => {
   it('takes the template overrides from the builders loaded at the press', () => {
     const src = read('app/document/[id]/useTemplateFlow.ts');
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);
+  });
+
+  // The Explorer opens only from the canvas's menu button (docs/specs/007-editor/toolbar-layout.md): the status
+  // screens (deleted, couldn't load, not found) render neither it nor its code.
+  it('shows no Explorer panel on the status screens', () => {
+    expect(read('app/document/[id]/editor-page.tsx')).not.toMatch(
+      /LazyExplorer|panels\/Explorer\b/,
+    );
   });
 });

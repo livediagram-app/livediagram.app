@@ -5,7 +5,7 @@ import { greyWorldBalance, hexToRgb, rgbToHsv, type ImageBuffer } from './colour
 import { standsOut } from './standout';
 import { detectStickies, cropRects } from './detect';
 import { toNormalised } from './normalised';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // Finding stickies in a photograph (docs/specs/021-event-storming/event-storming.md Phase 8). Every image here is
 // DRAWN by the test, which is the point of doing this with classical CV: the

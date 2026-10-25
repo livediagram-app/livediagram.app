@@ -1,13 +1,8 @@
 // Strip the owner's credentials from a document DTO for anyone who isn't the
 // owner: the owner's id, and the document's primary share code.
 //
-// A document's `ownerId` is a CREDENTIAL, not a label. For a guest owner it is
-// the `X-Owner-Id` bearer value itself, so handing it to a reader hands them
-// the thing the server uses to recognise that guest — and `POST /api/migrate`
-// will reassign every document, folder, image and preference belonging to an
-// owner id to whoever presents it (gated on an HMAC signature only when
-// `GUEST_ID_HMAC_SECRET` is configured; unset, knowing the id is enough).
-// See docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/public-api-and-tokens.md §4.
+// A document's `ownerId` is personal, not a label: a person's id (an account's, or a guest's) names them across
+// every liveworkspace app, so a reader is never handed it. See docs/specs/014-identity/auth-and-guest-access.md.
 //
 // This lived as a private `redactOwner` inside routes/share.ts, applied to the
 // share-code resolver — "the easiest observation vector". It was the only
@@ -17,7 +12,7 @@
 // document), and it returned `ownerId` intact — so the redaction guarded one
 // door of two. Hence a module: the rule now has one home, both doors, and a
 // test surface of its own, matching the precedent set by
-// origin-check / share-link-row.
+// share-link-row.
 //
 // Every non-owner reader already behaved as though this value might be blank:
 // the client reads it only to compute `isOwner` (correctly false for a blank),

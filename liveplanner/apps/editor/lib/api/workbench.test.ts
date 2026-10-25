@@ -1,12 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { WorkbenchSessionResponse } from '@liveplanner/api-schema';
 import { registerTokenProvider, setTokenProvider } from './core';
 import {
-  apiAnswerPairingRequest,
   apiEndWorkbenchSession,
   apiListWorkbenchPairings,
-  apiReadPairingRequest,
   apiRedeemWorkbenchTicket,
   apiUnpairWorkbench,
 } from './workbench';
@@ -17,7 +15,7 @@ import {
 type Seen = { method: string; url: string; headers: Headers; body: unknown };
 
 const SESSION: WorkbenchSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'project',
   projectId: 'doc-1',
   folderId: null,
@@ -144,55 +142,6 @@ describe('apiEndWorkbenchSession', () => {
 describe('the pairing calls', () => {
   beforeEach(() => {
     registerTokenProvider(async () => 'clerk-jwt');
-  });
-
-  it('reads a pairing request as the signed-in person', async () => {
-    const request = {
-      origin: 'https://127.0.0.1:5175',
-      name: 'Acme Editor',
-      tokenName: 'liveplanner CLI',
-      expiresAt: 5,
-      status: 'pending',
-    };
-    answer = reply(200, { request });
-
-    expect(await apiReadPairingRequest('user_1', 'c'.repeat(22))).toEqual(request);
-    expect(seen[0]!.url).toMatch(new RegExp(`/workbench/pairing-requests/${'c'.repeat(22)}$`));
-    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer clerk-jwt');
-  });
-
-  it('reads an unknown request as null', async () => {
-    answer = reply(404, { error: 'not_found' });
-
-    expect(await apiReadPairingRequest('user_1', 'c'.repeat(22))).toBeNull();
-  });
-
-  it('approves and declines', async () => {
-    answer = reply(200, { pairing: { id: 'p' } });
-    expect(await apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'approve')).toBe('approved');
-    expect(seen[0]).toMatchObject({ method: 'POST' });
-    expect(seen[0]!.url).toMatch(/\/approve$/);
-
-    answer = reply(204);
-    expect(await apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'decline')).toBe('declined');
-    expect(seen[1]!.url).toMatch(/\/decline$/);
-  });
-
-  it('names an answered, expired or missing request', async () => {
-    answer = reply(409, { error: 'pairing_answered' });
-    expect(await apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'approve')).toBe('answered');
-    answer = reply(410, { error: 'pairing_expired' });
-    expect(await apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'approve')).toBe('expired');
-    answer = reply(404, { error: 'not_found' });
-    expect(await apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'decline')).toBe('missing');
-  });
-
-  it('throws on any other refusal', async () => {
-    answer = reply(500, { error: 'internal' });
-
-    await expect(apiAnswerPairingRequest('user_1', 'c'.repeat(22), 'approve')).rejects.toThrow(
-      'answer pairing request failed: 500',
-    );
   });
 
   it('lists the pairings and unpairs one', async () => {

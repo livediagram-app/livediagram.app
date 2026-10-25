@@ -1,35 +1,30 @@
-// Document-level calls: load / create / save-meta / delete / list, the
-// copy-into-my-files flow, and the "Shared with you" list.
+// Document-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket.
+// Listing, copying, deleting and sharing documents are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
 import {
+  INDEX_GRANT_HEADER,
+  indexIntentOf,
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
   svgBackgroundColor,
-  TEAM_RECENT_INCLUDE,
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
 } from '@livedocuments/api-schema';
-import type {
-  LiveDoc,
-  DocumentListResponse,
-  DocumentResponse,
-  DocumentSummary,
-  SharedWithItem,
-  TeamRecentDocument,
-} from '@livedocuments/api-schema';
+import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livedocuments/api-schema';
 import type { Tab } from '@livedocuments/document';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
-  offlineListDocuments,
   offlineLoadDocument,
   offlineSaveDocumentMeta,
 } from '../offline/offline-store';
-import { offlinePurgeExpiredTrash, offlineTrashDocument } from '../offline/offline-trash';
-import { rememberRecentDiagrams } from '../recent-diagrams-snapshot';
+import { IndexError } from '@liveworkspace/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { markReported, reportApiError } from './error-report';
+import { seedDocumentGrant } from './document-grants';
 import {
   API_BASE,
-  apiDelete,
+  ApiError,
   apiHeaders,
   expectOk,
   expectOkOrNull,
@@ -75,7 +70,21 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
     headers: await apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DocumentResponse>(res, 'load');
+  if (body?.document) indexTitles.set(id, body.document.name);
   return body?.document ?? null;
+}
+
+// The title the index holds for each document this page has read or named, so a meta save tells the index only when
+// the name changed: never on a save that merely carries it (liveworkspace/docs/one-explorer-contracts.md "Items").
+const indexTitles = new Map<string, string>();
+
+function renameInIndex(id: string, name: string, shareCode: string | null): void {
+  if (indexTitles.get(id) === name) return;
+  indexTitles.set(id, name);
+  void indexClient.updateItem(id, { title: name }).catch((err: unknown) => {
+    indexTitles.delete(id);
+    console.warn('[index] rename not recorded', { shareCode: !!shareCode, err });
+  });
 }
 export const apiLoadDocument = dedupeInFlight(
   _apiLoadDocument,
@@ -140,6 +149,7 @@ export async function apiSaveDocumentMeta(
     signal: saveTimeoutSignal(body),
   });
   await expectOkVoid(res, 'save document meta');
+  if (typeof d.name === 'string' && d.name) renameInIndex(d.id, d.name, shareCode);
 }
 
 // Create a brand-new document with an optional initial set of tabs.
@@ -173,20 +183,44 @@ export async function apiCreateDocument(
   // without this the worker records it as a brand-new document being created.
   opts: { conversion?: DocumentConversion } = {},
 ): Promise<LiveDoc> {
+  // The index makes the document first (liveworkspace/docs/one-explorer-contracts.md "Items"): its place, its title
+  // and the grant on it come back together. The content is then started in the document's room with that grant.
+  let created: Awaited<ReturnType<typeof indexClient.createItem>>;
+  try {
+    created = await indexClient.createItem({
+      id: d.id,
+      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+      ...(opts.conversion === 'sync' ? { synced: true } : {}),
+      app: 'livedocuments',
+      title: d.name,
+      ...(d.teamId ? { teamId: d.teamId } : {}),
+      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
+      ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
+    });
+  } catch (err) {
+    if (err instanceof IndexError) {
+      reportApiError(err.status, 'create document in index', err.code);
+      const apiErr = new ApiError('create document', err.status, err.code);
+      markReported(apiErr);
+      throw apiErr;
+    }
+    throw err;
+  }
+  seedDocumentGrant(d.id, created.grant);
+  indexTitles.set(d.id, created.item.title);
   const res = await apiFetch(`${API_BASE}/documents`, {
     method: 'POST',
-    headers: await apiHeaders(ownerId, {
-      body: true,
-      ...(opts.conversion ? { extra: { [DOCUMENT_CONVERSION_HEADER]: opts.conversion } } : {}),
-    }),
+    headers: {
+      ...(await apiHeaders(ownerId, {
+        body: true,
+        ...(opts.conversion ? { extra: { [DOCUMENT_CONVERSION_HEADER]: opts.conversion } } : {}),
+      })),
+      [INDEX_GRANT_HEADER]: created.grant.grant,
+    },
     body: JSON.stringify({
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
-      ...(d.teamId ? { teamId: d.teamId } : {}),
-      // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
-      // may answer (docs/specs/013-workspace/folders.md "Placement on create").
-      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
       ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
@@ -197,78 +231,10 @@ export async function apiCreateDocument(
   return liveDoc;
 }
 
-// Moves the document to the Trash (docs/specs/013-workspace/trash.md): the
-// api's for a cloud document, this browser's for an Offline Mode one.
-export async function apiDeleteDocument(ownerId: string, id: string): Promise<void> {
-  if (await isOfflineId(id)) return offlineTrashDocument(id, Date.now());
-  // Owner-gated server-side as of the security fix — without the
-  // identity headers the worker would 400 / 403. apiHeaders prefers
-  // the account Bearer when a token provider is registered, falls
-  // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
-  return apiDelete(`${API_BASE}/documents/${id}`, ownerId, {
-    action: 'delete document',
-    purge: { sourceType: 'document', sourceId: id },
-  });
-}
-
-// The personal library and, beside it, the newest documents of the teams the caller has joined: the
-// team ones feed only the recent lists (Welcome back, Jump Back In), never the personal library views.
-export type DocumentListing = {
-  documents: DocumentSummary[];
-  teamRecent: TeamRecentDocument[];
-};
-
-async function _apiListDocumentsWithTeamRecent(ownerId: string): Promise<DocumentListing> {
-  // Offline documents (docs/specs/006-document/offline-mode.md) are browser-local; list them alongside the
-  // cloud ones. If the cloud fetch fails but offline documents exist (e.g. no
-  // network), still return those rather than failing the whole Explorer.
-  // The local Trash keeps its 30 days by being swept whenever the app lists
-  // documents (docs/specs/013-workspace/trash.md, "The local Trash").
-  await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
-  const offline = await offlineListDocuments().catch(() => [] as DocumentSummary[]);
-  try {
-    const res = await apiFetch(`${API_BASE}/documents?include=${TEAM_RECENT_INCLUDE}`, {
-      headers: await apiHeaders(ownerId),
-    });
-    const { documents: liveDocs, teamRecent = [] } = await expectOk<DocumentListResponse>(
-      res,
-      'list',
-    );
-    // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
-    // record and a same-id server row. The offline copy wins — it is what the
-    // dispatch loads for that id — and dropping the twin keeps React keys
-    // unique in every list.
-    const offlineIds = new Set(offline.map((o) => o.id));
-    const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
-    // The landing page's returning-visitor fan reads this (docs/specs/019-marketing/returning-visitor.md).
-    // A document in This Browser has no server snapshot, so it is drawn here from the offline store
-    // (lib/local-snapshot.ts, loaded only when one is wanted) rather than asked of the server, where it
-    // could only 404 (once per save, since the version is in the key). A guest's documents start local.
-    rememberRecentDiagrams([...documents, ...teamRecent], (id, savedAt) =>
-      offlineIds.has(id)
-        ? import('@/lib/local-snapshot').then((m) => m.localSnapshotSvg(id))
-        : apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
-    );
-    return { documents, teamRecent };
-  } catch (e) {
-    if (offline.length > 0) return { documents: offline, teamRecent: [] };
-    throw e;
-  }
-}
-export const apiListDocumentsWithTeamRecent = dedupeInFlight(
-  _apiListDocumentsWithTeamRecent,
-  (ownerId) => ownerId,
-);
-
-// The personal library (and this browser's Offline Mode documents).
-export async function apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
-  return (await apiListDocumentsWithTeamRecent(ownerId)).documents;
-}
-
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
 // for an `<img src>` plus the document's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
-// come through the authenticated client (Authorization / X-Owner-Id, plus
+// come through the authenticated client (the Authorization Bearer, plus
 // X-Share-Code for a shared row) and get wrapped in a blob URL the caller
 // revokes on unmount. `version` (the document's savedAt) rides as `?v=`
 // purely to bust the browser/edge cache when the document changes; the
@@ -289,10 +255,10 @@ export async function apiFetchDocumentThumbnailUrl(
   return { url: blobUrl, backgroundColor };
 }
 
-// The snapshot SVG's text, through the authenticated client; null on 404 / 403 / 503 (empty
-// document, no access, no R2). Behind the Explorer's thumbnails and the landing page's Welcome back
-// (docs/specs/019-marketing/returning-visitor.md).
-export async function apiFetchDocumentThumbnailSvg(
+// The document's preview SVG, liveworkspace's (liveworkspace/docs/previews.md: the router sends /api/previews there),
+// through the authenticated client; null on 404 / 503 (nothing drawn, no access, the service down). `version` is
+// only the browser's cache key. Behind the Explorer's thumbnails.
+async function apiFetchDocumentThumbnailSvg(
   ownerId: string,
   documentId: string,
   opts: { version?: number; shareCode?: string | null } = {},
@@ -300,42 +266,11 @@ export async function apiFetchDocumentThumbnailSvg(
   const params = new URLSearchParams();
   if (opts.version != null) params.set('v', String(opts.version));
   const qs = params.toString();
-  const url = `${API_BASE}/documents/${encodeURIComponent(documentId)}/thumbnail${qs ? `?${qs}` : ''}`;
+  const url = `${API_BASE}/previews/items/${encodeURIComponent(documentId)}${qs ? `?${qs}` : ''}`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
   const res = await apiFetch(url, { headers });
   if (!res.ok) return null;
   return res.text();
-}
-
-// ---------------------------------------------------------------------
-// shared_with — "Shared with you" (migration 0010)
-// ---------------------------------------------------------------------
-
-// The "Shared with you" row shape now lives in @livedocuments/api-schema
-// (the api worker emits it via listSharedWith), imported above and
-// re-exported here so the existing `@/lib/api-client` / `./api/documents`
-// import paths keep resolving unchanged. See that package for the
-// per-field rationale.
-export type { SharedWithItem };
-
-// List documents that have been shared with this owner (i.e. the
-// owner previously opened a share link for them and was identified
-// to the api at the time). Returns newest-interaction-first.
-// Same dedupe rationale as apiListDocuments: editor + /new +
-// /explorer all mount surfaces that fire this on first paint.
-async function _apiListSharedWith(ownerId: string): Promise<SharedWithItem[]> {
-  const res = await apiFetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });
-  const { shared } = await expectOk<{ shared: SharedWithItem[] }>(res, 'list shared');
-  return shared;
-}
-export const apiListSharedWith = dedupeInFlight(_apiListSharedWith, (ownerId) => ownerId);
-
-// Dismiss a single "shared with you" row.
-export async function apiDismissSharedWith(ownerId: string, documentId: string): Promise<void> {
-  return apiDelete(`${API_BASE}/shared/${documentId}`, ownerId, {
-    action: 'dismiss shared',
-    allow404: false,
-  });
 }
 
 // Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
@@ -354,10 +289,13 @@ export async function apiCreateRoomTicket(
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {
-      const res = await apiFetch(`${API_BASE}/documents/${documentId}/room-ticket`, {
-        method: 'POST',
-        headers: await apiHeaders(ownerId, { share: shareCode }),
-      });
+      const res = await apiFetch(
+        `${API_BASE}/documents/${encodeURIComponent(documentId)}/room-ticket`,
+        {
+          method: 'POST',
+          headers: await apiHeaders(ownerId, { share: shareCode }),
+        },
+      );
       if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
       if (!res.ok) continue;
       const { ticket } = (await res.json()) as Partial<RoomTicketResponse>;
@@ -368,23 +306,4 @@ export async function apiCreateRoomTicket(
     }
   }
   return null;
-}
-
-// Copy a document (typically one shared with the caller) into the
-// caller's own files. Returns the new document. Optional shareCode
-// covers the "visitor just arrived via share URL, no shared_with
-// row yet" path — when present the api worker uses it as the
-// authorisation proof instead of looking up shared_with.
-export async function apiCopyDocument(
-  ownerId: string,
-  sourceId: string,
-  opts: { name?: string; shareCode?: string | null } = {},
-): Promise<LiveDoc> {
-  const res = await apiFetch(`${API_BASE}/documents/${sourceId}/copy`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
-    body: JSON.stringify({ name: opts.name }),
-  });
-  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'copy document');
-  return liveDoc;
 }

@@ -41,4 +41,4 @@ export function takeAccessEnded(documentId?: string, now: number = Date.now()): 
 
 /** What the Explorer says when a revoked pass sent you there. */
 export const ACCESS_REVOKED_MESSAGE =
-  'The link you opened that document with was revoked, so it is no longer open to you.';
+  'The link you opened that canvas with was revoked, so it is no longer open to you.';

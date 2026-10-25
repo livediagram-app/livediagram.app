@@ -2,15 +2,15 @@
 // its per-element emitters: tables, shape silhouettes, freehand). Their own
 // module so the emitters never import from svg-render (which imports THEM),
 // keeping the graph cycle-free.
-import { labelFontPx } from './label-font';
+import { labelFontPx } from '@liveworkspace/model-core/label-font';
 import type { BoxedElement } from './index';
 
 // XML-escape for both text nodes and attribute values. Re-exported rather
-// than defined here: @liveplanner/icons owns the one escaper the monorepo's
+// than defined here: @liveworkspace/icons owns the one escaper the monorepo's
 // SVG builders share, and this package already depends on it. Every existing
 // `xmlEscape` import from here (and from the package barrel) still resolves.
 import type { ExportIconArt } from './svg-render-describe';
-import { xmlEscape } from '@liveplanner/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 export { xmlEscape };
 
 export const LABEL_LINE_HEIGHT = 1.25;
@@ -74,8 +74,6 @@ export function wrapLabel(
 // The width of a label with no canvas to measure it: a rough share of the font size a character. Headless
 // renders wrap with it.
 export const LABEL_ESTIMATE_CHAR_EM = 0.55;
-// How much wider a bold glyph runs than a regular one, for an estimate of bold text.
-export const BOLD_EM = 1.06;
 export function estimatedLabelMeasure(size: number): (s: string) => number {
   return (s) => s.length * size * LABEL_ESTIMATE_CHAR_EM;
 }

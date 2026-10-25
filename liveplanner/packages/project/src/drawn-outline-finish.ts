@@ -1,5 +1,5 @@
 // Outlines drawn on purpose in their finish (docs/specs/008-canvas/finish.md "Polygons"): a Polygon-tool
-// outline (docs/specs/008-canvas/polygon-tool.md), placed point by point, is a drawing like a shape's outline, not a
+// outline (docs/specs/008-canvas/finish.md "Polygons"), placed point by point, is a drawing like a shape's outline, not a
 // hand's stroke, so it follows its finish as a shape does. Pen strokes and smoothed pencil strokes are already
 // hand-drawn and stay as drawn.
 import {
@@ -8,7 +8,7 @@ import {
   DEFAULT_BORDER_STYLE,
   IMAGE_DEFAULT_RADIUS_PX,
   cornerRadiusPx,
-} from './border-style';
+} from '@liveworkspace/model-core/border-style';
 import { MARKER_LINE_PX, finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
 import { freehandCanvasPoints } from './freehand-points';
 import type { FreehandElement, ImageElement } from './index';

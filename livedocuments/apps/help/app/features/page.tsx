@@ -1,26 +1,11 @@
-import type { Metadata } from 'next';
-import { BrowsePage } from '@/components/BrowsePage';
-import { CategoryCard } from '@/components/CategoryCard';
-import { featureCategories } from '@/lib/articles';
-import { helpMetadata } from '@/lib/seo';
+import { FeaturesPage, featuresMetadata } from '@liveworkspace/help-site/components/CategoryPages';
+import { site } from '@/lib/help-site';
 
-export const metadata: Metadata = helpMetadata({
-  title: 'Features',
-  description:
-    'Browse livedocuments feature guides by area: User Interface, Explorer, Palette, Canvas, Tabs, Collaboration, and Tools.',
-  path: '/help/features/',
-});
+export const metadata = featuresMetadata(
+  site,
+  'Browse livedocuments feature guides by area: User Interface, Explorer, Palette, Canvas, Tabs, Collaboration, and Tools.',
+);
 
-export default function FeaturesPage() {
-  return (
-    <BrowsePage
-      title="Features"
-      eyebrow="Editor Guides"
-      lede="In-depth guides for everything in the editor, grouped by area."
-    >
-      {featureCategories.map((category) => (
-        <CategoryCard key={category.slug} category={category} />
-      ))}
-    </BrowsePage>
-  );
+export default function Features() {
+  return <FeaturesPage site={site} />;
 }

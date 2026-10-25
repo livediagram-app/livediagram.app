@@ -18,7 +18,6 @@ import {
   offlineLoadTab,
   offlineSaveDocumentMeta,
   offlineSaveTab,
-  offlineSetDocumentFolder,
   OFFLINE_OWNER_ID,
   recordToDocument,
   removeTab,
@@ -141,19 +140,16 @@ describe('offline store ops (in-memory backend)', () => {
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
   });
 
-  it('setDocumentFolder updates the personal-tree placement', async () => {
+  it('records no creation intent in the browser', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
-    await offlineSetDocumentFolder('d1', 'f1', 200);
-    expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
     // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
     expect((await offlineListDocuments())[0]).toMatchObject({
+      folderId: null,
       opensIn: null,
       tabKind: null,
       templateFamily: null,
     });
-    await offlineSetDocumentFolder('d1', null, 300);
-    expect((await offlineListDocuments())[0]?.folderId).toBeNull();
   });
 
   it('saveDocumentMeta renames without touching tabs', async () => {
@@ -165,7 +161,7 @@ describe('offline store ops (in-memory backend)', () => {
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Document as an ordinary diagram — the
+// kind would come back from a Sync Canvas as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
 describe('upsertTab — tab kind', () => {
   const rec = (): OfflineDocumentRecord =>
@@ -192,7 +188,7 @@ describe('upsertTab — tab kind', () => {
   });
 });
 
-describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offline-mode.md)', () => {
+describe('offlineDeleteIfUnchanged (Sync Canvas, docs/specs/006-document/offline-mode.md)', () => {
   it('removes the record and forgets the id when it still matches', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));

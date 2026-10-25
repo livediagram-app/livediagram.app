@@ -1,4 +1,4 @@
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ExcalidrawImportPanel } from './ExcalidrawImportPanel';
@@ -19,7 +19,7 @@ export function ExcalidrawImportDialog({
     <Dialog open onClose={onClose} ariaLabel={EXCALIDRAW_IMPORT_TITLE} size="lg">
       <DialogHeader
         title={EXCALIDRAW_IMPORT_TITLE}
-        subtitle="Each file becomes its own document, named and dated after the file."
+        subtitle="Each file becomes its own canvas, named and dated after the file."
       >
         <HelpArticleLink article="importTabs" size="md" />
         <DialogCloseButton onClick={onClose} />

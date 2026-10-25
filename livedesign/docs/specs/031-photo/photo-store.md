@@ -31,20 +31,21 @@ rev? }`: the pixel size, the layer stack ([Photo layers](photo-layers.md)), the 
 - **One decoded tile, many places**: the browser keeps one decoded copy per blob id, so tiles that read the same (every
   white tile of a blank photo) are one array in memory until painted. A loaded tile is held copy-on-write: the first
   paint on it copies it, never painting every place that shares it.
-- **The photo blob store**: blobs in R2 (the `PHOTO_BLOBS` bucket, under `photo/<blob id>`; its own bucket, apart from the gallery's `IMAGES`), one D1 row each
-  (`photo_blobs`: id, content type, byte size, created at), and the **blob refs** (`photo_blob_refs`: tab id, blob
-  id, created at). A blob is stored once however many tabs name it.
+- **The photo blob store**: blobs in R2 (the `PHOTO_BLOBS` bucket, under `photo/<blob id>`; its own bucket, apart
+  from the media service's gallery), with an empty marker object `photo-refs/<blob id>/<design id>` for each design
+  that holds it, and the **blob refs** in each design's own SQLite (`photo_blob_refs`: tab id, blob id, created at).
+  A blob is stored once however many tabs name it.
 
 ## The routes
 
 Under a design's tab, on the api worker ([API app](../015-api/api.md)):
 
-| Method | Path                                                    | Gate | Does                                                                                                                                                                                                                                                |
-| ------ | ------------------------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                       |
-| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                               |
+| Method | Path                                                  | Gate | Does                                                                                                                                                                                                                                            |
+| ------ | ----------------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                   |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                           |
 | POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-adopt`    | edit | Body `{ fromDesign, fromTab, ids }` (at most 2000): adds this tab's refs to blobs `fromTab` holds, where the caller may read `fromTab` in `fromDesign`. For duplicating a tab, and layers pasted between tabs. Answers `{ adopted: string[] }`. |
-| GET    | `/api/designs/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                              |
+| GET    | `/api/designs/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                          |
 
 - **A blob batch** is one request body: a 4-byte big-endian length, then that many bytes of JSON
   `[{ id, type, size }]`, then the blobs' bytes back to back in that order. At most 64 blobs and 24 MB a batch; a
@@ -105,7 +106,9 @@ ids }` (the stack's order) and `{ op: 'preview', blob }`; or `{ kind: 'photo', t
 - **Copying a design** (Copy to my files, a tab-scoped copy, a Community copy, a template from a design) gives
   every copied tab refs to every blob its source tab held, in the same batch as the copy.
 - **Duplicating a tab** in the editor adopts its blobs into the new tab (`photo-blobs-adopt`) before the new tab's first save.
-- **A tab linked into another design** is the same tab: its refs serve both.
+- **A tab shared with another design** ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)) is a copy
+  in each: a body sent to the other designs carries the blobs it names that the sender's tab holds, and each design
+  taking it in records refs to them (its marker first), so the bytes stay while any design's tab names them.
 - **Layers pasted** from one tab's photo into another's adopt their blobs into the target tab first.
 
 ## Offline Mode designs
@@ -117,12 +120,14 @@ ids }` (the stack's order) and `{ op: 'preview', blob }`; or `{ kind: 'photo', t
 
 ## Retention
 
-- Daily, on the api worker's cron, beside the [image sweep](../009-elements/images.md) "Retention": for each tab
-  holding blob refs older than **one day**, the blobs its saved body names now are read from it (`photoBlobIdsOf`:
-  every tile, source and preview of `Tab.photos`), and the tab's other refs older than a day are removed; a ref
-  whose tab is gone is removed. Then every blob no ref names is deleted (D1 first, then R2).
-- Bounded: at most 200 tabs and 5,000 blobs a run, resuming the next day; logs `photo sweep: removed <n> refs,
-deleted <m> blobs`, and `photo sweep: R2 delete failed` with the ids where R2 refuses.
+- Daily, in each design's own upkeep (its Durable Object's alarm, `sweepDesignPhotoBlobs` in
+  `apps/api/src/db/photo-blobs.ts`): for each tab holding blob refs older than **one day**, the blobs its saved body
+  names now are read from it (`photoBlobIdsOf`: every tile, source and preview of `Tab.photos`), and the tab's other
+  refs older than a day are removed; a ref whose tab is gone is removed. The blobs the design no longer holds at all
+  are released: its markers go, and a blob no design marks any more is deleted from R2 (`releaseBlobs`). A purged
+  design releases all of its blobs.
+- Bounded: at most 200 tabs a run, resuming the next day; logs `[photo-blobs] sweep` with the counts, and
+  `[photo-blobs] release failed` where R2 refuses (bytes kept, never a ref without bytes).
 - The day's grace keeps a blob a session's undo or a save in flight still needs. A session open for longer than a
   day re-sends, before its save, any blob of its history it undoes back to.
 

@@ -1,46 +1,39 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { GuestIdentity } from '@/components/illustrations/account';
 
 export const metadata = helpMetadata({
   title: 'How Guest Identity Works',
   description:
-    'Understand how liveplanner identifies you as a guest with a per-browser id, and what that means for your plans.',
+    'How liveplanner knows you as a guest: a liveworkspace guest identity, the same in every liveworkspace app, and what it means for your plans.',
   path: '/help/account-and-data/guest-identity/',
 });
 
 <ArticleLayout title="How Guest Identity Works" description="liveplanner works without signing in. Here is how liveplanner knows which plans are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-liveplanner always works without signing in. You can land on [a new plan](/new), build something real, and only later decide whether you want an account. To make that possible, liveplanner gives every guest a quiet, per-browser identity that owns whatever you put on the server.
+liveplanner always works without signing in. You can land on [a new plan](/new), build something real, and only later decide whether you want an account. To make that possible, every guest gets a quiet identity that owns whatever they make.
 
-## Your per-browser id
+## Your guest identity
 
-The first time you visit, liveplanner's server issues a unique guest id and your browser keeps it in `localStorage`. Everything of yours on the server as a guest (plans you share or sync, folders) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends it with each request; you never see or type it.
+The first time liveplanner needs to know who you are, your browser makes a quick trip to liveworkspace.app and back: a redirect you may glimpse for a moment, with nothing to fill in. liveworkspace gives this browser a **guest identity** and hands liveplanner a guest token for it, which your browser keeps and sends with each request. You never see or type it.
 
-Where sign-in is available, as on liveplanner.app, new plans you make as a guest start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, so nothing you try out is sent to our servers until you choose to. To share one, open **Share** and press **Sync Plan**: it uploads under your guest id and the Share options appear. A plan you create inside a folder goes to the server straight away.
+The guest identity is liveworkspace's, not liveplanner's alone, so it is **the same guest in every liveworkspace app** in this browser: a plan you make on liveplanner and a canvas you make on livediagram belong to the same guest, and both appear in the [Explorer](/help/explorer/explorer-page/) when you choose **All**.
 
-<Figure caption="A per-browser guest id owns the plans you sync or share, with no sign-in required.">
-  <GuestIdentity />
-</Figure>
+The token lasts a year, and liveplanner quietly fetches a fresh one when it has less than a month left, so a guest who comes back now and then keeps their identity.
 
-Two things follow from this:
-
-- **It is per browser, not per person.** The id lives in one browser on one device. Open liveplanner in a different browser or on another device and you get a fresh guest id, so your earlier plans will not appear there.
-- **It is not cross-device.** Guest content does not sync between devices, because there is no account tying them together yet.
-
-As a guest you still get the core of liveplanner: saving, share links and real-time collaboration all work, once a plan is synced. A few things need an address or an account to attach to, so they ask you to sign in: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) and [email notifications](/help/account-and-data/email-notifications/).
+Your new plans start in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). Everything you put on liveplanner as a guest is owned by that identity: the plans you sync or make in a folder, your folders, favourites and your Shared With Me list. As a guest you get the core of liveplanner: saving, share links and real-time collaboration all work. A few things need an address or an account to attach to, so they ask you to sign in: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) and [email notifications](/help/account-and-data/email-notifications/).
 
 ## What this means for your data
 
-Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, deletes your plans in This Browser and means the app can no longer recognise you as the owner of the ones on the server. Those are still there, but nothing in a fresh browser can claim them back. Treat your guest plans as living in that browser.
+- **It is per browser, not per person.** The identity lives in one browser on one device. Open liveplanner in a different browser or on another device and you are a different guest there, so your earlier plans will not appear.
+- **Clearing site data can lose it.** Clearing this browser's data for liveworkspace.app and liveplanner.app, or using private browsing that discards it, means your browser can no longer prove it is that guest. The plans are still on the server, but nothing in a fresh browser can claim them back.
 
-Share links are the exception: anyone holding one, including you in another browser, can still open that plan with the link's role. They just won't be its owner there.
+Share links are the exception: anyone holding one, including you in another browser, can still open that plan at the link's level. They just won't be its owner there.
 
-If you want your plans to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, the plans of yours on the server move into it automatically, and we offer to move the ones in This Browser too, so you do not lose the work you have already done.
+If you want your plans to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, everything your guest identity owns in this browser moves into the account, in every liveworkspace app at once.
 
 <Tip>
-  Doing serious work as a guest? Create an account before clearing your browser data, and move your
-  plans in This Browser across when we offer, so nothing is left behind.
+  Doing serious work as a guest? Sign in before clearing your browser data, so nothing is left
+  behind.
 </Tip>
 
 </ArticleLayout>

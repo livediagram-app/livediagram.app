@@ -11,9 +11,14 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadShared: (...a: Parameters<typeof apiLoadShared>) => apiLoadShared(...a),
   apiLoadDocument: (...a: Parameters<typeof apiLoadDocument>) => apiLoadDocument(...a),
 }));
+const getItem = vi.fn<(id: string) => Promise<{ item: { trashedAt: number | null } }>>();
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: { getItem: (id: string) => getItem(id) },
+}));
 const { joinRefusedBecauseTrashed } = await import('./room-refusal');
 
 beforeEach(() => {
+  getItem.mockReset();
   apiLoadShared.mockReset();
   apiLoadDocument.mockReset();
 });
@@ -26,6 +31,23 @@ describe('joinRefusedBecauseTrashed', () => {
     ).resolves.toBe(true);
     expect(apiLoadDocument).toHaveBeenCalledWith('me', 'd1');
     expect(apiLoadShared).not.toHaveBeenCalled();
+  });
+
+  it('asks the index when the load no longer finds the canvas (a trashed one has no grant)', async () => {
+    apiLoadDocument.mockResolvedValue(null);
+    getItem.mockResolvedValue({ item: { trashedAt: 5 } });
+    await expect(
+      joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: null }),
+    ).resolves.toBe(true);
+    expect(getItem).toHaveBeenCalledWith('d1');
+    getItem.mockResolvedValue({ item: { trashedAt: null } });
+    await expect(
+      joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: null }),
+    ).resolves.toBe(false);
+    getItem.mockRejectedValue(new Error('not found'));
+    await expect(
+      joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: null }),
+    ).resolves.toBe(false);
   });
 
   it('asks through the share link for a visitor', async () => {

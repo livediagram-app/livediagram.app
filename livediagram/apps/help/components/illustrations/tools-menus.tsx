@@ -5,7 +5,16 @@
 // column controls. Every label is the editor's own string. Composed from the
 // shared primitives; raw shapes only for motifs the kit lacks.
 
-import { Scene, Panel, Dialog, Button, Label, TextBar, Menu, Arrow } from './primitives';
+import {
+  Scene,
+  Panel,
+  Dialog,
+  Button,
+  Label,
+  TextBar,
+  Menu,
+  Arrow,
+} from '@liveworkspace/help-site/art/primitives';
 
 // --- Building blocks ---------------------------------------------------------
 

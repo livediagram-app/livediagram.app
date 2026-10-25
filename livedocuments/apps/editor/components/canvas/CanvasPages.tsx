@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
-import { lucideSettings } from '@livedocuments/icons/lucide';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
@@ -41,7 +41,7 @@ import {
   usePageReorderDrag,
   type PageReorder,
 } from '@/hooks/canvas/usePageReorderDrag';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { usePageImageSources } from './page-image-access';
@@ -440,7 +440,7 @@ export function CanvasPages({
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage && edit.addPageLike ? (
-        <AddPageButton last={last} zoom={zoom} onAdd={edit.addPage} onAddLike={edit.addPageLike} />
+        <AddPageButton last={last} zoom={zoom} onAddLike={edit.addPageLike} />
       ) : null}
       {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview

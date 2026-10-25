@@ -18,8 +18,8 @@ The strongest privacy guarantee livedocuments can offer is that you do not have 
 livedocuments is open source under the **MIT license**. That is permissive on purpose: anyone may read, fork, modify or embed it, for any purpose.
 
 - **Free for everyone.** There is no paid tier and no plan to introduce one. Every feature ships to every user.
-- **No license checks.** Nothing in the core editor calls home to verify a licence or gate a feature.
-- **Optional, not required, outside services.** Sign-in is optional. With it unconfigured, the app runs in pure-guest mode and works fully without any account system. Email is the same: it stays off until a deployment adds its key. Image search (Openverse) needs no key and is on everywhere; it runs from the browser, and only when someone searches.
+- **No license checks.** Nothing in the core editor calls home to verify a licence or gate a feature, which is also what keeps self-hosting honest.
+- **Optional, not required, outside services.** Sign-in is optional. With it unconfigured there are no accounts and no guests: the editor keeps documents in the browser, and shared documents open through their links. Email is the same: it stays off until a deployment adds its key. Image search (Openverse) needs no key and is on everywhere; it runs from the browser, and only when someone searches.
 
 Because the code is visible to the world, you can audit precisely how your data is handled rather than relying on a privacy policy alone.
 
@@ -35,7 +35,10 @@ Every secret a deployment needs is supplied at runtime through environment varia
 
 ## Audit it
 
-Read the code to satisfy yourself about how livedocuments treats your data: follow how a document is saved, how access is checked, or what an analytics event contains, all in the open.
+You have two ways to satisfy yourself about how livedocuments treats your data.
+
+1. **Read the code.** Follow how a document is saved, how access is checked, or what an analytics event contains, all in the open.
+2. **Self-host it.** Deploy your own instance so document content stays on infrastructure you control. Where documents are filed and who may open them are kept by liveworkspace's index, so the API talks to it; with sign-in off and telemetry off, that is its only required outbound traffic. The API also fetches a page's title and preview image when someone adds a link card, visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it. See [self-hosting](/help/self-hosting/self-hosting-overview/).
 
 ## Found a problem?
 

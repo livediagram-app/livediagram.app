@@ -173,8 +173,8 @@ Session templates open in Workshop, as the Draw templates open in Draw
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.
 
-**Blank Session** (kind `blank-session`) is Workshop's blank: a general tab that opens in
-Workshop with nothing on it, the document named "Untitled Session". It joins the blanks
+**Blank Workshop** (kind `blank-session`) is Workshop's blank: a general tab that opens in
+Workshop with nothing on it, the document named "Untitled Workshop". It joins the blanks
 leading Popular in the marketing gallery and the starts, which become five. It was the fifth row of the
 sites' Start Blank menu (funnel slot `HeaderSession`, retired with the menu, [Landing funnel](../019-marketing/landing-funnel.md)).
 

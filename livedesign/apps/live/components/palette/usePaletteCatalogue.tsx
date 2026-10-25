@@ -2,7 +2,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { usePaletteKind } from '@/lib/palette-kind';
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livedesign/design';
 import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';

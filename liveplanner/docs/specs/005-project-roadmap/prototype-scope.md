@@ -18,7 +18,7 @@ Eight apps, all built for Cloudflare Workers (with Static Assets for the five Ne
 - **live**: the planner: the Explorer and the project editor, at clean routes (no `/live` prefix).
 - **telemetry**: the public anonymous-events dashboard at `/telemetry` ([Telemetry](../017-telemetry/telemetry.md)).
 - **help**: the help centre at `/help`, statically exported with MDX articles.
-- **api**: the Worker holding the REST endpoints and a Durable Object realtime room per project; D1 is the durable store.
+- **api**: the Worker holding the REST endpoints and a SQLite-backed Durable Object per project that holds its content and runs its realtime room; it has no D1.
 - **mcp**: the Worker at its own host, `mcp.liveplanner.app`, that gives AI tools the project, board, card, sheet and
   form tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: the Worker that stitches marketing, live, telemetry, help and api under one hostname.
@@ -30,11 +30,11 @@ The planner is real:
   every tab is in Plan. `/new` creates a project and lands on **Start Planning**, which makes the tab a Board, Sheet,
   Dashboard or Form tab, or starts it from a Plan template.
 - **Boards** ([Plan board](../026-plan/plan-board.md), [Items](../026-plan/items.md)): a board draws a project's
-  **items** (kept in their own D1 table with an open field bag, or inside an offline project) as columns of cards:
+  **items** (kept in their own table in the project's store with an open field bag, or inside an offline project) as columns of cards:
   drag between columns and rows, WIP limits, card types with custom fields ([Item types](../026-plan/item-types.md)),
   an item panel, voting and hide-writing for retros, presence on cards, board widgets and plan views (Gantt, calendar,
   workload, status, priority; [Plan views](../026-plan/plan-views.md)).
-- **Sheets** ([Sheet](../029-sheets/sheet.md)): cells in their own D1 store, formulas that read other sheets and the
+- **Sheets** ([Sheet](../029-sheets/sheet.md)): cells in their own tables in the project's store, formulas that read other sheets and the
   project's cards, number formats, borders, merges, freeze, sort, filter, validation, conditional formats, copy and
   paste with Google Sheets and Excel, CSV in and out, live for everyone with one undo timeline.
 - **Dashboards** ([Plan tabs](../026-plan/plan-tabs.md)): rows of slots holding live versions of the project's boards
@@ -68,8 +68,9 @@ The planner is real:
   ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
 - **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
   per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
-- **Transactional and lifecycle email** (optional; [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)):
-  onboarding, team invites, form responses and account messages, off until a `RESEND_API_KEY` is set.
+- **Transactional email** (optional; [Transactional email (Resend)](../014-identity/transactional-email.md)):
+  new comments, form responses and account messages, off until a `RESEND_API_KEY` is set; onboarding and team
+  emails come from liveworkspace.
 
 **No project content lives in `localStorage`.** A project is stored on the server, or in IndexedDB for an Offline
 Mode project, and `apps/editor/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds
@@ -82,7 +83,7 @@ only small per-browser state, under `liveplanner:*` keys:
 - **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer,
   the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate
-  ([Share password](../013-workspace/share-password.md#password-cache)).
+  ([Share password](../013-workspace/share-password.md)).
 
 ## Next
 

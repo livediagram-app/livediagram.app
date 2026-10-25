@@ -1,6 +1,6 @@
 // What the read verbs share: the list limits, dates, and reading a project's tabs.
 
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { resolveProject, resolveTab, type ResolvedProject, type TabSummary } from '../addressing';
 import type { VerbContext } from '../define';
 

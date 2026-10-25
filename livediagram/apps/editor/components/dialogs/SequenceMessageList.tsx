@@ -16,7 +16,12 @@ import {
   type SequenceMessageKindName,
 } from '@livediagram/document';
 import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@livediagram/ui';
-import { lucideChevronDown, lucideChevronUp, lucidePlus, lucideX } from '@livediagram/icons/lucide';
+import {
+  lucideChevronDown,
+  lucideChevronUp,
+  lucidePlus,
+  lucideX,
+} from '@liveworkspace/icons/lucide';
 
 const UpIcon = lucideGlyph(lucideChevronUp, 15);
 const DownIcon = lucideGlyph(lucideChevronDown, 15);

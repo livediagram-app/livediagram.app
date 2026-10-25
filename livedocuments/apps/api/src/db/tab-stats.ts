@@ -1,9 +1,8 @@
 // Tab stats storage (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
 // from"): per tab, what the Explorer's Details view sums over a document, kept in `tab_stats`
 // (the baseline migration) beside each tab so a document list reads them without reading any tab body.
-import type { DocumentStats } from '@livedocuments/api-schema';
 import { tabStatsOf, type TabStats } from '@livedocuments/document';
-import type { Env } from '../types';
+import type { DocumentEnv } from '../types';
 
 // The counting itself is the document model's, shared with the browser's own documents.
 export { tabStatsOf, type TabStats };
@@ -24,7 +23,7 @@ export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolea
 // `ifStoredData`: only when the tab now stores exactly that body, for a conditional write (a swap)
 // whose stats must land only if the write did.
 export function tabStatsStatement(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   stats: TabStats,
   writtenAt: number,
@@ -34,7 +33,7 @@ export function tabStatsStatement(
     ifStoredData === undefined
       ? 'WHERE true'
       : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?6)';
-  return env.DB.prepare(
+  return env.DOCUMENT_DB.prepare(
     `INSERT INTO tab_stats (tab_id, element_count, comment_count, data_bytes, written_at)
      SELECT ?1, ?2, ?3, ?4, ?5 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET
@@ -65,21 +64,4 @@ export function documentStatsSql(documentIdSql: string): string {
            FROM document_tabs dt
            LEFT JOIN tab_stats s ON s.tab_id = dt.tab_id
           WHERE dt.document_id = ${documentIdSql}) AS doc_stats`;
-}
-
-const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
-
-// The `doc_stats` column as the wire's DocumentStats; null when absent or unreadable.
-export function readDocumentStats(raw: string | null | undefined): DocumentStats | null {
-  if (raw == null) return null;
-  try {
-    const v = JSON.parse(raw) as Record<string, unknown>;
-    if (isCount(v.elements) && isCount(v.comments) && isCount(v.bytes)) {
-      return { elements: v.elements, comments: v.comments, bytes: v.bytes };
-    }
-  } catch {
-    // Reported below with the shape it had.
-  }
-  console.warn('tab-stats: unreadable doc_stats', raw.slice(0, 120));
-  return null;
 }

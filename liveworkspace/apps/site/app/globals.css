@@ -1,19 +1,26 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@liveworkspace/tailwind-config';
 
-/* Every page but the telemetry dashboard, whose classes (and both apps' UI) are in its own
- * stylesheet, telemetry/telemetry.css, loaded only there. */
+/* Every page but the telemetry dashboard and the Explorer, whose classes (and the apps' UI) are in
+ * their own stylesheets, telemetry/telemetry.css and explorer/explorer.css, each loaded only there. */
 @source not './telemetry';
+@source not './explorer';
+@source not '../components/explorer';
 
 /* The header's site switcher and the shared icon primitive come from livediagram's UI package: scan
  * them so their classes are generated. Tailwind v4 skips node_modules, where the workspace package
  * is symlinked. */
 @source '../../../../livediagram/packages/ui/src/SiteSwitcher.tsx';
 @source '../../../../livediagram/packages/ui/src/icons';
-@source '../../../../livediagram/packages/ui/src/Brand.tsx';
-@source '../../../../livediagram/packages/ui/src/appearance';
-@source '../../../../livediagram/packages/ui/src/Tooltip.tsx';
-@source '../../../../livediagram/packages/ui/src/Breadcrumb.tsx';
+/* Every app's logo (components/landing/AppLogo.tsx): its dark-mode accent and shimmer. */
+@source '../../../../packages/brand/src';
+/* The account menu, shared with every app's marketing header. */
+@source '../../../../packages/account-menu/src';
+/* The Settings panel: the shared Settings view, and livediagram's dialog close button. */
+@source '../../../../packages/settings-ui/src';
+/* The design system every app shares (@liveworkspace/ui): the Tooltip and HoverCard with the hint surface they
+ * draw on, the dialog frame, the buttons and fields. All of it, so a piece a page starts using is never unstyled. */
+@source '../../../../packages/ui/src';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {

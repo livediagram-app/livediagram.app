@@ -1,0 +1,135 @@
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities) source(none);
+@import '@liveworkspace/tailwind-config';
+@import '@liveworkspace/explorer/explorer.css';
+
+/* The Explorer's own stylesheet, loaded only on /explorer (app/explorer/layout.tsx), so the rest of the site
+ * doesn't carry it, as the telemetry dashboard's. The site's stylesheet comes first with the base styles; this one
+ * adds the Explorer package's utilities (its explorer.css names its sources) and the page's own. */
+@source './';
+@source '../../components/explorer';
+/* The bottom bar's Appearance switch, so its wide-screen label's classes sort with this sheet's own. */
+
+/* The Explorer wears the colours of the app the person came from: its brand ramp, light and dark, as that app's
+ * tailwind-config has it. Arrived directly, the platform's slate. */
+[data-explorer-app] {
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #f1f5f9;
+  --color-brand-200: #e2e8f0;
+  --color-brand-300: #cbd5e1;
+  --color-brand-400: #94a3b8;
+  --color-brand-500: #64748b;
+  --color-brand-600: #475569;
+  --color-brand-700: #334155;
+  --color-brand-800: #1e293b;
+  --color-brand-900: #0f172a;
+  --color-brand-950: #020617;
+}
+
+[data-explorer-app='livediagram'] {
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0284c7;
+  --color-brand-700: #0369a1;
+  --color-brand-800: #075985;
+  --color-brand-900: #0c4a6e;
+  --color-brand-950: #082f49;
+}
+.dark [data-explorer-app='livediagram'] {
+  --color-brand-50: #eef3fa;
+  --color-brand-100: #dbe6f4;
+  --color-brand-200: #bcd0ea;
+  --color-brand-300: #9bb9de;
+  --color-brand-400: #8fb3e0;
+  --color-brand-500: #5b86bf;
+  --color-brand-600: #3a6599;
+  --color-brand-700: #2f5484;
+  --color-brand-800: #26446b;
+  --color-brand-900: #1d3553;
+  --color-brand-950: #142538;
+}
+
+[data-explorer-app='liveplanner'] {
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+  --color-brand-950: #2e1065;
+}
+.dark [data-explorer-app='liveplanner'] {
+  --color-brand-50: #f2eefa;
+  --color-brand-100: #e4dbf4;
+  --color-brand-200: #cdbcea;
+  --color-brand-300: #b49bde;
+  --color-brand-400: #ad8fe0;
+  --color-brand-500: #805bbf;
+  --color-brand-600: #5d3a99;
+  --color-brand-700: #4e2f84;
+  --color-brand-800: #3f266b;
+  --color-brand-900: #311d53;
+  --color-brand-950: #211438;
+}
+
+[data-explorer-app='livedocuments'] {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #c76508;
+  --color-brand-700: #a34a0c;
+  --color-brand-800: #92400e;
+  --color-brand-900: #78350f;
+  --color-brand-950: #451a03;
+}
+.dark [data-explorer-app='livedocuments'] {
+  --color-brand-50: #faf5ee;
+  --color-brand-100: #f4e9db;
+  --color-brand-200: #ead5bc;
+  --color-brand-300: #debf9b;
+  --color-brand-400: #e0bb8f;
+  --color-brand-500: #bf935b;
+  --color-brand-600: #996d3a;
+  --color-brand-700: #845e2f;
+  --color-brand-800: #6b4c26;
+  --color-brand-900: #533a1d;
+  --color-brand-950: #382714;
+}
+
+[data-explorer-app='livedesign'] {
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;
+  --color-brand-800: #9f1239;
+  --color-brand-900: #881337;
+  --color-brand-950: #4c0519;
+}
+.dark [data-explorer-app='livedesign'] {
+  --color-brand-50: #faeef0;
+  --color-brand-100: #f4dbdf;
+  --color-brand-200: #eabcc4;
+  --color-brand-300: #de9ba6;
+  --color-brand-400: #e08f9d;
+  --color-brand-500: #bf5b6c;
+  --color-brand-600: #993a4a;
+  --color-brand-700: #842f3e;
+  --color-brand-800: #6b2632;
+  --color-brand-900: #531d26;
+  --color-brand-950: #38141a;
+}

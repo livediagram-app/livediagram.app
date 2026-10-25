@@ -3,7 +3,7 @@
 // The canvas chrome's side of Edit Cards (./card-types-opener.ts): while the Card Types button is on
 // screen, opening means pressing its popover open (never toggling an open one shut).
 import { useEffect, useRef } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { registerCardTypesOpener } from './card-types-opener';
 

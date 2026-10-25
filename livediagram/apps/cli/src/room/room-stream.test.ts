@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createApiClient } from '@livediagram/api-client';
+import { createApiClient } from '@liveworkspace/api-client';
 import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
 import { fakeIo, type Route } from '../testing/fake-io';
 import { openRoomStream, ROOM_RECONNECT_MAX_MS, ROOM_RECONNECT_MIN_MS } from './room-stream';

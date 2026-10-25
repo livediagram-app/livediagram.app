@@ -158,7 +158,7 @@ last 7 days against the 7 before), and the **All pages** list of every page
 pages were briefly a stack opening into the per-app lists; a set of rankings
 read side by side on the page is not a stack.
 
-The page-view helpers live in `../liveworkspace/apps/site/app/telemetry/livedocuments/page-views.ts`, pure and
+The page-view helpers live in `../liveworkspace/apps/site/app/telemetry/_shared/page-views.ts`, pure and
 tested apart from the view.
 
 Page views are events, so they also count toward the window totals and Search

@@ -24,7 +24,7 @@ import {
   SheetHandle,
   useSheetDrag,
 } from '@livediagram/ui';
-import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -36,7 +36,7 @@ import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
-import { usePalettePopoverOpen } from '@/lib/palette-popover-open';
+import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -76,6 +76,7 @@ export function StartPanel<C extends string>({
   onChooseElsewhere,
   onClose,
   lead,
+  footer,
 }: {
   titleId: string;
   title: string;
@@ -93,6 +94,9 @@ export function StartPanel<C extends string>({
   // Every match, grouped by category, in rail order.
   search: (query: string) => readonly StartPanelResult<C>[];
   onChoose: (cardId: string) => void;
+  // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
+  // (save-locations.md "On the start screen").
+  footer?: ((palette: StartPalette) => ReactNode) | undefined;
   // Found in other modes (start-diagramming.md): the other modes' matches for a search, and choosing one, which
   // switches the tab to that mode. Absent where the tab's mode may not change: the search keeps to its own mode.
   elsewhere?: ((query: string) => readonly StartPanelElsewhere[]) | undefined;
@@ -477,6 +481,14 @@ export function StartPanel<C extends string>({
             )}
           </div>
         </div>
+        {footer ? (
+          <footer
+            className="shrink-0 border-t px-4 py-1.5 sm:px-6"
+            style={{ borderColor: palette.border }}
+          >
+            {footer(palette)}
+          </footer>
+        ) : null}
       </section>
     </div>
   );

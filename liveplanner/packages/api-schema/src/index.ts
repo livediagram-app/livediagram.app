@@ -14,7 +14,7 @@
 
 import type { AccessLevel } from './access-levels';
 import type { ProjectSource } from './project-source';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner/project';
+import type { EditorMode, Tab } from '@liveplanner/project';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
 
@@ -163,7 +163,7 @@ export type TabSummary = {
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-project folder name (docs/specs/006-project/tab-folders.md), read from the project_tabs
+  // Per-project folder name (docs/specs/006-project/tab-folders.md), read from the plan_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -175,7 +175,7 @@ export type TabSummary = {
 // Full tab payload returned by `GET /api/projects/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
 // row's audit metadata. `folder` here is the per-project membership
-// from the project_tabs link (docs/specs/006-project/tab-folders.md), distinct from anything in the
+// from the plan_tabs link (docs/specs/006-project/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 //
 // `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write
@@ -202,46 +202,6 @@ export type Folder = {
   parentId: string | null;
   teamId: string | null;
   name: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// ---------------------------------------------------------------------
-// Custom themes (docs/specs/011-theme/custom-themes.md)
-// ---------------------------------------------------------------------
-
-// The themable payload of a custom theme — the same fields a built-in
-// `ThemeDefinition` carries MINUS its `id` / `label` (which live on the
-// row) and the `extra` "show more" flag (custom themes are never
-// gated). Stored as a JSON string in the `custom_themes.definition`
-// column; this is the parsed shape the api emits and the live editor
-// materialises into a full ThemeDefinition. Kept structurally in step
-// with `apps/editor/lib/themes.ts` ThemeDefinition by the editor's
-// `materialiseCustomTheme` helper.
-export type CustomThemeDefinition = {
-  backgroundColor: string;
-  backgroundPattern: BackgroundPattern;
-  patternColor: string;
-  // Pattern opacity 0..1 (the canvas pattern-opacity slider). Optional;
-  // absent / undefined means fully opaque.
-  backgroundOpacity?: number;
-  elementFill: string | null;
-  elementStroke: string | null;
-  elementText: string | null;
-  palette?: { fill: string; stroke: string; text: string }[];
-  rootColor?: { fill: string; stroke: string; text: string };
-  shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string; text?: string }>>;
-};
-
-// A saved custom theme. `id` is `custom:<uuid>` so it can never collide
-// with a built-in ThemeId and is a cheap "is this custom?" check. It is
-// stored on `Tab.theme` like any other theme id. Owner-scoped (docs/specs/014-identity/auth-and-guest-access.md
-// hybrid identity), guests included.
-export type CustomTheme = {
-  id: string;
-  ownerId: string;
-  name: string;
-  definition: CustomThemeDefinition;
   createdAt: number;
   updatedAt: number;
 };
@@ -474,30 +434,36 @@ export type ParticipantPresence = {
 };
 
 // Canonical SHA-256 hex digest and PKCE challenge, shared by the workers and the CLI (see ./sha256.ts).
-export { pkceChallenge, sha256Hex } from './sha256';
+export { sha256Hex } from './sha256';
+export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
-// workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
+// workers and the editor (see @liveworkspace/api-kit/bytes).
+export {
+  base64ToBytes,
+  bytesToBase64,
+  bytesToBase64Url,
+  randomBase64Url,
+} from '@liveworkspace/api-kit/bytes';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
-export { objectOrEmpty } from './request-body';
+export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The project format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { PROJECT_FORMAT, PROJECT_FORMAT_HEADER, parseProjectFormat } from './project-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
-// so the two can't disagree on what a request presented (see ./request-auth.ts).
+// so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,
   isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
-} from './request-auth';
+} from '@liveworkspace/api-kit/request-auth';
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
@@ -516,21 +482,6 @@ export type CapabilitiesResponse = {
   emailEnabled?: boolean;
 };
 
-// Per-day buckets for the trend charts on the dashboard. `days` is
-// 30 UTC-midnight timestamps oldest -> newest; `totals[i]` is total
-// events on `days[i]`; `byCategory[category][i]` is the per-category
-// count on the same day. Pre-aggregated server-side so the dashboard
-// can render the sparkline + stacked-area without any client work.
-//
-export type UnfurlResult = {
-  url: string;
-  title?: string;
-  siteName?: string;
-  description?: string;
-  image?: string;
-  favicon?: string;
-};
-
 export * from './access-levels';
 export * from './cta-sources';
 export * from './page-views';
@@ -546,14 +497,12 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
-export { upgradeLegacyPreferences } from './legacy-preferences';
 // A project's own dates on create (docs/specs/015-api/api.md "Project dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
 export * from './project-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
-export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -589,14 +538,11 @@ export type CurrentTokenResponse = {
   role: 'full' | 'read-only';
   expiresAt: number | null;
 };
-export * from './api-token-format';
+export * from '@liveworkspace/api-kit/api-token';
 export * from './project-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './project-paths';
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
-export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

@@ -16,9 +16,9 @@ import {
   apiPutDriveConnection,
 } from '@/lib/api-client';
 import { notifyApiWrite, subscribeApiWrites } from '@/lib/api/write-signal';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 import { createBrowserTokens, type BrowserTokens } from '@/lib/drive/browser-tokens';
 import { driveUiMode, googleClientId, googlePickerApiKey } from '@/lib/drive/config';
@@ -103,7 +103,7 @@ const CHECKING_MAX_MS = DRIVE_CHECK_ANSWER_MS;
 
 export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
-  const { isSignedIn, authLoaded, clerkUserId } = useClerkApiBootstrap();
+  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
   const { user } = useDeferredAuth();
   const confirm = useConfirm();
   const [serverMode, setServerMode] = useState<DriveMode | undefined>(undefined);
@@ -172,7 +172,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('pageshow', onShow);
   }, []);
   const runtime = useRef<Runtime | null>(null);
-  const signedIn = !!isSignedIn && authLoaded && !!clerkUserId;
+  const signedIn = !!isSignedIn && authLoaded && !!accountUserId;
   const quiet = isQuiet(pathname);
 
   useEffect(() => {
@@ -190,8 +190,8 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   const resolved = authLoaded && (!signedIn || !googleClientId || serverMode !== undefined);
 
   useEffect(() => {
-    if (mode === 'off' || quiet || !clerkUserId) return;
-    const tokens = createBrowserTokens(mode, clerkUserId);
+    if (mode === 'off' || quiet || !accountUserId) return;
+    const tokens = createBrowserTokens(mode, accountUserId);
     const publish = (next: DriveMirrorStatus) => {
       showStatus(next);
       channel.post({ type: 'status', status: next });
@@ -269,7 +269,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
         .then(({ createBrowserEngine }) => {
           if (disposed || elected !== term) return;
           const engine = createBrowserEngine({
-            ownerId: clerkUserId,
+            ownerId: accountUserId,
             tokens: tokens.source,
             onStatus: publish,
             onInboundApplied: () => {
@@ -365,7 +365,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       channel.close();
       runtime.current = null;
     };
-  }, [mode, quiet, clerkUserId, showStatus]);
+  }, [mode, quiet, accountUserId, showStatus]);
 
   const handToEngine = useCallback((token: DriveAccessToken) => {
     const rt = runtime.current;
@@ -378,12 +378,12 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   // Broker mode leaves for Google and never returns here (connecting stays
   // set); browser mode hands the token to the engine and is done.
   const startConnect = useCallback(async () => {
-    if (!clerkUserId) return;
+    if (!accountUserId) return;
     if (mode === 'broker') {
       // Redirect mode: works on iOS and past popup blockers. A refresh token
       // is stored only after this, so the consent is asked for.
       const redirectUri = driveRedirectUri(window.location.origin);
-      const state = await apiDriveState(clerkUserId, redirectUri);
+      const state = await apiDriveState(accountUserId, redirectUri);
       // This page's own history entry names Cloud Sync, so Back from Google
       // reopens it; the same place is where the consent comes back to.
       const here = withSettingsTarget(
@@ -406,14 +406,14 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       return;
     }
     const token = await requestBrowserAccessToken(googleClientId, () => Date.now(), 'consent');
-    await apiPutDriveConnection(clerkUserId, {});
+    await apiPutDriveConnection(accountUserId, {});
     track('Drive', 'Linked', 'Browser');
     handToEngine(token);
     setConnecting(false);
-  }, [clerkUserId, mode, user?.email, handToEngine]);
+  }, [accountUserId, mode, user?.email, handToEngine]);
 
   const connect = useCallback(async () => {
-    if (!clerkUserId || mode === 'off') return;
+    if (!accountUserId || mode === 'off') return;
     setConnecting(true);
     setConnectError(null);
     setConnectNote(null);
@@ -425,7 +425,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       setConnectError(DRIVE_CONNECT_FAILED);
       setConnecting(false);
     }
-  }, [clerkUserId, mode, startConnect]);
+  }, [accountUserId, mode, startConnect]);
 
   const resume = useCallback(async () => {
     if (mode !== 'browser') return connect();
@@ -460,15 +460,15 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   }, [requestCheck]);
 
   const disconnect = useCallback(async () => {
-    if (!clerkUserId) return;
+    if (!accountUserId) return;
     const ok = await confirm({
       title: 'Disconnect Google Drive?',
       message: 'Your files stay in Drive; livediagram stops updating them.',
       confirmLabel: 'Disconnect',
     });
     if (!ok) return;
-    await apiDisconnectDrive(clerkUserId);
-    localSeenStore(localStorage).clear(clerkUserId);
+    await apiDisconnectDrive(accountUserId);
+    localSeenStore(localStorage).clear(accountUserId);
     track('Drive', 'Unlinked', mode === 'browser' ? 'Browser' : 'Broker');
     const rt = runtime.current;
     if (rt?.tokens.mode === 'browser') rt.tokens.source.clear();
@@ -478,7 +478,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     setStatus(next);
     rt?.channel.post({ type: 'status', status: next });
     syncNow();
-  }, [clerkUserId, confirm, mode, syncNow]);
+  }, [accountUserId, confirm, mode, syncNow]);
 
   const adopt = useCallback(async (notice: DriveMirrorNotice) => {
     const rt = runtime.current;

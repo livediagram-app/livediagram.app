@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
-import { watchUntilSettled } from '@/components/canvas/settle-watch';
+import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/settle-watch';
 
 // A face drawn by hand under Sketch (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). The
 // face renders once, live, with its ink hidden (app/sketch-face.css); underneath it sits a still copy of that DOM,

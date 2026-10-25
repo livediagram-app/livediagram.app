@@ -3,8 +3,8 @@
 
 import { PALETTE_TELEMETRY_TYPES } from '@livedocuments/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { LOCAL_MOVE_OFFERED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
@@ -276,8 +276,9 @@ export const DOCUMENT_ACTIONS: MetricStack = {
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
 // document delete. Whether anyone comes back for a deleted document is the
-// question, so restores lead; each chart counts every Trash (Personal, Team,
-// Local).
+// question, so restores lead; each chart counts every Trash (Personal, Team).
+// The Trash itself is the shared Explorer's; the editor opens it from Settings
+// and restores the open document from its deleted page.
 export const TRASH_OPENED = chart(
   'Trash',
   'Opened',
@@ -304,7 +305,7 @@ export const TRASH_EMPTIED = chart(
   'Trash',
   'Cleared',
   'Trash Emptied',
-  'Empty Trash on one group: your documents, a team, or this browser.',
+  'Empty Trash on one group: your documents or a team’s.',
   { rising: 'neutral' },
 );
 

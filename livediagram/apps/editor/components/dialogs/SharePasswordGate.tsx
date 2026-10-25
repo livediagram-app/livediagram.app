@@ -41,12 +41,12 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
         </span>
         <div>
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            This document is password-protected
+            This canvas is password-protected
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {ownerName
-              ? `Enter the password ${ownerName} set to open this document.`
-              : 'Enter the password the owner set to open this document.'}
+              ? `Enter the password ${ownerName} set to open this canvas.`
+              : 'Enter the password the owner set to open this canvas.'}
           </p>
         </div>
         <TextInput
@@ -55,7 +55,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Password"
-          aria-label="Document password"
+          aria-label="Canvas password"
           aria-invalid={invalid}
         />
         {invalid ? (
@@ -64,7 +64,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
           </p>
         ) : null}
         <Button type="submit" size="md" disabled={!value.trim()} className="w-full shadow-sm">
-          Open document
+          Open canvas
         </Button>
       </form>
     </div>

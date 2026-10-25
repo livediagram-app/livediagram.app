@@ -1,6 +1,5 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
-  AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
   AnimatedShapesArt,
@@ -16,7 +15,6 @@ import {
   CodeBlockArt,
   CommentsArt,
   ComponentsArt,
-  CustomThemesArt,
   DragDuplicateArt,
   DrawDockArt,
   EmbedArt,
@@ -84,7 +82,7 @@ import {
   UnlimitedTabsArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
-import type { FeatureProps } from '@/components/Section';
+import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
 /**
  * A feature category: one of the app's core features, each a story beat on the
@@ -142,7 +140,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Live presence',
         description:
-          'See who is in the document from the participant avatars on each tab. Status rings show online, away, or stale.',
+          'See who is in the canvas from the participant avatars on each tab. Status rings show online, away, or stale.',
       },
       {
         art: <RealtimeArt />,
@@ -190,7 +188,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you, with a count in the sidebar so you can tell without looking.',
+          'The Explorer opens on Home: the canvases you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <UndoRedoArt />,
@@ -278,7 +276,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'Walk a character across your canvas',
         description:
-          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like (gender, clothing, hair and size, remembered in your browser), and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared document everyone sees everyone else walking about in their own colour.',
+          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like (gender, clothing, hair and size, remembered in your browser), and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared canvas everyone sees everyone else walking about in their own colour.',
       },
       {
         art: <AvatarModeArt />,
@@ -318,7 +316,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'Your screen, not everyone else’s',
         description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the canvas open carry on working. You share your screen the way you already do. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
       },
       {
         art: <ZenModeArt />,
@@ -334,7 +332,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the canvas private.',
       },
       {
         art: <LiveImageArt />,
@@ -342,7 +340,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Live in your wiki, docs or README',
         description:
-          'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
+          'Copy an iframe from the Share dialog and the canvas sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
       },
       {
         art: <TeamsArt />,
@@ -350,7 +348,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+          'Create a team, invite people by email, and everyone gets a shared folder of canvases they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
       },
       {
         art: <ExpiryArt />,
@@ -366,7 +364,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Stop sharing on demand',
         description:
-          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The document is yours again.',
+          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The canvas is yours again.',
       },
     ],
   },
@@ -521,7 +519,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'More than boxes and arrows',
         title: 'Images on the canvas',
         description:
-          'Drag, drop, or paste a PNG, JPEG, WebP, or GIF straight onto the canvas. Resize and arrange it like any other element. Everything you add lands in your own gallery, ready to reuse in any document without uploading twice.',
+          'Drag, drop, or paste a PNG, JPEG, WebP, or GIF straight onto the canvas. Resize and arrange it like any other element. Everything you add lands in your own gallery, ready to reuse in any canvas without uploading twice.',
       },
       {
         art: <LinkCardArt />,
@@ -562,14 +560,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Twenty-six preset themes',
         description:
           'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel and Tropical schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Every theme has a light and a dark half, and follows your own appearance.',
-      },
-      {
-        art: <CustomThemesArt />,
-        href: '/help/canvas/themes/custom-themes/',
-        group: 'Templates & themes',
-        title: 'Build your own theme',
-        description:
-          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across documents just like a built-in one. Edit it any time, and guests get them too.',
       },
       {
         art: <CanvasBackdropArt />,
@@ -665,15 +655,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Neat without trying',
         title: 'Find or run anything with \u2318K',
         description:
-          'One box finds your documents, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201claser\u201d for the pointer. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
+          'One box finds your canvases, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201claser\u201d for the pointer. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
       },
       {
         art: <UnlimitedTabsArt />,
         href: '/help/tabs/using-tabs/',
         group: 'Tabs',
-        title: 'Unlimited tabs per document',
+        title: 'Unlimited tabs per canvas',
         description:
-          'Add as many tabs as a document needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
+          'Add as many tabs as a canvas needs. Each has its own theme, and nothing slows down as the stack grows.',
       },
       {
         art: <TabsArt />,
@@ -689,7 +679,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Tabs',
         title: 'Group tabs into folders',
         description:
-          'Big document, lots of tabs? Group related tabs into named folders along the tab bar and collapse the ones you are not using. Drag a tab in or out, and a folder opens on its own when you work in it.',
+          'Big canvas, lots of tabs? Group related tabs into named folders along the tab bar and collapse the ones you are not using. Drag a tab in or out, and a folder opens on its own when you work in it.',
       },
       {
         art: <SideBySideArt />,
@@ -703,9 +693,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TabCopyArt />,
         href: '/help/tabs/add-to-document/',
         group: 'Tabs',
-        title: 'Reuse a tab in another document',
+        title: 'Reuse a tab in another canvas',
         description:
-          "Copy a tab's full contents into another document you own, as a ready-made starting point you can take further.",
+          "Copy a tab's full contents into another canvas you own, as a ready-made starting point you can take further.",
       },
       {
         art: <AnimatedShapesArt />,
@@ -753,15 +743,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Build diagrams with AI',
         description:
-          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your documents for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
-      },
-      {
-        art: <AiAssistArt />,
-        href: '/help/tools/ai/',
-        group: 'AI & your tools',
-        title: 'An optional AI assistant',
-        description:
-          'Switch it on for a hand on the active tab: Ask answers questions about the diagram without changing it, and Clean tidies sizes, labels, and layout. It works from your selection or the whole tab, and one undo takes it all back. Off by default.',
+          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your canvases for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
       },
       {
         art: <MermaidArt />,
@@ -785,7 +767,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Bring your boards from other tools',
         description:
-          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a document you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
+          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a canvas you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
       },
       {
         art: <ExportArt />,
@@ -801,7 +783,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your documents and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export canvases from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your canvases and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
       },
     ],
   },

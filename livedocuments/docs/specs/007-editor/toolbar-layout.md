@@ -117,7 +117,7 @@ scrolling when long:
 
 ### A tile's side panel
 
-A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) or an opener opens a **side panel**: a
+A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) opens a **side panel**: a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
 to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
@@ -141,7 +141,7 @@ A strip shows one category at a time, so finding an element means knowing which 
 
 - **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put while the bar swipes.
-- **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), since it sits
+- **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), since it sits
   where the panel hangs.
 - **The popover** hangs from the button's right edge, 26rem wide (spanning the screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a strip menu: opening it closes any other (a flyout, the selection mode), and a press outside or Escape closes it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it had fallen to the page. **S** opens it too, wherever the strip is shown; everywhere else S keeps its old meaning, the legacy alias of Select. The field's clear button (×, once there is text) clears the query and returns to the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of the Pages palette, each once however many
@@ -208,7 +208,10 @@ still reopens on the group it was left on. Nothing about the bar is stored acros
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
 the top-left corner of the canvas toggles the real Explorer open as a
-popover hanging under it, and closed again. The popover hangs from the
+popover hanging under it, and closed again. It starts closed on every page and is never
+reopened from a remembered state; pressing the button is the only thing that opens it. A press
+outside, Esc, the button again or opening an item closes it. The status screens (deleted,
+couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
 Collaborate, Slides and Contents open as **popovers over their bottom-row
@@ -251,7 +254,7 @@ better layout. Its parts went with it:
 
 A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one held sideways:
 844 × 390 was laid out as a desktop, its panels covering the 286px canvas).
-`PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
+`PHONE_MEDIA_QUERY` (`../packages/workbench/src/lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
 button always was. It gets the same chrome as a desktop ([Editor app](editor-app.md)):

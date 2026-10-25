@@ -1,7 +1,7 @@
 // The Inbox's read of projects in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
 // worker, so the server's collaboration index never holds them; this finds their open actions, Plan cards and
 // comment threads in the browser's offline store, with the same derivation the index uses
-// (collabIndexRowsFromElements, planBoardRowsFromElements) and the same rules the server read applies, the reader
+// (collabIndexRowsFromElements, cardPlacesOf) and the same rules the server read applies, the reader
 // owning every one of them.
 
 import {
@@ -11,12 +11,7 @@ import {
   type ActivityCardThread,
   type ActivityThread,
 } from '@liveplanner/api-schema';
-import {
-  ALL_CARDS_STATUS,
-  collabIndexRowsFromElements,
-  planBoardRowsFromElements,
-  type Comment,
-} from '@liveplanner/project';
+import { cardPlacesOf, collabIndexRowsFromElements, type Comment } from '@liveplanner/project';
 import {
   ARCHIVED_FIELD,
   itemAssignee,
@@ -111,12 +106,7 @@ function collector(reader: OfflineReader) {
     // A project in the local Trash waits there; the server read skips trashed projects the same way.
     if (rec.trashedAt !== undefined) return;
     const place = placeOf(rec);
-    const boards: (ReturnType<typeof planBoardRowsFromElements>[number] & {
-      tabId: string;
-      tabName: string;
-      tabOrder: number;
-    })[] = [];
-    rec.tabs.forEach((tab, tabOrder) => {
+    rec.tabs.forEach((tab) => {
       const elements = tab.elements ?? [];
       const rows = collabIndexRowsFromElements(elements);
       const tabPlace = { ...place, tabId: tab.id, tabName: tab.name };
@@ -160,44 +150,18 @@ function collector(reader: OfflineReader) {
           mentionsYou: t.mentionedIds.some((id) => me.has(id)),
         });
       }
-      for (const b of planBoardRowsFromElements(elements)) {
-        boards.push({ ...b, tabId: tab.id, tabName: tab.name, tabOrder });
-      }
     });
     const items = rec.items ?? [];
     if (items.length === 0) return;
-    const done = new Set(boards.filter((b) => b.done).map((b) => b.status));
-    // A board holding the card's status, then an All Cards board, then any board, by tab, board, column order.
-    const boardFor = (status: string | undefined): ActivityCard['board'] => {
-      const fit = (s: string) => (s === status ? 0 : s === ALL_CARDS_STATUS ? 1 : 2);
-      let best: (typeof boards)[number] | undefined;
-      for (const b of boards) {
-        if (
-          !best ||
-          fit(b.status) < fit(best.status) ||
-          (fit(b.status) === fit(best.status) &&
-            (b.tabOrder - best.tabOrder ||
-              b.boardOrder - best.boardOrder ||
-              b.position - best.position) < 0)
-        )
-          best = b;
-      }
-      return best
-        ? {
-            tabId: best.tabId,
-            tabName: best.tabName,
-            elementId: best.elementId,
-            title: best.boardTitle,
-          }
-        : null;
-    };
+    // Where each card opens, and which statuses are done (@liveplanner/project cardPlacesOf).
+    const places = cardPlacesOf(rec.tabs.map((t) => ({ ...t, elements: t.elements ?? [] })));
     for (const item of items) {
       if (!isLive(item)) continue;
       const status = itemStatus(item);
       // Placed only once listed: most cards in a project are someone else's.
       const card = () => ({
         ...place,
-        board: boardFor(status),
+        board: places.boardFor(status),
         id: item.id,
         key: item.key,
         type: item.type,
@@ -209,7 +173,7 @@ function collector(reader: OfflineReader) {
         myPersonIds.has(assignee.id) &&
         // A linked card's action is listed already (docs/specs/026-plan/linked-boards.md "The Inbox").
         item.fields['linked'] == null &&
-        !(status !== undefined && done.has(status))
+        !places.isDone(status)
       ) {
         out.cards.push({ ...card(), status: status ?? null, updatedAt: item.updatedAt });
       }

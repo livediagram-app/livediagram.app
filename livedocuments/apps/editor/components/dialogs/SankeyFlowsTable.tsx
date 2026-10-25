@@ -43,9 +43,8 @@ import {
 } from '@/lib/sankey-flow-rows';
 import { flowLevels, flowNodeColors, flowTotals } from '@/lib/sankey-flow-levels';
 import { SankeyFlowRow, type FlowField } from '@/components/dialogs/SankeyFlowRow';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { lucideGlyph } from '@livedocuments/ui';
-import { lucidePlus } from '@livedocuments/icons/lucide';
+import { lucideGlyph, Switch } from '@livedocuments/ui';
+import { lucidePlus } from '@liveworkspace/icons/lucide';
 
 const LOOSE_FIELDS: FlowField[] = ['from', 'to', 'value'];
 const GROUPED_FIELDS: FlowField[] = ['to', 'value'];
@@ -324,7 +323,8 @@ export function SankeyFlowsTable({
                               {formatSankeyValue(kept)}
                             </span>
                             <span className="flex justify-end">
-                              <ToggleSwitch
+                              <Switch
+                                size="sm"
                                 checked={keptOn}
                                 label={`Draw ${formatSankeyValue(kept, unit)} not sent on from ${source.name} as ${leftoverName}`}
                                 onChange={() => onSetLeftover(source.name, !keptOn)}

@@ -69,9 +69,9 @@ describe('fromLegacyRequest', () => {
     expect(await fromLegacyRequest(req, 10)).toBeNull();
   });
   it('passes a non-JSON body through untouched', async () => {
-    const req = new Request('https://x.test/api/diagrams/d1/thumbnail', { method: 'GET' });
+    const req = new Request('https://x.test/api/diagrams/d1/tabs', { method: 'GET' });
     const next = (await fromLegacyRequest(req))!;
-    expect(new URL(next.url).pathname).toBe('/api/documents/d1/thumbnail');
+    expect(new URL(next.url).pathname).toBe('/api/documents/d1/tabs');
     expect(next.body).toBeNull();
   });
 });

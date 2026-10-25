@@ -3,27 +3,18 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
-import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '../community-redact';
 import {
-  deleteShareLinksForTab,
   deleteTabRow,
-  documentsContainingTab,
   getDocument,
   getDocumentForSave,
-  getParticipant,
   getTab,
-  linkTabToDocument,
-  tabLinkedToOwnedDocument,
 } from '../db';
+import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
-import { recordDocumentOpen } from '../home/record-open';
-import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
-import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes } from './changesets';
@@ -35,18 +26,21 @@ import {
   gateEdit,
   gateGrant,
   missingDocument,
-  ownsDocument,
   requireOwner,
-  shareCodeOf,
+  grantCallerOf,
+  shareAccessOf,
   COMMUNITY_CONTENT,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
+import { handleTabLink } from './tab-link-route';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
 // null to let the main dispatcher fall through to the remaining routes.
-export async function handleDocumentSubresources(ctx: RouteContext): Promise<Response | null> {
+export async function handleDocumentSubresources(
+  ctx: DocumentRouteContext,
+): Promise<Response | null> {
   const { request, env, segments } = ctx;
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
@@ -54,9 +48,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
-  // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
-  const commentPictures = await handleCommentPicturesRoute(ctx);
-  if (commentPictures) return commentPictures;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -131,36 +122,20 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
             ? redactTabForCommunity(tab)
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
-      // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
-      // The tab read is the honest signal for "opened" — the document GET is hit
-      // by link previews and polls, whereas fetching tab content means a person
-      // is looking at the canvas. Coalesced per visitor per day inside the
-      // emit, so a stranger with a link can't flood the owner's feed by
-      // refreshing.
-      //
-      // Gated on a share code being PRESENT, not merely on the caller not being
-      // the owner. The read gate also admits any joined member of the document's
-      // team (docs/specs/013-workspace/team-shared-documents.md), who presents no code — so the looser test reported
-      // teammates browsing their own library as visitors. The bubble reads
-      // "opened by a visitor · Someone with the share link" and files under the
-      // sharing filter, so an owner saw that for a document they had never
-      // shared a link for, once per teammate per day.
-      //
-      // Not for a Community visit (docs/specs/025-community/community.md): a public post is opened by
-      // strangers, whose names do not belong in the author's feed.
-      if (owner !== existing.ownerId && shareCodeOf(request) !== null && !communityVisit) {
-        ctx.waitUntil?.(
-          getParticipant(env, owner).then((p) =>
-            recordVisitorOpened(env, existing, owner, p?.name ?? null),
-          ),
-        );
-      }
-      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
-      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the
-      // Drive mirror and an embed read the same tab and are not opens. The read gate above has
-      // already admitted the reader, and the open is theirs whoever they are.
-      if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
-        ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));
+      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home and Most Used, at the
+      // index. Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the Drive
+      // mirror and an embed read the same tab and are not opens. The read gate above has already admitted the
+      // reader, and the open is theirs whoever they are. Not for a Community visit, whose strangers have no Home here.
+      if (!communityVisit && readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
+        const client = indexFor(env, grantCallerOf(ctx));
+        if (client)
+          ctx.waitUntil?.(
+            client
+              .recordOpen(id, shareAccessOf(request))
+              .catch((err: unknown) =>
+                console.warn('[documents] open not recorded', { error: String(err) }),
+              ),
+          );
       }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
@@ -182,15 +157,24 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      const removed = await deleteTabRow(env, id, tabId);
-      // Its comments' words leave this document's feed with it (docs/specs/013-workspace/timeline.md §4.3).
-      if (removed) ctx.waitUntil?.(retractTabComments(env, id, removed));
-      // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
-      // holders leave the editor as on a revoke.
-      const revoked = await deleteShareLinksForTab(env, id, tabId);
-      for (const code of revoked) {
-        ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
-      }
+      await deleteTabRow(env, id, tabId);
+      // The links scoped to it go with it (docs/specs/013-workspace/tab-scoped-share-links.md): the index revokes
+      // them and their holders leave the editor as on a revoke. Asked as the caller, off the response path; a link
+      // the index keeps opens nothing here meanwhile, since the tab reads as missing.
+      const client = indexFor(env, grantCallerOf(ctx));
+      if (client)
+        ctx.waitUntil?.(
+          client
+            .listShareLinks(id)
+            .then(({ links }) =>
+              Promise.all(
+                links.filter((l) => l.tabId === tabId).map((l) => client.revokeShareLink(l.code)),
+              ),
+            )
+            .catch((err: unknown) =>
+              console.warn('[documents] tab links not revoked', { error: String(err) }),
+            ),
+        );
       return noContent();
     }
   }
@@ -206,56 +190,12 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   if (rendered) return rendered;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
-  //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).
-  // Auth: the caller must own this document AND own at least
-  // one document that already contains the tab. The second
-  // half stops a stranger from grafting a tab they have no
-  // read access to. The `existing.ownerId !== owner` guard
-  // above the dispatch (canEditDocument on this document) only
-  // covers the destination side.
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    segments[5] === 'link' &&
-    request.method === 'POST'
-  ) {
-    const id = segments[2]!;
-    const tabId = segments[4]!;
-    const owner = requireOwner(ctx);
-    if (owner instanceof Response) return owner;
-    const existing = await getDocument(env, id);
-    if (!existing) return missingDocument(ctx, id);
-    // `ownsDocument`, not a bare id compare: on a TEAM document the owner id is
-    // a Clerk id every teammate can read, so it must be proven with a verified
-    // account id rather than the X-Owner-Id header (see routes/context.ts).
-    // The second half of this route's auth doesn't help here — it re-uses the
-    // SAME resolved owner, so a forged identity satisfies it with the victim's
-    // own documents.
-    if (!(await ownsDocument(ctx, existing))) return forbidden();
-    // The tab must already live in at least one of the caller's
-    // owned documents. One JOIN answers that (LIMIT 1 on the first
-    // owned match). On the failure path we fall back to listing the
-    // containing documents once, purely to tell "tab doesn't exist
-    // anywhere" (404) apart from "exists but you don't own it" (403).
-    if (!(await tabLinkedToOwnedDocument(env, tabId, owner))) {
-      const sourceIds = await documentsContainingTab(env, tabId);
-      return sourceIds.length === 0 ? notFound() : forbidden();
-    }
-    await linkTabToDocument(env, id, tabId);
-    // Return the tab summary the client uses to render the
-    // new pill in its TabBar without re-fetching the whole
-    // document. Pulled fresh so the order_index reflects the
-    // append we just performed.
-    const tab = await getTab(env, id, tabId);
-    return tab ? json({ tab }) : notFound();
-  }
+  // A tab belongs to exactly one document (its Durable Object holds it), so there is no linking an existing tab into
+  // another document any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
 
-  // /api/documents/<id>/share* — the share-link family lives in
-  // document-share-routes.ts.
-  {
-    const shareResp = await handleDocumentShareRoutes(ctx);
-    if (shareResp) return shareResp;
-  }
+  // /api/documents/<id>/tabs/<tabId>/link — share a tab from another of the caller's documents into this one.
+  const linked = await handleTabLink(ctx);
+  if (linked) return linked;
 
   return null;
 }

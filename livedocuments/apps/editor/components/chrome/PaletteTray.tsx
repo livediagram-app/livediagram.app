@@ -7,7 +7,7 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
+import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -40,7 +40,7 @@ export function usePaletteStripBox(active = true): StripBox | null {
   return useToolbarBox(STRIP_CARD, active);
 }
 
-// Where a toolbar is on screen (the strip's card, Draw's dock), kept current as it or the window resizes; null while
+// Where a toolbar is on screen (the strip's card), kept current as it or the window resizes; null while
 // it is not on screen.
 export function useToolbarBox(selector: string, active = true): StripBox | null {
   const [box, setBox] = useState<StripBox | null>(() =>
@@ -72,9 +72,8 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
-      // Not on screen yet (Draw's dock mounts a beat after an empty tab's pill asks for it): watch for it to
-      // arrive, and stop watching once it has. Only a resize re-measured it before, so the pill kept its no-dock
-      // place and sat on the dock's tools.
+      // Not on screen yet (it can mount a beat after it is first asked for): watch for it to arrive, and stop
+      // watching once it has.
       if (card) arrival?.disconnect();
       else arrival?.observe(document.body, { childList: true, subtree: true });
     };
@@ -156,7 +155,7 @@ export function PaletteTray({
           {lead}
         </span>
         {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
-            ("Tap to drop or drag to draw Squ…"). */}
+            ("Click to drop or drag to draw Squ…"). */}
         <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
         {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
       </div>

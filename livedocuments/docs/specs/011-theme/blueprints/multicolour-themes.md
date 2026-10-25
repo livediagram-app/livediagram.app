@@ -1,7 +1,6 @@
 # Multi-colour themes: blueprint
 
-Derived from [Multi-colour (rainbow) themes](../multicolour-themes.md), with the api rule from
-[Custom themes](../custom-themes.md). The spec decides; this file only adds engineering precision.
+Derived from [Multi-colour (rainbow) themes](../multicolour-themes.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
@@ -12,7 +11,6 @@ Scope, by file:
 | `packages/document/src/theme-graph.ts`              | The four wrappers and the per-element branch resolution           |
 | `packages/document/src/themes-data.ts`              | The five built-in multi-colour themes                             |
 | `packages/document/src/colors.ts`                   | `contrastRatio`, the WCAG contrast helper (D3)                    |
-| `apps/api/src/routes/custom-themes.ts`              | The empty-palette rejection                                       |
 | `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
 ## Domain and naming
@@ -124,54 +122,33 @@ export function contrastRatio(a: string, b: string): number;
 The helper returns `NaN` when either argument isn't `#rrggbb`, reusing `hexToRgb`, which returns
 null. A `NaN` fails every `>=` comparison, so the contrast test cannot pass on a malformed colour.
 
-The api's `POST` and `PUT /api/custom-themes` both check every incoming `definition`:
-
-| Condition                                                              | Response | Body                               |
-| ---------------------------------------------------------------------- | -------- | ---------------------------------- |
-| `Array.isArray(definition.palette) && definition.palette.length === 0` | 400      | `badRequest('empty palette')` (D5) |
-| `palette` absent                                                       | continue |                                    |
-| `palette` non-empty                                                    | continue |                                    |
-
-The check sits beside `themeTooLarge`, in a `themeInvalid(definition)` helper that both handlers
-call before any database write.
-
 ## Data and persistence
 
 - **Static data.** The `palette` and `rootColor` of built-in themes live in
   `packages/document/src/themes-data.ts` and ship in the bundle.
-- **Persisted.** The `palette` and `rootColor` of a custom theme live in `custom_themes.definition`
-  (D1, JSON text).
 - **Never persisted.** The branch map is derived on every apply and never stored. An element stores
   only the resolved colours the wrapper wrote.
-- **No migration.** The rejection applies on write only. A row already holding `palette: []` stays
-  readable and renders in the trunk colour with a warning (E5).
 
 ## Errors and edge cases
 
-| #   | Case                                       | Handling                                                                            |
-| --- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| E1  | Arrow with a free endpoint                 | Not an edge                                                                         |
-| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                                                         |
-| E3  | Self-loop                                  | Not an edge                                                                         |
-| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)                                           |
-| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning                                          |
-| E6  | Empty palette at the api                   | 400 `empty palette`, no write                                                       |
-| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field                               |
-| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                                                       |
-| E9  | More branches than palette entries         | Index wraps modulo the palette length                                               |
-| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                                              |
-| E11 | Shared or diamond descendant               | Keeps the first index that reached it                                               |
-| E12 | Unknown or deleted theme id                | Out of this blueprint: `getTheme` falls back ([Custom themes](../custom-themes.md)) |
+| #   | Case                                       | Handling                                                                                       |
+| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| E1  | Arrow with a free endpoint                 | Not an edge                                                                                    |
+| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                                                                    |
+| E3  | Self-loop                                  | Not an edge                                                                                    |
+| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)                                                      |
+| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning                                                     |
+| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field                                          |
+| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                                                                  |
+| E9  | More branches than palette entries         | Index wraps modulo the palette length                                                          |
+| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                                                         |
+| E11 | Shared or diamond descendant               | Keeps the first index that reached it                                                          |
+| E12 | Unknown theme id                           | Out of this blueprint: `getTheme` falls back ([Retired colour schemes](../retired-schemes.md)) |
 
 ## Security and trust
 
-- **Trust boundary.** A custom palette arrives only through the api. A caller can be a guest, a
-  signed-in user, an API token or MCP.
-- **Size.** `MAX_THEME_DEF_BYTES` (256 KiB) caps the definition, and with it the palette length.
-  Rendering reads at most one entry per element, so a long palette costs nothing extra.
-- **Content.** Colour strings aren't validated as colours. That gap belongs to
-  [Custom themes](../custom-themes.md) and is out of this blueprint's scope. A non-colour string
-  reaches only SVG/CSS colour attributes, which ignore invalid values.
+- **No trust boundary.** Every palette is built in, in `packages/document/src/themes-data.ts`; nothing a caller
+  sends becomes a palette. Rendering reads at most one entry per element.
 
 ## Performance and limits
 
@@ -204,7 +181,6 @@ There is no loading state and no error state: the swatch is computed synchronous
 - **Contrast.** Every built-in palette entry and `rootColor` keeps `contrastRatio(text, fill) ≥
 MIN_TEXT_CONTRAST`. Measured today, the lowest is 6.38.
 - **Swatch.** It is `aria-hidden`, and the card's visible text names the theme.
-- **Not covered.** Custom palettes aren't contrast-checked. The spec scopes the rule to built-ins.
 
 ## Observability
 
@@ -214,7 +190,6 @@ Each fingerprint is a fixed prefix plus `key=value` pairs.
 | --- | ----------------------------------------- | -------------- | ------------------------------------------------------------- |
 | O1  | Each wrapper, palette theme only (D1, D2) | `console.info` | `[theme-graph] <op> theme=<id> elements=<n> branches=<count>` |
 | O2  | `branchEntryFor`, empty palette (D2)      | `console.warn` | `[theme-graph] empty palette theme=<id>, painting trunk`      |
-| O3  | api, rejected write                       | `console.warn` | `[custom-themes] rejected id=<id> reason=empty-palette`       |
 
 - `<op>` is one of `recolour`, `switch`, `reset`, `reset-arrows`.
 - `assignBranches` never logs.
@@ -242,16 +217,14 @@ Each spec rule maps to one test, and every test is deterministic.
 | O1 logged once per palette call, never for single-colour | spy `console.info`                                              | `theme-graph.test.ts`                       |
 | `contrastRatio`                                          | black/white = 21; equal = 1; order-independent; malformed = NaN | `colors.test.ts`                            |
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
-| api rejects empty palette (E6) + O3                      | POST and PUT, 400, no write                                     | `apps/api/src/routes/custom-themes.test.ts` |
 | Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)   |
 | Colours reach the canvas + O1 in the browser             | Rainbow on a diagram: ≥ 3 palette hues, switch log              | `apps/editor/e2e/multicolour-theme.spec.ts` |
 
 ## Constants and configuration
 
-| Name                   | Value                                                     | Provenance                                             | Safe range            | Home                     |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------ | --------------------- | ------------------------ |
-| `ROOT_BRANCH`          | `-1`                                                      | Sentinel outside the index range                       | any negative          | `hierarchy.ts`           |
-| `MIN_TEXT_CONTRAST`    | `4.5`                                                     | WCAG 2.2 SC 1.4.3, normal text                         | `[4.5, 21]`           | `colors.ts`              |
-| `TRUNK_FALLBACK`       | `{ fill: '#f1f5f9', stroke: '#475569', text: '#0f172a' }` | Tailwind slate-100/600/900, the current inline literal | any triple at ≥ 4.5:1 | `theme-graph.ts`         |
-| `MAX_ELEMENTS_PER_TAB` | `10_000`                                                  | Existing tab limit                                     | unchanged             | `validate.ts`            |
-| `MAX_THEME_DEF_BYTES`  | `256 * 1024`                                              | Existing api limit                                     | unchanged             | `apps/api/src/limits.ts` |
+| Name                   | Value                                                     | Provenance                                             | Safe range            | Home             |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------ | --------------------- | ---------------- |
+| `ROOT_BRANCH`          | `-1`                                                      | Sentinel outside the index range                       | any negative          | `hierarchy.ts`   |
+| `MIN_TEXT_CONTRAST`    | `4.5`                                                     | WCAG 2.2 SC 1.4.3, normal text                         | `[4.5, 21]`           | `colors.ts`      |
+| `TRUNK_FALLBACK`       | `{ fill: '#f1f5f9', stroke: '#475569', text: '#0f172a' }` | Tailwind slate-100/600/900, the current inline literal | any triple at ≥ 4.5:1 | `theme-graph.ts` |
+| `MAX_ELEMENTS_PER_TAB` | `10_000`                                                  | Existing tab limit                                     | unchanged             | `validate.ts`    |

@@ -21,9 +21,12 @@ import {
   lucideColumns3,
   lucideLayoutGrid,
   lucideRows2,
-} from '@liveplanner/icons/lucide';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/icons/lucide';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';
 import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';

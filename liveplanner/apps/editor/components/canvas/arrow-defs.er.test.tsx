@@ -21,16 +21,8 @@ async function draw(supported: boolean) {
   vi.stubGlobal('CSS', {
     supports: (p: string, v: string) => supported || !(p === 'fill' && v === 'context-stroke'),
   });
-  const { DrawnArrowPreview } = await import('./DrawnArrowPreview');
-  const { container } = render(
-    <DrawnArrowPreview
-      arrow={relationship}
-      elementIndex={new Map()}
-      occluders={[]}
-      draftLayout={() => null}
-      withDefs={false}
-    />,
-  );
+  const { ArrowForTests } = await import('@/lib/testing/render-arrow');
+  const { container } = render(<ArrowForTests arrow={relationship} />);
   const line = [...container.querySelectorAll('path')].find(
     (p) => p.getAttribute('stroke') === '#334155',
   )!;

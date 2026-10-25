@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -72,7 +72,7 @@ function show({
   return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
 }
 
-// The view centred on a page (the centred transform, lib/viewport.ts), in jsdom's 0 x 0 canvas.
+// The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
 const centredOn = (i: number) => {
   const r = laid[i]!.rect;
   return { zoom: 1, offset: { x: -(r.x + r.width / 2), y: -(r.y + r.height / 2) } };
@@ -164,18 +164,13 @@ describe('PageContentsSidebar', () => {
 
   it('offers Add Page to an Editor alone', () => {
     const h = show();
-    // Add a Page of Any Kind opens the chooser.
-    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(
-      screen
-        .getByRole('dialog', { name: 'Add a Page' })
-        .querySelector('[data-add-kind="article"]')!,
-    );
-    expect(h.addPage).toHaveBeenCalledWith('article');
+    // One kind a tab: no chooser of another kind.
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    expect(h.addPage).toHaveBeenCalledWith('infographic');
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

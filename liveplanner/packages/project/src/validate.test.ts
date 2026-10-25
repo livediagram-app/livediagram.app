@@ -8,7 +8,7 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
-import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
+import { MAX_FREEHAND_POINTS, encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };
 
@@ -85,7 +85,7 @@ describe('isValidElement', () => {
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
-    // Highlighter recipe (docs/specs/006-project/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
+    // Highlighter recipe (docs/specs/006-project/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/finish.md "Polygons").
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);

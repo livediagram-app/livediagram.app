@@ -6,7 +6,7 @@ import { readPlainTab, type VerbContext } from '@livediagram/agent-verbs';
 import type { DocumentResponse } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
+import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { tabHashes, type PulledTab } from '../sync/pull-file';
 
 type DocumentSnapshot = {

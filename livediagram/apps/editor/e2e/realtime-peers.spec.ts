@@ -3,9 +3,10 @@ import {
   dismissQuickTour,
   expect,
   test,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  mintGuest,
+  documentHeaders,
+  seedDocumentItem,
   paletteTile,
 } from './fixtures';
 
@@ -24,11 +25,10 @@ async function openAs(
   owner: string | null,
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
       // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
@@ -37,7 +37,7 @@ async function openAs(
         JSON.stringify({ workshopTourSeen: true }),
       );
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -51,40 +51,39 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers,
-    data: {
-      id,
-      name: 'Room',
-      tabs: [
-        {
-          id: tabId,
-          name: 'Board',
-          opensIn: 'workshop',
-          elements: [
-            { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
-            // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
-            {
-              id: 'walk',
-              type: 'shape',
-              shape: 'mode-button',
-              mode: 'avatar',
-              label: 'Walk In',
-              x: 400,
-              y: 100,
-              width: 120,
-              height: 120,
-            },
-          ],
-        },
-      ],
-    },
+  const seeded = await seedDocumentItem(page.request, owner, {
+    id,
+    name: 'Room',
+    tabs: [
+      {
+        id: tabId,
+        name: 'Board',
+        opensIn: 'workshop',
+        elements: [
+          { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+          // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+          {
+            id: 'walk',
+            type: 'shape',
+            shape: 'mode-button',
+            mode: 'avatar',
+            label: 'Walk In',
+            x: 400,
+            y: 100,
+            width: 120,
+            height: 120,
+          },
+        ],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await documentHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers,
     data: { role: 'edit' },

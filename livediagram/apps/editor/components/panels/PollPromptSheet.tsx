@@ -20,9 +20,9 @@
 
 import { useEffect, useState } from 'react';
 import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { SOLID_BRAND_DARK_CONTROL, Portal } from '@livediagram/ui';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 export function PollPromptSheet({
   poll,

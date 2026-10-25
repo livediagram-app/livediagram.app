@@ -39,9 +39,9 @@ describe('errorTypeToken', () => {
   });
 
   it('caps at 40 characters without leaving a trailing dot', () => {
-    const t = errorTypeToken('UnhandledRejection', 'SsoCallback', 'QuotaExceededError');
+    const t = errorTypeToken('UnhandledRejection', 'SignIn', 'QuotaExceededError');
     expect(t.length).toBeLessThanOrEqual(40);
-    expect(t.startsWith('UnhandledRejection.SsoCallback')).toBe(true);
+    expect(t.startsWith('UnhandledRejection.SignIn')).toBe(true);
     expect(t.endsWith('.')).toBe(false);
   });
 
@@ -81,7 +81,7 @@ describe('errorPageToken', () => {
   it('names the page by its first segment', () => {
     expect(errorPageToken('/document')).toBe('Document');
     expect(errorPageToken('/explorer/team')).toBe('Explorer');
-    expect(errorPageToken('/sso-callback')).toBe('SsoCallback');
+    expect(errorPageToken('/get-started')).toBe('GetStarted');
     expect(errorPageToken('/help/canvas/the-canvas')).toBe('Help');
     expect(errorPageToken('/')).toBe('Home');
   });
@@ -99,13 +99,11 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
       'Post.Documents.Tabs.Comments',
     );
-    expect(apiRouteLabel('GET', 'http://localhost:8787/api/timeline?cursor=abc')).toBe(
-      'Get.Timeline',
-    );
-    expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');
+    expect(apiRouteLabel('GET', 'http://localhost:8787/api/teams?cursor=abc')).toBe('Get.Teams');
+    expect(apiRouteLabel('GET', '/api/shape-libraries')).toBe('Get.ShapeLibraries');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
-    // Explorer Home (docs/specs/013-workspace/explorer-home.md): one read.
-    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Home');
+    // Explorer Home and the Timeline are the liveworkspace index's now, not this api's resources.
+    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Unknown');
   });
 
   it('never echoes a share code or an unknown resource', () => {

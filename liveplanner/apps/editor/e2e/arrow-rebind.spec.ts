@@ -83,24 +83,4 @@ test.describe('Arrow auto-rebind', () => {
     expect(await pathEnds(page, 'q')).toEqual([500, 325, 700, 525]);
     expectNoPageErrors(pageErrors);
   });
-
-  test('the Settings switch turns it off', async ({ page, pageErrors }) => {
-    await startBlankProject(page);
-    await seedTab(page, [
-      square('a', 'Alpha', 400, 200),
-      square('b', 'Beta', 700, 200),
-      { id: 'x', type: 'arrow', from: pinned('a', 'e'), to: pinned('b', 'w') },
-    ]);
-    await page.getByRole('button', { name: /^application settings$/i }).click();
-    const toggle = page.getByRole('switch', { name: /auto-attach arrows/i });
-    await expect(toggle).toBeChecked();
-    await toggle.click();
-    await expect(toggle).not.toBeChecked();
-    await page.keyboard.press('Escape');
-
-    const release = await grab(page, 'Beta', -500, 0);
-    await release();
-    expect(await pathEnds(page, 'x')).toEqual([500, 250, 200, 250]);
-    expectNoPageErrors(pageErrors);
-  });
 });

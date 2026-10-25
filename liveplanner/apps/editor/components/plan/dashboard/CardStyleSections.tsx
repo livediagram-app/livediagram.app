@@ -14,8 +14,11 @@ import {
   type DashboardStyledType,
   type ElementShadow,
 } from '@liveplanner/project';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
   BorderColourIcon,
   BorderGlyph,

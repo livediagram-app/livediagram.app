@@ -2,14 +2,14 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livedocuments/document';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // docs/specs/004-interface-design/canvas-accessibility.md: a screen reader hears each selection change.
 // The hook follows the store, so the editor root does not render for it
 // (docs/specs/008-canvas/blueprints/selection-store.md "Above the canvas").
 
 const { announce, heard } = vi.hoisted(() => ({ announce: vi.fn(), heard: { nonce: 0 } }));
-vi.mock('@/lib/announcer', () => ({
+vi.mock('@liveworkspace/workbench/lib/announcer', () => ({
   announce: (message: string) => {
     heard.nonce += 1;
     announce(message);
@@ -110,7 +110,7 @@ describe('useCanvasA11y announcements', () => {
 
   it("leaves a verb's own word standing when its clear comes with it", async () => {
     const selection = setup();
-    const { announce: say } = await import('@/lib/announcer');
+    const { announce: say } = await import('@liveworkspace/workbench/lib/announcer');
     act(() => selection.setSelectedId(a.id));
     act(() => {
       vi.runAllTimers();

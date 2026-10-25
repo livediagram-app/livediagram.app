@@ -2,17 +2,17 @@
 
 Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                        | Role                                                      |
-| ----------------------------------------------------------- | --------------------------------------------------------- |
-| `packages/document/src/sequence-element.ts`                 | Fields, bounds, writes, the diagram it describes          |
-| `packages/document/src/svg-render-sequence.ts`              | The picture: `layoutSequence` drawn and fitted to the box |
+| File                                                          | Role                                                      |
+| ------------------------------------------------------------- | --------------------------------------------------------- |
+| `packages/document/src/sequence-element.ts`                   | Fields, bounds, writes, the diagram it describes          |
+| `packages/document/src/svg-render-sequence.ts`                | The picture: `layoutSequence` drawn and fitted to the box |
 | `apps/editor/components/canvas/SequenceFace.tsx`              | Canvas face (the same picture), the Play wipe             |
 | `apps/editor/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered                          |
-| `packages/document/src/sequence-text.ts`                    | The Text tab: rows as lines and back                      |
+| `packages/document/src/sequence-text.ts`                      | The Text tab: rows as lines and back                      |
 | `apps/editor/components/dialogs/SequenceDialog.tsx`           | The dialog: tabs, draft, preview, footer                  |
 | `apps/editor/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
 | `apps/editor/components/dialogs/SequenceMessageList.tsx`      | Numbered message rows, Add Message                        |
-| `apps/editor/components/dialogs/DialogTabs.tsx`               | The tab bar, shared with the Sankey Flows dialog          |
+| `../packages/workbench/src/components/dialogs/DialogTabs.tsx` | The tab bar, shared with the Sankey Flows dialog          |
 | `apps/editor/hooks/canvas/useSequenceSetters.ts`              | The dialog's writes, one commit each                      |
 | `apps/editor/lib/sequence-edit.ts`                            | `canEditSequence`: an Editor, on an unlocked diagram      |
 
@@ -204,14 +204,14 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 
 ## Testing
 
-| Rule                        | Test file                                                                                             |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Writes, bounds (I1), next   | `packages/document/src/sequence-element.test.ts`                                                      |
-| Picture and export (I2)     | same                                                                                                  |
+| Rule                        | Test file                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Writes, bounds (I1), next   | `packages/document/src/sequence-element.test.ts`                                                        |
+| Picture and export (I2)     | same                                                                                                    |
 | Look: colours, face, finish | `packages/document/src/sequence-element.test.ts`, `apps/editor/components/canvas/SequenceFace.test.tsx` |
 | Menu: summary, Edit         | `apps/editor/components/palette/SequenceMenuSection.test.tsx`                                           |
 | Dialog: rows, text, close   | `apps/editor/components/dialogs/SequenceDialog.test.tsx`                                                |
-| Text read and written       | `packages/document/src/sequence-text.test.ts`                                                         |
+| Text read and written       | `packages/document/src/sequence-text.test.ts`                                                           |
 | Dialog writes               | `apps/editor/hooks/canvas/useSequenceSetters.test.ts`                                                   |
 | Who may edit                | `apps/editor/lib/sequence-edit.test.ts`                                                                 |
 | Face label, Play class      | `apps/editor/components/canvas/SequenceFace.test.tsx`                                                   |

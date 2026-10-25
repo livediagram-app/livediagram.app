@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BoxedElement } from '@livedocuments/document';
 import { createElement } from 'react';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';
-import { CanvasArrivalProvider } from './CanvasArrivalContext';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):
 // a newly added element keeps its own 360ms spring (app/canvas-motion.test.ts)
@@ -92,5 +92,4 @@ describe('the board a tab opens with', () => {
     rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd', 'e'], seen }));
     expect(seen.get('e')).toBe('animate-element-pop-in');
   });
-
 });

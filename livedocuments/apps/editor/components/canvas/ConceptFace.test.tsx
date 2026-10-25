@@ -13,7 +13,7 @@ import {
   type WebRows,
 } from '@livedocuments/document';
 import { ConceptFace } from './ConceptFace';
-import { setConceptTourPreview } from '@/lib/concept-tour-preview';
+import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 
 afterEach(cleanup);
 

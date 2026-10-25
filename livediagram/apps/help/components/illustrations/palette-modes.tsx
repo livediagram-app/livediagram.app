@@ -3,7 +3,7 @@
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
+import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
 import { PickerTrigger, PixelCharacter } from './selection-modes';
 
@@ -225,7 +225,7 @@ export function PanelOpacity() {
       {/* The panel at ~60% opacity: the shape behind it stays
           visible through it. */}
       <g opacity={0.6}>
-        <Panel x={196} y={42} w={156} h={150} title="AI ASSISTANT">
+        <Panel x={196} y={42} w={156} h={150} title="MAP">
           <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
           <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
           <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />

@@ -1,6 +1,6 @@
 // The room's internal endpoints (docs/specs/015-api/api.md, Realtime model): calls the api worker makes into the
 // Durable Object after a privileged action. Not exposed publicly: the worker stubs the DO via
-// `env.PROJECT_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
+// `env.PLAN_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
 // internal and their bodies trusted. Every other request is a WebSocket upgrade, which the room answers itself.
 import { opForTheWire } from '@liveplanner/project';
 import { parseAccessCloseMatch, type AccessCloseMatch } from './room-access';
@@ -10,7 +10,6 @@ export type InternalRoom = {
   broadcastSystemOp: (op: unknown) => void;
   broadcastOrderedSystemOp: (op: unknown) => void;
   closeSessionsOfChangedLink: (op: unknown) => void;
-  closeAllIfTrashed: (op: unknown) => void;
   clearAgentsFor: (op: unknown) => Promise<void>;
   closeSessionsForAccessChange: (close: AccessCloseMatch) => void;
   purge: () => Promise<void>;
@@ -34,7 +33,7 @@ export async function answerInternal(
   // Internal fan-out endpoint, called by the api worker after a
   // privileged action that every connected client should learn
   // about immediately (e.g. share-link revocation). Not exposed
-  // publicly: the worker stubs the DO via `env.PROJECT_ROOM.get(...)
+  // publicly: the worker stubs the DO via `env.PLAN_ROOM.get(...)
   // .fetch(...)`, which never traverses Cloudflare's edge, so the
   // path is implicitly internal. Body is `{ op: RoomOp }` and the
   // op gets broadcast with a synthetic `from: 'system'` so the
@@ -49,7 +48,6 @@ export async function answerInternal(
     if (body.ordered === true) room.broadcastOrderedSystemOp(op);
     else room.broadcastSystemOp(op);
     room.closeSessionsOfChangedLink(op);
-    room.closeAllIfTrashed(op);
     await room.clearAgentsFor(op);
     return new Response(null, { status: 204 });
   }

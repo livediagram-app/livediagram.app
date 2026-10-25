@@ -49,11 +49,11 @@ describe('withThemeApplied', () => {
     expect((out.elements[1] as ArrowElement).strokeColor).not.toBe('#654321');
   });
 
-  it('hard-resets a tab whose previous theme no longer resolves (a deleted custom theme)', () => {
+  it('hard-resets a tab whose previous theme no longer resolves (an id the catalogue no longer knows)', () => {
     const t = {
       id: 't',
       name: 'T',
-      theme: 'custom:gone',
+      theme: 'gone',
       elements: [shape({ fillColor: '#123456' })],
     } as Tab;
     const out = withThemeApplied(t, 'forest');

@@ -11,43 +11,42 @@ Scope, by file:
 
 | File                                                                                                       | Role                                                                             |
 | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `apps/editor/lib/power-user-mode.ts`                                                                         | Pure: the preset, switch on / off with baseline and restore, the flags           |
-| `apps/editor/lib/power-user-offer.ts`                                                                        | Pure: offer counters, thresholds, eligibility; device-local storage              |
-| `apps/editor/hooks/ui/usePowerUserOffer.ts`                                                                  | Records sessions and shortcuts, shows the offer, applies the answer              |
-| `apps/editor/components/providers/minimal-chrome.tsx`                                                        | `MinimalChromeProvider`, `useMinimalChrome()`: the one flag                      |
-| `packages/ui/src/appearance/appearance-cycle.ts`                                                           | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
-| `apps/editor/components/chrome/AppearanceToggle.tsx`                                                         | Quick appearance switch: click flips, right-click sets System                    |
-| `apps/editor/hooks/ui/useAppearance.ts`                                                                      | Logs and tracks every explicit pick                                              |
-| `apps/editor/app/explorer/ExplorerShell.tsx`                                                                 | Passes `powerUser` to its bottom bar                                             |
-| `apps/editor/components/chrome/ChromeControls.tsx`                                                           | `TabBar` and the Explorer pass `powerUser` through to the toggle                 |
-| `apps/editor/components/chrome/RoleIndicator.tsx`                                                            | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
-| `apps/editor/app/project/[id]/useViewPreview.ts`                                                             | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
-| `apps/editor/app/project/[id]/useRoleIndicator.ts`                                                           | Role in force, owner name and toggle, for the pill and the icon                  |
-| `apps/editor/app/project/[id]/useEditorState.ts`                                                             | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
-| `apps/editor/hooks/persistence/useEditorPreferences.ts`                                                      | `prefsSettled`: the server copy merged, or failed to arrive                      |
-| `apps/editor/app/project/[id]/EditorView.tsx`                                                                | Provides the flag; places the pill / icon; gates the notices                     |
-| `apps/editor/components/chrome/EditorHeader.tsx`                                                             | `rolePill` slot after the visibility badge                                       |
-| `apps/editor/components/chrome/TopCenterChrome.tsx`                                                          | The visitor owner / role badge is removed                                        |
-| `apps/editor/components/chrome/TabBar.tsx`                                                                   | `roleIcon` slot first; "Tabs" label and control labels under the flag            |
-| `apps/editor/components/palette/PaletteIconButton.tsx`                                                       | Icon-only tile with a Tooltip under the flag                                     |
-| `apps/editor/components/primitives/MovablePanelHeader.tsx`                                                   | Title visually hidden, `?` removed under the flag                                |
-| `apps/editor/components/primitives/MovablePanel.tsx`                                                         | Same, for the popover header                                                     |
-| `apps/editor/components/panels/ExplorerHeaderMenu.tsx`                                                       | Help row under the flag                                                          |
-| `apps/editor/components/primitives/HelpArticleLink.tsx`                                                      | `openHelpArticle`: the `?` link's telemetry, from a menu row                     |
-| `apps/editor/components/panels/Explorer.tsx`                                                                 | Sign-in / "saved to this browser" notice gated on the flag                       |
-| `apps/editor/components/canvas/SelectionPopover.tsx`                                                         | More on touch only; caption and desktop bin under the flag; toolbar name         |
-| `apps/editor/components/canvas/MultiSelectionToolbar.tsx`                                                    | More on touch only; desktop bin under the flag                                   |
-| `apps/editor/components/chrome/FloatingToolbar.tsx`                                                          | Caption under the flag; toolbar name                                             |
-| `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                              | The rows, `parent`, the `presetSummary` kind; `SettingsRowContext.powerUserMode` |
-| `apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx`                                           | Nests a row's children under it as a named group; `onGoToRow`                    |
-| `apps/editor/components/dialogs/settings/SettingsPresetSummaryRow.tsx`                                       | The "Set By Power User Mode" readout                                             |
-| `apps/editor/components/dialogs/settings/power-user-preset-rows.ts`                                          | Pure: preset lines, current value, changed or not, where each row lives          |
-| `apps/editor/components/dialogs/SettingsDialog.tsx`                                                          | Computes `powerUserMode` for the row context                                     |
-| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                                     | `onShortcutUsed` after a key the handler claimed                                 |
-| `apps/editor/hooks/ui/useToast.tsx`                                                                          | `toast.offer`: an info toast with two actions and no timeout                     |
+| `apps/editor/lib/power-user-mode.ts`                                                                       | Pure: the preset, switch on / off with baseline and restore, the flags           |
+| `apps/editor/lib/power-user-offer.ts`                                                                      | Pure: offer counters, thresholds, eligibility; device-local storage              |
+| `apps/editor/hooks/ui/usePowerUserOffer.ts`                                                                | Records sessions and shortcuts, shows the offer, applies the answer              |
+| `../packages/workbench/src/components/providers/minimal-chrome.tsx`                                        | `MinimalChromeProvider`, `useMinimalChrome()`: the one flag                      |
+| `../packages/ui/src/appearance/appearance-cycle.ts`                                                        | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
+| `apps/editor/components/chrome/AppearanceToggle.tsx`                                                       | Quick appearance switch: click flips, right-click sets System                    |
+| `apps/editor/hooks/ui/useAppearance.ts`                                                                    | Logs and tracks every explicit pick                                              |
+| `apps/editor/app/embed/workbench/ExplorerHost.tsx`                                                         | Passes `powerUser` to its bottom bar                                             |
+| `apps/editor/components/chrome/ChromeControls.tsx`                                                         | `TabBar` and the Explorer pass `powerUser` through to the toggle                 |
+| `apps/editor/components/chrome/RoleIndicator.tsx`                                                          | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
+| `apps/editor/app/project/[id]/useViewPreview.ts`                                                           | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
+| `apps/editor/app/project/[id]/useRoleIndicator.ts`                                                         | Role in force, owner name and toggle, for the pill and the icon                  |
+| `apps/editor/app/project/[id]/useEditorState.ts`                                                           | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
+| `apps/editor/hooks/persistence/useEditorPreferences.ts`                                                    | `prefsSettled`: the server copy merged, or failed to arrive                      |
+| `apps/editor/app/project/[id]/EditorView.tsx`                                                              | Provides the flag; places the pill / icon; gates the notices                     |
+| `apps/editor/components/chrome/EditorHeader.tsx`                                                           | `rolePill` slot after the visibility badge                                       |
+| `apps/editor/components/chrome/TopCenterChrome.tsx`                                                        | The visitor owner / role badge is removed                                        |
+| `apps/editor/components/chrome/TabBar.tsx`                                                                 | `roleIcon` slot first; "Tabs" label and control labels under the flag            |
+| `apps/editor/components/primitives/MovablePanelHeader.tsx`                                                 | Title visually hidden, `?` removed under the flag                                |
+| `apps/editor/components/primitives/MovablePanel.tsx`                                                       | Same, for the popover header                                                     |
+| `apps/editor/components/panels/ExplorerHeaderMenu.tsx`                                                     | Help row under the flag                                                          |
+| `apps/editor/components/primitives/HelpArticleLink.tsx`                                                    | `openHelpArticle`: the `?` link's telemetry, from a menu row                     |
+| `apps/editor/components/panels/Explorer.tsx`                                                               | Sign-in / "saved to this browser" notice gated on the flag                       |
+| `apps/editor/components/canvas/SelectionPopover.tsx`                                                       | More on touch only; caption and desktop bin under the flag; toolbar name         |
+| `apps/editor/components/canvas/MultiSelectionToolbar.tsx`                                                  | More on touch only; desktop bin under the flag                                   |
+| `apps/editor/components/chrome/FloatingToolbar.tsx`                                                        | Caption under the flag; toolbar name                                             |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                            | The rows, `parent`, the `presetSummary` kind; `SettingsRowContext.powerUserMode` |
+| `packages/settings-ui/src/SettingsCategoryPane.tsx`                                                        | Nests a row's children under it as a named group; `onGoToRow`                    |
+| `packages/settings-ui/src/rows/SimpleRows.tsx`                                                             | The "Set By Power User Mode" readout                                             |
+| `apps/editor/components/dialogs/settings/power-user-preset-rows.ts`                                        | Pure: preset lines, current value, changed or not, where each row lives          |
+| `apps/editor/components/dialogs/SettingsDialog.tsx`                                                        | Computes `powerUserMode` for the row context                                     |
+| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                                   | `onShortcutUsed` after a key the handler claimed                                 |
+| `apps/editor/hooks/ui/useToast.tsx`                                                                        | `toast.offer`: an info toast with two actions and no timeout                     |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `visitors.ts`, `features.ts` | Charts for the new events; the offer is a Visitors stack                         |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`                               | A sentence per new event                                                         |
-| `apps/editor/lib/telemetry-manifest.ts`                                                                      | `UI·Declined` joins the emitted pairs                                            |
+| `apps/editor/lib/telemetry-manifest.ts`                                                                    | `UI·Declined` joins the emitted pairs                                            |
 | `apps/help/lib/featureIcons.tsx`, `featureColours.ts`, `packages/help-registry/src/index.ts`               | The article card and its registry entry                                          |
 | `apps/help/app/user-interface/power-user-mode/page.mdx`                                                    | The help article, registered per the instruction set                             |
 
@@ -203,7 +202,7 @@ mapped long press, so one handler covers every input.
   `read` formatted (toggle: On / Off; choice: the option label). `restorable` is whether a baseline entry exists (no status line without one). `changed` is true when the baseline entry exists and
   is not untouched (the same test switch-off uses, `isUntouched`). `reachable` is whether that row is in the
   visible categories (`offered`).
-- `SettingsPresetSummaryRow` renders a card: a `<ul>` of lines, each `label: value`, the category, the status
+- `SettingsPresetSummaryRowView` renders a card: a `<ul>` of lines, each `label: value`, the category, the status
   ("Changed: kept when you switch off" / "Restored when you switch off") and, when reachable, a `Change` button
   (`aria-label` "Change {label} in {category}") calling `onGoToRow(categoryId, rowKey)`.
 - `SettingsDialog` keeps a `goTo` target in state: going to a row selects its category and passes the row as
@@ -251,7 +250,7 @@ toast.offer(offer: ToastOffer): void;
 boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the row appears without reopening).
 
 ```ts
-// packages/ui/src/appearance/appearance-cycle.ts
+// ../packages/ui/src/appearance/appearance-cycle.ts
 export function oppositeAppearanceSetting(appearance: Appearance): AppearanceSetting; // 'light' <-> 'dark'
 export function quickAppearanceToggleName(
   setting: AppearanceSetting,
@@ -385,7 +384,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 | Minimal chrome hides + tooltips, role icon toggles        | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 | Role pill toggles view preview for the owner              | same                                                           |
 | Mode on / off with a changed and an untouched setting     | same                                                           |
-| Opposite setting and quick name                           | `packages/ui/src/appearance/appearance-cycle.test.ts`          |
+| Opposite setting and quick name                           | `../packages/ui/src/appearance/appearance-cycle.test.ts`       |
 | Quick switch table (mode off / on, click / context menu)  | `components/chrome/AppearanceToggle.test.tsx` (jsdom)          |
 | Quick switch in the real status bar                       | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 

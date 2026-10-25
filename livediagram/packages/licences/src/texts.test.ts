@@ -1,43 +1,24 @@
-import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+import { isLicenceAllowed } from '@liveworkspace/licences/licence-id';
+import { TEXT_SOURCES } from '@liveworkspace/licences/texts';
+
 import { EMBEDDED_WORKS } from './embedded-works.ts';
-import { isLicenceAllowed } from './licence-id.ts';
-import { normaliseText } from './licence-files.ts';
 import { OVERRIDES } from './overrides.ts';
-import { TEXT_SOURCES, TEXTS_DIR } from './texts.ts';
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
-const onDisk = readdirSync(TEXTS_DIR).toSorted();
 const tableFiles = [...OVERRIDES, ...EMBEDDED_WORKS]
   .flatMap((entry) => entry.texts)
   .flatMap((ref) => ('file' in ref ? [ref.file] : []));
 
-describe('TEXT_SOURCES', () => {
-  it('lists every committed text exactly once', () => {
-    expect(TEXT_SOURCES.map((t) => t.file).toSorted()).toEqual(onDisk);
-  });
-
-  it.each(TEXT_SOURCES.map((t) => [t.file, t] as const))(
-    '%s matches its recorded checksum and is stored normalised',
-    (_, source) => {
-      const text = readFileSync(`${TEXTS_DIR}${source.file}`, 'utf8');
-      expect(createHash('sha256').update(text).digest('hex')).toBe(source.sha256);
-      expect(normaliseText(text)).toBe(text);
-    },
-  );
-
-  it('names a pinned https source for every text', () => {
-    for (const { file, sources } of TEXT_SOURCES) {
-      expect(sources.length, file).toBeGreaterThan(0);
-      for (const url of sources) expect(url, file).toMatch(/^https:\/\//);
-    }
-  });
-
-  it('leaves no committed text unreferenced by a table', () => {
-    expect([...new Set(tableFiles)].toSorted()).toEqual(onDisk);
+// The texts themselves are the monorepo's one pool (@liveworkspace/licences, whose own test checks
+// their checksums and that every one is named by some product).
+describe('the tables', () => {
+  it('name only texts in the shared pool', () => {
+    const pool = new Set(TEXT_SOURCES.map((t) => t.file));
+    for (const file of tableFiles) expect(pool.has(file), file).toBe(true);
   });
 });
 

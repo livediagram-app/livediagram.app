@@ -41,7 +41,7 @@ export type DashboardExportInput = {
   now: Date;
   // Each figure from a Sheet, by slot id, read now.
   metrics?: ReadonlyMap<string, SheetMetricArt>;
-  // A tab's theme by id on a surface: the editor's own (its custom themes too); the built-in ones when absent.
+  // A tab's theme by id on a surface: the editor's own (in the viewer's appearance); the built-in ones when absent.
   themeOf?: (id: string | undefined, surface: CanvasSurface) => ThemeDefinition;
 };
 

@@ -35,15 +35,16 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
 “Plans”. Try again.", "“Tab 2” duplicated in “Roadmap”".
 
 - **The name is in curly quotes**, its whitespace collapsed to single spaces.
-- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/editor/lib/toast-name.ts`), cut
+- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `../packages/workbench/src/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
   ceiling; where they would not, the advice is dropped first ("Could not move “Roadmap” to “Plans”.").
 - **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the
   team library".
-- The wording lives in one place per family, so every surface says the same: `apps/editor/lib/document-toast-copy.ts`
-  (delete, restore, move, duplicate) and `apps/editor/lib/write-failure-copy.ts` (a failed folder or document write).
+- The wording lives in one place per family, so every surface says the same: `apps/editor/lib/write-failure-copy.ts`
+  (a failed folder or document write). The Explorer's own toasts (delete, restore, move, duplicate) are the shared
+  Explorer's (`@liveworkspace/explorer`).
 
 ## Tones
 

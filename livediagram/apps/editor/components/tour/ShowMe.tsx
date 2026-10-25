@@ -5,7 +5,7 @@
 // literal telemetry (so the dashboard's emitter scan reads them); these are the parts every Show Me shares.
 import { useEffect, useRef } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideFootprints } from '@livediagram/icons/lucide';
+import { lucideFootprints } from '@liveworkspace/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourStage } from './TourStage';

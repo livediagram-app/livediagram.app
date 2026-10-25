@@ -1,5 +1,5 @@
 import { apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has
@@ -15,7 +15,7 @@ export async function resolveParticipant(opts: {
   onParticipantStep?: () => void;
 }): Promise<Participant> {
   const { accountUserId, accountDisplayName } = opts;
-  const selfId = accountUserId ?? (await ensureSignedGuestIdentity()).id;
+  const selfId = accountUserId ?? (await ensureGuestIdentity()).id;
   opts.onParticipantStep?.();
   const storedSelf = await apiLoadSelf(selfId).catch(() => null);
   // Signed-in users always use their account name on the

@@ -10,7 +10,9 @@ import { PlanColumnPopover } from './PlanColumnPopover';
 const plan = { items: new Map(), statusNames: new Map() };
 const viewport = vi.hoisted(() => ({ mobile: false }));
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.mobile }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => viewport.mobile,
+}));
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();

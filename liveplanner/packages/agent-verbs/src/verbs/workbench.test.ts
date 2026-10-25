@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError } from '@liveplanner/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { WORKBENCH_NAME_MAX_LENGTH } from '@liveplanner/api-schema';
 import { AddressError } from '../addressing';
 import { VerbRefusal } from '../define';

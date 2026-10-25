@@ -14,7 +14,7 @@ Follow the references below only as needed; never upfront.
 - ./command-palette.md - when working on the command palette (⌘K): the Search panel and the Actions command registry
 - ./split-view.md - when working on side by side tabs: dragging a tab to the right edge to open it beside the active tab, following a click between panes, resizing, persistence
 - ./zen-mode.md - when working on zen mode: hide all chrome, keep the tab and zoom
-- ./panel-docking.md - when working on panel corner docking: which corner each corner panel (Minimap, tool panels) sits in, drag with snap-to-corner guides, stacking, device-local layout
+- ./panel-docking.md - when working on panel corner docking: which corner each corner panel (Minimap) sits in, drag with snap-to-corner guides, stacking, device-local layout
 - ./toolbar-layout.md - when working on the editor's one layout: the menu-button Explorer, the bottom-right cluster, popovers, phones; also the unmounted Palette strip whose code remains
 - ./editor-tour.md - when working on the editor's tours: the shared engine (steps that open what they explain, the spotlight, motion, mechanics, look, share roles) and the retired Diagram tour
 - ./show-me.md - when working on Show Me: the on-demand guided tour of one surface (card type editor, Share dialog, Dashboard Settings), its button, telemetry tokens, and how to add one

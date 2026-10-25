@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { LegalRedirect } from '@/components/LegalRedirect';
+import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
 
 // The privacy policy covers every liveworkspace app, livediagram included, so it lives on liveworkspace.app. This
 // page keeps the historical /privacy URL alive (it redirects there) but is noindex so search engines consolidate on
@@ -9,7 +9,7 @@ const PRIVACY_URL = 'https://liveworkspace.app/privacy';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · livediagram',
-  description: 'The privacy policy for livediagram is liveworkspace\'s, on liveworkspace.app.',
+  description: "The privacy policy for livediagram is liveworkspace's, on liveworkspace.app.",
   robots: { index: false, follow: true },
   alternates: { canonical: PRIVACY_URL },
 };

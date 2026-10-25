@@ -61,7 +61,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'add-page',
       title: 'Add a Page',
-      body: '+ adds another page like this one; the button under it adds a page of any kind.',
+      body: '+ adds another page like this one. Every page of a tab is one kind.',
       selector: addPageAnchor,
     },
     {

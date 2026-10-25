@@ -1,96 +1,86 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { MyDesignsTree } from '@/components/illustrations/explorer';
-import { ExplorerPageLayout } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Explorer Page',
   description:
-    'Find your way around the full-page Explorer: the Overview, Spaces and More sidebar groups, list or card views, and folders to organise your designs.',
+    'Find your way around the full-page Explorer: one library for everything you make across liveworkspace, its sidebar, views, search and folders.',
   path: '/help/explorer/explorer-page/',
 });
 
 <ArticleLayout
   title="Explorer Page"
-  description="Your whole design library in one place: how the full-page Explorer is laid out, and where everything lives."
+  description="One library for everything you make across liveworkspace: how the full-page Explorer is laid out, and where everything lives."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and the page you picked on the right, with its folders and designs. Opening `/explorer` takes you to **Home**. It is where all your designs live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
+The full-page [Explorer](/explorer) is your library: a sidebar on the left to move around, and the page you picked on the right, with its folders and items. Opening `/explorer` takes you to **Home**. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
 
-The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every design lives in exactly one place, **My Work**, a team, or this browser, and everything else in the sidebar is a view that gathers designs from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter designs](/help/explorer/filters/)). Making things happens in the page header: **New Design** is on Home, Timeline, Recent, Favourites and search results, and on My Work and inside a folder it becomes a **Create** button offering **New Design** and **New Folder** (**New Subfolder** inside a folder). Pages that aren't a place a design lands (Inbox, Shared With Me, Tags, the Library pages, Trash, a team, This Browser) have no New Design.
+The Explorer is shared by every liveworkspace app. It lives once, on liveworkspace.app, and opens at livedesign's own `/explorer` too, so a folder can hold a Design beside a Canvas from livediagram and a Document from livedocuments. Its header shows the liveworkspace logo and then livedesign's; click livedesign's to go back to livedesign. Your folders, favourites, sharing and Trash are the same whichever app you open it from.
 
-<Figure caption="The full-page Explorer: the sidebar's three groups on the left, and My Work in the card view on the right.">
-  <ExplorerPageLayout />
-</Figure>
+## Designs or All Apps
+
+At the top right of most pages, a two-way switch chooses what the lists show:
+
+- **Designs** shows only livedesign's designs.
+- **All Apps** shows every item from every app. Each row then carries its app's name, and the lists say "items" rather than "designs".
+
+Coming from livedesign, the Explorer opens on **Designs**, and your choice holds as you move from page to page. Opening an item from another app takes you to that app's site to open it.
+
+## Making things
+
+**New Design** sits in the page header wherever a new design has an obvious home: Recent, Favourites and search results put it in My Work, outside any folder, and on Home it sits inside the search field. On My Work, inside a folder and in a team's library, the button becomes **Create**, offering **New Design** and **New Folder** (**New Subfolder** inside a folder). New always makes a design here, whichever filter is on; to make something in another app, open the Explorer from that app.
+
+Pages that are not a place an item lives (the Inbox, the Timeline, Shared With Me and the Trash) have no New button.
 
 ## Overview
 
-- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the designs you use most and last, and what other people did while you were away. Its **See More** link opens [Recent](/help/explorer/recent/), which has no sidebar row of its own. The row carries a badge when something has happened since you last looked.
-- **Inbox** lists the open [actions and comment threads](/help/explorer/activity/) waiting on you, with a badge counting the open actions assigned to you.
-- **Timeline** is the [full feed](/help/explorer/timeline/#the-timeline) of everything that has happened across your designs, teams and account, your own doings included. Home's **See Timeline** link opens it too.
-- **Shared With Me** gathers every design other people have [shared with you](/help/explorer/shared-with-you/) into one list, kept apart from your own library so collaborator work and your own never get mixed up. Its badge counts them.
+- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the designs you use most, what was shared with you recently, and what other people did to your items.
+- **Inbox** lists the [actions and comment threads](/help/explorer/activity/) waiting on you, with a badge counting the open actions assigned to you.
+- **Timeline** is the record of what happened to your items, your teams and your account, by day ([Timeline](/help/explorer/timeline/#the-timeline)), with a count of what is new since you last looked.
+- **Shared With Me** gathers every item other people have [shared with you](/help/explorer/shared-with-you/) through a link, kept apart from your own library, with how many there are.
 
 ## Spaces
 
-Your spaces are the top-level folders of the tree.
-
-- **My Work** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the designs you have not filed. This is where you do the filing: moving designs into folders with **Change Folder**, renaming, and nesting folders inside folders. Its own menu (its **⋯** button or a right-click) holds **Use as Default for** ([Default folders](/help/explorer/folders/default-folders/)).
-- **Each team** you belong to sits beside it, and expands to the team's shared folders ([Team spaces](/help/explorer/team-spaces/)). Its badge counts the members once there is more than one.
-- **Invites** appears while a team invite is waiting for you.
-- **New Team** creates a team. If you are not signed in, a **Sign in to access Teams** card sits here instead.
-
-<Figure caption="My Work is a folder tree: folders you can nest as deep as you like, and the designs at its root.">
-  <MyDesignsTree />
-</Figure>
+- **My Work** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the items you have not filed. Its own menu (its **⋯** button or a right-click) holds **New Folder** and **Use as Default for…** ([Default Folders](/help/explorer/folders/default-folders/)).
+- **Each team** you belong to sits beside it, with its member count, and expands to the team's folders ([Team Spaces](/help/explorer/team-spaces/)).
+- **Invites** appears while a team invitation waits for you.
+- **Manage Teams**, when you are signed in, takes you to liveworkspace.app, where teams are made and run. If you are not signed in, a **Sign in to access Teams** card sits here instead.
 
 ## More
 
-- **This Browser** lists the designs saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). It shows only while there is at least one. They are yours, like everything in My Work, and every row and card of one carries a **This Browser** pill: hover or focus it to read that it lives only in this browser, and click it for the Offline Mode guide. Their menus offer **Sync Design** to move one to your account, while a cloud design's menu offers **Take Offline** to do the reverse.
-- **Library** expands (it has no page of its own) to **Tags** first, which opens the [Tags page](/help/explorer/tags/) (your designs grouped by the coloured tags you put on them) and expands to a row for each tag, then the [Image gallery](/help/explorer/image-gallery/) (every image you have uploaded, with where each is used) and [Themes](/help/explorer/themes-library/) (your custom themes, ready to edit or reuse).
-- **Trash** holds deleted designs for 30 days, ready to restore.
+- **Library** expands to **Recent** (everything by when you last opened it, [Recent](/help/explorer/recent/)), **Favourites** (what you starred) and the **Image Gallery** (every image you have uploaded, with where each is used, [Image Gallery](/help/explorer/image-gallery/)).
+- **This Browser** lists the designs saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)), with how many there are, and shows only while there is at least one. They are newest first, each opening in the editor, and when you are signed in each has **Sync Design** to move it to your account. A design's menu offers **Take Offline** to do the reverse.
+- **Trash** holds deleted items for 30 days, ready to restore ([Trash](/help/account-and-data/trash/)). While you drag an item, the Trash row wakes up as a place to drop it.
+
+Which rows you expand is remembered in this browser, and opening a Library page opens the Library for you.
 
 ## Moving around with the keyboard
 
 The sidebar is a single stop when you press Tab. Then the **arrow keys** move up and down, **Right** opens a row and **Left** closes it (or moves to its parent), **Home** and **End** jump to the first and last rows, **Enter** or **Space** opens the row, and typing a letter jumps to the next row starting with it. On a folder, or on My Work, **Shift+F10** (or the **Menu** key) opens its menu.
 
-My Work starts expanded and Library starts closed (it opens by itself when you are on one of its pages). Teams and folders start closed, and what you expand lasts until you reload.
+## Searching
 
-With [power user mode](/help/user-interface/power-user-mode/) and Minimal chrome on, the group titles give way to thin lines between the groups, with nothing above Home.
+The search field at the top of the page narrows the list you are on by the titles of your items and the names of their folders. On a page with no list of its own, such as Home or the Inbox, typing opens a **Search results** page across the whole library. The chips under each list's title, and typed filters like `made-by:ai` or `edited:7d`, narrow it further: [Search and Filter Designs](/help/explorer/filters/) covers them. Search does not look inside an item's content.
 
-Each page is named after its row: **Home**, **Shared With Me**, **My Work**, **This Browser**, **Image Gallery** and the rest, in the page heading, the browser tab and the breadcrumb.
+## List, Card and Details
 
-## List or card view
+Every list of items (My Work, a folder, a team, Recent, Favourites and search results) can be shown three ways, switched with the **List view**, **Card view** and **Details view** buttons at the top right of the page. Cards are what you get until you choose otherwise. Shared With Me and the Trash keep a fixed list of their own. [List, Card and Details Views](/help/explorer/list-and-card-views/) covers them.
 
-Every browse view (My Work, your folders, Recent, Favourites, Search results, This Browser, and a team's shared library) can be shown three ways, switched with the **List view** / **Card view** / **Details view** toggle at the top-right of the pane:
+## An item's menu
 
-- **List** packs designs into compact rows, best for scanning a long library by name and date.
-- **Card** shows each design as a tile with a thumbnail of its first tab, best for recognising a design by its shape at a glance.
-- **Details** lays everything out as a table you can sort by any column: type, comments, access, size and dates.
+Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Share**, **Add to Favourites**, **History**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete Design** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
 
-Cards are the starting view. Your choice is remembered on this device, so the Explorer always opens the way you left it. [List, Card and Details Views](/help/explorer/list-and-card-views/) covers the three layouts and the snapshot previews in detail.
+**Duplicate** makes a copy named after the original with "(copy)" on the end, every tab included, and puts it in your library.
 
-## Duplicating a Design
+## On a phone
 
-To make a copy of a design, open its menu (the **⋯** button on its row or card, or a right-click) and choose **Duplicate**. A notification naming the design ("“Roadmap” duplicated") confirms it, and the copy appears in the list.
-
-- **The name** is the original's with "copy" on the end, so "Roadmap" becomes "Roadmap copy". Rename it from the same menu.
-- **Where it goes:** beside the original, in the same team and folder. If you can't file a design there (a team you are not in, or a folder that isn't yours), the copy lands at the top of **My Work** instead.
-- **Everything comes with it:** every tab and its tab folders.
-- **Links between tabs** point at the copy's own tabs, so clicking one inside the copy stays inside the copy. Links to other designs and to websites are left as they are.
-- **[Default folders](/help/explorer/folders/default-folders/) don't apply.** A copy always goes beside its original, never into the folder you set as a default.
-- **A design in This Browser** duplicates as another design in This Browser, so nothing you chose to keep in this browser is uploaded. See [Offline Mode](/help/privacy-and-security/offline-mode/).
-
-If the copy can't be made, a message says so ("Could not duplicate “Roadmap”. Try again.") and nothing is created.
-
-## Finding your way around
-
-Whichever row you pick, the main pane on the right shows its contents. Inside a folder, a breadcrumb under the title traces the folder path so you can click any step to jump back up. On a phone, the menu button beside the page title opens the same sidebar as a drawer from the left; picking a page closes it. Everything works whether or not you are signed in: a guest sees the designs and folders their own browser owns, and can sign in later to carry that work into an account.
+The sidebar folds away on a small screen. Press the menu button beside the page title (**Browse sections**) to open it, and pick a page to close it again.
 
 <Tip>
   New here? Start with [My Work](/help/explorer/personal-space/) to learn folders, then let **Home**
-  show you what changed since you were last here.
+  take you back to whatever you were last working on.
 </Tip>
 
 </ArticleLayout>

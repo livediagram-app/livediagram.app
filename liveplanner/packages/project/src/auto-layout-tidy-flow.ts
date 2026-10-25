@@ -1,5 +1,5 @@
 // The editor's Tidy Up flow layout for one component (docs/specs/008-canvas/layout-cleanup.md "Tidy
-// Up keeps a flowchart a flowchart"). The same layered pipeline as the graph-input flow
+// Up keeps a flowchart a flowchart"). The same layered pipeline as the auto-layout flow
 // (auto-layout.ts), fed the tidy ranking (auto-layout-tidy-rank.ts): side steps share their
 // decision's rank and are kept right beside it, and the gaps are sized to the arrow labels that
 // have to fit in them rather than one constant.

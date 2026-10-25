@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Which guided tour is on screen (docs/specs/007-editor/editor-tour.md, docs/specs/012-collaboration/workshop-tour.md):
 // the welcome and Workshop tours never run at once, so each host publishes itself here while it is active and waits for the others to clear. A module

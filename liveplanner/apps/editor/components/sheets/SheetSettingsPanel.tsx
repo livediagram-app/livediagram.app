@@ -17,7 +17,7 @@ import {
   lucideRotateCcw,
   lucideTable,
   lucideTrash2,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   AXIS_SIZE_MAX,
   COLUMN_WIDTH_MIN,
@@ -35,10 +35,9 @@ import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection'
 import { SheetNamedRanges } from './SheetNamedRanges';
 import { SheetFormatRuleList, SheetValidationRules } from './rules/SheetRuleSettings';
 import { ConditionalFormatIcon, ValidationIcon } from './sheet-icons';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { SigmaIcon } from './sheet-icons';
-import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
-import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
+import { SettingsRowShell, SettingsToggleRowView } from '@liveworkspace/settings-ui';
 import { NumberStepper } from '@/components/primitives/NumberStepper';
 import { OptionRows } from '@/components/plan/OptionRows';
 import {
@@ -212,12 +211,12 @@ export function SheetSettingsPanel({
             <ViewGlyph />,
             <>
               <SettingsBody>
-                <SettingsRow
+                <SettingsToggleRowView
                   row={row('grid', 'Gridlines', 'The lines between the cells, for everyone.')}
                   checked={layout.showGrid !== false}
                   onChange={(on) => actions.setOptions({ showGrid: on })}
                 />
-                <SettingsRow
+                <SettingsToggleRowView
                   row={row(
                     'headers',
                     'Row and Column Headers',

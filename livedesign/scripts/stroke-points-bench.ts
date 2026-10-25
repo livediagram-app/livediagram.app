@@ -17,7 +17,7 @@ import {
   type Element,
   type FreehandElement,
 } from '../packages/design/src/index';
-import { clearStrokePointsCache } from '../packages/design/src/stroke-points-cache';
+import { clearStrokePointsCache } from '../../packages/model-core/src/stroke-points-cache';
 
 const STROKES = 3_300;
 const POINTS = 66_000;

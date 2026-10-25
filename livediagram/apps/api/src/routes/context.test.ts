@@ -1,33 +1,51 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
+import type { ItemGrant } from '../index-service';
+import type { RouteContext, WorkbenchContext } from './context';
+import {
+  COMMUNITY_CONTENT,
+  deniedOnTab,
+  deniedParticipate,
+  gateEdit,
+  gateGrant,
+  gateParticipate,
+  gateRead,
+  grantCallerOf,
+  ownsDocument,
+  requireOwner,
+  shareAccessOf,
+} from './context';
 
-// Route-entry guards in routes/context.ts: identity resolution + the
-// owner/share authorisation ladder (400 no-owner, 404 missing,
-// 403 foreign), plus the header readers. The 404-before-403 ordering is
-// a deliberate access-trust property (a foreign id can't be distinguished
-// from a missing one until ownership is proven), so it's worth pinning.
+// The gates in routes/context.ts: who may do what to a canvas is the index's grant
+// (liveworkspace/docs/one-explorer-contracts.md "Grants"), read here. Levels form a ladder (view < participate
+// < edit), a tab-scoped grant reaches its own tab only, a grant for another document reaches nothing, and a workbench
+// session holds no more than its own level.
 
-const { db } = vi.hoisted(() => ({
-  db: {
-    getDocument: vi.fn(),
-    getMembership: vi.fn(),
-    getTrashedDocumentMeta: vi.fn(async () => null),
-  },
-}));
-vi.mock('../db', () => db);
-
-const { access } = vi.hoisted(() => ({
-  access: { canReadDocument: vi.fn(), canEditDocument: vi.fn(), resolveDocumentGrant: vi.fn() },
-}));
-vi.mock('../auth/document-access', () => access);
-
-import type { RouteContext } from './context';
-import { ownsDocument, requireOwnedDocument, requireOwner, sharePasswordOf } from './context';
+const grant = (over: Partial<ItemGrant> = {}): ItemGrant => ({
+  item: 'd1',
+  level: 'edit',
+  tab: null,
+  sub: 'user_a',
+  team: null,
+  exp: 2_000_000_000,
+  shareCode: null,
+  token: 'g',
+  ...over,
+});
 
 function makeCtx(
-  opts: { owner?: string | null; headers?: Record<string, string> } = {},
+  opts: {
+    owner?: string | null;
+    headers?: Record<string, string>;
+    grant?: ItemGrant | null;
+    community?: { code: string; open: boolean } | null;
+    token?: { id: string } | null;
+    workbench?: Partial<WorkbenchContext> | null;
+    verifiedUserId?: string | null;
+    bearer?: string | null;
+  } = {},
 ): RouteContext {
-  const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
+  const owner = opts.owner === undefined ? 'user_a' : opts.owner;
   const url = new URL('https://api.test/api/documents/d1');
   const request = new Request(url, { headers: opts.headers ?? {} });
   return {
@@ -35,144 +53,150 @@ function makeCtx(
     env: {} as Env,
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
-    clerkUserId: null,
-    verifiedUserId: null,
-    clerkEmail: null,
+    accountUserId: null,
+    verifiedUserId: opts.verifiedUserId ?? null,
+    accountEmail: null,
     resolveOwner: () => owner,
+    token: opts.token ?? null,
+    workbench: (opts.workbench as WorkbenchContext | null) ?? null,
+    teams: [{ id: 'team_1', name: 'T', role: 'member' }],
+    bearer: opts.bearer ?? null,
+    grant: opts.grant === undefined ? grant() : opts.grant,
+    community: opts.community ?? null,
   };
 }
 
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+describe('the grant gates', () => {
+  it('climb the ladder: each level holds everything below it', async () => {
+    const view = makeCtx({ grant: grant({ level: 'view' }) });
+    expect(await gateRead(view, 'd1')).toBe(true);
+    expect(await gateParticipate(view, 'd1')).toBe(false);
+    expect(await gateEdit(view, 'd1')).toBe(false);
+    const part = makeCtx({ grant: grant({ level: 'participate' }) });
+    expect(await gateParticipate(part, 'd1')).toBe(true);
+    expect(await gateEdit(part, 'd1')).toBe(false);
+    expect(await gateEdit(makeCtx(), 'd1')).toBe(true);
+  });
 
-describe('sharePasswordOf', () => {
-  // The attempt carries the caller's network, whose guessing budget a check
-  // spends (docs/specs/013-workspace/share-password.md).
-  it('reads the X-Share-Password header with the caller network, else null', () => {
-    const request = makeCtx({
-      headers: { 'X-Share-Password': 'hunter2', 'CF-Connecting-IP': '2001:db8:0:1::5' },
-    }).request;
-    expect(sharePasswordOf(request)).toEqual({
-      value: 'hunter2',
-      rateKey: '2001:0db8:0000:0001::/64',
+  it('refuse without a grant, or with one for another document', async () => {
+    expect(await gateRead(makeCtx({ grant: null }), 'd1')).toBe(false);
+    expect(await gateRead(makeCtx({ grant: grant({ item: 'd2' }) }), 'd1')).toBe(false);
+    expect(await gateGrant(makeCtx({ grant: grant({ item: 'd2' }) }), 'd1')).toBeNull();
+  });
+
+  it('confine a tab-scoped grant to its tab, and to no document-level door', async () => {
+    const scoped = makeCtx({ grant: grant({ tab: 't1' }) });
+    expect(await gateEdit(scoped, 'd1', undefined, undefined, 't1')).toBe(true);
+    expect(await gateEdit(scoped, 'd1', undefined, undefined, 't2')).toBe(false);
+    expect(await gateRead(scoped, 'd1')).toBe(false);
+    expect(await gateGrant(scoped, 'd1')).toEqual({
+      role: 'edit',
+      tabScope: 't1',
+      shareCode: null,
+      community: false,
     });
-    expect(sharePasswordOf(makeCtx().request)).toBeNull();
+  });
+
+  it("cap a workbench session's grant at its own level", async () => {
+    const ctx = makeCtx({ workbench: { level: 'view' } });
+    expect(await gateRead(ctx, 'd1')).toBe(true);
+    expect(await gateEdit(ctx, 'd1')).toBe(false);
+  });
+
+  it('carry the share code a link grant came by', async () => {
+    const ctx = makeCtx({ grant: grant({ sub: 'link:CODE', shareCode: 'CODE', level: 'view' }) });
+    expect((await gateGrant(ctx, 'd1'))?.shareCode).toBe('CODE');
   });
 });
 
-describe('requireOwner', () => {
-  it('returns the resolved owner id', () => {
-    expect(requireOwner(makeCtx({ owner: 'owner-1' }))).toBe('owner-1');
+// A Community post's link (docs/specs/025-community/community.md "Viewing a post's document") is a content-only,
+// view-only pass while the post is open, and nothing otherwise.
+describe("a Community post's link", () => {
+  const link = grant({ sub: 'link:CODE', shareCode: 'CODE', level: 'edit' });
+
+  it('opens only the doors that pass COMMUNITY_CONTENT, to view', async () => {
+    const ctx = makeCtx({ grant: link, community: { code: 'CODE', open: true } });
+    expect(await gateRead(ctx, 'd1')).toBe(false);
+    expect(await gateGrant(ctx, 'd1')).toBeNull();
+    expect(await gateRead(ctx, 'd1', undefined, undefined, undefined, COMMUNITY_CONTENT)).toBe(
+      true,
+    );
+    expect(await gateGrant(ctx, 'd1', undefined, undefined, COMMUNITY_CONTENT)).toEqual({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'CODE',
+      community: true,
+    });
+    expect(await gateEdit(ctx, 'd1')).toBe(false);
   });
 
-  it('returns a 400 response when no caller is identified', () => {
-    const out = requireOwner(makeCtx({ owner: null }));
-    expect(out).toBeInstanceOf(Response);
-    expect((out as Response).status).toBe(400);
+  it('opens nothing once the post is not open', async () => {
+    const ctx = makeCtx({ grant: link, community: { code: 'CODE', open: false } });
+    expect(await gateGrant(ctx, 'd1', undefined, undefined, COMMUNITY_CONTENT)).toBeNull();
+  });
+
+  it('leaves any other link as the index granted it', async () => {
+    const ctx = makeCtx({ grant: link, community: { code: 'OTHER', open: true } });
+    expect(await gateEdit(ctx, 'd1')).toBe(true);
+    expect((await gateGrant(ctx, 'd1'))?.community).toBe(false);
   });
 });
 
-describe('requireOwnedDocument', () => {
-  it('400s when there is no owner', async () => {
-    const out = await requireOwnedDocument(makeCtx({ owner: null }), 'd1');
-    expect((out as Response).status).toBe(400);
-    expect(db.getDocument).not.toHaveBeenCalled();
-  });
+describe('the refusals', () => {
+  const doc = { id: 'd1', ownerId: 'user_a', teamId: null };
 
-  it('404s when the document is missing (before any ownership check)', async () => {
-    db.getDocument.mockResolvedValue(null);
-    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
-    expect((out as Response).status).toBe(404);
-  });
-
-  it('403s when the document belongs to someone else', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else', teamId: null });
-    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
-    expect((out as Response).status).toBe(403);
-  });
-
-  it('returns the document when the caller owns it', async () => {
-    const liveDoc = { id: 'd1', ownerId: 'owner-1', teamId: null };
-    db.getDocument.mockResolvedValue(liveDoc);
-    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
-    expect(out).toBe(liveDoc);
-  });
-
-  // A TEAM document's owner id is a Clerk id every teammate can read off
-  // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
-  // must not prove ownership of one — otherwise a removed member who kept the
-  // id reaches the owner-only surfaces this guard fronts: the share password
-  // in the clear, minting an edit-role link, clearing the password.
-  it('403s a TEAM document when the owner id arrives only as the guest header', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
-    // resolveOwner() returns the header value; verifiedUserId stays null.
-    const out = await requireOwnedDocument(makeCtx({ owner: 'user_owner' }), 'd1');
-    expect(out).toBeInstanceOf(Response);
-    expect((out as Response).status).toBe(403);
-  });
-
-  it('returns a TEAM document to its owner on a VERIFIED account id', async () => {
-    const liveDoc = { id: 'd1', ownerId: 'user_owner', teamId: 'team-1' };
-    db.getDocument.mockResolvedValue(liveDoc);
-    db.getMembership.mockResolvedValue({ status: 'joined' });
-    const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
-    expect(await requireOwnedDocument(ctx, 'd1')).toBe(liveDoc);
-  });
-
-  it('403s a TEAM document to an owner who is no longer in the team (docs/specs/013-workspace/team-shared-documents.md)', async () => {
-    // Removed (or left) before their work was handed on: owning the row must
-    // not keep the share-link, password and delete routes open to them.
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
-    db.getMembership.mockResolvedValue(null);
-    const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
-    expect(((await requireOwnedDocument(ctx, 'd1')) as Response).status).toBe(403);
-  });
-
-  it('403s a TEAM document for a verified caller who is not its owner', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
-    const ctx = { ...makeCtx({ owner: 'user_other' }), verifiedUserId: 'user_other' };
-    expect(((await requireOwnedDocument(ctx, 'd1')) as Response).status).toBe(403);
-  });
-
-  // The personal path is unchanged and must stay that way: a guest owner id is
-  // an unguessable server-minted UUID, which is what makes the header safe
-  // there, and every signed-out author depends on it.
-  it('still accepts the guest header for a PERSONAL document', async () => {
-    const liveDoc = { id: 'd1', ownerId: 'guest-uuid', teamId: null };
-    db.getDocument.mockResolvedValue(liveDoc);
-    expect(await requireOwnedDocument(makeCtx({ owner: 'guest-uuid' }), 'd1')).toBe(liveDoc);
+  it('answer a grant scoped to another tab as missing, anything else as forbidden', async () => {
+    expect((await deniedOnTab(makeCtx({ grant: grant({ tab: 't1' }) }), doc)).status).toBe(404);
+    expect((await deniedOnTab(makeCtx({ grant: null }), doc)).status).toBe(403);
+    expect(
+      (await deniedParticipate(makeCtx({ grant: grant({ tab: 't1' }) }), doc, 't2')).status,
+    ).toBe(404);
+    expect(
+      (await deniedParticipate(makeCtx({ grant: grant({ level: 'view' }) }), doc)).status,
+    ).toBe(403);
   });
 });
 
 describe('ownsDocument', () => {
-  it('requires a verified account id for a team document, not the header', async () => {
-    db.getMembership.mockResolvedValue({ status: 'joined' });
-    const team = { ownerId: 'user_owner', teamId: 'team-1' };
-    expect(await ownsDocument(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
-    expect(
-      await ownsDocument({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
-    ).toBe(true);
-  });
-
-  it('requires the owner of a team document to still be a joined member', async () => {
-    db.getMembership.mockResolvedValue(null);
-    const team = { ownerId: 'user_owner', teamId: 'team-1' };
-    expect(
-      await ownsDocument({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
-    ).toBe(false);
-  });
-
-  it('accepts the hybrid identity for a personal document', async () => {
-    const personal = { ownerId: 'guest-uuid', teamId: null };
-    expect(await ownsDocument(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
-    expect(await ownsDocument(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
-  });
-
-  it('is false when neither identity resolves', async () => {
-    expect(await ownsDocument(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(
+  it('is the document’s owner holding a grant on it', async () => {
+    expect(await ownsDocument(makeCtx(), { id: 'd1', ownerId: 'user_a' })).toBe(true);
+    expect(await ownsDocument(makeCtx({ owner: 'user_b' }), { id: 'd1', ownerId: 'user_a' })).toBe(
       false,
     );
-    expect(await ownsDocument(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
+    expect(await ownsDocument(makeCtx({ grant: null }), { id: 'd1', ownerId: 'user_a' })).toBe(
+      false,
+    );
+  });
+});
+
+describe('who the index is asked for', () => {
+  it('is an API token’s account, with its teams, under this app’s key', () => {
+    expect(grantCallerOf(makeCtx({ token: { id: 't' }, verifiedUserId: 'user_a' }))).toEqual({
+      kind: 'delegate',
+      personId: 'user_a',
+      teams: ['team_1'],
+    });
+  });
+
+  it('is a browser’s own bearer otherwise (none for a link visitor)', () => {
+    expect(grantCallerOf(makeCtx({ bearer: 'tok' }))).toEqual({ kind: 'bearer', token: 'tok' });
+    expect(grantCallerOf(makeCtx())).toEqual({ kind: 'bearer', token: null });
+  });
+
+  it('sends a link’s code and password on', () => {
+    expect(shareAccessOf(makeCtx({ headers: { 'X-Share-Code': 'C' } }).request)).toEqual({
+      code: 'C',
+    });
+    expect(
+      shareAccessOf(makeCtx({ headers: { 'X-Share-Code': 'C', 'X-Share-Password': 'p' } }).request),
+    ).toEqual({ code: 'C', password: 'p' });
+    expect(shareAccessOf(makeCtx().request)).toBeNull();
+  });
+});
+
+describe('requireOwner', () => {
+  it('is the caller, or the 400 with none', () => {
+    expect(requireOwner(makeCtx())).toBe('user_a');
+    expect((requireOwner(makeCtx({ owner: null })) as Response).status).toBe(400);
   });
 });

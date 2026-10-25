@@ -6,8 +6,8 @@ Derived from [Trusted Types](../trusted-types.md).
 
 | Term             | Identifier                                     | Meaning                                                                                      |
 | ---------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| The header value | `TRUSTED_TYPES_CSP`                            | `require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs default`         |
-| Markup policy    | `MARKUP_POLICY` (`'livedesign-markup'`)        | Makes `TrustedHTML` from livedesign's own builders' markup                                   |
+| The header value | `TRUSTED_TYPES_CSP`                            | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs default`      |
+| Markup policy    | `MARKUP_POLICY` (`'liveworkspace-markup'`)     | Makes `TrustedHTML` from livedesign's own builders' markup                                   |
 | Default policy   | `'default'`                                    | The browser's fallback for a plain string at a sink                                          |
 | Boot script      | `trustedTypesBootScript(assetPrefix, origins)` | Inline, first in each layout's `<head>`: the default policy and the violation log            |
 | Asset prefix     | `''`, `/live`, `/help`, `/telemetry`           | Where an app's own build is served from (`assetPrefix` or `basePath`)                        |
@@ -86,14 +86,14 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 
 None. Every layout calls `trustedTypesBootScript(prefix)` with no origins, so `ORIGINS` is `[]`. Sign-in used to load
 Clerk's script (from the origin in its publishable key) and Cloudflare Turnstile for its sign-up CAPTCHA; it now
-happens on the accounts site (accounts.liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
+happens on the accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
 `origins` stays as a parameter for a third party that one day needs it.
 
 ## Interfaces and contracts
 
 ```ts
 export const TRUSTED_TYPES_CSP: string;
-export const MARKUP_POLICY: 'livedesign-markup';
+export const MARKUP_POLICY: 'liveworkspace-markup';
 export function trustedHtml(markup: string): TrustedHTML | string;
 export function isAllowedScriptUrl(
   url: string,

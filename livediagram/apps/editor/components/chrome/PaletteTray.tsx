@@ -7,7 +7,7 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
+import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -156,7 +156,7 @@ export function PaletteTray({
           {lead}
         </span>
         {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
-            ("Tap to drop or drag to draw Squ…"). */}
+            ("Click to drop or drag to draw Squ…"). */}
         <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
         {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
       </div>

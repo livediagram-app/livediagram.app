@@ -28,10 +28,6 @@ describe('workspaceFramePath', () => {
       '/embed/workbench/explorer/team?id=t1',
     ],
     [
-      { kind: 'explorer', node: { kind: 'tags', id: 'g1' } },
-      '/embed/workbench/explorer/tags?id=g1',
-    ],
-    [
       { kind: 'project', projectId: 'doc-1', tabId: null, shareCode: null },
       '/embed/workbench/project/doc-1',
     ],

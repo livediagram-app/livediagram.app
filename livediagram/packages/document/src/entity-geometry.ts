@@ -2,8 +2,8 @@
 // sizes one: the canvas (EntityView), the SVG export (svgEntityRows), graph
 // authoring and the MCP (a box tall enough for its rows).
 
-import { rotatePoint } from './geometry-primitives';
-import { labelFontPx } from './label-font';
+import { rotatePoint } from '@liveworkspace/model-core/geometry-primitives';
+import { labelFontPx } from '@liveworkspace/model-core/label-font';
 import type { TextSize } from './index';
 
 // A field row: an 11 px name at the `leading-tight` 1.25, with a 3 px gap

@@ -7,9 +7,9 @@ Status: shipped
 A design that has held nothing for 30 days moves to the
 [Trash](trash.md) on its own. From there the Trash's usual 30 days apply, so it
 can still be restored, and it is removed for good only after both clocks have
-run. An empty design gives its owner nothing, but every one of them is a row
-the database keeps, lists and sweeps; letting them go keeps the Explorer and
-the database clean without anyone having to tidy up.
+run. An empty design gives its owner nothing, but every one of them is an
+item the index keeps and lists and a Durable Object the platform keeps; letting
+them go keeps the Explorer clean without anyone having to tidy up.
 
 ## Which designs
 
@@ -35,11 +35,14 @@ browser, cost the server nothing, and are never touched.
 
 ## The sweep
 
-The api worker's daily `0 3 * * *` cron, the one that already purges the Trash,
-moves every live design that is both empty and stale to the Trash. The check
-and the move are one statement, so a design saved a moment before the sweep
-is not moved. The sweep is capped per run, oldest first, so a backlog drains
-over a few days. It logs how many it moved.
+liveworkspace's index runs it, once for every app, in its daily run (the one that purges the Trash):
+`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`. Each design's Durable Object pushes its summary to the
+index after every save, and the summary carries `hasContent`, whether any tab holds anything (the rule above). The
+sweep moves every live design whose summary says `hasContent: false`, or that never pushed one (its content was
+never written), and that has not changed for 30 days, to the Trash with the reason `empty`. The check and the move
+are one statement, so a design saved a moment before is not moved. A team design goes to its team's Trash. The sweep
+moves at most 1,000 items a run, oldest change first, so a backlog drains over a few days, and it logs how many it
+moved. The app runs no sweep of its own.
 
 The move stamps the design's Trash time with **the moment of the sweep**,
 never its creation or last save. The Trash's purge counts from that time, so an
@@ -67,10 +70,10 @@ author: it records no one, so it adds nothing to erase on account deletion.
 
 ## Restore
 
-Restoring an automatically moved design works like any restore, and counts as
-a save: its 30 stale days start again from the restore, so it is not moved
-straight back by the next sweep. A design a person deleted restores exactly
-as it was, its last-saved time untouched.
+Restoring an automatically moved design works like any restore. The index remembers the change it was moved for
+(`empty_swept_for`), so it is never moved back for that same change: only after it is saved again and then left
+empty for 30 days does it go to the Trash again. A design a person deleted restores exactly as it was, its
+last-saved time untouched.
 
 ## The API
 

@@ -39,7 +39,6 @@ export function SearchBox({
   onTagChosen,
   onSortChosen,
   onCategoryChosen,
-  mineAvailable = false,
   onMineChosen,
 }: {
   value: string;
@@ -51,8 +50,6 @@ export function SearchBox({
   onSortChosen?: () => void;
   // Told when a category is chosen, for telemetry.
   onCategoryChosen?: () => void;
-  // Whether this build has sign-in, so My Shares can be offered.
-  mineAvailable?: boolean;
   // Told when My Shares is turned on, for telemetry.
   onMineChosen?: () => void;
 }) {
@@ -154,17 +151,15 @@ export function SearchBox({
             <CloseIcon size={14} aria-hidden />
           </button>
         ) : null}
-        {mineAvailable || mine ? (
-          <SearchControlButton
-            icon={<MineIcon />}
-            label="My Shares"
-            aria-label="My Shares"
-            aria-pressed={mine}
-            active={mine}
-            chevron={false}
-            onClick={toggleMine}
-          />
-        ) : null}
+        <SearchControlButton
+          icon={<MineIcon />}
+          label="My Shares"
+          aria-label="My Shares"
+          aria-pressed={mine}
+          active={mine}
+          chevron={false}
+          onClick={toggleMine}
+        />
         <CategoryMenu
           value={communitySearchCategory(draft)}
           facets={facets}

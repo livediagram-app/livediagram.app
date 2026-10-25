@@ -8,7 +8,7 @@ import {
   type Node,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livedesign/source-ast';
+import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
@@ -19,15 +19,23 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-const THEME_CSS = readFileSync(`${REPO}packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), then this product's palette over it
+// (packages/tailwind-config/theme.css): a later block's declarations win, as they do in the cascade.
+const THEME_CSS = [
+  `${REPO}../packages/tailwind-config/theme.css`,
+  `${REPO}packages/tailwind-config/theme.css`,
+]
+  .map((path) => readFileSync(path, 'utf8'))
+  .join('\n');
 
-/** The `--color-brand-*` declarations of the light `@theme` block. */
+/** The `--color-brand-*` declarations of the light `@theme` blocks, a later block's winning. */
 function lightBrand(): Record<string, string> {
-  const at = THEME_CSS.search(/(^|\n)@theme\s*\{/);
-  const body = THEME_CSS.slice(THEME_CSS.indexOf('{', at) + 1, THEME_CSS.indexOf('}', at));
-  return Object.fromEntries(
-    [...body.matchAll(/--color-brand-(\d+)\s*:\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]),
-  );
+  const out: Record<string, string> = {};
+  for (const { index } of THEME_CSS.matchAll(/(^|\n)@theme\s*\{/g)) {
+    const body = THEME_CSS.slice(THEME_CSS.indexOf('{', index) + 1, THEME_CSS.indexOf('}', index));
+    for (const m of body.matchAll(/--color-brand-(\d+)\s*:\s*([^;]+);/g)) out[m[1]!] = m[2]!.trim();
+  }
+  return out;
 }
 
 /** WCAG 2.2 relative luminance of a `#rrggbb` colour. */
@@ -120,6 +128,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = ['apps', 'packages']
   .flatMap((top) => readdirSync(`${REPO}${top}`).map((name) => `${REPO}${top}/${name}`))
   .filter((dir) => statSync(dir).isDirectory())
+  // The editor code every editor shares (@liveworkspace/workbench), which this product's editor renders too.
+  .concat(`${REPO}../packages/workbench/src`)
   .flatMap((dir) => sourceFiles(dir))
   .map((path) => ({ path, text: readFileSync(path, 'utf8') }));
 
@@ -172,9 +182,8 @@ describe('solid brand fills in light mode', () => {
 // Brand-coloured ink that carries no meaning a reader needs, so the contrast minimum does not apply
 // (WCAG 1.4.3 and 1.4.11 exempt pure decoration). Everything else in light brand ink is brand-700.
 const DECORATIVE_INK = new Set([
-  'apps/live/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
+  '../packages/workbench/src/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
   'apps/live/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
-  'apps/live/components/plan/dashboard/DashboardSheetMetric.tsx', // an aria-hidden sparkline
 ]);
 
 describe('brand ink in light mode', () => {

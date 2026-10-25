@@ -13,6 +13,7 @@ A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
+- **The code is shared.** The pages, components, MDX styles, SEO helpers (metadata, social cards, JSON-LD, sitemap), styles and catalogue checks are `@liveworkspace/help-site` ([README](../../../../packages/help-site/README.md)), one copy for every product's help centre. This app binds it to its own catalogue, art and facts (`lib/help-site.tsx` on the server, `lib/help-client.tsx` in the browser). It keeps its articles, illustrations, catalogue, card art, header, footer, home layout (`lib/home-sections.ts`) and page copy. A help-centre change that is not about this product's content is made there, once, for every product.
 
 It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livedocuments's) and the **brand**: livedocuments is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livedocuments/tailwind-config` brand ramp and slate neutrals to match `apps/marketing`.
 
@@ -22,7 +23,7 @@ livedocuments is free and MIT-licensed with no plan for a paid tier (see [Open s
 
 ## Information architecture
 
-The **`@livedocuments/help-registry` package** is the single source of truth for categories and articles; `apps/help/lib/articles.ts` re-exports it so the help app's `@/lib/articles` import path stays stable. It lives in `packages/` (not in the help app) because the live editor's search panel consumes the same catalogue (see "Help in global search" below). Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). The link helpers (`articleHref`, `categoryHref`) also live apart in the data-free `@livedocuments/help-registry/hrefs`, so a page that only builds links never bundles the catalogue: the article layout reads its own URL and its parent's off the route (`lib/article-route.ts`) and imports only the hrefs, and the search box loads the registry on the reader's first focus, hover or keystroke ([Web performance](../016-platform/web-performance.md)). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
+The **`@livedocuments/help-registry` package** is the single source of truth for categories and articles; `apps/help/lib/articles.ts` re-exports it so the help app's `@/lib/articles` import path stays stable. It lives in `packages/` (not in the help app) because the live editor's search panel consumes the same catalogue (see "Help in global search" below). Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). The arrays are this product's; their shapes (`Article`, `Category`) and the helpers are `@liveworkspace/help-registry`'s (the monorepo's `packages/help-registry`, shared by every product), which the package binds to its arrays with `createHelpRegistry`, as its `telemetry` module binds its id overrides with `createHelpTelemetryIds`. The link helpers (`articleHref`, `categoryHref`) also live apart in the data-free `@liveworkspace/help-registry/hrefs`, so a page that only builds links never bundles the catalogue: the article layout reads its own URL and its parent's off the route (`../packages/help-site/src/lib/article-route.ts`) and imports only the hrefs, and the search box loads the registry on the reader's first focus, hover or keystroke ([Web performance](../016-platform/web-performance.md)). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
 
 **Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title — synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
 
@@ -32,7 +33,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedocuments API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern only the hosted service at livedocuments.app. These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
+**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedocuments.app included (a self-hosted copy is the operator's responsibility), so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
 
 | slug                   | title                | kind    |
 | ---------------------- | -------------------- | ------- |
@@ -69,7 +70,7 @@ The feature categories group the feature guides by area. **Pages is the first**:
 
 - **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides and infographics).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
-- **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
@@ -121,7 +122,7 @@ per-category one. That fallback had 13 of the 40 icon-showing support cards on i
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
 icon.) Both halves of the catalogue are now fully illustrated, and a test per half keeps
-them that way: `feature-icons.test.ts` and `article-icons.test.ts` each fail on a
+them that way: `feature-icons.test.ts` and `help-site.test.ts` each fail on a
 card with no glyph of its own, naming the slug. The support one also reads WHICH
 browse pages number their cards straight off the pages, rather than hardcoding
 that Getting Started is the numbered one — so if the numbering ever moves, its
@@ -182,8 +183,7 @@ set — a padlock is `locking`, a chain is `links`, a picture is `images` — so
 draw the password field, the deadline, the page the document sits inside, and the
 refresh. And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
-palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
-was the browsing itself.
+palette, so what was left to draw was the browsing itself.
 
 Two mechanical checks earn their keep alongside the render, because both catch
 things the eye skims: every path must parse (a leading moveto, seven-parameter
@@ -194,13 +194,19 @@ checker has to split ARC parameters properly — SVG allows the two flags to be
 glued to the following coordinate (`0 1 4.5` written `014.5`), and a naive number
 scan reads that as one value and then reports perfectly good glyphs as broken.
 
-The system has three layers, all under `apps/help`:
+The system has these layers. The kit, and every figure that is the same in each product that shows it, live
+once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
 
-- **`components/illustrations/primitives.tsx`** — the shared SVG kit (`Scene`,
+- **`../packages/help-site/src/art/primitives.tsx`** — the shared SVG kit (`Scene`,
   `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`, `Panel`, `Dialog`,
   `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`). Every figure composes
   from these so the house style (white panels, slate borders, sky-blue `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
+- **`../packages/help-site/src/art/illustrations/<area>.tsx`** — a figure that is the
+  same in every product that shows it (the colour and border controls, the layers
+  panel, undo and redo, the presentation tools): drawn once, and imported by an
+  article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
+  the app while it shows that product's own work, words or palette.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
@@ -219,7 +225,7 @@ The system has three layers, all under `apps/help`:
   keeps them inline and needs no parts file. The marketing feature-art files
   (`apps/marketing/components/feature-art/<name>-parts.tsx`) follow the same
   convention.
-- **`components/Figure.tsx`** — frames any scene in an "editor viewport" card
+- **`../packages/help-site/src/components/Figure.tsx`** — frames any scene in an "editor viewport" card
   with an optional caption. Registered globally in `mdx-components.tsx` (like
   `Tip` / `Note`), so an article only imports the specific scene and writes
   `<Figure caption="…"><Scene/></Figure>`.
@@ -239,11 +245,11 @@ One rule for every public page, shared with the marketing site ([Marketing site]
 
 - **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The document `<title>` still reads "<Title> | livedocuments": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | livedocuments`.
 - **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
-- **Every article and category landing has its own card**: `og:type` article, Twitter `summary_large_image`, with a 1200x630 PNG at `/help/og/<route>.png` (`lib/help-cards.ts`, rendered at build time by `app/og/[...card]/route.tsx` through the shared `renderSocialCard` in `@livedocuments/ui`, the one marketing's cards use). The card shows the top category as its kicker (Help Topic on a landing), the title, the registry's card description through `cardSubtitle` (two lines, ending on a whole word) and "Help Centre" in its footer beside the livedocuments.app pill. Pages outside the registry (the home, the features index) carry the brand card marketing generates (`/opengraph-image`, `/twitter-image`).
-- **The sitemap dates each page by its last commit** (`lib/article-dates.ts`): one `git log` pass over `app/` at build time, page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.
+- **Every article and category landing has its own card**: `og:type` article, Twitter `summary_large_image`, with a 1200x630 PNG at `/help/og/<route>.png` (`../packages/help-site/src/lib/help-cards.ts`, rendered at build time by `app/og/[...card]/route.tsx` through the shared `renderSocialCard` in `@livedocuments/ui`, the one marketing's cards use). The card shows the top category as its kicker (Help Topic on a landing), the title, the registry's card description through `cardSubtitle` (two lines, ending on a whole word) and "Help Centre" in its footer beside the livedocuments.app pill. Pages outside the registry (the home, the features index) carry the brand card marketing generates (`/opengraph-image`, `/twitter-image`).
+- **The sitemap dates each page by its last commit** (`../packages/help-site/src/lib/article-dates.ts`): one `git log` pass over `app/` at build time, page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.
 - **Category landings carry `CollectionPage` structured data** whose `ItemList` names the articles the landing lists, in order (`collectionJsonLd`, rendered by `FeatureCategoryIndex` and by `BrowsePage` given a `listing`). The home carries the `WebSite` node. There is no `SearchAction`: Google retired the sitelinks search box it fed, and help search is not addressable by URL.
 - **Breadcrumb structured data** is a `BreadcrumbList` rooted at the help home, built by the shared `breadcrumbJsonLd` (the one marketing's `BreadcrumbJsonLd` uses) and rendered through `JsonLd` from the `Breadcrumb` component.
-- **A sub-article's parent crumb and its `TechArticle` url come from its route.** Sub-articles nest under their parent's folder, so the parent is the route one level up and the article's own URL is its route (`lib/article-route.ts`), never rebuilt from the page's `categorySlug` prop, which names the top category on some pages and the parent's path on others. `article-route.test.ts` checks every sub-article sits directly under a real page.
+- **A sub-article's parent crumb and its `TechArticle` url come from its route.** Sub-articles nest under their parent's folder, so the parent is the route one level up and the article's own URL is its route (`../packages/help-site/src/lib/article-route.ts`), never rebuilt from the page's `categorySlug` prop, which names the top category on some pages and the parent's path on others. `article-route.test.ts` checks every sub-article sits directly under a real page.
 - **Meta descriptions are 50 to 160 characters**, the same range the marketing site holds, so a search result shows each one whole; the article meta is written for the result, not copied from the search card. **Page titles are unique** across articles, static pages and category landings. `meta-descriptions.test.ts` holds every page to both.
 
 ## In-editor entry point
@@ -289,4 +295,4 @@ per-article `keywords`, and `help-search.ts` now derives from it.)
 
 ## articleCount is pinned by a test
 
-A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `registry-counts.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.
+A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.

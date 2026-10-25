@@ -5,7 +5,7 @@ import {
   pasteIntoTable,
   type TableElement,
 } from '@livediagram/document';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 
 // The in-cell contentEditable editor (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of
 // TableView's cell render: the spreadsheet-style keyboard layer (Enter

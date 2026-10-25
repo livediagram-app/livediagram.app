@@ -3,15 +3,13 @@
 // The sign-in and sign-up pages (docs/specs/014-identity/auth-and-guest-access.md "Routes"). Both
 // hand the visitor to the liveworkspace accounts site, which signs in new and returning people
 // alike with an emailed code, and brings them back to where they were going. The page only shows
-// itself when the hand-off came back with a problem, or when sign-in is off for the deployment.
+// itself when the hand-off came back with a problem.
 
 import { buttonClassName, ButtonContent } from '@livedocuments/ui';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
-import { signInEnabled } from '@/lib/auth-config';
 import {
   AuthCard,
-  AuthDisabledNotice,
   RedirectingCard,
   accountsSignInUrl,
   guestReturnHref,
@@ -46,7 +44,6 @@ function Handoff({ defaultDestination }: { defaultDestination: string }) {
 }
 
 export function AuthHandoff({ defaultDestination }: { defaultDestination: string }) {
-  if (!signInEnabled) return <AuthDisabledNotice />;
   return (
     <Suspense fallback={<RedirectingCard />}>
       <Handoff defaultDestination={defaultDestination} />

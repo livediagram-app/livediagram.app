@@ -6,7 +6,10 @@
 
 import { useEffect, useRef } from 'react';
 import type { Element, ThemeDefinition } from '@livedocuments/document';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import {
   applyStyleMemory,
   forgetStyleKinds,
@@ -17,7 +20,7 @@ import {
   type StyleKindKey,
   type StyleMemory,
 } from '@/lib/style-memory';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 

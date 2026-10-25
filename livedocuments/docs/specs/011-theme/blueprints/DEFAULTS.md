@@ -8,5 +8,4 @@ One row per default applied where a spec is silent or qualitative.
 | D2  | multicolour-themes | Log levels                                    | `console.info` for an apply, `console.warn` for an empty palette, matching the `[tag]` convention in `apps/editor` |
 | D3  | multicolour-themes | Where the contrast rule is computed           | A `contrastRatio` helper in `packages/document/src/colors.ts`, beside `hexToRgb` and `isLightColor`                |
 | D4  | multicolour-themes | "Without exhausting the call stack"           | An explicit-stack depth-first walk; same result as recursion, because each subtree takes one index                 |
-| D5  | multicolour-themes | Rejection wording                             | `badRequest('empty palette')`, following the route's lowercase messages (`'name too long'`)                        |
 | D6  | multicolour-themes | Branch map reuse in a switch                  | Build once, share for `prev` and `next`; the map depends only on the elements                                      |

@@ -8,9 +8,7 @@ import { handleApp } from './app-routes';
 import { communityEnabled, type Env } from './env';
 import { notFound, preflight, withCors } from './http';
 import { handlePublic } from './public-routes';
-
-const under = (pathname: string, base: string) =>
-  pathname === base || pathname.startsWith(`${base}/`);
+import { under } from '@liveworkspace/index-app/worker-http';
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

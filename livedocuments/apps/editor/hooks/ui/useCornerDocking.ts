@@ -8,7 +8,7 @@ import {
   type PanelCorner,
   type PanelId,
 } from '@/lib/panel-layout';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { usePanelDock } from '@/hooks/ui/usePanelDock';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { track } from '@/lib/telemetry';

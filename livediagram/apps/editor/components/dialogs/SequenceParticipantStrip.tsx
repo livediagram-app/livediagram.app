@@ -18,7 +18,7 @@ import {
   lucideChevronRight,
   lucidePlus,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 
 const LeftIcon = lucideGlyph(lucideChevronLeft, 15);
 const RightIcon = lucideGlyph(lucideChevronRight, 15);

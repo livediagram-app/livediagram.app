@@ -1,7 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { BackBar } from '@/components/primitives/BackBar';
-import { Button, trustedHtml } from '@livedesign/ui';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
+import { Button, trustedHtml, Switch } from '@livedesign/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
 
@@ -131,7 +130,7 @@ export function ImageExportPanel({
               </span>
             </span>
             <span className="pointer-events-none relative">
-              <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
+              <Switch presentational size="sm" checked={isometric} />
             </span>
           </div>
           {/* Background-pattern toggle. */}
@@ -152,7 +151,7 @@ export function ImageExportPanel({
                 Paint the tab's grid / dots / texture behind what's on the canvas.
               </span>
             </span>
-            <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
+            <Switch presentational size="sm" checked={pattern} />
           </button>
         </>
       )}
@@ -176,7 +175,7 @@ export function ImageExportPanel({
               Include layers you've hidden in the Layers panel.
             </span>
           </span>
-          <ToggleSwitch presentational checked={hiddenLayers} label="Export hidden layers" />
+          <Switch presentational size="sm" checked={hiddenLayers} />
         </button>
       ) : null}
       {error ? (

@@ -4,7 +4,7 @@ import {
   type EventStormingNoteKind,
 } from '@livediagram/document';
 import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';

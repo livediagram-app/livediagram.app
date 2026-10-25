@@ -82,7 +82,7 @@ export type LoggedOp = { seq: number; from: string; op: unknown };
 //     hold the ops it missed).
 //   - Fresh client (no epoch, lastSeq 0) → replay the whole current log;
 //     element ops apply idempotently by id, so re-applying ops the client
-//     already has from its D1 hydrate is harmless.
+//     already has from its hydrate is harmless.
 //   - Any other epoch mismatch with prior progress → resync: the client saw a
 //     previous room instance and we can't map its seq onto ours.
 export function resolveCatchup(

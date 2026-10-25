@@ -9,7 +9,7 @@ import { type ReactNode } from 'react';
 import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livedesign/design';
 
 import { SizeButton } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 
 import { MARKER_LABELS, ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
@@ -23,7 +23,7 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
 import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 import { lucideGlyph } from '@livedesign/ui';
-import { lucideCircleDot } from '@livedesign/icons/lucide';
+import { lucideCircleDot } from '@liveworkspace/icons/lucide';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 

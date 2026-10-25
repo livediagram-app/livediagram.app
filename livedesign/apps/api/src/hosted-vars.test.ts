@@ -90,8 +90,8 @@ describe('hosted profile', () => {
       expect(declared, `[${table}] declares hosted-only vars`).toEqual([]);
     }
     // Vacuity guard: the table reader must still see what IS committed.
-    expect(tomlTableKeys(toml, 'vars')).toContain('AI_ALLOWED_ORIGINS');
-    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('AI_ALLOWED_ORIGINS');
+    expect(tomlTableKeys(toml, 'vars')).toContain('INDEX_ORIGIN');
+    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('INDEX_ORIGIN');
   });
 });
 
@@ -105,6 +105,10 @@ describe('hosted-vars script', () => {
     const { buildEnv } = await load();
     expect(buildEnv({ TELEMETRY_ENABLED: 'true', IMAGE_MAX_PER_OWNER: '1' })).toEqual([
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
+    ]);
+    expect(buildEnv({ TELEMETRY_ENABLED: 'true', TELEMETRY_URL: 'https://t.test' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
+      'NEXT_PUBLIC_TELEMETRY_URL=https://t.test',
     ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
   });
@@ -155,7 +159,7 @@ describe('hosted-vars script', () => {
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
         { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
-        { type: 'd1', name: 'DB' },
+        { type: 'durable_object_namespace', name: 'DESIGN_ROOM' },
       ],
     },
   };

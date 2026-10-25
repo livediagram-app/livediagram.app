@@ -36,7 +36,7 @@ element menu, so no quick bar. A Participant still comments from the selection t
 - `apps/editor/components/palette/ElementMenuQuickBar.tsx`: `ElementMenuQuickBar` (`role="toolbar"`, "Quick actions",
   `data-element-quick-bar`), `quickBarItems(target, handlers)`; rendered first in `EditorContextMenu`.
 - Clear Styles: `QuickStyleHost` publishes the Quick Style view's targets and its `clearStyles` to
-  `apps/editor/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
+  `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
   press running the latest; the bar shows it when the store's targets include the element. Its telemetry is the
   panel's (`Element` / `Changed` / `QuickClearStyles`).
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`.

@@ -17,11 +17,10 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideThermometer,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MODE_GLYPHS } from '@liveplanner/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -66,32 +65,10 @@ export function StrikethroughIcon() {
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
-export function PanIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="pan" size={size} />;
-}
-
-export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="select" size={size} />;
-}
-
-// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the canvas in
-// 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="isometric" size={size} />;
-}
-
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
-// the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
-// element-to-element format tool): this one styles the whole tab.
+// the CanvasThemeDialog: it styles the whole tab.
 export { ThemeLookIcon } from '@liveplanner/ui';
-
-// Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
-// "Copy formatting" chip (drawn once in @liveplanner/ui): picks one
-// element's style and paints it onto others. Two-phase persistent mode
-// (pick a base, then tap targets).
-export { FormatPainterIcon } from '@liveplanner/ui';
 
 // Zen / focus mode (docs/specs/007-editor/zen-mode.md): an "expand to fullscreen" glyph (four
 // corner arrows pushing outward) for the palette enter button.
@@ -227,56 +204,12 @@ export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-// --- The collaboration family (docs/specs/012-collaboration/temperature-check.md, decision-record.md) -----
-// In-house members share one 16-unit frame; the rest are Lucide (thermometer).
-
-function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
-  return (
-    <Glyph size={size} units={16}>
-      {children}
-    </Glyph>
-  );
-}
+// --- The collaboration family (docs/specs/012-collaboration/temperature-check.md): Lucide's thermometer.
 
 export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
       <Prims prims={lucideThermometer} />
-    </Glyph>
-  );
-}
-
-export function DecisionIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a record card with a tick in its corner chip */}
-      <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
-      <path d="M4.8 6.2h4.4" />
-      <path d="M4.8 9h2.6" />
-      <path d="M9.4 10.6l1.3 1.3 2.2-2.6" />
-    </CollabGlyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
-export function SessionVoteIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="3" y="5" width="18" height="14" rx="2.2" />
-      <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-// A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @liveplanner/icons), the ONE drawing of each mode the palette uses.
-function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
-  const g = MODE_GLYPHS[mode]!;
-  return (
-    <Glyph size={size} units={g.units}>
-      <Prims prims={g.prims} />
     </Glyph>
   );
 }

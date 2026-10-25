@@ -14,8 +14,8 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livedocuments/document';
@@ -30,19 +30,19 @@ import {
 } from '@livedocuments/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import {
   TabStyleShowMeButton,
   TabStyleTourStage,
   useTabStyleTour,
 } from '@/components/tour/TabStyleTour';
-import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
+import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 import type { TextSize } from '@livedocuments/document';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
-import { easeNextStyleChange } from '@/lib/tab-style-ease';
+import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { LooksHome } from './LooksHome';
 import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
 
@@ -80,8 +80,7 @@ type CanvasThemeDialogProps = {
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
   onSetBackgroundAnimationSpeed: (speed: number) => void;
-  // Theme. `themeId` is a built-in ThemeId or a custom `custom:<uuid>`
-  // id (docs/specs/011-theme/custom-themes.md), so it's widened to string; onSetTheme applies either.
+  // Theme. `themeId` is widened to string: a tab's stored id may name no built-in theme.
   themeId: string;
   onSetTheme: (id: string) => void;
   // Font (docs/specs/004-interface-design/fonts.md). `font` null = the editor default; `defaultTextSize`
@@ -129,9 +128,9 @@ export function CanvasThemeDialog({
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
-  // behind it (see lib/modal-guard).
+  // behind it (see @liveworkspace/workbench/lib/modal-guard).
   useModalGuard(true);
-  // Every pick eases the canvas into its new colours (lib/tab-style-ease.ts).
+  // Every pick eases the canvas into its new colours (@liveworkspace/workbench/lib/tab-style-ease.ts).
   const onApplyLook = eased(applyLook);
   // The tab's four look settings: which look (or mashup) it wears.
   const lookSettings: LookSettings = {
@@ -310,7 +309,8 @@ export function CanvasThemeDialog({
                   previewTiles
                 />
               ) : (
-                <CustomThemePicker
+                <ThemeBrowser
+                  className="mt-4"
                   themeId={themeId}
                   onSelect={eased(onSetTheme)}
                   onCommit={(id) => {

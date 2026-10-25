@@ -2,15 +2,14 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
+import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import type { CanvasChromeProps } from './CanvasChrome';
-import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
-import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
+import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
@@ -54,11 +53,7 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 // wiring per panel, and each panel's element with
 // its own visibility gate. CanvasChrome distributes the returned map into
 // the corner stacks (docking) or renders the elements inline (zen). The
-// Explorer and the cluster popovers render beside the corner layer. The
-// tool-config panels, on screen only while
-// their own tool is active, live in useCanvasToolPanels.
-// The Explorer popover never moves, so its MovablePanel's move handler has nothing to do.
-const NO_MOVE = () => {};
+// Explorer and the cluster popovers render beside the corner layer.
 
 export function useCanvasChromePanels({
   props,
@@ -97,14 +92,9 @@ export function useCanvasChromePanels({
     commentRows,
     commentsPanelPosition,
     currentProjectId,
-    projectList,
-    projectListLoading,
+    currentShareCode,
+    onRenameCurrentProject,
     elements,
-    folders,
-    userPreferences,
-    onToggleRecentExclusion,
-    favouriteIds,
-    onToggleFavourite,
     tabVote,
     voteResults,
     onJumpToVoteResult,
@@ -114,55 +104,26 @@ export function useCanvasChromePanels({
     onNextVoteResult,
     onPrevVoteResult,
     onDoneVoteReview,
-    onCreateFolder,
-    onDeleteProject,
-    onDeleteFolder,
-    onDismissShared,
-    onDuplicateProject,
     onMoveCommentsPanel,
-    onMoveProjectToFolder,
-    onMoveProjectTo,
-    onLibraryChanged,
     onNewProject,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenProject,
-    onRenameCurrent,
-    onRenameFolder,
-    onTeamFolders,
     onResetCommentsPanel,
     readOnly,
     takePart,
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
-    sharedProjects,
-    teamProjects,
-    teamFolders,
-    teams,
     zenMode,
   } = props;
   // Stable handler identities for the React.memo'd Explorer so it skips re-rendering on every drag frame even
   // though this chrome host re-renders with the canvas. useStableCallbacks
   // keeps each reference fixed while always invoking the latest prop, so
   // there's no stale-closure risk despite the parent's per-frame churn.
-  // (The panels' data props are already stable: list state doesn't change
-  // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
-    onDismissShared,
-    onOpenProject,
     onNewProject,
-    onRenameCurrent,
-    onDeleteProject,
-    onDuplicateProject,
-    onCreateFolder,
-    onRenameFolder,
-    onDeleteFolder,
-    onMoveProjectToFolder,
-    onMoveProjectTo,
-    onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -202,8 +163,6 @@ export function useCanvasChromePanels({
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
   const newCardOpen = activeDockPanel === 'plan-new-card';
-  // The Format tool's panel (useCanvasToolPanels): on screen only while the tool is active.
-  const { formatEl } = useCanvasToolPanels({ props, chromeHidden, panelWiringFor });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -216,40 +175,13 @@ export function useCanvasChromePanels({
   const explorerEl =
     zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
-        recentExcludedIds={userPreferences.recentExcludedIds ?? []}
-        onToggleRecentExclusion={onToggleRecentExclusion}
-        favouriteIds={favouriteIds}
-        onToggleFavourite={onToggleFavourite}
-        // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
-        position={null}
-        projects={projectList}
-        ownerId={selfParticipant?.id ?? null}
-        folders={folders}
-        loading={projectListLoading}
-        shared={sharedProjects}
-        teams={teams}
-        teamFolders={teamFolders}
-        teamProjects={teamProjects}
-        onDismissShared={explorerHandlers.onDismissShared}
         currentProjectId={currentProjectId}
-        onMoveTo={NO_MOVE}
-        onOpenProject={explorerHandlers.onOpenProject}
+        currentShareCode={currentShareCode ?? null}
+        onRenameCurrent={onRenameCurrentProject}
         onNewProject={explorerHandlers.onNewProject}
         menuActions={explorerMenu}
-        onRenameCurrent={explorerHandlers.onRenameCurrent}
-        onDeleteProject={explorerHandlers.onDeleteProject}
-        onLibraryChanged={explorerHandlers.onLibraryChanged}
-        onDuplicateProject={explorerHandlers.onDuplicateProject}
-        onCreateFolder={explorerHandlers.onCreateFolder}
-        onRenameFolder={explorerHandlers.onRenameFolder}
-        onDeleteFolder={explorerHandlers.onDeleteFolder}
-        onTeamFolders={onTeamFolders}
-        onMoveProjectToFolder={explorerHandlers.onMoveProjectToFolder}
-        onMoveProjectTo={onMoveProjectTo ? explorerHandlers.onMoveProjectTo : undefined}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
-        asPopover
-        dismissOnOutside
         onPopoverClose={closeDockPanel}
       />
     );
@@ -352,7 +284,6 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
-    format: formatEl,
   };
   return {
     panelEls,

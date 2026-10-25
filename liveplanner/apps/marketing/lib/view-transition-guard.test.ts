@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@liveplanner/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 
-import { VIEW_TRANSITION_GUARD_SCRIPT } from './view-transition-guard';
+import { NON_MARKETING_SEGMENTS } from '@liveplanner/api-schema';
+import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
+
+// The shared guard, bound to this product's other apps as its layout binds it.
+const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
 
 const ORIGIN = 'https://liveplanner.app';
 
@@ -33,7 +37,13 @@ describe('the view transition guard', () => {
   });
 
   it('skips it into the editor, the help centre and the dashboard, and says so', () => {
-    for (const path of ['/new?via=Home.Hero', '/project/abc123', '/explorer', '/help/tabs', '/telemetry']) {
+    for (const path of [
+      '/new?via=Home.Hero',
+      '/project/abc123',
+      '/explorer',
+      '/help/tabs',
+      '/telemetry',
+    ]) {
       const { skipTransition, debug } = swapTo(`${ORIGIN}${path}`);
       expect(skipTransition).toHaveBeenCalledTimes(1);
       expect(debug).toHaveBeenCalledWith(

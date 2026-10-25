@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@liveplanner/vitest-config/sent-request';
+import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -44,7 +44,7 @@ const call = (
 
 async function setUp() {
   const room = roomRecorder();
-  const db = sqliteD1({ PROJECT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ PLAN_ROOM: room.binding } as unknown as Partial<Env>);
   await call(db, 'POST', '/api/projects', {
     id: 'D',
     name: 'Doc',

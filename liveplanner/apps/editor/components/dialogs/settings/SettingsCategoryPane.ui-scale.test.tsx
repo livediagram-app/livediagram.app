@@ -7,16 +7,16 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mobile = vi.hoisted(() => ({ value: false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 import type { UserPreferences } from '@/lib/user-preferences';
-import { getUiScalePreview } from '@/lib/ui-scale-preview';
+import { getUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { SettingsCategoryPane } from './SettingsCategoryPane';
+import { SettingsCategoryPane } from './test-pane';
 
 afterEach(() => {
   cleanup();

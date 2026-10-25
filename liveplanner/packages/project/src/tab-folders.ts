@@ -2,7 +2,7 @@
 // ordered list; a folder is a maximal *run of adjacent tabs* that
 // share a folder name, drawn under one collapsible chip. There is
 // no second ordering dimension and no folder entity — a folder is
-// just the name string carried per-tab (on the project_tabs link).
+// just the name string carried per-tab (on the plan_tabs link).
 //
 // This module is the single home for three pure helpers shared by
 // the tab-bar renderer, the client save path, and the server route:

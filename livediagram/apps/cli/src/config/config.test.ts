@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { fakeIo, NOW } from '../testing/fake-io';
 import { CAPABILITIES_CACHE_TTL_MS, loadCapabilities } from './capabilities';
-import { parseConfig } from './config-file';
+import { parseConfig } from '@liveworkspace/cli-kit/config-file';
 import { cacheDir, configDir } from './paths';
 import { DEFAULT_HOST, readConfig, resolveProfile } from './profiles';
 import { CLI_VERSION, isBelow } from './version';

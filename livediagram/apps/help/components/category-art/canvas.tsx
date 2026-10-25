@@ -1,5 +1,5 @@
-import { Arrow, Cursor, Label, SelectionBox, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Arrow, Cursor, Label, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 // Canvas: the infinite canvas itself, mid-flowchart. A decision branching to two outcomes, a sticky note pinned
 // beside it, the palette strip floating above and the zoom and undo controls in their corners.

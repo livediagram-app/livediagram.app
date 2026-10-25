@@ -5,8 +5,8 @@ import { clampIntoRange, Portal } from '@livediagram/ui';
 import type { TextRun } from '@livediagram/document';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
-import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Per-element note popover. Distinct from CommentThreadPopover: notes are a
 // SINGLE small document (no author, no thread, no resolve / replies),

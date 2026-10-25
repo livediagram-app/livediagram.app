@@ -43,7 +43,7 @@ function mapCommentThread(
 // colour onto a comment, or relabel someone else's existing one).
 //
 // A save can also carry SOMEBODY ELSE's new comment: it reached the saver
-// live, and their save landed in D1 before the author's own. That comment is
+// live, and their save landed before the author's own. That comment is
 // credited by `roomAuthors`, the name the room stamped it with when it was
 // posted (docs/specs/012-collaboration/collab-race-hardening.md), not to the saver, which is what used to happen. Its
 // author id stays empty (the saver's copy has none: it is stripped from every
@@ -139,11 +139,14 @@ export function rewriteCommentAuthors(
           };
         }
         // New comment: server-authoritative author (name, colour, and the
-        // stable id that later authorises delete-own).
+        // stable id that later authorises delete-own). A writer with no profile
+        // (a deployment with no accounts Worker keeps none) comes with an empty
+        // name and colour: the comment keeps the ones its own client put on it,
+        // and the id is still the server's.
         return {
           ...fresh,
-          authorName: writer.name,
-          authorColor: writer.color,
+          authorName: writer.name || fresh.authorName,
+          authorColor: writer.color || fresh.authorColor,
           authorId: writer.id,
           ...withMentions,
         };
@@ -217,27 +220,26 @@ export function redactTabDataAuthors(data: string, viewerId: string): string {
   }
 }
 
-// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
-// comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
-// the "someone commented on your document" notification only when a genuinely new comment landed
-// (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
-// reached the writer live first, which is not the writer commenting. Pass the elements after
-// rewriteCommentAuthors, whose author ids the server set.
-export function hasNewComments(
+// The comments `nextElements` adds over `prevElements` that `authorId` wrote, in order: what a save's
+// new-comment email (docs/specs/014-identity/transactional-email.md #1; only the writer's own: a save can carry a
+// peer's comment that reached the writer live first, which is not the writer commenting) and mention emails (docs/specs/012-collaboration/comment-mentions.md) are about. One pass
+// over each side's threads.
+export function newCommentsBy(
   nextElements: Element[],
   prevElements: Element[],
   authorId: string,
-): boolean {
+): Comment[] {
   const seen = new Set<string>();
   for (const el of prevElements) {
     for (const c of commentThreadOf(el)?.comments ?? []) seen.add(c.id);
   }
+  const out: Comment[] = [];
   for (const el of nextElements) {
     for (const c of commentThreadOf(el)?.comments ?? []) {
-      if (!seen.has(c.id) && c.authorId === authorId) return true;
+      if (!seen.has(c.id) && c.authorId === authorId) out.push(c);
     }
   }
-  return false;
+  return out;
 }
 
 // One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,

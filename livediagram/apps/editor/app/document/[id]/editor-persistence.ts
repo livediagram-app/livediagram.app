@@ -1,25 +1,16 @@
-import { getOnline } from '@/lib/online-status';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_DOCUMENT_NAME } from '@livediagram/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
-import {
-  apiListDocuments,
-  apiListSharedWith,
-  type DocumentListItem,
-  type SharedWithItem,
-  DOCUMENT_LIST_LOAD_SAFETY_MS,
-} from '@/lib/api-client';
 
 // Persistence-facing state for the editor: the autosave status pill, the
-// document name (mirrored into the browser tab title), the Explorer's
-// owned + shared document lists, and the transient import-error toast. Plus the two list-refresh helpers the
-// hydration + autosave paths call. A cohesive slice lifted out of
+// document name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists
+// are the index's, read by the shared Explorer itself. A cohesive slice lifted out of
 // useEditorState — same pattern as usePanelLayout / useEditorDialogs.
 //
-// The values render the header pill, footer "Saved X ago", Explorer
-// lists; the setters are written by the autosave,
+// The values render the header pill and the footer "Saved X ago"; the setters are written by the autosave,
 // hydration/bootstrap and room-op paths via the returned setters.
 export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useToast> }) {
   // Surfaced in the footer (bottom-right of the TabBar). The autosave
@@ -42,21 +33,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     document.title = documentName ? `${documentName} | livediagram` : 'livediagram';
   }, [documentName]);
 
-  // Every document in the local store. Used by the Explorer to render its
-  // list. Refreshed on hydration and after we save the current document
-  // (so the Explorer's "Your documents" section reflects renames + first
-  // saves in real time).
-  const [documentList, setDocumentList] = useState<DocumentListItem[]>([]);
-  // True while the very first document-list fetch is in flight, so the
-  // Explorer can render a skeleton instead of an empty "no documents"
-  // state. We only flip this off — subsequent refreshes don't reset it
-  // because they're triggered by saves and shouldn't blank the list.
-  const [documentListLoading, setDocumentListLoading] = useState(true);
-  // Documents shared with the current owner. Surfaced in the
-  // Explorer's "Shared with you" accordion. Fetched alongside the
-  // owned-document list and refreshed when the owner opens a new
-  // share link in this tab.
-  const [sharedDocuments, setSharedDocuments] = useState<SharedWithItem[]>([]);
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this
   // editor understands. Rendered as a transient toast under the
@@ -103,49 +79,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     }
   }, [saveStatus, toast]);
 
-  // Document-list refresh, fired after every autosave so the
-  // Explorer's "Updated X ago" timestamps stay fresh. Folders are
-  // explicitly NOT refetched here — they only change via folder
-  // mutations (create / rename / delete / move) which manage state
-  // optimistically themselves. Pulling them every save spammed
-  // /api/folders on every edit.
-  const refreshDocumentList = (ownerId: string) => {
-    const safety = window.setTimeout(
-      () => setDocumentListLoading(false),
-      DOCUMENT_LIST_LOAD_SAFETY_MS,
-    );
-    apiListDocuments(ownerId)
-      .then((list) => {
-        window.clearTimeout(safety);
-        setDocumentList(list);
-        setDocumentListLoading(false);
-      })
-      .catch(() => {
-        // Network glitch — the next save will retry. List staleness
-        // for a beat is acceptable; we don't want a transient error
-        // to wipe the rendered list. Drop the loading flag so the
-        // Explorer doesn't spin forever on a dead network.
-        window.clearTimeout(safety);
-        setDocumentListLoading(false);
-      });
-    // Shared-with-you is deliberately NOT fetched here. The list
-    // only changes when the user opens a NEW share URL (which
-    // navigates the page → hydration picks it up) or when the
-    // owner revokes shares (which the visitor won't see until
-    // their next page load anyway). Fetching it on every
-    // autosave-triggered refresh was burning a wasted GET
-    // /api/shared per ~500ms of active editing.
-  };
-  // One-shot shared-list fetch, called from the hydration IIFE
-  // alongside refreshDocumentList. Silent failure: the section
-  // hides when empty so a network glitch just leaves the
-  // accordion absent for this session.
-  const refreshSharedList = (ownerId: string) => {
-    apiListSharedWith(ownerId)
-      .then((items) => setSharedDocuments(items))
-      .catch(() => {});
-  };
-
   return {
     saveStatus,
     setSaveStatus,
@@ -155,15 +88,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setDocumentName,
     documentPresentation,
     setDocumentPresentation,
-    documentList,
-    setDocumentList,
-    documentListLoading,
-    setDocumentListLoading,
-    sharedDocuments,
-    setSharedDocuments,
     importError,
     setImportError,
-    refreshDocumentList,
-    refreshSharedList,
   };
 }

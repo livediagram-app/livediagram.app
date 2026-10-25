@@ -13,8 +13,6 @@ import type {
   ChartLegendPosition,
   ChartType,
   ChecklistItem,
-  EntityField,
-  FieldRemap,
   DecisionStatus,
   Element,
   ChartPaletteId,
@@ -23,8 +21,6 @@ import type {
   Finish,
   Layer,
   LegendItem,
-  MindFlow,
-  MindSpacing,
   IconAnimation,
   IconPosition,
   IconSize,
@@ -192,31 +188,11 @@ export type EditorContextMenuProps = {
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
   // canvas draws (chartRamp). Absent falls back to the built-in ramp.
   chartThemeRamp?: readonly string[];
-  // Flowchart (docs/specs/009-elements/flowchart.md): present only for an Editor on an unlocked step or
-  // chart lane, so the menu shows no Flowchart section otherwise.
-  flowchart?: import('@/components/flowchart/FlowchartMenuSections').FlowchartMenuHandlers;
-  // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
-  // in. Resolved here rather than in the menu because it is stored on the
-  // tree's ROOT, which the menu has no way to walk to.
-  mindFlow: MindFlow;
-  onSetMindFlow: (flow: MindFlow) => void;
-  // Lay the selected node's whole map out tidily in its flow (docs/specs/009-elements/mind-node.md "Tidy Map").
-  onTidyMindMap: () => void;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): the outline of the node's map; absent while it cannot be
-  // edited (a locked tab, edits blocked).
-  onEditMindOutline?: () => void;
-  // Spacing (docs/specs/009-elements/mind-node.md "Spacing"): read off the map's root, like the flow.
-  mindSpacing: MindSpacing;
-  onSetMindSpacing: (spacing: MindSpacing) => void;
-  // Select the node's branch, or its whole map (docs/specs/009-elements/mind-node.md "The Mind Map menu").
-  onSelectMindBranch: () => void;
-  onSelectMindMap: () => void;
   // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
   // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  onSetEntityFields: (fields: EntityField[], remap?: FieldRemap) => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.

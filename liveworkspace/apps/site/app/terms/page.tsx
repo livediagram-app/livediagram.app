@@ -4,7 +4,7 @@ import {
   lucideGift,
   lucideHandshake,
   lucideScale,
-} from '@livediagram/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
@@ -228,51 +228,15 @@ const SECTIONS: LegalSection[] = [
     ),
   },
 
-  // App by app.
   {
-    app: 'livediagram.app',
-    id: 'livediagram-software',
+    id: 'the-software',
     title: 'The software',
     body: (
       <p>
-        livediagram&rsquo;s source code is public and MIT-licensed, and that licence governs the
-        code itself. These terms cover your use of the hosted livediagram.app.
-      </p>
-    ),
-  },
-  {
-    app: 'liveplanner.app',
-    id: 'liveplanner-software',
-    title: 'The software',
-    body: (
-      <p>
-        liveplanner is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
-      </p>
-    ),
-  },
-  {
-    app: 'livedocuments.app',
-    id: 'livedocuments-software',
-    title: 'The software',
-    body: (
-      <p>
-        livedocuments is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
-      </p>
-    ),
-  },
-  {
-    app: 'livedesign.app',
-    id: 'livedesign-software',
-    title: 'The software',
-    body: (
-      <p>
-        livedesign is proprietary. Using it, which is free, does not give you a licence to its
-        source code. The third-party components it includes keep their own licences, listed in the
-        app.
+        The apps&rsquo; source code (livediagram, liveplanner, livedocuments and livedesign) is
+        public and MIT-licensed: you are free to read it, fork it and run your own copy. These terms
+        cover only the hosted apps on their .app addresses and liveworkspace.app, not a copy you
+        host yourself, which is yours to run.
       </p>
     ),
   },
@@ -293,10 +257,9 @@ export default function Terms() {
           <strong>liveplanner.app</strong>, <strong>livedocuments.app</strong> and{' '}
           <strong>livedesign.app</strong> (together, the &ldquo;Service&rdquo;), operated by the
           liveworkspace team (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By using the Service you agree to
-          them. If you do not agree, please do not use it. What only one app does is under{' '}
-          <a href="#app-by-app">App by app</a>. They work alongside our{' '}
-          <a href="/privacy">Privacy Policy</a>, which explains what the Service does with your
-          data.
+          them. If you do not agree, please do not use it. They are the same for every app, and work
+          alongside our <a href="/privacy">Privacy Policy</a>, which explains what the Service does
+          with your data.
         </p>
       }
     />

@@ -1,7 +1,7 @@
 'use client';
 
-import { useOnline } from '@/hooks/ui/useOnline';
-import { useSaveFailing } from '@/lib/save-health';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
+import { useSaveFailing } from '@liveworkspace/workbench/lib/save-health';
 import { TopCenterBanner, TopCenterRow } from './TopCenter';
 
 // The editor's offline banner (docs/specs/007-editor/load-recovery.md "Offline"), first in the

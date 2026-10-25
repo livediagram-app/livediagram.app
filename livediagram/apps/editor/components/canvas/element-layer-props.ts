@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Participant } from '@/lib/identity';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import type { CollabApi } from './collab/CollabFaceRouter';
 
 // Identity-stable per-element props for the element layer (docs/specs/008-canvas/canvas-performance.md):
@@ -67,7 +67,7 @@ void ALL_HANDLERS_LISTED;
 // presence churn (activity timestamps) does not re-render every element.
 const rosterSignature = (participants: readonly Participant[]) =>
   participants
-    .map((p) => [p.id, p.key, p.name, p.color, p.status, p.role, p.picture].join('\u0001'))
+    .map((p) => [p.id, p.key, p.name, p.color, p.status, p.role].join('\u0001'))
     .join('\u0002');
 
 // The collab bag the editor mints per render, held while nothing a face shows changes: handlers

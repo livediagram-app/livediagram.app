@@ -22,7 +22,6 @@ Scope, by file:
 | `apps/editor/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
 | `apps/editor/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
 | `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:checklist`, section `components`                                                                |
-| `apps/api/src/ai-prompt.ts`                                  | AI vocabulary entry for `checklist`                                                                         |
 
 ## Domain and naming
 
@@ -140,7 +139,7 @@ At most 30 rows of at most 200 characters; a tick is one small delta, not a whol
 
 Themed card that follows the tab theme; the quick style panel's Stroke and Background rows set
 the accent and the card. Palette: Components category, caption "Checklist",
-blurb "Tickable to-do rows". AI vocabulary includes it with `checklistItems` (max 30 rows).
+blurb "Tickable to-do rows".
 
 ## Accessibility
 

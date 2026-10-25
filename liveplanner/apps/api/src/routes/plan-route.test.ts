@@ -39,7 +39,7 @@ function addTab(id: string, order: number, elements: unknown[]) {
     .run(id, `Tab ${id}`, JSON.stringify({ elements }));
   sql.sql
     .prepare(
-      `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
     )
     .run(id, order);
 }
@@ -47,10 +47,10 @@ function addTab(id: string, order: number, elements: unknown[]) {
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
   `);
   addTab('t1', 0, [board('b1', presetSetup('kanban'))]);
   addTab('t2', 1, [{ id: 'x', type: 'text' }, board('b2', presetSetup('bug-triage'))]);
@@ -111,7 +111,7 @@ describe('the plan’s tabs (docs/specs/026-plan/plan-agents.md "Reading the pla
       .run(id, `Tab ${id}`, JSON.stringify({ kind, elements, ...(theme ? { theme } : {}) }));
     sql.sql
       .prepare(
-        `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+        `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
       )
       .run(id, order);
   }

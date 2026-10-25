@@ -7,14 +7,14 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mobile = vi.hoisted(() => ({ value: false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { SettingsCategoryPane } from './SettingsCategoryPane';
+import { SettingsCategoryPane } from './test-pane';
 
 afterEach(() => {
   cleanup();
@@ -108,18 +108,18 @@ describe('SettingsCategoryPane: targeting a section', () => {
 
 describe('SettingsCategoryPane link rows', () => {
   it('opens the linked category in place', () => {
-    const ai = SETTINGS_CATEGORIES.find((c) => c.id === 'ai')!;
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     const onOpenCategory = vi.fn();
     render(
       <SettingsCategoryPane
-        category={{ ...ai, rows: ai.rows.filter((r) => r.kind === 'link') }}
+        category={{ ...accessibility, rows: accessibility.rows.filter((r) => r.kind === 'link') }}
         settings={{}}
         onChange={vi.fn()}
         onOpenCategory={onOpenCategory}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Manage API Tokens' }));
-    expect(onOpenCategory).toHaveBeenCalledWith('tokens');
+    fireEvent.click(screen.getByRole('button', { name: 'Open Appearance' }));
+    expect(onOpenCategory).toHaveBeenCalledWith('appearance');
   });
 });
 

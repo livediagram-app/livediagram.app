@@ -7,27 +7,27 @@ storage path is the [Import image pipeline](../../020-import-export/import-image
 
 Scope, by file:
 
-| File                                              | Role                                                                    |
-| ------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/design/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
-| `packages/design/src/element-types.ts`          | `ImageElement.credit`                                                   |
-| `packages/design/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                          |
-| `apps/live/lib/upload-image.ts`                   | `PickedImage`: what every picker tab hands back                         |
-| `apps/live/lib/image-search/openverse.ts`         | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
-| `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
-| `apps/live/lib/image-search/telemetry.ts`         | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
-| `apps/live/lib/image-search/pick.ts`              | `storeSearchResult`: download (full, else thumbnail) and store          |
-| `apps/live/lib/image-search/read-capped.ts`       | `readCapped`: read a body, refusing past a byte cap                     |
-| `apps/live/hooks/ui/useImageSearch.ts`            | Search tab state: query, pages, status, picking                         |
-| `apps/live/components/panels/ImageSearchPane.tsx` | The Search tab's form, grid, states and footer credit                   |
-| `apps/live/components/panels/ImagePicker.tsx`     | Third tab; `onSelect(image: PickedImage)` carries the credit            |
-| `apps/live/hooks/canvas/useEditorImages.ts`       | `applyImageToElement` sets / drops `credit`; detach drops it            |
-| `apps/live/components/palette/ImageCreditRow.tsx` | Credit line, mounted in `ElementContentSections`' Image section         |
-| `apps/live/lib/telemetry-manifest.ts`             | `Element·Searched` in the emitted-pairs manifest                        |
-| `apps/telemetry/app/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
-| `apps/telemetry/app/event-explanations.ts`        | Sentences for the two events                                            |
-| `apps/help/app/palette/tools/images/page.mdx`     | "Searching for an image" section                                        |
-| `apps/help/app/policies/privacy-policy/page.mdx`  | Openverse named under Service providers                                 |
+| File                                                                        | Role                                                                    |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/design/src/image-credit.ts`                                       | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
+| `packages/design/src/element-types.ts`                                      | `ImageElement.credit`                                                   |
+| `packages/design/src/validate.ts`                                           | Image branch calls `isImageCredit` on `credit`                          |
+| `apps/live/lib/upload-image.ts`                                             | `PickedImage`: what every picker tab hands back                         |
+| `apps/live/lib/image-search/openverse.ts`                                   | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
+| `apps/live/lib/image-search/search.ts`                                      | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
+| `apps/live/lib/image-search/telemetry.ts`                                   | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
+| `apps/live/lib/image-search/pick.ts`                                        | `storeSearchResult`: download (full, else thumbnail) and store          |
+| `apps/live/lib/image-search/read-capped.ts`                                 | `readCapped`: read a body, refusing past a byte cap                     |
+| `apps/live/hooks/ui/useImageSearch.ts`                                      | Search tab state: query, pages, status, picking                         |
+| `apps/live/components/panels/ImageSearchPane.tsx`                           | The Search tab's form, grid, states and footer credit                   |
+| `apps/live/components/panels/ImagePicker.tsx`                               | Third tab; `onSelect(image: PickedImage)` carries the credit            |
+| `apps/live/hooks/canvas/useEditorImages.ts`                                 | `applyImageToElement` sets / drops `credit`; detach drops it            |
+| `apps/live/components/palette/ImageCreditRow.tsx`                           | Credit line, mounted in `ElementContentSections`' Image section         |
+| `apps/live/lib/telemetry-manifest.ts`                                       | `Element·Searched` in the emitted-pairs manifest                        |
+| `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/content.ts`  | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
+| `../liveworkspace/apps/site/app/telemetry/livedesign/event-explanations.ts` | Sentences for the two events                                            |
+| `apps/help/app/palette/tools/images/page.mdx`                               | "Searching for an image" section                                        |
+| liveworkspace.app/privacy (the shared policy, in the liveworkspace site)    | Openverse named under Service providers                                 |
 
 ## Domain and naming
 
@@ -152,7 +152,7 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 | Host declares or streams > 50 MB              | Download stops at the cap; `too-large`, final, nothing stored       |
 | Both downloads fail                           | "Couldn't download that image. Try another one."                    |
 | Gallery full / images unavailable / too large | The pipeline failure's upload copy (table below)                    |
-| Offline Mode design                         | Session embeds as data URI; over budget → "too large" copy          |
+| Offline Mode design                           | Session embeds as data URI; over budget → "too large" copy          |
 | Picker closed mid-pick                        | The store finishes; `onPicked` is ignored after unmount (D153)      |
 | Result with no landing URL                    | Stored without `credit`                                             |
 
@@ -261,7 +261,7 @@ dropped as stale sends nothing.
 | Stages: downloading, saving; again for the thumbnail         | `apps/live/lib/image-search/pick.test.ts`              |
 | Placeholders while searching; a tile's until it loads        | `apps/live/components/panels/ImageSearchPane.test.tsx` |
 | Picked tile busy, stage copy, others disabled, hand-off      | `apps/live/components/panels/ImageSearchPane.test.tsx` |
-| `credit` validation accepts good, rejects bad text / URLs    | `packages/design/src/validate.test.ts`               |
+| `credit` validation accepts good, rejects bad text / URLs    | `packages/design/src/validate.test.ts`                 |
 | Search tab end to end                                        | Browser verification (no e2e: external network)        |
 
 ## Constants and configuration

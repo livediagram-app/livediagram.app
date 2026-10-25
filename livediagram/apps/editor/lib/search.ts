@@ -11,7 +11,7 @@
 // + the dynamic-import wrapping.
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
-import { matches, paletteRank } from '@livediagram/icons';
+import { matches, paletteRank } from '@liveworkspace/icons';
 import type { ShapeKind, Tab } from '@livediagram/document';
 
 // Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its
@@ -276,23 +276,23 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const groups: SearchGroup[] = [];
 
   const documentMatches = liveDocs
-    .filter((d) => matches(q, d.name || 'Untitled document'))
+    .filter((d) => matches(q, d.name || 'Untitled canvas'))
     .slice(0, DOCUMENT_LIMIT);
   if (documentMatches.length > 0) {
     groups.push({
       key: 'documents',
-      label: 'Documents',
+      label: 'Canvases',
       items: documentMatches.map((d) => ({
         kind: 'document',
         id: d.id,
-        name: d.name || 'Untitled document',
+        name: d.name || 'Untitled canvas',
         ...(d.localOnly ? { localOnly: true } : {}),
       })),
     });
   }
 
   const sharedMatches = (shared ?? [])
-    .filter((s) => matches(q, s.name || 'Untitled document'))
+    .filter((s) => matches(q, s.name || 'Untitled canvas'))
     .slice(0, SHARED_LIMIT);
   if (sharedMatches.length > 0) {
     groups.push({
@@ -301,7 +301,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,
-        name: s.name || 'Untitled document',
+        name: s.name || 'Untitled canvas',
         shareCode: s.shareCode,
       })),
     });
@@ -330,7 +330,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
   const teamDocumentMatches = (teamDocuments ?? [])
-    .filter((d) => matches(q, d.name || 'Untitled document') || matches(q, d.teamName))
+    .filter((d) => matches(q, d.name || 'Untitled canvas') || matches(q, d.teamName))
     .slice(0, DOCUMENT_LIMIT);
   if (teamMatches.length + teamFolderMatches.length + teamDocumentMatches.length > 0) {
     groups.push({
@@ -347,7 +347,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         ...teamDocumentMatches.map((d): DocumentItem => ({
           kind: 'document',
           id: d.id,
-          name: d.name || 'Untitled document',
+          name: d.name || 'Untitled canvas',
           team: { id: d.teamId, name: d.teamName },
         })),
       ],

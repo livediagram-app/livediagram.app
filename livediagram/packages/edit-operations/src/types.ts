@@ -123,14 +123,14 @@ export type EditLog = (
 export type ApplyOptions = {
   // The owner's selection; null: the room was not read.
   selected?: readonly ElementId[] | null;
-  // The tab's theme resolved by the caller (custom themes included).
+  // The tab's theme resolved by the caller.
   theme?: ThemeDefinition;
   // Ids no slug can name; default crypto.randomUUID.
   makeId?: () => string;
   log?: EditLog;
 };
 
-// `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
+// `themeId` names a created tab's theme by id; it wins over `theme`.
 export type ReplaceOptions = ApplyOptions & {
   tabId: string;
   name: string;

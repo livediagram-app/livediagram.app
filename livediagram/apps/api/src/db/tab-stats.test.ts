@@ -19,7 +19,7 @@ function arrange() {
   const doc = (id: string) =>
     db.sql
       .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        'INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES (?, ?, ?, ?, ?)',
       )
       .run(id, 'owner', id, T0, T0);
   const tab = (docId: string, tabId: string, order: number) => {
@@ -50,9 +50,9 @@ function arrange() {
 }
 
 function docStats(sql: DatabaseSync, id: string) {
-  const row = sql
-    .prepare(`SELECT ${documentStatsSql('documents.id')} FROM documents WHERE id = ?`)
-    .get(id) as { doc_stats: string | null };
+  const row = sql.prepare(`SELECT ${documentStatsSql('?1')}`).get(id) as {
+    doc_stats: string | null;
+  };
   return readDocumentStats(row.doc_stats);
 }
 
@@ -98,7 +98,12 @@ describe('documentStatsSql', () => {
     tab('D', 't1', 0);
     await stats('t1', 'draw', 4, 1, 1000, T0);
     await stats('t1', 'workshop', 2, 0, 200, T0 + 5);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'workshop', elements: 2, comments: 0, bytes: 200 });
+    expect(docStats(db.sql, 'D')).toEqual({
+      mode: 'workshop',
+      elements: 2,
+      comments: 0,
+      bytes: 200,
+    });
   });
 });
 

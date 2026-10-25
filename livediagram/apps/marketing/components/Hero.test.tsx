@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livediagram/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livediagram/document';
 import {
@@ -13,10 +12,9 @@ import {
 } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
-import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, and the dealing fan of templates.
 
 let reduceMotion = false;
 // Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
@@ -166,48 +164,10 @@ describe('the hero', () => {
     );
   });
 
-  it('keeps the template fan below RECENT_FAN_MIN recent diagrams, then deals theirs and Explorer Home', () => {
-    const note = (n: number) =>
-      JSON.stringify({
-        v: 1,
-        diagrams: Array.from({ length: n }, (_, i) => ({
-          id: `d${i + 1}`,
-          name: `Diagram ${i + 1}`,
-          savedAt: Date.now() - (i + 1) * 3600e3,
-          mode: 'diagram',
-        })),
-      });
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(RECENT_FAN_MIN - 1));
-    const few = render(<Hero />);
+  it('deals the template fan for everyone, never a card to Explorer Home', () => {
+    render(<Hero />);
     expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
     expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();
-    few.unmount();
-
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(6));
-    render(<Hero />);
-    expect(fanTitles()).toEqual([]);
-    const docs = screen
-      .getAllByRole('link')
-      .map((a) => a.getAttribute('href'))
-      .filter((h) => h?.startsWith('/document/'));
-    expect(docs).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
-    // The save time sits at the card's foot, after its preview (out of sight until the card lifts).
-    const card = screen
-      .getAllByRole('link')
-      .find((l) => l.getAttribute('href') === '/document/d1')!;
-    expect(card.lastElementChild?.textContent).toMatch(/ago$/);
-    expect(card.firstElementChild?.textContent).toBe('Diagram 1');
-    expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
-      '/explorer/home',
-    );
-    // A phone shows the PHONE_RECENT most recent documents and leaves Explorer Home off.
-    const onPhone = screen
-      .getAllByRole('link')
-      .filter((a) => /^\/(document|explorer)\//.test(a.getAttribute('href') ?? ''))
-      .filter((a) => !a.parentElement!.className.split(' ').includes('max-sm:hidden'))
-      .map((a) => a.getAttribute('href'));
-    expect(onPhone).toEqual(['/document/d1', '/document/d2', '/document/d3']);
-    expect(onPhone).toHaveLength(PHONE_RECENT);
   });
 });
 

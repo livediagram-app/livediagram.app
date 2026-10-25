@@ -1,6 +1,6 @@
 'use client';
 
-import { isDragTravel } from '@/lib/press-gestures';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
 // Orbit control for the isometric view (docs/specs/008-canvas/isometric-view.md). Drag it to orbit the

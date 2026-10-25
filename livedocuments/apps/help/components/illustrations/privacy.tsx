@@ -4,7 +4,15 @@
 // dialog scenes in sharing.tsx.)
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Panel, Dialog, Label, TextBar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Panel,
+  Dialog,
+  Label,
+  TextBar,
+} from '@liveworkspace/help-site/art/primitives';
 
 /** A small shield motif with a tick, the recurring "protected" mark. */
 function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
@@ -28,7 +36,8 @@ function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
 }
 
 /** Where documents live: the browser sends edits through one API to Cloudflare
- *  storage (D1, a Durable Object room, object storage), all behind a shield. */
+ *  storage (liveworkspace's index, each item's Durable Object, liveworkspace accounts, object storage), all
+ *  behind a shield. */
 export function DocumentStorage() {
   return (
     <Scene w={420} h={240}>
@@ -44,32 +53,34 @@ export function DocumentStorage() {
       {/* Cloudflare storage stack, behind the shield */}
       <rect
         x={266}
-        y={28}
+        y={20}
         width={136}
-        height={184}
+        height={208}
         rx={12}
         className="fill-brand-50/40 stroke-brand-200"
         strokeWidth={2}
         strokeDasharray="6 5"
       />
-      <Label x={334} y={44} anchor="middle" size={10} weight={700} tone="muted">
+      <Label x={334} y={36} anchor="middle" size={10} weight={700} tone="muted">
         CLOUDFLARE
       </Label>
-      <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="D1" labelTone="strong" />
-      <Shape x={284} y={94} w={100} h={30} kind="rect" label="Room" labelTone="strong" />
-      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images (R2)" labelTone="strong" />
+      <Shape x={280} y={46} w={108} h={28} kind="cylinder" label="Index" labelTone="strong" />
+      <Shape x={280} y={80} w={108} h={28} kind="rect" label="Durable Objects" labelTone="strong" />
+      <Shape x={280} y={114} w={108} h={28} kind="cylinder" label="Accounts" labelTone="strong" />
+      <Shape x={280} y={148} w={108} h={28} kind="rect" label="Images (R2)" labelTone="strong" />
       {/* One bus out of the API, one level arrowhead per store. */}
       <path
-        d="M228 120 H252 M252 69 V149"
+        d="M228 120 H252 M252 60 V162"
         className="fill-none stroke-slate-300"
         strokeWidth={2}
         strokeLinecap="round"
       />
-      <Arrow from={[252, 69]} to={[284, 69]} tone="muted" />
-      <Arrow from={[252, 109]} to={[284, 109]} tone="muted" />
-      <Arrow from={[252, 149]} to={[284, 149]} tone="muted" />
+      <Arrow from={[252, 60]} to={[280, 60]} tone="muted" />
+      <Arrow from={[252, 94]} to={[280, 94]} tone="muted" />
+      <Arrow from={[252, 128]} to={[280, 128]} tone="muted" />
+      <Arrow from={[252, 162]} to={[280, 162]} tone="muted" />
 
-      <Shield x={296} y={190} scale={0.7} />
+      <Shield x={296} y={204} scale={0.7} />
     </Scene>
   );
 }

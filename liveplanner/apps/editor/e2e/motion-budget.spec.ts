@@ -1,5 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import {
+  expect,
+  test,
+  dismissQuickTour,
+  expectNoPageErrors,
+  seedTab,
+  serverNewUrl,
+} from './fixtures';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -57,8 +64,8 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 async function startBlank(page: Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), on liveplanner, as seedTab needs.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }
@@ -79,34 +86,18 @@ async function openAndClose(
   await page.waitForTimeout(300);
 }
 
-/** A trigger that opens and closes its own surface. */
-async function toggle(page: Page, name: string): Promise<void> {
-  const trigger = page.getByRole('button', { name, exact: true });
-  await openAndClose(
-    page,
-    () => trigger.click(),
-    () => trigger.click(),
-  );
-}
-
 async function tourTheChrome(page: Page): Promise<void> {
-  await (await paletteTile(page, 'Add Square')).click();
-  await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
+  await seedTab(page, [
+    { id: 'sq', type: 'shape', shape: 'square', x: 460, y: 300, width: 120, height: 120 },
+  ]);
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
-  await toggle(page, 'Selection mode');
-  // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
-  await openAndClose(page, () =>
-    page.locator('[data-category-bar-button][aria-label="Layout"]').click(),
-  );
-  await toggle(page, 'Fit to screen');
-  // The Explorer popover, and the Project menu on its Current Project card.
+  // The Explorer popover.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
   await explorer.click();
   await page.waitForTimeout(400);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Project menu' }).click());
   await explorer.click();
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());

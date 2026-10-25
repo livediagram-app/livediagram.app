@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { articlesOf } from './article-flow';
+import { withPageKindChosen } from './article-pages';
 import {
   pageAdded,
   pageBackgroundSet,
@@ -52,6 +53,12 @@ const a4 = (id: string, extra: Partial<Page> = {}): Page => ({
 });
 const article = (id: string, flow: string, extra: Partial<Page> = {}): Page =>
   a4(id, { kind: 'article', flow, ...extra });
+
+const slide = (id: string, extra: Partial<Page> = {}): Page =>
+  a4(id, { kind: 'slide', size: 'slide', orientation: 'landscape', ...extra });
+// An article tab: its one page `id` made the first page of article `flow`, writing and all.
+const articleTab = (page: Page, flow = 'e'): Tab =>
+  withPageKindChosen(tabOf([page]), page.id, 'article', flow)!;
 
 // A box in the middle of the n-th page of a row.
 const onPage = (pages: Page[], index: number, id: string): Element => {
@@ -205,17 +212,19 @@ describe('adding', () => {
     });
   });
 
-  it('carries the last page’s background onto a new page of any kind', () => {
+  it('carries the last page’s background onto a new page of every kind', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
-    const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
+    const background = { fill, pattern: 'dots' as const };
+    const tabs = {
+      infographic: tabOf([a4('p', { background })]),
+      slide: tabOf([slide('p', { background })]),
+      article: articleTab(a4('p', { background })),
+    };
     for (const kind of ['infographic', 'slide', 'article'] as const) {
-      expect(pagesOf(ok(pageAdded(tab, kind, 'n', 'f')))[1]!.background).toEqual({
-        fill,
-        pattern: 'dots',
-      });
+      expect(pagesOf(ok(pageAdded(tabs[kind], kind, 'n', 'f')))[1]!.background).toEqual(background);
     }
     // The paper carries nothing over.
-    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n', 'f'))[1]!.background).toBe(
+    expect(pagesAfter(pageAdded(tabOf([slide('p')]), 'slide', 'n', 'f'))[1]!.background).toBe(
       undefined,
     );
   });
@@ -233,7 +242,7 @@ describe('adding', () => {
 
   it('adds an article on the last paper size, else A4 portrait, with its writing', () => {
     const onA3 = ok(
-      pageAdded(tabOf([a4('p', { size: 'a3', orientation: 'landscape' })]), 'article', 'n', 'f'),
+      pageAdded(articleTab(a4('p', { size: 'a3', orientation: 'landscape' })), 'article', 'n', 'f'),
     );
     expect(pagesOf(onA3)[1]).toMatchObject({
       kind: 'article',
@@ -242,22 +251,34 @@ describe('adding', () => {
       orientation: 'landscape',
     });
     expect(articlesOf(onA3).f).toBeDefined();
-    const afterSlide = ok(
-      pageAdded(
-        tabOf([a4('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })]),
-        'article',
-        'n',
-        'f',
-      ),
-    );
-    expect(pagesOf(afterSlide)[1]).toMatchObject({ orientation: 'portrait' });
-    expect(pagesOf(afterSlide)[1]!.size).toBeUndefined();
+    // A tab stored before one kind a tab, an article first and a slide last.
+    const afterSlide = ok(pageAdded(tabOf([article('a', 'e'), slide('s')]), 'article', 'n', 'f'));
+    expect(pagesOf(afterSlide).at(-1)).toMatchObject({ id: 'n', orientation: 'portrait' });
+    expect(pagesOf(afterSlide).at(-1)!.size).toBeUndefined();
   });
 
   it('refuses past the page limit or on an id already there', () => {
     const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
-    expect(pageAdded(full, 'slide', 'n', 'f')).toEqual({ refused: 'page_limit' });
-    expect(pageAdded(tabOf([a4('p')]), 'slide', 'p', 'f')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(full, 'infographic', 'n', 'f')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(tabOf([a4('p')]), 'infographic', 'p', 'f')).toEqual({
+      refused: 'page_limit',
+    });
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('adds only pages of the tab’s kind, its first page’s', () => {
+    const infographic = tabOf([a4('p')]);
+    expect(pageAdded(infographic, 'slide', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    expect(pageAdded(infographic, 'article', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    const deck = tabOf([slide('s')]);
+    expect(pageAdded(deck, 'infographic', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    expect(pageAdded(deck, 'article', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    const articles = articleTab(a4('p'));
+    expect(pageAdded(articles, 'slide', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    // A tab stored mixing kinds takes its first page's.
+    const mixed = tabOf([slide('s'), a4('p')]);
+    expect(pageAdded(mixed, 'infographic', 'n', 'f')).toEqual({ refused: 'kind_not_offered' });
+    expect(pagesAfter(pageAdded(mixed, 'slide', 'n', 'f'))[2]).toMatchObject({ kind: 'slide' });
   });
 });
 
@@ -274,10 +295,10 @@ describe('duplicating, moving and deleting', () => {
   });
 
   it('duplicates a whole article with its writing', () => {
-    const tab = ok(pageAdded(tabOf([a4('p')]), 'article', 'a', 'f'));
+    const tab = ok(pageAdded(articleTab(a4('p')), 'article', 'a', 'f'));
     const out = ok(pageDuplicated(tab, 'a', 'unused', 'g'));
     expect(pagesOf(out).filter((p) => p.flow === 'g')).toHaveLength(1);
-    expect(Object.keys(articlesOf(out)).sort()).toEqual(['f', 'g']);
+    expect(Object.keys(articlesOf(out)).sort()).toEqual(['e', 'f', 'g']);
     const full = tabOf([
       ...Array.from({ length: MAX_PAGES - 1 }, (_, i) => a4(`p${i}`)),
       article('a', 'f'),
@@ -302,7 +323,7 @@ describe('duplicating, moving and deleting', () => {
   });
 
   it('deletes a whole article, never the last unit, never a locked page', () => {
-    const withArticle = ok(pageAdded(tabOf([a4('p')]), 'article', 'a', 'f'));
+    const withArticle = ok(pageAdded(articleTab(a4('p')), 'article', 'a', 'f'));
     const out = ok(pageRemoved(withArticle, 'a'));
     expect(pagesOf(out).map((p) => p.id)).toEqual(['p']);
     expect(articlesOf(out).f).toBeUndefined();

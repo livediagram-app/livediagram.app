@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // What the IMPORTING session sees around a photo draft (docs/specs/021-event-storming/event-storming.md Phase 8), and
 // only that session: which notes on the board the photo matched, and what the

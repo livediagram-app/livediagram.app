@@ -14,17 +14,18 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
+import { platformComputedEmitters } from '../platform-emitters';
 import {
+  LEVEL_TELEMETRY_TYPE,
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
-  LEVEL_TELEMETRY_TYPE,
-  PLACEMENT_DEFAULT_KEYS,
   pascalToken,
-  placementDefaultTelemetryType,
+  isValidTelemetryEvent,
 } from '@livedocuments/api-schema';
 import { countedVerbs } from '@livedocuments/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedocuments/agent-verbs/mcp';
-import { CANVAS_CONTROLS } from './event-vocab';
+import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -52,38 +53,28 @@ const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 // Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
 const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
-// The Appearance settings' labels (packages/ui appearance-cycle.ts), the
+// The Appearance settings' labels (@liveworkspace/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
 const APPEARANCE_LABELS = tokensAfter(
-  read('../packages/ui/src/appearance/appearance-cycle.ts'),
+  read('../../packages/ui/src/appearance/appearance-cycle.ts'),
   'export const APPEARANCE_LABEL',
   '};',
 );
 
-// The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
-// editor's panel, per SidebarTelemetryRow member.
-const SIDEBAR_ROW_KINDS = tokensAfter(
-  read('editor/app/explorer/sidebar/sidebar-telemetry.ts'),
-  'export type SidebarTelemetryRow',
-  ';',
-);
-const SIDEBAR_ROWS = ['Sidebar', 'ExplorerPanel'].flatMap((prefix) =>
-  SIDEBAR_ROW_KINDS.map((row) => `${prefix}.${row}`),
-);
-
-// The Explorer filters' facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the
-// values of LENS_TELEMETRY_TYPES, whose keys are lower case.
+// The Explorer filter lens's facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the values of the shared
+// Explorer's LENS_TELEMETRY_TYPES, whose keys are lower case.
 const LENS_FACETS = tokensAfter(
-  read('../packages/explorer-lens/src/dimensions.ts'),
+  read('../../packages/explorer/src/lens/dimensions.ts'),
   'export const LENS_TELEMETRY_TYPES',
   '}',
 ).filter((token) => /^[A-Z]/.test(token));
 
-// The Trash a Trash action happened in: TrashGroup's `telemetryType`.
-const TRASH_TYPES = tokensAfter(read('editor/lib/trash-groups.ts'), 'telemetryType:', ';');
-
-// One closed value per default folder key (placementDefaultTelemetryType).
-const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
+// The Trash a restored document sat in: useDocumentTrashed's `from`, Personal or Team.
+const TRASH_TYPES = tokensAfter(
+  read('editor/app/document/[id]/useDocumentTrashed.ts'),
+  'const [from, setFrom] = useState<',
+  '>',
+);
 
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
@@ -200,8 +191,8 @@ const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'article'] as
 
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
-const THEMES = ['Default', 'Plum', 'Custom'];
-const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Custom";
+const THEMES = ['Default', 'Plum', 'Unknown'];
+const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Unknown";
 const TEMPLATES = ['Article', 'SlideDeck', 'EventPoster'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
@@ -223,10 +214,15 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
-  // A share link's access level (docs/specs/013-workspace/share-roles.md), from LEVEL_TELEMETRY_TYPE.
-  'apps/api/src/routes/share.ts Document·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
+  // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
+  ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
+  // Someone's first time in through a link, by its level (@liveworkspace/index-app JOINED_TELEMETRY_TYPE, the
+  // same table as the api schema's).
+  'apps/api/src/routes/internal-items.ts Document·Joined': {
+    values: Object.values(LEVEL_TELEMETRY_TYPE),
+  },
   'apps/api/src/email/client.ts Error·Api': {
     values: ['Http500.SendEmail', 'Http429.SendEmail'],
     open: 'Http<status>.SendEmail, any status Resend answers',
@@ -261,12 +257,15 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The help centre.
-  'apps/help/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
-  'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
-  'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/lib/use-article-vote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/lib/use-article-vote.ts Help·Unhelpful': {
+    values: SLUGS,
+    open: SLUG_WHY,
+  },
 
   // Shared packages.
-  'packages/telemetry-client/src/index.ts Error·Client': {
+  'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
@@ -299,38 +298,43 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/editor/app/explorer/useTimelineFeed.ts Timeline·Selected': {
+  'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // The shared Explorer's Timeline, through ExplorerHost's onTimeline prop (@liveworkspace/explorer TimelinePane.tsx):
+  // each a fixed token from the package.
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
+    values: ['List', 'Calendar'],
+  },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
     values: [
-      'comments',
+      'Everyone',
+      'Others',
       'new',
       'edits',
       'renames',
       'deletions',
       'sharing',
-      'actions',
-      'teams',
       'filing',
-      'account',
+      'favourites',
       'other',
     ],
   },
-  // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
-  // telemetryType, the one closed set every site sends.
-  'apps/editor/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/editor/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
-  'apps/editor/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
-  'apps/editor/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/editor/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
-  // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
-  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
-    values: DEFAULT_FOLDER_TYPES,
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
+    values: ['Card', 'Stack', 'Menu'],
   },
-  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
-    values: DEFAULT_FOLDER_TYPES,
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
+    values: ['Entry', 'Stack'],
   },
-  'apps/editor/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
+  // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
+    values: ['WhatHappened', 'SeeTimeline'],
+  },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
+    values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
+  },
+  // The filter lens, through the Explorer's onLensSelected prop.
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
@@ -339,9 +343,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
-  },
-  'apps/editor/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
-    values: ['EmbedCode', 'LiveImage'],
   },
   'apps/editor/components/notes/useNoteRichTextSession.ts Note·Used': {
     values: ['Bold', 'Italic', 'List', 'Heading'],
@@ -452,15 +453,52 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/editor/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
-  // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
-  'apps/editor/hooks/persistence/useShareLinks.ts Document·Shared': {
-    values: [
-      ...Object.values(LEVEL_TELEMETRY_TYPE),
-      'ExpiryWeek',
-      'ExpiryMonth',
-      'ExpirySixMonths',
-    ],
+  // The Share dialog's reports, through its onTelemetry prop (@liveworkspace/explorer ShareDialog.tsx): each a fixed
+  // token from the package.
+  'apps/editor/lib/explorer-share-host.ts UI·Copied': {
+    values: ['ShareLink', 'EmbedCode', 'LiveImage'],
   },
+  'apps/editor/lib/explorer-share-host.ts Document·Removed': { values: ['ShareLink'] },
+  'apps/editor/lib/explorer-share-host.ts Document·Shared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Document·Shared'],
+  },
+  // Folders, default folders, the Trash, through the Explorer's onOrganise prop (lib/explorer-organise.ts): the
+  // Explorer's closed list.
+  'apps/editor/lib/explorer-organise.ts Folder·Created': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Created'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Moved': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Moved'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Deleted'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Changed': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Changed'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Cleared'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Restored': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Restored'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Deleted'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Cleared'],
+  },
+  'apps/editor/lib/explorer-share-host.ts UI·Selected': { values: ['LiveImageTab'] },
+  'apps/editor/lib/explorer-share-host.ts UI·Started': { values: ['ShareTour'] },
+  'apps/editor/lib/explorer-share-host.ts UI·Ended': {
+    values: ['ShareTourCompleted', 'ShareTourSkipped'],
+  },
+  // The Inbox's reports, through its onTelemetry prop (@liveworkspace/explorer InboxPane.tsx, inbox/InboxRows.tsx).
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Opened': { values: [null] },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Selected': {
+    values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
+  },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Loaded': { values: ['Retry'] },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/editor/lib/element-telemetry.ts Element·Added': {
     values: ELEMENT_KINDS,

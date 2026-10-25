@@ -1,7 +1,11 @@
-import { FeatureCategoryIndex, featureCategoryMetadata } from '@/components/FeatureCategoryIndex';
+import {
+  FeatureCategoryIndex,
+  featureCategoryMetadata,
+} from '@liveworkspace/help-site/components/FeatureCategoryIndex';
+import { site } from '@/lib/help-site';
 
-export const metadata = featureCategoryMetadata('explorer');
+export const metadata = featureCategoryMetadata(site, 'explorer');
 
 export default function ExplorerCategoryPage() {
-  return <FeatureCategoryIndex slug="explorer" />;
+  return <FeatureCategoryIndex site={site} slug="explorer" />;
 }

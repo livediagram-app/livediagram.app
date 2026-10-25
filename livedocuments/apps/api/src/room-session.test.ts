@@ -14,6 +14,8 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Person': 'p',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Document': 'd',
+        'X-Verified-Owner': 'user_o',
+        'X-Verified-Team': '',
       }),
     );
     expect(v).toEqual({
@@ -23,6 +25,8 @@ describe('verifiedSessionOf', () => {
       personTag: 'p',
       workbenchPairing: 'w',
       documentId: 'd',
+      grantExp: null,
+      head: { owner: 'user_o', team: null },
     });
   });
 

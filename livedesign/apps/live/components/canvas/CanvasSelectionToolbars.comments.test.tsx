@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livedesign/design';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 // docs/specs/013-workspace/share-roles.md: a Participant comments; a Viewer writes no comment, so it reads the thread
 // an element has behind Show Comments and is offered nothing on an element with none.

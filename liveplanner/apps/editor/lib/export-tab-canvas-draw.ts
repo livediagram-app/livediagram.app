@@ -63,8 +63,7 @@ function boxedSilhouettePath(
 }
 
 // Isometric extrusion (docs/specs/008-canvas/isometric-view.md): behind the element body, paint a stack of its
-// silhouette stepped along the projected depth axis — the same voxel column
-// the on-screen isometric view renders (IsometricDepthLayer). Each copy is the
+// silhouette stepped along the projected depth axis (a voxel column). Each copy is the
 // element's accent dimmed toward the floor. The step is computed in element
 // space so that, once the iso matrix is applied to the context, every copy
 // lands at the right SCREEN depth offset (0, z·sin(elevation)); inverting that
@@ -77,8 +76,7 @@ export function drawBoxedExtrusion(
   alpha = 1,
   surface: CanvasSurface = 'light',
 ): void {
-  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
-  // on-screen IsometricDepthLayer so screen + export can't drift).
+  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the SVG exporter so the two can't drift).
   if (!isoExtrudes(el)) return;
   const { shape, opacity } = describeBoxedExport(el, { surface });
   if (shape.kind === 'none' || shape.kind === 'sticker') return; // no body to extrude

@@ -13,7 +13,7 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 afterEach(() => {
   cleanup();
   track.mockClear();
-  act(() => setActiveTour('welcome', false));
+  act(() => setActiveTour('plan', false));
 });
 
 describe('useLandscapeBars', () => {
@@ -62,9 +62,9 @@ describe('useLandscapeBars', () => {
 
   it('keeps the bars shown while a tour is on screen, and folds them after it', () => {
     const { result } = renderHook(() => useLandscapeBars([0, 0]));
-    act(() => setActiveTour('welcome', true));
+    act(() => setActiveTour('plan', true));
     expect(result.current.shown).toBe(true);
-    act(() => setActiveTour('welcome', false));
+    act(() => setActiveTour('plan', false));
     expect(result.current.shown).toBe(false);
   });
 

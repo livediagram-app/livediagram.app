@@ -182,17 +182,19 @@ Cards, Sheet cells and forms have endpoints of their own: see [Plan Items, Sheet
 
 ## Organise into folders
 
-Create a folder, then move a plan into it:
+Create a folder (add `"parentId"` to make it inside another, or `"teamId"` for a team's), then create a plan straight into it by naming its id as `folderId`. Renaming and moving folders, and moving a plan you already have, happens in the Explorer.
 
 ```bash
 curl -X POST https://liveplanner.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$FOLDER"'", "name": "Sprints" }'
 
-curl -X PUT https://liveplanner.app/api/projects/$DOC/folder \
+curl -X POST https://liveplanner.app/api/projects \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "folderId": "'"$FOLDER"'" }'
+  -d '{ "id": "'"$(uuidgen)"'", "name": "Sprint 12", "folderId": "'"$FOLDER"'" }'
 ```
+
+`GET /api/folders` lists your folders with their ids.
 
 ## Delete and restore
 

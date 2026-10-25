@@ -3,9 +3,9 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
+import { ResetPositionGlyph } from '@liveworkspace/workbench/components/primitives/ResetPositionGlyph';
 import { HoverCard, Glyph } from '@livedocuments/ui';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 // A panel's title. Minimal chrome (docs/specs/007-editor/power-user-mode.md) keeps it for
 // assistive technology only; the header keeps its height from its buttons.

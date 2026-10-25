@@ -14,102 +14,124 @@ once per account / device and apply everywhere.
 
 ## Where preferences live
 
-Preferences live in **D1** as the source of truth, with
-`localStorage` as a fast warm cache so the editor never blocks on
-a network round-trip at boot.
+livedesign keeps no preferences of its own. They are kept with the person's
+**liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"Settings"), with `localStorage` as a fast warm cache so the editor never
+blocks on a network round-trip at boot.
 
-- **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
-  one row per owner (account user id for signed-in users, the per-
-  browser participant id for guests). Columns: `owner_id TEXT
-PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
-  `updated_at INTEGER NOT NULL` (Unix ms). The JSON blob shape
-  keeps the migration count low when new flags arrive: adding a
-  field never requires altering the table.
-- **localStorage cache** keyed `livedesign:user-preferences:v1`
-  (legacy key, unchanged). Read synchronously at page-load so the
-  Settings dialog and gate caches (telemetry, draw-to-add, etc.)
-  have a value to read before the network fetch returns.
+- **The account's settings**, read and written by the api worker through
+  the accounts Worker's internal API (`apps/api/src/accounts/settings.ts`,
+  app `livedesign.app`). Each person has two scopes there: **All**, the keys
+  every liveworkspace app shares (`ALL_SETTING_KEYS` in
+  `@liveworkspace/settings`: privacy, motion, notifications, the chrome's
+  scale and opacity, power user mode, your own swatches, and the editor
+  settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover, Pages' Contents and Presenting), and livedesign's
+  own for every other key. The api joins the two on a read
+  (`joinSettings`) and splits a change between them on a write
+  (`splitSettings`), so the editor sees one flat set. A shared key changed
+  here changes in every app that has it, and the Settings dialog marks those
+  rows with a quiet **All apps** note under their description.
+  The editor settings that became shared in October 2026 were this app's own
+  before, so a value may still sit in this app's scope: `joinSettings` uses it
+  until `all` has one, and the first change writes `all` and drops the old copy.
+- **Owners.** A signed-in person's settings are their account's
+  (`user_…`). A guest's are kept under their server-minted guest id
+  (`guest_<id>` to the accounts Worker), so a guest who clears
+  `localStorage` in the same browser still gets them back.
+- **localStorage cache** keyed `livedesign:user-preferences:v1`. Read
+  synchronously at page-load so the Settings dialog and gate caches
+  (telemetry, draw-to-add, etc.) have a value to read before the network
+  fetch returns.
 
 ### Sync flow
 
-- **On editor open**: read the localStorage cache synchronously
-  (zero-blocking), then fire-and-forget `GET /api/preferences`.
-  When the server response arrives, merge it over the cache
-  (server wins for any key present on both sides), persist back
-  to localStorage, and dispatch the existing
-  `livedesign:preferences-changed` window event so in-process
-  listeners refresh. If the fetch fails the cache value stays
-  authoritative for the session.
-- **On toggle**: update localStorage immediately (so the UI
-  reflects the change without waiting for the network), then
-  `PUT /api/preferences` with the full updated blob in the
-  background. Last-write-wins per device.
+- **On page load**: read the localStorage cache synchronously
+  (zero-blocking), then fire-and-forget `GET /api/preferences`, **once per
+  page load and owner**: the Explorer and the editor share one read
+  (`fetchUserPreferences`), so a session costs one accounts call. When the
+  answer arrives, merge it over the cache (server wins for any key present
+  on both sides), persist back to localStorage, and dispatch the existing
+  `livedesign:preferences-changed` window event so in-process listeners
+  refresh. If the fetch fails the cache stays authoritative, and the next
+  ask tries again.
+- **On toggle**: update localStorage immediately (so the UI reflects the
+  change without waiting for the network), then queue a save.
 - **Saving to the server** (`apps/live/lib/preferences-sync.ts`):
-  - **It fits.** The blob is trimmed to the api's cap (4,096
-    characters of `{"prefs":...}`) before it is cached or sent:
-    the oldest hidden-from-Recent ids go first
-    ([Hide from Recent](../013-workspace/hide-from-recent.md)); every
-    other key stays whole. A full account measured 4,967 characters,
-    past which every save was refused. A trim logs
-    `[preferences] trimmed to fit dropped=<n> length=<n>`.
-  - **One save at a time, the latest wins.** A save made while one
-    is in flight waits, and replaces any save already waiting, so
-    the server can never end on an older blob than the last one sent.
+  - **It fits.** The set is trimmed to 4,096 characters of
+    `{"prefs":...}` before it is cached or sent: an old blob's
+    `recentExcludedIds`, which nothing reads since Recent moved to
+    liveworkspace's index ([Hide from Recent](../013-workspace/hide-from-recent.md)),
+    goes whole; every other key stays whole. A full account measured 4,967 characters. A
+    trim logs `[preferences] trimmed to fit dropped=<n> length=<n>`.
+  - **Only what changed is sent, each key whole.** A save is a patch: the
+    keys whose value differs from what the server last held (the set
+    fetched at load, then each save it confirmed), each with its whole
+    value, and `null` for a key removed. The accounts Worker replaces a
+    value rather than merging into it, so an object such as
+    `presentation` is always sent entire. Another app or tab changing
+    other keys meanwhile keeps its change.
+  - **Changes close together are one save.** A save waits
+    `PREFERENCES_SAVE_DEBOUNCE_MS` (400 ms) after the last change: a
+    slider dragged across 20 steps is one request, not 20. A tab going
+    away (`pagehide`) sends a waiting change at once.
+  - **One save at a time, the latest wins.** A change made while a save
+    is in flight waits for it, so saves never land out of order.
   - **A save that did not land keeps this device's copy.** From the
-    moment a save is queued until one succeeds, this browser is
-    marked unsynced for that owner
-    (`livedesign:user-preferences:unsynced`, holding the owner id).
-    A refused or failed save (logged `[preferences] save-refused
-status=<n>` or `save-not-confirmed`) leaves the mark, and the
-    next load lets the cache win over the server's blob and sends it
-    again, instead of the server reverting settings it never received.
-- **Cross-tab updates**: the browser's native `storage` event on
-  the preferences key still fires across tabs in the same
-  browser, so toggling in one tab updates every open editor and
-  Explorer: both follow the cache live rather than holding their
-  own copy. Because every save sends the WHOLE blob, a change is
-  always built on the freshest cache, never on a render's snapshot
-  (`rebaseUserPreferences`: only the keys the change touched are
-  applied over the cache); built on a snapshot, it would undo a
-  change another tab made since.
+    moment a save is queued until one succeeds, this browser is marked
+    unsynced for that owner (`livedesign:user-preferences:unsynced`,
+    holding the owner id). A refused or failed save (logged
+    `[preferences] save-refused status=<n>` or `save-not-confirmed`)
+    leaves the mark, and the next load lets the cache win over the
+    server's set and sends the difference again, instead of the server
+    reverting settings it never received.
+- **A guest's Settings in the Explorer**: the Explorer on this app's
+  address (`/explorer`, liveworkspace's, served through the router) gives a
+  guest this app's settings too, and changes them in this same cache
+  (`livedesign:user-preferences:v1`, one key at a time over the freshest copy)
+  rather than over the network. Each change also sets the unsynced mark
+  for the guest's `guest_<uuid>`, so this editor's next load keeps the
+  cache over the server's copy and sends it on, as for a save of its own
+  that never landed ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md#settings)
+  "A guest"). Renaming the key or the mark means changing
+  `DEVICE_PREFERENCES` in `@liveworkspace/settings/device` with it; the
+  settings-site-catalogue test fails until both agree.
+- **Cross-tab updates**: the browser's native `storage` event on the
+  preferences key still fires across tabs in the same browser, so toggling
+  in one tab updates every open editor and Explorer: both follow the cache
+  live rather than holding their own copy. A change is always built on the
+  freshest cache, never on a render's snapshot (`rebaseUserPreferences`:
+  only the keys the change touched are applied over the cache); built on a
+  snapshot, it would undo a change another tab made since.
 
-### Why D1 instead of localStorage-only
+### Why not localStorage only
 
-The original v1 shape was localStorage-only on the grounds that
-flags were UI-only and a server round-trip per toggle was
-overkill. That trade-off was wrong for the user experience:
-signed-in users who use livedesign on a laptop and a phone had
-to re-flip every setting on each device. Per-account sync is the
-expected behaviour for an account-bound app.
-
-Guests get the same persistence model (the api keys them by
-their `X-Owner-Id` participant id), so server-side storage is
-effectively a remote copy of localStorage for that device, but
-with a cross-browser bonus: a guest who clears localStorage but
-keeps the same browser session still recovers their preferences.
+Signed-in users who use livedesign on a laptop and a phone would have to
+re-flip every setting on each device, and a person using several
+liveworkspace apps would set motion, notifications and scale once per app.
+Keeping them with the account fixes both.
 
 **Panel corner layout is the deliberate exception.** Which corner
 each corner panel docks into ([Panel corner docking](panel-docking.md)) is a
 per-device ergonomic choice (screen size, handedness, monitor), so it
 lives in its own **device-local** `localStorage` store
-(`livedesign:panel-layout:v1`) and is **not** part of this synced
-blob. Don't fold panel placement into `UserPreferences`.
+(`livedesign:panel-layout:v1`) and is **not** part of the synced
+set. Don't fold panel placement into `UserPreferences`.
 
 ### Sign-up migration
 
-`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the designs + folders + shared-with rows, so a guest
-who signs up keeps the settings they'd already chosen. Idempotent
-in the same shape as the existing migrations: a second call with
-the same `guestOwnerId` moves zero rows.
+When a guest signs up, the accounts Worker merges the guest into the
+account ([Auth + guest access](../014-identity/auth-and-guest-access.md)
+"Guest → account migration"), settings included: the account keeps what it
+already has, the guest's values fill its gaps, then the guest's are
+cleared. A second merge finds nothing left to move.
 
-### Degradation without the api
+### Without liveworkspace accounts
 
-When the api worker is unset (a pure-guest deployment without a D1
-binding configured) the client treats the fetch as a no-op
-failure: the localStorage cache acts as the only persistence,
-which is the same behaviour as the original v1 design and works
-exactly like it did before. No required SaaS calls.
+A self-host with no accounts Worker configured keeps no preferences on the
+server: `GET` and `PUT /api/preferences` answer 404
+`preferences_not_stored`, the editor stops sending for that page load, and
+the localStorage cache is the only store. No SaaS call is required, so
+self-hosting stays viable.
 
 ## Schema
 
@@ -132,17 +154,6 @@ type UserPreferences = {
   // setting it to false is the only state that changes behaviour.
   // See docs/specs/017-telemetry/telemetry.md for the rest of the telemetry contract.
   telemetryEnabled?: boolean;
-
-  // When true, the AI Assistant panel renders in the editor.
-  // Defaults to false (opt-in). Only surfaced in the Settings
-  // dialog when the api worker reports aiEnabled:true (an
-  // a model key is configured). See docs/specs/007-editor/ai-assistance.md.
-  aiAssistanceEnabled?: boolean;
-
-  // Show the AI panel's quick suggested-prompt chips (docs/specs/007-editor/ai-assistance.md).
-  // Toggled from the Settings dialog's AI category; they take vertical
-  // space, so it can hide them. Undefined / true === shown.
-  aiSuggestedPrompts?: boolean;
 
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
@@ -303,9 +314,6 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `aiAssistanceEnabled` undefined → AI panel hidden (the default).
-  Setting it to `true` shows the panel; the toggle only appears in
-  Settings when the api worker advertises AI capability.
 - `panelLayout` and `minimalPanels`, which older blobs still carry, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `contentsPlacement` undefined → the Contents docked as a sidebar
@@ -409,8 +417,8 @@ Missing key === undefined === default behaviour. Concretely:
 - `powerUserOfferShown` undefined → the offer may still be made, once its
   thresholds are met.
 
-Empty (or missing entirely) localStorage entry, AND no row in
-`user_preferences` for this owner, is therefore the "everything
+Empty (or missing entirely) localStorage entry, AND nothing stored
+with the account for this owner, is therefore the "everything
 on" state.
 
 ## UI placement
@@ -472,8 +480,10 @@ and the dialog stays as the one complete, browsable index of them.
   - **Desktop** takes the iPadOS split view: the categories in a fixed left
     rail, the selected category's settings in the pane beside it. A category
     is always selected (Editor, unless it reopens where it was left) - the pane
-    is never empty. The dialog
-    is a fixed `42rem` tall (less on a short window), whichever category is
+    is never empty. The dialog is `60rem` wide (never more than 92% of the
+    window), so the rail (`15rem`, whose names wrap rather than being cut off)
+    and a readable pane sit side by side, and a fixed `44rem` tall (less on a
+    short window), whichever category is
     open: sized to content, the frame jumped between categories, and
     unbounded, a long category stretched it from the top of the screen to
     the bottom and read as a page, not a modal. A long category scrolls
@@ -533,11 +543,9 @@ and the dialog stays as the one complete, browsable index of them.
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
-  **AI Tools** (assistant, with suggested prompts nested under it, and a
-  **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Designs** (a **Default Folders** section with one row per
+  **Designs** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
-  preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
+  preference, they read and write the index's placement defaults), and an **Explorer** section with **Show Home Banner**
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
@@ -554,9 +562,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
   email stand-in card, the API Tokens manager), the message ends with a
-  **Sign In** link to `/sign-in/` that returns to the current page. On a
-  deployment without sign-in (`signInEnabled` false) there is nowhere to sign
-  in, so the link is absent. Preferences whose
+  **Sign In** link to `/sign-in/` that returns to the current page. Preferences whose
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
 
@@ -635,13 +641,12 @@ and the dialog stays as the one complete, browsable index of them.
   switches as one row of chips, see **Toggle groups** below), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (the
   API token manager).
-  A toggle row's control is one `role="switch"` button, named by the label
-  (`aria-labelledby`) and described by the description; its `::after`
-  stretches over the whole cell so a click anywhere on the row flips it, while
-  the help link and the illustration sit above that layer and keep their own
-  clicks. The `ToggleSwitch` inside is wrapped `aria-hidden`, because
-  `presentational` still exposes `role="switch"` and would otherwise offer a
-  screen reader two nested switches of the same name.
+  A toggle row's control is `@liveworkspace/ui`'s `Switch` at its `sm` size
+  (a 20 x 36 px track, the compact look Settings has always had), named by the
+  label (`aria-labelledby`) and described by the description. It is drawn with
+  `coversRow`, so its `::after` stretches over the whole cell and a click
+  anywhere on the row flips it, while the help link and the illustration sit
+  above that layer and keep their own clicks. A screen reader hears one switch.
 
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
@@ -720,8 +725,52 @@ and the dialog stays as the one complete, browsable index of them.
   in a file that only grows. Picking a category emits `UI` / `Opened` with a
   `Settings<Category>` type.
 
+  **One Settings view for every app.** The dialog's view is shared:
+  `@liveworkspace/settings-ui` (`packages/settings-ui` at the monorepo root) draws the header with its
+  back bar, the rail, the pane, search and its "no matches" state, the view memory and scroll
+  anchor, sections, collapsed sections, nested rows, the desktop-only note and every generic row
+  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note`, the power user
+  preset readout and the shortcut list). It knows nothing of this app: it is driven by a plain model
+  (categories with an icon, rows with a value and an `onChange`) and is handed the app's pieces (the
+  search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
+  keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
+  `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
+  standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
+  and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
+  (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
+  liveworkspace.app renders the same view over this app's derived catalogue
+  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md) "Settings"), so the app's
+  settings look the same there as here.
+
+  **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
+  and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedesign**
+  (this app's logo and name) and **All** (liveworkspace's logo). livedesign shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
+  own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
+  at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
+  for nothing. All shows every setting the account
+  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then **Common**
+  (liveworkspace's logo): every editor setting two or more apps have (`COMMON_SETTING_KEYS`,
+  liveworkspace/docs/accounts.md "Common settings"), once, in the categories the apps file them under
+  (Explorer for Show Home Banner); then each app's settings under its name and logo, in the apps'
+  order. This app's group is its own Settings minus the shared switches the Account section already
+  holds (a row marked "All apps" whose key is one of the Account section's) and minus its common
+  rows, which are drawn in Common instead (this editor's own rows, so a change there is counted and
+  synced as here), so a setting never shows twice; the other apps' groups are their own rows of their
+  plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
+  liveworkspace's account API through this app's router (`/api/workspace/account/settings/<app>`)
+  with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.
+  The Account section's switches are this editor's own shared preferences, changed through this
+  editor's own row for the key when it has one (so the change is counted and synced as here), and
+  its Profile row links to liveworkspace.app, where the profile is set. Nothing of All is fetched
+  until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
+  read per other app, kept for the page's lifetime. All is offered only to a signed-in account
+  outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
+  `?settings=`) lands on livedesign; otherwise the dialog opens on the side this device chose last
+  (`livedesign:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
+  and the bearer request); the switch, the Account section and the All grouping are the package's.
+
   Email rows are **absent, not disabled**, unless BOTH Resend is configured
-  ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
+  ([Transactional email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
   out entirely rather than becoming a row that pushes a blank pane.
   **Power-user-only rows** (Minimal chrome) are absent the same way unless
@@ -762,23 +811,24 @@ Live in `apps/live/lib/user-preferences.ts`:
   reads localStorage only, so the editor can use it during render.
 - `writeUserPreferences(prefs, ownerId?): void` trims the blob to
   fit, serialises and writes it back to localStorage AND, when
-  `ownerId` is supplied, queues a `PUT /api/preferences` (one at a
-  time, latest wins) so the value round-trips to D1. Also dispatches a
+  `ownerId` is supplied, queues a save (debounced, a patch of what
+  changed, one at a time) so the value reaches the account. Also dispatches a
   `livedesign:preferences-changed` window event so same-tab
   listeners (notably `lib/telemetry.ts`) can refresh their cached
   gate without polling. Callers without an `ownerId` (unit tests,
   the editor before identity resolves) skip the network step and
   still get the localStorage write; the next call with an
-  ownerId catches D1 up.
+  ownerId catches the server up.
 - `fetchUserPreferences(ownerId): Promise<UserPreferences | null>`
-  does a single `GET /api/preferences` for the resolved owner,
+  does a single `GET /api/preferences` for the resolved owner (once
+  per page load: a second caller shares the first's answer),
   merges the server's value over the localStorage cache (server
   wins on conflict, unless this browser holds an unconfirmed save
   for the owner, when the cache wins and is sent again), writes the merged blob back to localStorage,
   and dispatches `livedesign:preferences-changed`. Returns the
-  merged preferences, or null on failure / when the api worker
-  is unreachable (the caller can treat that as "stick with the
-  cache"). Called once at editor mount.
+  merged preferences, or null on failure or when the deployment
+  keeps none (the caller can treat that as "stick with the
+  cache"). Called by the Explorer and the editor as they mount.
 
 - `rebaseUserPreferences(snapshot, next)` moves a change built on a
   render's snapshot onto the freshest cache, and
@@ -791,11 +841,15 @@ event on the preferences key.
 ## API
 
 - **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
-  for the resolved owner. Empty object when no row exists. Auth:
-  the standard hybrid identity (account Bearer OR `X-Owner-Id`).
-- **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
-  upserts the row for the resolved owner. Returns 204. The blob
-  is opaque to the api worker beyond a size cap (4 KB; defends
-  against runaway clients). No per-field validation: the client
-  is responsible for the shape, and a malformed client just
-  reflects malformed prefs back to itself.
+  for the resolved owner: both scopes joined, `{}` when nothing is
+  stored. Auth: the standard hybrid identity (an account's or a
+  guest's Bearer token). 404 `preferences_not_stored` without liveworkspace
+  accounts; 503 `preferences_unavailable` when the accounts Worker
+  can't be reached.
+- **`PUT /api/preferences`** — body `{ prefs: PreferencesPatch }`: the
+  keys to change, each value whole, `null` to delete one, keys left out
+  unchanged. The api splits it between the All scope and livedesign's
+  own and makes one accounts write. Returns 204. Refused with 400 for a
+  key that isn't a plain name (`[A-Za-z0-9_.-]`, up to 64) or a body
+  past 8 KB; a refusal from the accounts Worker (a scope past its 16 KB) keeps
+  its status. Values are otherwise opaque: the client owns their shape.

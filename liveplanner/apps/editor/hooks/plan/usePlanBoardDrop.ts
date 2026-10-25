@@ -20,7 +20,7 @@ import {
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
 import { moveStatusRefusal } from './status-refusal';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerPlanBoardTarget, sameIncoming, type PlanIncoming } from './plan-board-targets';
 
 import { track } from '@/lib/telemetry';

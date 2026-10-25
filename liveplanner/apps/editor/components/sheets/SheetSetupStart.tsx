@@ -26,7 +26,7 @@ import {
   lucideShieldCheck,
   lucideTable,
   lucideUsers,
-} from '@liveplanner/icons/lucide';
+} from '@liveworkspace/icons/lucide';
 import {
   SHEET_TEMPLATE_GROUPS,
   SHEET_TEMPLATES,

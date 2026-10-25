@@ -4,7 +4,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { bestInk } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideCheck, lucideChevronDown } from '@liveplanner/icons/lucide';
+import { lucideCheck, lucideChevronDown } from '@liveworkspace/icons/lucide';
 import {
   checkboxValue,
   isArray,

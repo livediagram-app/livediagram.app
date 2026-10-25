@@ -4,7 +4,7 @@
 // same stroke the export writes (svgIconShape), so the editor and the export match.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { techGlyphStrokeUnits } from '@livedesign/icons';
+import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { TechIconArt, TechIconGlyph } from './tech-icon-glyph';

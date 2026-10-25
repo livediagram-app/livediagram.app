@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livedesign/vitest-config/inline-script';
+import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import {
   APPEARANCE_BOOT_SCRIPT,
   APPEARANCE_STORAGE_KEY,
@@ -14,7 +14,7 @@ import {
 
 const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const APPS = ['live', 'marketing', 'help', 'telemetry'] as const;
+const APPS = ['live', 'marketing', 'help'] as const;
 const layoutOf = (app: (typeof APPS)[number]) => read(`../../../../apps/${app}/app/layout.tsx`);
 
 describe('the inlined storage key', () => {

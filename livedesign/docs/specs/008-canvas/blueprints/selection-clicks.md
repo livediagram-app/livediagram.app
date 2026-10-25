@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                                     | Role                                                                                             |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `apps/live/lib/selection-click.ts`                       | Pure click rules (`isOnlySelected`, `plainClickOutcome`, `isPlainClick`), `armPlainClick`        |
+| `../packages/workbench/src/lib/selection-click.ts`       | Pure click rules (`isOnlySelected`, `plainClickOutcome`, `isPlainClick`), `armPlainClick`        |
 | `apps/live/hooks/canvas/useCanvasSelectHandlers.ts`      | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows            |
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | A boxed press arms the click on a selected element; a paired press reselects                     |
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`         | `beginDrag` drops the multi-selection when the pressed element is not a member                   |
@@ -19,7 +19,7 @@ Scope, by file:
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Hands `handleElementClick` to every boxed view as `onPlainClick`                                 |
 | `apps/live/components/canvas/Canvas.tsx`                 | Feeds `selectedId`, `isPaintMode` and `onDeselect` to `useCanvasSelectHandlers`                  |
 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`     | `openCanvasMenu`: a right-click or long-press on the empty canvas deselects, then opens the menu |
-| `apps/live/hooks/ui/useLongPress.ts`                     | Exports `LONG_PRESS_MS`                                                                          |
+| `../packages/workbench/src/hooks/ui/useLongPress.ts`     | Exports `LONG_PRESS_MS`                                                                          |
 
 ## Domain and naming
 
@@ -119,7 +119,7 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 
 | Rule                                           | Test                                                                     |
 | ---------------------------------------------- | ------------------------------------------------------------------------ |
-| Only selected, outcome, plain click, arming    | `apps/live/lib/selection-click.test.ts`                                  |
+| Only selected, outcome, plain click, arming    | `../packages/workbench/src/lib/selection-click.test.ts`                  |
 | Boxed press arming per kind, Shift, paint      | `apps/live/components/canvas/useBoxedElementGestures.selection.test.tsx` |
 | Double-click from selected and unselected      | same file                                                                |
 | Non-member press drops the multi-selection     | `apps/live/hooks/canvas/useEditorDrag.select-press.test.tsx`             |
@@ -129,8 +129,8 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 
 ## Constants and configuration
 
-- `PRESS_DRAG_SLOP_PX = 4` (`lib/press-gestures.ts`), the engage threshold of every body drag.
-- `LONG_PRESS_MS = 500` (`hooks/ui/useLongPress.ts`).
+- `PRESS_DRAG_SLOP_PX = 4` (`../packages/workbench/src/lib/press-gestures.ts`), the engage threshold of every body drag.
+- `LONG_PRESS_MS = 500` (`../packages/workbench/src/hooks/ui/useLongPress.ts`).
 
 ## Defaults ledger
 

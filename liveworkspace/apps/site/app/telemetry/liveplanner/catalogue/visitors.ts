@@ -2,7 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { pageViewApp, type PageViewApp } from '@liveplanner/api-schema';
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
   ACTION_SIGN_IN_NUDGE,
   EDITOR_REASONS_OPENED,
@@ -12,7 +12,7 @@ import {
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -264,7 +264,6 @@ export const FORM_TOUR: MetricStack = {
 // only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
 const SHOW_ME_SURFACES = [
   { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
-  { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
 ] as const;

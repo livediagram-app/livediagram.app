@@ -6,8 +6,7 @@ import { STORY_CLASSES } from './motion';
 import { TemplatePreview } from './template-preview';
 
 // The hover stories (preview-motion.css) draw extra shapes into a preview:
-// the ideas a mind map grows, the card that lands on a kanban, the flowchart's
-// token. Those shapes are in the markup at rest, and the editor's picker
+// the ideas a mind map grows, the card that lands on a kanban. Those shapes are in the markup at rest, and the editor's picker
 // renders the same markup without the motion stylesheet, so each one must be
 // invisible until its story adds it.
 
@@ -16,7 +15,7 @@ const markup = TEMPLATES.map((t) => ({
   svg: renderToStaticMarkup(createElement(TemplatePreview, { kind: t.kind })),
 }));
 
-const STORY_ENTRANCES = ['pv-new', 'pv-arrive', 'pv-token', 'pv-travel'];
+const STORY_ENTRANCES = ['pv-new', 'pv-arrive'];
 
 describe('preview hover stories', () => {
   it('keeps every shape a story adds invisible at rest', () => {

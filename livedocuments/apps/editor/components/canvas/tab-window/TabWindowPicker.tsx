@@ -3,7 +3,7 @@
 // The empty window's Choose a Tab list (docs/specs/009-elements/tab-window.md "Choosing the tab"), opened under its
 // button. Loaded only when someone opens it, so the canvas's first load carries none of the menu.
 import type { Tab } from '@livedocuments/document';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { TabWindowTabList } from './TabWindowTabList';
 
 export function TabWindowPicker({

@@ -61,7 +61,7 @@ bottom edge.
 
 ## Guests count
 
-An unsigned guest is a participant ([Auth + guest access](../014-identity/auth-and-guest-access.md)) and appears in the roll under
+A guest is a participant ([Auth + guest access](../014-identity/auth-and-guest-access.md)) and appears in the roll under
 whatever name they are using, with no distinction drawn from a signed-in one.
 Attendance is about who was in the room, and the canvas has never cared which
 door they came through.

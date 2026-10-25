@@ -11,7 +11,7 @@ import {
   type Layer,
   type ShapeElement,
 } from '@livediagram/document';
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

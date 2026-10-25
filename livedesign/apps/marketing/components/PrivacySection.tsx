@@ -3,8 +3,13 @@
 // set apart from the story beats. Each card leads with an animated illustration in the
 // FeatureArt vocabulary (Frame + SVG + fa-* keyframes), drawn for both appearances.
 
-import { BAND_CARD, BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
-import { EYEBROW } from '@/components/eyebrow';
+import {
+  BAND_CARD,
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@liveworkspace/marketing-site/lib/band-classes';
+import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import {
   DataIsYoursArt,
   EncryptedArt,
@@ -18,7 +23,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'No third-party analytics',
     description:
-      'No Google Analytics. No Segment. No marketing pixels. The only product telemetry is anonymous, first-party events served from our own API, with every event we measure listed publicly on /telemetry.',
+      'No Google Analytics. No Segment. No marketing pixels. The only product telemetry is anonymous, first-party events sent to our own liveworkspace telemetry service, with every event we measure listed publicly on /telemetry.',
     art: <NoTrackersArt />,
   },
   {
@@ -85,7 +90,7 @@ export function PrivacySection() {
         <p className="mt-12 text-center text-xs text-slate-600 dark:text-slate-400">
           Read the full{' '}
           <a
-            href="/help/policies/privacy-policy/"
+            href="https://liveworkspace.app/privacy"
             className="underline transition hover:text-slate-900 dark:hover:text-slate-200"
           >
             privacy policy

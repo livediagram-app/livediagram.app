@@ -4,8 +4,8 @@
 import type { AnswerValue, FormSheetDestination } from '@liveplanner/forms';
 import { responseRowWrite, type FormDefinition } from '@liveplanner/forms';
 import { cellKey, type SheetPerson } from '@liveplanner/sheets';
-import { projectLinksTab, readCells, readSheetHead, usedSheetRows } from '../db';
-import type { RouteContext } from '../routes/context';
+import { planHasTab, readCells, readSheetHead, usedSheetRows } from '../db';
+import type { PlanRouteContext } from '../routes/context';
 import { storeSheetWrite } from '../routes/sheet-write-route';
 import { sheetOnItsTab } from './form-tab';
 
@@ -13,7 +13,7 @@ type SheetRowOutcome = 'written' | 'missing' | 'full' | 'busy';
 
 // Whether the sheet a form sends its responses to is still there, on its tab in the project (form-tab.ts).
 export async function sheetThere(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   sheet: FormSheetDestination,
 ): Promise<boolean> {
@@ -21,7 +21,7 @@ export async function sheetThere(
 }
 
 export async function writeResponseRow(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   input: {
     projectId: string;
     sheet: FormSheetDestination;
@@ -36,7 +36,7 @@ export async function writeResponseRow(
   const { projectId, sheet } = input;
   const head = await readSheetHead(env, projectId, sheet.sheetId);
   if (!head || head.tabId !== sheet.tabId) return 'missing';
-  if (!(await projectLinksTab(env, projectId, sheet.tabId))) return 'missing';
+  if (!(await planHasTab(env, projectId, sheet.tabId))) return 'missing';
   const headerRow = head.layout.rows[0];
   const headerCells = headerRow
     ? await readCells(

@@ -151,17 +151,6 @@ export function checkMark(cx: number, cy: number, size: number, color: string, w
   return `<path d="M ${p(3.5, 8.5)} L ${p(6.5, 11.5)} L ${p(12.5, 4.5)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(width)}" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
 
-/** A padlock centred at (cx, cy), `size` across. */
-export function lockMark(cx: number, cy: number, size: number, color: string): string {
-  const u = size / 16;
-  const x = (v: number) => r2(cx + (v - 8) * u);
-  const y = (v: number) => r2(cy + (v - 8) * u);
-  return (
-    `<rect x="${x(3.5)}" y="${y(7)}" width="${r2(9 * u)}" height="${r2(6.5 * u)}" rx="${r2(1.5 * u)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(1.5 * u)}"/>` +
-    `<path d="M ${x(5.5)} ${y(7)} V ${y(5)} a ${r2(2.5 * u)} ${r2(2.5 * u)} 0 0 1 ${r2(5 * u)} 0 V ${y(7)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(1.5 * u)}"/>`
-  );
-}
-
 /** One of the Temperature check's faces (TEMPERATURE_FACE_MOUTHS), centred at
  *  (cx, cy), `size` across, value 1..5. */
 export function moodFace(
@@ -258,8 +247,8 @@ export function wrapLines(body: string, width: number, size: number, max: number
 export type CollabAccent = { accent: string; on: string; ink: string };
 
 // mixHex lives in color-wash.ts, a leaf, so leaf modules can ramp colours at load; re-exported here for its callers.
-export { mixHex } from './color-wash';
-import { mixHex } from './color-wash';
+export { mixHex } from '@liveworkspace/model-core/color-wash';
+import { mixHex } from '@liveworkspace/model-core/color-wash';
 
 export function collabAccent(stroke: string, fill: string, textColor: string): CollabAccent {
   const on = inkOn(stroke);

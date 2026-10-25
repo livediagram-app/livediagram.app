@@ -5,8 +5,8 @@ A second, complete copy of the platform at **https://staging.livediagram.app**, 
 as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
 The point is to have somewhere a change is _running_ before anyone decides to ship it —
-in particular somewhere a **D1 migration runs against a real remote database** before it
-runs against the one holding people's documents.
+against real remote Workers, Durable Objects and liveworkspace's staging index before it
+reaches people's documents.
 
 ## The two environments
 
@@ -17,7 +17,7 @@ runs against the one holding people's documents.
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `livediagram-<app>`                  | `livediagram-<app>-staging`                |
-| D1           | `livediagram`                        | `livediagram-staging`                      |
+| Index        | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
 | R2           | `livediagram-images`                 | `livediagram-images-staging`               |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
@@ -66,15 +66,17 @@ drifting apart unnoticed.
 The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available —
-staging frontend, production database — so `apps/router/wrangler.toml` keeps its staging
+staging frontend, production data — so `apps/router/wrangler.toml` keeps its staging
 bindings adjacent to the production ones for eyeball comparison, and the dry-run in CI
 prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
-come free: a different script is a different DO namespace, so the staging
-`DOCUMENT_ROOM` is already separate.
+Staging gets its own **R2 bucket** and **KV namespace**, and talks to liveworkspace's
+staging services (`staging.liveworkspace.app`: the index, media, Community and telemetry).
+Durable Objects come free: a different script is a different DO namespace, so the staging
+`DOCUMENT_ROOM` (and every document's content in it), `PERSON_STORE` and `WORKBENCH` are
+already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -82,19 +84,16 @@ scoped per script by Cloudflare, so the staging worker's `1001` is not productio
 something.
 
 Consequence worth stating plainly: **staging has no production data.** It starts empty
-and stays a scratch environment. It is for exercising code paths and migrations, not for
+and stays a scratch environment. It is for exercising code paths, not for
 reproducing a specific user's document.
 
-## Migrations run on staging first
+## Staging runs first
 
-`deploy-staging.yml` applies `wrangler d1 migrations apply DB --remote --env staging`
-before the staging api worker deploys, exactly as production does. That makes every
-merge to `main` a rehearsal of the production migration step against a real remote D1,
-one manual deploy earlier than the rehearsal used to happen, which was never.
-
-A migration that fails halts the staging deploy and turns the `main` build red — which
-is the whole point, and the reason the staging deploy is chained to CI rather than fired
-in parallel with it.
+Every merge to `main` deploys to staging before anyone deploys production. There is no
+database migration step: each Durable Object makes its own schema the first time it is
+used, so the staging deploy rehearses the same Workers and Durable Object classes
+production will run. A deploy that fails turns the `main` build red — which is the
+reason the staging deploy is chained to CI rather than fired in parallel with it.
 
 ## noindex, at the edge
 
@@ -124,18 +123,17 @@ Two deliberate non-changes:
 
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is
 its own build** — the two workflows never share an artifact. Staging's build differs
-from production's in exactly two values:
+from production's in exactly one value:
 
-| Variable                            | Production                                        | Staging                               |
-| ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                   | `pk_test_*` (test tenant)             |
-| `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
+| Variable                 | Production                                        | Staging                               |
+| ------------------------ | ------------------------------------------------- | ------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md)
-"Hosted profile") / `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` are `true` in both so the staging
-build exercises the same code as production's.
+"Hosted profile") is `true` in both so the staging build exercises the same
+code as production's.
 
 ## Integrations
 
@@ -145,36 +143,36 @@ set. `GET /api/capabilities` is the authoritative answer at any moment; as of th
 first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging against
 `{"aiEnabled":true,"emailEnabled":true}` on production.
 
-| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livediagram.app` would need adding under Domains. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
+| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livediagram.app/api/auth/callback`. |
+| **Telemetry** — ON | Events land in liveworkspace's staging telemetry service, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                         |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging sends the same notification emails as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.     |
+| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                            |
 
-> **Email warning.** Staging runs the same daily lifecycle-email cron as production
-> (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
-> address that signs into staging receives them, from the same verified domain as
+> **Email warning.** Staging sends the same notification emails as production (comments,
+> mentions, assigned actions, first-share and milestone notes). With `RESEND_API_KEY` set,
+> any address that signs into staging receives them, from the same verified domain as
 > production's — so a staging account made with a colleague's address mails that
-> colleague. That is why the key is unset by default: absent, the email feature is inert
-> and the `email_lifecycle` table is never touched ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
+> colleague. That is why the key is unset by default: absent, the email feature is inert ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
 > Set it for a specific test, use addresses you own, and remove it afterwards.
 
 ## Secrets
 
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
-value the deploy workflow syncs, plus the Clerk publishable key:
+value the deploy workflow syncs:
 
-| GitHub secret                               | Synced to                       | Notes                                                                                                                                                                                                              |
-| ------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING` | build step                      | `pk_test_*` from the Clerk test tenant.                                                                                                                                                                            |
-| `CLERK_JWKS_URL_STAGING`                    | staging api                     | Test tenant's JWKS URL.                                                                                                                                                                                            |
-| `GUEST_ID_HMAC_SECRET_STAGING`              | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
-| `TELEMETRY_KEY_STAGING`                     | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
+| GitHub secret                    | Synced to                       | Notes                                                                                                                                                                                                              |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                                                                                                                      |
+| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                                                                                                            |
+| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                                                                                                    |
+| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                                                                                                              |
+| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
-`RESEND_API_KEY` and the model keys (`OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
+`RESEND_API_KEY` and the model key (`GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
 environment; they are provisioned once by hand with `wrangler secret put ... --env
 staging`, exactly as production provisions them. Keeping the workflow's secret list
 identical across the two environments is deliberate: a secret that exists in one
@@ -208,15 +206,14 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the three data stores exist, and their ids are committed:
+**Done** — the two data stores exist:
 
 | Resource | Name                         | Where the id lives       |
 | -------- | ---------------------------- | ------------------------ |
-| D1       | `livediagram-staging`        | `apps/api/wrangler.toml` |
 | R2       | `livediagram-images-staging` | bound by name, no id     |
 | KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
 
-Both were created in `ENAM`, Cloudflare's default for the account rather than a
+They were created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
 staging ever needs to reproduce production's read latency, that is the knob.
 
@@ -236,8 +233,7 @@ Still outstanding:
 ```bash
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
-cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the crop reader
+cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the note reader
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above
@@ -253,14 +249,15 @@ automated from the workflow — same as production, [Deployment](deployment.md))
 Only those two workers get hostnames. The other six are reached exclusively over the
 router's service bindings and never touch DNS, exactly as in production.
 
-**Clerk needs nothing**, contrary to what this spec first said. A development instance
-is origin-permissive, so there is no allow-list to add the staging host to. That only
-becomes a step if staging is ever moved to a Clerk production instance.
+**Sign-in needs one registration**: staging's OAuth client on the accounts Worker, with
+`https://staging.livediagram.app/api/auth/callback` as its redirect URI and its own
+resource. (Under Clerk, staging used an origin-permissive development tenant and needed
+nothing.)
 
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
-  Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
+  Per-PR previews would need a worker per PR, its own storage per PR and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's document.
@@ -287,7 +284,7 @@ leaves no trace either way, and no amount of reading the repo would have reveale
 caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
 hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
 and the deploy's verify step is the probe that fails when one is not live. (The caps have since moved to liveworkspace's media service, which keeps them for every app; the hosted profile now carries the media service's URL instead.)
-`AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
+`AI_REQUIRE_SIGN_IN` is deliberately unset in **both** environments (the editor offers AI to
 guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
 September 2026, which made staging refuse AI to guests that production serves: exactly the
 drift this environment exists to catch, so it was removed.

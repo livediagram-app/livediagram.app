@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { driveMode, googleOAuthBase } from './config';

@@ -1,10 +1,11 @@
-// docs/specs/014-identity/transactional-email.md: the five email bodies. Plain, inline-styled, email-client-safe HTML
-// (no external CSS, tables for layout where it matters). Each builder returns
+// docs/specs/014-identity/transactional-email.md: the bodies of the emails liveplanner sends itself, the
+// notifications about other people's activity and the account-deleted notice. The onboarding series and the team
+// emails are the liveworkspace accounts Worker's (liveworkspace/docs/accounts.md). Plain, inline-styled,
+// email-client-safe HTML (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
-// Content only: never a project's contents, only the user's own account facts
-// plus a team name the inviter already chose.
+// Content only: never a project's contents, only names the recipient already knows.
 
-import { xmlEscape } from '@liveplanner/icons';
+import { xmlEscape } from '@liveworkspace/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -27,9 +28,8 @@ const CANVAS = '#f5f3ff';
 const LOGO_PATH = '/email/liveplanner-mark-64.png';
 const LOGO_SIZE = 28;
 
-// Default sign-off, used by the onboarding emails (their recipients all have an
-// account). The invite + account-deleted builders pass their own, since those
-// recipients may not have (or no longer have) an account.
+// Default sign-off, for an email that names no footer of its own (its recipient has an account). The
+// notifications and the account-deleted notice each pass their own.
 const ACCOUNT_FOOTER =
   'You’re receiving this because you have a liveplanner account. liveplanner is free, with no ads and no trackers.';
 
@@ -40,41 +40,20 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-// docs/specs/014-identity/transactional-email.md: every tip / check-in after the welcome (week 1, week 2, the
-// activation nudge, win-back) respects notifyTips, so each carries the same opt-out footer and the
-// List-Unsubscribe header pointing at the toggle that stops it.
-function tipsFooter(env: Env): string {
-  return manageNotificationsFooter(
-    env,
-    'You’re receiving this because you have a liveplanner account and tips and check-ins are on.',
-  );
-}
-
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
-// forgotten) at each of the fourteen call sites. A fixed literal, never a
+// forgotten) at each call site. A fixed literal, never a
 // subject line or anything the recipient wrote.
 export type EmailKind =
-  | 'Welcome'
-  | 'Week1'
-  | 'Week2'
-  | 'Activation'
-  | 'WinBack'
   | 'Milestone'
   | 'FirstShare'
-  | 'TeamInvite'
-  | 'TeamInviteReminder1'
-  | 'TeamInviteReminder2'
-  | 'TeamInviteReminder3'
-  | 'InviteResponse'
   | 'ProjectJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
-  | 'TokenExpiring'
   | 'AccountDeleted';
 
 export type RenderedEmail = {
@@ -172,162 +151,6 @@ function shell(env: Env, section: Section): string {
 </body></html>`;
 }
 
-export function welcomeEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Welcome',
-    subject: 'Welcome to liveplanner',
-    html: shell(env, {
-      heading: 'Welcome, let’s plan something',
-      intro:
-        'liveplanner is a free, real-time planner for teams. Here’s how to get your first plan going:',
-      points: [
-        '<strong>Start a board</strong> of cards, add columns for each stage, and drag cards along as the work moves.',
-        '<strong>Add a sheet, a dashboard or a form</strong> as another tab, so the numbers, the charts and the requests live in the same plan.',
-        '<strong>Start from a template</strong> (kanban, project planner, bug triage and more) to have the columns and card types ready to fill.',
-      ],
-      outro: 'Everything saves as you go, so you can just start and come back later.',
-      ctaText: 'Start planning',
-      ctaHref: `${base}/new`,
-    }),
-  };
-}
-
-export function week1Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week1',
-    subject: 'Find your way around the Explorer',
-    html: shell(env, {
-      heading: 'Your plans, organised',
-      intro: 'Now that you’ve made a few plans, the Explorer is where you keep them tidy:',
-      points: [
-        '<strong>Folders</strong> group related plans; drag to sort, and collapse folders you’re not using.',
-        '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a plan to export a PDF / PNG / SVG / Markdown copy.',
-      ],
-      ctaText: 'Open your Explorer',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-export function week2Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week2',
-    subject: 'Bring your team into your plans',
-    html: shell(env, {
-      heading: 'Plans are better together',
-      intro: 'If you’re working with other people, a team gives everyone a shared home for plans:',
-      points: [
-        '<strong>Create a team</strong> from the Explorer and invite people by email.',
-        '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
-        '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
-      ],
-      outro: 'A plan still needs no account. Teams just add a shared home on top.',
-      ctaText: 'Create a team',
-      ctaHref: `${base}/explorer/team`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/013-workspace/teams.md "Declining from the email": where an invite email's Decline link lands. The
-// token rides in the query like /join's; the page only reads until its button is pressed.
-function declineInviteHref(env: Env, declineToken: string): string {
-  return `${appBaseUrl(env)}/join/decline?token=${encodeURIComponent(declineToken)}`;
-}
-
-type TeamInviteCopy = { subject: string; heading: string; intro: string; preheader?: string };
-
-// The invite and its reminders share one body (docs/specs/014-identity/transactional-email.md #4, #13): what the
-// team is, how to accept, and a quiet Decline link that needs no account. Only the opening lines differ.
-function teamInviteSection(
-  env: Env,
-  copy: Omit<TeamInviteCopy, 'subject'>,
-  declineToken: string | null,
-): Section {
-  const decline = declineToken
-    ? ` Not for you? <a href="${declineInviteHref(env, declineToken)}" style="color:${BRAND};text-decoration:underline">Decline the invite</a>, no account needed.`
-    : '';
-  return {
-    ...copy,
-    outro: `Sign in (or sign up, it’s free) with this email address and the invite will be waiting on your invites page.${decline}`,
-    ctaText: 'View your invite',
-    ctaHref: `${appBaseUrl(env)}/explorer/invites`,
-    footer:
-      'You’re receiving this because someone invited you to a team on liveplanner. If it wasn’t expected, you can safely ignore it, nothing happens unless you accept.',
-  };
-}
-
-function teamNames(teamName: string | null): { html: string; text: string } {
-  const trimmed = teamName?.trim();
-  return trimmed
-    ? { html: escapeHtml(trimmed), text: escapeText(trimmed) }
-    : { html: 'a team', text: 'a team' };
-}
-
-export function teamInviteEmail(
-  env: Env,
-  teamName: string | null,
-  declineToken: string | null = null,
-): RenderedEmail {
-  const name = teamNames(teamName);
-  return {
-    kind: 'TeamInvite',
-    subject: `You’ve been invited to ${name.text} on liveplanner`,
-    html: shell(
-      env,
-      teamInviteSection(
-        env,
-        {
-          heading: `You’re invited to ${name.html}`,
-          intro: `Someone invited you to join <strong>${name.html}</strong> on liveplanner, a shared space for plans you and your teammates can open and edit together.`,
-        },
-        declineToken,
-      ),
-    ),
-  };
-}
-
-// docs/specs/013-workspace/teams.md "Reminders and expiry": the three follow-ups, 1, 7 and 21 days in. The last
-// one says the invite closes in a week, which is when it expires.
-const REMINDER_COPY: Record<1 | 2 | 3, (team: { html: string; text: string }) => TeamInviteCopy> = {
-  1: (team) => ({
-    subject: `Reminder: you’re invited to ${team.text} on liveplanner`,
-    heading: `Your invite to ${team.html} is waiting`,
-    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on liveplanner, a shared space for plans you and your teammates can open and edit together.`,
-  }),
-  2: (team) => ({
-    subject: `Your invite to ${team.text} is still waiting`,
-    heading: `Still thinking about ${team.html}?`,
-    intro: `A week ago someone invited you to join <strong>${team.html}</strong> on liveplanner. The invite is still open whenever you are ready.`,
-  }),
-  3: (team) => ({
-    subject: `Last reminder: your invite to ${team.text} closes in a week`,
-    heading: `Your invite to ${team.html} closes soon`,
-    intro: `Someone invited you to join <strong>${team.html}</strong> on liveplanner three weeks ago. This is the last reminder: the invite closes in a week if nobody answers it.`,
-  }),
-};
-
-export function teamInviteReminderEmail(
-  env: Env,
-  teamName: string | null,
-  stage: 1 | 2 | 3,
-  declineToken: string,
-): RenderedEmail {
-  const { subject, ...copy } = REMINDER_COPY[stage](teamNames(teamName));
-  return {
-    kind: `TeamInviteReminder${stage}`,
-    subject,
-    html: shell(env, teamInviteSection(env, copy, declineToken)),
-  };
-}
-
 export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
@@ -347,176 +170,6 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   };
 }
 
-// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared projects for the
-// first time. Sent to the project OWNER, so the project name is their own
-// content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
-// visitor's display name when known (already visible to the owner in live
-// presence / the Shared list); null falls back to "Someone".
-export function projectJoinedEmail(
-  env: Env,
-  projectName: string,
-  joinerName: string | null,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
-  const named = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your plan';
-  const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
-  return {
-    kind: 'ProjectJoined',
-    subject: `${whoText} opened one of your plans`,
-    html: shell(env, {
-      heading: 'Someone joined your plan',
-      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a plan you shared. They can collaborate on it with the access you granted.`,
-      outro:
-        'Join notifications are on by default for plans you share. You can turn them off any time in your notification settings.',
-      ctaText: 'Open the plan',
-      ctaHref: `${base}/explorer`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because someone opened a plan you shared.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/014-identity/profile-and-email-notifications.md: an invitee accepted or declined a team invite. Sent to the team's
-// admins. The responder address + team name are both already known to the
-// inviting admin (they typed the address, they named the team), so this stays
-// within docs/specs/014-identity/transactional-email.md §7.
-export function inviteResponseEmail(
-  env: Env,
-  teamName: string | null,
-  responderEmail: string,
-  accepted: boolean,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const team = teamName && teamName.trim() ? escapeHtml(teamName.trim()) : 'your team';
-  const teamText = teamName && teamName.trim() ? escapeText(teamName.trim()) : 'your team';
-  const who = escapeHtml(responderEmail);
-  const verb = accepted ? 'accepted' : 'declined';
-  return {
-    kind: 'InviteResponse',
-    subject: `${escapeText(responderEmail)} ${verb} your invitation to ${teamText}`,
-    html: shell(env, {
-      heading: accepted ? 'Invitation accepted' : 'Invitation declined',
-      intro: accepted
-        ? `<strong>${who}</strong> accepted your invitation and is now a member of <strong>${team}</strong>.`
-        : `<strong>${who}</strong> declined your invitation to <strong>${team}</strong>. You can invite them again any time.`,
-      ctaText: 'Open the team',
-      ctaHref: `${base}/explorer/team`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because you’re an admin of this team.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a project element.
-// Sent to the assignee (a joined teammate of the assigner). Opt-out
-// (notifyActionAssigned). Everything user-influenced here (assigner name,
-// project name, action name, description) is either the assigner's own words
-// being delivered on their behalf or a project/team fact the two already
-// share (docs/specs/014-identity/transactional-email.md §7), and all of it is escaped.
-const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
-
-export function actionAssignedEmail(
-  env: Env,
-  assignerName: string | null,
-  // Null when the assignee cannot open the project (docs/specs/012-collaboration/assigned-actions.md §4): the
-  // email names no project and its button opens the Explorer instead of a page they would be refused.
-  project: { id: string; name: string } | null,
-  actionName: string,
-  description: string | null,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
-  const whoText =
-    assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
-  const liveDoc =
-    project && project.name.trim() ? escapeHtml(project.name.trim()) : 'a shared plan';
-  const action = escapeHtml(actionName.trim());
-  const detail = description?.trim()
-    ? escapeHtml(
-        description.trim().length > ACTION_DESCRIPTION_PREVIEW_CHARS
-          ? `${description.trim().slice(0, ACTION_DESCRIPTION_PREVIEW_CHARS)}…`
-          : description.trim(),
-      )
-    : null;
-  const intro = project
-    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
-    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its plan yet, so ask them to share it with you.`;
-  return {
-    kind: 'ActionAssigned',
-    subject: `${whoText} assigned you an action`,
-    html: shell(env, {
-      heading: 'You have a new action',
-      intro,
-      ...(detail ? { outro: detail } : {}),
-      ...(project
-        ? {
-            ctaText: 'Open the plan',
-            ctaHref: `${base}/project/${encodeURIComponent(project.id)}`,
-          }
-        : { ctaText: 'Open liveplanner', ctaHref: `${base}/explorer` }),
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because a teammate assigned you an action.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
-// author and project name come from server state (the notify-mention route);
-// the quote is the author's own words, escaped and cut at a word.
-export const MENTION_QUOTE_CHARS = 280;
-
-export function mentionQuote(text: string): string {
-  const flat = text.trim().replace(/\s+/g, ' ');
-  if (flat.length <= MENTION_QUOTE_CHARS) return flat;
-  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
-  const space = cut.lastIndexOf(' ');
-  return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
-}
-
-export function mentionedEmail(
-  env: Env,
-  authorName: string | null,
-  projectName: string,
-  projectId: string,
-  commentText: string,
-  // A Plan card's comment: the button opens the card (docs/specs/012-collaboration/comment-mentions.md).
-  itemId?: string,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const docHref = `${base}/project/${encodeURIComponent(projectId)}`;
-  const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
-  const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
-  const liveDoc =
-    projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'a shared plan';
-  const projectText = projectName && projectName.trim() ? escapeText(projectName.trim()) : 'a plan';
-  return {
-    kind: 'Mentioned',
-    subject: `${whoText} mentioned you in ${projectText}`,
-    html: shell(env, {
-      heading: 'You were mentioned',
-      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
-      outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: itemId ? 'Open the card' : 'Open the plan',
-      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because a teammate mentioned you in a comment.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
 // Escaping for the one piece of user-influenced text in an email body (the
 // team name): the repo's one markup escaper for the body, and a plain-text
 // variant for the subject line. A local copy used to skip the apostrophe.
@@ -524,77 +177,6 @@ const escapeHtml = xmlEscape;
 
 function escapeText(s: string): string {
   return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
-}
-
-// docs/specs/014-identity/transactional-email.md (#3): a one-time heads-up that an API token (docs/specs/015-api/public-api-and-tokens.md) is within a week
-// of its 6-month expiry, so a script / connected tool doesn't silently break.
-// Transactional (account-important); not opt-out.
-const EXPIRY_MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-export function tokenExpiringEmail(
-  env: Env,
-  tokenName: string | null,
-  expiresAt: number,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const name = tokenName && tokenName.trim() ? escapeHtml(tokenName.trim()) : 'an API token';
-  const d = new Date(expiresAt);
-  const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-  return {
-    kind: 'TokenExpiring',
-    subject: 'Your liveplanner API token expires soon',
-    html: shell(env, {
-      heading: 'An API token is about to expire',
-      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your plans.`,
-      points: [
-        'Create a fresh token in Settings, API Tokens before this one expires.',
-        'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
-        'Revoke the old token once the switch is done.',
-      ],
-      outro: 'Tokens last six months; this is the only reminder we send for each one.',
-      ctaText: 'Manage your tokens',
-      ctaHref: `${base}/explorer?settings=tokens`,
-      footer:
-        'You’re receiving this because an API token on your liveplanner account is nearing its expiry.',
-    }),
-  };
-}
-
-// docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// project yet (fires once, ~3 days in). Opt-out (notifyTips).
-export function activationEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Activation',
-    subject: 'Your first plan is waiting',
-    html: shell(env, {
-      heading: 'Ready when you are',
-      intro:
-        'You signed up for liveplanner but haven’t made a plan yet. It takes about thirty seconds to get going:',
-      points: [
-        'Start a blank board and add a few cards, or start from a template (kanban, project planner, bug triage and more).',
-        'Add a sheet, a dashboard or a form beside it, and it all saves as you go.',
-        'Share it with one link and plan it together in real time.',
-      ],
-      outro: 'No pressure: liveplanner is free and always here.',
-      ctaText: 'Make your first plan',
-      ctaHref: `${base}/new`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
 }
 
 // docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a project the
@@ -689,26 +271,137 @@ export function formSuspendedEmail(
   };
 }
 
-// docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
-// a few weeks. Opt-out (notifyTips).
-export function winBackEmail(env: Env): RenderedEmail {
+// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared projects for the
+// first time. Sent to the project OWNER, so the project name is their own
+// content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
+// visitor's display name when known (already visible to the owner in live
+// presence / the Shared list); null falls back to "Someone".
+export function projectJoinedEmail(
+  env: Env,
+  projectName: string,
+  joinerName: string | null,
+): RenderedEmail {
   const base = appBaseUrl(env);
+  const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
+  const named = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your plan';
+  const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
-    kind: 'WinBack',
-    subject: 'Your plans are waiting',
+    kind: 'ProjectJoined',
+    subject: `${whoText} opened one of your plans`,
     html: shell(env, {
-      heading: 'It’s been a while',
-      intro:
-        'You haven’t opened liveplanner in a few weeks, and your plans are right where you left them. A few things you can pick back up:',
-      points: [
-        'Start something new in seconds from a template or theme.',
-        'Share a plan with a live link, or bring a team into it.',
-        'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
-      ],
-      outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your plans',
+      heading: 'Someone joined your plan',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a plan you shared. They can collaborate on it with the access you granted.`,
+      outro:
+        'Join notifications are on by default for plans you share. You can turn them off any time in your notification settings.',
+      ctaText: 'Open the plan',
       ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because someone opened a plan you shared.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a project element.
+// Sent to the assignee (a joined teammate of the assigner). Opt-out
+// (notifyActionAssigned). Everything user-influenced here (assigner name,
+// project name, action name, description) is either the assigner's own words
+// being delivered on their behalf or a project/team fact the two already
+// share (docs/specs/014-identity/transactional-email.md §7), and all of it is escaped.
+const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
+
+export function actionAssignedEmail(
+  env: Env,
+  assignerName: string | null,
+  // Null when the assignee cannot open the project (docs/specs/012-collaboration/assigned-actions.md §4): the
+  // email names no project and its button opens the Explorer instead of a page they would be refused.
+  project: { id: string; name: string } | null,
+  actionName: string,
+  description: string | null,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
+  const whoText =
+    assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
+  const liveDoc =
+    project && project.name.trim() ? escapeHtml(project.name.trim()) : 'a shared plan';
+  const action = escapeHtml(actionName.trim());
+  const detail = description?.trim()
+    ? escapeHtml(
+        description.trim().length > ACTION_DESCRIPTION_PREVIEW_CHARS
+          ? `${description.trim().slice(0, ACTION_DESCRIPTION_PREVIEW_CHARS)}…`
+          : description.trim(),
+      )
+    : null;
+  const intro = project
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its plan yet, so ask them to share it with you.`;
+  return {
+    kind: 'ActionAssigned',
+    subject: `${whoText} assigned you an action`,
+    html: shell(env, {
+      heading: 'You have a new action',
+      intro,
+      ...(detail ? { outro: detail } : {}),
+      ...(project
+        ? {
+            ctaText: 'Open the plan',
+            ctaHref: `${base}/project/${encodeURIComponent(project.id)}`,
+          }
+        : { ctaText: 'Open liveplanner', ctaHref: `${base}/explorer` }),
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate assigned you an action.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
+// author and project name come from server state (the plan the comment is on);
+// the quote is the author's own words, escaped and cut at a word.
+export const MENTION_QUOTE_CHARS = 280;
+
+export function mentionQuote(text: string): string {
+  const flat = text.trim().replace(/\s+/g, ' ');
+  if (flat.length <= MENTION_QUOTE_CHARS) return flat;
+  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+export function mentionedEmail(
+  env: Env,
+  authorName: string | null,
+  projectName: string,
+  projectId: string,
+  commentText: string,
+  // A Plan card's comment: the button opens the card (docs/specs/012-collaboration/comment-mentions.md).
+  itemId?: string,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const docHref = `${base}/project/${encodeURIComponent(projectId)}`;
+  const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
+  const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
+  const liveDoc =
+    projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'a shared plan';
+  const projectText = projectName && projectName.trim() ? escapeText(projectName.trim()) : 'a plan';
+  return {
+    kind: 'Mentioned',
+    subject: `${whoText} mentioned you in ${projectText}`,
+    html: shell(env, {
+      heading: 'You were mentioned',
+      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
+      outro: `“${escapeHtml(mentionQuote(commentText))}”`,
+      ctaText: itemId ? 'Open the card' : 'Open the plan',
+      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate mentioned you in a comment.',
+      ),
     }),
     unsubscribeUrl: profilePath(env),
   };

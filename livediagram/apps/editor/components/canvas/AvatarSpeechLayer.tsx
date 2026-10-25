@@ -9,12 +9,12 @@
 // its node: no React render per frame, and no loop at all while nothing is flying.
 
 import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
 import { AVATAR_FALLBACK_COLOUR } from '@/lib/avatar-config';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarSpeechBubble';
 
 // The brand cyan a character falls back to with no presence colour (AvatarWalker's).

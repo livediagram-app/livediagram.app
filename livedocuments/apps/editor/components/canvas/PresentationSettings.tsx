@@ -7,7 +7,7 @@
 //
 // The person's own (lib/presentation-config), following their account, not a property of the document.
 
-import { HoverCard } from '@livedocuments/ui';
+import { HoverCard, SwitchRow } from '@livedocuments/ui';
 import {
   SLIDE_SPEEDS,
   SLIDE_TRANSITIONS,
@@ -73,33 +73,23 @@ function Toggle({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={(e) => {
-        e.stopPropagation();
-        onChange(!on);
-      }}
-      className="flex w-full cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-white/10"
+    // The small track sits first, on a dark panel: brand-400 on, a quarter-white off.
+    <SwitchRow
+      checked={on}
+      onChange={onChange}
+      onClick={(e) => e.stopPropagation()}
+      size="xs"
+      track="start"
+      onColor="var(--color-brand-400)"
+      offColor="rgb(255 255 255 / 0.25)"
+      layout="flex w-full items-start gap-2 rounded-md text-left"
+      className="px-2 py-1.5 transition hover:bg-white/10 [&>[data-switch]]:mt-0.5"
     >
-      <span
-        aria-hidden
-        className={`mt-0.5 flex h-3.5 w-6 shrink-0 items-center rounded-full transition ${
-          on ? 'bg-brand-400' : 'bg-white/25'
-        }`}
-      >
-        <span
-          className={`h-2.5 w-2.5 rounded-full bg-white transition-transform ${
-            on ? 'translate-x-3' : 'translate-x-0.5'
-          }`}
-        />
-      </span>
       <span className="flex min-w-0 flex-col">
         <span className="text-[11px] font-medium text-white/90">{label}</span>
         <span className="text-[10px] leading-tight text-white/45">{hint}</span>
       </span>
-    </button>
+    </SwitchRow>
   );
 }
 

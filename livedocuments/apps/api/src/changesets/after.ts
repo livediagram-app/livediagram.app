@@ -1,16 +1,15 @@
 import type { Tab } from '@livedocuments/document';
-import { hasNewComments } from '../comments';
+import { newCommentsBy } from '../comments';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
-import { recordTabSave } from '../timeline';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Env, DocumentEnv } from '../types';
 import type { FrontDoor } from './front-door';
 import type { Author } from './write';
 
 // What follows a written changeset, off the response path (docs/specs/024-agents/blueprints/
-// agent-changesets.md "The pipeline" step 11): the Timeline and the new-comment email exactly as a
-// save does, with the author as the actor (CS29), and the Agent telemetry for a token's changeset.
+// agent-changesets.md "The pipeline" step 11): the new-comment and mention emails exactly as a
+// save sends them, with the author as the actor (CS29), and the Agent telemetry for a token's changeset.
 // Never for a dry run (CS12).
 
 type AgentAction = 'Applied' | 'Conflicted' | 'Held' | 'Reverted';
@@ -30,7 +29,7 @@ function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise
 }
 
 async function run(
-  env: Env,
+  env: DocumentEnv,
   w: {
     document: DocumentDTO;
     author: Author;
@@ -42,20 +41,29 @@ async function run(
   },
 ): Promise<void> {
   const previous = w.stored?.elements ?? [];
-  const work: Promise<unknown>[] = [
-    recordTabSave(env, w.document, w.author.id, w.next.elements, previous),
-  ];
-  if (
-    emailEnabled(env) &&
-    w.author.id !== w.document.ownerId &&
-    hasNewComments(w.next.elements, previous, w.author.id)
-  ) {
+  const work: Promise<unknown>[] = [];
+  const fresh =
+    emailEnabled(env) && (w.author.id !== w.document.ownerId || (!w.agent && w.document.teamId))
+      ? newCommentsBy(w.next.elements, previous, w.author.id)
+      : [];
+  if (fresh.length > 0 && w.author.id !== w.document.ownerId) {
     work.push(
       notifyNewComment(
         env,
         { id: w.document.id, ownerId: w.document.ownerId, name: w.document.name },
         w.author.name,
       ),
+    );
+  }
+  // The teammates the author's new comments @-mention (docs/specs/012-collaboration/comment-mentions.md): a
+  // person's own changeset only, never an API token's, as only a signed-in person's mention emails.
+  if (!w.agent && w.document.teamId && fresh.some((c) => c.mentions?.length)) {
+    work.push(
+      notifyMentions(env, {
+        document: { id: w.document.id, name: w.document.name, teamId: w.document.teamId },
+        authorId: w.author.id,
+        comments: fresh,
+      }),
     );
   }
   if (w.agent) work.push(telemetry(env, w.action, w.frontDoor));

@@ -10,7 +10,7 @@ import { defaultStrokeColor } from './colors';
 import { PEN_INK, penColourHex } from './pen-colours';
 import { renderElementsToSvg, svgArrow, svgBoxed } from './svg-render';
 import { resolveStockColours } from './stock-colours';
-import { encodeStrokePoints } from './stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
@@ -59,7 +59,6 @@ const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
 });
 
 describe('resolveStockColours', () => {
-
   it('draws a named line colour in its version for the canvas surface', () => {
     const el = shape({ penColour: 'blue' });
     expect(resolveStockColours(el, 'light').strokeColor).toBe(penColourHex('blue', 'light'));

@@ -15,8 +15,8 @@ import {
   pickOption,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
-import { randomPick } from './random';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
+import { randomPick } from '@liveworkspace/workbench/lib/random';
 
 // The costume vocabulary itself lives in @livediagram/api-schema, because the
 // presence packet carries it to peers and both ends must agree on the tokens

@@ -9,10 +9,9 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@livediagram/api-schema';
+import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
-  showProfilePictureEnabled,
   panelEnabled,
   type MapSize,
   type PanelSwitch,
@@ -42,16 +41,14 @@ import {
   uiScalePatch,
   withUiScalePatch,
   type UiScalePart,
-} from '@/lib/ui-scale';
-import { setUiScalePreview } from '@/lib/ui-scale-preview';
+} from '@liveworkspace/workbench/lib/ui-scale';
+import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import {
   readWhiteboardDockPosition,
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
-import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
   CLOUD_SYNC_PROVIDERS,
   CLOUD_SYNC_SECTION,
@@ -97,7 +94,7 @@ function emailSwitch(
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / AI / Map gear popovers that used to carry
+// the Palette / Layers / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
@@ -113,14 +110,9 @@ function emailSwitch(
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
-// `authEnabled` is whether this deployment offers sign-in at all
-// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth deployment they
-// are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
   // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
@@ -243,7 +235,7 @@ export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
 // window. Read-only, so no read/write pair either.
 export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 
-// Account identity, read from Clerk, and account deletion. Neither is a
+// Account identity, read from the account, and account deletion. Neither is a
 // preference: they moved here from /explorer/profile (docs/specs/014-identity/profile-and-email-notifications.md) when that page
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
@@ -253,6 +245,10 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Here for everyone, guests and deployments without accounts included, because
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
+
+// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases go when made without
+// a place. Not a preference: the shared Explorer reads and writes them on the index.
+export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
 
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
@@ -264,14 +260,6 @@ export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 export type SettingsCloudSyncRowSpec = RowBase & {
   kind: 'cloudSync';
   provider: CloudSyncProviderId;
-};
-
-// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
-// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
-export type SettingsPlacementDefaultRowSpec = RowBase & {
-  kind: 'placementDefault';
-  placementKey: PlacementDefaultKey;
 };
 
 export type SettingsRowSpec =
@@ -287,9 +275,9 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
+  | SettingsDefaultFoldersRowSpec
   | SettingsPresetSummaryRowSpec
-  | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsCloudSyncRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -300,8 +288,6 @@ export type SettingsCategorySpec = {
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
-  // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
-  requiresAi?: boolean;
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
@@ -1196,73 +1182,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'ai',
-    label: 'AI Tools',
-    requiresAi: true,
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'aiAssistanceEnabled',
-        keywords: 'assistant chat ask clean llm',
-        section: 'Assistant',
-        label: 'AI Assistant',
-        description:
-          'An AI panel to Ask about the active tab, or Clean up its labels, sizes and styles. Off by default.',
-        helpArticle: 'aiTools',
-        read: (p) => p.aiAssistanceEnabled === true,
-        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
-        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'aiSuggestedPrompts',
-        keywords: 'starter questions prompts suggestions ai',
-        section: 'Assistant',
-        parent: 'aiAssistanceEnabled',
-        label: 'Suggested Prompts',
-        description: 'One-click starter prompts under the panel’s mode buttons.',
-        read: (p) => p.aiSuggestedPrompts !== false,
-        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
-        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
-      },
-      {
-        kind: 'link',
-        key: 'apiTokensLink',
-        keywords: 'api token key mcp integration script developer access',
-        section: 'API Access',
-        label: 'API Tokens',
-        cta: 'Manage API Tokens',
-        target: 'tokens',
-        description: 'Let your scripts, and AI tools connected over MCP, use livediagram as you.',
-        available: (ctx) => ctx.authEnabled === true,
-      },
-    ],
-  },
-  {
     id: 'documents',
-    label: 'Documents',
+    label: 'Canvases',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new document is saved when you create it without choosing a place.',
+        note: 'Where each kind of new canvas is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
     rows: [
-      // One row per default folder entry, in list order: guests have defaults too.
-      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-        kind: 'placementDefault',
-        key: `placementDefault-${entry.key}`,
-        placementKey: entry.key,
-        section: 'Default Folders',
-        // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
-        label: titleCase(entry.label),
-        keywords:
-          'default folder where new documents go save location place file automatically always save placement',
-        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      })),
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back.
+        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
         section: 'Explorer',
@@ -1273,6 +1204,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+      {
+        kind: 'defaultFolders',
+        key: 'defaultFolders',
+        section: 'Default Folders',
+        label: 'Where New Canvases Go',
+        keywords:
+          'default folder where new canvases documents go save location place file automatically always save placement template retrospective kanban',
+        description:
+          'New canvases you make without choosing a place are saved in these folders: one for every canvas, and one for each template family.',
       },
     ],
   },
@@ -1285,24 +1226,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords:
-          'account profile identity name email signed in sign in avatar picture photo google joined',
+        keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
+          'Your name and email come from your account. Signed out, your canvases belong to this browser.',
         helpArticle: 'guestVsAccount',
-      },
-      {
-        kind: 'toggle',
-        key: 'showProfilePicture',
-        keywords: 'profile picture photo avatar google show hide privacy collaborators',
-        section: 'You',
-        label: 'Show My Profile Picture',
-        description:
-          'To signed-in collaborators, on presence, cursors and comments. Others always see your initials.',
-        available: (ctx) => ctx.signedIn,
-        read: (p) => showProfilePictureEnabled(p),
-        write: (p, v) => ({ ...p, showProfilePicture: v }),
-        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
@@ -1310,8 +1237,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back canvas document diagram permanently empty',
+        description: 'Deleted canvases wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       // One row per provider, from the Cloud Sync catalogue.
@@ -1333,7 +1260,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo.',
+          'Removes your livediagram canvases, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -1349,7 +1276,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a canvas to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -1366,20 +1293,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your canvases, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       emailSwitch('notifyDocumentJoin', {
         event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
-        keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
+        keywords: 'email join collaborator opened document',
+        label: 'Someone Joins My Canvas',
+        description: 'A new person opens one of your shared canvases.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Document',
-        description: 'Someone leaves a comment on a document you own.',
+        label: 'Someone Comments on My Canvas',
+        description: 'Someone leaves a comment on a canvas you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1409,7 +1336,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first document.',
+        description: 'A note when you hit one, like sharing your first canvas.',
       }),
     ],
   },
@@ -1426,7 +1353,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Let your scripts, and AI tools connected over MCP, use livediagram as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
-        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -1457,16 +1383,10 @@ export function settingsSectionId(section: string): string {
 }
 
 // The categories actually offered right now, with each one's rows filtered to
-// those that apply. AI only appears when the api worker advertises the
-// capability, so a deploy without it never shows an empty group ,
-// and a category left with no applicable rows drops out entirely rather than
+// those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
-export function visibleCategories(
-  aiCapable: boolean,
-  ctx: SettingsRowContext,
-): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
+export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
+  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
@@ -1483,7 +1403,7 @@ export function visibleCategories(
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one document. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

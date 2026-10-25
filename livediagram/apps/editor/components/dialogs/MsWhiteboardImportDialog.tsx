@@ -1,4 +1,4 @@
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MsWhiteboardImportPanel } from './MsWhiteboardImportPanel';
@@ -25,7 +25,7 @@ export function MsWhiteboardImportDialog({
     >
       <DialogHeader
         title={MS_WHITEBOARD_IMPORT_TITLE}
-        subtitle="Each board becomes its own document, named and dated as the board."
+        subtitle="Each board becomes its own canvas, named and dated as the board."
       >
         <HelpArticleLink article="microsoftWhiteboardImport" size="md" />
         <DialogCloseButton onClick={onClose} />

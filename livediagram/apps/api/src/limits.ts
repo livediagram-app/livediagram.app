@@ -74,16 +74,10 @@ export const MAX_NAME_LEN = 500;
 // bound a hostile payload, not to constrain any real deck.
 export const MAX_DECK_LEN = 256 * 1024;
 
-// A custom theme's JSON definition (palette + per-shape colours).
-export const MAX_THEME_DEF_BYTES = 256 * 1024;
-
 // The client-claimed document-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
 export const MAX_PARTICIPANT_KEY_LEN = 64;
-
-// Share-link password.
-export const MAX_PASSWORD_LEN = 256;
 
 // UTF-8 byte length of a string, for size-gating JSON payloads (a char count
 // would under-count multi-byte content).

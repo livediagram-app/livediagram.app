@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMotionBudget, formatViolations } from '@liveplanner/tailwind-config/motion-budget';
+import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards/motion-budget';
 
 // Shared chrome (docs/specs/004-interface-design/motion.md): every app renders these
 // components, so they are held to the motion budget here, at the source.

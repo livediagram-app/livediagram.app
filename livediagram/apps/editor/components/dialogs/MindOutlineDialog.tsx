@@ -7,7 +7,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import type { MindOutlineSummary } from '@livediagram/document';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { rowsFromText, rowText, textFromRows, type OutlineRow } from '@/lib/outline-rows';
 import { MindOutlineRows } from './MindOutlineRows';

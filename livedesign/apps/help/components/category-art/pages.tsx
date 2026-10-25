@@ -1,5 +1,5 @@
-import { Label } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 // Pages: a design as a row of pages. A phone wireframe in its device, a photo with a selection on it, and a
 // square logo artboard with its construction circle, each labelled above its corner the way the editor labels them.

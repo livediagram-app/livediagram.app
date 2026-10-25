@@ -56,6 +56,10 @@ changes before it would have done.
 | `delete`                  | `page`                                                                                             | Removes the page and everything on it; never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
 | `apply_background_to_all` | `page`                                                                                             | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                       |
 
+- **One kind a tab** ([Pages](../007-editor/pages-mode.md#one-kind-a-tab)): an `add` of a kind other than the tab's
+  (its first page's) is refused (`kind_not_offered`), naming the tab's kind and pointing to a tab of its own
+  (`add_tab`); a wireframe `add` may name any `device`. A tab whose first page is a blank page holding something has
+  no kind yet and takes no `add`. The first page's choice, below, is how an unchosen tab takes its kind.
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
@@ -129,7 +133,7 @@ Every decision logs with the `[pages-agent]` fingerprint: `applied` (design, tab
   `Cli`, `Api`), as a changeset does; a refusal sends nothing.
 - Reading the `pages` view sends `Agent · Viewed · Pages`, as every view does.
 - Each tool call and CLI verb counts as every one does: `Mcp · Used · ChangePages` and
-  `Cli · Used · PageLs|PageSet`, charted on the telemetry dashboard (`apps/telemetry`).
+  `Cli · Used · PageLs|PageSet`, charted on the telemetry dashboard (`liveworkspace/apps/site/app/telemetry/livedesign`).
 
 ## Non-goals
 

@@ -5,7 +5,12 @@
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_PAGES, pageKindOf, type PageKind, type WireframeDeviceId } from '@livedesign/design';
+import {
+  lastPageOfTabKind,
+  MAX_PAGES,
+  type PageKind,
+  type WireframeDeviceId,
+} from '@livedesign/design';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
@@ -155,8 +160,6 @@ export function usePageContents({
     buttons.current.get(order[to]!)?.focus();
   };
   const full = pages.length >= MAX_PAGES;
-  // The last page's kind leads the footer, highlighted: the next page is most often the same.
-  const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =
     view.edit?.addPage && !full
       ? (kind: PageKind, device?: WireframeDeviceId) => {
@@ -165,8 +168,9 @@ export function usePageContents({
           else view.edit!.addPage!(kind);
         }
       : undefined;
-  // Another page like the last (its kind and shape; a wireframe page's device and frame too).
-  const lastPage = pages.at(-1);
+  // Another page like the last of the tab's kind (its kind and shape; a wireframe page's device and
+  // frame too): "One kind a tab". None on a tab whose first page is still blank.
+  const lastPage = lastPageOfTabKind(pages);
   const addLike =
     view.edit?.addPageLike && lastPage && !full
       ? () => {
@@ -213,7 +217,6 @@ export function usePageContents({
     addLike,
     lastPage,
     full,
-    lastKind,
   };
 }
 

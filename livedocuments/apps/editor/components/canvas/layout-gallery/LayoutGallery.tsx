@@ -8,7 +8,7 @@
 // for every place a layout is chosen: the empty page's card, the title bar's Layout popover, the
 // page panel's Layouts tab and a phone's sheet.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { lucideDices } from '@livedocuments/icons/lucide';
+import { lucideDices } from '@liveworkspace/icons/lucide';
 import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import {
   layoutCatalogueFor,
@@ -17,7 +17,7 @@ import {
 } from '@livedocuments/templates';
 import { lucideGlyph, NoMatches, Tooltip } from '@livedocuments/ui';
 import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
-import { prefetchWhenIdle } from '@/lib/idle-prefetch';
+import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { LayoutTile } from './LayoutTile';
 import {

@@ -7,6 +7,7 @@ import {
   type Tab,
 } from '@liveplanner/project';
 import { applyEditOperations } from './apply';
+import { formatRejections } from './rejections';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
 import { fixedIds, newView, sprintDashboard } from './fixtures/sprint-dashboard';
@@ -115,6 +116,12 @@ describe('applyEditOperations', () => {
       run([add(newView('x', 'gantt')), add(newView('y', 'search')), { op: 'rm', target: 'x' }]),
     );
     expect(createdIds).toEqual(['y']);
+  });
+
+  it('names the refused operation in its line form, as the header prints it', () => {
+    const rejection = refused(run([set('w1', { label: 'Load' }), { op: 'rm', target: 'gone' }]));
+    expect(rejection).toMatchObject({ code: 'target_not_found', operation: 2, op: 'rm gone' });
+    expect(formatRejections([rejection])[0]).toBe('error target_not_found · op 2 · rm gone');
   });
 
   describe('finalise', () => {

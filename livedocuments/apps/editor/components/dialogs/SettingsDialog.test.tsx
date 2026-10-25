@@ -3,10 +3,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SettingsDialog } from './SettingsDialog';
 import { visibleCategories } from './settings/settings-catalogue';
-import { SETTINGS_ROW_ATTRIBUTE } from './settings/settings-scroll-anchor';
-import { readSettingsView, writeSettingsView } from './settings/settings-view-memory';
+import {
+  readSettingsView as readView,
+  SETTINGS_ROW_ATTRIBUTE,
+  writeSettingsView as writeView,
+} from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
+
+const VIEW_KEY = 'livedocuments:settings-view:v1';
+const readSettingsView = () => readView(VIEW_KEY);
+const writeSettingsView = (view: Parameters<typeof writeView>[1]) => writeView(VIEW_KEY, view);
 
 // Who is reading: a guest unless a test signs in.
 const clerk = vi.hoisted(() => ({ accountUserId: null as string | null, isSignedIn: false }));
@@ -87,15 +94,17 @@ describe('SettingsDialog', () => {
     expect(screen.queryByRole('button', { name: /^Settings$/ })).toBeNull();
   });
 
-  it('holds one fixed desktop height whichever category is picked', () => {
+  it('holds one wide frame of one fixed desktop height whichever category is picked', () => {
     // jsdom has no layout, so this pins the contract rather than pixels: a
     // HEIGHT, not only a max-height, so a short category cannot shrink it.
     setViewport(false);
     renderDialog();
     const dialog = screen.getByRole('dialog', { name: 'Settings' });
-    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+    expect(dialog.className).toContain('sm:h-[min(44rem,calc(100%-6rem))]');
+    // Wide enough for the rail and a readable pane side by side.
+    expect(dialog.className).toContain('w-[60rem]');
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
-    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+    expect(dialog.className).toContain('sm:h-[min(44rem,calc(100%-6rem))]');
   });
 
   it('swaps the pane when another category is picked, keeping the rail', () => {

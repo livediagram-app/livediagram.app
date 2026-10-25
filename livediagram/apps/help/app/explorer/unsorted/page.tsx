@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Redirect } from '@/components/Redirect';
+import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // Unsorted is gone (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets): documents
 // with no folder sit at the root of My Work, and the article went with it. This stub keeps
@@ -9,7 +9,7 @@ const NEW_URL = '/help/explorer/personal-space/';
 
 export const metadata: Metadata = {
   title: 'My Work and Folders',
-  description: 'Unsorted is gone: documents with no folder sit at the root of My Work.',
+  description: 'Unsorted is gone: canvases with no folder sit at the root of My Work.',
   robots: { index: false, follow: true },
   alternates: { canonical: NEW_URL },
 };

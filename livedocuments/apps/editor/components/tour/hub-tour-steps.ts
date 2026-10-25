@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Hub and Spoke tour (docs/specs/007-editor/element-tours.md "The Hub and Spoke tour"): the hub everything
 // touches, its satellites round it from twelve o'clock, the spokes that can go, and Pulse travelling round.

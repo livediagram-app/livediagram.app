@@ -20,10 +20,6 @@ binding = "API"
 service = "livedesign-api"
 
 [[services]]
-binding = "TELEMETRY"
-service = "livedesign-telemetry"
-
-[[services]]
 binding = "HELP"
 service = "livedesign-help"
 
@@ -35,11 +31,22 @@ service = "livedesign-help"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
+# liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
+# switch is on (liveworkspace/docs/one-explorer.md); production's (https://liveworkspace.app) needs no var.
+WORKSPACE_ORIGIN = "http://localhost:3000"
 MARKETING_ORIGIN = "http://127.0.0.1:3401"
 LIVE_ORIGIN = "http://127.0.0.1:3402"
 API_ORIGIN = "http://127.0.0.1:8989"
-TELEMETRY_ORIGIN = "http://127.0.0.1:3403"
+# /telemetry redirects to the central dashboard (liveworkspace/docs/telemetry.md), run locally by
+# liveworkspace/apps/site; production's needs no var.
+TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3404"
+# The central index `/api/index/*` forwards to (liveworkspace/docs/one-explorer.md), run locally by
+# liveworkspace/apps/index; production's (https://liveworkspace.app) needs no var.
+INDEX_ORIGIN = "http://127.0.0.1:8793"
+# liveworkspace's media service (`pnpm dev` in liveworkspace/apps/media), which serves every app's previews:
+# `/api/previews/*` and a share link's image.svg, image.png and card go there (liveworkspace/docs/previews.md).
+PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-router-staging` and fronts
@@ -48,10 +55,10 @@ HELP_ORIGIN = "http://127.0.0.1:3404"
 # production).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
-# non-inheritable, so these six are the staging router's only downstreams,
+# non-inheritable, so these four are the staging router's only downstreams,
 # but a suffix dropped from one of them is the worst failure this repo can
 # produce: a staging frontend writing to the PRODUCTION database, with
-# nothing in the UI to say so. Read them against the six above before
+# nothing in the UI to say so. Read them against the four above before
 # changing anything here; `pnpm staging:check` prints the resolved binding table.
 # ---------------------------------------------------------------------------
 
@@ -74,10 +81,6 @@ binding = "API"
 service = "livedesign-api-staging"
 
 [[env.staging.services]]
-binding = "TELEMETRY"
-service = "livedesign-telemetry-staging"
-
-[[env.staging.services]]
 binding = "HELP"
 service = "livedesign-help-staging"
 
@@ -87,3 +90,7 @@ service = "livedesign-help-staging"
 # production's router has no DEPLOY_ENV, so the header is impossible there.
 [env.staging.vars]
 DEPLOY_ENV = "staging"
+WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
+TELEMETRY_DASHBOARD_URL = "https://staging.liveworkspace.app/telemetry"
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
+PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

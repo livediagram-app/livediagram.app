@@ -4,7 +4,7 @@ import { useMemo, type Ref } from 'react';
 import { isBoxed, unionBoxedBounds, type Element } from '@livedocuments/document';
 import { isoPivot, isoTransform } from '@/lib/isometric';
 import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
 // The isometric-view slice (docs/specs/008-canvas/isometric-view.md), lifted out of Canvas: the

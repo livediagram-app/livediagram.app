@@ -27,7 +27,7 @@ file). Built on [Board import](board-import.md); evidence in
   (random, bound to the opener), exchanges the code with the client secret, and
   returns a page that `postMessage`s the access token (60 minutes) and refresh
   token to the opener, targeted at the livediagram origin only, then closes.
-  Nothing is written to D1.
+  Nothing is written to the server.
 - Every later call goes **browser to `api.miro.com`** (CORS `*`). An expired
   access token is refreshed once from the tab through
   `POST /api/import/miro/refresh` (same statelessness); a second failure asks

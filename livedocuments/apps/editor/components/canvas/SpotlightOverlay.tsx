@@ -68,18 +68,19 @@ export function SpotlightOverlay({
       }}
     >
       {/* Glowing dot marking the exact centre of the light (the hidden OS
-          cursor's stand-in). A bright sky core with a white rim reads on both
-          light canvas content and the dark shroud; the box-shadow is the
-          glow. */}
+          cursor's stand-in). A bright core in the app's brand (brand-400) with a
+          white rim reads on both light canvas content and the dark shroud; the
+          box-shadow is the glow. */}
       <div
         className="absolute h-2.5 w-2.5 rounded-full"
         style={{
           left: dotLeft,
           top: dotTop,
           transform: 'translate(-50%, -50%)',
-          background: '#38bdf8',
+          background: 'var(--color-brand-400)',
           border: '1.5px solid rgba(255, 255, 255, 0.95)',
-          boxShadow: '0 0 10px 3px rgba(56, 189, 248, 0.85), 0 0 3px 1px rgba(255, 255, 255, 0.9)',
+          boxShadow:
+            '0 0 10px 3px color-mix(in srgb, var(--color-brand-400) 85%, transparent), 0 0 3px 1px rgba(255, 255, 255, 0.9)',
         }}
       />
     </div>

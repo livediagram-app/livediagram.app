@@ -16,7 +16,7 @@ import {
   sketchArtPictureMarkup,
   sketchArtRasterScale,
 } from './SketchArtPicture';
-import { SKETCH_INK_SETTLE_MS } from './settle-watch';
+import { SKETCH_INK_SETTLE_MS } from '@liveworkspace/workbench/components/canvas/settle-watch';
 
 // jsdom lays nothing out: every <svg> here is 24 x 24 unless a test says otherwise.
 let size = 24;

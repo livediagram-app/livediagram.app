@@ -11,7 +11,9 @@ import { PlanColumnPopover } from './PlanColumnPopover';
 // (docs/specs/004-interface-design/colour-picker.md).
 const plan = { items: new Map(), statusNames: new Map() };
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 afterEach(cleanup);
 
 function open(color?: string, onClose: (focus: boolean) => void = () => {}) {

@@ -9,16 +9,16 @@ Scope, by file:
 
 | File                                                   | Role                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `packages/ui/src/hint/hint-constants.ts`               | Every timing and size, named                                                   |
-| `packages/ui/src/hint/place-hint.ts`                   | Pure placement: trigger rect + surface size + viewport to a layout             |
-| `packages/ui/src/hint/hint-registry.ts`                | Module state: the one open hint, and the tooltip warm-up clock                 |
-| `packages/ui/src/hint/trigger-text.ts`                 | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
-| `packages/ui/src/hint/useHint.ts`                      | The state machine: pointer, focus, press, long press, Escape, grace            |
-| `packages/ui/src/hint/HintSurface.tsx`                 | The portal, the measured layout, the pointer triangle, the two looks           |
-| `packages/ui/src/Tooltip.tsx`                          | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
-| `packages/ui/src/HoverCard.tsx`                        | `HoverCard`: title + description, instant, on the layout wrapper it always had |
+| `../packages/ui/src/hint/hint-constants.ts`            | Every timing and size, named                                                   |
+| `../packages/ui/src/hint/place-hint.ts`                | Pure placement: trigger rect + surface size + viewport to a layout             |
+| `../packages/ui/src/hint/hint-registry.ts`             | Module state: the one open hint, and the tooltip warm-up clock                 |
+| `../packages/ui/src/hint/trigger-text.ts`              | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
+| `../packages/ui/src/hint/useHint.ts`                   | The state machine: pointer, focus, press, long press, Escape, grace            |
+| `../packages/ui/src/hint/HintSurface.tsx`              | The portal, the measured layout, the pointer triangle, the two looks           |
+| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
+| `../packages/ui/src/HoverCard.tsx`                     | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                            |
-| `packages/oxlint-config/native-title.ts`               | `livedocuments/no-native-title`: native `title` outside the exceptions         |
+| `packages/oxlint-config/native-title.ts`               | `liveworkspace/no-native-title`: native `title` outside the exceptions         |
 | `apps/editor/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                 |
 | `apps/editor/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                   |
 
@@ -28,14 +28,13 @@ One term, one identifier. The left column is the only spelling used in code, tes
 
 | Term          | Identifier                                                 | Meaning                                                            |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
-| Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
+| Hint          | `HintKind` (`'tooltip' \| 'hover-card'`)                   | Floating, non-interactive content shown for hover or focus         |
 | Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
-| Preview       | `useRowPreview`, `data-hint="preview"`                     | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
 | Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
-| Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip or a preview may skip its delay                          |
+| Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip may skip its delay                                       |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
 | Placement     | `HintPlacement` (`'top' \| 'bottom' \| 'right' \| 'left'`) | Side of the trigger the surface sits on                            |
@@ -84,18 +83,17 @@ pointer events from bubbling, and the hint must still see them.
 `settle()`: if none of `overTrigger`, `overSurface`, `focused` holds, clear `dismissed` and, when open, close after
 `HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
 
-`OPEN_DELAY_MS[kind]`: `0` for a hover card, `TOOLTIP_OPEN_DELAY_MS` for a tooltip,
-`PREVIEW_OPEN_DELAY_MS` for a preview; a tooltip or a preview opens at once when `isHintWarm(kind, now)`.
+`OPEN_DELAY_MS[kind]`: `0` for a hover card, `TOOLTIP_OPEN_DELAY_MS` for a tooltip; a tooltip opens at once when
+`isHintWarm(kind, now)`.
 
 Opening calls `claimHint(token, close, kind)`, which closes the previous holder (T14). Closing calls
 `releaseHint(token, kind, now)`,
-which, for a tooltip or a preview, stamps that kind's warm-up clock.
+which, for a tooltip, stamps its warm-up clock.
 
 ### Invariants
 
 - **I1:** at most one hint is open in a document.
-- **I2:** a tooltip (a preview) never opens from pointer hover sooner than `TOOLTIP_OPEN_DELAY_MS`
-  (`PREVIEW_OPEN_DELAY_MS`) unless warm.
+- **I2:** a tooltip never opens from pointer hover sooner than `TOOLTIP_OPEN_DELAY_MS` unless warm.
 - **I3:** keyboard-visible focus opens either hint in the same task; mouse focus opens nothing.
 - **I4:** Escape never calls `stopPropagation` or `preventDefault`.
 - **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to `document.body`.
@@ -257,19 +255,17 @@ surface.
 
 ## Constants and configuration
 
-| Constant                  | Value | Provenance                                                   | Safe range |
-| ------------------------- | ----- | ------------------------------------------------------------ | ---------- |
-| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                         | 300–1000   |
-| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                         | 300–1000   |
-| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                         | 400–1000   |
-| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                         | 300–800    |
-| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed               | 50–300     |
-| `HINT_LONG_PRESS_MS`      | 500   | Spec; `apps/editor/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
-| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                          | 6–16       |
-| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                         | 1000–3000  |
-| `TOOLTIP_GAP_PX`          | 6     | D29                                                          | 4–10       |
-| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                       | 6–14       |
-| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `packages/ui/src/popover.ts`                       | 4–16       |
+| Constant                  | Value | Provenance                                                                 | Safe range |
+| ------------------------- | ----- | -------------------------------------------------------------------------- | ---------- |
+| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                                       | 300–1000   |
+| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                                       | 300–1000   |
+| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed                             | 50–300     |
+| `HINT_LONG_PRESS_MS`      | 500   | Spec; `../packages/workbench/src/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
+| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                                        | 6–16       |
+| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                                       | 1000–3000  |
+| `TOOLTIP_GAP_PX`          | 6     | D29                                                                        | 4–10       |
+| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                                     | 6–14       |
+| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `../packages/ui/src/popover.ts`                                  | 4–16       |
 
 ## Assets and external resources
 

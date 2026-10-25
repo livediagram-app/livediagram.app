@@ -3,25 +3,24 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
-import { openSearchWithPrefetch } from '@/lib/open-search';
-import { pastePointer } from '@/lib/canvas-pointer';
+import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
+import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { canvasSurface } from '@livedocuments/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { presentedPages } from '@/lib/presented-pages';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
+import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -69,9 +68,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     setActiveLayer,
     addLayer,
     renameLayer,
@@ -142,21 +138,15 @@ export function EditorCanvasHost() {
     styleNewElement,
     commitLabel,
     commitTable,
-    createFolder,
     deleteCurvePoint,
-    deleteDocument,
-    refreshOwnDocuments,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     documentId,
-    documentList,
-    documentListLoading,
     documentName,
-    dismissSharedDocument,
+    nameDocument,
+    sessionShareCode,
     dropIconOnElement,
     dropPaletteItem,
-    duplicateDocument,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -168,7 +158,6 @@ export function EditorCanvasHost() {
     workbenchMode,
     exitFormatTool,
     fitToScreen,
-    folders,
     followLink,
     formatSourceId,
     handleCanvasDoubleClick,
@@ -189,8 +178,6 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDocumentToFolder,
-    moveDocumentTo,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
@@ -198,18 +185,15 @@ export function EditorCanvasHost() {
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDocument,
     openNote,
     pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     retryActiveTabLoad,
     readSelection,
     selectElement,
     selectMarquee,
-    confirm,
     selfParticipant,
     followMe,
     tabs,
@@ -217,8 +201,6 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDocumentList,
-    setDocumentName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -237,15 +219,10 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedDocuments,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     tabSummaries,
-    teamDocuments,
-    teamFolders,
-    teams,
-    refreshTeamLibraries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -284,20 +261,6 @@ export function EditorCanvasHost() {
     at: { x: number; y: number };
     holders: LockHolder[];
   } | null>(null);
-  // A stable reference for the list-shaped prop the Explorer takes, so the
-  // (React.memo'd) panel doesn't re-render on every drag frame just because
-  // the editor re-rendered. It recomputes only when its real input changes.
-  const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
-  const viewerId = selfParticipant?.id ?? null;
-  const onTeamFolders = useTeamFolderActions({
-    accountUserId,
-    viewerId,
-    teamFolders,
-    refreshTeamLibraries,
-    confirm,
-  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -534,14 +497,6 @@ export function EditorCanvasHost() {
               onCancelDraw={cancelDrawShape}
               onUndo={undo}
               onRedo={redo}
-              documentList={documentList}
-              folders={folders}
-              sharedDocuments={sharedDocuments}
-              teams={explorerTeams}
-              teamFolders={teamFolders}
-              teamDocuments={teamDocuments}
-              onDismissShared={(id) => void dismissSharedDocument(id)}
-              documentListLoading={documentListLoading}
               mapPosition={mapPosition}
               onMoveMap={(x, y) =>
                 // Equality-guarded so a drag tick that resolves to the same spot
@@ -553,9 +508,6 @@ export function EditorCanvasHost() {
               activeLayerId={activeLayerId}
               layerCounts={layerCounts}
               userPreferences={userPreferences}
-              onToggleRecentExclusion={toggleRecentExclusion}
-              favouriteIds={favouriteIds}
-              onToggleFavourite={toggleFavourite}
               laserPanelPosition={laserPanelPosition}
               spotlightPanelPosition={spotlightPanelPosition}
               formatConfig={formatConfig}
@@ -632,7 +584,8 @@ export function EditorCanvasHost() {
                   : (id, done) => (done ? completeAction(id) : reopenAction(id))
               }
               currentDocumentId={documentId}
-              onOpenDocument={openDocument}
+              currentShareCode={sessionShareCode}
+              onRenameCurrentDocument={nameDocument}
               onNewDocument={newDocument}
               explorerMenuActions={{
                 // The header's Share gate: the owner, or a joined member of the document's team
@@ -654,25 +607,6 @@ export function EditorCanvasHost() {
                   track('UI', 'Opened', 'Settings');
                 },
               }}
-              onRenameCurrent={(next) => {
-                const prev = documentName.trim();
-                const nextTrim = next.trim();
-                setDocumentName(next);
-                if (nextTrim && documentId)
-                  setDocumentList((prev) =>
-                    prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
-                  );
-                if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-              }}
-              onDeleteDocument={(id) => void deleteDocument(id)}
-              onLibraryChanged={refreshOwnDocuments}
-              onDuplicateDocument={(id) => void duplicateDocument(id)}
-              onCreateFolder={createFolder}
-              onRenameFolder={renameFolder}
-              onDeleteFolder={(id) => void deleteFolder(id)}
-              onTeamFolders={onTeamFolders}
-              onMoveDocumentToFolder={moveDocumentToFolder}
-              onMoveDocumentTo={moveDocumentTo}
               onDeselect={() => {
                 // Clicking empty canvas also cancels an armed arrow-connect, and
                 // wraps up the Format tool — restoring the pre-Format tool — so a

@@ -11,9 +11,9 @@ tab's start. The other four, the switch and everything that existed only for the
 
 ## Domain language
 
-| Term            | Means                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.      |
+| Term            | Means                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.        |
 | **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/project/src/editor-mode.ts`). |
 
 - "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor
@@ -23,7 +23,7 @@ tab's start. The other four, the switch and everything that existed only for the
 ## Where the mode is named
 
 The mode is no longer stored on a tab, but it is still named wherever a project's mode is recorded or sent, so it
-stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `editorModeLabel`, `isEditorMode`):
+stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `isEditorMode`):
 
 - **A project's recorded creation intent** (`intent.mode`, the `opens_in` column, `ProjectSummary.opensIn`;
   [Default folders](../013-workspace/default-folders.md) "Recorded intent"): `plan` for every new project.
@@ -42,13 +42,13 @@ each mode's template start (Start Diagramming, Start Drawing, Start a Workshop, 
 other modes, the empty-canvas card, the Diagram tour, the `/new` mode step, the template picker's mode filter and the
 per-mode palette layouts.
 
-Stored data keeps the old ids, and every reader takes them safely:
+liveplanner was never deployed with those modes, so no stored data names them:
 
-- **A tab's `opensIn`** (`diagram`, `draw`, `workshop`, `pages`, and the older `illustrate`, `infographic`,
-  `facilitate`) is no longer part of the `Tab` type and is ignored where it is read: every tab is in Plan.
+- **A tab's `opensIn`** is no longer part of the `Tab` type and is ignored where it is read: every tab is in Plan.
 - **A stored mode id anywhere else** (a recorded intent, a tab-stats row, a returning-visitor note, an
-  `opens-in:` filter, a create's `intent.mode` from an older client) reads as `plan` (`parseEditorMode`). An id that
-  was never a mode reads as unknown, as before.
+  `opens-in:` filter, a create's `intent.mode`) is read through `parseEditorMode`: `plan` reads as itself, and
+  anything else, a retired mode's id included, reads as unknown. (The read-time list that mapped the retired ids to
+  `plan` was removed on 2026-10-24.)
 - **A stored default-folder key of a retired mode** (`mode:diagram`, `mode:draw`, `mode:workshop`, `mode:pages`,
   `mode:illustrate`, `mode:infographic`, `mode:facilitate`) is no longer in force: it is left out of the person's
   defaults and never answers a create; the row stays until it is cleared. A request naming one is refused as an

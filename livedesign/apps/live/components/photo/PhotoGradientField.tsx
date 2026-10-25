@@ -11,7 +11,7 @@ import { Button, Tooltip } from '@livedesign/ui';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { PREVIEW_CHECKER } from '@/components/dialogs/ImageExportPanel';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import {
   gradientCss,
   gradientPresets,

@@ -6,11 +6,11 @@
 // bottom sheet (PhotoPhoneOptions), and the Photo panel a bottom sheet. An Editor sees both; a Participant the Eyedropper alone, and on a phone the sheet
 // (photo-pages.md "Share roles"); a Viewer nothing.
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
+import { CLUSTER_STRIP } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { useState } from 'react';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { PhotoDialogs } from './PhotoDialogs';
 import { PhotoPanelBody } from './PhotoPanel';
 import { PhotoPhoneHeldBar, PhotoPhoneOptionsSheet } from './PhotoPhoneOptions';

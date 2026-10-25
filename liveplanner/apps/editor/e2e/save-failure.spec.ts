@@ -3,8 +3,8 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
+  seedTab,
   startBlankProject,
-  paletteTile,
 } from './fixtures';
 
 // A failed autosave names its real cause (docs/specs/006-project/per-tab-storage.md). Production showed
@@ -13,7 +13,10 @@ import {
 // exists in the e2e stack; lifting it proves the next edit saves again.
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
   await startBlankProject(page);
-  const canvas = page.locator('[data-canvas-a11y-root]');
+  await seedTab(page, [
+    { id: 'sq', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+  ]);
+  const square = page.getByRole('img', { name: 'Square', exact: true }).first();
   const tabWrites = '**/api/projects/*/tabs/*';
 
   await page.route(tabWrites, (route) =>
@@ -25,8 +28,9 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
         })
       : route.continue(),
   );
-  await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 420, y: 300 } });
+  // An edit: the square nudged by the keyboard.
+  await square.click();
+  await page.keyboard.press('ArrowRight');
 
   // Next's route announcer is an alert too; the toast is the other one.
   const alert = page.locator('[role="alert"]:not(#__next-route-announcer__)');
@@ -38,8 +42,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
   const saved = page.waitForResponse(
     (r) => r.request().method() === 'PUT' && /\/api\/projects\/[^/]+\/tabs\//.test(r.url()),
   );
-  await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 560, y: 300 } });
+  await page.keyboard.press('ArrowRight');
   expect((await saved).status()).toBeLessThan(300);
 
   expectNoPageErrors(pageErrors);

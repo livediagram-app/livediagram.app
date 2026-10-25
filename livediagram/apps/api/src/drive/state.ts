@@ -13,7 +13,7 @@ import {
   DRIVE_STATE_TTL_MS,
   oauthRedirectUrl,
 } from '@livediagram/api-schema';
-import { timingSafeEqual } from '../auth/timing-safe';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 import { driveKeyBytes } from './crypto';
 
 const enc = new TextEncoder();

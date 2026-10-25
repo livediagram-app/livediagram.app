@@ -1,16 +1,34 @@
-import type { Metadata } from 'next';
-import { TeamInviteJoin } from '@/components/panels/TeamInviteJoin';
+'use client';
 
-// /join?token=<token> — landing for a shareable team invite link
-// (docs/specs/013-workspace/teams.md). A top-level route (outside the Explorer chrome) so the
-// signed-out flow can show its own "sign in to join" card instead of
-// being bounced by the explorer's auth gate. `index: false` is
-// inherited from the root layout (docs/specs/007-editor/editor-app.md keeps the editor app out of the
-// index). The token is read client-side, so this stays a thin shell.
-export const metadata: Metadata = {
-  title: 'Join a team | livediagram',
-};
+import { useEffect, useSyncExternalStore } from 'react';
+import { siteUrl } from '@liveworkspace/sites';
+import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
+
+// /join?token=… — where a team's join link used to land (docs/specs/013-workspace/teams.md). Teams
+// are run on liveworkspace.app now (liveworkspace/docs/accounts.md "The join link"), so an old link
+// forwards there with its token: siteUrl keeps a dev server on the local liveworkspace port, and
+// NEXT_PUBLIC_ACCOUNTS_SITE_URL points a staging build at staging. The card is the fallback if the
+// forward doesn't run. `index: false` is inherited from the root layout.
+const JOIN_URL = `${(process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || siteUrl('liveworkspace.app', 'https://liveworkspace.app')).replace(/\/+$/, '')}/join`;
+
+const noSubscribe = () => () => {};
+const readSearch = () => window.location.search;
+const serverSearch = () => '';
 
 export default function JoinPage() {
-  return <TeamInviteJoin />;
+  const search = useSyncExternalStore(noSubscribe, readSearch, serverSearch);
+  const target = `${JOIN_URL}${search}`;
+
+  useEffect(() => {
+    window.location.replace(`${JOIN_URL}${window.location.search}`);
+  }, []);
+
+  return (
+    <ManagedOnLiveworkspace
+      title="Teams are on liveworkspace.app"
+      body="Your teams work in every liveworkspace app. Taking you to liveworkspace.app to join this team."
+      href={target}
+      cta="Join on liveworkspace.app"
+    />
+  );
 }

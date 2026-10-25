@@ -1,7 +1,7 @@
 // Feature illustrations for the canvas elements that carry more than a label: the sequence
 // diagram (docs/specs/009-elements/sequence-diagram.md), charts and meters (the palette's Data
 // elements) and code blocks. Diagram ink is the Default theme's, read through the canvas-marks
-// utilities; a code block paints from its own scheme (Midnight, packages/document/src/code-themes.ts).
+// utilities; a code block paints from its own scheme (Midnight, ../packages/model-core/src/code-themes.ts).
 
 import { ARROW, Caret, INK, INK_TEXT, SHADOW, Scene, TEXT_BODY } from './canvas-marks';
 import { AMBER, EMERALD, Frame, MONO, SKY, VIOLET } from './shared';

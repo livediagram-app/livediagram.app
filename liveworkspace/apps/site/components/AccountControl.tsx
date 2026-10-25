@@ -1,64 +1,74 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
-import { signInHref } from '@/lib/accounts';
+import { lazy, Suspense, useCallback, useMemo, useState, useSyncExternalStore } from 'react';
+import { AccountMenu } from '@liveworkspace/account-menu';
+import { signInHref, signUpHref } from '@/lib/accounts';
 import { signOut, useSession } from '@/lib/session';
 
 const noChange = () => () => {};
 
-// The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in
-// name, a link to their teams and API tokens, and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
-// without showing either, so nothing jumps.
-export function AccountControl() {
+// The Settings panel's code: fetched when the pointer or focus reaches Settings, or as it is pressed, never with the
+// page.
+const loadSettings = () => import('@/components/settings/SiteSettingsDialog');
+const SiteSettingsDialog = lazy(loadSettings);
+
+/** A surface's own Settings panel: opening it in place, and fetching its code ahead of the press. */
+export type SettingsControl = { onOpen: () => void; onPrepare: () => void };
+
+// The header's account control (liveworkspace/docs/site.md "The header"): AccountMenu from
+// @liveworkspace/account-menu, the one every app's marketing header and the Explorer show too. Signed in, the person's
+// avatar and name, opening the Explorer, Settings and Sign out; Settings opens the Settings panel over this page, in
+// place: the Explorer's own panel there (`settings`), else this control's own, its code fetched only when Settings is
+// approached. Signed out, the same control as Guest, opening Sign in and Create account, each back to this page. Until
+// the page knows who is signed in (lib/session.ts), the Guest button holds the place, unseen, so nothing jumps.
+export function AccountControl({ settings = null }: { settings?: SettingsControl | null }) {
   const session = useSession();
-  const [leaving, setLeaving] = useState(false);
   // This page, to come back to after signing in.
   const here = useSyncExternalStore(
     noChange,
     () => window.location.pathname + window.location.search,
     () => '/',
   );
-
-  async function leave() {
-    setLeaving(true);
-    await signOut();
-    setLeaving(false);
-  }
-
-  const link =
-    'relative touch-target-y rounded-md px-2.5 py-1.5 whitespace-nowrap text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
+  const [open, setOpen] = useState(false);
+  const own = useMemo<SettingsControl>(
+    () => ({
+      onOpen: () => setOpen(true),
+      onPrepare: () => {
+        void loadSettings();
+        // Imported here, not at the top: the header is on every page, and the panel's code stays out of it.
+        void import('@liveworkspace/settings-ui').then((ui) => ui.preloadSettingsPanel());
+      },
+    }),
+    [],
+  );
+  const close = useCallback(() => setOpen(false), []);
 
   if (session.state === 'in') {
+    const panel = settings ?? own;
     return (
-      <span className="flex items-center gap-1">
-        <a
-          href="/account/teams"
-          className={`${link} max-w-40 truncate font-medium text-slate-900 max-sm:hidden dark:text-white`}
-        >
-          {session.name}
-        </a>
-        <button
-          type="button"
-          onClick={() => void leave()}
-          disabled={leaving}
-          className={`${link} cursor-pointer`}
-        >
-          Sign out
-        </button>
-      </span>
+      <>
+        <AccountMenu
+          name={session.name}
+          fullName={session.fullName}
+          colour={session.colour}
+          explorerHref="/explorer"
+          onOpenSettings={panel.onOpen}
+          onPrepareSettings={panel.onPrepare}
+          onSignOut={signOut}
+        />
+        {open ? (
+          <Suspense fallback={null}>
+            <SiteSettingsDialog app={null} onClose={close} />
+          </Suspense>
+        ) : null}
+      </>
     );
   }
 
+  const checking = session.state === 'checking';
   return (
-    <a
-      href={signInHref(here)}
-      aria-hidden={session.state === 'checking' || undefined}
-      tabIndex={session.state === 'checking' ? -1 : undefined}
-      className={`${link} rounded-md border border-slate-200 dark:border-slate-700 ${
-        session.state === 'checking' ? 'invisible' : ''
-      }`}
-    >
-      Sign in
-    </a>
+    <div aria-hidden={checking || undefined} className={checking ? 'invisible' : undefined}>
+      <AccountMenu guest={{ signInHref: signInHref(here), signUpHref: signUpHref(here) }} />
+    </div>
   );
 }

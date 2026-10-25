@@ -15,7 +15,6 @@ export type RecordedIntentRow = {
 const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
 
 export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
-  // A row recorded before Pages mode's rename says `infographic`.
   const opensIn = parseEditorMode(row.opens_in);
   if (!opensIn) return UNKNOWN;
   return {

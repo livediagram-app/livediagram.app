@@ -8,7 +8,7 @@
 import { Fragment, useState } from 'react';
 import { CHART_TYPE_LABELS, CHART_TYPES } from '@liveplanner/project';
 import { posRangeOf, unmergeRange } from '@liveplanner/sheets';
-import { ContextMenu } from '@/components/palette/ContextMenu';
+import { ContextMenu } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   CopyIcon,
   CutIcon,
@@ -16,8 +16,12 @@ import {
   PasteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import { openHyperlink } from '@/lib/open-hyperlink';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
 import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { keyLabel } from '@/lib/key-label';

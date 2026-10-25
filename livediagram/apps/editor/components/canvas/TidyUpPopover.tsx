@@ -7,8 +7,11 @@ import type { CleanupKind } from '@/lib/tab-cleanup';
 import { verdictLine, type CleanupVerdict } from '@/lib/tidy-verdict';
 import { loadTidyEngine } from '@/lib/tidy-engine';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
-import { useLatest } from '@/hooks/ui/useLatest';
+import {
+  onMouseHover,
+  useRevertOnUnmount,
+} from '@liveworkspace/workbench/components/primitives/hover-preview';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { TidyUpDrawing } from './tidy-up-drawings';
 import type { TidyUpActions } from './tidy-up-actions';
 

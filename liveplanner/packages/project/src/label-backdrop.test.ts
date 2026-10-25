@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { contrastRatio } from './colors';
 import { LABEL_BACKDROP_CONTRAST, labelBackdrops, withReadableLabelInks } from './label-backdrop';
 import type { Element } from './index';

@@ -2,8 +2,12 @@
 
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
 import { NoMatches } from '@livedesign/ui';
-import { SearchInput } from '@/components/primitives/SearchInput';
-import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
+import {
+  ToolsBreadcrumb,
+  ToolsCategoryGrid,
+  type ToolsCategory,
+} from '@liveworkspace/workbench/components/palette/palette-tools-nav';
 import { track } from '@/lib/telemetry';
 import { PaletteCategoryRail } from './PaletteCategoryRail';
 

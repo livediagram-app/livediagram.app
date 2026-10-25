@@ -6,7 +6,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Tooltip } from '@liveplanner/ui';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 import { ChevronIcon, SearchIcon } from './sheet-icons';

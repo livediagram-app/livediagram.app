@@ -48,6 +48,30 @@ describe('production dispatch (service bindings)', () => {
     expect(api.urls).toEqual(['https://livediagram.app/api/documents/abc']);
   });
 
+  it("sends /api/index/* to the index, not the api, without this site's cookies", async () => {
+    const { env, api } = makeEnv();
+    const seen: Request[] = [];
+    vi.stubGlobal('fetch', (req: Request) => {
+      seen.push(req);
+      return Promise.resolve(new Response('index'));
+    });
+    try {
+      const res = await router.fetch(
+        new Request('https://livediagram.app/api/index/items?app=livediagram', {
+          headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
+        }),
+        { ...env, INDEX_ORIGIN: 'https://index.test' },
+      );
+      expect(await res.text()).toBe('index');
+      expect(seen[0]!.url).toBe('https://index.test/api/index/items?app=livediagram');
+      expect(seen[0]!.headers.get('Cookie')).toBeNull();
+      expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
+      expect(api.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
@@ -228,7 +252,7 @@ describe('bare help-article paths', () => {
       expect(marketing.urls.length, path).toBe(1);
     }
     const { env, live } = makeEnv();
-    await dispatch('/explorer/recent', env);
+    await dispatch('/new', env);
     expect(live.urls.length).toBe(1);
   });
 
@@ -320,7 +344,7 @@ describe('the caching rules', () => {
       HELP: answering('<html></html>', html),
       COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/community']) {
+    for (const page of ['/', '/new', '/help/canvas/', '/community']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {
@@ -345,9 +369,7 @@ describe('the caching rules', () => {
       DEPLOY_ENV: 'local',
       EDITOR: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
     };
-    expect((await dispatch('/explorer/unsorted', page)).headers.get('Cache-Control')).toBe(
-      'no-store',
-    );
+    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
@@ -371,5 +393,154 @@ describe('the caching rules', () => {
     expect((await dispatch('/api/docs', env)).headers.get('Cache-Control')).toBe(
       'public, max-age=60',
     );
+  });
+});
+
+describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+  it("sends every item's preview and a link's image and card to the previews service, never the api", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(new Request('https://livediagram.app/api/previews/items/d1?v=5'), env);
+      await router.fetch(new Request('https://livediagram.app/api/share/ABC/image.png'), {
+        ...env,
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+      });
+      expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
+        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
+      ]);
+      // What a link opens stays the api's.
+      await router.fetch(new Request('https://livediagram.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://livediagram.app/api/share/ABC']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe("liveworkspace's Explorer under this address (@liveworkspace/sites/workspace-proxy)", () => {
+  const page = () =>
+    new Response('<!doctype html><title>Explorer</title>', {
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=0' },
+    });
+
+  it('serves every /explorer address from liveworkspace.app, path and query kept, the page never cached', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(page()));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, live, marketing } = makeEnv();
+      for (const path of [
+        '/explorer',
+        '/explorer/recent',
+        '/explorer/team?id=t1&folder=f2',
+        '/explorer/profile',
+        '/explorer?settings=notifications',
+        '/explorer/offline',
+      ]) {
+        const res = await router.fetch(new Request(`https://livediagram.app${path}#ignored`), env);
+        expect(res.status).toBe(200);
+        expect(res.headers.get('Cache-Control')).toBe('no-store');
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+      }
+      expect(live.urls).toEqual([]);
+      expect(marketing.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("goes to the origin named (local dev, staging), with the page's payloads and the account reads", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
+      await router.fetch(new Request('https://livediagram.app/explorer/recent.txt?_rsc=x'), local);
+      expect(fetchMock.mock.calls[0]![0].url).toBe(
+        'http://localhost:3000/explorer/recent.txt?_rsc=x',
+      );
+      await router.fetch(
+        new Request('https://livediagram.app/api/workspace/account/people?ids=u1', {
+          headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
+        }),
+        local,
+      );
+      const sent = fetchMock.mock.calls[1]![0];
+      expect(sent.url).toBe('http://localhost:3000/api/account/people?ids=u1');
+      expect(sent.headers.get('Authorization')).toBe('Bearer t');
+      expect(sent.headers.get('Cookie')).toBeNull();
+      expect(api.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("leaves the app's own assets, pages and api where they were", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, live, marketing, api } = makeEnv();
+      await dispatch('/live/_next/static/chunk.js', env);
+      await dispatch('/_next/static/chunk.js', env);
+      await dispatch('/explorers', env);
+      await dispatch('/api/account', env);
+      await dispatch('/new', env);
+      expect(live.urls).toEqual([
+        'https://livediagram.app/_next/static/chunk.js',
+        'https://livediagram.app/new',
+      ]);
+      expect(marketing.urls).toEqual([
+        'https://livediagram.app/_next/static/chunk.js',
+        'https://livediagram.app/explorers',
+      ]);
+      expect(api.urls).toEqual(['https://livediagram.app/api/account']);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('keeps a redirect on this address', async () => {
+    const fetchMock = vi.fn((_req: Request) =>
+      Promise.resolve(
+        new Response(null, {
+          status: 307,
+          headers: { Location: 'https://liveworkspace.app/explorer/recent' },
+        }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const res = await dispatch('/explorer/recent/', makeEnv().env);
+      expect(res.status).toBe(307);
+      expect(res.headers.get('Location')).toBe('/explorer/recent');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('never loops: an origin naming this router, or a request already forwarded, is refused', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(page()));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env } = makeEnv();
+      const self = await router.fetch(new Request('https://livediagram.app/explorer'), {
+        ...env,
+        WORKSPACE_ORIGIN: 'https://livediagram.app',
+      });
+      expect(self.status).toBe(508);
+      const again = await router.fetch(
+        new Request('https://livediagram.app/explorer', {
+          headers: { 'X-Liveworkspace-Proxy': 'livediagram' },
+        }),
+        env,
+      );
+      expect(again.status).toBe(508);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

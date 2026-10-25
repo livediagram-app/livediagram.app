@@ -1,9 +1,9 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
-import { useReposition } from '@/hooks/canvas/useReposition';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
   ClearIcon,
@@ -11,7 +11,10 @@ import {
   MoveIcon,
   TabLockIcon,
 } from '@/components/chrome/tab-bar-icons';
-import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import {
@@ -270,7 +273,7 @@ export function PortalMenu({
             <MenuToolButton
               icon={<DuplicateIcon />}
               label="Duplicate"
-              description="Create a copy of this tab in this document."
+              description="Create a copy of this tab in this canvas."
               onClick={onDuplicate}
             />
             {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -368,7 +371,7 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<MoveIcon />}
-            label="Add to Document"
+            label="Add to Another Canvas"
             onClick={() => setView('copyTo')}
             disabled={otherDocuments.length === 0}
           />

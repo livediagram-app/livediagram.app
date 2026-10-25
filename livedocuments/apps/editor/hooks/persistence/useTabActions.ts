@@ -28,9 +28,9 @@ import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
-import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
-import { toastName } from '@/lib/toast-name';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 type TabActionsDeps = {
   tabs: Tab[];
@@ -41,6 +41,8 @@ type TabActionsDeps = {
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
+  // The open document: the one a tab added elsewhere is shared from.
+  documentId: string | null;
   // The local participant id (owner of the link request).
   ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
@@ -78,6 +80,7 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     documentList,
     ownerId,
+    documentId,
     createTab,
     commit,
     commitTabs,
@@ -151,21 +154,16 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's documents (docs/specs/006-document/tab-document-many-to-many.md).
-  // Goes through POST /api/documents/<target>/tabs/<tabId>/link so the
-  // server inserts one `document_tabs` row pointing at the existing
-  // tab body. The previous implementation cloned the tab into a fresh
-  // row with a new id; that duplicated the content (edits on either
-  // side stayed siloed) and the menu label promised the linking
-  // behaviour the user actually wanted. After this call, edits to
-  // the tab from either document write to the same `tabs.data` row.
+  // Share the active tab into another of the user's documents (docs/specs/006-document/tab-document-many-to-many.md).
+  // Goes through POST /api/documents/<target>/tabs/<tabId>/link with this document as `from`: the target then holds
+  // the same tab, and an edit to it in either document reaches the other.
   const linkActiveTabTo = async (targetDocumentId: string) => {
     const source = tabs.find((t) => t.id === activeId);
-    if (!source) return;
+    if (!source || !documentId) return;
     const target =
       toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
     try {
-      await apiLinkTab(ownerId, targetDocumentId, source.id);
+      await apiLinkTab(ownerId, targetDocumentId, source.id, documentId);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

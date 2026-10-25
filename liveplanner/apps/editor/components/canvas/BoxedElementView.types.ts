@@ -21,7 +21,6 @@ export type BoxedElementViewProps = {
   // label was seeded with the first typed char and the editor should
   // place the caret at the end instead of selecting all.
   editCursorAtEnd?: boolean;
-  isPaintMode: boolean;
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
@@ -137,9 +136,6 @@ export type BoxedElementViewProps = {
   // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
   // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
-  // Paint index within the elements layer. Isometric mode only: it stops
-  // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
-  isoDepth: number;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // Live dot-vote (docs/specs/012-collaboration/session-tools.md). `vote` is the active tab's vote session

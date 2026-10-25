@@ -9,8 +9,8 @@ import {
   lucideSquarePlus,
   lucideUsers,
   lucideZap,
-} from '@liveplanner/icons/lucide';
-import type { IconPrim } from '@liveplanner/icons';
+} from '@liveworkspace/icons/lucide';
+import type { IconPrim } from '@liveworkspace/icons';
 import type { SearchResultItem } from '@/lib/search';
 import { ProjectIcon } from '@/components/primitives/explorer-icons';
 import { Glyph, PlanCardsIcon, Prims } from '@liveplanner/ui';

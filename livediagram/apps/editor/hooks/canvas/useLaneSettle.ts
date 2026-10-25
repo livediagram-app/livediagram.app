@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The one-time settle of an older event-storming board
 // (docs/specs/021-event-storming/event-storming.md "Always on a lane"). A board authored before lanes held notes can

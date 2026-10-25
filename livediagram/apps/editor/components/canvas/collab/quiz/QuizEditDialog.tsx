@@ -11,8 +11,8 @@ import {
   quizOptionLetter,
   type ShapeElement,
 } from '@livediagram/document';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
 
 // Edit Quiz (docs/specs/012-collaboration/quiz.md): the question, its answers

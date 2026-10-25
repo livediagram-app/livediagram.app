@@ -10,61 +10,61 @@ file only adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                                    | Role                                                                                                                        |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
-| `packages/design/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
-| `packages/design/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| `packages/design/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
-| `packages/api-schema/src/design-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
-| `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
-| `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
-| `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/design-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedesign/design-views` (depends on `design`, `api-schema`), shaped like `explorer-lens`             |
-| `packages/design-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
-| `packages/design-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
-| `packages/design-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
-| `packages/design-views/src/text.ts`                                   | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural`                                                                |
-| `packages/design-views/src/fields.ts`                                 | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element                    |
-| `packages/design-views/src/view-attribute.ts`                         | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf`                                                           |
-| `packages/design-views/src/visibility.ts`                             | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
-| `packages/design-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
-| `packages/design-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
-| `packages/design-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/design-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                    |
-| `packages/design-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
-| `packages/design-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
-| `packages/design-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
-| `packages/design-views/src/edges.ts`                                  | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
-| `packages/design-views/src/header.ts`                                 | `countElements`, `viewHeader`, `headerLine`                                                                                 |
-| `packages/design-views/src/model.ts`                                  | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`      |
-| `packages/design-views/src/{outline,graph,layout,comments}.ts`        | One view each                                                                                                               |
-| `packages/design-views/src/{show,find,diff,overview}.ts`              | One view each                                                                                                               |
-| `packages/design-views/src/show-selected.ts` (new, + test)            | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                      |
-| `packages/design-views/src/budget.ts`                                 | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)     |
-| `packages/design-views/src/elision.ts`                                | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
-| `packages/design-views/src/render-view.ts`                            | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
-| `packages/design-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
-| `packages/design-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab design, the agent-built tab, the 300-element tab, the edge cases        |
-| `packages/design-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
-| `apps/api/package.json`                                                 | Depends on `@livedesign/design-views`                                                                                     |
-| `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
-| `apps/api/src/routes/design-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
-| `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, designId, tabId, personTag, reader)`: the warning names its reader                               |
-| `apps/api/src/routes/design-subresource-routes.ts`                    | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
-| `apps/api/src/routes/designs.ts`                                      | The design GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
-| `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, designId, offset, limit)`                                                                          |
-| `apps/api/src/openapi/{manifest,design,types}.ts`                     | The view query parameters; `textResponse` on the two GETs                                                                   |
-| `apps/api/scripts/gen-openapi-schemas.mjs`                              | The view wire types join `ROOT_TYPES`                                                                                       |
-| `apps/mcp/src/api.ts`                                                   | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                    |
-| `apps/mcp/src/tool-helpers.ts`                                          | `viewResult`: the view text first, then its one-line JSON                                                                   |
-| `apps/mcp/src/read-design.ts`                                         | `readDesign`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
-| `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_design` registered on `readDesign`; its input and output schemas; `READ_DESIGN_DEFAULT_BUDGET`                  |
-| `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDesign` attach                                             |
-| `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
-| `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@livedesign/edit-operations`, `@livedesign/page-lint` (own)            | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedesign/design`                       |
-| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedesign/design`                                                                           |
+| File                                                                           | Role                                                                                                                         |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `packages/design/src/element-refs.ts`                                          | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`          |
+| `packages/design/src/containment.ts`                                           | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`  |
+| `../packages/model-core/src/style-keys.ts`                                     | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                           |
+| `packages/design/src/index.ts`                                                 | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                              |
+| `packages/api-schema/src/design-views.ts`                                      | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                        |
+| `packages/api-schema/src/ref-errors.ts`                                        | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                           |
+| `packages/api-schema/src/telemetry-schema.ts`                                  | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                           |
+| `packages/api-schema/src/index.ts`                                             | Re-exports both new files                                                                                                    |
+| `packages/design-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@livedesign/design-views` (depends on `design`, `api-schema`), shaped like the former explorer-lens package |
+| `packages/design-views/vitest.config.ts`                                       | 100% line, branch, function and statement thresholds                                                                         |
+| `packages/design-views/src/index.ts`                                           | The public surface: `renderView`, every view function, the budget                                                            |
+| `packages/design-views/src/constants.ts`                                       | The view constants in [Constants and configuration](#constants-and-configuration)                                            |
+| `packages/design-views/src/text.ts`                                            | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural`                                                                 |
+| `packages/design-views/src/fields.ts`                                          | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element                     |
+| `packages/design-views/src/view-attribute.ts`                                  | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf`                                                            |
+| `packages/design-views/src/visibility.ts`                                      | `partitionVisible`: printed elements, hidden-layer elements                                                                  |
+| `packages/design-views/src/tree.ts`                                            | `buildViewTree`: `deriveContainers`, then reading order per container                                                        |
+| `packages/design-views/src/reading-order.ts`                                   | `readingOrder`, `rowsOf`                                                                                                     |
+| `packages/design-views/src/freehand-runs.ts`                                   | `freehandRuns`: consecutive bare strokes folded into one line                                                                |
+| `packages/design-views/src/content-summary.ts`                                 | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                     |
+| `packages/design-views/src/state-attribute.ts`                                 | `stateAttributeOf`: the one state attribute of each content kind that has one                                                |
+| `packages/design-views/src/attributes.ts`                                      | `attributesOf`: the ordered attribute list of one element                                                                    |
+| `packages/design-views/src/style-attributes.ts`                                | `styleAttributesOf` for `style`                                                                                              |
+| `packages/design-views/src/edges.ts`                                           | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                        |
+| `packages/design-views/src/header.ts`                                          | `countElements`, `viewHeader`, `headerLine`                                                                                  |
+| `packages/design-views/src/model.ts`                                           | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`       |
+| `packages/design-views/src/{outline,graph,layout,comments}.ts`                 | One view each                                                                                                                |
+| `packages/design-views/src/{show,find,diff,overview}.ts`                       | One view each                                                                                                                |
+| `packages/design-views/src/show-selected.ts` (new, + test)                     | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                       |
+| `packages/design-views/src/budget.ts`                                          | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)      |
+| `packages/design-views/src/elision.ts`                                         | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                            |
+| `packages/design-views/src/render-view.ts`                                     | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                 |
+| `packages/design-views/src/performance.test.ts`                                | A 10,000-element tab with 100 containers renders and fits within a second                                                    |
+| `packages/design-views/src/__fixtures__/*.ts`                                  | The checkout tab, its "after" twin, the three-tab design, the agent-built tab, the 300-element tab, the edge cases           |
+| `packages/design-views/src/__fixtures__/golden/*`                              | One golden file per view (see [Testing](#testing))                                                                           |
+| `apps/api/package.json`                                                        | Depends on `@livedesign/design-views`                                                                                        |
+| `apps/api/src/responses.ts`                                                    | `textPlain(body, init)`                                                                                                      |
+| `apps/api/src/routes/design-views-route.ts`                                    | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event          |
+| `apps/api/src/room-client.ts`                                                  | `readRoomSelections(env, designId, tabId, personTag, reader)`: the warning names its reader                                  |
+| `apps/api/src/routes/design-subresource-routes.ts`                             | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                             |
+| `apps/api/src/routes/designs.ts`                                               | The design GET hands `view=overview` to `answerOverview` after its gate and redaction                                        |
+| `apps/api/src/db/tabs.ts`                                                      | `tabBodiesInOrder(env, designId, offset, limit)`                                                                             |
+| `apps/api/src/openapi/{manifest,design,types}.ts`                              | The view query parameters; `textResponse` on the two GETs                                                                    |
+| `apps/api/scripts/gen-openapi-schemas.mjs`                                     | The view wire types join `ROOT_TYPES`                                                                                        |
+| `apps/mcp/src/api.ts`                                                          | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                     |
+| `apps/mcp/src/tool-helpers.ts`                                                 | `viewResult`: the view text first, then its one-line JSON                                                                    |
+| `apps/mcp/src/read-design.ts`                                                  | `readDesign`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                    |
+| `apps/mcp/src/{tools,schema,output-schema}.ts`                                 | `read_design` registered on `readDesign`; its input and output schemas; `READ_DESIGN_DEFAULT_BUDGET`                         |
+| `apps/mcp/src/image-result.ts`                                                 | `tabPreview`: the PNG on its own, which `imageResult` and `readDesign` attach                                                |
+| `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/connections.ts` | The `Agent·Viewed` chart, by view                                                                                            |
+| `docs/development/architecture.md`, `README.md`                                | The new package in the layout and the package list                                                                           |
+| `@livedesign/edit-operations`, `@livedesign/page-lint` (own)                   | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedesign/design`                          |
+| The cross-tab comments route (agent-presence's blueprint)                      | Imports `computeRefs` from `@livedesign/design`                                                                              |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
 edited without it); the change names the gap.
@@ -73,13 +73,13 @@ edited without it); the change names the gap.
 
 | Term            | Identifier                                                               | Meaning                                                                        |
 | --------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| View            | `ViewName`, `VIEW_NAMES`, query `view`                                   | One read-only text projection; `overview` of a design, the rest of a tab     |
+| View            | `ViewName`, `VIEW_NAMES`, query `view`                                   | One read-only text projection; `overview` of a design, the rest of a tab       |
 | Door            | `ViewDoor` (`cli`, `mcp`), query `door`                                  | The front door a view is read through; it chooses the elision command's syntax |
 | Ref             | `RefTable` (`refOf(id)`), `computeRefs`                                  | The short name a view prints for an element or tab                             |
 | Slug id         | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
-| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedesign/design` does not know             |
+| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedesign/design` does not know               |
 | Container       | `deriveContainers`, `ViewNode.container`                                 | The frame an element nests under                                               |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
@@ -342,17 +342,17 @@ Every other kind has no state attribute; `show` has its content.
 
 **Attributes** (`attributesOf`), in this order after the summary and the state attribute (`VW14`):
 
-| Attribute        | When                                                 | Form                                                                                        |
-| ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                             |
+| Attribute        | When                                                 | Form                                                                                      |
+| ---------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                           |
 | `link=`          | `link` set (`VW28`)                                  | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<designId>` |
-| `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                               |
-| `locked`         | `locked: true`                                       | flag                                                                                        |
-| `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done           |
-| `actions=`       | an `actions` list                                    | `actions=<open> open/<total>`                                                               |
-| `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                                 |
-| `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                      |
-| style attributes | only with `style` (`VW50`)                           | see below                                                                                   |
+| `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                             |
+| `locked`         | `locked: true`                                       | flag                                                                                      |
+| `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done         |
+| `actions=`       | an `actions` list                                    | `actions=<open> open/<total>`                                                             |
+| `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                               |
+| `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                    |
+| style attributes | only with `style` (`VW50`)                           | see below                                                                                 |
 
 **Style attributes** (`styleAttributesOf`): `fill=` (`fillColor`), `stroke=` (`strokeColor`), `text-color=`
 (`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`),
@@ -370,17 +370,17 @@ dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elem
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
-| View       | Function                                | Served by                | Lines after the header                                                                  |
-| ---------- | --------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
-| `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
-| `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
-| `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
-| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
-| `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livedesign/page-lint`                 | api, CLI offline         | The lint's own output ([Page lint](../page-lint.md)) under the same header              |
-| `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
-| `overview` | `overviewView(design, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
+| View       | Function                               | Served by                | Lines after the header                                                                  |
+| ---------- | -------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
+| `outline`  | `outlineView(model, options)`          | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
+| `graph`    | `graphView`                            | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
+| `layout`   | `layoutView`                           | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
+| `comments` | `commentsView`                         | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
+| `show`     | `showView` (`ref`), `showSelectedView` | api, CLI offline         | One element in full                                                                     |
+| `find`     | `findView` (`q` required)              | api, CLI offline         | Matches with their container chains                                                     |
+| `lint`     | `@livedesign/page-lint`                | api, CLI offline         | The lint's own output ([Page lint](../page-lint.md)) under the same header              |
+| `diff`     | `diffView(before, after, context)`     | CLI only, from its cache | Added, removed, changed and moved elements                                              |
+| `overview` | `overviewView(design, tabs, options)`  | api, CLI offline         | One line per tab                                                                        |
 
 `renderView` dispatches `lint` to the page-lint package's renderer; this package owns only its header and the
 query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per design, tab and `rev` and runs
@@ -512,7 +512,7 @@ written in the reading door's syntax (`VW54`):
 | Door (`door`)   | Command form                                                                                                      | Example                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `cli` (default) | `view` then ` --<flag> <value>` per argument; a value outside `[A-Za-z0-9_.,:/@%+=-]` single-quoted for the shell | `view --only c991`, `view --only 'id:"Node A"'` |
-| `mcp`           | `read_design` then the arguments as one object                                                                  | `read_design {"only":"c991"}`                 |
+| `mcp`           | `read_design` then the arguments as one object                                                                    | `read_design {"only":"c991"}`                   |
 
 ### JSON forms
 
@@ -638,13 +638,13 @@ stale: boolean }`.
 
 ### REST
 
-Both doors are `guest-or-clerk`, token-usable, read-gated exactly like the plain GETs they extend (`gateRead` on the
+Both doors are `guest-or-account`, token-usable, read-gated exactly like the plain GETs they extend (`gateRead` on the
 tab, `gateGrant` on the design), and answer `200 text/plain; charset=utf-8` (or `application/json` with `json=1`)
 through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag` the tab read carries
 ([Agent changesets](../agent-changesets.md#the-tab-revision)); a view never answers 304 (`VW44`).
 
-| Method | Path                                   | Query (`VIEW_QUERY`, `VW42`)                                                                             | Failures                                                                                                     |
-| ------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Method | Path                                 | Query (`VIEW_QUERY`, `VW42`)                                                                             | Failures                                                                                                     |
+| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | GET    | `/api/designs/:id/tabs/:tabId?view=` | `view`, `json=1`, `budget`, `only` (outline, layout), `coarse=1`, `style=1`, `ref`, `q`, `all=1`, `door` | 400 `unknown_view`, 400 `invalid_value`, 404 `target_not_found`, 400 `target_ambiguous`, the GET's 404 / 410 |
 | GET    | `/api/designs/:id?view=overview`     | `view=overview`, `json=1`, `budget`, `door`                                                              | 400 `unknown_view`, 400 `invalid_value`, the GET's 404 / 410                                                 |
 
@@ -700,7 +700,7 @@ types join `ROOT_TYPES`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref, label and
   arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find, lint), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
-- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@livedesign/api-client` client as
+- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@liveworkspace/api-client` client as
   `apiJson` (`clientFor(env, token).text`): Bearer token, `ApiError` on
   non-2xx, a 5xx reported to `Error` telemetry. The revision in the result is the view's `ETag`; a view without one
   is an error, never a revision of 0. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
@@ -715,13 +715,13 @@ dropped online or offline.
 
 ## Data and persistence
 
-| Datum                  | Class          | Notes                                                                                         |
-| ---------------------- | -------------- | --------------------------------------------------------------------------------------------- |
-| View text and JSON     | derived        | Never stored; recomputed per request                                                          |
-| Element ids from slugs | identity       | Stored as any element id, in `tabs.data`; the slug rule only chooses them                     |
-| `tabs.rev`             | state (theirs) | Owned by [Agent changesets](../agent-changesets.md); views read it                            |
+| Datum                  | Class          | Notes                                                                                       |
+| ---------------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| View text and JSON     | derived        | Never stored; recomputed per request                                                        |
+| Element ids from slugs | identity       | Stored as any element id, in `tabs.data`; the slug rule only chooses them                   |
+| `tabs.rev`             | state (theirs) | Owned by [Agent changesets](../agent-changesets.md); views read it                          |
 | The diff's before tab  | cache (CLI)    | The last tab the CLI read per design, tab and `rev`, in its cache directory (CLI blueprint) |
-| `Agent·Viewed` events  | telemetry      | Category, action and view type only; no id, label or content                                  |
+| `Agent·Viewed` events  | telemetry      | Category, action and view type only; no id, label or content                                |
 
 No migration. Snapshot and restore are the tab's own. A design export or `pull` file holds what a local view needs:
 the tab and its `rev`.
@@ -755,7 +755,7 @@ the tab and its `rev`.
 | E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
 | E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                         |
 | E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
-| E25  | Trashed design                               | The GET's 410, unchanged                                                                         |
+| E25  | Trashed design                                 | The GET's 410, unchanged                                                                         |
 | E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                                    |
 | E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
 | E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
@@ -796,7 +796,7 @@ the tab and its `rev`.
 - `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
   as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
-  the tab cap) and makes one D1 query per batch.
+  the tab cap) and makes one query per batch.
 - `read_design` makes two service-binding calls (design, view), three with `image: true` (the tab, in parallel).
 - `[views] slow` logs any render over `VIEW_SLOW_MS`.
 
@@ -812,8 +812,8 @@ the tab and its `rev`.
 | `[views] slow <view> ms=<n> elements=<n>`                                  | api, warn                           |
 | `[views] overview doc=<id> tabs=<n> batches=<n> ms=<n>`                    | api, overview                       |
 | `[views] selection doc=<id> tab=<id> read=<bool> count=<n>`                | api, `show selected`                |
-| `[views] selections-unreachable designId=<id> tabId=<id>`                | api, warn: the room did not answer  |
-| `[mcp] read_design <view or json> image=<bool> budget=<n>`               | mcp, per call                       |
+| `[views] selections-unreachable designId=<id> tabId=<id>`                  | api, warn: the room did not answer  |
+| `[mcp] read_design <view or json> image=<bool> budget=<n>`                 | mcp, per call                       |
 
 No log line carries a label, note, comment, query text or ref input. Telemetry: `Agent·Viewed·<View>` per answered
 view (above), beside the front doors' `Mcp·Used` and `Cli·Used`.
@@ -822,36 +822,36 @@ view (above), beside the front doors' `Mcp·Used` and `Cli·Used`.
 
 Every rule maps to a deterministic test; the spec's rules are numbered here.
 
-| Rule                                                                 | Test                                                                                                                                     |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| R1 A slug id is its own ref                                          | `packages/design/src/element-refs.test.ts`                                                                                             |
-| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                          |
-| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                   |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/design-views-route.test.ts`                                                               |
-| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `design-views-route.test.ts`                                                                         |
-| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                           |
-| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/design/src/collab-index-rows.test.ts` |
-| R8 One line per element, indentation is containment                  | `packages/design-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
-| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
-| R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                           |
-| R11 Smallest frame holding the centre                                | `packages/design/src/containment.test.ts`                                                                                              |
-| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
-| R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                  |
-| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
-| R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                                 |
-| R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
-| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                              |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                          |
-| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                           |
-| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-design.test.ts` (8,000)           |
-| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                  |
-| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                      |
-| R23 `?view=` answers `text/plain`; overview on the design; no diff | `design-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                |
-| R24 `read_design` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-design.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                   |
-| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                        |
-| R26 One `Agent·Viewed` event per answered view                       | `design-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                     |
-| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/design-views/src/show-selected.test.ts`, `design-views-route.test.ts`, `room-client.test.ts`                               |
-| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                         |
+| Rule                                                                 | Test                                                                                                                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1 A slug id is its own ref                                          | `packages/design/src/element-refs.test.ts`                                                                                                              |
+| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                                         |
+| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                                  |
+| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/design-views-route.test.ts`                                                                                |
+| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `design-views-route.test.ts`                                                                                          |
+| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                                          |
+| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/design/src/collab-index-rows.test.ts`                  |
+| R8 One line per element, indentation is containment                  | `packages/design-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                                              |
+| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                                     |
+| R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                                          |
+| R11 Smallest frame holding the centre                                | `packages/design/src/containment.test.ts`                                                                                                               |
+| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                                         |
+| R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                                 |
+| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                                          |
+| R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                                                |
+| R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                                                     |
+| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                                             |
+| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                                         |
+| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                                          |
+| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-design.test.ts` (8,000)                            |
+| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                                 |
+| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                                     |
+| R23 `?view=` answers `text/plain`; overview on the design; no diff   | `design-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                                 |
+| R24 `read_design` reads a view; JSON and the PNG only on request     | `apps/mcp/src/read-design.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                                    |
+| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                                       |
+| R26 One `Agent·Viewed` event per answered view                       | `design-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `../liveworkspace/apps/site/app/telemetry/livedesign` catalogue suite |
+| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/design-views/src/show-selected.test.ts`, `design-views-route.test.ts`, `room-client.test.ts`                                                  |
+| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                                        |
 
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 `packages/design-views/src/__fixtures__/golden/`:
@@ -860,7 +860,7 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
-| `checkout-design.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
+| `checkout-design.ts`    | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
 | `agent-built-tab.ts`    | The Services frame built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E28 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
@@ -884,28 +884,28 @@ out of Prettier (`.prettierignore`).
 
 ## Constants and configuration
 
-| Constant                       | Value                         | Provenance                                                                | Safe range      |
-| ------------------------------ | ----------------------------- | ------------------------------------------------------------------------- | --------------- |
-| `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livedesign/design`)                                  | fixed           |
-| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                | fixed           |
-| `REF_MIN_LENGTH`               | 4                             | Spec                                                                      | fixed           |
-| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                      | fixed           |
-| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                      | fixed           |
-| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                      | fixed           |
-| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                      | fixed           |
+| Constant                     | Value                         | Provenance                                                                | Safe range      |
+| ---------------------------- | ----------------------------- | ------------------------------------------------------------------------- | --------------- |
+| `SLUG_ID_PATTERN`            | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livedesign/design`)                                    | fixed           |
+| `SLUG_ID_MAX_LENGTH`         | 24                            | Spec (the pattern's bound)                                                | fixed           |
+| `REF_MIN_LENGTH`             | 4                             | Spec                                                                      | fixed           |
+| `LABEL_CUT_CHARS`            | 60                            | Spec                                                                      | fixed           |
+| `NOTE_CUT_CHARS`             | 48                            | Spec                                                                      | fixed           |
+| `ENTITY_FIELDS_SHOWN`        | 8                             | Spec                                                                      | fixed           |
+| `CHARS_PER_TOKEN`            | 3                             | Spec (measured 3.07 for the outline)                                      | fixed           |
 | `READ_DESIGN_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)             | 2,000 to 32,000 |
-| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
-| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
-| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                | narrower only   |
-| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                            | 1 to 20         |
-| `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livedesign/api-schema`     | 64 to 1,024     |
-| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                       | fixed           |
-| `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a design (`VW53`); in `@livedesign/api-schema`            | 50 to 1,000     |
-| `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livedesign/api-schema` | 200,000 and up  |
-| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                             | 1 to 16         |
-| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                | 50 to 1,000     |
-| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                          | 1 to 10         |
-| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                  | fixed           |
+| `ALT_CUT_CHARS`              | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
+| `ACTION_CUT_CHARS`           | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
+| `ATTR_BARE_PATTERN`          | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                | narrower only   |
+| `REF_NEAREST_MAX`            | 5                             | Enough to choose from (`VW53`)                                            | 1 to 20         |
+| `REF_INPUT_MAX_LENGTH`       | 256                           | Above any stored id in practice (`VW53`); in `@livedesign/api-schema`     | 64 to 1,024     |
+| `SELECTED_REF`               | `selected`                    | Spec: the edit operations' selector                                       | fixed           |
+| `FIND_QUERY_MAX_LENGTH`      | 200                           | A phrase, not a design (`VW53`); in `@livedesign/api-schema`              | 50 to 1,000     |
+| `VIEW_BUDGET_MAX`            | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livedesign/api-schema` | 200,000 and up  |
+| `OVERVIEW_TAB_BATCH`         | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                             | 1 to 16         |
+| `VIEW_SLOW_MS`               | 100                           | Well above a 1,000-element render (`VW53`)                                | 50 to 1,000     |
+| `ELISION_CONTAINERS_NAMED`   | 3                             | A line that stays short (`VW60`)                                          | 1 to 10         |
+| `PROGRESS_DEFAULT`           | 50                            | Where the editor draws an unset progress                                  | fixed           |
 
 No environment variable or binding; a deployment needs nothing new.
 

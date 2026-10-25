@@ -1,4 +1,4 @@
-import { lucideCircleCheck, lucideSparkles } from '@livediagram/icons/lucide';
+import { lucideCircleCheck, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { DiagramBuildAnimation, lucideGlyph } from '@livediagram/ui';
 
 const CheckIcon = lucideGlyph(lucideCircleCheck, 14);

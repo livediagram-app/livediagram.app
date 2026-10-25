@@ -9,7 +9,6 @@ import { SETTINGS_CATEGORIES, type SettingsDeleteAccountRowSpec } from './settin
 
 const auth = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth.value }));
-vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),
 }));

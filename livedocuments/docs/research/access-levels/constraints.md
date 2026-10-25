@@ -75,7 +75,7 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 | Run session tools, hold the facilitator baton                        | `canHold` is edit-only ([facilitator.ts](../../../apps/api/src/facilitator.ts)) | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
-[document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
+[document-room.ts](../../../apps/api/src/document-room/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 Per-participant responses ("Edit-role only"),
 Session tools ("the facilitator and participants share an edit link"),
@@ -433,6 +433,6 @@ What should MCP share_document create when an agent names no level?
 - Code and specs read on `main` at `fc2d2d650`; draft spec, blueprint and agent specs read on the
   `docs/agent-cli` worktree.
 - Contrast ratios computed with the WCAG relative-luminance formula from the hex values in
-  [theme.css](../../../packages/tailwind-config/theme.css) and Tailwind's default palette.
+  [theme.css](../../../../packages/tailwind-config/theme.css) and Tailwind's default palette.
 - This note is not yet listed in [docs/research/README.md](../README.md); indexing it is left to the
   session that owns that index.

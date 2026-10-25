@@ -1,11 +1,11 @@
 // The editor's title bar for the User Interface › The Title Bar article (docs/specs/018-help/help-app.md).
-// Drawn from the live header (apps/live/components/chrome/EditorHeader.tsx): the logo and section menu,
+// Drawn from the live header (apps/live/components/chrome/EditorHeader.tsx): the logo and its site switcher,
 // the design name, the visibility pill (SharedBadge), the role pill (RoleIndicator), Share and the
 // account button; and the visibility pill's legend (VisibilityLegend). Labels are the real UI strings,
 // in capitals where the editor prints them in capitals.
 
 import type { ReactNode } from 'react';
-import { Avatar, Label, Scene } from './primitives';
+import { Avatar, Label, Scene } from '@liveworkspace/help-site/art/primitives';
 
 // --- Glyphs ------------------------------------------------------------------
 
@@ -129,7 +129,7 @@ function Callout({
   );
 }
 
-/** The title bar as the owner of a shared design sees it: logo and section menu, the
+/** The title bar as the owner of a shared design sees it: the logo and its switcher, the
  *  design name, the SHARED visibility pill, the EDITING role pill, a solid Share button and
  *  the account button. */
 export function TitleBarParts() {
@@ -146,7 +146,7 @@ export function TitleBarParts() {
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
-      {/* Logo and the section menu (ProductNav), which reads "Editor" here. */}
+      {/* The logo, with the chevron of its site switcher (liveworkspace/docs/site-switcher.md). */}
       <rect x={10} y={y + 10} width={20} height={20} rx={5} className="fill-brand-500" />
       <path
         d={`M15 ${y + 23} l4 -6 l3 4 l3 -3`}
@@ -157,18 +157,18 @@ export function TitleBarParts() {
         strokeLinejoin="round"
       />
       <Label x={40} y={y + 21} size={10} weight={600} tone="body">
-        Editor
+        livedesign
       </Label>
       <path
-        d={`M76 ${y + 19} l3 3 l3 -3`}
+        d={`M115 ${y + 19} l3 3 l3 -3`}
         className="stroke-slate-400"
         fill="none"
         strokeWidth={1.3}
         strokeLinecap="round"
       />
       {/* The design name: click to rename. */}
-      <Label x={118} y={y + 21} size={11} tone="body">
-        Checkout Flow
+      <Label x={129} y={y + 21} size={11} tone="body">
+        Q3 Report
       </Label>
       {/* The visibility pill (SharedBadge), Shared state. */}
       <rect
@@ -246,7 +246,7 @@ export function VisibilityLegendFigure() {
     <Scene w={420} h={300}>
       {/* The pill the legend hangs from, beside the design name. */}
       <Label x={176} y={21} size={11} tone="body" anchor="end">
-        Checkout Flow
+        Q3 Report
       </Label>
       <rect
         x={184}

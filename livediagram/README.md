@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, PNG rendering, sticky-note photo detection, telemetry client, the TypeScript source parser for static guards, the licences generator, test fakes, configs
+packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client, the licences generator, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -26,12 +26,12 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 - **Marketing** at `/` is the pitch and feature tour.
 - **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)). Signed-in users can mirror their Personal Space to their own Google Drive, kept in step both ways while a tab is open ([Google Drive mirror](docs/specs/022-drive-mirror/drive-mirror.md)).
-- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
+- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, each document's content in its own Durable Object; liveworkspace's index files documents and decides who may open them).
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
-- **Router** stitches the six under one hostname.
+- **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
 - **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
+[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

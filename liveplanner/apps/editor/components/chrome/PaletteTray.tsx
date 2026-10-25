@@ -7,7 +7,7 @@
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
+import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
@@ -87,19 +87,6 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
     };
   }, [active, selector]);
   return box;
-}
-
-// A small text action at the tray's end (Cancel, Done).
-export function PaletteTrayAction({ label, onAction }: { label: string; onAction: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onAction}
-      className="shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-    >
-      {label}
-    </button>
-  );
 }
 
 // Where the tray goes on the page: in the editor's own box, beside the strip, so it stacks with the editor's

@@ -6,8 +6,8 @@
 // gesture changes.
 
 import { useSyncExternalStore } from 'react';
-import { debugLog } from './debug-log';
-import { createListeners } from '@/lib/listeners';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type CanvasGesture = 'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke';
 
@@ -60,9 +60,6 @@ export function beginCanvasGesture(kind: CanvasGesture): () => void {
 export function canvasGestureNow(): CanvasGestureState {
   return reported;
 }
-
-/** Called whenever the reported gesture changes (a gesture opening or closing). */
-export const subscribeCanvasGesture = listeners.subscribe;
 
 const serverSnapshot = (): CanvasGestureState => 'idle';
 

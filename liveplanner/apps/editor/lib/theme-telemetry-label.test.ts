@@ -1,33 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { THEMES } from '@liveplanner/project';
+import { DEFAULT_SCHEME_ID, THEMES } from '@liveplanner/project';
 import { TELEMETRY_TYPE_PATTERN } from '@liveplanner/api-schema';
-import { themeTelemetryLabel } from './custom-theme-registry';
+import { themeTelemetryLabel } from './theme-telemetry-label';
 
 // docs/specs/017-telemetry/telemetry.md's rule is categorical: a telemetry `type` is a preset token, never
-// user content. A custom theme's name is user content — someone's client,
-// someone's project — so it must never leave the browser.
-//
-// Three call sites derived this label independently and two held a
-// byte-identical copy of the ternary. The comments said the right thing; only
-// the reviewer's attention enforced it. These tests enforce it instead.
+// user content. These tests hold every call site to it.
+
+const DEFAULT_LABEL = THEMES.find((t) => t.id === DEFAULT_SCHEME_ID)!.label;
 
 describe('themeTelemetryLabel', () => {
   it('reports a built-in theme by its catalogue label', () => {
     for (const t of THEMES) expect(themeTelemetryLabel(t.id)).toBe(t.label);
   });
 
-  it('never reports a custom theme by anything but the fixed token', () => {
-    // The names below are what a real leak would look like in the dashboard.
-    for (const name of ['Acme Rebrand', 'client-confidential', 'Project Hydra', '']) {
-      expect(themeTelemetryLabel(`custom:${name}`)).toBe('Custom');
+  it('never reports a retired custom theme id', () => {
+    // Custom themes are gone and their ids are moved to Default on read; one that slips through reports Default.
+    for (const id of ['custom:', 'custom:1234-abcd', 'custom:Café ☕']) {
+      expect(themeTelemetryLabel(id)).toBe(DEFAULT_LABEL);
     }
-  });
-
-  it('reports Custom for any custom id, whatever it carries', () => {
-    // The prefix is the whole test: no lookup, no fallback, no chance for a
-    // registry miss to fall through to the id itself.
-    const ids = ['custom:', 'custom:1234-abcd', `custom:${'x'.repeat(200)}`, 'custom:Café ☕'];
-    for (const id of ids) expect(themeTelemetryLabel(id)).toBe('Custom');
   });
 
   it('title-cases an id the catalogue no longer knows', () => {
@@ -36,9 +26,9 @@ describe('themeTelemetryLabel', () => {
     expect(themeTelemetryLabel('retired-hue')).toBe('Retired-hue');
   });
 
-  it('has a token for no theme at all', () => {
-    expect(themeTelemetryLabel(undefined)).toBe('Unknown');
-    expect(themeTelemetryLabel('')).toBe('Unknown');
+  it('reports no theme at all as Default, which is how such a tab draws', () => {
+    expect(themeTelemetryLabel(undefined)).toBe(DEFAULT_LABEL);
+    expect(themeTelemetryLabel('')).toBe(DEFAULT_LABEL);
   });
 
   it('emits a token the api will accept, for every built-in', () => {
@@ -51,7 +41,6 @@ describe('themeTelemetryLabel', () => {
     for (const t of THEMES) {
       expect(themeTelemetryLabel(t.id), t.label).toMatch(TELEMETRY_TYPE_PATTERN);
     }
-    for (const token of ['Custom', 'Unknown']) expect(token).toMatch(TELEMETRY_TYPE_PATTERN);
     // The retired-built-in fallback title-cases a raw id; it must clear the
     // pattern too, and the 40-character cap is the part an id can breach.
     expect(themeTelemetryLabel('retired-hue')).toMatch(TELEMETRY_TYPE_PATTERN);
@@ -60,8 +49,8 @@ describe('themeTelemetryLabel', () => {
 
   it('emits nothing that could be a name a user typed', () => {
     // Whole-surface check: for every input shape the callers can produce, the
-    // result is either a catalogue label or one of the two fixed tokens.
-    const allowed = new Set([...THEMES.map((t) => t.label), 'Custom', 'Unknown']);
+    // result is a catalogue label.
+    const allowed = new Set(THEMES.map((t) => t.label));
     const inputs = [...THEMES.map((t) => t.id), 'custom:Secret Client', undefined, ''];
     for (const i of inputs) expect(allowed.has(themeTelemetryLabel(i))).toBe(true);
   });

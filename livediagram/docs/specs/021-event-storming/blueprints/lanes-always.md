@@ -18,22 +18,22 @@ Scope, by file:
 | `packages/document/src/comments.ts` (`graftLiveTabState`)        | The mark survives undo / redo / cancel                                    |
 | `packages/sticky-vision/src/normalised.ts`                       | `toNormalised`: both axes in fractions of the photo's width               |
 | `packages/templates/src/template-canvas-overrides.ts`            | `templateCanvasOverrides('event-storming')` marks the board settled       |
-| `apps/editor/hooks/canvas/boxed-drag-resolve.ts`                   | `laneHeld` switches the y threshold                                       |
-| `apps/editor/hooks/canvas/useEditorDrag.ts`                        | Picks the lane anchor of a selection; passes `laneHeld`                   |
-| `apps/editor/hooks/canvas/lane-drag.ts`                            | `lanesHoldDrag`, `laneAnchorOf`: which drags meet the lanes, and by what  |
-| `apps/editor/lib/palette-drag-snap.ts`                             | `laneHeld` switches the y threshold                                       |
-| `apps/editor/lib/palette-drag-preview.ts`                          | `workshop` flag on the drag preview                                       |
-| `apps/editor/components/palette/palette-tile-drag.ts`              | Publishes `workshop` for a kinded tile                                    |
-| `apps/editor/lib/stamp-placement.ts`                               | A kinded stamp is held                                                    |
-| `apps/editor/hooks/canvas/useNudgeSelection.ts`                    | Up / down on a workshop note: a lane per press                            |
-| `apps/editor/lib/paste-placement.ts`                               | `pasteTranslation`, `landPastedCopies`: pointer vs staggered              |
-| `apps/editor/hooks/canvas/useClipboard.ts`                         | Paste reads the canvas pointer; the menu's Paste passes its own point     |
-| `apps/editor/lib/canvas-pointer.ts`                                | `pastePointer`: a floating panel is not the canvas                        |
-| `apps/editor/hooks/canvas/useElementDuplication.ts`                | Duplicate staggers along the lane                                         |
-| `apps/editor/hooks/canvas/useLaneSettle.ts`                        | The one-time settle of an older board                                     |
-| `apps/editor/lib/import-merge.ts`                                  | A file import onto an event-storming tab settles its notes                |
-| `apps/editor/lib/next-note-add.ts`                                 | The next note takes its source's lane                                     |
-| `apps/editor/lib/insert-between.ts`                                | The slot's `atY` is a lane centre; the row is the cursor's lane           |
+| `apps/editor/hooks/canvas/boxed-drag-resolve.ts`                 | `laneHeld` switches the y threshold                                       |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                      | Picks the lane anchor of a selection; passes `laneHeld`                   |
+| `apps/editor/hooks/canvas/lane-drag.ts`                          | `lanesHoldDrag`, `laneAnchorOf`: which drags meet the lanes, and by what  |
+| `apps/editor/lib/palette-drag-snap.ts`                           | `laneHeld` switches the y threshold                                       |
+| `apps/editor/lib/palette-drag-preview.ts`                        | `workshop` flag on the drag preview                                       |
+| `apps/editor/components/palette/palette-tile-drag.ts`            | Publishes `workshop` for a kinded tile                                    |
+| `apps/editor/lib/stamp-placement.ts`                             | A kinded stamp is held                                                    |
+| `apps/editor/hooks/canvas/useNudgeSelection.ts`                  | Up / down on a workshop note: a lane per press                            |
+| `apps/editor/lib/paste-placement.ts`                             | `pasteTranslation`, `landPastedCopies`: pointer vs staggered              |
+| `apps/editor/hooks/canvas/useClipboard.ts`                       | Paste reads the canvas pointer; the menu's Paste passes its own point     |
+| `../packages/workbench/src/lib/canvas-pointer.ts`                | `pastePointer`: a floating panel is not the canvas                        |
+| `apps/editor/hooks/canvas/useElementDuplication.ts`              | Duplicate staggers along the lane                                         |
+| `apps/editor/hooks/canvas/useLaneSettle.ts`                      | The one-time settle of an older board                                     |
+| `apps/editor/lib/import-merge.ts`                                | A file import onto an event-storming tab settles its notes                |
+| `apps/editor/lib/next-note-add.ts`                               | The next note takes its source's lane                                     |
+| `apps/editor/lib/insert-between.ts`                              | The slot's `atY` is a lane centre; the row is the cursor's lane           |
 | `packages/document/src/tab-builders.ts`, `apps/mcp/src/tools.ts` | `landWorkshopArrivals` in `update_document`                               |
 | `packages/sticky-vision/scripts/placement-check.ts`              | Private harness: photo placement over the labelled walls                  |
 | `apps/help/app/canvas/event-storming-boards/page.mdx`            | Help: lanes section                                                       |
@@ -135,7 +135,7 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
   coords, null while the pointer is off the canvas). `pasteFromClipboard(source?, at?)`: `at`
   overrides the ref (the canvas menu's Paste passes its right-click point).
 - The pointer ref is written by `EditorCanvasHost.onCanvasPointerMove` through `pastePointer(x, y, target)`
-  (`lib/canvas-pointer.ts`): null when the pointer left the canvas, and null over a floating panel
+  (`../packages/workbench/src/lib/canvas-pointer.ts`): null when the pointer left the canvas, and null over a floating panel
   (`[data-floating-panel]`), which lies on top of the canvas and lets its pointer moves through.
   The canvas menu stores the pointer at the right-click as `canvasPoint` and passes it as `at`.
 
@@ -345,7 +345,7 @@ only skips a settle the forger could have undone. MCP input is already validated
 | Photo: columns, cascade, slide, invariants, isotropy    | `event-storming-photo-place.test.ts`, `detect.test.ts`    |
 | MCP landing                                             | `packages/document/src/tab-builders.test.ts`              |
 | Template marks the board                                | `packages/templates` test                                 |
-| The whole flow in a browser                             | `apps/editor/e2e/event-storming-lanes.spec.ts`              |
+| The whole flow in a browser                             | `apps/editor/e2e/event-storming-lanes.spec.ts`            |
 
 ## Constants and configuration
 

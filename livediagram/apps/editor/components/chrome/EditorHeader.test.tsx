@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -21,14 +20,15 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
-const { HEADER_ICON_SLOT_PX } = await import('./header-action');
+const { HEADER_ICON_SLOT_PX } =
+  await import('@liveworkspace/workbench/components/chrome/header-action');
 
 afterEach(cleanup);
 
 function renderHeader() {
   return render(
     <EditorHeader
-      documentName="Untitled document"
+      documentName="Untitled canvas"
       showShare
       shareable={false}
       onMakeCopy={() => {}}
@@ -59,11 +59,8 @@ describe('EditorHeader stack row', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    // The account avatar (docs/specs/014-identity/profile-picture.md) holds the slot at its size.
-    const avatar = slot.firstElementChild as HTMLElement;
-    expect(avatar.dataset.avatarState).toBe('initial');
-    expect(avatar.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
-    const disc = avatar.firstElementChild as HTMLElement;
+    // The account avatar holds the slot at its size.
+    const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
@@ -106,7 +103,7 @@ describe('EditorHeader account menu', () => {
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader
-      documentName="Untitled document"
+      documentName="Untitled canvas"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}
@@ -115,7 +112,7 @@ describe('EditorHeader rename requests', () => {
       hideTitle={hideTitle}
     />
   );
-  const editing = () => screen.queryByDisplayValue('Untitled document');
+  const editing = () => screen.queryByDisplayValue('Untitled canvas');
 
   it('opens the name editor for a request, never on mount', () => {
     const { rerender } = render(header(0));
@@ -130,7 +127,7 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
     rerender(header(1, false));
     expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled document'));
+    fireEvent.blur(screen.getByDisplayValue('Untitled canvas'));
     expect(editing()).toBeNull();
     rerender(header(1, true));
     rerender(header(1, false));
@@ -140,11 +137,11 @@ describe('EditorHeader rename requests', () => {
   it('hands focus back to the title when a rename ends from the keyboard', async () => {
     // The field goes as the rename ends, so Escape (or Enter) left focus on the page (NameEditor).
     render(header(0));
-    fireEvent.click(screen.getByRole('button', { name: 'Untitled document' }));
-    fireEvent.keyDown(screen.getByDisplayValue('Untitled document'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Untitled canvas' }));
+    fireEvent.keyDown(screen.getByDisplayValue('Untitled canvas'), { key: 'Escape' });
     expect(editing()).toBeNull();
     await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled document' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled canvas' }));
   });
 });
 
@@ -153,7 +150,7 @@ describe('EditorHeader rename requests', () => {
 describe('EditorHeader title on a touch screen', () => {
   it('pads the rename button to 44px tall without a clipped pad', () => {
     renderHeader();
-    const title = screen.getByRole('button', { name: 'Untitled document' });
+    const title = screen.getByRole('button', { name: 'Untitled canvas' });
     expect(title.className).toMatch(/\bpointer-coarse:py-3\b/);
     expect(title.className).toMatch(/\btruncate\b/);
     expect(title.className).not.toMatch(/\btouch-target/);
@@ -196,10 +193,10 @@ describe('EditorHeader Present button', () => {
     expect(button).toHaveProperty('disabled', true);
   });
 
-  it('links the logo to the Explorer home, not the homepage', () => {
+  it('links the logo to the Explorer on this address, not the homepage', () => {
     renderHeader();
     expect(screen.getByRole('link', { name: 'livediagram' }).getAttribute('href')).toBe(
-      '/explorer/home',
+      '/explorer',
     );
   });
 });
@@ -211,7 +208,7 @@ describe('EditorHeader with a long name', () => {
   it('lets the name shrink and keeps the actions whole', () => {
     const { container } = renderHeader();
     const header = container.firstElementChild as HTMLElement;
-    const name = screen.getByRole('button', { name: 'Untitled document' });
+    const name = screen.getByRole('button', { name: 'Untitled canvas' });
     expect(name.className).toContain('truncate');
     for (let el = name.parentElement; el && el !== header; el = el.parentElement) {
       expect(el.className, el.outerHTML.slice(0, 80)).toContain('min-w-0');

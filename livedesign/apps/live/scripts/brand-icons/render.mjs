@@ -1,5 +1,5 @@
 // Writes every static copy of the brand mark from its one source, the Living
-// Prism module in @livedesign/ui (docs/specs/004-interface-design/brand-mark.md):
+// Prism module in @liveworkspace/brand, through @livedesign/ui (docs/specs/004-interface-design/brand-mark.md):
 //   - apps/*/app/icon.svg: the compact mark, light/dark by prefers-color-scheme
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
 //   - marketing/media/icons/: transparent PNGs at the standard icon sizes, and
@@ -20,9 +20,7 @@ const root = fileURLToPath(new URL('../../../../', import.meta.url));
 // to one ESM file in memory and import that.
 const bundle = await build({
   stdin: {
-    contents:
-      "export { brandMarkSvg } from './packages/ui/src/brand-mark-geometry';" +
-      "export { brandLogoSvg } from './packages/ui/src/brand-logo-svg';",
+    contents: "export { brandMarkSvg, brandLogoSvg } from './packages/ui/src/brand-app';",
     resolveDir: root,
     loader: 'ts',
   },
@@ -42,7 +40,7 @@ const write = (path, text) => {
 };
 
 const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
-for (const app of ['marketing', 'live', 'help', 'telemetry']) {
+for (const app of ['marketing', 'live', 'help']) {
   write(`apps/${app}/app/icon.svg`, `${favicon}\n`);
 }
 for (const scheme of ['light', 'dark']) {

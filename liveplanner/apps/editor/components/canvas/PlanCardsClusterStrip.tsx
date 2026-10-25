@@ -2,7 +2,10 @@
 
 import { isTrashed } from '@liveplanner/items';
 import { PlanCardsIcon, SearchIcon } from '@liveplanner/ui';
-import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
+import {
+  ClusterPopoverSegment,
+  ClusterStrip,
+} from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { TrashDropTarget, TrashSegment, usePlanCardDragging } from './TrashClusterButton';
 import { NewCardSegment } from './NewCardClusterButton';
 import { usePlan } from '@/components/plan/PlanContext';

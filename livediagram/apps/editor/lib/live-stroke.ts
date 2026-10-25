@@ -12,7 +12,7 @@ import {
   type RecognisedShape,
 } from '@livediagram/document';
 import { adjustRecognised, shiftRatio } from './recognition-preview';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type Point = { x: number; y: number };
 

@@ -1,8 +1,11 @@
-// An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams"
-// and "API tokens"), with its OAuth client credentials: checking an API token, making one for an AI
-// tool someone connects, and reading the teams change feed. These send the client secret, so they run
+// An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
+// "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
+// for an AI tool someone connects, making a team for someone, reading the teams change feed,
+// reading and writing someone's settings, reading profiles and setting one's own, this app's
+// sign-ups and milestones, accounts' emails, and reporting activity for the onboarding series. These send the client secret, so they run
 // in the app's Worker only.
-import type { ClientCredentials } from './oauth';
+import type { SiteId } from '@liveworkspace/sites';
+import { basicAuthorization, type ClientCredentials } from './oauth';
 
 const ACCOUNT_PATH = '/api/account/internal';
 
@@ -34,38 +37,9 @@ export interface MintedToken {
   secret: string;
 }
 
-export interface TeamChange {
-  id: string;
-  name: string;
-  deleted: boolean;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface MemberChange {
-  id: string;
-  teamId: string;
-  userId: string | null;
-  email: string;
-  role: TeamRole;
-  status: 'invited' | 'joined' | 'declined' | 'removed';
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface TeamChanges {
-  teams: TeamChange[];
-  members: MemberChange[];
-  cursor: string;
-  more: boolean;
-}
-
-function basic(credentials: ClientCredentials): string {
-  const pair = `${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`;
-  return `Basic ${btoa(pair)}`;
-}
-
-async function call(
+// One internal call to the account API with the app's client credentials (also workbench.ts's and
+// invitations.ts's).
+export async function call(
   credentials: ClientCredentials,
   path: string,
   init: { method: 'GET' | 'POST'; body?: unknown },
@@ -74,7 +48,7 @@ async function call(
   return fetcher(`${credentials.accountsUrl.replace(/\/+$/, '')}${ACCOUNT_PATH}${path}`, {
     method: init.method,
     headers: {
-      authorization: basic(credentials),
+      authorization: basicAuthorization(credentials),
       accept: 'application/json',
       ...(init.body === undefined ? {} : { 'content-type': 'application/json' }),
     },
@@ -97,7 +71,7 @@ export function readTeamsClaim(value: unknown): TeamClaim[] | null {
   return Array.isArray(value) ? value.filter(isTeamClaim) : null;
 }
 
-async function sha256(value: string): Promise<string> {
+export async function sha256(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return btoa(String.fromCharCode(...new Uint8Array(bytes)));
 }
@@ -176,6 +150,47 @@ export async function mintAccountToken(
   return (await response.json()) as MintedToken;
 }
 
+// A team as the account API answers one just made: the person is its admin and only member.
+export interface CreatedTeam {
+  id: string;
+  name: string;
+  organisation: string | null;
+  role: TeamRole;
+  memberCount: number;
+  invitedCount: number;
+  members: { id: string; name: string | null; email: string; role: TeamRole }[];
+}
+
+// Why making a team was refused, from the account API's error code: `name_required`, or
+// `team_limit_reached` (409) at the most teams an account may be in.
+export class TeamError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`team create refused: ${status} ${code}`);
+    this.name = 'TeamError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// Makes a team for the person signed in to this app, who becomes its admin: the same team on
+// liveworkspace.app and in every app. The app vouches for them with the access token it holds for
+// them. Throws a TeamError when refused.
+export async function createTeamFor(
+  credentials: ClientCredentials,
+  request: { accessToken: string; name: string; organisation?: string | null },
+  fetcher: typeof fetch = fetch,
+): Promise<CreatedTeam> {
+  const response = await call(credentials, '/teams', { method: 'POST', body: request }, fetcher);
+  if (response.status === 400 || response.status === 401 || response.status === 409) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new TeamError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`team create failed: ${response.status}`);
+  return (await response.json()) as CreatedTeam;
+}
+
 // A token revoking itself (a CLI signing out). False when it was already gone.
 export async function revokeAccountToken(
   credentials: ClientCredentials,
@@ -214,14 +229,324 @@ export async function liveTokenIds(
   return ((await response.json()) as { live: string[] }).live;
 }
 
-// One page of the teams change feed after `cursor` (null for the start).
-export async function fetchTeamChanges(
+// --- Settings ---
+
+// An app's site id, as @liveworkspace/sites spells it: the scope of that app's own settings.
+export type SettingsApp = Exclude<SiteId, 'liveworkspace.app'>;
+export type SettingsPrefs = Record<string, unknown>;
+
+// Someone's settings as one app sees them: those every app shows, and the app's own.
+export interface AccountSettings {
+  all: SettingsPrefs;
+  app: SettingsPrefs;
+  // The later of the two scopes' last writes; null when neither has been written.
+  updatedAt: number | null;
+}
+
+// Each key set to its new value, replacing it whole, or to null to delete it. Keys left out stay.
+export interface SettingsPatch {
+  all?: SettingsPrefs;
+  app?: SettingsPrefs;
+}
+
+// Why a settings write was refused, from the account API's error code.
+export class SettingsError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`settings write refused: ${status} ${code}`);
+    this.name = 'SettingsError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// `owner` is an id the app has already verified: an access token's sub, or a guest token's.
+export async function readSettings(
   credentials: ClientCredentials,
-  cursor: string | null,
+  request: { owner: string; app: SettingsApp },
   fetcher: typeof fetch = fetch,
-): Promise<TeamChanges> {
-  const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
-  const response = await call(credentials, `/teams/changes${query}`, { method: 'GET' }, fetcher);
-  if (!response.ok) throw new Error(`team changes failed: ${response.status}`);
-  return (await response.json()) as TeamChanges;
+): Promise<AccountSettings> {
+  const response = await call(
+    credentials,
+    '/settings/read',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`settings read failed: ${response.status}`);
+  return (await response.json()) as AccountSettings;
+}
+
+// Applies the patch and answers the settings as they now are. A refusal (a patch that isn't an
+// object of named keys, or a scope past its 16 KB) throws a SettingsError with the code.
+export async function writeSettings(
+  credentials: ClientCredentials,
+  request: { owner: string; app: SettingsApp; patch: SettingsPatch },
+  fetcher: typeof fetch = fetch,
+): Promise<AccountSettings> {
+  const response = await call(
+    credentials,
+    '/settings/write',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (response.status === 400 || response.status === 413) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new SettingsError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`settings write failed: ${response.status}`);
+  return (await response.json()) as AccountSettings;
+}
+
+// --- Profiles ---
+
+// A person's display name and presence colour, the same in every app. An account shows its account
+// name until it sets a display name; `name` and `color` may be null (no name, or the app's own pick of
+// colour), and the times are null for an account that never set either.
+export interface Profile {
+  id: string;
+  name: string | null;
+  color: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
+// A string sets the field, null clears it, and a field left out stays.
+export interface ProfilePatch {
+  name?: string | null;
+  color?: string | null;
+}
+
+// The most ids the account API takes in one read; readProfiles splits a longer list.
+export const MAX_PROFILE_IDS = 100;
+
+// Why a profile write was refused, from the account API's error code: `invalid_name`,
+// `invalid_color`, `nothing_to_change` or `invalid_owner` (400), or `unknown_owner` (404).
+export class ProfileError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`profile write refused: ${status} ${code}`);
+    this.name = 'ProfileError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// The profiles of these owners (account or guest ids the app has seen), for a presence list or a
+// page of comments. Repeated ids are asked once, and a list over MAX_PROFILE_IDS goes in batches of
+// that many, at once. An id with neither a profile nor an account is left out of the answer.
+export async function readProfiles(
+  credentials: ClientCredentials,
+  ids: string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Profile[]> {
+  const unique = [...new Set(ids)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_PROFILE_IDS) {
+    batches.push(unique.slice(at, at + MAX_PROFILE_IDS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (batch) => {
+      const response = await call(
+        credentials,
+        '/profiles/read',
+        { method: 'POST', body: { ids: batch } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`profiles read failed: ${response.status}`);
+      return ((await response.json()) as { profiles: Profile[] }).profiles;
+    }),
+  );
+  return pages.flat();
+}
+
+// Sets someone's own name or colour. `owner` is an id the app has already verified as the person
+// asking (an access token's sub, or a guest token's). Answers the profile as it now is.
+export async function writeProfile(
+  credentials: ClientCredentials,
+  request: { owner: string } & ProfilePatch,
+  fetcher: typeof fetch = fetch,
+): Promise<Profile> {
+  const response = await call(
+    credentials,
+    '/profiles/write',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (response.status === 400 || response.status === 404) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new ProfileError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`profile write failed: ${response.status}`);
+  return ((await response.json()) as { profile: Profile }).profile;
+}
+
+// --- Sign-ups, milestones and emails, per app ---
+
+// Records that this app has seen a signed-in account. True only the first time this app sees it,
+// which the app counts as a sign-up. The app is this client's own.
+export async function recordSighting(
+  credentials: ClientCredentials,
+  userId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<boolean> {
+  const response = await call(
+    credentials,
+    '/sightings',
+    { method: 'POST', body: { userId } },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`sighting failed: ${response.status}`);
+  return ((await response.json()) as { first: boolean }).first;
+}
+
+// This app's one-time milestone emails: `milestone` (the tenth item) and `firstShare`.
+export type Milestone = 'milestone' | 'firstShare';
+
+// Claims one before sending it: true only for the first claim, so a burst sends one email. False
+// when already claimed, or this app has never recorded a sighting of the account.
+export async function claimMilestone(
+  credentials: ClientCredentials,
+  request: { userId: string; milestone: Milestone },
+  fetcher: typeof fetch = fetch,
+): Promise<boolean> {
+  const response = await call(
+    credentials,
+    '/milestones/claim',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`milestone claim failed: ${response.status}`);
+  return ((await response.json()) as { claimed: boolean }).claimed;
+}
+
+// The most ids the account API takes in one email lookup; accountEmails splits a longer list.
+export const MAX_EMAIL_IDS = 100;
+
+// The verified addresses of these accounts (`user_…` ids), for this app's notification emails. An
+// account without a verified address is left out. Repeated ids are asked once, in batches, at once.
+export async function accountEmails(
+  credentials: ClientCredentials,
+  ids: string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Record<string, string>> {
+  const unique = [...new Set(ids)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_EMAIL_IDS) {
+    batches.push(unique.slice(at, at + MAX_EMAIL_IDS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (batch) => {
+      const response = await call(
+        credentials,
+        '/emails',
+        { method: 'POST', body: { ids: batch } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`emails failed: ${response.status}`);
+      return ((await response.json()) as { emails: Record<string, string> }).emails;
+    }),
+  );
+  return Object.assign({}, ...pages) as Record<string, string>;
+}
+
+// --- The onboarding series ---
+
+// Someone saved something they own at `at` (default now), for the onboarding series liveworkspace
+// sends: whether they have made anything yet, and when they were last active, across every app. Send it
+// at most once a minute an item (as its summary push goes). A guest's is accepted and ignored.
+export async function reportActivity(
+  credentials: ClientCredentials,
+  request: { userId: string; at?: number },
+  fetcher: typeof fetch = fetch,
+): Promise<void> {
+  const response = await call(credentials, '/activity', { method: 'POST', body: request }, fetcher);
+  if (!response.ok) throw new Error(`activity failed: ${response.status}`);
+}
+
+// --- Notification emails ---
+
+// The most accounts one switch read names; readNotifySettings splits a longer list.
+export const MAX_NOTIFY_OWNERS = 100;
+
+// Each account's stored value of these `notify…` switches, in `all` and this app's scope. An account
+// with none of them set is left out (the switches are opt-out: missing reads as on). Accounts only.
+export type NotifySettings = Record<
+  string,
+  { all: Record<string, unknown>; app: Record<string, unknown> }
+>;
+
+export async function readNotifySettings(
+  credentials: ClientCredentials,
+  request: { owners: string[]; app: SettingsApp; keys: string[] },
+  fetcher: typeof fetch = fetch,
+): Promise<NotifySettings> {
+  const unique = [...new Set(request.owners)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_NOTIFY_OWNERS) {
+    batches.push(unique.slice(at, at + MAX_NOTIFY_OWNERS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (owners) => {
+      const response = await call(
+        credentials,
+        '/settings/notify',
+        { method: 'POST', body: { owners, app: request.app, keys: request.keys } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`notify settings failed: ${response.status}`);
+      return ((await response.json()) as { settings: NotifySettings }).settings;
+    }),
+  );
+  return Object.assign({}, ...pages) as NotifySettings;
+}
+
+// Someone in a team, joined or invited: `id` is the membership row (the only key for an invitation
+// with no account yet), `name` their display name (null for an invitation not yet answered).
+export interface TeamPerson {
+  id: string;
+  userId: string | null;
+  email: string;
+  name: string | null;
+  role: TeamRole;
+  status: 'invited' | 'joined';
+}
+
+// The teams an account is in now, as an access token would carry them minted this moment: for an app whose
+// token claim (up to an hour old) may not hold a team made or joined a moment ago.
+export async function readAccountTeams(
+  credentials: ClientCredentials,
+  userId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<TeamClaim[]> {
+  const response = await call(
+    credentials,
+    '/teams/of',
+    { method: 'POST', body: { userId } },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`account teams failed: ${response.status}`);
+  return readTeamsClaim(((await response.json()) as { teams?: unknown }).teams) ?? [];
+}
+
+// A live team's name and its joined and invited people, or null when there is no such team. Show it
+// only to someone the app has checked is in the team (their token's `teams` claim).
+export async function readTeamPeople(
+  credentials: ClientCredentials,
+  teamId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<{ team: { id: string; name: string }; members: TeamPerson[] } | null> {
+  const response = await call(
+    credentials,
+    '/teams/members',
+    { method: 'POST', body: { teamId } },
+    fetcher,
+  );
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`team members failed: ${response.status}`);
+  return (await response.json()) as {
+    team: { id: string; name: string };
+    members: TeamPerson[];
+  };
 }

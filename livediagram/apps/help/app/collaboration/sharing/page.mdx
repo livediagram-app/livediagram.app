@@ -7,29 +7,29 @@ import { SharePassesDialog } from '@/components/illustrations/sharing';
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
   description:
-    'Share a document with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
+    'Share a canvas with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
   path: '/help/collaboration/sharing/',
 });
 
 <ArticleLayout title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a document into something other people can open. A share link lets anyone with the URL join your document in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the document in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+Sharing turns a canvas into something other people can open. A share link lets anyone with the URL join your canvas in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the canvas in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
 
 ## Opening the Share dialog
 
-Press **Share** at the top right of the editor. It turns solid blue once the document has a live link, so you can tell at a glance that it is shared. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) (search "Share Document") or from a document's menu in the Explorer.
+Press **Share** at the top right of the editor. It turns solid blue once the canvas has a live link, so you can tell at a glance that it is shared. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) (search "Share Canvas") or from a canvas's menu in the Explorer.
 
 New to passes? **Show Me**, at the dialog's top right beside **Help**, walks you through issuing one: choosing what it lets people do, how long it lasts, creating it, managing your passes and adding a password. Every control stays live while it runs, so you can make a real pass as you go.
 
-Only the document's owner manages its links. Someone who opened your document through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Title Bar](/help/user-interface/title-bar/#share-or-copy)).
+The canvas's owner, and every member of the [team](/help/collaboration/teams/) whose library holds it, manage its links. Someone who opened your canvas through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Title Bar](/help/user-interface/title-bar/#share-or-copy)).
 
 ## Share links
 
-The dialog draws every link as a **pass**, a ticket that lets whoever holds it in. The line under the title always tells you who can get in right now: **Private** while only you can open it, **Shared** once any pass is live, and **Public** while it is in the [Community](/help/collaboration/sharing/community/).
+The dialog draws every link as a **pass**, a ticket that lets whoever holds it in. The line under the title always tells you who can get in right now: **Private** while only you can open it, **Team** while it sits in a team's library, and **Shared** once any pass is live.
 
 Under **Issue a pass**, press the role card and pick what the pass lets people do from the three roles it unfolds, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on the coloured band across its top:
 
-- An **Editor** pass lets the visitor change the document with you, live.
+- An **Editor** pass lets the visitor change the canvas with you, live.
 - A **Participant** pass lets them take part without reshaping the board. They add stickies, text and images, grow mind maps with **Tab**, **Enter** or **Add Child** and **Add Sibling**, undo and redo their own changes, write on anything (a table's cells included) except a behaviour element such as a poll, move and resize stickies and images, recolour stickies, swap an image's picture, cast dots, answer [session tools](/help/collaboration/session-tools/), [comment](/help/collaboration/comments/) and send reactions. They can delete what they added and any mind-map node, nothing else of other people's, and they cannot change the tab's mode, add or remove tabs, move or restyle other people's shapes and frames (mind-map nodes aside), spin a picker, press Bring Focus or hold the [facilitator](/help/collaboration/facilitator/) baton. Their palette has one category, **Participate**, holding just what they can add, and the selection modes they need: Select, Hand, Laser, Spotlight, Isometric and Zen, plus Avatar while they walk (entered from an Avatar button on the board). It is the pass to hand a team for a retrospective or a workshop.
 - A **Viewer** pass lets them watch, pan and zoom, follow along and point with the laser, and nothing else: no [comments](/help/collaboration/comments/), votes, [polls](/help/collaboration/session-tools/polls/) or changes. Hand out a Participant pass to anyone who should chime in.
 
@@ -37,11 +37,11 @@ Under **Issue a pass**, press the role card and pick what the pass lets people d
   <SharePassesDialog />
 </Figure>
 
-A document can have several links at once, so you can hand out an edit link to a co-facilitator, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the document lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+A canvas can have several links at once, so you can hand out an edit link to a co-facilitator, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the canvas lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
 
-Each pass shows its link with a copy button inside it. Beneath that, one row shows which tabs it **Opens** (on a document with more than one tab) and how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at the right. On a phone the menus drop to a line of their own.
+Each pass shows its link with a copy button inside it. Beneath that, one row shows which tabs it **Opens** (on a canvas with more than one tab) and how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at the right. On a phone the menus drop to a line of their own.
 
-A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the document never reaches their browser.
+A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the canvas never reaches their browser.
 
 ## Your name when sharing
 
@@ -51,16 +51,16 @@ As a guest, the **Sharing as** field at the bottom of the dialog is the name oth
 
 Two self-serve controls let you bound who gets in and for how long:
 
-- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The document's owner always bypasses it.
+- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The canvas's owner, and the members of its team, never need it.
 - A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
 
 These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
 
-## Embedding a document
+## Embedding a canvas
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a document inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the document is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a canvas inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the canvas is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
-<Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
+<Figure caption="A canvas embedded in another page, alongside the iframe snippet that places it.">
   <EmbeddedDocument />
 </Figure>
 
@@ -68,21 +68,21 @@ Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/hel
 
 ## Sharing with everyone
 
-Proud of a document? [Share it to the Community](/help/collaboration/sharing/community/), the public gallery where anyone can find it, view it read-only and make their own copy. Looking for a starting point instead? [Find documents in the Community](/help/collaboration/sharing/finding-community-documents/) by searching their words and tags. The **Community** tab at the top of the Share dialog, beside **Passes**, publishes it, edits its listing and takes it down again.
+Proud of a canvas? [Share it to the Community](/help/collaboration/sharing/community/), the public gallery where anyone can find it, view it read-only and make their own copy. Looking for a starting point instead? [Find canvases in the Community](/help/collaboration/sharing/finding-community-documents/) by searching their words and tags. The **Community** section at the foot of the Share dialog, below **Password Protection**, publishes it, edits its listing and takes it down again.
 
 ## Stopping sharing
 
-To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the document straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
+To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the canvas straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
 
 <Note>
-  A [document in This Browser](/help/privacy-and-security/offline-mode/) lives only in your browser,
+  A [canvas in This Browser](/help/privacy-and-security/offline-mode/) lives only in your browser,
   so there is nothing on the server to share yet. Opening **Share** on one shows a gate instead of
-  the link controls, with a **Sync Document** button that uploads it to your account first.
+  the link controls, with a **Sync Canvas** button that uploads it to your account first.
 </Note>
 
 <FeatureGrid>
   <Feature slug="embeds" title="Embeds">
-    Drop a live document into another page, read-only or editable depending on the link.
+    Drop a live canvas into another page, read-only or editable depending on the link.
   </Feature>
   <Feature slug="teams" title="Teams">
     Share a whole library with teammates instead of one link at a time.

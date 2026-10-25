@@ -26,7 +26,7 @@ The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the 
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@livediagram/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
-- No external service: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (Clerk unset).
+- Self-hostable: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
 
 ## Non-goals (v1)
 
@@ -43,9 +43,9 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 
 ### Recommended: route manifest + generated component schemas
 
-- **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livediagram/api-schema`; it is the single declaration of the surface.
+- **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either; `clerk` is the manifest's name for Bearer-only, kept from before sign-in moved to the accounts Worker), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livediagram/api-schema`; it is the single declaration of the surface.
 - **Component schemas** — generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
-- **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definitions (the guest `X-Owner-Id` header and the Clerk Bearer, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
+- **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definition (one Bearer, carrying an account access token, a guest token or an API token, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
 - **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@livediagram/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
 
 ### Drift test
@@ -53,7 +53,7 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 The route inventory is taken from the worker itself, by probing it:
 
 - **Vocabulary.** For each resource segment in `index.ts`'s dispatch switch, the literals its route modules compare a path position against (`segments[k] === '<literal>'`), read from the source, plus a placeholder standing in for any path parameter.
-- **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (D1, R2, Durable Objects) and outbound `fetch` replaced by a trap that records the touch and throws.
+- **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (R2, Durable Objects) and outbound `fetch` replaced by a trap that records the touch and throws.
 - **Outcomes.** A clean 404 / 405 without a touch is _not routed_. Any other answer without a touch is _routed_: that exact method and path are served. A touch means the path is served, but not which methods, because most handlers load and authorise the resource before branching on the verb.
 
 What the test then proves:
@@ -70,7 +70,7 @@ Two consequences for route code: every handler matches its **full** path, so an 
 
 ### Auth + secrets
 
-The doc declares the two auth schemes (guest `X-Owner-Id` header; Clerk `Authorization: Bearer`) and tags each endpoint with which it accepts, but carries **no secrets, keys, or URLs** ([Secrets policy](../002-project-scope/secrets-policy.md)). The `/api/openapi.json` endpoint is public and unauthenticated, like `GET /api/capabilities`.
+The doc declares one auth scheme (`Authorization: Bearer`: an account access token, a guest token or an API token) and tags each endpoint that needs it, but carries **no secrets, keys, or URLs** ([Secrets policy](../002-project-scope/secrets-policy.md)). The `/api/openapi.json` endpoint is public and unauthenticated, like `GET /api/capabilities`.
 
 ### Optional viewer
 
@@ -104,8 +104,8 @@ The recommended route-manifest approach shipped. Concrete layout, all under
   utilities inline). The generator is a dev dependency only and is **not** in the
   worker bundle — nothing on the runtime path imports it.
 - **`document.ts`** — `buildOpenApiDocument()` assembles the manifest + generated
-  schemas + the two security schemes (`Bearer` = Clerk JWT **or** API token;
-  `GuestId` = the `X-Owner-Id` header) + a shared `Error` envelope into the 3.1
+  schemas + the one security scheme (`Bearer` = an account access token, a guest token
+  or an API token) + a shared `Error` envelope into the 3.1
   object. Path parameters are derived from the `{param}` placeholders, so the
   manifest doesn't repeat them. Pure and deterministic.
 - **`routes/openapi.ts`** — `handleOpenapi`, dispatched from `index.ts` on the
@@ -123,8 +123,8 @@ path-template)` parity described under "Drift test", run in the api worker's
   mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
   unique.
 - **Media types** — a success body is `application/json` unless the entry sets
-  `responseMediaType`; the two SVG snapshot reads (`GET /documents/{id}/thumbnail`,
-  `GET /share/{code}/image.svg`) declare `image/svg+xml`.
+  `responseMediaType`; the tab render (`GET /documents/{id}/tabs/{tabId}/render.svg`) declares
+  `image/svg+xml`. A document's previews are liveworkspace's (`liveworkspace/docs/previews.md`), not this api's.
 
 The served document validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;

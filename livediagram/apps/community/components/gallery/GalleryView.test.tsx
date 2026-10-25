@@ -28,13 +28,9 @@ vi.mock('next/link', () => ({
   ),
 }));
 vi.mock('@/lib/telemetry', () => ({ communityTelemetry: h.telemetry }));
-vi.mock('@/lib/session', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/session')>()),
-  signInAvailable: true,
-}));
-// Clerk itself is not loaded in tests: the lazy session reports whatever the test set.
-vi.mock('../auth/LazyClerkSession', () => ({
-  LazyClerkSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {
+// The api's session is not asked for in tests: the session reports whatever the test set.
+vi.mock('../auth/AccountSession', () => ({
+  AccountSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {
     useEffect(() => {
       h.emit = onSession;
       if (h.session) onSession(h.session);
@@ -236,7 +232,7 @@ describe('the gallery', () => {
     render(<GalleryView />);
     await screen.findByText('First');
     fireEvent.click(screen.getByRole('button', { name: 'Load More' }));
-    expect(await screen.findByText("We couldn't load more documents.")).toBeTruthy();
+    expect(await screen.findByText("We couldn't load more canvases.")).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     expect(await screen.findByText('Second')).toBeTruthy();
     expect(screen.getByText('First')).toBeTruthy();
@@ -251,7 +247,7 @@ describe('the gallery', () => {
         : Response.json({ posts: [post()], nextOffset: null }),
     );
     render(<GalleryView />);
-    expect(await screen.findByText('No documents match these filters.')).toBeTruthy();
+    expect(await screen.findByText('No canvases match these filters.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
     await screen.findByText('Post 1');
     expect(search().value).toBe('sort:loved');
@@ -312,7 +308,7 @@ describe('My Shares', () => {
     expect(postCalls()).toHaveLength(0);
 
     const summary = screen.getByRole('region', { name: 'Your Shares' });
-    expect(summary.textContent).toContain('2 documents shared');
+    expect(summary.textContent).toContain('2 canvases shared');
     expect(summary.textContent).toContain('7 likes');
     expect(summary.textContent).toContain('3 copies made');
 

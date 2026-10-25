@@ -18,6 +18,16 @@ export const SERVER_EMITTED_EVENT_PAIRS: readonly string[] = [
   'Email·Sent',
   'Session·SignedIn',
   'Session·SignedUp',
+  // Teams and API tokens are run on liveworkspace.app: accounts counts these as they happen, under the
+  // app the person signed up through. Team·Created, ·Added and ·Removed stay the browser's too (a team
+  // made in an app, an item moved into or out of a team); their accounts types (Member, Invite, Self,
+  // Link) are ones no browser sends.
+  'Team·Changed',
+  'Team·Declined',
+  'Team·Deleted',
+  'Team·Joined',
+  'Team·Shared',
+  'Token·Removed',
 ];
 
 export function isServerEmittedEvent(e: { category: string; action: string }): boolean {

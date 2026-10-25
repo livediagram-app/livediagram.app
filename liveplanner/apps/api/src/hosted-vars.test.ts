@@ -85,8 +85,8 @@ describe('hosted profile', () => {
       expect(declared, `[${table}] declares hosted-only vars`).toEqual([]);
     }
     // Vacuity guard: the table reader must still see what IS committed.
-    expect(tomlTableKeys(toml, 'vars')).toContain('GUEST_SIGNING_LIVE_AT');
-    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('GUEST_SIGNING_LIVE_AT');
+    expect(tomlTableKeys(toml, 'vars')).toContain('INDEX_ORIGIN');
+    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('INDEX_ORIGIN');
   });
 });
 

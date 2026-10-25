@@ -3,7 +3,7 @@
 // MCP project it.
 
 import type { z } from 'zod';
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import type { ReadCopies } from './copies';
 
 export type VerbBehaviour = 'read' | 'write' | 'destructive';

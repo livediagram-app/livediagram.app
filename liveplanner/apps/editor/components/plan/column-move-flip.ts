@@ -4,7 +4,7 @@
 // laid out it plays each from its old place to its new one (`playColumnMove`). Positions are layout offsets
 // (`offsetLeft`), so the canvas zoom does not skew them. Nothing plays under reduced motion.
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // How long the glide takes, and its curve (a quick start, a soft landing).
 export const COLUMN_MOVE_MS = 240;

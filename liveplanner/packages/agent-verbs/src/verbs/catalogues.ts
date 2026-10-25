@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import type { TemplateCatalogueResponse } from '@liveplanner/api-schema';
-import { ApiError } from '@liveplanner/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { columns } from './shared';
 

@@ -15,7 +15,10 @@ import {
 } from '@liveplanner/sheets';
 import { SheetMergeConfirm } from './SheetMergeConfirm';
 import { SheetFunctionMenu } from './SheetFunctionMenu';
-import { MenuActionRow, PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { useSheetController } from './sheet-controller';

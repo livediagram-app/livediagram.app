@@ -33,7 +33,7 @@ interface ElementAction {
   name: string; // required, short ("Confirm the retry budget")
   description: string; // optional detail, '' when empty
   assignee: {
-    // The stable key: a Clerk user id, or — for a SELF-assignment made
+    // The stable key: an account user id, or — for a SELF-assignment made
     // while signed out — the guest participant id (docs/specs/014-identity/auth-and-guest-access.md hybrid
     // identity). Guests can only ever pick themselves, so a guest id
     // here always means "the assigner's own browser identity".
@@ -50,7 +50,7 @@ interface ElementAction {
   // The team the assignee was picked from; null for a self-assignment
   // (Myself is not a team row).
   teamId: string | null;
-  assignerId: string; // Clerk user id of who assigned it
+  assignerId: string; // account user id of who assigned it
   assignerName: string | null;
   // 'wont-do': closed without being done (liveplanner).
   status: 'open' | 'done' | 'wont-do';
@@ -63,7 +63,7 @@ action?: ElementAction;
 ```
 
 **No email address is ever stored in the element blob.** Documents travel
-(share links, embeds, exports); the blob carries only the Clerk `userId` /
+(share links, embeds, exports); the blob carries only the account `userId` /
 membership `memberId` and a display name, all already visible to anyone the
 assignee collaborates with. The assignee's address is resolved server-side
 at send time (§4), never denormalised. An invited member's display name is
@@ -103,7 +103,7 @@ are excluded just like today), each gets its own accordion section id
 unchanged. The **Assign Action** tile:
 
 - **Always shows, for everyone.** The feature is not sign-in gated:
-  a signed-out user (or a Clerk-less deployment, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
+  a signed-out user can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
   every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from
@@ -119,16 +119,14 @@ Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
-  account, or the guest participant identity), then the **joined members
-  of the team whose shared library holds this document** (`GET
-/api/teams/<documentTeamId>` members, via the existing api-client
-  helper), each row showing the member's avatar bubble and display name
-  (email local-part fallback, as TeamPane does). Members of the user's
+  account, or the guest participant identity), then the **people of the canvas's team**, the team whose library holds it
+  (`GET /api/teams/<documentTeamId>/members`, read from liveworkspace's accounts, one request shared with the
+  mention list's), each row showing the member's avatar bubble and display name
+  (email local-part fallback). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
   document's team, so they almost certainly can't open the document to
   complete the action — offering them just manufactures the §4 access
-  warning. **Invited-but-not-joined members ARE offered** (with the same
-  amber "Invited" badge the team pane uses): work often gets divided up
+  warning. **Invited-but-not-joined members ARE offered** (with an amber "Invited" badge): work often gets divided up
   while invites are still in flight. An invited member is keyed by their
   membership `memberId` (their `userId` when the lazy claim has already
   identified an account, else null), and picking one shows an
@@ -140,10 +138,11 @@ Clicking it opens the **Assign Action dialog** (its own component under
   Myself-only states, each with its own nudge: a **personal document**
   (no team library) offers the fix INLINE — "Move this document into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared documents](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
-  with the team id, landing at the team root) right from the dialog and
+  files the canvas into that team's library root through the index ([Team shared documents](../013-workspace/team-shared-documents.md),
+  `indexClient.updateItem` with the team id) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
-  signed-in user with no teams gets the create-a-team link instead; a
+  signed-in user with no teams gets the create-a-team link instead (the
+  Explorer's Invites, `/explorer/invites`, beside the teams); a
   signed-in user **not a member of the document's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
@@ -154,7 +153,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   selected on focus so typing replaces it in one keystroke.
 - **Description**: optional multi-line text.
 - **"Email {name} about this action"**: the shared iOS-style toggle
-  (`ToggleSwitch`, the same control every settings row uses), **default
+  (`@liveworkspace/ui`'s `Switch` at `sm`, the same control every settings row uses), **default
   on**, rendered only when `useCapabilities().emailEnabled` is true
   ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without Resend never advertises a send it
   can't perform. **Hidden entirely for a self-assignment** (guest or
@@ -200,7 +199,7 @@ state; nothing is added to `useEditorState.ts` beyond the wiring call.
 
 ## 4. Email notification
 
-A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
+A new **signed-in-only** endpoint on the api worker (account access token required,
 401 otherwise):
 
 ```
@@ -215,7 +214,7 @@ The server, not the client, establishes every fact that matters:
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
 - verifies the caller can access `documentId` (owner, team library, or
-  shared-with), and reads the **document name from D1**, not the body;
+  shared-with), and reads the **document name from the index**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -360,8 +359,9 @@ One new opt-out flag in the [User preferences](../007-editor/user-preferences.md
 notifyActionAssigned?: boolean; // someone assigns me an action
 ```
 
-- Server-side it joins `NotificationPrefs`
-  (`apps/api/src/db/notification-prefs.ts`), read by the notify dispatcher.
+- Server-side it is one of the shared settings in `@liveworkspace/settings`, kept by liveworkspace
+  accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
+  reads it through `NotificationPrefs` (`apps/api/src/liveworkspace/notification-prefs.ts`).
 - Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
   `NotificationRow`: "Someone assigns me an action", gated with the others
   on `emailEnabled`, flipping through the same `setFlag` round-trip.
@@ -412,7 +412,7 @@ enum-ish tokens, not user content.
 
 - ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
-  a D1 projection (`collab_actions`) written beside every tab save,
+  a projection pushed to liveworkspace's index from each document's outbox,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an ordinary element (an
   Action panel is the place for a list), and multiple assignees.

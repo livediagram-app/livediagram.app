@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  indexIntentOf,
   CREATION_TAB_KINDS,
   PLACEMENT_DEFAULT_KEYS,
   TEMPLATE_FAMILIES,
@@ -34,7 +35,7 @@ describe('isPlacementDefaultKey', () => {
     expect(isPlacementDefaultKey(key)).toBe(true);
   });
 
-  // A retired mode's key, stored before Plan was the only mode, is no longer in force.
+  // Another product's mode, kind or template is not a key here.
   it.each([
     ['mode:diagram'],
     ['mode:draw'],
@@ -105,16 +106,10 @@ describe('readCreationIntent', () => {
     });
   });
 
-  // An older client still names a retired mode.
-  it.each([['diagram'], ['draw'], ['workshop'], ['pages'], ['illustrate'], ['facilitate']])(
-    'reads the retired mode %s as Plan',
-    (mode) => {
-      expect(readCreationIntent({ mode })).toEqual({
-        ok: true,
-        intent: { mode: 'plan', tabKind: 'empty' },
-      });
-    },
-  );
+  // liveplanner never had another mode, so livediagram's are refused like any other word.
+  it.each([['diagram'], ['draw'], ['workshop'], ['pages']])('refuses the mode %s', (mode) => {
+    expect(readCreationIntent({ mode })).toEqual({ ok: false });
+  });
 
   it('reads every field', () => {
     expect(
@@ -144,6 +139,16 @@ describe('readCreationIntent', () => {
     ['a template family that is not a string', { mode: 'plan', templateFamily: 3 }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
+  });
+});
+
+describe('indexIntentOf', () => {
+  it('words an intent as the index keeps it, the template family last', () => {
+    expect(indexIntentOf({ mode: 'plan', tabKind: 'board' })).toBe('plan:board');
+    expect(indexIntentOf({ mode: 'plan', tabKind: 'empty', templateFamily: 'kanban' })).toBe(
+      'plan:empty:kanban',
+    );
+    expect(indexIntentOf(null)).toBeNull();
   });
 });
 

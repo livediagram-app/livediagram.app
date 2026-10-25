@@ -10,7 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./entity.md - when implementing or changing the entity, its title band, fields and keys, in-place editing, field-to-field relationships or cardinality
 - ./flowchart.md - when implementing or changing the flowchart, its layout, growth, step types or lanes
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
-- ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
+- ./link-cards.md - when implementing or changing link cards
 - ./mind-node.md - when implementing or changing mind nodes, Tab / Enter growth, flows or collision placement
 - ./page-element.md - when implementing or changing the Page element, its masthead, body or corner fold
 - ./portal-element.md - when implementing or changing portals, their links, names or travel

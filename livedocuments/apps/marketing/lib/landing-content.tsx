@@ -8,7 +8,6 @@ import {
   AssignedActionsArt,
   CommentsArt,
   ContentsSidebarArt,
-  CustomThemesArt,
   ExpiryArt,
   FollowAlongArt,
   FontsArt,
@@ -41,7 +40,7 @@ import {
   UndoRedoArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
-import type { FeatureProps } from '@/components/Section';
+import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
 /**
  * A feature category: one kind of page livedocuments makes, or the way people make them together, each
@@ -307,14 +306,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Preset themes',
         description:
           'One click recolours every page, shape and line. Every theme has a light and a dark half, and multi-colour themes tint each part a different hue.',
-      },
-      {
-        art: <CustomThemesArt />,
-        href: '/help/canvas/themes/custom-themes/',
-        group: 'Make it yours',
-        title: 'Your brand as a theme',
-        description:
-          'Build a custom theme from your brand palette, save it to your account, and reuse it across documents just like a built-in one. Edit it any time.',
       },
       {
         art: <FontsArt />,

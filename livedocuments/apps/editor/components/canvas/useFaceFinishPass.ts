@@ -16,7 +16,7 @@ import {
   type Finish,
 } from '@livedocuments/document';
 import { trustedHtml } from '@livedocuments/ui';
-import { watchUntilSettled } from '@/components/canvas/settle-watch';
+import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/settle-watch';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
 // once the face has settled, its frames (outlined HTML boxes) and its SVG shapes are read from the live DOM and

@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react';
 import { TRASHED_FROM_FIELD, isTrashed, itemTitle, statusLabel, typeIn } from '@liveplanner/items';
 import { Button, CountBadge, EmptyState, relativeSince, TrashIcon } from '@liveplanner/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';

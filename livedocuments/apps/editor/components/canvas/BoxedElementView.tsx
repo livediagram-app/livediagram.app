@@ -38,9 +38,8 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
-import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -59,7 +58,7 @@ import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { isPanThrough } from '@/hooks/canvas/pan-through';
+import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -332,6 +331,8 @@ function BoxedElementViewImpl({
       ref={wrapperRef}
       data-element-id={element.id}
       data-stack-glide={stackGlide ? '' : undefined}
+      // A margin note's kind, for its touch reach and for hiding it while presenting (article-pages.css).
+      data-article-note={articleNote}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
       // so its buttons stay reachable.
@@ -340,7 +341,7 @@ function BoxedElementViewImpl({
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
-        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        // A finger on a board's empty space pans the canvas instead (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);
@@ -419,103 +420,101 @@ function BoxedElementViewImpl({
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
           (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
           the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
-      <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
-        <SketchFace
-          active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
-        >
-          <AccentEdgeOverlay
-            element={withTagAccent(element, tagColours)}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          />
-          {element.type === 'shape' && element.shape === 'pointer-note' ? (
-            <PointerNoteOverlay
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              editable={isSelected && !readOnly && !isLocked}
-              onSetTip={onSetPointerTip}
-            />
-          ) : null}
-          <ShapeContentRouter
+      <SketchFace
+        active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+      >
+        <AccentEdgeOverlay
+          element={withTagAccent(element, tagColours)}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+        />
+        {element.type === 'shape' && element.shape === 'pointer-note' ? (
+          <PointerNoteOverlay
             element={element}
-            isEditing={isEditing}
-            artAnimClass={artAnimClass}
-            accent={accent}
-            textColor={textColor}
-            remoteBorderColor={remoteBorderColor}
-            isLocked={isLocked}
-            isSelected={isSelected}
-            readOnly={readOnly}
-            onToggleChecklistItem={onToggleChecklistItem}
-            chartPalette={chartPalette}
-            fontFamily={fontFamily}
-            svgAnim={svgAnim}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            editable={isSelected && !readOnly && !isLocked}
+            onSetTip={onSetPointerTip}
           />
-          {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+        ) : null}
+        <ShapeContentRouter
+          element={element}
+          isEditing={isEditing}
+          artAnimClass={artAnimClass}
+          accent={accent}
+          textColor={textColor}
+          remoteBorderColor={remoteBorderColor}
+          isLocked={isLocked}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          onToggleChecklistItem={onToggleChecklistItem}
+          chartPalette={chartPalette}
+          fontFamily={fontFamily}
+          svgAnim={svgAnim}
+        />
+        {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
           composite dash patterns. When one of those is picked, stroke the
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
-          {element.type === 'shape' &&
-          !sketch &&
-          !isSvgRenderedShape(element.shape) &&
-          !remoteBorderColor &&
-          !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
-            <BoxBorderOverlay
-              shape={element.shape}
-              width={element.width}
-              height={element.height}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
-              dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-              radiusPx={cornerPx}
-            />
-          ) : null}
-          {/* Browser-only HTML chrome overlay. SVG handles only the
+        {element.type === 'shape' &&
+        !sketch &&
+        !isSvgRenderedShape(element.shape) &&
+        !remoteBorderColor &&
+        !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+          <BoxBorderOverlay
+            shape={element.shape}
+            width={element.width}
+            height={element.height}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
+            dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+            radiusPx={cornerPx}
+          />
+        ) : null}
+        {/* Browser-only HTML chrome overlay. SVG handles only the
           outer frame + divider so the user's border style applies;
           the dots / nav / URL bar render here so their geometry is
           fixed-pixel and doesn't deform with the box's aspect
           ratio. */}
-          {element.type === 'shape' && element.shape === 'browser' ? (
-            <BrowserChrome
-              stroke={
-                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-              }
-            />
-          ) : null}
-
-          {/* Whatever this element shows in place of a plain label: a pressable
-          face, a drawn body, or the label itself. See ElementFaceRouter. */}
-          <ElementFaceRouter
-            element={element}
-            isEditing={isEditing}
-            isSelected={isSelected}
-            readOnly={readOnly}
-            writable={writable}
-            fontFamily={fontFamily}
-            imageContext={imageContext}
-            tabSummaries={tabSummaries}
-            onCommitTable={onCommitTable}
-            onFollowLink={onFollowLink}
-            onLinkCell={onLinkCell}
-            onSetPageHeading={onSetPageHeading}
-            onSetWebRows={onSetWebRows}
-            onSetHeroCaptionLine={onSetHeroCaptionLine}
-            label={label}
-            labelNode={labelNode}
-            // Clear of the indicators and on the label body (a cylinder's, under its lid).
-            contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
-            textColor={textColor}
-            textSize={textSize}
-            alignX={alignX}
-            alignY={alignY}
-            isLocked={isLocked}
-            remoteBorderColor={remoteBorderColor}
-            inlineIcon={inlineIcon}
-            marker={marker}
-            iconCaptionBand={iconCaptionBand}
+        {element.type === 'shape' && element.shape === 'browser' ? (
+          <BrowserChrome
+            stroke={
+              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            }
           />
-        </SketchFace>
-      </FaceFinishProvider>
+        ) : null}
+
+        {/* Whatever this element shows in place of a plain label: a pressable
+          face, a drawn body, or the label itself. See ElementFaceRouter. */}
+        <ElementFaceRouter
+          element={element}
+          isEditing={isEditing}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          writable={writable}
+          fontFamily={fontFamily}
+          imageContext={imageContext}
+          tabSummaries={tabSummaries}
+          onCommitTable={onCommitTable}
+          onFollowLink={onFollowLink}
+          onLinkCell={onLinkCell}
+          onSetPageHeading={onSetPageHeading}
+          onSetWebRows={onSetWebRows}
+          onSetHeroCaptionLine={onSetHeroCaptionLine}
+          label={label}
+          labelNode={labelNode}
+          // Clear of the indicators and on the label body (a cylinder's, under its lid).
+          contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+          textColor={textColor}
+          textSize={textSize}
+          alignX={alignX}
+          alignY={alignY}
+          isLocked={isLocked}
+          remoteBorderColor={remoteBorderColor}
+          inlineIcon={inlineIcon}
+          marker={marker}
+          iconCaptionBand={iconCaptionBand}
+        />
+      </SketchFace>
       {element.type === 'image' ? sketchOverlay() : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}

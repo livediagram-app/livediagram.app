@@ -11,24 +11,17 @@ import {
 } from '@livedocuments/api-schema';
 import { isValidTab, migrateIncomingTab, type Tab } from '@livedocuments/document';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
-import { hasNewComments, rewriteCommentAuthors } from '../comments';
-import {
-  changesetMergePages,
-  getParticipant,
-  getTab,
-  isTabRevStale,
-  upsertTabAtRev,
-  tabBelongsElsewhere,
-} from '../db';
+import { newCommentsBy, rewriteCommentAuthors } from '../comments';
+import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
-import { recordTabSave } from '../timeline';
 import type { TabSaveDocument } from '../db/tab-save-document';
-import { readBody, type RouteContext } from './context';
+import { readBody, type DocumentRouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
@@ -36,7 +29,7 @@ const RECORD_FIELDS = ['rev', 'documentId', 'orderIndex', 'updatedAt'] as const;
 
 // A token never does a whole-tab save (CS45): answered before anything is read.
 export function refuseTokenTabPut(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   documentId: string,
   tabId: string,
 ): Response | null {
@@ -53,7 +46,7 @@ export function refuseTokenTabPut(
 
 // The caller has passed the edit gate for this tab.
 export async function handleTabPut(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   existing: TabSaveDocument,
   tabId: string,
   owner: string,
@@ -87,13 +80,6 @@ export async function handleTabPut(
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
-    // A new tab id must be new: an id that already names another document's tab is refused, never overwritten
-    // (docs/specs/006-document/per-tab-storage.md). Checked only when this document has no such tab, so the
-    // common autosave pays nothing.
-    if (!existingTab && (await tabBelongsElsewhere(env, tabId, id))) {
-      console.warn("[tabs] refused a save onto another document's tab", { documentId: id, tabId });
-      return conflict('tab_id_taken');
-    }
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.
@@ -113,29 +99,20 @@ export async function handleTabPut(
       return conflict('empty_tab_overwrite_blocked');
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
-    // Newly added comments carry the resolved owner's participant record, never the client's claim
-    // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's
-    // row: reused when the writer IS the owner, the common autosave case.
-    const writerParticipant =
-      owner === existing.ownerId && existing.ownerName !== null
-        ? {
-            id: owner,
-            name: existing.ownerName,
-            color: existing.ownerColor ?? '#0ea5e9',
-            createdAt: existing.createdAt,
-          }
-        : await getParticipant(env, owner);
-    const sanitised: Tab = writerParticipant
-      ? {
-          ...body,
-          elements: rewriteCommentAuthors(
-            body.elements,
-            existingTab?.elements ?? [],
-            writerParticipant,
-            commentAuthors,
-          ),
-        }
-      : body;
+    // Newly added comments carry the resolved owner's profile, never the client's claim
+    // (docs/specs/014-identity/auth-and-guest-access.md). Read from the accounts Worker and remembered
+    // per isolate for a minute (person/profiles.ts), so a run of autosaves asks once.
+    // With no profile the writer is still the owner: the comments already stored stay locked.
+    const writerParticipant = await getParticipant(env, owner);
+    const sanitised: Tab = {
+      ...body,
+      elements: rewriteCommentAuthors(
+        body.elements,
+        existingTab?.elements ?? [],
+        writerParticipant ?? { id: owner, name: '', color: '', createdAt: 0 },
+        commentAuthors,
+      ),
+    };
     let rev = 0;
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores
@@ -150,24 +127,32 @@ export async function handleTabPut(
       continue;
     }
     logMerge(id, tabId, merge);
-    // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the save
-    // added that the feed cares about. Off the response path: this fires on every autosave.
-    ctx.waitUntil?.(
-      recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
-    );
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
-    // notifies the owner. Their own comment only, read from the authors the server just set.
-    if (
-      emailEnabled(env) &&
-      owner !== existing.ownerId &&
-      hasNewComments(sanitised.elements, existingTab?.elements ?? [], owner)
-    ) {
+    // notifies the owner; on a team document, the teammates the writer's new comments @-mention hear of it
+    // (docs/specs/012-collaboration/comment-mentions.md). Their own comments only, read from the authors the
+    // server just set.
+    // Only a save that could email anyone looks: a visitor's (the owner's email), or any on a team document (mentions).
+    const fresh =
+      emailEnabled(env) && (owner !== existing.ownerId || existing.teamId)
+        ? newCommentsBy(sanitised.elements, existingTab?.elements ?? [], owner)
+        : [];
+    if (fresh.length > 0 && owner !== existing.ownerId) {
       ctx.waitUntil?.(
         notifyNewComment(
           env,
           { id, ownerId: existing.ownerId, name: existing.name },
           writerParticipant?.name ?? null,
         ),
+      );
+    }
+    if (existing.teamId && fresh.some((c) => c.mentions?.length)) {
+      ctx.waitUntil?.(
+        notifyMentions(env, {
+          document: { id, name: existing.name, teamId: existing.teamId },
+          authorId: owner,
+          authorFallbackName: ctx.accountEmail,
+          comments: fresh,
+        }),
       );
     }
     // Echo what was just written instead of reading it back; folder is link metadata the client
@@ -192,7 +177,7 @@ type MergeOutcome = { tab: Tab; records: number; merged: number; superseded: num
 // Every recorded changeset of this tab after the revision the editor has seen, or, from an editor
 // too old to say (no header), those of the last CHANGESET_MERGE_WINDOW_MS, page by page.
 async function mergeUnseenChangesets(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   save: Tab,
   seen: number | null,
 ): Promise<MergeOutcome> {

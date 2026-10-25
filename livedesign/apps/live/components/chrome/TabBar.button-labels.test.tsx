@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DockNamesProvider } from '@/hooks/ui/useDockNames';
+import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { TabBar } from './TabBar';
 import { tabBarProps as props } from './TabBar.test-props';
 

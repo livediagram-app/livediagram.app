@@ -1,35 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { useTokens } from '@/hooks/persistence/useTokens';
+import { ButtonContent, buttonClassName } from '@livediagram/ui';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { TokensGlyph } from './settings-icons';
-import { SettingsRowShell } from './SettingsRowShell';
+import { manageTokensUrl } from '@/lib/auth-config';
+import { useRelativeNow } from '@/lib/relative-time';
+import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
+import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import { SettingsSignInLink } from './SettingsSignInLink';
-import { SettingsTokenCreate } from './SettingsTokenCreate';
-import { SettingsTokenList } from './SettingsTokenList';
-import { SettingsTokenOverview } from './SettingsTokenOverview';
-import { SettingsTokenReveal } from './SettingsTokenReveal';
+import { SettingsTokenPairings } from './SettingsTokenPairings';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
 
-// The API Tokens category's one row: the whole token manager
-// (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
-// Overview and capacity, then whichever of the composer or the one-time
-// reveal is open, then the tokens. Tokens are Clerk-only, so a guest gets the
-// reason and a way to sign in rather than a form that would only ever 403.
+// The API Tokens category's one row (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
+// API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): one token
+// works on every app's API and MCP server, and they are made, listed and revoked on liveworkspace.app,
+// so this row says so and links there. Workbenches paired through a token stay this app's, so they
+// are listed here with Unpair. Tokens are signed-in only, so a guest gets the reason and a way to
+// sign in.
 export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
-  const { authLoaded, clerkUserId, isSignedIn } = useClerkApiBootstrap();
-  const enabled = Boolean(isSignedIn && clerkUserId);
-  const tokens = useTokens(clerkUserId ?? null, { enabled });
-  const pairings = useWorkbenchPairings(clerkUserId ?? null, { enabled });
-  const [composing, setComposing] = useState(false);
-  const [secret, setSecret] = useState<string | null>(null);
-  // First run: with no tokens and nothing just minted, the composer is the
-  // category, one field and one button, rather than an empty list plus two
-  // routes to the same form.
-  const firstRun = tokens.list !== null && tokens.list.length === 0 && secret === null;
+  const { authLoaded, accountUserId, isSignedIn } = useAccountBootstrap();
+  const enabled = Boolean(isSignedIn && accountUserId);
+  const pairings = useWorkbenchPairings(accountUserId ?? null, { enabled });
+  const now = useRelativeNow();
 
   return (
     <SettingsRowShell
@@ -44,7 +37,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
               : 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700'
           }`}
         >
-          {TokensGlyph}
+          <SettingsSharedGlyph id="tokens" />
         </span>
       }
       descriptionContent={
@@ -57,38 +50,26 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
       }
     >
       {!authLoaded || !enabled ? null : (
-        <div className="flex flex-col gap-4">
-          <SettingsTokenOverview
-            count={tokens.list === null ? null : tokens.count}
-            max={tokens.max}
-            composing={composing || secret !== null}
-            onNew={() => setComposing(true)}
+        <div className="flex flex-col gap-3">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Your API tokens belong to your liveworkspace account, so one token works in every
+            liveworkspace app. Make, see and revoke them on liveworkspace.app.
+          </p>
+          <a
+            href={manageTokensUrl}
+            className={buttonClassName({ size: 'sm', className: 'w-fit shadow-sm' })}
+          >
+            <ButtonContent>Manage API Tokens</ButtonContent>
+          </a>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Connecting Claude or another AI tool? It creates its own token when you approve it.{' '}
+            <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
+          </p>
+          <SettingsTokenPairings
+            pairings={pairings.list}
+            now={now}
+            onUnpair={(id) => void pairings.unpair(id)}
           />
-          {secret !== null ? (
-            <SettingsTokenReveal secret={secret} onDone={() => setSecret(null)} />
-          ) : composing || firstRun ? (
-            <SettingsTokenCreate
-              tokens={tokens}
-              onCancel={firstRun ? undefined : () => setComposing(false)}
-              onCreated={(minted) => {
-                setComposing(false);
-                setSecret(minted);
-              }}
-            />
-          ) : null}
-          {firstRun ? (
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Connecting Claude or another AI tool? It creates its own token when you approve it.{' '}
-              <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
-            </p>
-          ) : (
-            <SettingsTokenList
-              tokens={tokens.list}
-              onRevoke={(id) => void tokens.revoke(id)}
-              pairingsFor={pairings.forToken}
-              onUnpair={(id) => void pairings.unpair(id)}
-            />
-          )}
         </div>
       )}
     </SettingsRowShell>
