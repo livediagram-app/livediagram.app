@@ -31,6 +31,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
+import { openSetup } from '@/lib/setup-dialog-store';
 import { usePlanTabKind } from '@/hooks/plan/plan-cover-store';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
@@ -54,11 +55,10 @@ export function PlanBoardSettings({
   onClose,
 }: {
   element: ShapeElement;
-  // Closes the menu or popover holding the section (Setup Board takes over the board itself).
+  // Closes the menu or popover holding the section (Setup Board opens its dialog over the board).
   onClose?: (() => void) | undefined;
 }) {
   const board = useBoard(element);
-  const plan = usePlan();
   const [title, setTitle] = useState(board?.setup.title ?? '');
   if (!board) return null;
   const { setup, set } = board;
@@ -90,7 +90,8 @@ export function PlanBoardSettings({
             className="mt-2 w-full"
             onClick={() => {
               onClose?.();
-              plan?.openBoardSetup(element.id);
+              // Setup Board's dialog over the board, for this person only (lib/setup-dialog-store.ts).
+              openSetup(element.id, { again: true });
             }}
           >
             <PlanIcon size={14} />

@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
-// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): a placed sheet awaiting setup shows the card in place
-// of its grid; a start and a look are written as one change; Start Blank and Import CSV end setup; cards found by
+// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): the dialog a placed sheet awaiting setup opens; a start and a look are written as one change; Start Blank and Import CSV end setup; cards found by
 // the Cards panel's search become rows.
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
@@ -14,6 +13,8 @@ import {
   type SheetHarness,
 } from './sheet-ui-test-utils';
 import { importType, SheetSetup } from './SheetSetup';
+import { markPlacedHere, resetSetupDialogs } from '@/lib/setup-dialog-store';
+import { SetupSheetHost, SHEET_SET_UP_ELSEWHERE } from './SetupSheetHost';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { rememberSetupStart } from '@/lib/sheet-seeds';
@@ -37,8 +38,14 @@ const card = (key: number, title: string, status = 'todo'): Item => ({
 });
 
 const importCsv = vi.fn();
+const onClose = vi.fn();
+const onFinish = vi.fn();
 function show(h: SheetHarness) {
-  return renderSheet(h, () => <SheetSetup onImportCsv={importCsv} />, {});
+  return renderSheet(
+    h,
+    () => <SheetSetup onImportCsv={importCsv} onClose={onClose} onFinish={onFinish} />,
+    {},
+  );
 }
 const btn = (name: string | RegExp) => screen.getByRole('button', { name });
 const radio = (name: string | RegExp) => screen.getByRole('radio', { name });
@@ -48,6 +55,7 @@ describe('Setup Sheet', () => {
   let h: SheetHarness;
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetSetupDialogs();
     plan = undefined;
     h = await makeSheet({ cells: {}, cols: 26 });
     act(() => {
@@ -61,7 +69,7 @@ describe('Setup Sheet', () => {
 
   it('fills a start in a look, as one change, and ends setup', async () => {
     show(h);
-    expect(screen.getByRole('heading', { name: 'Setup Sheet' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
     // Without cards, Plan Cards is not offered.
     expect(screen.queryByRole('radio', { name: /Plan Cards/ })).toBeNull();
     // The templates sit under their headings.
@@ -123,6 +131,7 @@ describe('Setup Sheet', () => {
     await h.store.settle();
     expect(sheet(h).layout.setupPending).toBeUndefined();
     expect(track).toHaveBeenLastCalledWith('Sheet', 'Created', 'Blank');
+    expect(onFinish).toHaveBeenCalledOnce();
     act(() => {
       h.store.write(
         SHEET_ID,
@@ -279,5 +288,87 @@ describe('Setup Sheet', () => {
       'State',
       'Assignee',
     ]);
+  });
+
+  it('keeps its step and picks for when it opens again, and Not now closes it', async () => {
+    const view = show(h);
+    fireEvent.click(radio(/^Tracker/));
+    fireEvent.click(btn('Next: Style'));
+    fireEvent.click(radio(/^Roomy/));
+    fireEvent.click(btn('Not now'));
+    expect(onClose).toHaveBeenCalledOnce();
+    view.unmount();
+    show(h);
+    expect(radio(/^Roomy/).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(btn('Back'));
+    expect(radio(/^Tracker/).getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('Setup Sheet as a dialog', () => {
+  let h: SheetHarness;
+  const host = () => (
+    <SetupSheetHost
+      unset={sheet(h).layout.setupPending === true && sheet(h).cells.size === 0}
+      canEdit
+      notify={h.notify}
+      onImportCsv={importCsv}
+    />
+  );
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    resetSetupDialogs();
+    plan = undefined;
+    h = await makeSheet({ cells: {}, cols: 26 });
+    act(() => {
+      h.store.write(
+        SHEET_ID,
+        { kind: 'layout', changes: [{ k: 'options', setupPending: true }] },
+        { undoable: false },
+      );
+    });
+  });
+
+  it('opens at once for whoever placed the sheet, with focus inside, and Escape leaves the placeholder', async () => {
+    markPlacedHere(SHEET_ID);
+    renderSheet(h, host, {});
+    const dialog = await screen.findByRole('dialog', { name: 'Set up your sheet' });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByText('Not set up yet')).toBeTruthy();
+    expect(sheet(h).layout.setupPending).toBe(true);
+    fireEvent.click(btn('Set up sheet'));
+    expect(await screen.findByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
+  });
+
+  it('writes the setup on Create Sheet and closes, with no news to its author', async () => {
+    markPlacedHere(SHEET_ID);
+    renderSheet(h, host, {});
+    await screen.findByRole('dialog');
+    fireEvent.click(radio(/^Tracker/));
+    fireEvent.click(btn('Next: Style'));
+    fireEvent.click(btn(/Create Sheet/));
+    await h.store.settle();
+    expect(h.cell('A1')).toMatchObject({ input: { s: 'Project Tracker' } });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(h.notify).not.toHaveBeenCalledWith(SHEET_SET_UP_ELSEWHERE);
+  });
+
+  it('closes with a toast when cells arrive from someone else while it is open', async () => {
+    markPlacedHere(SHEET_ID);
+    renderSheet(h, host, {});
+    await screen.findByRole('dialog');
+    // Someone else's write (not undoable here, as a peer's arrives).
+    const { rows, cols } = sheet(h).layout;
+    act(() => {
+      h.store.write(
+        SHEET_ID,
+        { kind: 'cells', cells: [{ r: rows[1]!, c: cols[1]!, i: { s: 'From a peer' } }] },
+        { undoable: false },
+      );
+    });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(h.notify).toHaveBeenCalledWith(SHEET_SET_UP_ELSEWHERE);
   });
 });

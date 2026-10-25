@@ -2,10 +2,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES } from '@liveplanner/items';
+import { resetSetupDialogs } from '@/lib/setup-dialog-store';
 import { PlanSetupBoard } from './PlanSetupBoard';
-import { planPalette } from './plan-palette';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  resetSetupDialogs();
+});
 
 // docs/specs/026-plan/plan-board.md "Setup Board".
 const NAMES = new Map([
@@ -13,13 +16,13 @@ const NAMES = new Map([
   ['done', 'Done'],
 ]);
 const LAYOUT = { swimlaneBy: 'none' as const, fillTab: false };
-const draw = (canEdit = true) => {
+const draw = () => {
   const onSetUp = vi.fn();
   render(
     <PlanSetupBoard
+      boardId="b"
+      onClose={vi.fn()}
       layout={LAYOUT}
-      palette={planPalette('light', {})}
-      canEdit={canEdit}
       types={ITEM_TYPES}
       statusNames={NAMES}
       onSetUp={onSetUp}
@@ -37,7 +40,7 @@ const toColumns = () => {
 describe('Setup Board', () => {
   it('asks for card types first, none on, and needs one to go on', () => {
     draw();
-    expect(screen.getByRole('heading', { name: 'Setup Board' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
     expect(screen.queryAllByRole('checkbox', { checked: true })).toHaveLength(0);
     expect(screen.getByText('Pick at least one card type.')).toBeTruthy();
     const next = screen.getByRole('button', { name: 'Next: Columns' }) as HTMLButtonElement;
@@ -101,17 +104,11 @@ describe('Setup Board', () => {
     ]);
   });
 
-  it('tells a viewer the board is not set up yet, with no steps', () => {
-    draw(false);
-    expect(screen.getByText(/This board is not set up yet/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Next: Columns' })).toBeNull();
-  });
-
   it('offers Add New Card Type, and a type made there arrives ticked', () => {
     const onCreateType = vi.fn();
     const props = {
-      palette: planPalette('light', {}),
-      canEdit: true,
+      boardId: 'b',
+      onClose: vi.fn(),
       statusNames: NAMES,
       onSetUp: vi.fn(),
       onCreateType,
@@ -134,8 +131,8 @@ describe('Setup Board', () => {
     const onCancel = vi.fn();
     render(
       <PlanSetupBoard
-        palette={planPalette('light', {})}
-        canEdit
+        boardId="b"
+        onClose={onCancel}
         types={ITEM_TYPES}
         statusNames={NAMES}
         onSetUp={onSetUp}
@@ -144,7 +141,6 @@ describe('Setup Board', () => {
           columns: [{ kind: 'existing', status: 'todo', name: 'To Do' }],
           typeIds: ['task'],
         }}
-        onCancel={onCancel}
       />,
     );
     expect(screen.getByText(`1 of ${ITEM_TYPES.length} card types`)).toBeTruthy();
@@ -173,8 +169,8 @@ describe('Setup Board', () => {
   it('lays the board out in a third step, which can be skipped', () => {
     const onSetUp = vi.fn();
     const props = {
-      palette: planPalette('light', {}),
-      canEdit: true,
+      boardId: 'b',
+      onClose: vi.fn(),
       types: ITEM_TYPES,
       statusNames: NAMES,
       onSetUp,
@@ -230,5 +226,52 @@ describe('Setup Board', () => {
     expect(screen.queryByRole('button', { name: /Layout, done/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Card Types, done: go back' }));
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Card Types');
+  });
+});
+
+describe('Setup Board as a dialog', () => {
+  it('presses the step’s primary action on Enter, but not from a field', () => {
+    const onSetUp = draw();
+    const dialog = screen.getByRole('dialog');
+    // Nothing picked yet: Enter does nothing.
+    fireEvent.keyDown(dialog, { key: 'Enter' });
+    expect(screen.getByText('Step 1 of 3')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
+    fireEvent.keyDown(dialog, { key: 'Enter' });
+    expect(screen.getByText('Step 2 of 3')).toBeTruthy();
+    // The new state field's Enter adds a column, never moves on.
+    const field = screen.getByLabelText('Add a New State');
+    fireEvent.change(field, { target: { value: 'Waiting' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(screen.getByText('Step 2 of 3')).toBeTruthy();
+    fireEvent.keyDown(dialog, { key: 'Enter' });
+    fireEvent.keyDown(dialog, { key: 'Enter' });
+    expect(onSetUp).toHaveBeenCalledWith(
+      [{ kind: 'new', name: 'Waiting' }],
+      expect.any(Array),
+      LAYOUT,
+    );
+  });
+
+  it('opens again on the step and picks it was closed on', () => {
+    const { unmount } = render(
+      <PlanSetupBoard
+        boardId="b"
+        onClose={vi.fn()}
+        layout={LAYOUT}
+        types={ITEM_TYPES}
+        statusNames={NAMES}
+        onSetUp={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('checkbox', { name: /Task/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add To Do' }));
+    unmount();
+    draw();
+    expect(screen.getByText('Step 2 of 3')).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Columns' }).textContent).toContain('To Do');
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByText(`1 of ${ITEM_TYPES.length} card types`)).toBeTruthy();
   });
 });

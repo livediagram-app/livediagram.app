@@ -147,8 +147,6 @@ export function usePlanSlice(opts: {
     },
     [setTypeForBoard],
   );
-  // The board showing Setup Board again (docs/specs/026-plan/plan-board.md "Setup Board"), for this person only.
-  const [setupBoardId, openBoardSetup] = useState<string | null>(null);
   const createTypeForBoard = useCallback(
     (boardId: string, statuses: readonly string[]) => {
       setEditingType('new');
@@ -504,8 +502,6 @@ export function usePlanSlice(opts: {
       editType,
       createTypeForBoard,
       createTypeForView,
-      setupBoardId,
-      openBoardSetup,
       ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
       ...(opts.linkedActions ? { linkedActions: opts.linkedActions } : {}),
       status: planItems.status,
@@ -552,7 +548,6 @@ export function usePlanSlice(opts: {
       editType,
       createTypeForBoard,
       createTypeForView,
-      setupBoardId,
       planItems.status,
       planItems.self,
       planItems.refetch,

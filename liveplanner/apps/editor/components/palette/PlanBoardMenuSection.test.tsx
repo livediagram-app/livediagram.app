@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@liveplanner/project';
@@ -200,16 +200,17 @@ describe('the board menu’s sections', () => {
 
 // docs/specs/026-plan/plan-board.md "Setup Board": run again from a board's Board Setup.
 describe('Setup Board under the title', () => {
-  it('reopens the setup screen on the board and closes what holds it', async () => {
+  it('reopens the setup dialog for the board and closes what holds it', async () => {
     const { PlanBoardSettings } = await import('./PlanBoardMenuSection');
+    const store = await import('@/lib/setup-dialog-store');
+    store.resetSetupDialogs();
     for (const key of Object.keys(plan)) delete plan[key];
-    const openBoardSetup = vi.fn();
-    Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), openBoardSetup });
+    Object.assign(plan, { canEdit: true, updateBoard: vi.fn() });
     const onClose = vi.fn();
     render(<PlanBoardSettings element={board} onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Setup Board' }));
     expect(onClose).toHaveBeenCalled();
-    expect(openBoardSetup).toHaveBeenCalledWith('board');
+    expect(renderHook(() => store.useSetupOpen('board')).result.current).toBe('again');
   });
 });
 

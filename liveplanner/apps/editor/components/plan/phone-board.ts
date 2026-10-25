@@ -38,9 +38,6 @@ type BoardLook = {
 // What a phone's bottom controls cover of a covering board (the undo, dock and Plan strip rows, measured 2026-10-11
 // at 390 px: 134 px from the canvas's foot), with the home indicator's safe area.
 export const PHONE_END_CLEARANCE = 'pb-[calc(8.5rem+env(safe-area-inset-bottom))]';
-// A covering Sheet's: its controls are one row (undo, Style, Fit), 72 px from the canvas's foot (measured 2026-10-19 at
-// 390 px), so its Setup Sheet card ends a little above them and keeps its step room to scroll.
-export const PHONE_SHEET_END_CLEARANCE = 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]';
 
 const NO_QUICK: QuickFilter = {};
 

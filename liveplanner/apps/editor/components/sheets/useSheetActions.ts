@@ -375,7 +375,7 @@ export function useSheetActions() {
           newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(type), c.scroll, view),
         );
       },
-      // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), its charts taken with it (a
+      // Clear Sheet: the sheet back to how a placed one starts (awaiting setup, its placeholder showing), its charts taken with it (a
       // set-up-again sheet would otherwise show them twice), one change and one undo.
       clearSheet: () => {
         const charts = c.chartsRemoval?.() ?? null;

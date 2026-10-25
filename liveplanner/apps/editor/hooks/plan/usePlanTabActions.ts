@@ -41,6 +41,7 @@ import {
 import { tabNameFromPlan, viewsTitled } from '@/lib/tab-named-plan';
 import type { DashboardItem, DashboardZone } from './dashboard-drop';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
+import { markPlacedHere } from '@/lib/setup-dialog-store';
 
 const newId = () => crypto.randomUUID();
 
@@ -316,7 +317,13 @@ export function usePlanTabActions({
             ? (item.chart ?? null)
             : null;
       const made = item.kind === 'board' || item.kind === 'sheet' ? newSlotTab(item) : null;
-      if (made) tabHooks.current.bringCardTypes?.(made.elements);
+      if (made) {
+        tabHooks.current.bringCardTypes?.(made.elements);
+        // A new board not set up yet opens Setup Board's dialog for this person (lib/setup-dialog-store.ts).
+        for (const el of made.elements)
+          if (el.type === 'shape' && el.shape === 'plan-board' && !el.planBoard?.columns.length)
+            markPlacedHere(el.id);
+      }
       commitTabs((ts) => {
         const tab = ts.find((t) => t.id === activeId);
         if (!tab) return ts;

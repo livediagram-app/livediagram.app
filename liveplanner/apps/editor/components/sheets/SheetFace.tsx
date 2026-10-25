@@ -36,7 +36,7 @@ export function SheetFace({
       </div>
       {loading ? (
         <div role="status" aria-live="polite" className="flex min-h-0 flex-1 overflow-hidden">
-          {/* As the setup cards: shrinks with the Sheet, but stops growing when zoomed in (ScaleCapped). */}
+          {/* Shrinks with the Sheet, but stops growing when zoomed in (ScaleCapped). */}
           <ScaleCapped className="flex w-full flex-col items-center justify-center gap-3 px-6">
             <SheetBuildAnimation className="max-w-[240px]" />
             <span className="text-[13px] font-semibold" style={{ color: palette.text }}>

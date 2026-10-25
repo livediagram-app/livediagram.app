@@ -44,12 +44,9 @@ export type PlanContextValue = {
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
   // A Gantt chart's Add New Card Type: a new type with Start and Due, added to the chart's types if it names some.
   createTypeForView: (viewId: string) => void;
-  // Setup Board on a board that has columns (its Board Setup's Setup Board): the board showing it, or null.
-  setupBoardId: string | null;
   // New Form on a board's cog (docs/specs/030-forms/forms.md "Starting a form"): a Blank form whose responses go to
   // this board, on a new Form tab, opened. Absent where no form may be made.
   newFormFor?: (boardElementId: string) => void;
-  openBoardSetup: (boardId: string | null) => void;
   // The Actions board's links (docs/specs/026-plan/linked-boards.md "On the board"): where a linked card's action is,
   // and the way to it. Absent outside the editor.
   linkedActions?: {

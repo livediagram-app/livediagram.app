@@ -2,9 +2,11 @@
 
 // A board, visualisation or Sheet this person just added (placed from the palette, dropped, drawn to size) is glided
 // into view, as its header's Focus does (docs/specs/026-plan/plan-board.md "Focus"). Their own add is the one it
-// selects; a peer's add, an undo, a tab switch or the first load are not focused.
+// selects; a peer's add, an undo, a tab switch or the first load are not focused. A board so added with no columns
+// yet is marked as placed here, so Setup Board's dialog opens for this person (lib/setup-dialog-store.ts).
 import { useEffect, useRef } from 'react';
 import { isBoxed, type Element } from '@liveplanner/project';
+import { markPlacedHere } from '@/lib/setup-dialog-store';
 
 const FOCUSED_KINDS: ReadonlySet<string> = new Set(['plan-board', 'plan-view', 'plan-sheet']);
 
@@ -29,6 +31,9 @@ export function useFocusNewPlanElement(opts: {
     const added = elements.find(
       (el) => !prev.ids.has(el.id) && el.id === sel && isBoxed(el) && isFocusedOnAdd(el),
     );
-    if (added && isBoxed(added)) focus({ x: added.x, y: added.y, w: added.width, h: added.height });
+    if (!added || !isBoxed(added)) return;
+    if (added.type === 'shape' && added.shape === 'plan-board' && !added.planBoard?.columns.length)
+      markPlacedHere(added.id);
+    focus({ x: added.x, y: added.y, w: added.width, h: added.height });
   }, [tabId, elements, selectedId, focus]);
 }

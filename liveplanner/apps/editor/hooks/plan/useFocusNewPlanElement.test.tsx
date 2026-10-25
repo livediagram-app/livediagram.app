@@ -2,6 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@liveplanner/project';
+import { resetSetupDialogs, usePlacedHere } from '@/lib/setup-dialog-store';
 import { useFocusNewPlanElement } from './useFocusNewPlanElement';
 
 const board = { ...createShape('plan-board', 10, 20), id: 'b1' } as Element;
@@ -38,5 +39,16 @@ describe('focusing a newly added board, visualisation or Sheet', () => {
     const other = setup('q9');
     other.view.rerender({ tabId: 't1', elements: [square, { ...square, id: 'q9' }] });
     expect(other.focus).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/026-plan/plan-board.md "Setup Board": Setup Board's dialog opens for whoever placed a board.
+  it('marks a board this person added with no columns as placed here, and no other', () => {
+    resetSetupDialogs();
+    const { view } = setup('b1');
+    const placed = renderHook(() => [usePlacedHere('b1'), usePlacedHere('s1')]);
+    expect(placed.result.current).toEqual([false, false]);
+    view.rerender({ tabId: 't1', elements: [square, board, sheet] });
+    placed.rerender();
+    expect(placed.result.current).toEqual([true, false]);
   });
 });

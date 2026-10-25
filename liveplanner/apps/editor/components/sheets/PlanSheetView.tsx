@@ -6,7 +6,7 @@
 // Maximises as a board does: one stable tree inside MaximisableSlot, so nothing is lost either way. Loaded as its
 // own chunk, with the engine, only when a Sheet is drawn.
 import { useCardTableSync, type CardTablePush } from './useCardTableSync';
-import { SheetSetup } from './SheetSetup';
+import { SetupSheetHost } from './SetupSheetHost';
 import { usePublishSheetSettings } from './sheet-settings-registry';
 import { placeSheetChart, sheetChartsRemoval } from './sheet-charts';
 import { OPEN_TAB_TO_CHART, useSheetCharts } from './sheet-charts-context';
@@ -18,8 +18,6 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planBandTint, planOwnColours, planPalette } from '@/components/plan/plan-palette';
 import { MaximisableSlot } from '@/components/plan/MaximisedPlanLayer';
-import { PHONE_SHEET_END_CLEARANCE } from '@/components/plan/phone-board';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { SheetCellThreadsProvider } from '@/hooks/sheets/sheet-comments-context';
@@ -309,10 +307,10 @@ function SheetParts({
     return () => clearPointingTarget(c.sheet.id);
   }, [writingFormula, c.sheet.id, c.sheet.tabId, latestPoint, latestCaret]);
   const onImportCsv = () => file.current?.click();
-  // Setup Sheet (sheet.md "Setup Sheet"): a placed sheet awaiting setup shows it while it has no cells; cells
-  // arriving any other way (a peer, an agent, an import) end setup, so a sheet cleared later never shows it again.
+  // Setup Sheet (sheet.md "Setup Sheet"): a placed sheet awaiting setup shows its placeholder (and, for this person,
+  // the dialog) while it has no cells; cells arriving any other way (a peer, an agent, an import) end setup, so a
+  // sheet cleared later never shows it again.
   const pending = c.sheet.layout.setupPending === true;
-  const phone = useIsMobileViewport();
   const settingUp = pending && c.sheet.cells.size === 0 && canEdit && interactive;
   // The header holds the top row (menu-name-slot): the toolbar joins it rather than sitting under it.
   const [bandMarker, inBand] = useInHeaderBand();
@@ -361,13 +359,15 @@ function SheetParts({
         // Maximised or filling its tab, with the top row in its header: the toolbar rides there, in a card.
         toolbar={toolbarInBand ? <SheetToolbar actions={actions} inBand /> : undefined}
       />
-      {settingUp ? (
-        // Covering the canvas on a phone, the card ends clear of the bottom controls as a board's cards do
-        // (phone-board.ts), so its footer's Next is never under them.
-        <div className={`min-h-0 flex-1 ${phone && c.maximised ? PHONE_SHEET_END_CLEARANCE : ''}`}>
-          <SheetSetup onImportCsv={onImportCsv} />
-        </div>
-      ) : (
+      {canEdit && interactive ? (
+        <SetupSheetHost
+          unset={settingUp}
+          canEdit
+          notify={bridge.notify}
+          onImportCsv={onImportCsv}
+        />
+      ) : null}
+      {settingUp ? null : (
         <>
           {/* Merge, sort, filter, freeze and charts reshape the Sheet: an Editor's, never a Participant's. */}
           {c.canShape && !toolbarInBand ? <SheetToolbar actions={actions} /> : null}

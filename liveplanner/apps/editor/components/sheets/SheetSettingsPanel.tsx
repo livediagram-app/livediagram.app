@@ -52,6 +52,7 @@ import { renameSheet } from './sheet-rename';
 import { SheetArt } from './sheet-art';
 import { STATS, toggleStatusPick, useStatusPick } from './sheet-status-pick';
 import type { SheetActions } from './useSheetActions';
+import { markPlacedHere } from '@/lib/setup-dialog-store';
 
 const DataGlyph = lucideGlyph(lucideTable, 14);
 const ViewGlyph = lucideGlyph(lucideEye, 14);
@@ -155,7 +156,8 @@ export function SheetSettingsPanel({
                     }}
                   />
                 ) : null}
-                {/* An empty sheet can be set up again (sheet.md "Setup Sheet"): its card takes the grid's place. */}
+                {/* An empty sheet can be set up again (sheet.md "Setup Sheet"): it awaits setup again, and the dialog
+                    opens for this person once it does (marked as placed here, lib/setup-dialog-store.ts). */}
                 {c.canShape && c.sheet.cells.size === 0 ? (
                   <SettingsActionTile
                     icon={<SheetArt size={18} />}
@@ -167,6 +169,7 @@ export function SheetSettingsPanel({
                         { kind: 'layout', changes: [{ k: 'options', setupPending: true }] },
                         { undoable: false },
                       );
+                      markPlacedHere(c.sheet.id);
                     }}
                   />
                 ) : null}
@@ -190,7 +193,7 @@ export function SheetSettingsPanel({
             {confirmClear ? (
               <ConfirmPopover
                 anchor={confirmClear}
-                message={`Start ${c.sheet.title} over? Every cell, chart, format and setting goes, and Setup Sheet shows again. You can undo this.`}
+                message={`Start ${c.sheet.title} over? Every cell, chart, format and setting goes, and it waits to be set up again. You can undo this.`}
                 confirmLabel="Clear"
                 onConfirm={() => {
                   setConfirmClear(null);
