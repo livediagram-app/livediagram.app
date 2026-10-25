@@ -170,13 +170,6 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     desktopOnly: true,
   },
-
-  {
-    id: 'isometric',
-    name: 'Isometric View',
-    keywords: 'isometric 3d tilt perspective depth angle i',
-    needsContent: true,
-  },
 ];
 
 // The tool switches, minus whichever tool is already in force. Grouped with

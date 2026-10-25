@@ -31,7 +31,6 @@ export const HELP_ARTICLES = {
   // articles.
   embedElements: 'tabs/using-tabs',
   panelOpacity: 'user-interface/settings',
-  isometricMode: 'tabs/export-tabs',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -152,10 +151,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
-  },
-  isometricMode: {
-    title: 'Learn about the isometric view',
-    description: 'How the isometric projection works and when to use it.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

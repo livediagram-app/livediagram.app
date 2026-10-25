@@ -42,6 +42,17 @@ export function isTurbopack(env = process.env) {
  * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date }} [options]
  * @returns {import('next').NextConfig}
  */
+// The hosts the routers forward as in local dev (each product's wrangler.toml routes), and their subdomains.
+export const DEV_ORIGINS = [
+  'livediagram.app',
+  'liveplanner.app',
+  'livedocuments.app',
+  'livedesign.app',
+  'liveworkspace.app',
+]
+  .flatMap((host) => [host, `*.${host}`])
+  .concat(['localhost', '127.0.0.1']);
+
 export function liveworkspaceNextConfig({
   env = process.env,
   exportInDev = true,
@@ -61,6 +72,11 @@ export function liveworkspaceNextConfig({
     distDir: env.NEXT_DISTDIR ?? '.next',
     typescript: typescriptConfig(env),
     images: { unoptimized: true },
+    // Locally each product's router (wrangler dev, on the first port of its block) proxies the editor and forwards
+    // the request as its production host, so `next dev` sees the hot-reload socket come from liveplanner.app and,
+    // since Next 16, refuses it as cross-origin. The editor then never starts (a page stuck on "Creating your plan").
+    // Dev only: production builds ignore it.
+    allowedDevOrigins: DEV_ORIGINS,
     // The footer's year, inlined at build so the prerender and the browser render the same text.
     env: { NEXT_PUBLIC_BUILD_YEAR: String(now.getFullYear()) },
     // The repository's agent files are written by hand: `next dev` must not generate an AGENTS.md.

@@ -47,7 +47,8 @@ Nothing anyone made is lost, and every design opens as before.
 - A design's export (`designToEnvelopeText`) no longer carries a deck, and importing an older export that has one
   reads it without the deck (`packages/design/src/design-envelope.test.ts`). The same holds for the design's Google
   Drive file: the export door never serves the kept deck, and the import door makes the copy without one
-  (`apps/api/src/routes/internal-file.test.ts`).
+  (`apps/api/src/routes/internal-file.test.ts`). The one-time move from livediagram.app's old documents writes no
+  deck into a livedesign design either (`apps/api/src/design-room/design-migration.test.ts`).
 - An Offline Mode record written before the removal may still hold its deck; nothing reads it, and taking a design
   offline or saving one to the cloud no longer carries one (`apps/live/lib/offline/offline-convert.test.ts`).
 - The presenter settings stored in a person's preferences (one `presentation` object) are no longer read and are

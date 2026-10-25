@@ -11,9 +11,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // The guest handoff's way back, /auth/guest (docs/specs/014-identity/auth-and-guest-access.md).
   'auth',
   'document',
-  // The Google Drive mirror's /drive/connected and /drive/open
-  // (docs/specs/022-drive-mirror/drive-mirror.md).
-  'drive',
   'embed',
   'explorer',
   // A retired form link's page, /form/<code>: old links still arrive, their code is never recorded.

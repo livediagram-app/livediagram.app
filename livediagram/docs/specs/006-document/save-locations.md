@@ -117,13 +117,13 @@ SaveLocationId`.
 
 ## Google Drive is a mirror, not a location
 
-A signed-in user can mirror the documents in My Work to their own Google
+A signed-in person can keep a copy of their own work, from every liveworkspace app, in their own Google
 Drive. The document still lives in livediagram (the default location): Drive
-holds a copy that is kept in sync both ways while a tab is open, and a Drive
+holds a copy that liveworkspace keeps in sync, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
-**livediagram** is mirrored like any other. Canvases in This Browser have no
-server copy and are not mirrored. The mirror itself (connection, folder tree,
-rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
+**livediagram** is synced like any other. Canvases in This Browser have no
+server copy and are not synced. The sync itself (connection, folder tree,
+rename, move, delete to Trash, "Open with") is liveworkspace's, specified in [Google Drive sync](../../../../liveworkspace/docs/drive.md), not
 here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))

@@ -8,7 +8,6 @@ import { StaleBuildBoot } from '@liveworkspace/workbench/components/providers/St
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
-import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livediagram/ui/seo';
@@ -19,7 +18,6 @@ import {
   DARK_READER_LOCK,
   RANDOM_UUID_BOOT_SCRIPT,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@livediagram/ui';
 import {
@@ -40,14 +38,8 @@ import './globals.css';
 // `noindex, nofollow` at the root layout cascades through every
 // nested page in the static export. See docs/specs/007-editor/editor-app.md "SEO and indexing".
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and Google's script origins where this build
-// offers the Drive mirror (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '/live',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'livediagram';
 const DESCRIPTION = 'Diagrams, whiteboards and workshops. Multiplayer canvas.';
@@ -176,11 +168,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <KeyboardAvoidanceBoot />
         <AuthProvider>
           <ToastProvider>
-            <ConfirmProvider>
-              {/* The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): runs in one
-                  tab per browser, signed in, on a deployment that offers it. */}
-              <DriveMirrorProvider>{children}</DriveMirrorProvider>
-            </ConfirmProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
           </ToastProvider>
         </AuthProvider>
       </body>

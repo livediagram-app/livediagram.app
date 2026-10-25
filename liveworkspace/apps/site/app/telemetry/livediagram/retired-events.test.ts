@@ -90,6 +90,14 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Community', 'Selected', 'Tag')).toBe(false);
   });
 
+  it("retires livediagram's own Google Drive mirror, every Drive event", () => {
+    for (const action of ['Linked', 'Unlinked', 'Changed', 'Created', 'Applied', 'Opened'])
+      expect(isRetiredEvent('Drive', action, null)).toBe(true);
+    expect(isRetiredEvent('Drive', 'Applied', 'Rename')).toBe(true);
+    // Agent changesets share the Applied action, and carry on.
+    expect(isRetiredEvent('Agent', 'Applied', 'Mcp')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

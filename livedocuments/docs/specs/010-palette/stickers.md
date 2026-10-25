@@ -58,7 +58,7 @@ Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
 mistaken for an icon fold), `supportsColours` false, membership in
 `SELF_PAINTING_SHAPES` (no wrapper border) and in `isSelfDrawingShape` (no
 label editor, no markers, no text alignment, no morph), and exclusion from
-`acceptsInlineIcon` and from the isometric extrusion.
+`acceptsInlineIcon`.
 
 **Animations all work.** Glow, Pulse, Trace and Gradient did nothing at all: a
 sticker counts as SVG-rendered, so the wrapper dropped its animation class on

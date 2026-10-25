@@ -70,6 +70,10 @@ export type Env = {
   // same value as the service's DRIVE_KEY_LIVEPLANNER: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
+  // The migrate tool's key on the migration door (docs/migration.md "The apps' migration door"): it opens
+  // PUT /api/internal/items/:id/migration and nothing else. A secret set only while the migration runs (wrangler
+  // secret put MIGRATION_KEY), removed after; unset, the door takes INDEX_KEY alone (the index's handoff).
+  MIGRATION_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

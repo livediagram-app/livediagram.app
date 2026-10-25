@@ -26,7 +26,7 @@ Canvases are saved through a single Cloudflare Worker API. The browser never tal
 livediagram runs on Cloudflare. Your canvas content goes to another company only when you use a feature that needs one:
 
 - **Reading sticky notes from a photo** sends small crops of the notes, never the whole photo, to the reading model the deployment uses (Google's Gemini on livediagram.app). On a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you import a photo.
-- **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your canvases in your own Drive, written straight from your browser.
+- **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your canvases in your own Drive, written by liveworkspace's Drive service (it holds your Google grant, sealed, and never hands it to your browser).
 - **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no livediagram server sees it.
 - **Emails** about your work go through the email provider. They name the canvas, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
 

@@ -42,14 +42,19 @@ describe('isRepairClearable', () => {
     }
   });
 
-  it('keeps identity, per-browser keys and Drive state', () => {
+  it('keeps identity and per-browser keys', () => {
+    for (const k of REPAIR_KEPT_KEYS) {
+      expect(isRepairClearable(k), k).toBe(false);
+    }
+  });
+
+  it('clears what the removed Google Drive mirror left behind (liveworkspace/docs/drive.md)', () => {
     for (const k of [
-      ...REPAIR_KEPT_KEYS,
       'livediagram:v2:drive-state',
       'livediagram:v2:drive-seen:user_a',
       'livediagram:drive-mirror',
     ]) {
-      expect(isRepairClearable(k), k).toBe(false);
+      expect(isRepairClearable(k), k).toBe(true);
     }
   });
 

@@ -97,13 +97,6 @@ export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="laser" size={size} />;
 }
 
-// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the canvas in
-// 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="isometric" size={size} />;
-}
-
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
 // The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.

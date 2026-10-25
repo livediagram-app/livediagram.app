@@ -30,6 +30,10 @@ export interface Env {
   INDEX_MERGE_KEY?: string;
   // The index Worker itself, so the merge reaches it rather than going out and back (wrangler.toml).
   INDEX?: Fetcher;
+  // The Google Drive mirror's service (liveworkspace/docs/drive.md), told when an account closes
+  // (drive-disconnect.ts): its Worker and the key it takes from accounts. Either unset, nothing is sent.
+  DRIVE?: Fetcher;
+  DRIVE_KEY_ACCOUNTS?: string;
 
   // The telemetry service (liveworkspace/docs/telemetry.md), told when an onboarding email goes
   // (src/telemetry.ts): its URL, reached through the TELEMETRY service binding when there is one, and

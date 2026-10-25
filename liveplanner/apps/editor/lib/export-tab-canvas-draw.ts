@@ -1,5 +1,5 @@
 // Canvas 2D element drawing for tab export (PNG/PDF rasteriser): boxed
-// shapes (incl. isometric extrusion + silhouette), drawn into a
+// shapes (incl. silhouette), drawn into a
 // CanvasRenderingContext2D. Arrows rasterise from svgArrow instead (export-tab.ts),
 // so their captions lay out exactly as the canvas lays them out.
 // Tab export helpers — one entry per format the user can pick from
@@ -13,9 +13,9 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import { type CanvasSurface, shade, type BoxedElement } from '@liveplanner/project';
+import { type CanvasSurface, type BoxedElement } from '@liveplanner/project';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the project package so the
-// MCP worker reuses the same element drawing. The canvas / isometric / backdrop
+// MCP worker reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
   describeBoxedExport,
@@ -29,11 +29,6 @@ import {
   type ExportRun,
   type ExportShape,
 } from '@liveplanner/project';
-import { isoDepthLayers, isoExtrudes, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
-
-// Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
-// the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
-// off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 
 function boxedSilhouettePath(
   ctx: CanvasRenderingContext2D,
@@ -60,42 +55,6 @@ function boxedSilhouettePath(
     // rect + image both use the rounded outline.
     roundedRect(ctx, x, y, el.width, el.height, 6);
   }
-}
-
-// Isometric extrusion (docs/specs/008-canvas/isometric-view.md): behind the element body, paint a stack of its
-// silhouette stepped along the projected depth axis (a voxel column). Each copy is the
-// element's accent dimmed toward the floor. The step is computed in element
-// space so that, once the iso matrix is applied to the context, every copy
-// lands at the right SCREEN depth offset (0, z·sin(elevation)); inverting that
-// projection gives the element-space offset z·tan(elevation)·(sinAz, cosAz).
-// `alpha` is an extra opacity FACTOR (per-layer opacity, docs/specs/006-project/layers.md)
-// multiplied over the element's own — same rule on all three drawers.
-export function drawBoxedExtrusion(
-  ctx: CanvasRenderingContext2D,
-  el: BoxedElement,
-  alpha = 1,
-  surface: CanvasSurface = 'light',
-): void {
-  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the SVG exporter so the two can't drift).
-  if (!isoExtrudes(el)) return;
-  const { shape, opacity } = describeBoxedExport(el, { surface });
-  if (shape.kind === 'none' || shape.kind === 'sticker') return; // no body to extrude
-  const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
-  const az = (ISO_TILT_DEG.z * Math.PI) / 180;
-  const k = Math.tan((ISO_TILT_DEG.x * Math.PI) / 180);
-  const ox = Math.sin(az);
-  const oy = Math.cos(az);
-  const layers = isoDepthLayers();
-  ctx.save();
-  ctx.globalAlpha = opacity * alpha;
-  // Deepest (floor) first so nearer, brighter copies paint over it.
-  for (let i = layers.length - 1; i >= 0; i--) {
-    const z = -layers[i]!; // positive depth (floor → just under the element)
-    ctx.fillStyle = shade(accent, 1 - isoLayerBrightness(i, layers.length));
-    boxedSilhouettePath(ctx, el, shape.kind, z * k * ox, z * k * oy);
-    ctx.fill();
-  }
-  ctx.restore();
 }
 
 // Draw a loaded bitmap into the element's rounded box, honouring objectFit

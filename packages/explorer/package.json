@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./this-browser": "./src/this-browser.ts",
+    "./inbox-actions": "./src/inbox-actions.ts",
     "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",
     "./offline-redirect": "./src/offline-redirect.tsx",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:^",
     "@liveworkspace/sites": "workspace:*",

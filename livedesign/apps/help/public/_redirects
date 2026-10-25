@@ -12,3 +12,7 @@
 /selection-modes/slide-deck /selection-modes/ 301
 /selection-modes/slide-deck/ /selection-modes/ 301
 /selection-modes/slide-deck/* /selection-modes/ 301
+# The isometric view left this product on 2026-10-25 (docs/specs/008-canvas/canvas-and-palette.md "Retired
+# features"); its article's old URL lands on the Selection Modes page. livediagram keeps the view.
+/selection-modes/isometric-mode /selection-modes/ 301
+/selection-modes/isometric-mode/ /selection-modes/ 301

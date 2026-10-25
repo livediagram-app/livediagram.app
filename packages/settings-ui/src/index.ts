@@ -78,6 +78,14 @@ export {
   type AccountSignInMethods,
 } from './profile/SecurityRows';
 export { foldIntoAccount } from './fold-account';
+export {
+  CLOUD_SYNC_PROVIDERS,
+  cloudSyncRows,
+  createCloudSyncHost,
+  useCloudSync,
+  type CloudSync,
+  type CloudSyncHost,
+} from './cloud-sync/cloud-sync-host';
 export { ownToggleSetter } from './own-toggle';
 export {
   catalogueModel,

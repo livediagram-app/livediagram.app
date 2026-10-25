@@ -15,6 +15,7 @@ import type {
   ShareMessage,
   SharedTabCopy,
 } from '@liveworkspace/index-app';
+import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { Env } from './types';
 
 export type DocumentRoomClient = {
@@ -39,6 +40,8 @@ export type DocumentRoomClient = {
   // `copiedBy`: who copies; anyone but the owner takes other people's comment authors redacted.
   exportCopy(onlyTabId: string | null, copiedBy: string | null): Promise<DocumentCopy | null>;
   importCopy(copy: DocumentCopy): Promise<void>;
+  // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
+  importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   // The document is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
@@ -73,6 +76,7 @@ export function documentRoom(
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copiedBy) => room.exportCopy(documentId, onlyTabId, copiedBy),
     importCopy: (copy) => room.importCopy(documentId, copy),
+    importMigrated: (payload) => room.importMigrated(documentId, payload),
     purge: () => room.purge(documentId),
     revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
     joined: (personId) => room.joined(documentId, personId),
@@ -98,6 +102,7 @@ export type DocumentRoomRpc = {
     copiedBy: string | null,
   ): Promise<DocumentCopy | null>;
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
+  importMigrated(documentId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   purge(documentId: string): Promise<void>;
   revokeCodes(
     documentId: string,

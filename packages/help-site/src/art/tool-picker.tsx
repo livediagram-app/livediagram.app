@@ -4,8 +4,8 @@ import { Card } from './parts';
 
 // The palette's tool picker, opened: its tiles in three bands, the current tool tinted and a tool's key in its
 // tile's corner. This is the picker of the editors whose pages are made in Pages mode (the Select article in their
-// help: Edit holds Select, Hand and Format; Present holds Laser, Spotlight and Slide Deck; Preview holds Isometric
-// and Zen). Each glyph is drawn about its centre in `currentColor`, so the tile tints it.
+// help: Edit holds Select, Hand and Format; Present holds Laser, Spotlight and Slide Deck; Preview holds Zen;
+// livediagram's own picker keeps Isometric). Each glyph is drawn about its centre in `currentColor`, so the tile tints it.
 
 const ICON = 'fill-none stroke-current';
 
@@ -52,14 +52,6 @@ const TOOL_GLYPHS: Record<string, ReactNode> = {
       <path d="M0 3.5 v3 M-3 6.5 h6" className={ICON} strokeWidth={1.3} strokeLinecap="round" />
     </g>
   ),
-  Isometric: (
-    <path
-      d="M0 -7 L6.5 -3.5 V3.5 L0 7 L-6.5 3.5 V-3.5 Z M-6.5 -3.5 L0 0 L6.5 -3.5 M0 0 V7"
-      className={ICON}
-      strokeWidth={1.4}
-      strokeLinejoin="round"
-    />
-  ),
   Zen: (
     <path d="M5.5 -3 A6.5 6.5 0 1 0 6.3 2" className={ICON} strokeWidth={2} strokeLinecap="round" />
   ),
@@ -76,10 +68,7 @@ const BANDS: { name: string; tools: { name: string; key?: string }[] }[] = [
   },
   {
     name: 'PREVIEW',
-    tools: [
-      { name: 'Isometric', key: 'I' },
-      { name: 'Zen', key: 'Z' },
-    ],
+    tools: [{ name: 'Zen', key: 'Z' }],
   },
 ];
 

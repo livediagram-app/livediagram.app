@@ -3,7 +3,6 @@
   "environments": {
     "production": {
       "APP_BASE_URL": "https://livediagram-router.liveworkspace-easing509.workers.dev",
-      "GOOGLE_CLIENT_ID": "",
       "TELEMETRY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry",
       "COMMUNITY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community",
       "MEDIA_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media",
@@ -11,7 +10,6 @@
     },
     "staging": {
       "APP_BASE_URL": "https://livediagram-router-staging.liveworkspace-easing509.workers.dev",
-      "GOOGLE_CLIENT_ID": "",
       "TELEMETRY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry",
       "COMMUNITY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community",
       "MEDIA_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/media",

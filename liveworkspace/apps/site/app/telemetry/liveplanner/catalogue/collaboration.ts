@@ -583,12 +583,42 @@ export const INBOX_RETRIES = chart(
   { types: ['Retry'], rising: 'bad' },
 );
 
+export const INBOX_FILTERS = chart(
+  'Activity',
+  'Changed',
+  'Inbox Filters Chosen',
+  "A filter chosen over the Explorer's Inbox: All, My Actions, Assigned by Me, Comments or Form Responses.",
+  { rising: 'neutral' },
+);
+
+export const INBOX_REPLIES = chart(
+  'Activity',
+  'Added',
+  'Inbox Replies',
+  "A reply to a comment thread sent from the Explorer's Inbox reading pane.",
+  { types: ['Reply'] },
+);
+
+export const INBOX_RESOLVED = chart(
+  'Activity',
+  'Resolved',
+  'Inbox Threads Resolved and Actions Done',
+  "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
+);
+
 export const INBOX: MetricStack = {
   stack: true,
   title: 'Inbox',
   blurb:
-    "What waits on people, read in the Explorer's Inbox: visits, the rows they follow, and failed reads retried.",
-  members: [INBOX_OPENED, INBOX_ROWS_OPENED, INBOX_RETRIES],
+    "What waits on people, read in the Explorer's Inbox: visits, the rows they follow, the filters they choose, replies and resolves from the pane, and failed reads retried.",
+  members: [
+    INBOX_OPENED,
+    INBOX_ROWS_OPENED,
+    INBOX_RETRIES,
+    INBOX_FILTERS,
+    INBOX_REPLIES,
+    INBOX_RESOLVED,
+  ],
   headline: INBOX_ROWS_OPENED,
 };
 

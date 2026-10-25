@@ -62,6 +62,8 @@ import { ExtrasProvider, type ViewModeTelemetry } from './extras';
 import type { ExplorerAccounts } from '../data/accounts';
 import type { TeamsHost } from '../data/teams';
 import { TeamsProvider, useTeams } from '../teams/context';
+import { DriveReconnectBanner, withDriveMarks } from '../drive/DriveMarks';
+import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -82,6 +84,10 @@ export type ExplorerProps = {
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
   renderItemMark?: RenderItemMark;
+  /** Google Drive's marks and reconnect banner (liveworkspace/docs/drive.md "The Explorer shows each item's sync"):
+   *  the Drive service over the host's origin, for a signed-in person. Without it, or for someone not connected,
+   *  nothing shows and only the config is read. */
+  drive?: ExplorerDriveHost | null;
   /** The filter's logos: the app's, and the platform's for All (RenderAppLogo). */
   renderAppLogo?: RenderAppLogo;
   /** The host's link component (Next.js `Link`); a plain `<a>` by default. */
@@ -277,7 +283,8 @@ function ExplorerInner({
   onCreate,
   newApps,
   renderThumbnail,
-  renderItemMark,
+  renderItemMark: hostItemMark,
+  drive,
   renderAppLogo,
   Link,
   onOpenItem,
@@ -332,6 +339,11 @@ function ExplorerInner({
     [onNavigate],
   );
   const openNav = useCallback(() => setNavOpen(true), []);
+  const driveMarks = useDriveMarks(drive);
+  const renderItemMark = useMemo(
+    () => withDriveMarks(hostItemMark, driveMarks),
+    [hostItemMark, driveMarks],
+  );
   const extras = useMemo(
     () => ({
       sidebarLinks: sidebarLinks ?? [],
@@ -422,6 +434,9 @@ function ExplorerInner({
               </main>
               {signInBanner && signedIn === false && signInHref ? (
                 <SignInBanner href={signInHref} host={signInBanner} />
+              ) : null}
+              {drive && driveMarks.needsReconnect ? (
+                <DriveReconnectBanner workspaceOrigin={drive.workspaceOrigin} />
               ) : null}
             </div>
           </WelcomeProvider>

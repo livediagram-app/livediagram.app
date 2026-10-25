@@ -45,7 +45,7 @@ function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
 }
 
 // A Board, Sheet or Dashboard tab's image: flat, no backdrop pattern, every element it draws.
-const PLAIN_IMAGE = { isometric: false, pattern: false, hiddenLayers: true } as const;
+const PLAIN_IMAGE = { pattern: false, hiddenLayers: true } as const;
 
 type ExportTabDialogProps = {
   tab: Tab;
@@ -151,8 +151,8 @@ const TEXT_PANELS: Record<
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
 // Markdown / CSV) open an editable view/copy panel; image formats
-// (PNG / SVG / PDF) open an options-and-download panel with the isometric +
-// background-pattern toggles. The main grid stays clean — no format-specific
+// (PNG / SVG / PDF) open an options-and-download panel with the
+// background-pattern toggle. The main grid stays clean — no format-specific
 // options bleed onto it.
 export function ExportTabDialog({
   tab,
@@ -237,7 +237,7 @@ export function ExportTabDialog({
   const plain = planImage.plain;
   const planExtras = planImage.opts;
   const renderPreview = useCallback(
-    (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
+    (opts: { pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(imageTab, {
         ...(plain ? PLAIN_IMAGE : opts),
         ...planOpts,
@@ -249,7 +249,7 @@ export function ExportTabDialog({
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
   const runImageExport = async (
     format: ImageFormat,
-    opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean },
+    opts: { pattern: boolean; hiddenLayers: boolean },
   ) => {
     if (busy) return;
     setBusy(true);

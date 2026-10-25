@@ -43,4 +43,3 @@ jobs:
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       COMMUNITY_KEY: ${{ secrets.COMMUNITY_KEY }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
-      NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}

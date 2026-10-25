@@ -491,17 +491,58 @@ since my last look, up to now (never one still to come), not removed, counted to
 `TIMELINE_NEW_CAP + 1` (100, shown as "99+"); 0 before my first look. One read is three indexed queries and the
 count: about 18 ms with 2,000 of my items among 22,000, each with a form, a thread and an action.
 
-The Explorer shows it in four sections, each hidden when empty: **Assigned to You** (actions and cards, a
-self-assignment only here), **Assigned by You**, **Form Responses** ("3 new responses to Bug Report", opening the
-board they land on) and **Open Comment Threads** (with **Mentioned you**, **On your plan** when the item is mine
-and I haven't commented, or **You replied**). Every row is one link, the same component on the page and in the
-panel at two densities: where it is, what needs me, the latest comment or note, why it is here as an icon and
-words, and who is behind it (the products' `013-workspace/inbox.md` "How a row reads"). It follows the header's filter: this app's rows, or every app's with each row's app
-mark. The sidebar's badge counts Assigned to You, 0 included once read. Coming back to the browser tab reads it
-again (at most every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees
-(liveplanner's plans in This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill. A
-row opens through the host's `itemHref` with an `ItemPlace`: the tab and element, `open: 'action' | 'comments'`
-for the popover, and `cardId` for a card.
+The Explorer shows it as a list and a reading pane (`packages/explorer/src/explorer/InboxPane.tsx`), the same
+component on the page and in every editor's panel:
+
+- **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
+  Each row is three lines: who is behind it (who assigned it, who it waits on, who wrote last; semibold when it asks
+  something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
+  the date); what it is (the action, the card's number and title, the element a thread is on, the form's heading);
+  and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
+  **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism (in the All filter) and
+  the item's name, and the teal **This Browser** pill for an item only this browser holds. The chosen row has a
+  brand edge on its left. Rows are an ARIA listbox: focus stays on the list while j/k or the arrows move the choice.
+- **The filter bar**, over the list: **All**, **My Actions** (assigned to me, a self-assignment included),
+  **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
+  **Form Responses**, each with its count. The choice is kept per viewer on this device
+  (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices, and sits beside
+  the header's app filter (this app or All), which still decides which rows are read. Each change is
+  `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`).
+- **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
+  the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
+  with their keys, the item's thumbnail where the host draws one (the host's `renderThumbnail`, the item read from
+  the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the
+  form's responses, and a reply field where Reply is offered.
+- **The verbs.** Open in the app (↵) is always there, through the host's `itemHref` with an `ItemPlace`: the tab and
+  element, `open: 'action' | 'comments'` for the popover, and `cardId` for a card (`Activity·Selected`, by row kind).
+  The rest come from the host's `InboxHost.actions` (`@liveworkspace/explorer/inbox-actions`), asked per row, so no
+  page shows a verb it can't carry out:
+  - **Reply** (r) and **Resolve** (e) on a thread, through the owning app's comment routes: an element's thread by
+    `POST /api/<items>/:id/tabs/:tabId/comments` and `…/comments/:firstCommentId/resolve` (the thread named by its
+    first comment, read from `GET /api/<items>/:id/comments?status=all`, which also gives the pane the whole thread),
+    a card's by `POST /api/projects/:id/items/:cardId/comments` and `…/comments/resolve`. On liveworkspace.app every
+    app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
+    panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
+    `Activity·Resolved` (`Thread`).
+  - **Mark Done** (e) on an action, only in an editor's panel and only for an action on the tab it has open: the
+    canvas's own Mark Done (an action's status has no route; it is the people's to change, in the editor).
+    `Activity·Resolved` (`Action`).
+  - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
+    yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
+    A row whose work is done here leaves the list at once, though the index may list it until the app's next push.
+    The Inbox keeps no read state: no Seen, Later or Done of its own (one-explorer.md "Not decided yet").
+- **Keys.** j/k or ↑/↓ move, Home and End jump, ↵ opens the row in its app (where the pane stands beside the list) or
+  opens the pane (where it stands in for the list), r replies, e resolves or marks done, Esc returns from the pane.
+  The keys show on the buttons, except on a touch screen.
+- **Narrow.** Under 768 px, and always in the editor's panel, the list stands alone; choosing a row opens the pane in
+  its place (on a phone, full screen) with **Back to Inbox**. The browser's Back (Android's, an iPhone's swipe) and
+  Esc return to the list: opening the pane adds one history entry, keeping the page's history state as it was. The
+  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does; chips, rows and
+  Back are at least 44 px tall; the page keeps its 16 px gutter.
+
+The sidebar's badge counts My Actions, 0 included once read. Coming back to the browser tab reads it again (at most
+every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
+This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
 
 ## What goes away in each app, as it moves
 

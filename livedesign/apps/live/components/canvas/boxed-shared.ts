@@ -11,7 +11,6 @@ export type BoxedShared = Omit<
   | 'isMultiSelected'
   | 'showHandles'
   | 'showAnchors'
-  | 'isoDepth'
   | 'layerOpacity'
   | 'remoteSelectors'
   | 'isEditing'

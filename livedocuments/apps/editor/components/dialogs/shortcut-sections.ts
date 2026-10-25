@@ -43,8 +43,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand Tool' },
       { keys: ['K'], label: 'Laser Pointer' },
-      { keys: ['I'], label: 'Isometric View' },
-      { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
     ],
   },

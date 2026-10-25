@@ -141,6 +141,14 @@ feature only some apps have (livediagram's Google Drive mirror, liveplanner's li
 Offline Mode is every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
+### Help (`/help/google-drive`)
+
+Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
+instead. Today that is Google Drive sync (drive.md): `/help/google-drive`, one page in the site's own chrome, listed
+in the sitemap. Settings › Account › Cloud Sync links to it, and each app's help has a short **Google Drive**
+article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
+links and old addresses still find it. Change it when drive.md changes what a person sees.
+
 ### Licences (`/licences`)
 
 The third-party licences of this website and the platform's services (accounts, Community, index,

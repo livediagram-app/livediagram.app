@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 The **canvas-tool** picker (Select / Hand / Format / Laser /
-Spotlight / Isometric / Zen) and the **palette category** picker
+Spotlight / Zen) and the **palette category** picker
 (Popular / Shapes / Write / Concepts / Components / Devices / Icons / ...) lay
 their options out as an icon-over-label **tile grid** instead of one long
 vertical list.

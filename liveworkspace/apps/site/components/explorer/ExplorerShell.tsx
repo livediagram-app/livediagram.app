@@ -56,6 +56,7 @@ import { APP_ITEMS, APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@l
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
+import { explorerDrive } from '@/lib/drive/client';
 import { appSignInHref } from '@/lib/explorer/app-session';
 import {
   arrival,
@@ -72,6 +73,7 @@ import {
   rememberApp,
   RETIRED_TARGETS,
   retiredTarget,
+  SECTION_PARAM,
   SETTINGS_PARAM,
   settingsOpening,
   shareUrl,
@@ -85,7 +87,7 @@ import {
   workspaceToken,
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
-import { inboxHost, localInboxHost } from '@/lib/explorer/inbox';
+import { inboxActionsFor, inboxHost, localInboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { renewIdentity } from '@/lib/explorer/new-team';
@@ -333,6 +335,8 @@ export function ExplorerShell() {
     );
   }, [app, inNoApp]);
   const signedIn = identity?.kind === 'account';
+  // Google Drive's marks and reconnect banner, for an account (a guest has no Drive to sync with).
+  const drive = useMemo(() => (signedIn ? explorerDrive() : null), [signedIn]);
   // Signing in comes back here: through the app's own sign-in on its address.
   const explorerSignInHref = host
     ? appSignInHref(pathname || '/explorer')
@@ -359,7 +363,12 @@ export function ExplorerShell() {
   // On the app's address, its This Browser rows too, for the person reading (lib/explorer/inbox.tsx).
   const viewerId = identity?.sub ?? null;
   const inbox = useMemo(
-    () => localInboxHost({ ...inboxHost, onTelemetry: trackInbox }, host, viewerId),
+    () =>
+      localInboxHost(
+        { ...inboxHost, onTelemetry: trackInbox, actions: inboxActionsFor(host) },
+        host,
+        viewerId,
+      ),
     [host, viewerId],
   );
   const signInBanner = useMemo(
@@ -465,6 +474,8 @@ export function ExplorerShell() {
   // Explorer, and the address drops it as the panel closes. An Account section needs an account: a guest signs in and
   // comes back to the same address; on an app's address a guest's app side is the guest's own panel.
   const settingsParam = searchParams.get(SETTINGS_PARAM);
+  // `&section=cloud-sync`: a section of that category to scroll to (Cloud Sync's way back from Google).
+  const settingsSection = searchParams.get(SECTION_PARAM);
   const asked = useMemo(
     () => (ready && identity ? settingsOpening(settingsParam, arrived.app) : null),
     [ready, identity, settingsParam, arrived.app],
@@ -493,8 +504,9 @@ export function ExplorerShell() {
   const closeSettings = useCallback(() => {
     setSettingsAt(null);
     const url = new URL(window.location.href);
-    if (!url.searchParams.has(SETTINGS_PARAM)) return;
+    if (!url.searchParams.has(SETTINGS_PARAM) && !url.searchParams.has(SECTION_PARAM)) return;
     url.searchParams.delete(SETTINGS_PARAM);
+    url.searchParams.delete(SECTION_PARAM);
     window.history.replaceState(window.history.state, '', url);
   }, []);
 
@@ -525,6 +537,7 @@ export function ExplorerShell() {
           onCreate={onCreate}
           {...(host ? {} : { newApps: APP_NAMES })}
           renderThumbnail={renderPreview}
+          drive={drive}
           prefetchThumbnail={prefetchPreview}
           Link={ExplorerLink}
           teams={teams}
@@ -595,6 +608,7 @@ export function ExplorerShell() {
             app={shownSettings.app}
             initialScope={shownSettings.scope}
             initialCategoryId={shownSettings.categoryId}
+            initialSectionId={settingsAt ? null : settingsSection}
             onClose={closeSettings}
           />
         </Suspense>

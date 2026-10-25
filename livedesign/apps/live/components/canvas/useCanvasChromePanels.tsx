@@ -105,6 +105,7 @@ export function useCanvasChromePanels({
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
+    activeTabId,
     onOpenCommentsForElement,
     onResetCommentsPanel,
     readOnly,
@@ -114,6 +115,17 @@ export function useCanvasChromePanels({
     tabThemeId,
     zenMode,
   } = props;
+  // The Inbox's Mark Done for an action on this tab (lib/explorer-inbox-host): the canvas's own verb, through a
+  // stable wrapper so the panel's props stay the same while the editor re-renders.
+  const { markDone } = useStableCallbacks({
+    markDone: (elementId: string, actionId: string) =>
+      onToggleActionDone?.(elementId, true, actionId),
+  });
+  const canMarkDone = Boolean(onToggleActionDone);
+  const inboxOpenAction = useMemo(
+    () => (canMarkDone && activeTabId ? { tabId: activeTabId, markDone } : null),
+    [canMarkDone, activeTabId, markDone],
+  );
   // Stable handler identities for the React.memo'd Explorer so it skips re-rendering on every drag frame even
   // though this chrome host re-renders with the canvas. useStableCallbacks
   // keeps each reference fixed while always invoking the latest prop, so
@@ -183,6 +195,7 @@ export function useCanvasChromePanels({
     zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
         currentDesignId={currentDesignId}
+        inboxOpenAction={inboxOpenAction}
         currentShareCode={currentShareCode ?? null}
         onRenameCurrent={onRenameCurrentDesign}
         onNewDesign={explorerHandlers.onNewDesign}

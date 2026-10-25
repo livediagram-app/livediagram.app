@@ -19,7 +19,6 @@
 import { useEffect } from 'react';
 import { isInMenuSurface, isPressableControl } from '@livedocuments/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import {
   EDIT_KEYS,
   runModShortcut,
@@ -50,13 +49,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   useEffect(() => {
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    if (
-      formatSourceId === null &&
-      pendingDraw === null &&
-      canvasTool !== 'format' &&
-      canvasTool !== 'isometric'
-    )
-      return;
+    if (formatSourceId === null && pendingDraw === null && canvasTool !== 'format') return;
     const onKey = (e: KeyboardEvent) => {
       // A modal dialog owns the keyboard while open (its own Escape
       // closes it); cancelling canvas modes behind it double-acts.
@@ -73,8 +66,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||
-          live.canvasTool === 'format' ||
-          live.canvasTool === 'isometric'
+          live.canvasTool === 'format'
         ) {
           e.preventDefault();
         }
@@ -82,12 +74,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
-        // Isometric: Escape leaves the view back to the normal editing tool —
-        // Select on desktop, Hand (pan) on touch where Select isn't the
-        // default. Mirrors how Spotlight reverts to Select.
-        if (liveRef.current.canvasTool === 'isometric') {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
-        }
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }
@@ -136,7 +122,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
       // and with nothing MORE transient to peel first: an active mode
-      // (format / draw / isometric — the narrow effect above
+      // (format / draw — the narrow effect above
       // owns those) or a live selection each take their own Escape, so
       // one press exits exactly one layer instead of snapping the whole
       // stack back at once.
@@ -148,7 +134,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.formatSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
         selectedId === null &&
         multiSelectedIds.size === 0
       ) {
@@ -159,8 +144,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // --- Escape clears the selection ---
       // When Escape has no transient mode to cancel (the narrow first
-      // effect above owns format / pending-draw / Format /
-      // Isometric) and the user isn't typing, a live selection is
+      // effect above owns format / pending-draw / Format)
+      // and the user isn't typing, a live selection is
       // dropped, mirroring a click on empty canvas. Guarded on the same
       // mode flags so a single Escape does one thing: cancel the mode
       // OR deselect, never both.
@@ -171,7 +156,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.formatSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
@@ -214,7 +198,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // --- Plain key tool + element-add shortcuts ---
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
-      //   V (S alias) = Select, H = Hand, K = Laser, I = Isometric,
+      //   V (S alias) = Select, H = Hand, K = Laser,
       //   Z = Zen (tools)
       //   F = Frame, R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
@@ -286,7 +270,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
-      // Non-mutating view tools (Select / Hand / Laser / Isometric /
+      // Non-mutating view tools (Select / Hand / Laser /
       // Zen): before the read-only gate so view-role visitors get them.
       const viewAction = VIEW_TOOL_KEYS[lower];
       if (viewAction) {

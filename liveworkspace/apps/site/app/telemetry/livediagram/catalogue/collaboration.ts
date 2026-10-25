@@ -717,6 +717,29 @@ export const ACTIVITY_THREADS = chart(
   "An action or a comment thread opened from the Explorer's Inbox.",
 );
 
+export const ACTIVITY_FILTERS = chart(
+  'Activity',
+  'Changed',
+  'Inbox Filters Chosen',
+  "A filter chosen over the Explorer's Inbox: All, My Actions, Assigned by Me, Comments or Form Responses.",
+  { rising: 'neutral' },
+);
+
+export const ACTIVITY_REPLIES = chart(
+  'Activity',
+  'Added',
+  'Inbox Replies',
+  "A reply to a comment thread sent from the Explorer's Inbox reading pane.",
+  { types: ['Reply'] },
+);
+
+export const ACTIVITY_RESOLVED = chart(
+  'Activity',
+  'Resolved',
+  'Inbox Threads Resolved and Actions Done',
+  "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
+);
+
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
 // from each part of Home, summaries expanded, and failed reads retried.
 export const HOME_LANDINGS = chart(
@@ -780,6 +803,9 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
+    ACTIVITY_FILTERS,
+    ACTIVITY_REPLIES,
+    ACTIVITY_RESOLVED,
     TIMELINE_LOADS,
     TIMELINE_VIEW_SWITCHED,
     TIMELINE_FILTERED,

@@ -116,3 +116,21 @@ describe('liveworkspaceNextConfig', () => {
     expect(log).toHaveBeenCalledWith('[next-config] turbopack=true export=true compiler=false');
   });
 });
+
+describe('local dev behind a router', () => {
+  it('lets each product host, its subdomains and localhost open the hot-reload socket', async () => {
+    const { liveworkspaceNextConfig } = await import('./index.js');
+    const origins = liveworkspaceNextConfig({ env: {} }).allowedDevOrigins;
+    for (const host of [
+      'liveplanner.app',
+      'www.livediagram.app',
+      'livedocuments.app',
+      'livedesign.app',
+      'localhost',
+    ]) {
+      expect(
+        origins.some((o) => o === host || (o.startsWith('*.') && host.endsWith(o.slice(1)))),
+      ).toBe(true);
+    }
+  });
+});

@@ -1,12 +1,6 @@
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type {
-  BoxedElement,
-  HeroCaption,
-  IconPosition,
-  TextRun,
-  WebRows,
-} from '@livedesign/design';
+import type { BoxedElement, HeroCaption, IconPosition, TextRun, WebRows } from '@livedesign/design';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -99,9 +93,6 @@ export type BoxedElementViewProps = {
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Paint index within the elements layer. Isometric mode only: it stops
-  // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
-  isoDepth: number;
   // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
   stackGlide?: boolean;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).

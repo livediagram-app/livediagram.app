@@ -209,13 +209,13 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
   });
 
-  it('retires the Format and Isometric tools, not the isometric image export', () => {
+  it('retires the Format and Isometric tools and the isometric image export', () => {
     expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(true);
     expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(true);
     expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(true);
     expect(isRetiredEvent('UI', 'Changed', 'FormatCopiesFill')).toBe(true);
     expect(isRetiredEvent('UI', 'Changed', 'FormatMode')).toBe(true);
-    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(true);
     expect(isRetiredEvent('Element', 'Changed', 'TextFormat')).toBe(false);
   });
 

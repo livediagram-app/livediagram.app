@@ -621,7 +621,6 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | `V` / `S` | Select (`S` is a legacy alias; with the Toolbar strip's Search, `S` opens it) |
 | `H`       | Hand (pan)                                                                    |
 | `K`       | Laser                                                                         |
-| `I`       | Isometric view (`⇧`+drag orbits the camera once in it)                        |
 | `Z`       | Zen mode (focus)                                                              |
 
 **Add elements** (plain key — drops the element, mirroring the palette tile):
@@ -693,7 +692,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 6. **Elements** — the open design's element text (editor only). Matches element labels; **tables match by cell text** (tables have no single label), surfacing the matching cell as the row label. Blank-labelled elements are unmatchable. Opening the panel triggers a **load-all-tabs prefetch**: per-tab lazy loading ([Per-tab storage](../006-design/per-tab-storage.md)) means unvisited tabs are empty placeholders locally, so search pulls every remaining tab's content in one parallel best-effort sweep — without it, element search silently misses tabs the user hasn't opened this session.
 7. **Actions** — synthetic, do-something results rather than navigation: a contextual **command palette** for power users (editor only, non-empty query). The matcher (name + keywords, capped) lives in `lib/search.ts` as a generic `command` result kind; the editor supplies the applicable command list and a dispatcher via `useEditorCommands` (catalogue + applicability logic in `lib/editor-commands.ts`, unit-tested in `editor-commands.test.ts`). The group ranks **below** the navigation + element groups so picking an existing tab / element by name keeps the default Enter; commands are reached by typing their verb (e.g. "delete", "lock", "rotate", "share", "theme", "rename"). Each command reuses the exact same handler (and telemetry) as its menu/toolbar entry point, so behaviour can't drift. Commands never surface on an empty query (no catalogue dump); view-only (`view`-role) sessions keep only the view-safe subset (zen / fit / export / Collaborators, plus the tools that only change how you look at the canvas), mirroring the palette's read-only gate.
 
-   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:format`, `tool:laser`, `tool:spotlight`, `tool:isometric`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Spotlight is desktop-only, and the one that writes to the design (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
+   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:format`, `tool:laser`, `tool:spotlight`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Spotlight is desktop-only, and the one that writes to the design (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
 
    The catalogue is **contextual**:
    - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to Front**, **Send to Back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset Rotation**, **Add / Edit Note**, **Add Comment**, plus **Clear Animation** (when the element has one) and, for a shape, **Clear Marker** (when set) / **Add … Marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
@@ -1079,7 +1078,7 @@ An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`
 **A finger's double-tap on the empty canvas zooms in on the tapped spot** instead of dropping text, and the next one fits the whole tab back into view: on a phone or an iPad the canvas is usually shown small, a stray text box was rarely what a double-tap meant, and a finger has no wheel to zoom with.
 
 - **What decides it is the pointer that pressed**, not the device: a finger (`pointerType` `touch`) zooms; a mouse, a trackpad or a pen drops text, so an iPad with a trackpad or a Pencil keeps the quick text drop, and a touch-screen laptop's finger zooms.
-- **Anywhere on the empty canvas**: the content layer is scaled with the zoom, so on a zoomed-out phone most of the empty canvas is the surface around it (`<main>`), and a double-tap there zooms too. Off a page, where a double-click makes nothing, a double-tap still zooms. In Spotlight and Isometric, which give every press on the surface its own meaning, the surface does not zoom.
+- **Anywhere on the empty canvas**: the content layer is scaled with the zoom, so on a zoomed-out phone most of the empty canvas is the surface around it (`<main>`), and a double-tap there zooms too. Off a page, where a double-click makes nothing, a double-tap still zooms. In Spotlight, which gives every press on the surface its own meaning, the surface does not zoom.
 - **The view glides** (`glideViewport`, eased over `VIEW_GLIDE_MS`; at once under reduced motion) so the tapped point lands in the **middle of the canvas** at the new zoom.
 - **The new zoom** is twice the current one, and never less than **100%**, so one double-tap on a phone's zoomed-out view lands at a readable size; capped at `ZOOM_MAX` (500%). At the cap, the double-tap only centres the spot.
 - **In, then out to the whole tab**: a double-tap never zooms in twice running. After a double-tap has zoomed in (on the canvas or on a small element, below), the next double-tap on the empty canvas **fits the whole tab** into view instead, the same view as Fit to Screen, gliding there; the one after zooms in again on its spot. So a person can double-tap out to the overview, then double-tap where they want to go. If they have pinched back out to the whole-tab view or wider since, there is nothing to fit, and the double-tap zooms in. A new tab starts afresh.
@@ -1390,3 +1389,23 @@ alike; a text field still takes its primary-selection paste from the browser.
 Pasting foreign text as a text element is the obvious next step and is
 deliberately not built: it needs the viewport centre in canvas coordinates,
 which lives in `Canvas` rather than in the clipboard hook.
+
+## Retired features
+
+- **Slide decks and presenting** (removed 25 October 2026): the Slide Deck canvas tool and `tool:slide-deck`, the
+  Slides button over a Pages tab, each page's deck and notes buttons, the header's Present button and the
+  full-screen presentation. What went, and how a design's stored deck still loads, is in
+  [Presentation mode](../012-collaboration/presentation-mode.md).
+- **The isometric view** (removed 2026-10-25; livediagram keeps it). The Isometric canvas tool went with
+  everything that served it: its entry in the tool dropdown, the `I` key and the search panel's
+  `tool:isometric`, Shift-drag and right-drag orbiting, the orbit button in the zoom bar, the extruded depth
+  layer and the `[data-iso]` / `--iso-z` rules, its help article (`selection-modes/isometric-mode`) and its
+  shortcut rows. The image export's **Isometric view** toggle went too, so every image export is flat and
+  top-down. Telemetry: `Canvas·Used·Isometric` and `UI·Toggled·IsometricExport` are no longer sent
+  ([Telemetry](../017-telemetry/telemetry.md#retired-features)).
+  - **Old designs open unchanged, drawn flat.** Nothing a design stores was ever isometric: the view was
+    session-only view state (never saved, never synced) and the export toggle was never saved either, so no
+    element or tab carries an isometric field to migrate. A design that was being looked at in the view opens,
+    like any other, on the default tool (Select on desktop, Hand on touch) with its elements flat.
+  - **The Isometric background pattern stays.** It is rhombic grid paper among the static patterns (and the
+    Studio look's pattern), not the view, so a tab that wears it keeps drawing it on the canvas and in exports.

@@ -194,28 +194,14 @@ pnpm --filter @livediagram/editor exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveworkspace/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/editor test:e2e:drive`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `ACCOUNTS_URL`, `API_RESOURCE`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test stands in for the accounts Worker's JWKS (port 8795) and the fake Google (8796) itself. Rebuild the editor app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3102 first (or set `E2E_EDITOR_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
-
-`pnpm --filter @livediagram/editor test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
-
 Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/workbench.md](../../../liveworkspace/docs/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
 
-## Enabling the Google Drive mirror locally (optional)
+## Google Drive sync locally (optional)
 
-The mirror needs a Google Cloud OAuth client (web application) with `http://localhost:3100/drive/connected` as an authorised redirect URI and `http://localhost:3100` as a JavaScript origin, and the Drive API enabled:
-
-```sh
-# apps/api/.dev.vars (gitignored)
-GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=...
-DRIVE_TOKEN_KEY=...        # openssl rand -base64 32
-
-# apps/editor/.env.local (gitignored)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
-NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
-```
-
-It is signed-in only, so sign-in must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
+Google Drive sync is liveworkspace's service, not livediagram's ([liveworkspace/docs/drive.md](../../../liveworkspace/docs/drive.md)):
+run it from `liveworkspace/apps/drive` as that page says. The router sends `/api/drive/*` to it (`DRIVE_ORIGIN` in
+`apps/router/wrangler.toml`), and the api needs only `DRIVE_KEY` in `apps/api/.dev.vars` for the service's export and
+import doors.
 
 ## Trying the photo import without an AI key
 
@@ -233,8 +219,7 @@ on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
 `E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
-`.next/out-signed-in`). The stack stands in for the accounts Worker unless `E2E_ACCOUNTS_STUB=0`
-(the Drive run serves its own): it keeps settings and profiles in memory, and the api verifies access
+`.next/out-signed-in`). The stack always stands in for the accounts Worker: it keeps settings and profiles in memory, and the api verifies access
 tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for

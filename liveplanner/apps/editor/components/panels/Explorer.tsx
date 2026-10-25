@@ -21,9 +21,10 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
-import { explorerInboxHost } from '@/lib/explorer-inbox-host';
+import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenPlan } from '@/lib/project-delete-undo';
+import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
 import type { ExplorerProps } from './Explorer.types';
 
 // The filter's logos: this app's own, and liveworkspace's for All.
@@ -39,6 +40,7 @@ const NO_MOVE = () => {};
 // once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
   currentProjectId,
+  inboxOpenAction = null,
   currentShareCode = null,
   onRenameCurrent,
   onNewProject,
@@ -58,9 +60,28 @@ function ExplorerImpl({
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
-  const inboxHost = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
+  const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
+  // The pane's verbs: this app's threads, and an action on the open plan's active tab.
+  const inboxActions = useMemo(
+    () =>
+      explorerInboxActions(
+        inboxOwner,
+        currentProjectId && inboxOpenAction
+          ? { itemId: currentProjectId, ...inboxOpenAction }
+          : null,
+      ),
+    [inboxOwner, currentProjectId, inboxOpenAction],
+  );
+  const inboxHost = useMemo(
+    () => ({ ...inboxBase, actions: inboxActions }),
+    [inboxBase, inboxActions],
+  );
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
+  // Google Drive's marks on the person's items (liveworkspace/docs/drive.md "The Explorer shows each item's sync"),
+  // over the same Drive host as Settings' Cloud Sync: an account's only, made once per sign-in so the marks read keeps
+  // one client. The panel mounts only while open, so nothing is asked before it opens.
+  const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
   // The open plan as the index has it (its title, place and star), for the card on top.
   const [current, setCurrent] = useState<Item | null>(null);
@@ -141,6 +162,7 @@ function ExplorerImpl({
         onOpenExplorer={(view) => window.location.assign(explorerPath(view))}
         onOpenItem={(href) => go(href)}
         renderThumbnail={renderPlanThumbnail}
+        drive={drive}
         Link={Link}
         teams={teams}
         teamsHost={isSignedIn ? explorerTeamsHost : null}

@@ -315,6 +315,13 @@ the item's content, beside what it is about, so it saves, undoes and copies with
 Explorer is then one query across every app: threads you are in, mentions, and actions assigned to you or by you. Comment and mention emails
 are sent from liveworkspace too.
 
+The Inbox reads as a list and a reading pane (one-explorer-contracts.md "Inbox"): every row newest first under
+Today, Earlier This Week and Older, a filter bar over it (All, My Actions, Assigned by Me, Comments, Form
+Responses, each with its count), and the chosen row read in full beside it. On a phone and in the editor's panel the
+pane takes the list's place, with Back. The pane offers only what the page can really do through the owning app's
+own routes or editor (Reply and Resolve on a thread, Mark Done on an action in the editor that has it open); Open in
+the app is always there.
+
 The Timeline moves too, and spans apps the same way: the index records what it changes itself (made,
 renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what. The
 Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it.
@@ -382,3 +389,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 ## Not decided yet
 
 - The CLI and MCP server across apps.
+- Proposed, not built: the Inbox remembering what a person has seen, put off till later or marked done (Seen, Later,
+  Done, snooze). It would need read state per person and row, which the index doesn't keep; today the Inbox has
+  none, and a row leaves only when its work is done in its app.
+- Proposed, not built: Mark Done on a Plan card from the Inbox. Done is the board's done column, which the Inbox
+  doesn't know; the card opens on its board instead.

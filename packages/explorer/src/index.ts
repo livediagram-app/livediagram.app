@@ -40,9 +40,13 @@ export type {
   RenderAppLogo,
   RenderItemMark,
   RenderThumbnail,
+  InboxActions,
+  InboxComment,
   InboxHost,
   InboxLocalRows,
+  InboxTarget,
   InboxTelemetry,
+  InboxVerb,
   Located,
   ShareHost,
   ShareHostTelemetry,
@@ -56,6 +60,11 @@ export type {
   OrganiseTelemetry,
 } from './types';
 export { placementDefaultTelemetry } from './types';
+export {
+  DRIVE_MARKS_MIN_GAP_MS,
+  type DriveMarksClient,
+  type ExplorerDriveHost,
+} from './drive/useDriveMarks';
 export {
   DefaultFoldersSettings,
   type DefaultFoldersSettingsProps,

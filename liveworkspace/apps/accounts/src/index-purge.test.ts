@@ -155,6 +155,31 @@ describe('deleteAccount', () => {
     expect(sql.prepare('SELECT id FROM "user"').all()).toEqual([{ id: 'user_bea' }]);
   });
 
+  it('disconnects the account’s Google Drive mirror once the account is gone', async () => {
+    const disconnected: string[] = [];
+    const res = await deleteAccount(
+      new Request(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+        {
+          method: 'POST',
+          headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+          body: JSON.stringify({ token: 'access-token' }),
+        },
+      ),
+      auth,
+      db,
+      config,
+      async () => {},
+      (userId) => {
+        // The account is already closed when Drive is told.
+        expect(sql.prepare('SELECT id FROM "user" WHERE id = ?').all(userId)).toEqual([]);
+        disconnected.push(userId);
+      },
+    );
+    expect(res.status).toBe(200);
+    expect(disconnected).toEqual(['user_ada']);
+  });
+
   it('still closes the account when the index is down, and leaves the purge for the cron', async () => {
     answer = () => new Response(null, { status: 502 });
     const res = await close();

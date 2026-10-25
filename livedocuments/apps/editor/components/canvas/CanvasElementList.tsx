@@ -105,7 +105,7 @@ export const CanvasElementList = memo(function CanvasElementList({
     // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
     // changing restyles this node and not the board beneath it.
     <div data-element-plane="" className="contents">
-      {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
+      {shownOrder.map(({ element: listed, layerOpacity }) => (
         <PreviewedElement
           key={listed.id}
           store={previewStore}
@@ -121,13 +121,7 @@ export const CanvasElementList = memo(function CanvasElementList({
                 <Fragment key={element.id}>
                   <svg
                     className="absolute inset-0 h-full w-full"
-                    // Tagged so isometric mode can lift arrows just off the base
-                    // plane (globals.css [data-iso] rule): an arrow's surface is
-                    // coplanar with the boxes it crosses under preserve-3d, and
-                    // coplanar layers z-fight — which is what made a FLOWING arrow
-                    // shimmer in isometric while a static one looked fine (the
-                    // animation repaints every frame, so the fight is visible
-                    // continuously rather than only while the camera orbits).
+                    // Tagged for tests and e2e, which find an arrow's path by it.
                     data-arrow-svg=""
                     style={{
                       pointerEvents: 'none',
@@ -183,10 +177,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 editingId={editingId}
                 {...boxedShared}
                 element={element}
-                // Paint index, used only by isometric mode to stagger each element
-                // onto its own z-plane (globals.css --iso-z): coplanar layers
-                // z-fight under preserve-3d, which is the flicker.
-                isoDepth={isoDepth}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
                 stackGlide={stackedIds.has(element.id) && entry === undefined}
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}

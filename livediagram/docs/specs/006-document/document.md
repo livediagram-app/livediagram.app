@@ -48,8 +48,8 @@ Prose follows the context:
 ## What keeps its name
 
 - **livediagram** stays the product and brand name.
-- A document mirrored to Google Drive is a `.livediagram` file of MIME type
-  `application/vnd.livediagram+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
+- A document synced to Google Drive is a `.livediagram` file of MIME type
+  `application/vnd.livediagram+json` ([Google Drive sync](../../../../liveworkspace/docs/drive.md)):
   both name the app that opens the file, not what is inside it.
 
 <!-- legacy-names -->

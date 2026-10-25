@@ -252,7 +252,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:pan',
       'tool:laser',
       'tool:spotlight',
-      'tool:isometric',
     ]);
   });
 
@@ -315,19 +314,12 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 });
 
 // Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
-// was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar /
-// Isometric; the search panel offered none of them.
+// was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar;
+// the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:eraser',
-      'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:isometric',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:eraser', 'tool:format', 'tool:laser', 'tool:spotlight']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
@@ -357,7 +349,8 @@ describe('canvas tool commands', () => {
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toContain('tool:laser');
-    expect(got).toContain('tool:isometric');
+    // The isometric view is livediagram's alone (docs/specs/008-canvas/canvas-and-palette.md "Retired features").
+    expect(got).not.toContain('tool:isometric');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
   });

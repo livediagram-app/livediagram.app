@@ -176,7 +176,6 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   '1': (l) => l.setCanvasTool('select'),
   h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
-  i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 

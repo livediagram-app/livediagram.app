@@ -1,6 +1,7 @@
-// The Inbox's one row at its two densities: the page's comfortable row and the editor panel's compact one, the
-// skeleton that matches them while the Inbox reads, the empty state, and a This Browser row's name.
+// The Inbox's one row at its two densities (the page's and the editor panel's): three lines of who, what, and why
+// and where; the skeleton that matches it while the Inbox reads, the empty state, and a This Browser row.
 import { act, render, screen, within } from '@testing-library/react';
+import { shortAgo } from './inbox/InboxRows';
 import { describe, expect, it, vi } from 'vitest';
 import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
 import { createFakeIndex } from '../test/fakeClient';
@@ -83,52 +84,45 @@ async function settle() {
 }
 
 describe('an Inbox row', () => {
-  it('is one link on the page: the app, the whole path, the full time and an Open arrow', async () => {
+  it('reads in three lines: who and when, what, then why and where; one option, no links', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(NOW);
     const index = createFakeIndex();
     index.inbox.actions.push(action);
     const { container } = renderPane(index);
     await settle();
-    const row = screen.getByRole('link', { name: /Split the ledger out/ });
-    expect(container.querySelectorAll('[data-inbox-row] a')).toHaveLength(1);
-    expect(row.closest('li')!.getAttribute('data-density')).toBe('comfortable');
-    // Where: the app's mark (the All filter), the item, the tab, then the element.
-    expect(row.querySelector('[data-app-mark="livediagram"]')).toBeTruthy();
-    expect(row.textContent).toContain('Payments architecture');
-    expect(row.textContent).toContain('Overview');
-    expect(row.textContent).toContain('Billing service');
-    expect(row.querySelector('time')!.textContent).toBe('8 mins ago');
-    // An unnamed assigner: a teammate, on a person glyph rather than initials.
-    expect(row.getAttribute('aria-label')).toBe(
-      'Split the ledger out. Assigned to you by a teammate. In Payments architecture, Overview, Billing service',
-    );
+    const row = screen.getByRole('option', { name: /Split the ledger out/ });
+    expect(container.querySelectorAll('[data-inbox-row] a')).toHaveLength(0);
+    expect(row.getAttribute('data-density')).toBe('comfortable');
+    // An unnamed assigner: a teammate, on a person glyph rather than initials, in bold as it asks something of me.
+    const who = row.querySelector('[data-inbox-who]')!;
+    expect(who.textContent).toBe('A teammate');
+    expect(who.className).toContain('font-semibold');
     expect(row.querySelector('[data-inbox-avatar] svg')).toBeTruthy();
-    // The Open arrow, decorative.
-    expect(row.lastElementChild!.getAttribute('aria-hidden')).toBe('true');
+    expect(row.querySelector('time')!.textContent).toBe('8m');
+    expect(row.querySelector('[data-inbox-title]')!.textContent).toBe('Split the ledger out');
+    expect(row.querySelector('[data-inbox-reason="assigned"]')!.textContent).toBe('To do');
+    // Where: the app's mark (the All filter) and the item; the whole path on hover and in the name.
+    expect(row.querySelector('[data-app-mark="livediagram"]')).toBeTruthy();
+    expect(row.querySelector('[title*="›"]')!.getAttribute('title')).toBe(
+      'Payments architecture › Overview › Billing service',
+    );
+    expect(row.getAttribute('aria-label')).toBe(
+      'Split the ledger out. To do. A teammate. In Payments architecture, Overview, Billing service',
+    );
     vi.restoreAllMocks();
   });
 
-  it('is compact in the panel: the item alone, a short time and no arrow', async () => {
+  it('is the same row in the panel, at the compact density', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(NOW);
     const index = createFakeIndex();
     index.inbox.actions.push(action);
     renderPane(index, { compact: true });
     await settle();
-    const row = screen.getByRole('link', { name: /Split the ledger out/ });
-    expect(row.closest('li')!.getAttribute('data-density')).toBe('compact');
-    expect(row.textContent).toContain('Payments architecture');
-    expect(row.textContent).not.toContain('Overview');
-    expect(row.textContent).not.toContain('Billing service');
-    // The whole path is still there, on hover and in the name.
-    expect(row.querySelector('[title*="›"]')!.getAttribute('title')).toBe(
-      'Payments architecture › Overview › Billing service',
-    );
-    expect(row.getAttribute('aria-label')).toContain('Overview');
-    expect(row.querySelector('time')!.textContent).toBe('8 min ago');
+    const row = screen.getByRole('option', { name: /Split the ledger out/ });
+    expect(row.getAttribute('data-density')).toBe('compact');
     expect(row.querySelector('[data-inbox-title]')!.getAttribute('title')).toBe(
       'Split the ledger out',
     );
-    expect(row.lastElementChild!.getAttribute('aria-hidden')).toBeNull();
     vi.restoreAllMocks();
   });
 
@@ -137,7 +131,7 @@ describe('an Inbox row', () => {
     index.inbox.actions.push(action);
     renderPane(index, { filter: 'app' as 'all' });
     await settle();
-    const row = screen.getByRole('link', { name: /Split the ledger out/ });
+    const row = screen.getByRole('option', { name: /Split the ledger out/ });
     expect(row.querySelector('[data-app-mark]')).toBeNull();
   });
 
@@ -165,13 +159,22 @@ describe('an Inbox row', () => {
         </ExplorerProvider>
       </ToastProvider>,
     );
-    const row = await screen.findByRole('link', { name: /Ledger/ });
+    const row = await screen.findByRole('option', { name: /Ledger/ });
     expect(row.getAttribute('aria-label')).toBe(
-      'Ledger. On your canvas. 1 comment. In Offline canvas, Overview, This Browser',
+      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, This Browser',
     );
-    expect(row.querySelector('[data-this-browser]')!.textContent).toBe('This Browser');
+    expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^This Browser/);
     // No author name: a teammate wrote it.
-    expect(row.querySelector('[data-inbox-detail]')!.textContent).toBe('A teammate: Agreed.');
+    expect(row.querySelector('[data-inbox-who]')!.textContent).toBe('A teammate');
+  });
+
+  it('says its age in a few characters', () => {
+    const m = 60_000;
+    expect(shortAgo(NOW - 20_000, NOW)).toBe('now');
+    expect(shortAgo(NOW - 12 * m, NOW)).toBe('12m');
+    expect(shortAgo(NOW - 3 * 60 * m, NOW)).toBe('3h');
+    expect(shortAgo(NOW - 2 * 24 * 60 * m, NOW)).toBe('2d');
+    expect(shortAgo(NOW - 30 * 24 * 60 * m, NOW)).toMatch(/\d/);
   });
 
   it('shows skeleton rows of the same shape while the Inbox reads, at either density', () => {
@@ -193,7 +196,7 @@ describe('an Inbox row', () => {
       const view = renderPane(createFakeIndex(), { compact });
       await settle();
       expect(screen.getByText('You’re all caught up')).toBeTruthy();
-      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.queryByRole('option')).toBeNull();
       view.unmount();
     }
   });

@@ -540,6 +540,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
   },
   'apps/live/lib/explorer-inbox-host.ts Activity·Loaded': { values: ['Retry'] },
+  'apps/live/lib/explorer-inbox-host.ts Activity·Changed': {
+    values: ['All', 'MyActions', 'AssignedByMe', 'Comments', 'FormResponses'],
+  },
+  'apps/live/lib/explorer-inbox-host.ts Activity·Added': { values: ['Reply'] },
+  'apps/live/lib/explorer-inbox-host.ts Activity·Resolved': {
+    values: ['Thread', 'Action', 'Card'],
+  },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web

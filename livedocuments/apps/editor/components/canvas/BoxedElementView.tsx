@@ -93,7 +93,6 @@ function BoxedElementViewImpl({
   onSetWebRows,
   onSetPointerTip,
   onSetHeroCaptionLine,
-  isoDepth,
   stackGlide,
   chartPalette,
   onCancelEdit,
@@ -375,8 +374,6 @@ function BoxedElementViewImpl({
         wrapperAnimClass
       } ${variant.className} ${cursor}`}
       style={{
-        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
-        ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,

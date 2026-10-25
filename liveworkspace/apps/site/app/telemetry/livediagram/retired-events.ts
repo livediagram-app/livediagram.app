@@ -197,8 +197,13 @@ function isTagsEvent(category: string, action: string, type: string | null): boo
   return false;
 }
 
+// livediagram's own Google Drive mirror (removed 2026-10-25, liveworkspace/docs/drive.md "Coming from livediagram's
+// mirror"): every Drive event. Google Drive sync is liveworkspace's now, for every app, and sends none of these.
+const DRIVE_MIRROR_CATEGORY = 'Drive';
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (category === DRIVE_MIRROR_CATEGORY) return true;
   if (isTagsEvent(category, action, type)) return true;
   if (isAiAssistantEvent(category, action, type)) return true;
   if (isPagesModeEvent(category, action, type)) return true;

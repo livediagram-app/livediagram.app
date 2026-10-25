@@ -64,14 +64,16 @@ A category or article that is removed keeps its old URL landing: `apps/help/publ
 (301) to the live page nearest to it, with paths as the help worker sees them (no `/help` prefix, which the router
 strips). The Self-Hosting category (its overview, deploying, configuration and MCP server articles) is retired, and
 every `/self-hosting` URL goes to the help centre home. `lib/retired-articles.test.ts` checks every rule targets a
-live page and never redirects a live article or category away.
+live page and never redirects a live article or category away. Isometric Mode
+(`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view
+([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 
 - **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides and infographics).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
 - **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
-- **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
+- **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
 - **Tabs** — a document's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (Markdown and JSON) and Exporting, one guide per tab-menu action.

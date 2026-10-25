@@ -2,8 +2,7 @@
 
 // Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see lib/auth-config.ts): a
 // signed-in session without the accounts Worker, for the signed-in e2e specs
-// (docs/specs/003-system-architecture/e2e-smoke.md) and the opt-in Google Drive e2e
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing"). The e2e
+// (docs/specs/003-system-architecture/e2e-smoke.md). The e2e
 // stack mints an access token against a JWKS it serves itself, which the api
 // worker verifies exactly as it verifies the accounts Worker's; the test puts it
 // in localStorage and this publishes it as the session. Without one the page is

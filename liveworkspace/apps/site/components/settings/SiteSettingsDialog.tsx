@@ -12,6 +12,7 @@ import {
   SettingsPanel,
   settingsPanelApp,
   SettingsUiKitProvider,
+  useCloudSync,
   useSettingsScope,
   type AccountHost,
   type AccountIdentity,
@@ -22,6 +23,7 @@ import {
 import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
 import { accountSecurity } from '@/lib/account-security';
+import { cloudSyncHost } from '@/lib/drive/client';
 import {
   appAccount,
   onAppAccountChange,
@@ -68,11 +70,14 @@ export default function SiteSettingsDialog({
   guest = null,
   initialScope = null,
   initialCategoryId = null,
+  initialSectionId = null,
   onClose,
 }: {
   // A targeted open's side of the switch (`?app=all`, a `#notifications` link), else this browser's last.
   initialScope?: SettingsScope | null;
   initialCategoryId?: string | null;
+  // A section of that category to scroll to (`&section=cloud-sync`, Cloud Sync's way back from Google).
+  initialSectionId?: string | null;
   onClose: () => void;
 } & (
   | { app: AppId | null; guest?: null }
@@ -101,6 +106,9 @@ export default function SiteSettingsDialog({
       }),
     [accountName],
   );
+  // Cloud Sync, for an account: its section shows once the Drive service says the deployment offers it.
+  const cloudSyncFor = useMemo(() => (guestSignIn ? null : cloudSyncHost()), [guestSignIn]);
+  const cloudSync = useCloudSync(cloudSyncFor);
   const account = useMemo<AccountHost>(
     () =>
       guestSignIn
@@ -109,12 +117,14 @@ export default function SiteSettingsDialog({
           ? {
               identity,
               profile,
+              cloudSync,
               securityHref: workspaceHref('/explorer?settings=profile'),
               tokensHref: workspaceHref('/explorer?settings=tokens'),
             }
           : {
               identity,
               profile,
+              cloudSync,
               security: accountSecurity,
               onSignOut: async () => {
                 const left = await signOut();
@@ -123,7 +133,7 @@ export default function SiteSettingsDialog({
               },
               renderTokens: () => <TokensRow />,
             },
-    [identity, guestSignIn, profile],
+    [identity, guestSignIn, profile, cloudSync],
   );
   // A guest's: the browser copy the app's editor keeps, made once per opening.
   const isGuest = guest !== null;
@@ -181,6 +191,7 @@ export default function SiteSettingsDialog({
               : 'liveworkspace:settings-view:v1'
           }
           initialCategoryId={initialCategoryId}
+          initialSectionId={initialSectionId}
           isMobile={isMobile}
           onClose={onClose}
           title="Settings"

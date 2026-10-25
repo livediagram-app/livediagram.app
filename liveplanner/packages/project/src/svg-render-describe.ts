@@ -54,8 +54,7 @@ const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
 // crops, contain letterboxes, and avatars clip to a circle. `none` is a
 // label-only element (text); the rest carry resolved fill + stroke. `icon` is
 // a shape==='icon' element whose glyph a caller resolved (see ResolveIconArt);
-// it keeps fill/stroke so the isometric extrusion can tint its silhouette
-// column like any other box.
+// it keeps fill/stroke like any other box.
 export type ExportShape =
   | { kind: 'image'; href?: string; objectFit: 'cover' | 'contain'; radius: number }
   | { kind: 'ellipse'; fill: string; stroke: string }

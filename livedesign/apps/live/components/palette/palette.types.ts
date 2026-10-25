@@ -3,8 +3,7 @@ import type { ShapeKind } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
-export type CanvasTool =
-  'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'isometric';
+export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'format';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
@@ -12,12 +11,12 @@ export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
   // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
-  // dropdown under Isometric. An action, not a tool: firing it leaves the
+  // dropdown, its last entry. An action, not a tool: firing it leaves the
   // current tool selected. Omit to hide the entry; exit stays on the zoom
   // dock (the only chrome left in zen).
   onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Eraser / Format / Laser / Spotlight).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one, so a tile per choice places
   // that choice rather than the factory default.

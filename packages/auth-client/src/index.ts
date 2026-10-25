@@ -25,6 +25,7 @@ export {
 } from './oauth';
 export {
   accountEmails,
+  claimLegacyGuest,
   claimMilestone,
   createTeamFor,
   createTokenChecker,
@@ -52,6 +53,7 @@ export {
   writeSettings,
   type AccountSettings,
   type CreatedTeam,
+  type LegacyGuestClaimOutcome,
   type MintedToken,
   type NotifySettings,
   type Milestone,

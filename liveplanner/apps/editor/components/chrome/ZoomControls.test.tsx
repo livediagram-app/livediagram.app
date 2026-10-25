@@ -24,7 +24,7 @@ describe('ZoomControls', () => {
     expect(h.onZoomOut).toHaveBeenCalled();
   });
 
-  it('goes entirely when zoom is hidden and there is no Isometric or Zen to offer', () => {
+  it('goes entirely when zoom is hidden and there is no Zen to offer', () => {
     const { container } = render(<ZoomControls zoom={1} {...handlers()} zoomHidden />);
     expect(container.querySelector('[data-zoom-controls]')).toBeNull();
   });

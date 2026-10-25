@@ -398,6 +398,48 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: 'google-drive',
+    title: 'Google Drive',
+    body: (
+      <>
+        <p>
+          If you connect Google Drive in Cloud Sync, liveworkspace asks Google for access to{' '}
+          <strong>only the files it creates, or that you open with it</strong> (the{' '}
+          <code>drive.file</code> scope), and to appear in Drive&rsquo;s Open with menu (
+          <code>drive.install</code>). It cannot see any other file in your Drive.
+        </p>
+        <ul>
+          <li>
+            Our Drive service keeps a copy of your own work, from every app, in those files, and
+            brings renames, moves and deletions you make in Drive back to your work. It runs on our
+            servers, so it keeps up whether or not you have a tab open.
+          </li>
+          <li>
+            We store an encrypted refresh token, the id of the Google account you connected, the ids
+            of the files and folders liveworkspace created, and the state it last wrote to them.
+          </li>
+          <li>
+            We use Google user data only to provide the sync you asked for. We do not use it for
+            advertising, sell it or use it to train AI models, and nobody reads it unless you ask us
+            to for support, it is needed for security, or the law requires it.
+          </li>
+          <li>
+            Disconnecting, or deleting your account, revokes access at Google and deletes what we
+            stored. Your files stay in your Drive.
+          </li>
+        </ul>
+        <p>
+          liveworkspace&rsquo;s use and transfer of information received from Google APIs adheres to
+          the{' '}
+          <a href="https://developers.google.com/terms/api-services-user-data-policy">
+            Google API Services User Data Policy
+          </a>
+          , including the Limited Use requirements.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'children',
     title: 'Children',
     body: (
@@ -425,48 +467,6 @@ const SECTIONS: LegalSection[] = [
   },
 
   // App by app: only what one app does beyond the above (each signs you in with your liveworkspace account).
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-google-drive',
-    title: 'Google Drive',
-    body: (
-      <>
-        <p>
-          If you mirror your documents to Google Drive, livediagram asks Google for access to{' '}
-          <strong>only the files it creates, or that you open with it</strong> (the{' '}
-          <code>drive.file</code> scope), and to appear in Drive&rsquo;s Open with menu (
-          <code>drive.install</code>). It cannot see any other file in your Drive.
-        </p>
-        <ul>
-          <li>
-            Your browser reads and writes those files with Google directly; the contents of your
-            Drive never pass through our servers.
-          </li>
-          <li>
-            We store an encrypted refresh token, the id of the Google account you connected, the ids
-            of the files and folders livediagram created, and the state it last wrote to them.
-          </li>
-          <li>
-            We use Google user data only to provide the mirror you asked for. We do not use it for
-            advertising, sell it or use it to train AI models, and nobody reads it unless you ask us
-            to for support, it is needed for security, or the law requires it.
-          </li>
-          <li>
-            Disconnecting, or deleting your account, revokes access at Google and deletes what we
-            stored. Your files stay in your Drive.
-          </li>
-        </ul>
-        <p>
-          livediagram&rsquo;s use and transfer of information received from Google APIs adheres to
-          the{' '}
-          <a href="https://developers.google.com/terms/api-services-user-data-policy">
-            Google API Services User Data Policy
-          </a>
-          , including the Limited Use requirements.
-        </p>
-      </>
-    ),
-  },
   {
     app: 'livediagram.app',
     id: 'livediagram-sticky-notes',

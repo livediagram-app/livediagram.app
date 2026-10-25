@@ -115,12 +115,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLocateFixed} />
     </Glyph>
   ),
-  'isometric-mode': (
-    <Glyph>
-      <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z" />
-      <path d="M12 12l9-4M12 12v9M12 12L3 8" />
-    </Glyph>
-  ),
   // Palette → Elements.
   // The element families the Build / Write / Collaborate / Behaviour tabs
   // hold. Each one draws the thing it makes, so the tab reads before the label

@@ -150,16 +150,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The element plane
 
 - `CanvasElementList` renders every element inside one `<div data-element-plane class="contents">`:
-  no box, so layout, hit testing, paint order and the isometric 3D stack are as before.
+  no box, so layout, hit testing and paint order are as before.
 - `globals.css` gives `[data-element-plane]` `cursor: auto`. The canvas world's cursor (its
   `canvasCursorClass` class, or a draw tool's inline cursor) then stops there, so a change of it
   restyles the plane and not the 2,760 nodes beneath it on the reference board. Every part of an
   element that takes a press already sets its own cursor (`BoxedElementView`'s `cursor-*` class,
   `ArrowView`'s hit line), so what shows does not change.
 - Invariant: a change of the canvas world's cursor class (a switch between the class-cursor tools, a pan's start
-  and end, a diagram stroke landing) restyles no element view. It does not cover:
-  - the world's other child (`IsometricDepthLayer`), which sits outside the plane and inherits the world's
-    cursor, so a pan restyles isometric depth blocks.
+  and end, a diagram stroke landing) restyles no element view.
 
 ### The element grid
 

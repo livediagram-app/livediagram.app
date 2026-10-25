@@ -21,6 +21,7 @@ import { linkOut, profileRows } from './profile/profile-rows';
 import type { AccountIdentity } from './profile/ProfileHeader';
 import type { ProfileHost } from './profile/profile-host';
 import type { AccountSecurity } from './profile/SecurityRows';
+import { cloudSyncRows, type CloudSync } from './cloud-sync/cloud-sync-host';
 import type { SettingsCategory, SettingsRow } from './model';
 
 export interface AccountSection {
@@ -45,6 +46,9 @@ export interface AccountSection {
   tokensHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
+  // Cloud Sync (liveworkspace/docs/drive.md "Connecting"): where the deployment offers Drive and the person is signed
+  // in (useCloudSync), its section in the Profile, before Your Account.
+  cloudSync?: CloudSync | null;
 }
 
 const toggleRow =
@@ -70,6 +74,11 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     rows.map(toggleRow(all, set, heading));
 
   const profile = profileRows(section);
+  if (section.cloudSync && profile.length > 0) {
+    // Before Your Account (Sign Out), which closes the Profile.
+    const at = profile.findIndex((row) => row.key === 'signOut');
+    profile.splice(at < 0 ? profile.length : at, 0, ...cloudSyncRows(section.cloudSync));
+  }
 
   const categories: SettingsCategory[] = [];
   if (profile.length > 0) {

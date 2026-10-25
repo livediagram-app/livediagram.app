@@ -45,6 +45,11 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
   item's summary and its comments and actions. The index calls the app back with the same key, at
   `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`. The same doors take
   `…/export` (an item's drawing), on that key or the app's media key, for the previews ([previews.md](previews.md)).
+  For the one-time move from the old livediagram.app ([docs/migration.md](../../docs/migration.md)) each app also serves
+  `PUT …/:id/migration` (one item's part, a `MigrationRoomPayload`, written in one transaction and answered
+  `{ written, edited, meta }`), on that key or the move's own `MIGRATION_KEY`, and its people merge
+  (`POST /api/internal/people/:guest/merge`) takes `{ into, legacy: true }` with a guest as `into`, for an old guest
+  coming back; without `legacy` the target must be an account.
 - **livediagram's api, for the migration**, with its key: `POST /api/index/app/migration/handoff` makes an item in
   another app for the person `X-Index-Person` names (a guest allowed on this route alone) and calls that app's
   `${APP_ORIGIN_<APP>}/api/internal/items/:id/migration` with the app's key

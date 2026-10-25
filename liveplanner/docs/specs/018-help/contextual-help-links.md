@@ -97,7 +97,7 @@ Grouped by priority; each links the keyed article.
 - Share dialog - header (roles / real-time) -> `sharing`
 - Palette settings - auto-attach arrows -> `auto-attach-arrows`
 - Palette settings - alignment guides -> `alignment-guides`
-- Export dialog header -> `exporting-diagrams` (isometric toggle -> `isometric-mode`)
+- Export dialog header -> `exporting-diagrams`
 - Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 

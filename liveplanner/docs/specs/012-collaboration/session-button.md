@@ -12,7 +12,7 @@ Putting the tools ON the canvas makes the canvas run itself. A retro board can c
 
 ## The element
 
-- A **shape kind**, `session-button`: a fixed-size tile (`FIXED_SIZE_SHAPES`), the tool's glyph in a chip over the action's name, a light button surface, pressable inside the pointer-inert Isometric layer.
+- A **shape kind**, `session-button`: a fixed-size tile (`FIXED_SIZE_SHAPES`), the tool's glyph in a chip over the action's name, a light button surface, pressable on the canvas.
 - What it starts lives in **`ShapeElement.session`**, one small object rather than a scatter of fields:
   - `{ tool: 'timer', minutes }` — a countdown of that many minutes (default 5).
   - `{ tool: 'vote', dots }` — a dot vote with that many dots each (default 3).

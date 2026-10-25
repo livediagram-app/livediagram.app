@@ -104,9 +104,9 @@ the copy takes).
      live, so when a token lapses the tool signs in again on its own instead of failing on an unknown client.
      Some tools may still ask to be reconnected, which step 8's email says.
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
-   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has the
-   Drive mirror off for now (both hosted client ids are empty, `drive-mirror.md`), so a person reconnects once it
-   is back; until then step 8's email says Drive sync is paused, not that it needs reconnecting.
+   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
+   Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/drive.md), so a
+   person connects there once; step 8's email says Drive sync is paused, not that it needs reconnecting.
 
 ## 2. Copy documents into livediagram
 
@@ -302,58 +302,136 @@ After a set quiet period (30 days is a starting point):
 
 ## Tooling
 
-Built ahead of the switch, so every step above is a command that can be rehearsed. Four parts, one contract
+Built ahead of the switch (2026-10-25), so every step above is a command that can be rehearsed. Nothing below has
+run against Cloudflare yet; the first run is a staging rehearsal (step 0). Four parts, one contract
 (`packages/migration/src/contract.ts`):
 
 **`@liveworkspace/migration`** (`packages/migration`): the contract, and the splitter, `splitOldDocument` and
 `splitLocalDocument` (`src/split.ts`). Pure TypeScript with no product imports, so the tool, the Workers and the
-editor share it; what it needs of a product (livediagram's stored-tab upgrades, a page's rectangle, a tab's picture)
-is handed in. It classifies each tab and page (step 3), builds one `MigrationRoomPayload` per part, freezes
-cross-product references into a picture and a link, and answers the `MovedParts` mapping and what it reports.
+editor share it; what it needs of a product (livediagram's stored-tab upgrades, a page's rectangle, an image's
+owner, an id) is handed in. It classifies each tab and page (step 3), builds one `MigrationRoomPayload` per part,
+freezes cross-product references into a picture slot and a link, recomputes card people for liveplanner (from
+`input.people`; a person not in it keeps the old hash), and answers the `MovedParts` mapping and what it reports.
+A liveplanner part may have no tabs (a plan with only cards and sheets).
 
-**`@liveworkspace/migrate`** (`liveworkspace/apps/migrate`): the Node command that runs from a laptop. Nothing in it
-is deployed.
+**`@liveworkspace/migrate`** (`liveworkspace/apps/migrate`, runbook in its README): the Node command that runs
+from a laptop. Nothing in it is deployed.
 
 - `snapshot <export.sql>`: loads a `wrangler d1 export` of the old database into a local SQLite file
   (`node:sqlite`) and refuses one whose last `d1_migrations` row isn't `OLD_SCHEMA_LEVEL`. Read-only toward the
-  old account, so it never loads production. The old site's production schema is its repository's `origin/main`
-  (100 migrations, to `0099_workbench_workspace.sql`).
+  old account.
 - `plan <snapshot> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>]`: the whole migration as a
-  bundle on disk, written once and read by everything after:
-  `owner-map.json`, `sql/{accounts,index,media,community}.sql`, `r2/images.json`, `rooms/<app>/<id>.json`,
-  `kv/mcp-clients.json`, `moved-parts.json` and `report.json` (counts, owner-map matches, cross-product
-  references, dropped history). Deterministic: the same snapshot and ledger make the same bundle.
-- `apply <bundle> --env staging|production`: runs it in order (accounts, index, media and R2, the rooms through
-  each app's migration door, community, the MCP's KV), each SQL file with `wrangler d1 execute --remote --file`,
-  then records what it wrote in the ledger.
-- `verify <bundle> --env …`: step 9's counts, read back from each database and door.
+  bundle on disk: `manifest.json` (steps in apply order, the bundle id, the ledger generation it was planned
+  against), `owner-map.json`, `sql/<db>/NNNN.sql` with `ledger/<db>/NNNN.jsonl` beside each chunk (accounts,
+  index, media, community), `r2/images.json` (and `r2/pictures/` for drawn pictures), `rooms/rooms.jsonl`,
+  `kv/mcp-clients.json`, `moved-parts.json` and `report.json`. Deterministic: ids are name-based UUIDs, so the
+  same snapshot and ledger make a byte-identical bundle. Tabs are upgraded with `@livediagram/document`'s
+  `migrateStoredTabKeepingRetired` (every upgrade but the Pages and Plan drops). Each `CrossReference.picture` is
+  drawn with liveplanner's renderer into a PNG and lands as a media image in the person's library. Export
+  `existing-accounts.json` right before `plan`: a stale one can let a Clerk row clash with an account made since.
+- `apply <bundle> --env staging|production [--dry-run]`: runs the steps in order (accounts, index, media and R2,
+  the rooms through each app's migration door, community, the MCP's KV), each command with only that side's
+  credentials (it never passes the shell's `CLOUDFLARE_*` through), then records what it wrote in the ledger. A
+  bundle planned against an older ledger generation is refused.
+- `verify <bundle> --env …`: step 9's row counts, read back from each database (one wrangler call per 500 keys).
+  It doesn't read the rooms back yet.
+
+What `plan` decides for you (all reported in `report.json`):
+
+- **Onboarding emails**: every stage already due at the snapshot is stamped as sent, so the new lifecycle sweep
+  doesn't send old accounts a welcome. New-side accounts with no old row keep their own series.
+- **Settings**: a first run only fills keys the person doesn't have yet on the new side.
+- **Share links**: each goes to the part holding its tab, else to the part that kept the old id. People it was
+  shared with see every part; a part with no link of its own gets a generated one (`shared_with` needs a link).
+  Codes that differ only in case are reported (the new side stores them upper case).
+- **History**: Timeline events are written once, as `imp:<old id>`. Kinds with no new equivalent are dropped and
+  counted.
+- **Profiles and `legacy_guest`**: a `profile` row from each carried participant, and a `legacy_guest` row per old
+  guest (step 6).
+- **Tokens**: only live ones are copied; one revoked on the old site after an earlier run gets its `revokedAt`.
 
 **Writing without overwriting.** Every SQL row is keyed by its old id. A first run inserts (`INSERT OR IGNORE`); a
 catch-up run updates a row only where it still holds what the last run wrote
 (`ON CONFLICT … DO UPDATE … WHERE <row>.updated_at = <the value in the ledger>`), so a row someone has changed on
-the new side since is left alone and reported. Rows without a time of their own (favourites, tags on a document)
-are only ever inserted. Nothing is deleted. The ledger is a local SQLite file kept with the bundles.
+the new side since is left alone and reported. Rows without a time of their own (favourites, image refs, liveplanner
+cells and `sheet_refs`) are only ever inserted. Nothing is deleted. The ledger is a local SQLite file kept with the
+bundles.
 
-**The apps' migration door** (each app's api): `PUT /api/internal/items/:id/migration` with a
-`MigrationRoomPayload`, behind `Bearer MIGRATION_KEY` (a new secret, set on each api for the migration and removed
-after it) or the app's `INDEX_KEY` (the index's handoff, below); a plain 404 with neither set. It writes the room
-with the times given, its changesets, image owners and grants, and for liveplanner its card types, items, sheets,
-cells and form links, and keeps a `migration_tabs` row per tab (the revision it wrote). On a re-run it replaces a
-tab only while the room still holds that revision. The index item must exist first (the index SQL runs before the
-rooms), since the room's outbox pushes its summary to it.
+**The apps' migration door** (`@liveworkspace/index-app`'s `migration-door.ts`, wired in each app's api):
+`PUT /api/internal/items/:id/migration` with a `MigrationRoomPayload`, behind `Bearer MIGRATION_KEY` (a new secret,
+in each app's `.env.example`, set for the migration and removed after it; it opens no other door) or the app's
+`INDEX_KEY` (the index's handoff, below); a plain 404 with neither set, 401 for a wrong key.
 
-**API tokens.** `isApiTokenFormat` and the prefix checks accept `lvd_` beside `lwt_`: the accounts Worker
-(`src/tokens.ts`, `src/workbench/revoke.ts`), `packages/api-kit/src/api-token.ts` (and the CLI's credentials, which
-use it), each app's `apps/api/src/index.ts` and `apps/api/src/auth/accounts.ts`, and each CLI's
-`apps/cli/src/commands/local.ts`. Nothing mints `lvd_`.
+- The whole body is checked before anything is written: `v` 1, this app and this id, tab ids unique, at most
+  32 MiB (413 `too_large`), each tab under `MAX_TAB_BYTES` (413 `tab_too_large` with `tabId`, `bytes` and `cap`;
+  nothing is written).
+- One transaction per item (`importMigrated`): the room with the times given, its changesets (authors kept as old
+  owner ids), image owners and grants (their media rows are already in, since apply runs media first), and for
+  liveplanner its card types, cards (keys kept), sheets, cells and form links. liveplanner keeps no image tables,
+  so its parts' image owners and grants are dropped.
+- `migration_tabs` keeps the revision it wrote per tab; a tab's first revision is the larger of 1 and its newest
+  changeset's. On a re-run a tab is replaced only while the room still holds that revision; a tab deleted on the
+  new side since counts as `edited` and is never re-created.
+- Answers 200 `{ written, edited, meta }`, 400 for a body that isn't this app's payload, 503 when the write fails.
+- The index item must exist first (the index SQL runs before the rooms, with summary `{"imported":"1"}`). The
+  room's first summary push carries the item's old `savedAt` as its change time.
 
-**Returning guests and Local only documents** (step 6): the accounts Worker's `legacy_guest` table and
-`POST /api/account/internal/legacy-guests/claim`; the index's `legacy: true` merge and
-`POST /app/migration/handoff` (makes an item in another app for the delegated person and calls that app's
-migration door with its `INDEX_KEY`); livediagram's api `POST /api/legacy-guest/claim` and
-`POST /api/migration/local-parts`; and in livediagram's editor, the claim on first load and the one-time pass over
-the Local only store, which sets each document's raw tabs aside in a new `retired-parts` store before anything
-reads it.
+**API tokens.** `packages/api-kit/src/api-token.ts` has `LEGACY_API_TOKEN_PREFIX` and `hasApiTokenPrefix`, and its
+`isApiTokenFormat` takes `lvd_` beside `lwt_`. Every product's api-schema re-exports them, so the accounts Worker
+(`src/tokens.ts`, `src/workbench/revoke.ts`, `src/workbench/routes.ts`), each app's `apps/api/src/index.ts` and
+`auth/accounts.ts`, and each CLI accept a carried-over token. Nothing mints `lvd_`.
+
+**Returning guests and Local only documents** (step 6):
+
+- **Accounts**: the `legacy_guest` table (`migrations/0011_legacy_guest.sql`) and
+  `POST /api/account/internal/legacy-guests/claim` `{ legacyId, signature | null, into }`, livediagram's client
+  only, a plain 404 without `LEGACY_GUEST_ID_HMAC_SECRET` (the old site's `GUEST_ID_HMAC_SECRET`). The signature is
+  checked before any row is read (403 `bad_signature`); an unsigned id is accepted only if first seen before
+  `LEGACY_GUEST_SIGNING_LIVE_AT` (403 `signature_required`). It answers `{merged:false, reason:'unknown'}` with no
+  row, `{merged:false, reason:'claimed'}` for one claimed by someone else, `{merged:true}` (also on a retry by the
+  same person), 502 `merge_failed` when the index merge fails (nothing stamped), and 429 past 10 a minute per caller
+  (`LEGACY_GUEST_LIMITER`).
+- **Index**: `/internal/merge` with `legacy: true` lets the target be a guest; `person_app_merges` gains a `legacy`
+  flag (`migrations/0006_person_app_merges_legacy.sql`), so each app's people merge is called with
+  `{ into, legacy: true }`, and takes a guest as `into` only then. `POST /app/migration/handoff`: livediagram's key
+  only, the person in `X-Index-Person` (an account or a guest); it makes the item (owner forced to the person, no
+  team, 409 `item_exists` if the id is taken), calls the app's migration door with its `INDEX_KEY`, and deletes the
+  item again with a 502 `migration_failed` if the app fails. 32 MiB and 60 a minute per person
+  (`MIGRATION_LIMITER`).
+- **livediagram's api**: `POST /api/legacy-guest/claim` forwards as the caller; a refusal that will never clear is a
+  200 `{merged:false, reason}`, one that may clear is a 401, 429 or 503. `POST /api/migration/local-parts` takes the
+  whole raw record (`LocalPartsRequest`, its id included), splits it with `splitLocalDocument`, and hands each part
+  to the index; part ids are derived from the caller, the document id and the app, so a retry names the same items
+  and a 409 `item_exists` counts as landed. Owner and team come from the caller; changesets, image owners and grants
+  are dropped, so a browser can't forge them. 200 `{ parts, keep }`, or 502 `handoff_failed` with the parts that
+  landed.
+- **livediagram's editor**: the claim on `/new` and in the editor (not the Explorer), and the one-time pass over
+  the Local only store: the version 3 upgrade sets each document's raw tabs aside in a `retired-parts` store before
+  anything reads them, and **Move Them** sends each record and writes the answer's `keep` back.
+
+**Measured** (2026-10-25, on a loaded laptop):
+
+- `plan`: 10,000 documents in 10.4 s (1,000 of them split, with pictures), heap growth about 31 MB; every reader
+  streams one document at a time. A picture takes 58 ms for 20 elements, 322 ms for 200.
+- The door: a 200-tab, 40-element-per-tab item in 42 ms (43 ms on a re-run), a 1.96 MB tab in 10 ms. Budgets
+  are kept in a test.
+- The splitter: 5,000 elements over 20 pages in 114 ms.
+
+**Known gaps and risks** (none blocks a rehearsal):
+
+- **R2 copy speed**: one wrangler process per get and per put. At 50,000 images that is hours; if the rehearsal is
+  slow, copy with an S3 client (rclone) under the same keys.
+- **Picture time**: 10,000 pictures is roughly 10–50 minutes on one thread; worker threads would cut it.
+- **Not carried**: tags (the index has none), shape libraries, custom themes, and tabs shared between documents
+  (`tab_shares`, a second pass not built). Invitations need an email after the switch.
+- **A Community post** whose content moved to livedocuments or livedesign is skipped and reported.
+- **Two images, one owner**: when a guest is folded into an account and both had the same bytes, only the first
+  goes in (reported); places using the other show nothing.
+- **Workshop Q&A voter hashes** aren't remapped; **an arrow pinned across a split tab** is left dangling.
+- **An old-editor tab left open** during the editor's version 3 upgrade blocks the upgrade until it closes.
+- **The handoff**: if the app's door times out after writing, the index deletes the item and the room is orphaned.
+  Two claims of one guest at once both merge; the second answers `claimed`.
+- **Check on the first staging dry run**: wrangler's `--yes` and the shape of its `--json` output.
 
 ## Checked against the code (2026-10-25)
 

@@ -14,7 +14,6 @@
 
 import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
-import type { DriveMode } from './drive';
 import type { EditorMode, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
@@ -254,9 +253,6 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
-  // gets Google access tokens. Optional so an older worker parses as 'off'.
-  driveMode?: DriveMode;
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
@@ -289,7 +285,6 @@ export * from './activity';
 export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
-export * from './drive';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
 export * from '@liveworkspace/api-schema/document-dates';

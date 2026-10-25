@@ -50,7 +50,7 @@ export const categories: Category[] = [
     title: 'Account and Data',
     description:
       'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -127,8 +127,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
-    articleCount: 7,
+      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight and Slide Deck.',
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -515,6 +515,15 @@ export const articles: Article[] = [
     parentSlug: 'connect-ai-mcp',
   },
   {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Keep a copy of your documents in your own Google Drive, synced both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livedocuments file folders liveworkspace',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
     slug: 'email-notifications',
     title: 'Email Notifications',
     description: 'The optional emails we send, and how to turn each kind off in Settings.',
@@ -871,14 +880,6 @@ export const articles: Article[] = [
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'isometric-mode',
-    title: 'Isometric Mode',
-    description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
-    keywords: '3d tilt perspective iso angle view projection orbit rotate camera export',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
   },
   // ---- Palette landings: Elements ----
   {

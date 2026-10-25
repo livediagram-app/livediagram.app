@@ -8,17 +8,15 @@ import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-schema';
-import {
-  API_TOKEN_PREFIX,
-  isApiTokenFormat,
-  isWorkbenchSessionFormat,
-  WORKBENCH_SESSION_PREFIX,
-} from '@livediagram/api-schema';
+import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livediagram/api-schema';
+import { hasApiTokenPrefix, isApiTokenFormat } from '@livediagram/api-schema';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
+import { handleLegacyGuestClaim } from './routes/legacy-guest';
+import { handleLocalParts, LOCAL_PARTS_MAX_BYTES } from './routes/migration';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -41,7 +39,6 @@ import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
-import { handleDrive } from './routes/drive';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
@@ -125,8 +122,9 @@ async function routeApiRequest(
   if (!person) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
-    // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
-    if (bearer?.startsWith(API_TOKEN_PREFIX)) {
+    // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path. A token
+    // carried over from the old livediagram.app (`lvd_`, @liveworkspace/api-kit api-token.ts) takes the same path.
+    if (bearer && hasApiTokenPrefix(bearer)) {
       // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
       // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
       // than drops its credential.
@@ -247,7 +245,13 @@ async function routeApiRequest(
     const len = Number(request.headers.get('content-length'));
     // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
     // the route re-checks it and answers with file_too_large + limitBytes.
-    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    // A This Browser document's parts (routes/migration.ts) cross whole, up to an RPC message's cap.
+    const cap =
+      segments[1] === 'images'
+        ? MAX_IMAGE_BYTES
+        : segments[1] === 'migration'
+          ? LOCAL_PARTS_MAX_BYTES
+          : MAX_BODY_BYTES;
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
@@ -370,8 +374,11 @@ async function routeApiRequest(
         return await handlePreferences(ctx);
       case 'participants':
         return await handleParticipants(ctx);
-      case 'drive':
-        return await handleDrive(ctx);
+      // The one-time doors of the move from the old livediagram.app (docs/migration.md step 6).
+      case 'legacy-guest':
+        return await handleLegacyGuestClaim(ctx);
+      case 'migration':
+        return await handleLocalParts(ctx);
     }
   } catch (err) {
     // Log the real error server-side, but don't echo its message to the

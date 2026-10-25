@@ -45,8 +45,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Cta·Opened',
   // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
   // kind), 'Loaded' a failed read retried.
+  'Activity·Added',
+  'Activity·Changed',
   'Activity·Loaded',
   'Activity·Opened',
+  'Activity·Resolved',
   'Activity·Selected',
   'Document·Created',
   'Document·Deleted',
@@ -67,13 +70,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
-  'Drive·Applied',
-  'Drive·Changed',
-  'Drive·Created',
-  'Drive·Linked',
-  'Drive·Opened',
-  'Drive·Unlinked',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
   'Editor·Changed',
   'Element·Added',
@@ -135,6 +131,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Note·Opened',
   'Note·Used',
   'Participant·Created',
+  'Participant·Moved',
   'Participant·Returned',
   'Search·Opened',
   'Search·Searched',

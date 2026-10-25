@@ -360,7 +360,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
   const pickCanvasTool = (tool: CanvasTool) => {
-    // Format / Laser / Spotlight / Isometric all act on existing
+    // Format / Laser / Spotlight all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
     // Hand stay available.
@@ -368,7 +368,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (
       tabForTool &&
       tabForTool.elements.length === 0 &&
-      (tool === 'format' || tool === 'laser' || tool === 'spotlight' || tool === 'isometric')
+      (tool === 'format' || tool === 'laser' || tool === 'spotlight')
     ) {
       return;
     }

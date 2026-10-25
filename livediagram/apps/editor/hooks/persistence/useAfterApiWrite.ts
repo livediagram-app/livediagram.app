@@ -34,7 +34,7 @@ export function useAfterApiWrite(
     enabled?: boolean;
     delayMs?: number;
     minIntervalMs?: number;
-    // Only signals it accepts count (the Drive views take `drive` ones only).
+    // Only signals it accepts count (the legacy-claim views take `claimed` ones only).
     filter?: (signal: ApiWriteSignal) => boolean;
   } = {},
 ): void {

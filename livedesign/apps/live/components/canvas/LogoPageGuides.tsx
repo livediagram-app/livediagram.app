@@ -19,7 +19,7 @@ function Line({ l, ...rest }: { l: GuideLine } & React.SVGProps<SVGLineElement>)
 }
 
 /** Whether a logo page's guides are drawn for this viewer: Show Guides on for the page (it is per
- *  page), an editor, and not zen or the isometric view. */
+ *  page), an editor, and not zen. */
 export function showsLogoGuides(view: PagesModeView, bare: boolean, pageId: string): boolean {
   return !bare && !!view.edit && !!view.logo?.guidesOn(pageId);
 }

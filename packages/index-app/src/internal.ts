@@ -13,8 +13,11 @@
 //                                                            (if any), from address `ip` (if known)
 //   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items
-//   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
-//                                                            for the guest to the account
+//   POST   /api/internal/people/:guest/merge  {into, legacy?}  a guest became an account: move what the app keeps
+//                                                            for the guest to the account. With `legacy: true` (a
+//                                                            returning guest of the old livediagram.app claiming
+//                                                            its migrated work, docs/migration.md step 6) `into` may
+//                                                            be a guest too
 //   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=]   the item drawn as a file, for liveworkspace's
 //                                                            previews (liveworkspace/docs/previews.md). Also takes the
 //                                                            app's MEDIA_KEY (`exportKey`) and DRIVE_KEY (`driveKey`).
@@ -22,11 +25,20 @@
 //                                                            (liveworkspace/docs/drive.md "Contracts > The apps")
 //   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
 //                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
+//   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
+//                                                            into the item's room with its own times (docs/migration.md
+//                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
 //
-// The Drive key opens those two doors and nothing else.
+// The Drive key opens those two doors and nothing else; the migration key the migration door alone.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
 import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
+import type {
+  MigrationApp,
+  MigrationDoorAnswer,
+  MigrationRoomPayload,
+} from '@liveworkspace/migration';
+import { MigrationTabTooLarge, parseMigrationPayload } from './migration-door';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
 
@@ -103,8 +115,9 @@ export type InternalItemHandlers = {
   personClosed?: (personId: string) => Promise<unknown>;
   // A guest became an account (the index's merge): what the app keeps for the guest beside their items (images,
   // a per-person store) moves to the account. Idempotent. An app with nothing to move leaves it out and the door
-  // just confirms.
-  personMerged?: (guestId: string, userId: string) => Promise<unknown>;
+  // just confirms. `legacy`: a returning guest of the old livediagram.app claiming its migrated work
+  // (docs/migration.md step 6), where `intoId` may be another guest (the browser's new one) as well as an account.
+  personMerged?: (guestId: string, intoId: string, options: { legacy: boolean }) => Promise<unknown>;
   // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
   // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
@@ -116,6 +129,11 @@ export type InternalItemHandlers = {
   // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/workbench.md
   // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
   workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
+  // An old livediagram.app document's part into the item's room (the migration door, docs/migration.md): one
+  // Durable Object call, one transaction (migration-room.ts writeMigratedRoom). The payload is checked for shape,
+  // version, app and id before it is called. Throws MigrationTabTooLarge (migration-door.ts) for a tab over the
+  // app's tab cap, which the door answers 413 naming the tab.
+  migrate?: (payload: MigrationRoomPayload) => Promise<MigrationDoorAnswer>;
 };
 
 // The import door's body (liveworkspace/docs/drive.md "Contracts > The apps"): whose item it is (an account id,
@@ -133,6 +151,11 @@ export const IMPORT_NAME_MAX = 1000;
 
 export type InternalItemsOptions = {
   key: string | undefined;
+  // The app's name as the migration's payloads carry it (`MigrationRoomPayload.app`): needed by the migration door.
+  app?: MigrationApp;
+  // The app's MIGRATION_KEY, which the migrate tool calls with (docs/migration.md "Tooling"): the migration door
+  // alone. Set only for the migration, and removed after it.
+  migrationKey?: string | undefined;
   // A second key the export door alone takes: the app's MEDIA_KEY, which liveworkspace's previews call it with.
   exportKey?: string | undefined;
   // The app's DRIVE_KEY, which liveworkspace's Drive mirror calls with: the export door and the import door alone.
@@ -174,11 +197,18 @@ const USER_ID = /^user_[A-Za-z0-9-]{1,64}$/;
 
 async function personMerged(request: Request, guest: string, handlers: InternalItemHandlers) {
   if (!GUEST_ID.test(guest)) return notFound();
-  const into = ((await bodyOf(request)) ?? {})['into'];
-  if (typeof into !== 'string' || !USER_ID.test(into))
+  const body = (await bodyOf(request)) ?? {};
+  const into = body['into'];
+  // A returning old guest (`legacy: true`) merges into whoever claims it, a guest or an account; any other merge is a
+  // guest signing in, into an account.
+  const legacy = body['legacy'] === true;
+  if (legacy) {
+    if (typeof into !== 'string' || !PERSON_ID.test(into) || into === guest)
+      return badRequest('into must be another guest or an account id');
+  } else if (typeof into !== 'string' || !USER_ID.test(into))
     return badRequest('into must be an account id');
   try {
-    await handlers.personMerged?.(guest, into);
+    await handlers.personMerged?.(guest, into, { legacy });
   } catch (err) {
     // The index asks again (a merge is safe to do twice).
     console.warn('[internal] person merge failed', { error: String(err) });
@@ -273,21 +303,94 @@ async function importItem(
   return json({ id: result.id }, 201);
 }
 
+// The largest migration body the door reads: the same RPC message cap as the import door's.
+export const MIGRATION_MAX_BYTES = IMPORT_MAX_BYTES;
+
+// PUT /api/internal/items/:id/migration: an old document's part into the item's room.
+async function migrateItem(
+  request: Request,
+  id: string,
+  app: MigrationApp | undefined,
+  run: NonNullable<InternalItemHandlers['migrate']>,
+): Promise<Response> {
+  if (!app) return notFound();
+  const declared = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(declared) && declared > MIGRATION_MAX_BYTES) {
+    console.warn('[internal] migration refused', { reason: 'too_large', bytes: declared });
+    return json({ error: 'too_large' }, 413);
+  }
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength > MIGRATION_MAX_BYTES) {
+    console.warn('[internal] migration refused', { reason: 'too_large', bytes: bytes.byteLength });
+    return json({ error: 'too_large' }, 413);
+  }
+  let body: unknown;
+  try {
+    body = JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    return badRequest('body must be JSON');
+  }
+  const parsed = parseMigrationPayload(body, app, id);
+  if (!parsed.ok) {
+    console.warn('[internal] migration refused', { reason: 'invalid', error: parsed.error });
+    return badRequest(parsed.error);
+  }
+  let answer: MigrationDoorAnswer;
+  try {
+    answer = await run(parsed.payload);
+  } catch (err) {
+    if (err instanceof MigrationTabTooLarge) {
+      console.warn('[internal] migration refused', {
+        reason: 'tab_too_large',
+        tabId: err.tabId,
+        bytes: err.bytes,
+      });
+      return json({ error: 'tab_too_large', tabId: err.tabId, bytes: err.bytes, cap: err.cap }, 413);
+    }
+    // The tool runs again; every write is safe to repeat.
+    console.error('[internal] migration failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  console.info('[internal] migrated', {
+    written: answer.written.length,
+    edited: answer.edited.length,
+    meta: answer.meta,
+  });
+  return json(answer);
+}
+
 const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
+const MIGRATION_PATH = /^\/api\/internal\/items\/[^/]+\/migration$/;
 const IMPORT_PATH = '/api/internal/items/import';
 
 export async function handleInternalItems(
   request: Request,
-  { key, exportKey, driveKey, handlers, waitUntil = (p) => void p }: InternalItemsOptions,
+  {
+    key,
+    app,
+    exportKey,
+    driveKey,
+    migrationKey,
+    handlers,
+    waitUntil = (p) => void p,
+  }: InternalItemsOptions,
 ): Promise<Response> {
   const url = new URL(request.url);
   const pathname = url.pathname;
   if (!isInternalItemsPath(pathname)) return notFound();
   // The export door takes the index's, the media and the Drive key; the import door the index's and the Drive key;
-  // every other door the index's alone.
+  // the migration door the index's (its handoff of a browser's Local only parts) and the migration key; every other
+  // door the index's alone.
   const exporting = EXPORT_PATH.test(pathname) && request.method === 'GET';
   const importing = pathname === IMPORT_PATH && request.method === 'POST';
-  const keys = exporting ? [key, exportKey, driveKey] : importing ? [key, driveKey] : [key];
+  const migrating = MIGRATION_PATH.test(pathname) && request.method === 'PUT';
+  const keys = exporting
+    ? [key, exportKey, driveKey]
+    : importing
+      ? [key, driveKey]
+      : migrating
+        ? [key, migrationKey]
+        : [key];
   const present = keys.filter((k): k is string => Boolean(k));
   if (present.length === 0) return notFound();
   let allowed = false;
@@ -312,6 +415,8 @@ export async function handleInternalItems(
   if (exporting)
     return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
+  if (migrating)
+    return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

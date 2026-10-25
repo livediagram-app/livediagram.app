@@ -71,8 +71,7 @@ page is and offers; this section is the basics.
   off a page is hidden and cannot be pressed, as if the pages were the only
   paper (`PageClip`, a layer clipped to the pages that holds the
   element views). The selection handles are drawn above it, so an element
-  hanging off a page still shows all of them. Not in the isometric view, whose
-  3D stack a clip would flatten.
+  hanging off a page still shows all of them.
 - **The sheets are a view, never elements.** They take no pointer events (a
   press on one is a press on the empty canvas). Thumbnails see the tab's own
   backdrop and the elements whole; the Export dialog exports
@@ -219,8 +218,8 @@ the card to Choose a Device, and the device chosen turns it into that device's s
 (`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)); **Photo** turns it into an unstarted photo page
 (`kind: 'photo'`), its Start a Photo card showing ([Photo pages](../031-photo/photo-pages.md)). One edit each. Anything put on the page first (a layout, an element) keeps it a blank page: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
-empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
-view, nor on a second page (a page added from the + is of the tab's kind).
+empty page's layout invitation waits until the choice is made. Not offered in zen,
+nor on a second page (a page added from the + is of the tab's kind).
 
 ## The page panel
 
@@ -1116,8 +1115,7 @@ The Export dialog exports **pages**, not the tab's content bounds.
   which also adds the Logo Kit format); elements are inked for the page's own surface. An element (an arrow by its
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
-- The Isometric and Background pattern options are not offered: a page is its own background and
-  is never tilted.
+- The Background pattern option is not offered: a page is its own background.
 - The Hidden layers option is not offered: Pages has no Layers, so a hidden layer's
   elements stay out of the export as they stay off its canvas.
 - The preview is the download: a logo page's PNG and SVG preview show its see-through paper over a
@@ -1192,9 +1190,9 @@ separate pages. It is explicit: never run on opening a tab.
 - It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
   `Tab · Changed · PagesLaidOut`.
 
-## Zen and the isometric view
+## Zen
 
-Zen and the isometric view show the sheets alone: no labels, cogs, layout invites or add button.
+Zen shows the sheets alone: no labels, cogs, layout invites or add button.
 
 livedesign has no slides: a tab's pages are not a deck and are not presented (removed 25 October 2026,
 [Presentation mode](../012-collaboration/presentation-mode.md)).

@@ -264,7 +264,7 @@ export const LIVEDESIGN: TelemetryAppConfig = {
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Laser, spotlight, eraser, format painter, isometric',
+    selectionSubtitle: 'Laser, spotlight, eraser, format painter',
     option: /^(Eraser|Laser|Spotlight|Format)/,
     optionsSubtitle:
       'Settings inside a mode: eraser size and target, laser colour and trail, spotlight shape, format painter copies',

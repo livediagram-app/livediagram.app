@@ -8,6 +8,7 @@ export declare function typescriptConfig(env?: NodeJS.ProcessEnv): { ignoreBuild
 export declare function isTurbopack(env?: NodeJS.ProcessEnv): boolean;
 
 /** The settings every Next app shares; an app spreads this and adds only what is its own. */
+export declare const DEV_ORIGINS: string[];
 export declare function liveworkspaceNextConfig(options?: {
   env?: NodeJS.ProcessEnv;
   exportInDev?: boolean;

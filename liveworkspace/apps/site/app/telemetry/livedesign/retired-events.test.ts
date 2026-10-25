@@ -20,6 +20,17 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'Helpful', 'activity-panel')).toBe(true);
   });
 
+  it('retires the isometric view, its export toggle and its help article, not the other modes', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'isometric-mode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'isometric-mode')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
+    // The Isometric background pattern is a pattern, not the view, and carries on.
+    expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(false);
+  });
+
   it('retires the palette Favourites events', () => {
     expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);

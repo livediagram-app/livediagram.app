@@ -364,3 +364,35 @@ describe('workbench sessions at the front door', () => {
     expect(ctx.token).toEqual({ id: 'tok1', readOnly: false });
   });
 });
+
+// API tokens carried over from the old livediagram.app (docs/migration.md step 1.5, @liveworkspace/api-kit api-token.ts): `lvd_`
+// takes the token path as `lwt_` does.
+describe('carried-over lvd_ API tokens', () => {
+  beforeEach(() => {
+    resolveApiTokenMock.mockReset();
+    resolveApiTokenMock.mockResolvedValue({
+      ownerId: 'user_old',
+      tokenId: 'tok-old',
+      readOnly: false,
+    });
+  });
+
+  it('resolves a well-formed lvd_ token as the token it is', async () => {
+    const token = `lvd_${'b'.repeat(43)}`;
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: `Bearer ${token}` }),
+      env(),
+    );
+    expect(res.status).not.toBe(401);
+    expect(resolveApiTokenMock).toHaveBeenCalledWith(expect.anything(), token);
+  });
+
+  it('refuses a cut-short lvd_ bearer as a token, never reading it as anyone else', async () => {
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: 'Bearer lvd_short' }),
+      env(),
+    );
+    expect(res.status).toBe(401);
+    expect(resolveApiTokenMock).not.toHaveBeenCalled();
+  });
+});

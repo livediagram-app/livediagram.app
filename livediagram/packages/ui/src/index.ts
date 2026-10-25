@@ -50,7 +50,6 @@ export {
   isAllowedScriptUrl,
   parseInert,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
@@ -92,7 +91,6 @@ export { indefiniteArticle, withArticle } from '@livediagram/document';
 export {
   GUEST_IDENTITY_KEYS,
   REPAIR_KEPT_KEYS,
-  REPAIR_KEPT_PREFIXES,
   REPAIR_SCOPE_PREFIXES,
   isRepairClearable,
   repairBrowserStorage,

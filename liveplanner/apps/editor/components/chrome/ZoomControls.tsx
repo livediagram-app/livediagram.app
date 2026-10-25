@@ -18,7 +18,7 @@ type ZoomControlsProps = {
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
   // Zoom belongs to a Sheet (docs/specs/029-sheets/sheet.md "Zoom"); on every other tab a Board, Dashboard or Form
-  // fills the canvas and there is nothing to zoom, so the zoom buttons go and only Isometric and Zen stay.
+  // fills the canvas and there is nothing to zoom, so the zoom buttons go and only Zen stays.
   zoomHidden?: boolean;
   // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
   // their hover cards tell apart.

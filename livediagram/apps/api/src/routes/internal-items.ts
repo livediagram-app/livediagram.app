@@ -12,7 +12,12 @@
 // "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
 // MEDIA_KEY, and answers its whole file for liveworkspace's Drive mirror, which calls it and the import door with
 // DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps", routes/internal-file.ts).
-import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
+import {
+  JOINED_TELEMETRY_TYPE,
+  checkMigrationTabSizes,
+  handleInternalItems as handle,
+} from '@liveworkspace/index-app';
+import { MAX_TAB_BYTES } from '../limits';
 import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
@@ -31,8 +36,10 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    app: 'livediagram',
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    migrationKey: env.MIGRATION_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -71,8 +78,10 @@ export function handleInternalItems(
       },
       // A closed account, wherever it was closed: what livediagram keeps for them beside their canvases.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
-      // A guest who became an account: what livediagram keeps for the guest becomes the account's.
-      personMerged: (guestId, userId) => mergeGuest(env, guestId, userId),
+      // A guest who became an account: what livediagram keeps for the guest becomes the account's. A returning guest
+      // of the old site (`legacy`, docs/migration.md step 6) may merge into another guest: the same moves, since
+      // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
+      personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them.
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
@@ -83,6 +92,12 @@ export function handleInternalItems(
           : documentRoom(env, id).exportImage(query),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
+      // the tab cap refuses the whole part (413) before the room is called.
+      migrate: async (payload) => {
+        checkMigrationTabSizes(payload, MAX_TAB_BYTES);
+        return documentRoom(env, payload.id).importMigrated(payload);
+      },
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },

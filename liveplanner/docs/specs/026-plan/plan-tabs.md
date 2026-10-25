@@ -349,7 +349,7 @@ offered.
 - A **Visualisation tab** exports its one chart filling the page (1376 by 720 px inside the margin).
 - The pictures are drawn from the same models as the live views. The Sheets are read when the Export dialog opens
   (the sheets engine loads then, and only for an image with a Sheet or a figure from one); the preview waits for them.
-- **Isometric view** and **Background pattern** are not offered for a Board, Sheet or Dashboard tab (they are not
+- **Background pattern** is not offered for a Board, Sheet or Dashboard tab (they are not
   drawn on a canvas); Hidden layers neither.
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
   file its Import reads back.

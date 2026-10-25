@@ -16,6 +16,7 @@ import type {
   ShareMessage,
   SharedTabCopy,
 } from '@liveworkspace/index-app';
+import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { Env } from './types';
 
 export type PlanRoomClient = {
@@ -37,6 +38,8 @@ export type PlanRoomClient = {
   // A copy's two halves (plan-content.ts).
   exportCopy(onlyTabId: string | null, redactAuthorsFor: string | null): Promise<PlanCopy | null>;
   importCopy(copy: PlanCopy): Promise<void>;
+  // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
+  importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   // The plan is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
@@ -68,6 +71,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     item: (itemId) => room.item(planId, itemId),
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
     importCopy: (copy) => room.importCopy(planId, copy),
+    importMigrated: (payload) => room.importMigrated(planId, payload),
     purge: () => room.purge(planId),
     revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
     joined: (personId) => room.joined(planId, personId),
@@ -93,6 +97,7 @@ export type PlanRoomRpc = {
     redact: string | null,
   ): Promise<PlanCopy | null>;
   importCopy(planId: string, copy: PlanCopy): Promise<void>;
+  importMigrated(planId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   purge(planId: string): Promise<void>;
   revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   joined(planId: string, personId: string): Promise<void>;

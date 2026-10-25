@@ -139,8 +139,18 @@ function isRetiredSlideDeck(category: string, action: string, type: string | nul
   }
   return category === 'Error' && action === 'Client' && t.startsWith('Render.Presentation.');
 }
+// The isometric view (removed 2026-10-25, docs/specs/008-canvas/canvas-and-palette.md "Retired features"; livediagram
+// keeps it): the canvas tool, the image export's Isometric view toggle and the tool's help article.
+const ISOMETRIC_VIEW = new Set(['Canvas|Used|Isometric', 'UI|Toggled|IsometricExport']);
+const ISOMETRIC_HELP_ID = 'isometric-mode';
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (
+    (category === 'Help' || (category === 'UI' && action === 'Opened')) &&
+    type === ISOMETRIC_HELP_ID
+  )
+    return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (isRetiredSlideDeck(category, action, type)) return true;
   if (isRetiredAiAssistant(category, action, type)) return true;

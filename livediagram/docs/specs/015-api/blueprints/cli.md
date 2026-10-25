@@ -566,7 +566,6 @@ hint: livediagram skill install --to ~/.claude/skills
 type CapabilitiesResponse = {
   aiEnabled: boolean;
   emailEnabled?: boolean;
-  driveMode?: DriveMode;
   apiBase?: string; // `${url.origin}/api` (CLI9)
   authEnabled?: boolean; // ACCOUNTS_URL and API_RESOURCE are set (CLI11)
   oauthIssuer?: string; // OAUTH_ISSUER, an https origin; absent when unset or invalid

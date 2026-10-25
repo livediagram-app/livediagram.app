@@ -9,6 +9,7 @@ import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
+import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
 import type { Env } from './env.ts';
 import { sweepIdleGuests } from './guest-sweep.ts';
 import {
@@ -97,8 +98,14 @@ export default {
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(request, getAuth(env), env.AUTH_DB, indexPurgeConfig(env), (userId) =>
-        closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+      return deleteAccount(
+        request,
+        getAuth(env),
+        env.AUTH_DB,
+        indexPurgeConfig(env),
+        (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+        // After the answer: Google's revoke never holds the close up.
+        (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
       );
     }
 

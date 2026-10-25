@@ -170,8 +170,8 @@ through its `footer`, in the panel's own colours.
 - **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
   it. Select is one pick away, for moving or resizing a board.
 - **No Format or Isometric tool**: the format painter and the isometric view worked on drawn content a Plan tab
-  does not hold, so they are gone (the image export keeps its isometric option,
-  [Isometric export](../008-canvas/isometric-view.md)).
+  does not hold, so they are gone, and the image export's isometric option went after them on 2026-10-25
+  ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)).
 - **No Layers panel**, as below.
 
 ## No palette

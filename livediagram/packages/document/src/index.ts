@@ -602,6 +602,8 @@ export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
+// The retired themes' upgrade on its own, for the migration's stored-tab upgrade without the Pages and Plan drops
+// (apps/api/src/migration/upgrade-tab.ts).
 export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
