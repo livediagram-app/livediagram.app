@@ -21,7 +21,7 @@ export function useCtaAttribution(): { trackCreated: () => void } {
     // already stripped and returns above, so the arrival is counted once.
     const found = ctaSourceFromSearch(url.search);
     url.searchParams.delete(CTA_VIA_PARAM);
-    window.history.replaceState(window.history.state, '', url);
+    window.history.replaceState(null, '', url);
     if (!found) return;
     source.current = found;
     track('Cta', 'Opened', found);

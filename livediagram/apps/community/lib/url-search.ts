@@ -31,6 +31,6 @@ export function getServerSearchSnapshot(): string | null {
 export function replaceSearch(search: string): void {
   if (search === window.location.search) return;
   const { pathname, hash } = window.location;
-  window.history.replaceState(window.history.state, '', `${pathname}${search}${hash}`);
+  window.history.replaceState(null, '', `${pathname}${search}${hash}`);
   notify();
 }

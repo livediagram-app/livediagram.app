@@ -261,7 +261,7 @@ export function ExplorerShell() {
     if (landed.strip) {
       const url = new URL(window.location.href);
       for (const key of [ENDED_PARAM, TRASHED_PARAM, TITLE_PARAM]) url.searchParams.delete(key);
-      window.history.replaceState(window.history.state, '', url);
+      window.history.replaceState(null, '', url);
     }
   }, [landed]);
   useEffect(
@@ -507,7 +507,7 @@ export function ExplorerShell() {
     if (!url.searchParams.has(SETTINGS_PARAM) && !url.searchParams.has(SECTION_PARAM)) return;
     url.searchParams.delete(SETTINGS_PARAM);
     url.searchParams.delete(SECTION_PARAM);
-    window.history.replaceState(window.history.state, '', url);
+    window.history.replaceState(null, '', url);
   }, []);
 
   // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.

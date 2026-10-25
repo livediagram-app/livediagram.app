@@ -41,7 +41,13 @@ const DISCONNECT_FAILED = 'Couldn’t disconnect just now. Try again in a moment
 
 // The status at the top right: plain, muted words, as wide as the widest of the phase; the warning colour and a
 // glyph when something needs the person.
-function StatusText({ options, current }: { options: DriveStatusText[]; current: DriveStatusText }) {
+function StatusText({
+  options,
+  current,
+}: {
+  options: DriveStatusText[];
+  current: DriveStatusText;
+}) {
   const all = options.some((o) => o.text === current.text) ? options : [...options, current];
   return (
     <span data-drive-status className="grid shrink-0 text-xs tabular-nums">
@@ -53,7 +59,9 @@ function StatusText({ options, current }: { options: DriveStatusText[]; current:
             data-warn={option.warn || undefined}
             aria-hidden={shown ? undefined : true}
             className={`inline-flex items-center gap-1 justify-self-end [grid-area:1/1] ${
-              option.warn ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'
+              option.warn
+                ? 'text-amber-700 dark:text-amber-300'
+                : 'text-slate-500 dark:text-slate-400'
             } ${shown ? '' : 'invisible'}`}
           >
             {option.warn ? <WarningGlyph /> : null}
@@ -92,7 +100,7 @@ function useReturnOutcome() {
     if (!outcome) return;
     const url = new URL(window.location.href);
     url.searchParams.delete(DRIVE_OUTCOME_PARAM);
-    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   }, [outcome]);
   return outcome;
 }
@@ -143,8 +151,7 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
     returned: outcome === 'connected',
   };
   const keepReading =
-    driveRowBusy(row, connect) &&
-    (row.kind === 'connected' || reads < DRIVE_ROW_ARRIVAL_READS);
+    driveRowBusy(row, connect) && (row.kind === 'connected' || reads < DRIVE_ROW_ARRIVAL_READS);
   useEffect(() => {
     if (!keepReading) return;
     const timer = window.setTimeout(() => void read(), DRIVE_ROW_REFRESH_MS);
@@ -155,7 +162,9 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
   const now = useSinceNow(lastSyncedAt);
   const copy = driveSyncCopy(row, connect, now);
   const { phase } = copy;
-  const problem = actionError ? { text: actionError, action: null, failed: true as const } : copy.problem;
+  const problem = actionError
+    ? { text: actionError, action: null, failed: true as const }
+    : copy.problem;
 
   // Leaving for Google: this page's own history entry first names Settings on Cloud Sync, so Back from Google's page
   // (and every way back from liveworkspace's) lands here with it open.
@@ -165,7 +174,7 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
     setActionError(null);
     const back = withCloudSyncOpen(window.location.href, settingsParam);
     const url = new URL(back);
-    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     window.location.assign(driveConnectUrl(workspaceOrigin, back));
   };
 
@@ -211,7 +220,10 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
           </span>
         }
         control={
-          <span data-drive-actions className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
+          <span
+            data-drive-actions
+            className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2"
+          >
             <span aria-live="polite" className="text-xs">
               <StatusText options={driveStatusOptions(row, phase)} current={copy.status} />
             </span>
@@ -249,18 +261,15 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
           >
             <p
               className={`min-w-0 text-xs ${
-                problem.failed ? 'text-rose-700 dark:text-rose-300' : 'text-amber-800 dark:text-amber-200'
+                problem.failed
+                  ? 'text-rose-700 dark:text-rose-300'
+                  : 'text-amber-800 dark:text-amber-200'
               }`}
             >
               {problem.text}
             </p>
             {problem.action === 'reconnect' ? (
-              <Button
-                variant="primary"
-                size="sm"
-                aria-disabled={connecting}
-                onClick={startConnect}
-              >
+              <Button variant="primary" size="sm" aria-disabled={connecting} onClick={startConnect}>
                 Reconnect
               </Button>
             ) : null}
@@ -278,4 +287,3 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
     </div>
   );
 }
-

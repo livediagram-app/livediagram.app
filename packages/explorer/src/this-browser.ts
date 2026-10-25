@@ -271,5 +271,5 @@ export function dropThisBrowserConversion(): void {
   if (!url.searchParams.has(THIS_BROWSER_CONVERT_PARAM)) return;
   url.searchParams.delete(THIS_BROWSER_CONVERT_PARAM);
   url.searchParams.delete(THIS_BROWSER_ITEM_PARAM);
-  window.history.replaceState(window.history.state, '', url);
+  window.history.replaceState(null, '', url);
 }
