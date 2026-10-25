@@ -337,7 +337,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
   the session may use; My Work carries its Use as Default for menu.
 - **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
-  "No designs yet", "This folder is empty", "Nothing waiting on you", "No activity yet", "Nothing in the Trash right
+  "No designs yet", "This folder is empty", "You’re all caught up", "No activity yet", "Nothing in the Trash right
   now".
 - **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
   cascade in as they arrive (the dialogs' view and row motions, a fade alone under reduced motion).

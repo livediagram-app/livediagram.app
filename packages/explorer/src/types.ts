@@ -12,6 +12,7 @@ export type LinkProps = {
   children?: ReactNode;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   'aria-label'?: string;
+  'aria-describedby'?: string;
   title?: string;
 };
 

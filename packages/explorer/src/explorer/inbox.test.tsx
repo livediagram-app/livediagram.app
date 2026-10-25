@@ -13,7 +13,7 @@ import {
 import { createFakeIndex } from '../test/fakeClient';
 import type { InboxHost, ItemHref } from '../types';
 import { Explorer, type ExplorerProps } from './Explorer';
-import { inboxSections, threadHint } from './inbox/sections';
+import { actionReason, formReason, inboxSections, threadReason } from './inbox/sections';
 
 // Every part of the place in the address, so a test reads exactly what a row hands the host.
 const itemHref: ItemHref = (item, at) => {
@@ -106,8 +106,6 @@ const form = (patch: Partial<InboxForm> = {}): InboxForm => ({
   ...patch,
 });
 
-const hrefOf = (name: RegExp) => screen.getByRole('link', { name }).getAttribute('href');
-
 describe('the Inbox', () => {
   it('lists actions and cards for me, forms, and threads, each linking to its place', async () => {
     const index = createFakeIndex();
@@ -143,26 +141,43 @@ describe('the Inbox', () => {
       'https://liveplanner.app/open/plan-1?tabId=tab-b&elementId=board-1&cardId=card-7',
       'https://liveplanner.app/open/plan-1?tabId=tab-1&elementId=el-1&open=action',
     ]);
-    // The card reads as its number, title, type and board.
+    // The card reads as its number, title, type and board, assigned to me by Sam.
     const cardRow = forMe.getAllByRole('link')[0]!;
-    expect(cardRow.textContent).toContain('#12 Login fails');
-    expect(cardRow.textContent).toContain('Bug');
-    expect(cardRow.textContent).toContain('Sprint · Board');
-    // The action: its note, where it is, and who assigned it.
-    const actionRow = forMe.getAllByRole('link')[1]!;
-    expect(actionRow.textContent).toContain('Somewhere with a screen');
-    expect(actionRow.textContent).toContain('Kick-off · Roadmap');
-    expect(actionRow.querySelector('[data-inbox-avatar]')!.getAttribute('aria-label')).toBe(
-      'You, Assigned by Sam Lee',
+    expect(cardRow.querySelector('[data-inbox-title]')!.textContent).toBe('#12Login fails');
+    expect(cardRow.querySelector('[data-inbox-card-type="bug"]')!.textContent).toBe('Bug');
+    expect(cardRow.getAttribute('aria-label')).toBe(
+      '#12 Login fails. Assigned to you by Sam Lee. Bug. In Launch, Board, Sprint',
     );
-    expect(hrefOf(/Chase Bo/)).toContain('open=action');
-    expect(
-      screen.getByRole('link', { name: /Chase Bo/ }).querySelector('[data-inbox-avatar]')!
-        .textContent,
-    ).toBe('B');
+    // The action: its note, where it is, and who assigned it, on Sam's avatar.
+    const actionRow = forMe.getAllByRole('link')[1]!;
+    expect(actionRow.querySelector('[data-inbox-detail]')!.textContent).toBe(
+      'Somewhere with a screen',
+    );
+    expect(actionRow.getAttribute('aria-label')).toBe(
+      'Book the room. Assigned to you by Sam Lee. In Launch, Roadmap, Kick-off',
+    );
+    expect(actionRow.querySelector('[data-inbox-reason="assigned"]')!.textContent).toBe(
+      'Assigned to you',
+    );
+    expect(actionRow.querySelector('[data-inbox-avatar]')!.textContent).toBe('SL');
+    // The note and the time describe the row; the time is a <time> with its instant.
+    const described = actionRow.getAttribute('aria-describedby')!.split(' ');
+    expect(described.map((id) => document.getElementById(id)?.tagName)).toEqual(['SPAN', 'TIME']);
+    expect(actionRow.querySelector('time')!.getAttribute('datetime')).toBe(
+      new Date(2).toISOString(),
+    );
+    // Work I handed out waits on its assignee, on their avatar.
+    const chase = screen.getByRole('link', { name: /Chase Bo/ });
+    expect(chase.getAttribute('href')).toContain('open=action');
+    expect(chase.querySelector('[data-inbox-reason="waiting"]')!.textContent).toBe('Waiting on Bo');
+    expect(chase.querySelector('[data-inbox-avatar]')!.textContent).toBe('B');
 
-    expect(hrefOf(/2 new responses to Bug Report/)).toBe(
+    const formRow = screen.getByRole('link', { name: /Bug Report/ });
+    expect(formRow.getAttribute('href')).toBe(
       'https://liveplanner.app/open/plan-2?tabId=board-tab',
+    );
+    expect(formRow.querySelector('[data-inbox-reason="responses"]')!.textContent).toBe(
+      '2 new responses',
     );
 
     const threads = within(screen.getByRole('region', { name: 'Open Comment Threads' }));
@@ -170,30 +185,49 @@ describe('the Inbox', () => {
     expect(elementThread!.getAttribute('href')).toBe(
       'https://liveplanner.app/open/plan-1?tabId=tab-1&elementId=el-2&open=comments',
     );
-    expect(elementThread!.textContent).toContain('Can we halve it?');
+    // The latest comment, quoted under its author, and the thread's comment count.
+    expect(elementThread!.querySelector('[data-inbox-detail]')!.textContent).toBe(
+      'Ada King: Can we halve it?',
+    );
+    expect(elementThread!.querySelector('[data-inbox-comments]')!.textContent).toBe('3');
+    expect(elementThread!.getAttribute('aria-label')).toBe(
+      'Budget. You replied. 3 comments. In Launch, Roadmap',
+    );
     const disc = elementThread!.querySelector<HTMLElement>('[data-inbox-avatar]')!;
     expect(disc.textContent).toBe('AK');
     // Their orange, darkened in its own hue until the white initials read at AA (ui/avatar-fill.ts).
     expect(disc.style.backgroundColor).toBe('rgb(187, 86, 17)');
     expect(cardThread!.getAttribute('href')).toContain('cardId=card-7');
-    expect(cardThread!.querySelector('[data-inbox-hint]')!.textContent).toBe('Mentioned You');
+    expect(cardThread!.querySelector('[data-inbox-reason="mention"]')!.textContent).toBe(
+      'Mentioned you',
+    );
 
     // The sidebar counts the work assigned to me: the action and the card, not the forms or threads.
     expect(screen.getByRole('treeitem', { name: 'Inbox (2)' })).toBeTruthy();
   });
 
-  it('says why a thread is there: a mention first, then the item being theirs', () => {
+  it('says why a row is there: a mention first, then the item being theirs, then a reply', () => {
     const t = {
       app: 'liveplanner' as const,
       mentionsYou: false,
       youCommented: false,
       onYourItem: false,
     };
-    expect(threadHint({ ...t, mentionsYou: true, onYourItem: true })).toBe('Mentioned You');
-    expect(threadHint({ ...t, onYourItem: true })).toBe('Your plan');
-    expect(threadHint({ ...t, onYourItem: true, youCommented: true })).toBeNull();
-    expect(threadHint({ ...t, app: 'livediagram', onYourItem: true })).toBe('Your canvas');
-    expect(threadHint(t)).toBeNull();
+    const label = (r: ReturnType<typeof threadReason>) => r?.label ?? null;
+    expect(label(threadReason({ ...t, mentionsYou: true, onYourItem: true }))).toBe(
+      'Mentioned you',
+    );
+    expect(label(threadReason({ ...t, onYourItem: true }))).toBe('On your plan');
+    expect(label(threadReason({ ...t, onYourItem: true, youCommented: true }))).toBe('You replied');
+    expect(label(threadReason({ ...t, app: 'livediagram', onYourItem: true }))).toBe(
+      'On your canvas',
+    );
+    expect(threadReason(t)).toBeNull();
+    expect(actionReason({ assigneeName: 'Bo' }, true).label).toBe('Assigned to you');
+    expect(actionReason({ assigneeName: 'Bo' }, false).label).toBe('Waiting on Bo');
+    expect(actionReason({ assigneeName: null }, false).label).toBe('Waiting on a teammate');
+    expect(formReason(1).label).toBe('1 new response');
+    expect(formReason(4).label).toBe('4 new responses');
   });
 
   it('merges the host’s This Browser rows, and lists none of them when its store fails', async () => {
@@ -216,7 +250,7 @@ describe('the Inbox', () => {
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     renderInbox(index, { inbox: { localRows: () => Promise.reject(new Error('idb')) } });
-    await screen.findByRole('link', { name: /Can we halve it/ });
+    await screen.findByRole('link', { name: /Budget/ });
     expect(screen.queryByText('Offline plan')).toBeNull();
     warn.mockRestore();
   });
@@ -227,7 +261,7 @@ describe('the Inbox', () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread());
     renderInbox(index);
-    await screen.findByRole('link', { name: /Can we halve it/ });
+    await screen.findByRole('link', { name: /Budget/ });
     const reads = () => index.calls.filter((c) => c.method === 'inbox').length;
     const first = reads();
 
@@ -243,7 +277,7 @@ describe('the Inbox', () => {
       window.dispatchEvent(new Event('focus'));
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await screen.findByRole('link', { name: /new responses to Bug Report/ });
+    await screen.findByRole('link', { name: /Bug Report/ });
     expect(reads()).toBe(first + 1);
 
     now.mockReturnValue(1_200_000);
@@ -252,7 +286,7 @@ describe('the Inbox', () => {
       window.dispatchEvent(new Event('focus'));
     });
     await waitFor(() => expect(reads()).toBe(first + 2));
-    expect(screen.getByRole('link', { name: /Can we halve it/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Budget/ })).toBeTruthy();
     expect(screen.queryByText('Couldn’t load your Inbox')).toBeNull();
     now.mockRestore();
   });
@@ -267,7 +301,7 @@ describe('the Inbox', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Try again' }));
     expect(onTelemetry).toHaveBeenCalledWith('Loaded', 'Retry');
     index.fail.delete('inbox');
-    await screen.findByText('Nothing waiting on you');
+    await screen.findByText('You’re all caught up');
     expect(screen.getByRole('link', { name: 'How actions work' }).getAttribute('href')).toBe(
       'https://help/actions',
     );
@@ -281,7 +315,7 @@ describe('the Inbox', () => {
     now.mockReturnValue(1_000_000);
     const props = { inbox: { onTelemetry: first } };
     const view = renderInbox(index, props);
-    await screen.findByText('Nothing waiting on you');
+    await screen.findByText('You’re all caught up');
     const opened = (fn: ReturnType<typeof vi.fn>) => fn.mock.calls.filter((c) => c[0] === 'Opened');
     expect(opened(first)).toEqual([['Opened']]);
     // Returning to the tab re-reads the Inbox: not a visit.

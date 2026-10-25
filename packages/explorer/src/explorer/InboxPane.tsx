@@ -2,15 +2,22 @@
 
 // The Inbox (one-explorer-contracts.md "Inbox"): what is outstanding for the person, across every app or this one
 // (the header's filter). Assigned to You (actions and cards), Assigned by You, Form Responses and Open Comment
-// Threads, each hidden when empty, one empty state when all are. Rows are in ./inbox/InboxRows; the split in
-// ./inbox/sections.
+// Threads, each hidden when empty, one empty state when all are. Rows are in ./inbox/InboxRows, the same on the page
+// (comfortable) and in the editor's panel (compact); the split in ./inbox/sections.
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { CountBadge } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
-import { EMPTY_CTA, EmptyPane, SkeletonRows } from './EmptyPane';
+import { ActionIcon, ClockIcon, CommentIcon, FormIcon } from '../ui/icons';
+import { EMPTY_CTA, EmptyPane } from './EmptyPane';
 import { useExplorer } from './context';
-import { InboxActionRow, InboxFormRow, InboxThreadRow } from './inbox/InboxRows';
+import {
+  InboxActionRow,
+  InboxFormRow,
+  InboxSkeleton,
+  InboxThreadRow,
+  type InboxDensity,
+} from './inbox/InboxRows';
 import { inboxSections } from './inbox/sections';
 import { PaneHeader } from './PaneHeader';
 
@@ -33,6 +40,7 @@ export function InboxPane({
   }, []);
   const { forMe, byMe, forms, threads } = inboxSections(inbox.data, viewerId);
   const showApp = filter === 'all';
+  const density: InboxDensity = compact ? 'compact' : 'comfortable';
   const retry = () => {
     onTelemetry?.('Loaded', 'Retry');
     inbox.reload();
@@ -54,7 +62,7 @@ export function InboxPane({
           </button>
         </div>
       ) : inbox.loading ? (
-        <SkeletonRows count={4} />
+        <InboxSkeleton count={4} density={density} />
       ) : forMe.length + byMe.length + forms.length + threads.length === 0 ? (
         <EmptyPane view={{ kind: 'inbox' }} words={words} compact={compact}>
           {help ? (
@@ -65,32 +73,45 @@ export function InboxPane({
         </EmptyPane>
       ) : (
         <div className="flex flex-col gap-5">
-          <InboxSection title="Assigned to You" count={forMe.length}>
+          <InboxSection title="Assigned to You" icon={<ActionIcon />} count={forMe.length}>
             {forMe.map((r) => (
-              <InboxActionRow key={`a:${r.itemId}:${r.actionId}`} row={r} forMe showApp={showApp} />
+              <InboxActionRow
+                key={`a:${r.itemId}:${r.actionId}`}
+                row={r}
+                forMe
+                showApp={showApp}
+                density={density}
+              />
             ))}
           </InboxSection>
-          <InboxSection title="Assigned by You" count={byMe.length}>
+          <InboxSection title="Assigned by You" icon={<ClockIcon />} count={byMe.length}>
             {byMe.map((r) => (
               <InboxActionRow
                 key={`a:${r.itemId}:${r.actionId}`}
                 row={r}
                 forMe={false}
                 showApp={showApp}
+                density={density}
               />
             ))}
           </InboxSection>
-          <InboxSection title="Form Responses" count={forms.length}>
+          <InboxSection title="Form Responses" icon={<FormIcon />} count={forms.length}>
             {forms.map((r) => (
-              <InboxFormRow key={`f:${r.itemId}:${r.tabId}`} row={r} showApp={showApp} />
+              <InboxFormRow
+                key={`f:${r.itemId}:${r.tabId}`}
+                row={r}
+                showApp={showApp}
+                density={density}
+              />
             ))}
           </InboxSection>
-          <InboxSection title="Open Comment Threads" count={threads.length}>
+          <InboxSection title="Open Comment Threads" icon={<CommentIcon />} count={threads.length}>
             {threads.map((r) => (
               <InboxThreadRow
                 key={`t:${r.itemId}:${r.tabId}:${r.elementId}`}
                 row={r}
                 showApp={showApp}
+                density={density}
               />
             ))}
           </InboxSection>
@@ -102,17 +123,22 @@ export function InboxPane({
 
 function InboxSection({
   title,
+  icon,
   count,
   children,
 }: {
   title: string;
+  icon: ReactNode;
   count: number;
   children: ReactNode;
 }) {
   if (count === 0) return null;
   return (
     <section aria-label={title}>
-      <h2 className="mb-2 flex items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <h2 className="mb-2 flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span aria-hidden className="text-slate-400 dark:text-slate-500 [&_svg]:size-3.5">
+          {icon}
+        </span>
         {title}
         <CountBadge count={count} />
       </h2>

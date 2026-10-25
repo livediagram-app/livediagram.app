@@ -430,8 +430,10 @@ count: about 18 ms with 2,000 of my items among 22,000, each with a form, a thre
 
 The Explorer shows it in four sections, each hidden when empty: **Assigned to You** (actions and cards, a
 self-assignment only here), **Assigned by You**, **Form Responses** ("3 new responses to Bug Report", opening the
-board they land on) and **Open Comment Threads** (with **Mentioned You**, or **Your plan** when the item is mine
-and I haven't commented). It follows the header's filter: this app's rows, or every app's with each row's app
+board they land on) and **Open Comment Threads** (with **Mentioned you**, **On your plan** when the item is mine
+and I haven't commented, or **You replied**). Every row is one link, the same component on the page and in the
+panel at two densities: where it is, what needs me, the latest comment or note, why it is here as an icon and
+words, and who is behind it (the products' `013-workspace/inbox.md` "How a row reads"). It follows the header's filter: this app's rows, or every app's with each row's app
 mark. The sidebar's badge counts Assigned to You, 0 included once read. Coming back to the browser tab reads it
 again (at most every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees
 (liveplanner's plans in This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill. A

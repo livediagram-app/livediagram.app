@@ -188,9 +188,17 @@ export function DefaultLink({
   onClick,
   title,
   'aria-label': ariaLabel,
+  'aria-describedby': describedBy,
 }: LinkProps) {
   return (
-    <a href={href} className={className} onClick={onClick} title={title} aria-label={ariaLabel}>
+    <a
+      href={href}
+      className={className}
+      onClick={onClick}
+      title={title}
+      aria-label={ariaLabel}
+      aria-describedby={describedBy}
+    >
       {children}
     </a>
   );
