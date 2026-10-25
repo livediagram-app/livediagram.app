@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput } from '@livedesign/ui';
+import { Button, CloseIcon, TextInput, Switch } from '@livedesign/ui';
 import {
   ACTION_STATUSES,
   ACTION_STATUS_LABELS,
@@ -18,7 +18,6 @@ import {
   AssigneePicker,
   type PickableMember,
 } from '@/components/dialogs/AssignActionAssigneePicker';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
@@ -31,7 +30,7 @@ import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/Dialog
 // and an edit that keeps the assignee never sends email (the hook
 // enforces it, the control hides to match).
 //
-// The email offer is the shared iOS-style ToggleSwitch, default on, and
+// The email offer is the shared iOS-style Switch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
 // check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this design" hint only shows
@@ -341,11 +340,7 @@ export function AssignActionDialog({
               className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <span>Email {assignee?.name ?? 'them'} about this action</span>
-              <ToggleSwitch
-                checked={notifyEmail}
-                label={`Email ${assignee?.name ?? 'them'} about this action`}
-                presentational
-              />
+              <Switch presentational size="sm" checked={notifyEmail} />
             </button>
           ) : null}
         </div>

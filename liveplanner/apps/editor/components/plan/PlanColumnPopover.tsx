@@ -21,9 +21,9 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
+  SwitchRow,
 } from '@liveplanner/ui';
 import { plural } from '@liveplanner/project';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideBetweenVerticalEnd } from '@liveworkspace/icons/lucide';
 

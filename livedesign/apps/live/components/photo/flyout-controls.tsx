@@ -6,6 +6,7 @@
 // long choice (the blend modes, the fonts) as a row that opens its popover. Each tells the footer what it is when
 // pointed at.
 import { useState, type ReactNode } from 'react';
+import { SwitchRow as SharedSwitchRow } from '@livedesign/ui';
 import { CHOICE_BLURBS, OPTION_GUIDES } from '@/lib/photo-editor/option-guides';
 import { fromLogPosition, logScaled, toLogPosition } from './slider-scale';
 import { choicePicture } from './option-pictures';
@@ -239,14 +240,13 @@ export function SwitchRow({
 }) {
   const line = OPTION_GUIDES[guide]?.blurb;
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
+    <SharedSwitchRow
+      checked={on}
+      onChange={onChange}
       aria-label={label}
-      onClick={() => onChange(!on)}
       onPointerEnter={() => onPoint({ name: label, text: line ?? '' })}
-      className="group flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left ring-1 ring-transparent transition hover:bg-slate-50 hover:ring-slate-200 dark:hover:bg-slate-800/70 dark:hover:ring-slate-700"
+      layout="group flex w-full items-center justify-between gap-3 rounded-xl text-left"
+      className="px-2 py-1.5 ring-1 ring-transparent transition hover:bg-slate-50 hover:ring-slate-200 dark:hover:bg-slate-800/70 dark:hover:ring-slate-700"
     >
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-[12.5px] font-medium text-slate-700 dark:text-slate-200">
@@ -256,19 +256,7 @@ export function SwitchRow({
           <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">{line}</span>
         ) : null}
       </span>
-      <span
-        aria-hidden
-        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-          on ? 'bg-brand-500' : 'bg-slate-200 dark:bg-slate-700'
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-            on ? 'translate-x-[18px]' : 'translate-x-0.5'
-          }`}
-        />
-      </span>
-    </button>
+    </SharedSwitchRow>
   );
 }
 

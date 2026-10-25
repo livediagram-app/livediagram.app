@@ -99,5 +99,7 @@ export { SITE_FOOTER_LINK, SiteFooter, type SiteFooterProps } from './SiteFooter
 export { ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { ExplorerLink } from './ExplorerLink';
 // The iOS-style switch, and the start screen's "Sync <Kind> to Server" row built on it (save-switch/).
-export { Switch } from './Switch';
+export { Switch, SwitchChip, SwitchRow, type SwitchSize } from './Switch';
+// An editor settings popover's on/off row (a label, a hint, the compact switch), built on SwitchRow.
+export { SettingsToggleRow } from './SettingsToggleRow';
 export * from './save-switch';

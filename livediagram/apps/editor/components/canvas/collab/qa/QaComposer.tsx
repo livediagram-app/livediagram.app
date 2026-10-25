@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { QA_MAX_TEXT } from '@livediagram/document';
+import { SwitchRow } from '@livediagram/ui';
 import { tint } from '../collab-chrome';
 import { CollabComposer } from '../CollabComposer';
 import { MaskGlyph, QA_ACCENT, QA_ACCENT_INK, stopPointer } from './qa-parts';
@@ -33,37 +34,34 @@ export function QaComposer({
       full={full ? 'Board is full' : undefined}
       onSubmit={(text) => onAdd(text, anonymous)}
       meta={
-        <button
-          type="button"
-          role="switch"
+        <SwitchRow
           // A stable name, the state is aria-checked: a name that flipped
           // between "As Sam" and "Anonymous" announced as two controls.
           aria-label="Anonymous"
-          aria-checked={anonymous}
+          checked={anonymous}
+          onChange={setAnonymous}
           {...stopPointer}
-          onClick={(e) => {
-            e.stopPropagation();
-            setAnonymous((a) => !a);
-          }}
-          className="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 text-[10px] font-semibold transition"
+          onClick={(e) => e.stopPropagation()}
+          size="xs"
+          track="start"
+          onColor={QA_ACCENT}
+          offColor={tint(textColor, 0.2)}
+          knob={
+            anonymous ? (
+              <span className="flex text-slate-700">
+                <MaskGlyph size={8} />
+              </span>
+            ) : null
+          }
+          layout="pointer-events-auto inline-flex items-center gap-1.5 rounded-full"
+          className="py-0.5 pl-0.5 pr-2 text-[10px] font-semibold transition"
           style={{
             color: anonymous ? QA_ACCENT_INK : textColor,
             backgroundColor: anonymous ? tint(QA_ACCENT, 0.14) : tint(textColor, 0.06),
           }}
         >
-          <span
-            className="inline-flex h-4 w-7 items-center rounded-full p-0.5 transition-colors"
-            style={{ backgroundColor: anonymous ? QA_ACCENT : tint(textColor, 0.2) }}
-          >
-            <span
-              className="inline-flex h-3 w-3 items-center justify-center rounded-full bg-white text-slate-700 transition-transform duration-200"
-              style={{ transform: anonymous ? 'translateX(12px)' : 'none' }}
-            >
-              {anonymous ? <MaskGlyph size={8} /> : null}
-            </span>
-          </span>
           {anonymous ? 'Anonymous' : `As ${selfName || 'you'}`}
-        </button>
+        </SwitchRow>
       }
     />
   );

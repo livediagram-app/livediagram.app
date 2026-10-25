@@ -11,8 +11,7 @@ import {
   SCALE_LABEL_MAX,
   type FormQuestion,
 } from '@liveplanner/forms';
-import { Select, TextInput } from '@liveplanner/ui';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
+import { Select, TextInput, SwitchRow } from '@liveplanner/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { updateQuestion } from '@liveplanner/forms';
 import { DraftText } from './DraftText';

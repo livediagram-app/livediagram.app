@@ -9,7 +9,7 @@
 // anything structural at once, one undo step each. A store that would change nothing is skipped.
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import { Button, DialogCloseButton, DialogHeader, Switch } from '@liveplanner/ui';
 import {
   nextMessageAfter,
   parseSequenceText,
@@ -29,7 +29,6 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { SequenceParticipantStrip } from '@/components/dialogs/SequenceParticipantStrip';
 import { SequenceMessageList } from '@/components/dialogs/SequenceMessageList';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 type Tab = 'messages' | 'text';
 const TABS: readonly Tab[] = ['messages', 'text'];
@@ -288,7 +287,8 @@ export function SequenceDialog({
           data-tour-id="sequence-numbered"
           className="flex cursor-pointer items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200"
         >
-          <ToggleSwitch
+          <Switch
+            size="sm"
             checked={element.sequenceNumbered === true}
             onChange={() => onNumbered(element.sequenceNumbered !== true)}
             label="Numbered"

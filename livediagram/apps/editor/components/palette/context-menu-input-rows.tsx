@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { Glyph, Switch } from '@livediagram/ui';
 import { DirArrow } from '@/components/palette/context-menu-icons';
 import { type IconPosition, type StandardTone } from '@livediagram/document';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
@@ -203,7 +202,7 @@ export function MenuToggleRow({
           <span className="text-[10px] text-slate-600 dark:text-slate-400">{description}</span>
         ) : null}
       </span>
-      <ToggleSwitch presentational checked={checked} label={label} />
+      <Switch presentational size="sm" checked={checked} />
     </button>
   );
 }
