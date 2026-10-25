@@ -46,7 +46,10 @@ export function siteUrl(id: SiteId, live: string, local = LOCAL): string {
 export const PLATFORM_SITE: Site = {
   id: 'liveworkspace.app',
   name: 'liveworkspace',
-  url: siteUrl('liveworkspace.app', 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
+  url: siteUrl(
+    'liveworkspace.app',
+    'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+  ),
   pitch: 'One account across every app',
   accent: '#64748b',
   deep: '#334155',
@@ -55,14 +58,19 @@ export const PLATFORM_SITE: Site = {
 /** liveworkspace.app's origin as seen from a page on `host`: staging's from a staging app (`staging.<app>`), else
  *  PLATFORM_SITE's (the local site on a dev server). For links from an app's pages to the account pages. */
 export function workspaceOriginFor(host: string): string {
-  return /^staging\./i.test(host) ? 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev' : PLATFORM_SITE.url;
+  return /^staging\./i.test(host)
+    ? 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev'
+    : PLATFORM_SITE.url;
 }
 
 export const APP_SITES: readonly Site[] = [
   {
     id: 'livediagram.app',
     name: 'livediagram',
-    url: siteUrl('livediagram.app', 'https://www.livediagram.app'),
+    url: siteUrl(
+      'livediagram.app',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    ),
     pitch: 'Diagram and draw together',
     accent: '#0ea5e9',
     deep: '#0369a1',
@@ -336,6 +344,7 @@ export {
   appOfAnyOrigin,
   appOfOrigin,
   appOrigins,
+  STAND_INS,
   type AppEnvironment,
   type AppSiteId,
 } from './app-origins';

@@ -42,7 +42,7 @@ describe('tabToExcalidrawText envelope', () => {
     const scene = parse(tabToExcalidrawText(tab([], { backgroundColor: '#0f172a' })));
     expect(scene.type).toBe('excalidraw');
     expect(scene.version).toBe(2);
-    expect(scene.source).toBe('https://livediagram.app');
+    expect(scene.source).toBe('https://livediagram-router.liveworkspace-easing509.workers.dev');
     expect(scene.elements).toEqual([]);
     expect(scene.appState.viewBackgroundColor).toBe('#0f172a');
     expect(scene.files).toEqual({});

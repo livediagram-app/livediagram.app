@@ -189,7 +189,7 @@ describe('POST /internal/purge-person', () => {
         .map((c) => `${c.method} ${c.url}`)
         .sort(),
     ).toEqual([
-      'DELETE https://livediagram.app/api/internal/items/ada-2',
+      'DELETE https://livediagram-router.liveworkspace-easing509.workers.dev/api/internal/items/ada-2',
       'DELETE https://liveplanner.app/api/internal/items/ada-1',
       'DELETE https://liveplanner.app/api/internal/items/ada-gone',
     ]);
@@ -198,7 +198,7 @@ describe('POST /internal/purge-person', () => {
     // stays with the team) and Bea's, where she commented and was given and gave actions.
     const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/'));
     expect(told.map((c) => c.url)).toContain(
-      `https://livediagram.app/api/internal/people/${ADA}/purge`,
+      `https://livediagram-router.liveworkspace-easing509.workers.dev/api/internal/people/${ADA}/purge`,
     );
     expect(new Set(told.map((c) => c.url)).size).toBe(told.length);
     const planner = told.find((c) => c.url.startsWith('https://liveplanner.app'))!;

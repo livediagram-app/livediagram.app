@@ -38,7 +38,8 @@ describe('interrupts', () => {
 
 // Opening the sign-in URL (CLI34): never through a shell, so `&` in the query is a character, not a command.
 describe('openerFor', () => {
-  const url = 'https://livediagram.app/oauth/authorize?a=1&b=2&calc.exe';
+  const url =
+    'https://livediagram-router.liveworkspace-easing509.workers.dev/oauth/authorize?a=1&b=2&calc.exe';
 
   it('hands Windows the URL as one rundll32 argument, never cmd', () => {
     expect(openerFor('win32', url)).toEqual(['rundll32', ['url.dll,FileProtocolHandler', url]]);

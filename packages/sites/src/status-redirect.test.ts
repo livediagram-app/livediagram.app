@@ -8,7 +8,10 @@ import { PRODUCTION_WORKSPACE_ORIGIN, statusPageUrl, statusRedirect } from './wo
 describe('statusRedirect', () => {
   it('sends /status and everything under it to the app’s group on liveworkspace’s page, permanently', () => {
     for (const path of ['/status', '/status/', '/status/anything?x=1']) {
-      const res = statusRedirect(new URL(`https://www.livediagram.app${path}`), 'livediagram');
+      const res = statusRedirect(
+        new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
+        'livediagram',
+      );
       expect(res?.status).toBe(301);
       expect(res?.headers.get('Location')).toBe(
         `${PRODUCTION_WORKSPACE_ORIGIN}/status#livediagram`,
@@ -17,7 +20,12 @@ describe('statusRedirect', () => {
   });
 
   it('follows the router’s workspace origin: staging’s, or the local site', () => {
-    expect(statusPageUrl('liveplanner', 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev')).toBe(
+    expect(
+      statusPageUrl(
+        'liveplanner',
+        'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
+      ),
+    ).toBe(
       'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/status#liveplanner',
     );
     expect(statusPageUrl('livedesign', 'http://localhost:3000')).toBe(
@@ -28,7 +36,10 @@ describe('statusRedirect', () => {
   it('leaves every other path alone', () => {
     for (const path of ['/', '/statuses', '/help/status', '/api/status']) {
       expect(
-        statusRedirect(new URL(`https://www.livediagram.app${path}`), 'livediagram'),
+        statusRedirect(
+          new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
+          'livediagram',
+        ),
       ).toBeNull();
     }
   });

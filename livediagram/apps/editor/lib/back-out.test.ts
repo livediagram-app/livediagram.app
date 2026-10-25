@@ -3,15 +3,19 @@ import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 
 // docs/specs/007-editor/new-document-route.md "Escape backs out".
 describe('backOutTarget', () => {
-  const origin = 'https://livediagram.app';
+  const origin = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
   it('goes back to the page of ours that opened the wizard', () => {
-    expect(backOutTarget({ referrer: 'https://livediagram.app/', origin, historyLength: 2 })).toBe(
-      'back',
-    );
     expect(
       backOutTarget({
-        referrer: 'https://livediagram.app/explorer/recent',
+        referrer: 'https://livediagram-router.liveworkspace-easing509.workers.dev/',
+        origin,
+        historyLength: 2,
+      }),
+    ).toBe('back');
+    expect(
+      backOutTarget({
+        referrer: 'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/recent',
         origin,
         historyLength: 5,
       }),
@@ -23,16 +27,20 @@ describe('backOutTarget', () => {
     expect(backOutTarget({ referrer: 'https://example.com/', origin, historyLength: 3 })).toBe(
       'home',
     );
-    expect(backOutTarget({ referrer: 'https://livediagram.app/', origin, historyLength: 1 })).toBe(
-      'home',
-    );
+    expect(
+      backOutTarget({
+        referrer: 'https://livediagram-router.liveworkspace-easing509.workers.dev/',
+        origin,
+        historyLength: 1,
+      }),
+    ).toBe('home');
     expect(backOutTarget({ referrer: 'not a url', origin, historyLength: 3 })).toBe('home');
   });
 
   it('never goes back to the wizard itself', () => {
     expect(
       backOutTarget({
-        referrer: 'https://livediagram.app/new?folder=f1',
+        referrer: 'https://livediagram-router.liveworkspace-easing509.workers.dev/new?folder=f1',
         origin,
         historyLength: 3,
       }),

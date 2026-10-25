@@ -8,7 +8,7 @@ const lc = (over: Partial<LineContext> = {}): LineContext => ({
   pathOf: (rel) => `docs/diagrams/${rel}`,
   level: 'files',
   relocate: false,
-  linkHost: 'https://livediagram.app',
+  linkHost: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
   ...over,
 });
 const doc = { documentId: 'd1', name: 'Home screen' };
@@ -99,13 +99,16 @@ describe('actionLine', () => {
         {
           kind: 'transient',
           ...doc,
-          failure: 'https://livediagram.app is rate limiting this token',
+          failure:
+            'https://livediagram-router.liveworkspace-easing509.workers.dev is rate limiting this token',
           exit: 6,
           reason: '429',
         },
         lc(),
       ),
-    ).toBe('! "Home screen": https://livediagram.app is rate limiting this token; files kept');
+    ).toBe(
+      '! "Home screen": https://livediagram-router.liveworkspace-easing509.workers.dev is rate limiting this token; files kept',
+    );
     expect(actionLine({ kind: 'none', ...doc, path: null }, lc())).toBeNull();
   });
 
@@ -131,7 +134,7 @@ describe('actionLine', () => {
     );
     expect(refuse('invalid', 'not JSON')).toBe(`! ${p}: not JSON`);
     expect(refuse('foreign-host', 'https://self.example')).toBe(
-      `! ${p}: synced from https://self.example, not this link's https://livediagram.app`,
+      `! ${p}: synced from https://self.example, not this link's https://livediagram-router.liveworkspace-easing509.workers.dev`,
     );
     expect(refuse('duplicate', 'other.livediagram.json')).toBe(
       `! ${p}: names the same document as docs/diagrams/other.livediagram.json`,

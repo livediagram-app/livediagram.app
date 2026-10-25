@@ -45,7 +45,7 @@ const mirror = (): MirrorFile => ({
       'tab-1': { settingsHash: 's1', rev: 17, hash: 'h1' },
       'tab-2': { rev: 2, hash: 'h2', settingsHash: 's2' },
     },
-    host: 'https://livediagram.app',
+    host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
   },
 });
 
@@ -74,7 +74,7 @@ const GOLDEN = `{
   },
   "kind": "livediagram.document",
   "livediagramSync": {
-    "host": "https://livediagram.app",
+    "host": "https://livediagram-router.liveworkspace-easing509.workers.dev",
     "tabs": {
       "tab-1": {
         "hash": "h1",
@@ -126,7 +126,10 @@ describe('a document with no tabs (E24)', () => {
     const empty: MirrorFile = {
       ...mirror(),
       document: { id: 'd', name: 'Empty', presentation: null, tabs: [] },
-      livediagramSync: { host: 'https://livediagram.app', tabs: {} },
+      livediagramSync: {
+        host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        tabs: {},
+      },
     };
     expect(mirrorFileText(empty)).toContain('"tabs": []');
     expect(mirrorFileText(empty)).toContain('"tabs": {}');

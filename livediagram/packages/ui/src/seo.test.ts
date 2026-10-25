@@ -13,7 +13,10 @@ import { pageMetadata } from './seo';
 
 describe('pageMetadata', () => {
   it("uses a page's own card for both Open Graph and Twitter when it has one", () => {
-    const image = { url: 'https://livediagram.app/help/og/canvas/themes.png', alt: 'Themes' };
+    const image = {
+      url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/og/canvas/themes.png',
+      alt: 'Themes',
+    };
     const md = pageMetadata({ title: 't', description: 'd', path: '/help/canvas/themes/', image });
     expect(md.openGraph?.images).toEqual([{ ...image, width: 1200, height: 630 }]);
     expect(md.twitter?.images).toEqual([image.url]);
@@ -40,7 +43,7 @@ describe('pageMetadata', () => {
   it('uses the supplied path as the canonical', () => {
     // The metadataBase in each app's layout resolves the relative
     // path against the production origin, so `/faq` becomes
-    // `https://livediagram.app/faq` in the emitted <link>. The
+    // `https://livediagram-router.liveworkspace-easing509.workers.dev/faq` in the emitted <link>. The
     // factory's job is to surface the supplied path verbatim.
     const md = pageMetadata({ title: 't', description: 'd', path: '/terms' });
     expect(md.alternates).toEqual({ canonical: '/terms' });
@@ -91,14 +94,16 @@ describe('pageMetadata', () => {
     const og = md.openGraph as Record<string, unknown> | undefined;
     expect(og?.images).toEqual([
       {
-        url: 'https://livediagram.app/opengraph-image',
+        url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'livediagram: a real-time canvas for diagrams, whiteboards and workshops',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.images).toEqual(['https://livediagram.app/twitter-image']);
+    expect(tw?.images).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/twitter-image',
+    ]);
   });
 
   it('omits the shared card image when the page has its own route-level image (ownOgImage)', () => {

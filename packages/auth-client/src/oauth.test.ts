@@ -42,22 +42,24 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram.app/auth/callback',
+        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram.app/api',
+        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
       }),
     );
-    expect(url.origin + url.pathname).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/authorize');
+    expect(url.origin + url.pathname).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/authorize',
+    );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram.app/auth/callback',
+      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
       scope: 'openid email profile offline_access',
       state: 'st',
       code_challenge: 'ch',
       code_challenge_method: 'S256',
-      resource: 'https://livediagram.app/api',
+      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     });
   });
 
@@ -66,10 +68,10 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram.app/auth/callback',
+        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram.app/api',
+        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
         prompt: 'create',
       }),
     );
@@ -83,15 +85,17 @@ describe('guestHandoffUrl', () => {
       guestHandoffUrl({
         accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
         clientId: 'client-1',
-        redirectUri: 'https://livediagram.app/auth/guest',
+        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
         state: 'abcdefgh',
         resource: 'https://api.livediagram.app',
       }),
     );
-    expect(url.origin + url.pathname).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/guest');
+    expect(url.origin + url.pathname).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/guest',
+    );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram.app/auth/guest',
+      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
       state: 'abcdefgh',
       resource: 'https://api.livediagram.app',
     });
@@ -133,9 +137,9 @@ describe('exchangeCode', () => {
       credentials,
       {
         code: 'c',
-        redirectUri: 'https://livediagram.app/auth/callback',
+        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
         codeVerifier: 'v',
-        resource: 'https://livediagram.app/api',
+        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
       },
       fetchImpl,
     );
@@ -147,16 +151,18 @@ describe('exchangeCode', () => {
       scope: 'openid email',
     });
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/token');
+    expect(String(url)).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/token',
+    );
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
     );
     expect(Object.fromEntries(new URLSearchParams(String(init?.body)))).toEqual({
       grant_type: 'authorization_code',
       code: 'c',
-      redirect_uri: 'https://livediagram.app/auth/callback',
+      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
       code_verifier: 'v',
-      resource: 'https://livediagram.app/api',
+      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     });
   });
 
@@ -196,7 +202,10 @@ describe('refreshTokens', () => {
     const fetchImpl = tokenResponse({ access_token: 'at2' });
     const tokens = await refreshTokens(
       credentials,
-      { refreshToken: 'rt', resource: 'https://livediagram.app/api' },
+      {
+        refreshToken: 'rt',
+        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      },
       fetchImpl,
     );
     expect(tokens.accessToken).toBe('at2');
@@ -212,7 +221,9 @@ describe('closeAccount', () => {
     const fetchImpl = tokenResponse({ deleted: true });
     await closeAccount(credentials, 'at', fetchImpl);
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account');
+    expect(String(url)).toBe(
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+    );
     expect(init?.method).toBe('POST');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,

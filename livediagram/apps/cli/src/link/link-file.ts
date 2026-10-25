@@ -100,7 +100,7 @@ function originOf(value: string, path: string): string {
     refuse(
       EXIT.rejected,
       'invalid_host',
-      `${path}: host must be an origin such as https://livediagram.app, not ${value}`,
+      `${path}: host must be an origin such as https://livediagram-router.liveworkspace-easing509.workers.dev, not ${value}`,
     );
   let url: URL;
   try {

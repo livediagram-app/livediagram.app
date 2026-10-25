@@ -221,7 +221,13 @@ export function buildOpenApiDocument(): OpenApiDocument {
         'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },
     },
-    servers: [{ url: '/api', description: 'Same-origin API (e.g. https://livediagram.app/api).' }],
+    servers: [
+      {
+        url: '/api',
+        description:
+          'Same-origin API (e.g. https://livediagram-router.liveworkspace-easing509.workers.dev/api).',
+      },
+    ],
     tags: TAGS,
     paths,
     components: {

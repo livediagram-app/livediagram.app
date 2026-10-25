@@ -22,9 +22,9 @@ ENVIRONMENT = "production"
 # grants are issued as `${ACCOUNTS_URL}/api/index`.
 ACCOUNTS_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 # Every app's API resource: an access or guest token addressed to any of them is let in.
-INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+INDEX_AUDIENCES = "https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
 # Where the index calls each app's internal routes.
-APP_ORIGIN_LIVEDIAGRAM = "https://livediagram.app"
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://livedesign.app"
@@ -53,8 +53,8 @@ ENVIRONMENT = "staging"
 # Staging's app origins and API resources: check them against each app's staging deploy before the first
 # deploy here.
 ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
-INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
-APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
+INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"

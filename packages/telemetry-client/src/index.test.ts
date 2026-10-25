@@ -349,30 +349,34 @@ describe('createClientErrorTracking', () => {
   it("skips the edge's bot-detection snippet that Trusted Types refuses by design", () => {
     const track = vi.fn();
     Object.assign(windowTarget, {
-      location: { pathname: '/help/canvas', href: 'https://livediagram.app/help/canvas/#top' },
+      location: {
+        pathname: '/help/canvas',
+        href: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/#top',
+      },
     });
     install(track);
     // The snippet's throw: an inline script (filename is the page) and a cross-realm error.
     windowTarget.fire('error', {
       message:
         "Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.",
-      filename: 'https://livediagram.app/help/canvas/',
+      filename: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/',
       error: { name: 'TypeError' },
     });
     windowTarget.fire('error', {
       message: 'TypeError: This assignment requires a TrustedHTML',
-      filename: 'https://livediagram.app/help/canvas/',
+      filename: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/',
       error: { name: 'TypeError' },
     });
     // The same refusal from one of our own script files still counts, as does anything else inline.
     windowTarget.fire('error', {
       message: 'This assignment requires a TrustedHTML',
-      filename: 'https://livediagram.app/help/_next/static/chunks/app.js',
+      filename:
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/help/_next/static/chunks/app.js',
       error: new TypeError('x'),
     });
     windowTarget.fire('error', {
       message: 'x is undefined',
-      filename: 'https://livediagram.app/help/canvas/',
+      filename: 'https://livediagram-router.liveworkspace-easing509.workers.dev/help/canvas/',
       error: new RangeError('x'),
     });
     expect(track.mock.calls).toEqual([

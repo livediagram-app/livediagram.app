@@ -96,9 +96,12 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('PUT', '/api/documents/0b7c5f9e-1111/tabs/abc123')).toBe(
       'Put.Documents.Tabs',
     );
-    expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
-      'Post.Documents.Tabs.Comments',
-    );
+    expect(
+      apiRouteLabel(
+        'POST',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/documents/x/tabs/y/comments',
+      ),
+    ).toBe('Post.Documents.Tabs.Comments');
     expect(apiRouteLabel('GET', 'http://localhost:8787/api/teams?cursor=abc')).toBe('Get.Teams');
     expect(apiRouteLabel('GET', '/api/shape-libraries')).toBe('Get.ShapeLibraries');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');

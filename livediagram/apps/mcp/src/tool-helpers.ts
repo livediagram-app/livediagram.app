@@ -26,7 +26,7 @@ export type ToolResult = {
 // The editor app this MCP server belongs to: its own host on staging and on a deployment
 // (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
-  env.CONSENT_BASE_URL ?? 'https://livediagram.app';
+  env.CONSENT_BASE_URL ?? 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
   `${appBase(env)}/document/${id}`;

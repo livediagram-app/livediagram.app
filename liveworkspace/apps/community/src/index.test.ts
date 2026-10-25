@@ -65,7 +65,10 @@ async function publish(document = 'd1', patch: Partial<CommunityAppPublish> = {}
   return { res, post: res.ok ? ((await res.json()) as { post: CommunityAppPost }).post : null };
 }
 
-const fromPage = (origin = 'https://livediagram.app', key = KEY): Record<string, string> => ({
+const fromPage = (
+  origin = 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  key = KEY,
+): Record<string, string> => ({
   Origin: origin,
   'X-Community-Key': key,
 });
@@ -292,7 +295,9 @@ describe('the public routes', () => {
       call(`/posts/${post!.id}/like?app=livediagram.app`, { method, headers });
     const liked = await like(fromPage());
     expect(await liked.json()).toEqual({ likeCount: 1, liked: true });
-    expect(liked.headers.get('Access-Control-Allow-Origin')).toBe('https://livediagram.app');
+    expect(liked.headers.get('Access-Control-Allow-Origin')).toBe(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    );
     // Another site's page: the like is answered, but the browser never lets that page read it, and the
     // preflight a real cross-site call needs refuses it first.
     const elsewhere = await like(fromPage('https://evil.example'));
@@ -304,13 +309,18 @@ describe('the public routes', () => {
     expect(pre.headers.get('Access-Control-Allow-Origin')).toBeNull();
     const ok = await call(`/posts/${post!.id}/like?app=livediagram.app`, {
       method: 'OPTIONS',
-      headers: { Origin: 'https://livediagram.app' },
+      headers: { Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev' },
     });
-    expect(ok.headers.get('Access-Control-Allow-Origin')).toBe('https://livediagram.app');
+    expect(ok.headers.get('Access-Control-Allow-Origin')).toBe(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    );
     expect(ok.headers.get('Access-Control-Allow-Headers')).toContain('X-Community-Key');
     // The same browser key from the other page changed nothing, so unliking leaves none.
     expect(await (await like(fromPage(), 'DELETE')).json()).toEqual({ likeCount: 0, liked: false });
-    expect((await like({ Origin: 'https://livediagram.app' })).status).toBe(400);
+    expect(
+      (await like({ Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev' }))
+        .status,
+    ).toBe(400);
   });
 
   it('hide a post after three reports from distinct browsers and networks', async () => {
@@ -318,7 +328,10 @@ describe('the public routes', () => {
     const report = (key: string, ip: string, payload: unknown = { reason: 'spam' }) =>
       call(`/posts/${post!.id}/report?app=livediagram.app`, {
         method: 'POST',
-        headers: { ...fromPage('https://livediagram.app', key), 'CF-Connecting-IP': ip },
+        headers: {
+          ...fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev', key),
+          'CF-Connecting-IP': ip,
+        },
         body: JSON.stringify(payload),
       });
     expect((await report(KEY, '203.0.113.1', { reason: 'nope' })).status).toBe(400);
@@ -364,7 +377,11 @@ describe('the public routes', () => {
 
   it('answer nothing outside its API: liveworkspace.app hosts no Community pages', async () => {
     for (const path of ['/community', '/community/post/', '/api/communityx']) {
-      const res = await worker.fetch(new Request(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`), db.env, ctx);
+      const res = await worker.fetch(
+        new Request(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`),
+        db.env,
+        ctx,
+      );
       expect(res.status).toBe(404);
     }
   });

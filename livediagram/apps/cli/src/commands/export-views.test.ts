@@ -12,7 +12,7 @@ import { EXPORT_RATE_RETRY_MS } from './export';
 
 // `export --all` (CLI29, E24) and a pull file read offline (CLI70), through the whole command.
 
-const HOST = 'https://livediagram.app';
+const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 const square = (id: string, label: string, x = 0): ShapeElement => ({
   id,
   type: 'shape',

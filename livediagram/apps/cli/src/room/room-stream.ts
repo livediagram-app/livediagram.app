@@ -22,7 +22,7 @@ export type RoomStream = {
 type Deps = {
   io: CliIo;
   api: ApiClient;
-  // The api base the token talks to, e.g. https://www.livediagram.app/api.
+  // The api base the token talks to, e.g. https://livediagram-router.liveworkspace-easing509.workers.dev/api.
   apiBase: string;
   documentId: string;
   log: (line: string) => void;

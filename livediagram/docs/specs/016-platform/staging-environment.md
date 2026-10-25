@@ -207,15 +207,13 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Done** — the data store exists:
 
-| Resource | Name                   | Where the id lives       |
-| -------- | ---------------------- | ------------------------ |
-| KV       | `mcp-oauth-kv-staging` | `apps/mcp/wrangler.toml` |
+| Resource | Name                            | Where the id lives       |
+| -------- | ------------------------------- | ------------------------ |
+| KV       | `livediagram-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
 
-It was created in `ENAM`, Cloudflare's default for the account rather than a
-deliberate choice; production's region was not readable from the API to mirror. If
-staging ever needs to reproduce production's read latency, that is the knob.
-
-Note the KV **title** is `mcp-oauth-kv-staging`, matching production's `mcp-oauth-kv`.
+Note the KV **title** is `livediagram-mcp-oauth-staging`, matching production's
+`livediagram-mcp-oauth`: the product's name leads, because every liveworkspace app's
+namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
 It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
 `livediagram-mcp-staging-OAUTH_KV` instead.

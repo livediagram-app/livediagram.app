@@ -11,7 +11,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 function setUp(tickets: Route) {
   const io = fakeIo({ routes: [tickets] });
   const api = createApiClient({
-    baseUrl: 'https://livediagram.app/api',
+    baseUrl: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     headers: () => ({}),
     fetch: io.fetch,
   });
@@ -22,7 +22,7 @@ function setUp(tickets: Route) {
   const stream = openRoomStream({
     io,
     api,
-    apiBase: 'https://livediagram.app/api',
+    apiBase: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     documentId: 'd 1',
     log: (l) => void logs.push(l),
     notice: (l) => void notices.push(l),
@@ -43,7 +43,9 @@ describe('openRoomStream', () => {
     const { io, ops, logs, stream } = setUp(ticketing);
     await tick();
     const socket = io.sockets[0]!;
-    expect(socket.url).toMatch(/^wss:\/\/livediagram\.app\/api\/documents\/d%201\/ws\?t=t\d+$/);
+    expect(socket.url).toMatch(
+      /^wss:\/\/livediagram-router\.liveworkspace-easing509\.workers\.dev\/api\/documents\/d%201\/ws\?t=t\d+$/,
+    );
     socket.open();
     socket.send({ kind: 'presence', participants: [] });
     socket.send({ kind: 'op', from: 'p', op: { kind: 'tab', tabId: 't1' } });

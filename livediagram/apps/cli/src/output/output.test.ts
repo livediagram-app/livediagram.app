@@ -6,7 +6,7 @@ import { EXIT, exitCodeForStatus } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf, ISSUES_URL } from './failure-of';
 import { render } from './print';
 
-const HOST = 'https://livediagram.app';
+const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 const apiError = (status: number, body: unknown) =>
   new ApiError(status, typeof body === 'string' ? body : JSON.stringify(body));
 

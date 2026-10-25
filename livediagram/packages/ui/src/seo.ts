@@ -36,7 +36,7 @@ export type PageMetadataInput = {
   title: string;
   description: string;
   // Canonical path, resolved against the app's metadataBase (SITE_URL), so
-  // `/faq` becomes `https://livediagram.app/faq`. A basePath app includes its
+  // `/faq` becomes `https://livediagram-router.liveworkspace-easing509.workers.dev/faq`. A basePath app includes its
   // prefix (help passes `/help/canvas/themes/`).
   path: `/${string}`;
   // The OG siteName. Defaults to SITE_NAME; the help centre names itself.

@@ -13,9 +13,9 @@ describe('resolveMcpOrigin', () => {
     expect(resolveMcpOrigin('   ')).toBe(DEFAULT_MCP_ORIGIN);
   });
   it('uses an explicit origin, without a trailing slash', () => {
-    expect(resolveMcpOrigin('https://mcp-staging.livediagram.app')).toBe(
-      'https://mcp-staging.livediagram.app',
-    );
+    expect(
+      resolveMcpOrigin('https://livediagram-mcp-staging.liveworkspace-easing509.workers.dev'),
+    ).toBe('https://livediagram-mcp-staging.liveworkspace-easing509.workers.dev');
     expect(resolveMcpOrigin('https://mcp.example.com/')).toBe('https://mcp.example.com');
     expect(resolveMcpOrigin('https://mcp.example.com///')).toBe('https://mcp.example.com');
     expect(resolveMcpOrigin('///')).toBe(DEFAULT_MCP_ORIGIN);

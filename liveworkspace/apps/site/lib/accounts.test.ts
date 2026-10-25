@@ -97,39 +97,57 @@ describe("on an app's own address", () => {
   }
 
   it('knows an app’s address from liveworkspace.app’s, staging’s and the local one', () => {
-    expect(onAppAddress('https://www.livediagram.app')).toBe(true);
+    expect(onAppAddress('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
+      true,
+    );
     expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
     expect(onAppAddress('http://localhost:3300')).toBe(true);
-    expect(onAppAddress('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(false);
-    expect(onAppAddress('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev')).toBe(false);
+    expect(onAppAddress('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
+      false,
+    );
+    expect(
+      onAppAddress('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev'),
+    ).toBe(false);
     expect(onAppAddress('http://localhost:3000')).toBe(false);
   });
 
   it('reaches the accounts API through the app’s router there, and directly here', () => {
-    expect(accountsApi('https://livediagram.app')).toBe('/api/workspace/auth');
-    expect(accountsApi('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe('/api/auth');
+    expect(accountsApi('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
+      '/api/workspace/auth',
+    );
+    expect(accountsApi('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
+      '/api/auth',
+    );
   });
 
   it('links to the app’s own sign-in there, which keeps the address on the app', () => {
     expect(signInHref('/explorer/recent', 'https://liveplanner.app')).toBe(
       '/api/auth/sign-in?return_to=%2Fexplorer%2Frecent',
     );
-    expect(signInHref('/explorer/recent', 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
-      '/sign-in?return=%2Fexplorer%2Frecent',
-    );
+    expect(
+      signInHref(
+        '/explorer/recent',
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+      ),
+    ).toBe('/sign-in?return=%2Fexplorer%2Frecent');
   });
 
   it('keeps the hand-off’s binding for the tab, and only one that looks like a hash', () => {
-    at('https://livediagram.app');
+    at('https://livediagram-router.liveworkspace-easing509.workers.dev');
     expect(handoffBind(`?handoff=${BIND}`)).toBe(BIND);
     expect(handoffBind('?sig=s')).toBe(BIND);
     expect(handoffBind('?handoff=short')).toBe(BIND);
   });
 
   it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
-    const hop = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/handoff?token=t';
-    const fetched = at('https://livediagram.app', Response.json({ url: hop }));
-    const next = 'https://livediagram.app/api/auth/callback?code=c&state=s';
+    const hop =
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/handoff?token=t';
+    const fetched = at(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+      Response.json({ url: hop }),
+    );
+    const next =
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/auth/callback?code=c&state=s';
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(hop);
     expect(fetched).toHaveBeenCalledWith('/api/workspace/auth/handoff/start', expect.anything());
     expect(
@@ -138,10 +156,10 @@ describe("on an app's own address", () => {
       return: next,
       bind: BIND,
     });
-    at('https://livediagram.app');
+    at('https://livediagram-router.liveworkspace-easing509.workers.dev');
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
     // No binding: straight back.
-    const none = at('https://livediagram.app');
+    const none = at('https://livediagram-router.liveworkspace-easing509.workers.dev');
     expect(await afterSignIn(next, '')).toBe(next);
     expect(none).not.toHaveBeenCalled();
     // A consent step still to come keeps the session where it is.

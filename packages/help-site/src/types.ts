@@ -26,7 +26,7 @@ export interface HelpCatalogue {
 export interface HelpFacts {
   /** The product's name as it is written, its SITE_NAME: `livediagram`. */
   siteName: string;
-  /** The product's origin, its SITE_URL: `https://livediagram.app`. */
+  /** The product's origin, its SITE_URL: `https://livediagram-router.liveworkspace-easing509.workers.dev`. */
   siteUrl: string;
   /** `${siteUrl}/help`, the prefix every absolute help URL builds on. */
   helpUrl: string;

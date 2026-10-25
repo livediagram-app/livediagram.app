@@ -255,7 +255,7 @@ describe('the guest hand-off', () => {
       client_id: CLIENT_ID,
       redirect_uri: GUEST_RETURN,
       state: 's',
-      resource: 'https://livediagram.app/api',
+      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     });
     expect(await response.json()).toEqual({ error: 'invalid_resource' });
   });

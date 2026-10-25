@@ -29,9 +29,9 @@ export function isTelemetryAppFilter(value: unknown): value is TelemetryAppFilte
 // another's name. Local development origins are allowed separately, by the ingest's environment.
 export const TELEMETRY_APP_ORIGINS: Record<TelemetryApp, readonly string[]> = {
   'livediagram.app': [
-    'https://livediagram.app',
-    'https://www.livediagram.app',
-    'https://staging.livediagram.app',
+    'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
   ],
   'liveplanner.app': [
     'https://liveplanner.app',

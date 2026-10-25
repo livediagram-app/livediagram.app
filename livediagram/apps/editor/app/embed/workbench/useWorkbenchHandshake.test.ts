@@ -55,7 +55,7 @@ function fakeWindow(href: string, framed = true) {
   return { win: win as unknown as Window, parent, deliver, listeners };
 }
 
-const ADDRESS = `https://livediagram.app/embed/workbench?d=doc-1#ticket=${TICKET}`;
+const ADDRESS = `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1#ticket=${TICKET}`;
 
 let events: WorkbenchEvent[];
 const dispatch = (e: WorkbenchEvent) => events.push(e);
@@ -77,7 +77,9 @@ afterEach(() => {
 
 describe('runWorkbenchHandshake', () => {
   it('refuses an address without a ticket and redeems nothing', async () => {
-    const { win } = fakeWindow('https://livediagram.app/embed/workbench?d=doc-1');
+    const { win } = fakeWindow(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1',
+    );
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 

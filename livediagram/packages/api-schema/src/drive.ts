@@ -115,9 +115,20 @@ export function isDriveLeaseHolder(value: unknown): value is string {
   return typeof value === 'string' && LEASE_HOLDER_RE.test(value);
 }
 
-const PRODUCTION_HOSTS = new Set(['livediagram.app', 'www.livediagram.app']);
+// Each with its workers.dev stand-in until livediagram.app moves (docs/specs/016-platform/stand-in-addresses.md).
+const PRODUCTION_HOSTS = new Set([
+  'livediagram.app',
+  'www.livediagram.app',
+  'livediagram-router.liveworkspace-easing509.workers.dev',
+]);
 // Staging, and local development, which uses the staging Google client.
-const STAGING_HOSTS = new Set(['staging.livediagram.app', 'localhost', '127.0.0.1', '::1']);
+const STAGING_HOSTS = new Set([
+  'staging.livediagram.app',
+  'livediagram-router-staging.liveworkspace-easing509.workers.dev',
+  'localhost',
+  '127.0.0.1',
+  '::1',
+]);
 
 // A host as `location.host` gives it, lower-cased, without its port:
 // `[::1]:3000` → `::1`, `localhost:3100` → `localhost`.

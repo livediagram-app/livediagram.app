@@ -19,9 +19,9 @@ import {
 import { addClient, testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
-const APP = 'https://livediagram.app';
+const APP = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
-const RESOURCE = 'https://livediagram.app/api';
+const RESOURCE = 'https://livediagram-router.liveworkspace-easing509.workers.dev/api';
 const CALLBACK = `${APP}/api/auth/callback`;
 const PLANNER_CALLBACK = 'https://liveplanner.app/api/auth/callback';
 const SESSION_COOKIE = '__Secure-better-auth.session_token';
@@ -345,14 +345,23 @@ describe('the hand-off', () => {
 
   it.each([
     ['another site', 'https://evil.example/api/auth/callback?code=c'],
-    ['a look-alike host', 'https://livediagram.app.evil.example/api/auth/callback?code=c'],
+    [
+      'a look-alike host',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example/api/auth/callback?code=c',
+    ],
     ['a sub-domain', 'https://evil.livediagram.app/api/auth/callback?code=c'],
     ['plain http', 'http://livediagram.app/api/auth/callback?code=c'],
-    ['a path the app did not register', 'https://livediagram.app/sign-in?code=c'],
+    [
+      'a path the app did not register',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/sign-in?code=c',
+    ],
     ['another app’s callback', `${PLANNER_CALLBACK}?code=c`],
     ['a local address in production', 'http://localhost:3100/api/auth/callback?code=c'],
     ['credentials in the address', 'https://user:pass@livediagram.app/api/auth/callback?code=c'],
-    ['a fragment', 'https://livediagram.app/api/auth/callback?code=c#x'],
+    [
+      'a fragment',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/auth/callback?code=c#x',
+    ],
     ['a protocol-relative address', '//evil.example/api/auth/callback'],
     ['a javascript: address', 'javascript:alert(1)'],
   ])('refuses a return address that is %s (foreign return, open redirect)', async (_, back) => {
@@ -401,7 +410,12 @@ describe('the app origin a request came through', () => {
     });
 
   it('is the forwarded host when an app’s router forwarded it and the host is an app’s', () => {
-    expect(appOriginOfProxy(proxied('livediagram.app'), 'production')).toBe(APP);
+    expect(
+      appOriginOfProxy(
+        proxied('livediagram-router.liveworkspace-easing509.workers.dev'),
+        'production',
+      ),
+    ).toBe(APP);
     expect(appOriginOfProxy(proxied('localhost:3100'), 'development')).toBe(
       'http://localhost:3100',
     );

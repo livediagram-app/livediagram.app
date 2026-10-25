@@ -153,7 +153,7 @@ describe('sync at files', () => {
     const { io, host } = setup('files', [home(), menu()]);
     await sync(io);
     const text = file(io, MIRROR)!.replace(
-      '"host": "https://livediagram.app"',
+      '"host": "https://livediagram-router.liveworkspace-easing509.workers.dev"',
       '"host": "not a url"',
     );
     expect(text).toContain('"not a url"');
@@ -251,9 +251,17 @@ describe('sync at files', () => {
 
   it('keeps every file through transient failures, exiting 6 or 7', async () => {
     for (const [state, code, says] of [
-      [429, 6, 'https://livediagram.app is rate limiting this token'],
-      [503, 7, 'https://livediagram.app failed (HTTP 503)'],
-      ['network', 7, 'could not reach https://livediagram.app (fetch failed)'],
+      [
+        429,
+        6,
+        'https://livediagram-router.liveworkspace-easing509.workers.dev is rate limiting this token',
+      ],
+      [503, 7, 'https://livediagram-router.liveworkspace-easing509.workers.dev failed (HTTP 503)'],
+      [
+        'network',
+        7,
+        'could not reach https://livediagram-router.liveworkspace-easing509.workers.dev (fetch failed)',
+      ],
     ] as const) {
       const { io, host } = setup('files', [home()]);
       await sync(io);
@@ -384,7 +392,7 @@ describe('sync and the link’s host', () => {
     expect(result).toEqual({
       code: 2,
       out: '',
-      err: 'error: /work/livediagram.toml links https://self.example; this profile is https://livediagram.app\nhint: livediagram --profile work sync\n',
+      err: 'error: /work/livediagram.toml links https://self.example; this profile is https://livediagram-router.liveworkspace-easing509.workers.dev\nhint: livediagram --profile work sync\n',
     });
     expect(io.requests).toEqual([]);
     io.fileMap.delete('/home/agent/.config/livediagram/config.toml');
@@ -551,14 +559,14 @@ describe('sync, edges', () => {
     const limited = await sync(io);
     expect(limited.code).toBe(6);
     expect(limited.out).toContain(
-      '! "Home screen": https://livediagram.app is rate limiting this token; files kept',
+      '! "Home screen": https://livediagram-router.liveworkspace-easing509.workers.dev is rate limiting this token; files kept',
     );
     expect(io.fileMap.has(MIRROR)).toBe(false);
     status = 503;
     expect((await sync(io)).code).toBe(7);
     status = 0;
     expect((await sync(io)).out).toContain(
-      'could not reach https://livediagram.app (fetch failed); files kept',
+      'could not reach https://livediagram-router.liveworkspace-easing509.workers.dev (fetch failed); files kept',
     );
     status = 401;
     expect((await sync(io)).code).toBe(4);

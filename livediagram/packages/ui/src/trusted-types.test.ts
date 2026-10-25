@@ -15,7 +15,7 @@ describe('TRUSTED_TYPES_CSP', () => {
 describe('trustedScriptOrigins', () => {
   // docs/specs/022-drive-mirror/drive-mirror.md: the Drive mirror's Google libraries, only for a build that offers it.
   it("lets Google's Drive libraries load where the build offers the Drive mirror, and only there", () => {
-    const page = 'https://www.livediagram.app';
+    const page = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
     const withDrive = trustedScriptOrigins({
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: '123456789012-abc.apps.googleusercontent.com',
     });

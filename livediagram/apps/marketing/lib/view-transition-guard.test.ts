@@ -7,7 +7,7 @@ import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/vie
 // The shared guard, bound to this product's other apps as its layout binds it.
 const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
 
-const ORIGIN = 'https://livediagram.app';
+const ORIGIN = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 // Runs the inline script against a stub window and swaps the page to `url`.
 function swapTo(url: string, withTransition = true) {

@@ -45,7 +45,10 @@ function makeEnv(previewsOrigin?: string) {
 }
 
 const get = (path: string, env: never) =>
-  worker.fetch(new Request(`https://www.livediagram.app${path}`), env);
+  worker.fetch(
+    new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
+    env,
+  );
 
 let asked: string[];
 beforeEach(() => {
@@ -75,21 +78,27 @@ describe('editor worker: the share page', () => {
     const { env, assets } = makeEnv();
     const res = await get('/document/shared?s=CODE1234', env);
     expect(assets).toEqual(['/document/placeholder']);
-    expect(asked).toEqual(['https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/card']);
+    expect(asked).toEqual([
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/card',
+    ]);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     const edits = (await res.json()) as Record<string, string>;
     expect(edits.title).toBe('Payments flow');
     expect(edits['meta[name="description"]']).toBe(SHARE_PITCH);
     expect(edits['meta[property="og:image"]']).toBe(
-      'https://www.livediagram.app/api/previews/share/CODE1234/image.png',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/image.png',
     );
     expect(edits['meta[property="og:image:alt"]']).toBe('Payments flow, drawn in livediagram');
   });
 
   it('asks the previews origin it is given (staging)', async () => {
-    const { env } = makeEnv('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev');
+    const { env } = makeEnv(
+      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
+    );
     await get('/document/shared?s=C', env);
-    expect(asked).toEqual(['https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/previews/share/C/card']);
+    expect(asked).toEqual([
+      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/previews/share/C/card',
+    ]);
   });
 
   it("never asks about a document's own address, which only its owner can open", async () => {

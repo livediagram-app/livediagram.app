@@ -71,7 +71,10 @@ export async function trackedFile(
       kind: 'livediagram.document',
       schemaVersion: 1,
       document: { id: doc.id, name: doc.name, presentation: null, tabs },
-      livediagramSync: { host: 'https://livediagram.app', tabs: recorded },
+      livediagramSync: {
+        host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        tabs: recorded,
+      },
     },
     hashes,
   };

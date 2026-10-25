@@ -44,7 +44,7 @@ async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await page.addInitScript((mode) => localStorage.setItem('livediagram:v2:ui-mode', mode), scheme);
 }
 
-const MCP = 'https://mcp.livediagram.app';
+const MCP = 'https://livediagram-mcp.liveworkspace-easing509.workers.dev';
 
 async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);

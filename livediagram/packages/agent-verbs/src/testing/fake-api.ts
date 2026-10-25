@@ -10,7 +10,7 @@ const isText = (a: unknown): a is { text: string } =>
 export function fakeApi(routes: Record<string, unknown>): ApiClient & { calls: string[] } {
   const calls: string[] = [];
   const api = createApiClient({
-    baseUrl: 'https://livediagram.app/api',
+    baseUrl: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
     headers: () => ({}),
     fetch: async (request) => {
       const url = new URL(request.url);
@@ -46,7 +46,7 @@ export function contextOf(
   return {
     log: (line) => void logs.push(line),
     api,
-    host: 'https://livediagram.app',
+    host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
     useShareCode: (code) => void shareCodes.push(code),
     notice: (line) => void notices.push(line),
     now: () => clock.now,

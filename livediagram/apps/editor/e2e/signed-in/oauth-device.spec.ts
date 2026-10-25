@@ -9,7 +9,7 @@ import { freshUserId, installSession } from './session';
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
-const MCP = 'https://mcp.livediagram.app';
+const MCP = 'https://livediagram-mcp.liveworkspace-easing509.workers.dev';
 
 test('a signed-in person connects the CLI with the code their terminal shows', async ({
   page,

@@ -34,7 +34,7 @@ const libraries: Libraries = {
   ],
 };
 const choices = folderChoices(libraries);
-const HOST = 'https://livediagram.app';
+const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 async function failureOf(run: () => Promise<unknown>): Promise<CliFailure> {
   try {
@@ -48,7 +48,7 @@ async function failureOf(run: () => Promise<unknown>): Promise<CliFailure> {
 
 describe('pickFolder', () => {
   const LIST = [
-    'Folders in https://livediagram.app',
+    'Folders in https://livediagram-router.liveworkspace-easing509.workers.dev',
     '   1  Art                personal',
     '   2  Minigames          personal',
     '   3  Minigames/Screens  personal',
@@ -162,7 +162,8 @@ describe('noFoldersError', () => {
     expect(noFoldersError(HOST).failure).toEqual({
       exit: 3,
       code: 'no_folders',
-      message: 'there are no folders in https://livediagram.app to link',
+      message:
+        'there are no folders in https://livediagram-router.liveworkspace-easing509.workers.dev to link',
       hint: 'create a folder in livediagram, or link documents: livediagram link init --doc <doc>',
     });
   });

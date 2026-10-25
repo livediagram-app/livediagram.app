@@ -191,13 +191,17 @@ describe('workbench pair', () => {
     expect(await pair(recovers.io)).toBe(0);
     const fails = host({ polls: ['network', 'network', 'network'] });
     expect(await pair(fails.io)).toBe(7);
-    expect(fails.io.err()).toContain('could not reach https://livediagram.app (fetch failed)');
+    expect(fails.io.err()).toContain(
+      'could not reach https://livediagram-router.liveworkspace-easing509.workers.dev (fetch failed)',
+    );
   });
 
   it('reports any other failure of the poll as the CLI reports the api', async () => {
     const { io } = host({ polls: [{ http: 503 }] });
     expect(await pair(io)).toBe(7);
-    expect(io.err()).toContain('https://livediagram.app failed (HTTP 503)');
+    expect(io.err()).toContain(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev failed (HTTP 503)',
+    );
   });
 
   it('refuses a bad origin or name with exit 1, before asking', async () => {

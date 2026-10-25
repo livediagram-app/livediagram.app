@@ -31,7 +31,7 @@ IMAGE_MAX_BYTES_PER_OWNER = "104857600"
 # fetch to another Worker's route on its own zone isn't routed to it).
 INDEX_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index"
 # Where each app answers its export door (/api/internal/items/:id/export).
-APP_ORIGIN_LIVEDIAGRAM = "https://livediagram.app"
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://livedesign.app"
@@ -69,7 +69,7 @@ workers_dev = false
 IMAGE_MAX_PER_OWNER = "100"
 IMAGE_MAX_BYTES_PER_OWNER = "104857600"
 INDEX_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/index"
-APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"

@@ -15,13 +15,13 @@ const redirects = readFileSync(
 );
 
 const RETIRED: Record<string, string> = {
-  'microsoft-whiteboard': 'https://www.livediagram.app',
-  miro: 'https://www.livediagram.app',
-  xmind: 'https://www.livediagram.app',
-  excalidraw: 'https://www.livediagram.app',
-  drawio: 'https://www.livediagram.app',
-  figjam: 'https://www.livediagram.app',
-  lucidchart: 'https://www.livediagram.app',
+  'microsoft-whiteboard': 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  miro: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  xmind: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  excalidraw: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  drawio: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  figjam: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  lucidchart: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
   'google-slides': 'https://www.livedocuments.app',
 };
 

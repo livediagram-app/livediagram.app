@@ -3,6 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./router-app.md - when working on Router app: Path-based routing across apps (`/` → marketing; `/document`, `/explorer`, `/new`, ... → editor)
+- ./stand-in-addresses.md - when livediagram.app is still on another Cloudflare account: the router's and mcp's workers.dev addresses stand in for its hosts, where they are written, and how to switch back
 - ./deployment.md - when working on Deployment: GitHub Actions → Cloudflare Workers pipeline for all eight workers
 - ./staging-environment.md - when working on Staging environment: A second complete copy of the platform at staging.livediagram.app, deployed automatically on every green CI run on `main` while production stays manual. Its own KV and Durable Objects, against liveworkspace's staging services, so a change runs on real remote Workers one deploy before it reaches people's documents. Wrangler `[env.staging]` blocks (bindings are NOT inherited, so each restates its app in full), noindex set once at the router rather than threaded through five static builds, and one reusable workflow body both environments call so the two deploys cannot drift
 - ./new-version-prompt.md - when working on the document format number or the "A new version of livediagram is ready" reload prompt an editor shows when the server serves a newer document format

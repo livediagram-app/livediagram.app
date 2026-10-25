@@ -8,7 +8,7 @@ import {
 } from './addressing';
 import { DOC_A, DOC_B, DOC_C, fakeApi, library } from './testing/fake-api';
 
-const HOST = 'https://livediagram.app';
+const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<AddressFailure> {
   try {
@@ -23,7 +23,12 @@ async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<A
 describe('parseDocumentUrl', () => {
   it('reads a document link and a share link, on the host or its www twin', () => {
     expect(parseDocumentUrl(`${HOST}/document/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
-    expect(parseDocumentUrl(`https://www.livediagram.app/document/${DOC_A}?tab=x`, HOST)).toEqual({
+    expect(
+      parseDocumentUrl(
+        `https://livediagram-router.liveworkspace-easing509.workers.dev/document/${DOC_A}?tab=x`,
+        HOST,
+      ),
+    ).toEqual({
       id: DOC_A,
     });
     expect(parseDocumentUrl(`${HOST}/document/shared?s=abc123`, HOST)).toEqual({

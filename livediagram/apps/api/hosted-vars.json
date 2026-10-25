@@ -2,7 +2,7 @@
   "TELEMETRY_ENABLED": "true",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.livediagram.app",
+      "APP_BASE_URL": "https://livediagram-router.liveworkspace-easing509.workers.dev",
       "GOOGLE_CLIENT_ID": "1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2.apps.googleusercontent.com",
       "TELEMETRY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry",
       "COMMUNITY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community",
@@ -10,7 +10,7 @@
       "INDEX_ORIGIN": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.livediagram.app",
+      "APP_BASE_URL": "https://livediagram-router-staging.liveworkspace-easing509.workers.dev",
       "GOOGLE_CLIENT_ID": "1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com",
       "TELEMETRY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry",
       "COMMUNITY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community",

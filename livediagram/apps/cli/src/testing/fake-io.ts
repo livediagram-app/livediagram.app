@@ -295,7 +295,7 @@ export const capabilities: Route = (_, url) =>
   url.pathname === '/api/capabilities'
     ? Response.json({
         aiEnabled: false,
-        apiBase: 'https://livediagram.app/api',
+        apiBase: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
         authEnabled: true,
         documentFormat: 2,
       })

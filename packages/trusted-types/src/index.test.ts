@@ -63,12 +63,12 @@ describe('trustedTypesCsp', () => {
 });
 
 describe('isAllowedScriptUrl', () => {
-  const page = 'https://livediagram.app';
+  const page = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
   it("lets the app's own build scripts through, under its asset prefix", () => {
     expect(isAllowedScriptUrl('/_next/static/chunks/a.js', page, '', [])).toBe(true);
     expect(
       isAllowedScriptUrl(
-        'https://livediagram.app/live/_next/static/chunks/b.js',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/live/_next/static/chunks/b.js',
         page,
         '/live',
         [],
@@ -90,7 +90,7 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it("lets a worker start from the page's own blob: URL (Clerk's session timers), nothing else from one", () => {
-    const blob = 'blob:https://livediagram.app/1234';
+    const blob = 'blob:https://livediagram-router.liveworkspace-easing509.workers.dev/1234';
     expect(isAllowedScriptUrl(blob, page, '', [], 'Worker constructor')).toBe(true);
     expect(isAllowedScriptUrl(blob, page, '', [], 'HTMLScriptElement src')).toBe(false);
     expect(isAllowedScriptUrl(blob, page, '', [])).toBe(false);
@@ -110,7 +110,14 @@ describe('isAllowedScriptUrl', () => {
     expect(isAllowedScriptUrl('https://evil.example/_next/a.js', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('javascript:alert(1)', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('data:text/javascript,alert(1)', page, '', [])).toBe(false);
-    expect(isAllowedScriptUrl('blob:https://livediagram.app/1234', page, '', [])).toBe(false);
+    expect(
+      isAllowedScriptUrl(
+        'blob:https://livediagram-router.liveworkspace-easing509.workers.dev/1234',
+        page,
+        '',
+        [],
+      ),
+    ).toBe(false);
     expect(isAllowedScriptUrl('::not a url', page, '', [])).toBe(false);
   });
 });

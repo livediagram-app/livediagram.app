@@ -11,7 +11,7 @@ import {
 
 const FILE = '/home/agent/.config/livediagram/credentials.json';
 const stored: StoredCredential = {
-  host: 'https://livediagram.app',
+  host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
   token: TOKEN,
   tokenId: 't1',
   accountName: 'Ada',

@@ -17,7 +17,10 @@ function env() {
 describe('editor worker, the old editor address', () => {
   it('serves it for an old /diagram/<id> address during a deploy', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://livediagram.app/diagram/abc'), e);
+    await worker.fetch(
+      new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/diagram/abc'),
+      e,
+    );
     expect(seen).toEqual(['/document/placeholder']);
   });
 });

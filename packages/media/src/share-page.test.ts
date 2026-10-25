@@ -55,7 +55,7 @@ function service(answer: (url: string, init?: RequestInit) => Promise<Response> 
 }
 
 const visit = (path: string, init: RequestInit = {}) =>
-  new Request(`https://www.livediagram.app${path}`, init);
+  new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`, init);
 
 beforeEach(() => {
   vi.stubGlobal('HTMLRewriter', RecordingRewriter);
@@ -78,10 +78,17 @@ describe('isSharePagePath', () => {
 
 describe('shareHead', () => {
   it('names the item and points at its share card on this origin', () => {
-    expect(shareHead('Payments flow', 'Ab 12', 'https://staging.livediagram.app')).toEqual({
+    expect(
+      shareHead(
+        'Payments flow',
+        'Ab 12',
+        'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
+      ),
+    ).toEqual({
       title: 'Payments flow',
       description: PITCH,
-      image: 'https://staging.livediagram.app/api/previews/share/Ab%2012/image.png',
+      image:
+        'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api/previews/share/Ab%2012/image.png',
       imageAlt: 'Payments flow, drawn in livediagram',
     });
   });
@@ -101,7 +108,8 @@ describe('sharePage', () => {
       'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/card',
     ]);
     const edits = (await res.json()) as Edits;
-    const image = 'https://www.livediagram.app/api/previews/share/CODE1234/image.png';
+    const image =
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/image.png';
     expect(edits.title!.inner).toBe('Payments flow');
     expect(edits['meta[name="description"]']!.attrs.content).toBe(PITCH);
     expect(edits['meta[property="og:title"]']!.attrs.content).toBe('Payments flow');

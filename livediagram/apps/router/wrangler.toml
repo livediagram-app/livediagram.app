@@ -1,4 +1,6 @@
 name = "livediagram-router"
+# The liveworkspace Cloudflare account, which will also host livediagram.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
@@ -54,9 +56,8 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-router-staging` and fronts
-# https://staging.livediagram.app (the custom domain is attached in the
-# Cloudflare dashboard — the deploy token has no zone scope, same as
-# production).
+# https://staging.livediagram.app; until that zone moves, its workers.dev address stands in
+# (docs/specs/016-platform/stand-in-addresses.md), as production's does.
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
 # non-inheritable, so these five are the staging router's only downstreams,

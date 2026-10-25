@@ -9,7 +9,7 @@ import type { Metadata, Viewport } from 'next';
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
 // ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
-export const SITE_URL = 'https://livediagram.app';
+export const SITE_URL = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 // This site in liveworkspace's list of sites (@liveworkspace/sites), marked in the logo's switcher.
 export const SITE_ID = 'livediagram.app' as const;
@@ -36,7 +36,8 @@ export const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
 // The public contact form, the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
 // page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj';
+export const CONTACT_FORM_URL =
+  'https://livediagram-router.liveworkspace-easing509.workers.dev/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for

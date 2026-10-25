@@ -53,9 +53,24 @@ describe('isLocalhostPair', () => {
       // The whole point of the filter: a request from livediagram.app
       // to a victim's local server, or from a malicious site to
       // livediagram.app, must not be granted dev-only escape.
-      expect(isLocalhostPair('https://livediagram.app', 'http://localhost:8787')).toBe(false);
-      expect(isLocalhostPair('http://localhost:3102', 'https://livediagram.app')).toBe(false);
-      expect(isLocalhostPair('https://example.com', 'https://livediagram.app')).toBe(false);
+      expect(
+        isLocalhostPair(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev',
+          'http://localhost:8787',
+        ),
+      ).toBe(false);
+      expect(
+        isLocalhostPair(
+          'http://localhost:3102',
+          'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        ),
+      ).toBe(false);
+      expect(
+        isLocalhostPair(
+          'https://example.com',
+          'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        ),
+      ).toBe(false);
     });
 
     it('a hostname that contains "localhost" as a substring', () => {

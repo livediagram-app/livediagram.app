@@ -41,7 +41,7 @@ const ruleFor = (from: string) => rules.find(([source]) => source === from);
 describe('the comparison redirects', () => {
   it('name each app at its www address, as the sites registry does', () => {
     expect(Object.keys(MOVED)).toEqual([
-      'https://www.livediagram.app',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
       'https://www.liveplanner.app',
       'https://www.livedocuments.app',
       'https://www.livedesign.app',

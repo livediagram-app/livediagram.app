@@ -7,6 +7,7 @@ import {
   APP_SITES,
   LOCAL_PORTS,
   PLATFORM_SITE,
+  STAND_INS,
   type Site,
   type SiteId,
 } from '@liveworkspace/sites';
@@ -95,8 +96,9 @@ const MCP_DEV_PORTS: Record<AppSiteId, number> = {
 /** An app's address in `env`: its router's port on a dev server, its `staging.` host, else its live site. */
 export function appOrigin(site: Site, env: StatusEnvironment): string {
   if (env === 'development') return `http://localhost:${LOCAL_PORTS[site.id]}`;
-  if (env === 'staging') return `https://staging.${site.id}`;
-  return `https://www.${site.id}`;
+  const standIn = STAND_INS[site.id as AppSiteId];
+  if (env === 'staging') return standIn?.staging ?? `https://staging.${site.id}`;
+  return standIn?.production ?? `https://www.${site.id}`;
 }
 
 /** An app's MCP server in `env`, or null where the page doesn't check it (staging has no public MCP host). */
@@ -104,7 +106,7 @@ export function mcpOrigin(site: Site, env: StatusEnvironment): string | null {
   if (site.id === 'liveworkspace.app') return null;
   if (env === 'development') return `http://localhost:${MCP_DEV_PORTS[site.id]}`;
   if (env === 'staging') return null;
-  return `https://mcp.${site.id}`;
+  return STAND_INS[site.id as AppSiteId]?.mcp ?? `https://mcp.${site.id}`;
 }
 
 const read = (

@@ -4,7 +4,7 @@ import { AI_CLIENT_GROUPS, aiClients, cursorInstallLink, vscodeInstallLink } fro
 
 // docs/specs/019-marketing/build-with-ai.md "The clients", in each product. A product binds the list to its name
 // and MCP address; any product will do here.
-const MCP_URL = 'https://mcp.livediagram.app/mcp';
+const MCP_URL = 'https://livediagram-mcp.liveworkspace-easing509.workers.dev/mcp';
 const AI_CLIENTS = aiClients({
   name: 'livediagram',
   mcpUrl: MCP_URL,

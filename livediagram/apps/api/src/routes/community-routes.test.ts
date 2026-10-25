@@ -428,7 +428,10 @@ describe('My Shares', () => {
     const post = await publish('d1');
     await service.read(`/posts/${post.id}/like`, {
       method: 'PUT',
-      headers: { 'X-Community-Key': KEY, Origin: 'https://livediagram.app' },
+      headers: {
+        'X-Community-Key': KEY,
+        Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+      },
     });
 
     expect((await mine(null)).status).toBe(401);

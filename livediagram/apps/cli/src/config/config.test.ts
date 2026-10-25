@@ -127,7 +127,7 @@ describe('loadCapabilities', () => {
     aiEnabled: false,
     apiBase: `${DEFAULT_HOST}/api`,
     authEnabled: true,
-    oauthIssuer: 'https://mcp.livediagram.app',
+    oauthIssuer: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
     cli: { minVersion: '0.1.0' },
   };
 
@@ -142,7 +142,7 @@ describe('loadCapabilities', () => {
     const expected = {
       apiBase: `${DEFAULT_HOST}/api`,
       authEnabled: true,
-      oauthIssuer: 'https://mcp.livediagram.app',
+      oauthIssuer: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
       minVersion: '0.1.0',
     };
     expect(await loadCapabilities(io, profile, log)).toEqual(expected);

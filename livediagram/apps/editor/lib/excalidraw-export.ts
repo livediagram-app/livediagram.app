@@ -328,7 +328,7 @@ export function tabToExcalidrawText(tab: Tab): string {
     {
       type: 'excalidraw',
       version: 2,
-      source: 'https://livediagram.app',
+      source: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
       elements: out,
       appState: {
         gridSize: null,

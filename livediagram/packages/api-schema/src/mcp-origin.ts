@@ -2,7 +2,7 @@
 // OAuth consent pages and the marketing site's Build with AI page. Staging overrides it at build time with
 // NEXT_PUBLIC_MCP_ORIGIN, so both read it through resolveMcpOrigin rather than writing the hosted one in.
 
-export const DEFAULT_MCP_ORIGIN = 'https://mcp.livediagram.app';
+export const DEFAULT_MCP_ORIGIN = 'https://livediagram-mcp.liveworkspace-easing509.workers.dev';
 
 // The build-time value, or the hosted default when it is unset OR blank.
 // Blank matters: the production deploy passes `mcp_origin: ''` into

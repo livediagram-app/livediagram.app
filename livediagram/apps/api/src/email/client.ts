@@ -11,7 +11,7 @@ import type { EmailKind } from './templates';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const DEFAULT_FROM = 'livediagram <hello@livediagram.app>';
-const DEFAULT_BASE_URL = 'https://livediagram.app';
+const DEFAULT_BASE_URL = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
 
 export function emailEnabled(env: Env): boolean {
   return typeof env.RESEND_API_KEY === 'string' && env.RESEND_API_KEY.length > 0;

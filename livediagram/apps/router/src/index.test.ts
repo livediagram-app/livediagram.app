@@ -39,13 +39,18 @@ function makeEnv() {
 }
 
 const dispatch = (path: string, env: Env) =>
-  router.fetch(new Request(`https://livediagram.app${path}`), env);
+  router.fetch(
+    new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
+    env,
+  );
 
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
     await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://livediagram.app/api/documents/abc']);
+    expect(api.urls).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/documents/abc',
+    ]);
   });
 
   it("sends /api/index/* to the index, not the api, without this site's cookies", async () => {
@@ -57,9 +62,12 @@ describe('production dispatch (service bindings)', () => {
     });
     try {
       const res = await router.fetch(
-        new Request('https://livediagram.app/api/index/items?app=livediagram', {
-          headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
-        }),
+        new Request(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev/api/index/items?app=livediagram',
+          {
+            headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
+          },
+        ),
         { ...env, INDEX_ORIGIN: 'https://index.test' },
       );
       expect(await res.text()).toBe('index');
@@ -75,13 +83,17 @@ describe('production dispatch (service bindings)', () => {
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
-    expect(live.urls).toEqual(['https://livediagram.app/_next/static/chunk.js']);
+    expect(live.urls).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/_next/static/chunk.js',
+    ]);
   });
 
   it('strips the basePath for help, keeping the query', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://livediagram.app/canvas/themes/']);
+    expect(help.urls).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/canvas/themes/',
+    ]);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -112,16 +124,20 @@ describe('production dispatch (service bindings)', () => {
   it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
     const { env, community, marketing } = makeEnv();
     await dispatch('/community/post/?id=ABCDEFGH23', env);
-    expect(community.urls).toEqual(['https://livediagram.app/post/?id=ABCDEFGH23']);
+    expect(community.urls).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/post/?id=ABCDEFGH23',
+    ]);
     await dispatch('/community', env);
-    expect(community.urls[1]).toBe('https://livediagram.app/');
+    expect(community.urls[1]).toBe(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/',
+    );
     expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help', env);
-    expect(help.urls).toEqual(['https://livediagram.app/']);
+    expect(help.urls).toEqual(['https://livediagram-router.liveworkspace-easing509.workers.dev/']);
   });
 
   // docs/specs/017-telemetry/telemetry.md: the dashboard is liveworkspace's, filtered to this app.
@@ -146,15 +162,17 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/document/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://livediagram.app/document/abc123',
-      'https://livediagram.app/new?blank=1',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/document/abc123',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/new?blank=1',
     ]);
   });
 
   it("routes the editor app's root-served icon to the editor worker", async () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
-    expect(live.urls).toEqual(['https://livediagram.app/icon.svg']);
+    expect(live.urls).toEqual([
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/icon.svg',
+    ]);
   });
 
   it('serves the licences page and its texts from marketing', async () => {
@@ -163,8 +181,8 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/licences', env);
     await dispatch('/licences/texts/0123456789abcdef.txt', env);
     expect(marketing.urls).toEqual([
-      'https://livediagram.app/licences',
-      'https://livediagram.app/licences/texts/0123456789abcdef.txt',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/licences',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/licences/texts/0123456789abcdef.txt',
     ]);
   });
 
@@ -229,7 +247,7 @@ describe('bare help-article paths', () => {
     const res = await dispatch('/privacy-and-security/data-privacy/', env);
     expect(res.status).toBe(308);
     expect(res.headers.get('location')).toBe(
-      'https://livediagram.app/help/privacy-and-security/data-privacy/',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/help/privacy-and-security/data-privacy/',
     );
     // Never reached marketing's 404, which is what it used to do.
     expect(marketing.urls).toEqual([]);
@@ -402,18 +420,33 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env, api } = makeEnv();
-      await router.fetch(new Request('https://livediagram.app/api/previews/items/d1?v=5'), env);
-      await router.fetch(new Request('https://livediagram.app/api/share/ABC/image.png'), {
-        ...env,
-        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
-      });
+      await router.fetch(
+        new Request(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev/api/previews/items/d1?v=5',
+        ),
+        env,
+      );
+      await router.fetch(
+        new Request(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev/api/share/ABC/image.png',
+        ),
+        {
+          ...env,
+          PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+        },
+      );
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
         'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/items/d1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
-      await router.fetch(new Request('https://livediagram.app/api/share/ABC'), env);
-      expect(api.urls).toEqual(['https://livediagram.app/api/share/ABC']);
+      await router.fetch(
+        new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/api/share/ABC'),
+        env,
+      );
+      expect(api.urls).toEqual([
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/share/ABC',
+      ]);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -439,10 +472,17 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         '/explorer?settings=notifications',
         '/explorer/offline',
       ]) {
-        const res = await router.fetch(new Request(`https://livediagram.app${path}#ignored`), env);
+        const res = await router.fetch(
+          new Request(
+            `https://livediagram-router.liveworkspace-easing509.workers.dev${path}#ignored`,
+          ),
+          env,
+        );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(
+          `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`,
+        );
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -457,14 +497,22 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
     try {
       const { env, api } = makeEnv();
       const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
-      await router.fetch(new Request('https://livediagram.app/explorer/recent.txt?_rsc=x'), local);
+      await router.fetch(
+        new Request(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/recent.txt?_rsc=x',
+        ),
+        local,
+      );
       expect(fetchMock.mock.calls[0]![0].url).toBe(
         'http://localhost:3000/explorer/recent.txt?_rsc=x',
       );
       await router.fetch(
-        new Request('https://livediagram.app/api/workspace/account/people?ids=u1', {
-          headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
-        }),
+        new Request(
+          'https://livediagram-router.liveworkspace-easing509.workers.dev/api/workspace/account/people?ids=u1',
+          {
+            headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
+          },
+        ),
         local,
       );
       const sent = fetchMock.mock.calls[1]![0];
@@ -488,14 +536,16 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       await dispatch('/api/account', env);
       await dispatch('/new', env);
       expect(live.urls).toEqual([
-        'https://livediagram.app/_next/static/chunk.js',
-        'https://livediagram.app/new',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/_next/static/chunk.js',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/new',
       ]);
       expect(marketing.urls).toEqual([
-        'https://livediagram.app/_next/static/chunk.js',
-        'https://livediagram.app/explorers',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/_next/static/chunk.js',
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/explorers',
       ]);
-      expect(api.urls).toEqual(['https://livediagram.app/api/account']);
+      expect(api.urls).toEqual([
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/api/account',
+      ]);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
@@ -507,7 +557,10 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       Promise.resolve(
         new Response(null, {
           status: 307,
-          headers: { Location: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent' },
+          headers: {
+            Location:
+              'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent',
+          },
         }),
       ),
     );
@@ -526,13 +579,16 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env } = makeEnv();
-      const self = await router.fetch(new Request('https://livediagram.app/explorer'), {
-        ...env,
-        WORKSPACE_ORIGIN: 'https://livediagram.app',
-      });
+      const self = await router.fetch(
+        new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/explorer'),
+        {
+          ...env,
+          WORKSPACE_ORIGIN: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        },
+      );
       expect(self.status).toBe(508);
       const again = await router.fetch(
-        new Request('https://livediagram.app/explorer', {
+        new Request('https://livediagram-router.liveworkspace-easing509.workers.dev/explorer', {
           headers: { 'X-Liveworkspace-Proxy': 'livediagram' },
         }),
         env,

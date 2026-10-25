@@ -17,9 +17,26 @@ export function appOrigins(site: AppSiteId, environment: AppEnvironment): string
     const port = LOCAL_PORTS[site];
     return [`http://localhost:${port}`, `http://127.0.0.1:${port}`];
   }
-  if (environment === 'staging') return [`https://staging.${site}`];
-  return [`https://${site}`, `https://www.${site}`];
+  const standIn = STAND_INS[site];
+  if (environment === 'staging')
+    return standIn ? [`https://staging.${site}`, standIn.staging] : [`https://staging.${site}`];
+  return standIn
+    ? [`https://${site}`, `https://www.${site}`, standIn.production]
+    : [`https://${site}`, `https://www.${site}`];
 }
+
+/** An app that answers on a workers.dev address while its domain is still on another Cloudflare account
+ *  (livediagram/docs/specs/016-platform/stand-in-addresses.md): it answers there as well, until the domain moves. */
+export const STAND_INS: Partial<
+  Record<AppSiteId, { production: string; staging: string; mcp: string }>
+> = {
+  'livediagram.app': {
+    production: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    staging: 'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
+    // Its production MCP server's.
+    mcp: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
+  },
+};
 
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
  *  origin matches: no other port, scheme or subdomain. */

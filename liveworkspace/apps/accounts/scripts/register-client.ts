@@ -5,9 +5,9 @@
 //     --accounts https://liveworkspace-gateway.liveworkspace-easing509.workers.dev \
 //     --name livediagram \
 //     --app livediagram.app \
-//     --redirect https://www.livediagram.app/auth/callback \
-//     --redirect https://livediagram.app/auth/callback \
-//     --resource https://livediagram.app/api
+//     --redirect https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback \
+//     --redirect https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback \
+//     --resource https://livediagram-router.liveworkspace-easing509.workers.dev/api
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({

@@ -39,7 +39,9 @@ describe('postHead', () => {
       }),
     );
     expect(head.title).toBe('Payments Platform | livediagram Community');
-    expect(head.canonical).toBe('https://livediagram.app/community/post/?id=p%201');
+    expect(head.canonical).toBe(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/community/post/?id=p%201',
+    );
     const [work, crumbs] = (head.jsonLd as { '@graph': Record<string, unknown>[] })['@graph'];
     expect(work).toMatchObject({
       '@type': 'CreativeWork',
@@ -54,7 +56,11 @@ describe('postHead', () => {
     expect(crumbs).toMatchObject({
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { position: 1, name: 'Community', item: 'https://livediagram.app/community/' },
+        {
+          position: 1,
+          name: 'Community',
+          item: 'https://livediagram-router.liveworkspace-easing509.workers.dev/community/',
+        },
         { position: 2, name: 'Payments Platform', item: head.canonical },
       ],
     });
@@ -85,7 +91,7 @@ describe('sitemapXml', () => {
   it('lists each post at its canonical address with when it last changed', () => {
     const xml = sitemapXml([{ id: 'a&b', updatedAt: Date.UTC(2026, 9, 1) }]);
     expect(xml).toContain(
-      '<url><loc>https://livediagram.app/community/post/?id=a%26b</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod></url>',
+      '<url><loc>https://livediagram-router.liveworkspace-easing509.workers.dev/community/post/?id=a%26b</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod></url>',
     );
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
   });

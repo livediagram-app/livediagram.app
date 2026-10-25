@@ -3,9 +3,19 @@ import { appOfAnyOrigin, appOfOrigin, appOrigins } from './app-origins';
 
 describe("each app's origins", () => {
   it('are its bare and www hosts in production, staging. on staging, its router port locally', () => {
+    expect(appOrigins('liveplanner.app', 'production')).toEqual([
+      'https://liveplanner.app',
+      'https://www.liveplanner.app',
+    ]);
+    // livediagram answers on its stand-in too until livediagram.app moves (stand-in-addresses.md).
     expect(appOrigins('livediagram.app', 'production')).toEqual([
       'https://livediagram.app',
       'https://www.livediagram.app',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    ]);
+    expect(appOrigins('livediagram.app', 'staging')).toEqual([
+      'https://staging.livediagram.app',
+      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
     ]);
     expect(appOrigins('liveplanner.app', 'staging')).toEqual(['https://staging.liveplanner.app']);
     expect(appOrigins('livedesign.app', 'development')).toContain('http://localhost:3400');
@@ -17,11 +27,26 @@ describe("each app's origins", () => {
       'livedocuments.app',
     );
     expect(appOfOrigin('http://localhost:3100', 'production')).toBeNull();
-    expect(appOfOrigin('https://staging.livediagram.app', 'production')).toBeNull();
-    expect(appOfOrigin('https://livediagram.app.evil.example', 'production')).toBeNull();
+    expect(
+      appOfOrigin(
+        'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
+        'production',
+      ),
+    ).toBeNull();
+    expect(
+      appOfOrigin(
+        'https://livediagram-router.liveworkspace-easing509.workers.dev.evil.example',
+        'production',
+      ),
+    ).toBeNull();
     expect(appOfOrigin('https://evil.livediagram.app', 'production')).toBeNull();
     expect(appOfOrigin('http://livediagram.app', 'production')).toBeNull();
-    expect(appOfOrigin('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', 'production')).toBeNull();
+    expect(
+      appOfOrigin(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+        'production',
+      ),
+    ).toBeNull();
     expect(appOfOrigin('not a url', 'production')).toBeNull();
     expect(appOfAnyOrigin('http://localhost:3200')).toBe('liveplanner.app');
     expect(appOfAnyOrigin('http://localhost:3000')).toBeNull();

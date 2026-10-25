@@ -78,7 +78,9 @@ describe('the shared gate still guards this route', () => {
   it('403 from an origin the deployment does not serve', async () => {
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_ALLOWED_ORIGINS: 'https://livediagram.app' },
+        env: {
+          AI_ALLOWED_ORIGINS: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        },
         origin: 'https://evil.example',
       }),
     );

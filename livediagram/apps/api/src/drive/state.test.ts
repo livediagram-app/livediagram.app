@@ -6,7 +6,7 @@ import { isAllowedRedirectUri, signDriveState, verifyDriveState } from './state'
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting").
 
 const KEY = bytesToBase64(new Uint8Array(32).map((_, i) => i + 7));
-const URI = 'https://livediagram.app/drive/connected';
+const URI = 'https://livediagram-router.liveworkspace-easing509.workers.dev/drive/connected';
 const T0 = 1_700_000_000_000;
 
 describe('signDriveState / verifyDriveState', () => {
@@ -43,21 +43,41 @@ describe('signDriveState / verifyDriveState', () => {
 
 describe('isAllowedRedirectUri', () => {
   it('accepts https on any host, and http only on loopback, always at /drive/connected', () => {
-    expect(isAllowedRedirectUri('https://livediagram.app/drive/connected')).toBe(true);
+    expect(
+      isAllowedRedirectUri(
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/drive/connected',
+      ),
+    ).toBe(true);
     expect(isAllowedRedirectUri('https://self.example/drive/connected')).toBe(true);
     // livediagram.app redirects the apex to www before the app runs, so the
     // consent flow sends the www origin; both hosts are registered at Google.
-    expect(isAllowedRedirectUri('https://www.livediagram.app/drive/connected')).toBe(true);
-    expect(isAllowedRedirectUri('https://staging.livediagram.app/drive/connected')).toBe(true);
+    expect(
+      isAllowedRedirectUri(
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/drive/connected',
+      ),
+    ).toBe(true);
+    expect(
+      isAllowedRedirectUri(
+        'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/drive/connected',
+      ),
+    ).toBe(true);
     expect(isAllowedRedirectUri('http://localhost:3100/drive/connected')).toBe(true);
     expect(isAllowedRedirectUri('http://127.0.0.1:3102/drive/connected')).toBe(true);
   });
 
   it('refuses other paths, schemes, query strings and plain http', () => {
-    expect(isAllowedRedirectUri('https://livediagram.app/drive/open')).toBe(false);
+    expect(
+      isAllowedRedirectUri(
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/drive/open',
+      ),
+    ).toBe(false);
     expect(isAllowedRedirectUri('http://livediagram.app/drive/connected')).toBe(false);
     expect(isAllowedRedirectUri('javascript:alert(1)')).toBe(false);
-    expect(isAllowedRedirectUri('https://livediagram.app/drive/connected?x=1')).toBe(false);
+    expect(
+      isAllowedRedirectUri(
+        'https://livediagram-router.liveworkspace-easing509.workers.dev/drive/connected?x=1',
+      ),
+    ).toBe(false);
     expect(isAllowedRedirectUri('not a url')).toBe(false);
     expect(isAllowedRedirectUri(42)).toBe(false);
   });

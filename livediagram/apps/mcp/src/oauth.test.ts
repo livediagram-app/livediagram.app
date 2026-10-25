@@ -12,7 +12,9 @@ describe('the authorization server', () => {
   });
 
   it('sends people to the hosted editor unless CONSENT_BASE_URL names another', () => {
-    expect(OAUTH.appBase({} as Env)).toBe('https://livediagram.app');
+    expect(OAUTH.appBase({} as Env)).toBe(
+      'https://livediagram-router.liveworkspace-easing509.workers.dev',
+    );
     expect(OAUTH.appBase({ CONSENT_BASE_URL: 'https://live.test' } as Env)).toBe(
       'https://live.test',
     );
