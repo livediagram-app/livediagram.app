@@ -12,7 +12,18 @@ import { pageApp } from './explorer/page-app';
 export type Session =
   | { state: 'checking' }
   | { state: 'out' }
-  | { state: 'in'; name: string; fullName: string | null; colour: string | null };
+  | {
+      state: 'in';
+      name: string;
+      fullName: string | null;
+      colour: string | null;
+      // For Settings' Profile header: the account's address and when it was made (ISO), where the answer had them.
+      email?: string | null;
+      joined?: string | null;
+    };
+
+const textOf = (value: unknown) =>
+  typeof value === 'string' && value.trim() ? value.trim() : null;
 
 let current: Session = { state: 'checking' };
 let asked = false;
@@ -38,6 +49,8 @@ function ask() {
             name: displayName(user as Record<string, unknown>),
             fullName: fullNameOf(user as Record<string, unknown>),
             colour: accountColourOf(user),
+            email: textOf((user as Record<string, unknown>).email),
+            joined: textOf((user as Record<string, unknown>).createdAt),
           }
         : { state: 'out' },
     );
