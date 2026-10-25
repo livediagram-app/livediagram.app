@@ -18,6 +18,7 @@
     "./help.css": "./src/help.css",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./art/*": "./src/art/*.tsx",
     "./testing": "./src/testing.tsx"
   },
   "scripts": {
