@@ -38,16 +38,15 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 
 ### Readers above the canvas
 
-| Reader                            | Becomes                                                                                                                                                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useKeyboardAvoidance` (`zoom`)   | reads `zoomRef.current` when the keyboard moves                                                                                                                                                             |
-| Saving the view before presenting | a layout effect on `presenting`, declared before the slide fit: it captures `viewport.get()` as a deck starts and `setView`s it back as it ends, before the exit paints (never a store write during render) |
-| Publishing our view (follow-me)   | `viewport.subscribe` in an effect, plus a send on a tab switch                                                                                                                                              |
-| `useFollowMe`                     | applies a peer's view with one `setView` after recording it; while following, `viewport.subscribe` ends the follow on any other view                                                                        |
-| `useCanvasPinchZoom`              | reads `viewport.get()` per event (bursts within a frame compound correctly) and zooms at a point with one `setView`                                                                                         |
-| `TourHost` (viewport centre)      | `viewport.get().offset` when the step runs                                                                                                                                                                  |
-| The editor context                | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                                                                                                   |
-| `EditorCanvasHost` → `Canvas`     | passes no view; `EditorView` provides the store (`ViewportStoreProvider`) and `CanvasView` subscribes with `useViewportOf`                                                                                  |
+| Reader                          | Becomes                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `useKeyboardAvoidance` (`zoom`) | reads `zoomRef.current` when the keyboard moves                                                                                      |
+| Publishing our view (follow-me) | `viewport.subscribe` in an effect, plus a send on a tab switch                                                                       |
+| `useFollowMe`                   | applies a peer's view with one `setView` after recording it; while following, `viewport.subscribe` ends the follow on any other view |
+| `useCanvasPinchZoom`            | reads `viewport.get()` per event (bursts within a frame compound correctly) and zooms at a point with one `setView`                  |
+| `TourHost` (viewport centre)    | `viewport.get().offset` when the step runs                                                                                           |
+| The editor context              | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                            |
+| `EditorCanvasHost` → `Canvas`   | passes no view; `EditorView` provides the store (`ViewportStoreProvider`) and `CanvasView` subscribes with `useViewportOf`           |
 
 ### Inside the canvas
 
@@ -91,7 +90,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 | The shared slice subscription                      | `useStoreSlice.test.tsx`; `useSelectionStore.test.tsx` kept |
 | The root never renders for a zoom or a pan         | `useEditorViewport.test.tsx`: its host renders 0 times      |
 | Follow-me publishes and lets go on a local move    | `useFollowMe` tests, store-driven                           |
-| Behaviour unchanged                                | the e2e suites that pan, zoom, pinch, follow and present    |
+| Behaviour unchanged                                | the e2e suites that pan, zoom, pinch and follow             |
 
 ## Constants and configuration
 

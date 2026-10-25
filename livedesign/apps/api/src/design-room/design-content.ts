@@ -1,6 +1,8 @@
 // The design-level reads and writes of a design's own SQLite (docs/specs/015-api/api.md "Storage"): the tab outline
-// a design read carries, its slide deck, the design row a create makes, and a copy's export and import. Runs inside
-// the design's Durable Object, on `env.DESIGN_DB`.
+// a design read carries, the design row a create makes, and a copy's export and import. Runs inside the design's
+// Durable Object, on `env.DESIGN_DB`. The design row's `presentation` column (the slide deck livedesign no longer
+// has, docs/specs/012-collaboration/presentation-mode.md "Saved data") is never read or written: whatever a design
+// holds there stays as it is.
 
 import { remapTabLinks, type Element } from '@livedesign/design';
 import { redactTabDataAuthors } from '../comments';
@@ -8,7 +10,7 @@ import { servableImageIds } from '../db/image-grants';
 import { imageRefAddStatements } from '../db/image-refs';
 import { blobRefsOfTabs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DesignEnv, TabSummaryDTO } from '../types';
 
@@ -24,19 +26,15 @@ export type DesignMeta = {
   createdAt: number;
 };
 
-// What a design read takes from the design: its tabs in order (no body), its slide deck, and what it knows of
-// itself.
+// What a design read takes from the design: its tabs in order (no body) and what it knows of itself.
 export type DesignOutline = {
   tabs: TabSummaryDTO[];
-  // The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or null for none.
-  presentation: string | null;
   // The design's last save.
   savedAt: number;
   meta: DesignMeta | null;
 };
 
 type DesignHeadRow = {
-  presentation: string | null;
   saved_at: number;
   created_at: number;
   name: string;
@@ -48,7 +46,7 @@ type DesignHeadRow = {
 };
 
 const DESIGN_HEAD_COLS =
-  'presentation, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind';
+  'saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind';
 
 function metaOf(head: DesignHeadRow | null): DesignMeta | null {
   if (!head || !head.created_at) return null;
@@ -77,7 +75,6 @@ export async function readDesignOutline(env: DesignEnv, designId: string): Promi
   const head = (design?.results?.[0] ?? null) as DesignHeadRow | null;
   return {
     tabs: ((tabs?.results ?? []) as TabRow[]).map(rowToTabSummary),
-    presentation: head?.presentation ?? null,
     savedAt: head?.saved_at ?? 0,
     meta: metaOf(head),
   };
@@ -88,19 +85,18 @@ export async function readDesignMeta(env: DesignEnv, designId: string): Promise<
   return (await readDesignHead(env, designId)).meta;
 }
 
-// What the design knows of itself, its last save and its slide deck, in one read: the export door's version
+// What the design knows of itself and its last save, in one read: the export door's version
 // (liveworkspace/docs/previews.md), without the tab outline.
 export async function readDesignHead(
   env: DesignEnv,
   designId: string,
-): Promise<{ meta: DesignMeta | null; savedAt: number; presentation: string | null }> {
+): Promise<{ meta: DesignMeta | null; savedAt: number }> {
   const head = await env.DESIGN_DB.prepare(`SELECT ${DESIGN_HEAD_COLS} FROM design WHERE id = ?`)
     .bind(designId)
     .first<DesignHeadRow>();
   return {
     meta: metaOf(head ?? null),
     savedAt: head?.saved_at ?? 0,
-    presentation: head?.presentation ?? null,
   };
 }
 
@@ -135,19 +131,15 @@ export type DesignStart = {
   tabKind: string | null;
   savedAt: number;
   createdAt: number;
-  // A create's slide deck (a copy's or an import's), serialised; a started design keeps its own.
-  presentation?: string | null;
 };
 
 // Start the design (docs/specs/015-api/api.md "Storage"), or on a design already started rename it and move its
-// last save. On a genuine start the slide deck the create carries goes in too; a started design keeps its deck.
+// last save.
 export async function initDesign(env: DesignEnv, designId: string, d: DesignStart): Promise<void> {
   await env.DESIGN_DB.prepare(
-    `INSERT INTO design (id, presentation, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+    `INSERT INTO design (id, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
      ON CONFLICT (id) DO UPDATE SET
-       presentation = CASE WHEN design.created_at = 0 THEN COALESCE(design.presentation, excluded.presentation)
-                           ELSE design.presentation END,
        saved_at = excluded.saved_at,
        name = excluded.name,
        created_at = CASE WHEN design.created_at = 0 THEN excluded.created_at ELSE design.created_at END,
@@ -161,7 +153,6 @@ export async function initDesign(env: DesignEnv, designId: string, d: DesignStar
   )
     .bind(
       designId,
-      d.presentation ?? null,
       d.savedAt,
       d.createdAt,
       d.name,
@@ -205,31 +196,14 @@ export async function claimCommentNotify(
   return res.meta.changes === 1;
 }
 
-// The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or null to clear it. Moves
-// the design's last save. False when the design is not started.
-export async function setDesignPresentation(
-  env: DesignEnv,
-  designId: string,
-  presentation: string | null,
-  savedAt: number,
-): Promise<boolean> {
-  const res = await env.DESIGN_DB.prepare(
-    'UPDATE design SET presentation = ?, saved_at = ? WHERE id = ? AND created_at > 0',
-  )
-    .bind(presentation, savedAt, designId)
-    .run();
-  return (res.meta.changes ?? 0) > 0;
-}
-
 // ---------- Copies --------------------------------------------------------------------------------------------
 
 // A design's content as one Durable Object hands it to another for a copy (docs/specs/015-api/api.md "Copies"):
-// tabs under fresh ids (their links re-pointed), the slide deck, the images the source may serve that the copy
+// tabs under fresh ids (their links re-pointed), the images the source may serve that the copy
 // carries (as placement grants, docs/specs/009-elements/images.md "Placement grants"), and the photo blobs the
 // copied tabs hold. Sent as one RPC message, so a design past the 32 MiB a message may carry cannot be copied this
 // way (the follow-up is to stream it in pages).
 export type DesignCopy = {
-  presentation: string | null;
   // The source's creation intent (docs/specs/013-workspace/default-folders.md): the copy opens as it did.
   opensIn: string | null;
   tabKind: string | null;
@@ -277,8 +251,7 @@ export async function readContentTabRows(
   return tabRows.results ?? [];
 }
 
-// The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and no slide deck,
-// which spans the design's tabs). `copierId`: who copies (null when the index did not say); anyone but the owner
+// The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only. `copierId`: who copies (null when the index did not say); anyone but the owner
 // copies the comments as the tab read serves them to them, every author id but their own blanked.
 export async function exportDesignCopy(
   env: DesignEnv,
@@ -287,11 +260,10 @@ export async function exportDesignCopy(
   copierId: string | null,
 ): Promise<DesignCopy | null> {
   const design = await env.DESIGN_DB.prepare(
-    'SELECT presentation, opens_in, tab_kind, owner_id FROM design WHERE id = ?',
+    'SELECT opens_in, tab_kind, owner_id FROM design WHERE id = ?',
   )
     .bind(designId)
     .first<{
-      presentation: string | null;
       opens_in: string | null;
       tab_kind: string | null;
       owner_id: string | null;
@@ -324,7 +296,6 @@ export async function exportDesignCopy(
     tabId: tabIdMap.get(b.tabId)!,
   }));
   return {
-    presentation: onlyTabId === null ? (design?.presentation ?? null) : null,
     opensIn: design?.opens_in ?? null,
     tabKind: design?.tab_kind ?? null,
     tabs,
@@ -370,11 +341,11 @@ export async function importDesignCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initDesign).
-        `INSERT INTO design (id, presentation, saved_at, created_at, opens_in, tab_kind) VALUES (?1, ?2, ?3, 0, ?4, ?5)
-         ON CONFLICT (id) DO UPDATE SET presentation = excluded.presentation, saved_at = excluded.saved_at,
+        `INSERT INTO design (id, saved_at, created_at, opens_in, tab_kind) VALUES (?1, ?2, 0, ?3, ?4)
+         ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at,
            opens_in = excluded.opens_in, tab_kind = excluded.tab_kind`,
       )
-      .bind(designId, copy.presentation, now, copy.opensIn ?? null, copy.tabKind ?? null),
+      .bind(designId, now, copy.opensIn ?? null, copy.tabKind ?? null),
   ];
   for (const tab of copy.tabs) {
     stmts.push(

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { StableLabel } from './StableLabel';
 
 // A label that never changes its control's width as its wording changes
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Nothing reflows as the state changes").
+// (docs/specs/004-interface-design/layout-stability.md).
 describe('StableLabel', () => {
   it('lays every wording in one cell, showing only the current one', () => {
     const { container } = render(

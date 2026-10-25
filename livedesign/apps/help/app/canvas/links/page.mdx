@@ -2,7 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ElementLink } from '@/components/illustrations/canvas';
-import { LinkElementDialogScene } from '@/components/illustrations/canvas-links-notes';
+import { LinkElementDialogScene } from '@liveworkspace/help-site/art/illustrations/canvas-links-notes';
 
 export const metadata = helpMetadata({
   title: 'Links',
@@ -32,7 +32,7 @@ To add one, right-click the element and press **Add Link** in the row of buttons
 To change a link, open the same dialog again and pick a new target; the Remove link button at its foot takes the link off. The link follows the element if you move it, and like any edit it can be undone. For more on tab and element targets, see [Linking Across Tabs](/help/tabs/linking-tabs/).
 
 <Figure caption="The Link element dialog, open on External URL: type the web address and save the link.">
-  <LinkElementDialogScene />
+  <LinkElementDialogScene noun="design" />
 </Figure>
 
 <Figure caption="A linked element gains a follow-link badge; clicking it jumps to the target, here another tab.">

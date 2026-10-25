@@ -2,7 +2,7 @@
 // Produced by scripts/gen-openapi-schemas.mjs from @livediagram/api-schema.
 // Regenerate with: pnpm --filter @livediagram/api gen:openapi
 // Served as the `components.schemas` of GET /api/openapi.json (docs/specs/015-api/api-documentation.md).
-import type { ComponentSchemas } from './types';
+import type { ComponentSchemas } from '@liveworkspace/api-kit/openapi-types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
   AccentEdge: {
@@ -550,9 +550,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       documentFormat: {
         type: 'number',
-      },
-      driveMode: {
-        $ref: '#/components/schemas/DriveMode',
       },
       emailEnabled: {
         type: 'boolean',
@@ -1626,164 +1623,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   DrawingAnimation: {
     enum: ['draw', 'trace', 'dash', 'boil', 'ink', 'glow', 'shimmer'],
-    type: 'string',
-  },
-  DriveAccessToken: {
-    additionalProperties: false,
-    properties: {
-      accessToken: {
-        type: 'string',
-      },
-      expiresAt: {
-        type: 'number',
-      },
-    },
-    required: ['accessToken', 'expiresAt'],
-    type: 'object',
-  },
-  DriveConnection: {
-    additionalProperties: false,
-    properties: {
-      connectedAt: {
-        type: 'number',
-      },
-      hasRefreshToken: {
-        type: 'boolean',
-      },
-      pageToken: {
-        type: ['string', 'null'],
-      },
-      pageTokenSavedAt: {
-        type: ['number', 'null'],
-      },
-      pendingAccountSwitch: {
-        anyOf: [
-          {
-            additionalProperties: false,
-            properties: {
-              expiresAt: {
-                type: 'number',
-              },
-            },
-            required: ['expiresAt'],
-            type: 'object',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      rootFolderId: {
-        type: ['string', 'null'],
-      },
-      status: {
-        $ref: '#/components/schemas/DriveConnectionStatus',
-      },
-    },
-    required: [
-      'status',
-      'hasRefreshToken',
-      'rootFolderId',
-      'pageToken',
-      'pageTokenSavedAt',
-      'connectedAt',
-      'pendingAccountSwitch',
-    ],
-    type: 'object',
-  },
-  DriveConnectionStatus: {
-    enum: ['connected', 'needs_reconnect'],
-    type: 'string',
-  },
-  DriveItem: {
-    additionalProperties: false,
-    properties: {
-      driveFileId: {
-        type: 'string',
-      },
-      headRevisionId: {
-        type: ['string', 'null'],
-      },
-      kind: {
-        $ref: '#/components/schemas/DriveItemKind',
-      },
-      ldId: {
-        type: 'string',
-      },
-      ldName: {
-        type: 'string',
-      },
-      md5: {
-        type: ['string', 'null'],
-      },
-      mirroredSavedAt: {
-        type: ['number', 'null'],
-      },
-      name: {
-        type: 'string',
-      },
-      notice: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DriveNotice',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      noticeParentId: {
-        type: ['string', 'null'],
-      },
-      parentId: {
-        type: ['string', 'null'],
-      },
-      trashed: {
-        type: 'boolean',
-      },
-    },
-    required: [
-      'kind',
-      'ldId',
-      'driveFileId',
-      'name',
-      'ldName',
-      'parentId',
-      'trashed',
-      'md5',
-      'headRevisionId',
-      'mirroredSavedAt',
-      'notice',
-      'noticeParentId',
-    ],
-    type: 'object',
-  },
-  DriveItemKind: {
-    enum: ['document', 'folder'],
-    type: 'string',
-  },
-  DriveLease: {
-    additionalProperties: false,
-    properties: {
-      acquired: {
-        type: 'boolean',
-      },
-      expiresAt: {
-        type: ['number', 'null'],
-      },
-      holder: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['acquired', 'holder', 'expiresAt'],
-    type: 'object',
-  },
-  DriveMode: {
-    enum: ['off', 'browser', 'broker'],
-    type: 'string',
-  },
-  DriveNotice: {
-    const: 'unseen_folder',
     type: 'string',
   },
   EditWarning: {
@@ -6271,7 +6110,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'Trash',
       'Draw',
       'Editor',
-      'Drive',
       'Explorer',
       'Agent',
       'Community',

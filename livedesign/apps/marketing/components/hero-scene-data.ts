@@ -8,7 +8,7 @@
 
 import type { TabDef } from './hero-editor-window';
 
-export type HeroSceneKey = 'logo' | 'photo' | 'present' | 'together';
+export type HeroSceneKey = 'logo' | 'photo' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -36,15 +36,6 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     title: 'Bloom brand',
     tabs: [
       { name: 'Photos', color: '#f59e0b', active: true },
-      { name: 'Logo', color: '#0ea5e9' },
-    ],
-    shared: true,
-  },
-  {
-    key: 'present',
-    title: 'Bloom launch',
-    tabs: [
-      { name: 'Website', color: '#0284c7', active: true },
       { name: 'Logo', color: '#0ea5e9' },
     ],
     shared: true,

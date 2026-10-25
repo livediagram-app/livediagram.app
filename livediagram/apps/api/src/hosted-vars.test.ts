@@ -27,7 +27,6 @@ interface HostedVarsModule {
     unset: string[],
     deployed: Map<string, string>,
   ) => { name: string; expected: string; actual: string | null }[];
-  clientIdBuildDrift: (texts: string[], expected: string | null, others: string[]) => string[];
   wranglerVarFlags: (vars: Record<string, string>) => string[];
   buildEnv: (vars: Record<string, string>) => string[];
   activeVersionIds: (status: unknown) => string[];
@@ -114,13 +113,6 @@ describe('hosted-vars script', () => {
     ]);
   });
 
-  it('hands the Google client id to the frontends (docs/specs/022-drive-mirror/drive-mirror.md)', async () => {
-    const { buildEnv } = await load();
-    expect(buildEnv({ GOOGLE_CLIENT_ID: '123-abc.apps.googleusercontent.com' })).toEqual([
-      'NEXT_PUBLIC_GOOGLE_CLIENT_ID=123-abc.apps.googleusercontent.com',
-    ]);
-  });
-
   it('points the Community pages at the same Community service as the api', async () => {
     const { buildEnv } = await load();
     expect(buildEnv({ COMMUNITY_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community' })).toEqual([
@@ -200,15 +192,15 @@ describe('hosted-vars script', () => {
   });
 });
 
-// The Drive mirror's Google identity is per environment: livediagram.app runs one
-// Google Cloud project for production and one for staging
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
+// Some vars are per environment: each deployment's own address and the liveworkspace services it reaches.
 describe('hosted profile per environment', () => {
+  const prod = 'https://livediagram-router.example.workers.dev';
+  const staging = 'https://livediagram-router-staging.example.workers.dev';
   const profile: Profile = {
     shared: { TELEMETRY_ENABLED: 'true' },
     environments: {
-      production: { GOOGLE_CLIENT_ID: '111-prod.apps.googleusercontent.com' },
-      staging: { GOOGLE_CLIENT_ID: '222-staging.apps.googleusercontent.com' },
+      production: { APP_BASE_URL: prod },
+      staging: { APP_BASE_URL: staging },
     },
   };
 
@@ -228,68 +220,33 @@ describe('hosted profile per environment', () => {
     });
   });
 
-  it("resolves each environment's own client id, shared vars beside it", async () => {
+  it("resolves each environment's own value, shared vars beside it", async () => {
     const { resolveHostedVars } = await load();
     expect(resolveHostedVars(profile, 'staging')).toEqual({
-      vars: {
-        TELEMETRY_ENABLED: 'true',
-        GOOGLE_CLIENT_ID: '222-staging.apps.googleusercontent.com',
-      },
+      vars: { TELEMETRY_ENABLED: 'true', APP_BASE_URL: staging },
       unset: [],
     });
-    expect(resolveHostedVars(profile, 'production').vars.GOOGLE_CLIENT_ID).toBe(
-      '111-prod.apps.googleusercontent.com',
-    );
+    expect(resolveHostedVars(profile, 'production').vars.APP_BASE_URL).toBe(prod);
   });
 
-  it('leaves an empty entry unset: no --var, no build twin, so the mirror stays off', async () => {
+  it('leaves an empty entry unset: no --var, no build twin', async () => {
     const { resolveHostedVars, wranglerVarFlags, buildEnv } = await load();
     const empty: Profile = {
       ...profile,
-      environments: { ...profile.environments, staging: { GOOGLE_CLIENT_ID: '' } },
+      environments: { ...profile.environments, staging: { APP_BASE_URL: '' } },
     };
     const { vars, unset } = resolveHostedVars(empty, 'staging');
-    expect(unset).toEqual(['GOOGLE_CLIENT_ID']);
+    expect(unset).toEqual(['APP_BASE_URL']);
     expect(wranglerVarFlags(vars)).toEqual(['--var', 'TELEMETRY_ENABLED:true']);
     expect(buildEnv(vars)).toEqual(['NEXT_PUBLIC_TELEMETRY_ENABLED=true']);
   });
 
-  it('gives the worker and the live build of one environment the same client id', async () => {
-    const { resolveHostedVars, wranglerVarFlags, buildEnv } = await load();
-    for (const env of ['production', 'staging'] as const) {
-      const { vars } = resolveHostedVars(profile, env);
-      const id = profile.environments[env].GOOGLE_CLIENT_ID;
-      expect(wranglerVarFlags(vars)).toContain(`GOOGLE_CLIENT_ID:${id}`);
-      expect(buildEnv(vars)).toContain(`NEXT_PUBLIC_GOOGLE_CLIENT_ID=${id}`);
-    }
-  });
-
   it('verify fails when a deployment still holds a var this environment leaves unset', async () => {
     const { unsetVarDrift } = await load();
-    const deployed = new Map([['GOOGLE_CLIENT_ID', '111-prod.apps.googleusercontent.com']]);
-    expect(unsetVarDrift(['GOOGLE_CLIENT_ID'], deployed)).toEqual([
-      {
-        name: 'GOOGLE_CLIENT_ID',
-        expected: '(unset)',
-        actual: '111-prod.apps.googleusercontent.com',
-      },
+    const deployed = new Map([['APP_BASE_URL', prod]]);
+    expect(unsetVarDrift(['APP_BASE_URL'], deployed)).toEqual([
+      { name: 'APP_BASE_URL', expected: '(unset)', actual: prod },
     ]);
-    expect(unsetVarDrift(['GOOGLE_CLIENT_ID'], new Map())).toEqual([]);
-  });
-
-  it("verify-build finds the environment's client id in the live build, and never another's", async () => {
-    const { clientIdBuildDrift } = await load();
-    const prod = '111-prod.apps.googleusercontent.com';
-    const staging = '222-staging.apps.googleusercontent.com';
-    expect(clientIdBuildDrift(['a', `x"${staging}"y`], staging, [prod])).toEqual([]);
-    expect(clientIdBuildDrift(['a'], staging, [prod])).toEqual([`missing ${staging}`]);
-    expect(clientIdBuildDrift([`${staging} ${prod}`], staging, [prod])).toEqual([
-      `holds another environment's ${prod}`,
-    ]);
-    // Unset here: no client id may be baked in at all.
-    expect(clientIdBuildDrift([prod], null, [prod])).toEqual([
-      `holds another environment's ${prod}`,
-    ]);
-    expect(clientIdBuildDrift(['nothing'], null, [prod])).toEqual([]);
+    expect(unsetVarDrift(['APP_BASE_URL'], new Map())).toEqual([]);
   });
 });

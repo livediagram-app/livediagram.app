@@ -22,14 +22,11 @@ const handledKeys = new Set([
   ...HANDLED_OUTSIDE_THE_MAPS,
 ]);
 
-// The presentation binds its own keys on the overlay (PresentationOverlay),
-// deliberately outside the editor's maps — while a deck runs, the editor's
-// shortcuts are dead. So its rows describe real bindings that `handledKeys`
+// A photo page binds its own keys (usePhotoShortcuts, docs/specs/031-photo/photo-tools.md "Keyboard summary"),
+// deliberately outside the editor's maps. So its rows describe real bindings that `handledKeys`
 // will never contain, and checking them against it would fail on the truth.
-// So are a photo page's (usePhotoShortcuts, docs/specs/031-photo/photo-tools.md "Keyboard summary").
 const EDITOR_SECTIONS = SHORTCUT_SECTIONS.filter(
-  (section) =>
-    section.heading !== 'While presenting' && section.heading !== 'While on a photo page',
+  (section) => section.heading !== 'While on a photo page',
 );
 
 // Rows whose `keys` are a single printable character: the ones that name one

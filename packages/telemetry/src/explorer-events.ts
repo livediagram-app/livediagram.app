@@ -63,10 +63,14 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   'Home·Loaded': ['Retry'],
   // The filter lens: a facet that gained a value, never the value.
   'Explorer·Selected': ['Text', 'OpensIn', 'Template', 'MadeBy', 'Edited', 'People', 'Space'],
-  // The Inbox: opened, a row followed, a failed read retried.
+  // The Inbox: opened, a row followed into its app, a failed read retried, the filter bar changed, and a reply or a
+  // resolve (or Mark Done) from the reading pane.
   'Activity·Opened': [null],
   'Activity·Selected': ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
   'Activity·Loaded': ['Retry'],
+  'Activity·Changed': ['All', 'MyActions', 'AssignedByMe', 'Comments', 'FormResponses'],
+  'Activity·Added': ['Reply'],
+  'Activity·Resolved': ['Thread', 'Action', 'Card'],
   // The List / Card / Details toggle, and Home's banner closed.
   'UI·Toggled': ['ExplorerViewList', 'ExplorerViewCard', 'ExplorerViewDetails', 'HomeBannerOff'],
   // The Share dialog: a link, an embed or a live image copied, a live image's tab picked, Show Me, and a

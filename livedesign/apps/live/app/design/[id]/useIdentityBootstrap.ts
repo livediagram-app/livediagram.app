@@ -90,7 +90,6 @@ export function useIdentityBootstrap(opts: {
     setActiveId: SetState<string>;
     setDesignId: SetState<string | null>;
     setDesignName: SetState<string>;
-    setDesignPresentation: SetState<string | null>;
     setDesignNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The design is in the Trash (docs/specs/013-workspace/trash.md).
@@ -161,7 +160,6 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setDesignId,
       setDesignName,
-      setDesignPresentation,
       setDesignNotFound,
       setLoadError,
       setDesignTrashed,
@@ -199,7 +197,6 @@ export function useIdentityBootstrap(opts: {
       noteChangesetSeen,
       setActiveId,
       setDesignName,
-      setDesignPresentation,
       setDesignOwnerColor,
       setDesignOwnerId,
       setDesignOwnerName,

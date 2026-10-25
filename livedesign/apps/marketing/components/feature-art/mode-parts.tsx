@@ -6,10 +6,13 @@
 
 import type { ReactNode } from 'react';
 import { FONT } from '@/components/art-tokens';
-import { Cursor as TeammateCursor, Frame } from './shared';
+import {
+  Cursor as TeammateCursor,
+  Frame,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
-export { SERIF } from './page-kit';
+export { SERIF } from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // A surface in the editor (a card, a panel, a page): white in light, slate in dark, with the
 // soft shadow the editor lifts it on.

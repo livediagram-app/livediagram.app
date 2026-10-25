@@ -1,12 +1,12 @@
 // The whole-design envelope: the contents of a `.livedesign` file, as the
 // CLI's pull files write it and read it back. The sibling of the per-tab `livedesign.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
-// design with every tab, each tab's per-design folder, and the slide deck.
+// design with every tab and each tab's per-design folder. An older file's `presentation` (the slide deck
+// livedesign no longer has, docs/specs/012-collaboration/presentation-mode.md) is read past.
 // Images stay references to livedesign's image store; no bytes are embedded.
 
 import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
-import type { StoredPresentation } from './slide-deck';
 
 export const DESIGN_ENVELOPE_KIND = 'livedesign.design';
 export const DESIGN_SCHEMA_VERSION = 1;
@@ -20,7 +20,6 @@ export type DesignEnvelope = {
   design: {
     id: string;
     name: string;
-    presentation: string | null;
     tabs: EnvelopeTab[];
   };
 };
@@ -28,7 +27,7 @@ export type DesignEnvelope = {
 type DesignEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function designToEnvelopeText(
-  liveDoc: { id: string; name: string; presentation: string | null },
+  liveDoc: { id: string; name: string },
   tabs: EnvelopeTab[],
   exportedAt: number,
 ): string {
@@ -39,7 +38,6 @@ export function designToEnvelopeText(
     design: {
       id: liveDoc.id,
       name: liveDoc.name,
-      presentation: liveDoc.presentation,
       tabs,
     },
   };
@@ -76,11 +74,6 @@ export function parseDesignEnvelope(
     !d ||
     typeof d.id !== 'string' ||
     typeof d.name !== 'string' ||
-    !(
-      d.presentation === null ||
-      d.presentation === undefined ||
-      typeof d.presentation === 'string'
-    ) ||
     !Array.isArray(d.tabs) ||
     !d.tabs.every(isTab)
   ) {
@@ -95,7 +88,6 @@ export function parseDesignEnvelope(
       design: {
         id: d.id,
         name: d.name,
-        presentation: d.presentation ?? null,
         tabs: d.tabs,
       },
     },
@@ -103,29 +95,13 @@ export function parseDesignEnvelope(
 }
 
 // A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/drive.md): fresh tab ids, with
-// the tab links and the deck's slides following them, so the copy navigates and presents like the original. An
-// unreadable deck is dropped rather than carried broken.
-export function copyDesignEnvelope(envelope: DesignEnvelope): {
-  tabs: EnvelopeTab[];
-  presentation: string | null;
-} {
+// the tab links following them, so the copy navigates like the original.
+export function copyDesignEnvelope(envelope: DesignEnvelope): { tabs: EnvelopeTab[] } {
   const idMap = new Map(envelope.design.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.design.tabs.map((t) => ({
     ...t,
     id: idMap.get(t.id)!,
     elements: remapTabLinks(t.elements, idMap),
   }));
-  let presentation = envelope.design.presentation;
-  if (presentation) {
-    try {
-      const deck = JSON.parse(presentation) as StoredPresentation;
-      for (const d of deck.decks ?? []) {
-        for (const slide of d.slides ?? []) slide.tabId = idMap.get(slide.tabId) ?? slide.tabId;
-      }
-      presentation = JSON.stringify(deck);
-    } catch {
-      presentation = null;
-    }
-  }
-  return { tabs, presentation };
+  return { tabs };
 }

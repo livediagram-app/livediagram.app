@@ -260,7 +260,7 @@ describe('PagesTourHost end', () => {
 
   it('counts the page’s steps on screen', async () => {
     await start();
-    expect(stage.engine!.countableSteps).toBe(6);
+    expect(stage.engine!.countableSteps).toBe(5);
   });
 
   it('leaves out a step whose control is not on screen', async () => {

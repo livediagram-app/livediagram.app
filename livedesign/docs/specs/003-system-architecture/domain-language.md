@@ -34,6 +34,9 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - What a **page** is (a logo, a wireframe or a photo) is the page's kind (`PageKind`), not the tab's
   ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
   (`tabPageKind`), so a logo tab holds only logo pages; a tab whose first page is still blank has no kind yet.
+- livedesign has no **slide** pages, article or infographic pages, and no slide deck: a stored page of a kind it
+  does not have reads as a page whose kind is not chosen yet, and presenting was removed on 25 October 2026
+  ([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 ### Template
 

@@ -9,11 +9,7 @@
 //
 // Device-local, like the other tool panels. Never sent to the api.
 
-import {
-  readLocalStorageSafe,
-  storedRecord,
-  writeLocalStorageSafe,
-} from './local-storage-safe';
+import { readLocalStorageSafe, storedRecord, writeLocalStorageSafe } from './local-storage-safe';
 import { workbench } from '../bindings';
 
 export type FormatGroup = 'fill' | 'border' | 'text' | 'effects' | 'size';

@@ -12,7 +12,6 @@ uploads, `fields` and `q`) and the OAuth token and revoke endpoints
 - The `user*` methods act as the person in the Drive UI (rename, move, bin,
   restore, delete forever, create a folder the app cannot see, edit
   contents); `fail` injects 401 / 403 / 404 / 429 / 5xx.
-- `@liveworkspace/fake-google/server` serves it over HTTP for the e2e stack.
 
 It models `drive.file`: the app sees only files it created or was given
 (Open with, the Picker). Where Google's behaviour is not yet verified

@@ -17,7 +17,7 @@ const dusk = { kind: 'gradient' as const, from: '#1e1b4b', to: '#4c1d95', angle:
 const animated = { ...dusk, motion: 'aurora' as const, speed: 1.5 };
 const picture = { kind: 'image' as const, imageId: 'img-1' };
 
-const slide = (id: string, extra: Partial<Page> = {}): Page => ({
+const sheet = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
   orientation: 'landscape',
   ...extra,
@@ -35,9 +35,9 @@ const backgrounds = (tab: Tab) => Object.fromEntries(pagesOf(tab).map((p) => [p.
 describe('pageBackgroundSpread', () => {
   it('gives every other page of its kind the background, animated speed and pattern included', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: animated, pattern: 'dots' } }),
-      slide('b'),
-      slide('c', { background: { fill: { kind: 'solid', color: '#ffffff' } } }),
+      sheet('a', { background: { fill: animated, pattern: 'dots' } }),
+      sheet('b'),
+      sheet('c', { background: { fill: { kind: 'solid', color: '#ffffff' } } }),
     ]);
     const out = pageBackgroundSpread(tab, 'a');
     if (!('tab' in out)) throw new Error('refused');
@@ -48,9 +48,9 @@ describe('pageBackgroundSpread', () => {
 
   it('reaches only pages of the same kind', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: dusk } }),
+      sheet('a', { background: { fill: dusk } }),
       { id: 'i', orientation: 'portrait', kind: 'wireframe', size: 'device' },
-      slide('b'),
+      sheet('b'),
     ]);
     const out = pageBackgroundSpread(tab, 'a');
     if (!('tab' in out)) throw new Error('refused');
@@ -59,7 +59,7 @@ describe('pageBackgroundSpread', () => {
   });
 
   it('spreads the plain paper too, clearing what the others wore', () => {
-    const tab = tabOf([slide('a'), slide('b', { background: { fill: dusk, pattern: 'grid' } })]);
+    const tab = tabOf([sheet('a'), sheet('b', { background: { fill: dusk, pattern: 'grid' } })]);
     const out = pageBackgroundSpread(tab, 'a');
     if (!('tab' in out)) throw new Error('refused');
     expect(backgrounds(out.tab).b).toBeUndefined();
@@ -67,9 +67,9 @@ describe('pageBackgroundSpread', () => {
 
   it('leaves a locked page as it is and counts it', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: dusk } }),
-      slide('b', { locked: true }),
-      slide('c'),
+      sheet('a', { background: { fill: dusk } }),
+      sheet('b', { locked: true }),
+      sheet('c'),
     ]);
     const out = pageBackgroundSpread(tab, 'a');
     if (!('tab' in out)) throw new Error('refused');
@@ -79,15 +79,15 @@ describe('pageBackgroundSpread', () => {
 
   it('counts a page already wearing it as applied, with no change', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: dusk } }),
-      slide('b', { background: { fill: dusk } }),
+      sheet('a', { background: { fill: dusk } }),
+      sheet('b', { background: { fill: dusk } }),
     ]);
     const out = pageBackgroundSpread(tab, 'a');
     expect(out).toMatchObject({ tab, applied: 1, skipped: 0 });
   });
 
   it('re-inks what sits on each page it reaches, as painting each in turn does', () => {
-    const [, b, c] = layOutPages([slide('a'), slide('b'), slide('c')]);
+    const [, b, c] = layOutPages([sheet('a'), sheet('b'), sheet('c')]);
     const pale = (id: string, at: { x: number; y: number }) =>
       ({
         id,
@@ -103,7 +103,7 @@ describe('pageBackgroundSpread', () => {
       }) as Element;
     const night = { fill: { kind: 'solid' as const, color: '#0f172a' } };
     const tab = tabOf(
-      [slide('a', { background: night }), slide('b'), slide('c')],
+      [sheet('a', { background: night }), sheet('b'), sheet('c')],
       [pale('on-b', b!.rect), pale('on-c', c!.rect)],
     );
     const out = pageBackgroundSpread(tab, 'a');
@@ -120,7 +120,7 @@ describe('pageBackgroundSpread', () => {
     expect(
       pageBackgroundSpread(
         tabOf([
-          slide('a'),
+          sheet('a'),
           { id: 'i', orientation: 'portrait', kind: 'wireframe', size: 'device' },
         ]),
         'a',
@@ -128,7 +128,7 @@ describe('pageBackgroundSpread', () => {
     ).toEqual({
       refused: 'no_other_pages',
     });
-    expect(pageBackgroundSpread(tabOf([slide('a')]), 'zz')).toEqual({ refused: 'unknown_page' });
+    expect(pageBackgroundSpread(tabOf([sheet('a')]), 'zz')).toEqual({ refused: 'unknown_page' });
   });
 
   it('copies a logo page’s fill to other logo pages, never a pattern', () => {
@@ -149,8 +149,8 @@ describe('pageBackgroundSpread', () => {
 describe('pageBackgroundCopied', () => {
   it('paints one page with another’s background', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: picture, pattern: 'lines' } }),
-      slide('b'),
+      sheet('a', { background: { fill: picture, pattern: 'lines' } }),
+      sheet('b'),
     ]);
     const out = pageBackgroundCopied(tab, 'a', 'b');
     if (!('tab' in out)) throw new Error('refused');
@@ -159,7 +159,7 @@ describe('pageBackgroundCopied', () => {
 
   it('paints across shapes, a wide page onto a portrait one', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: dusk } }),
+      sheet('a', { background: { fill: dusk } }),
       { id: 'i', orientation: 'portrait' },
     ]);
     const out = pageBackgroundCopied(tab, 'a', 'i');
@@ -168,14 +168,14 @@ describe('pageBackgroundCopied', () => {
   });
 
   it('is no edit onto the source itself', () => {
-    const tab = tabOf([slide('a', { background: { fill: dusk } }), slide('b')]);
+    const tab = tabOf([sheet('a', { background: { fill: dusk } }), sheet('b')]);
     expect(pageBackgroundCopied(tab, 'a', 'a')).toEqual({ tab });
   });
 
   it('refuses a locked page and a picture onto a logo page', () => {
     const tab = tabOf([
-      slide('a', { background: { fill: picture } }),
-      slide('b', { locked: true }),
+      sheet('a', { background: { fill: picture } }),
+      sheet('b', { locked: true }),
       { id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' },
     ]);
     expect(pageBackgroundCopied(tab, 'a', 'b')).toEqual({ refused: 'locked' });
@@ -206,7 +206,7 @@ describe('backgroundPatchFor', () => {
 describe('pageBackgroundSpread at the page cap', () => {
   it('gives 99 full pages one background within its budget', () => {
     const pages = Array.from({ length: 100 }, (_, i) =>
-      slide(`p${i}`, i === 0 ? { background: { fill: { kind: 'solid', color: '#0f172a' } } } : {}),
+      sheet(`p${i}`, i === 0 ? { background: { fill: { kind: 'solid', color: '#0f172a' } } } : {}),
     );
     const laid = layOutPages(pages);
     const elements = laid.flatMap((pg) =>

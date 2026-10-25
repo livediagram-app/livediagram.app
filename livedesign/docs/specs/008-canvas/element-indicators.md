@@ -108,10 +108,9 @@ moves: content that moved out of their way stays put, so selecting never shifts 
 - Indicators scale with the canvas zoom and hide below 40% zoom (`ADORNMENT_MIN_ZOOM`), with the
   lock badge and the remote selectors.
 - A margin note shows its count on its own face, so it shows no note indicator.
-- They are editor chrome: exports, thumbnails, embeds (view or edit role) and a slide being
-  **presented** ([Presentation mode](../012-collaboration/presentation-mode.md)) never draw them,
+- They are editor chrome: exports, thumbnails and embeds (view or edit role) never draw them,
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);
-  the lock badge hides with them, so a presented slide shows only what the audience should see.
+  the lock badge hides with them, so an export shows only what its reader should see.
   The share view (`/design/shared`) is the editor reached by a share link, so it draws them like
   the editor.
 

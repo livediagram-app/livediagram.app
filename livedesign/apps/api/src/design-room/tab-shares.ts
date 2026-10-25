@@ -8,7 +8,7 @@ import { createTabShares } from '@liveworkspace/index-app';
 import type { SharedTabsSummary } from '@livedesign/api-schema';
 import type { Tab } from '@livedesign/design';
 import { photoBlobIdsOf } from '@livedesign/photo-engine';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { imageRefReplaceStatements } from '../db/image-refs';
 import { servableImageIds } from '../db/image-grants';
 import { heldBlobs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';

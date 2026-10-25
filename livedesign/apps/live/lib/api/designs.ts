@@ -117,27 +117,17 @@ export async function apiSaveDesignMeta(
     name?: string;
     tabs?: { id: string; folder?: string }[];
     tabIds?: string[];
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. Absent leaves the stored deck alone,
-    // which is what every save that isn't about the deck sends; null clears
-    // it. JSON.stringify drops an undefined field, so "absent" travels as
-    // absent rather than as null.
-    presentation?: string | null;
   },
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(d.id)) {
-    await offlineSaveDesignMeta(
-      d.id,
-      { name: d.name, tabs: d.tabs, presentation: d.presentation },
-      Date.now(),
-    );
+    await offlineSaveDesignMeta(d.id, { name: d.name, tabs: d.tabs }, Date.now());
     return;
   }
   const body = JSON.stringify({
     name: d.name,
     tabs: d.tabs,
     tabIds: d.tabIds,
-    presentation: d.presentation,
   });
   const res = await apiFetch(`${API_BASE}/designs/${d.id}`, {
     method: 'PUT',
@@ -156,8 +146,8 @@ export async function apiSaveDesignMeta(
 export async function apiCreateDesign(
   ownerId: string,
   // `teamId` / `folderId` are the placement, filed by the create itself and refused by name when
-  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` /
-  // `presentation` are for an Offline Mode sync (docs/specs/006-design/offline-mode.md), which must
+  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` is
+  // for an Offline Mode sync (docs/specs/006-design/offline-mode.md), which must
   // carry what the offline record held: the server copy is all that is left once the local one is
   // deleted. `createdAt` / `savedAt` also date an imported board as the board
   // (docs/specs/015-api/api.md "Design dates").
@@ -174,7 +164,6 @@ export async function apiCreateDesign(
     intent?: CreationIntent;
     createdAt?: number;
     savedAt?: number;
-    presentation?: string | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-design/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new design being created.
@@ -222,7 +211,6 @@ export async function apiCreateDesign(
       ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
-      ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });
   const { design: liveDoc } = await expectOk<DesignResponse>(res, 'create design');

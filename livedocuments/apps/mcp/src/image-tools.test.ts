@@ -2,13 +2,13 @@
 // "Agents").
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { contactSheetTab, IMAGES_UNAVAILABLE } from './image-tools';
 import { registerTools } from './tools';
 
 // The SVG each preview drew, so a test reads what the contact sheet holds (resvg's wasm does not load here).
 const drawn: string[] = [];
-vi.mock('./render', () => ({
+vi.mock('@liveworkspace/mcp-kit/render', () => ({
   svgToPngBase64: async (svg: string) => {
     drawn.push(svg);
     return 'cG5n';

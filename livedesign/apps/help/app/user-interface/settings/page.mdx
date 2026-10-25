@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SettingsDialogScene } from '@/components/illustrations/settings-dialog';
+import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Settings',
@@ -21,10 +21,10 @@ export const metadata = helpMetadata({
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
 <Figure caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
-  <SettingsDialogScene />
+  <SettingsDialogScene noun="design" />
 </Figure>
 
-Some categories hold **sub-categories** (Editor holds Pages and Presenting; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
+Some categories hold **sub-categories** (Editor holds Pages; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
 
@@ -51,10 +51,6 @@ Then:
 - **Logo Guides**: shows a [logo page](/help/pages/logo-pages/)'s construction guides, which the artwork snaps to while they show. On by default; a page you switch them on or off for keeps its own choice.
 - **Logo Guide Strength**, beneath it: how strongly the guides show, **Faint**, **Medium** (the default) or **Strong**.
 - **Guides Shown**, beneath it: one chip per guide, **Centre Lines**, **Diagonals**, **Safe Area**, **Circles**, **Square** and **Grid**, all on by default. Tap a chip to hide or show that guide.
-
-### Presenting
-
-How [presenting](/help/selection-modes/slide-deck/presenting/) a deck behaves: **Transition** and its **Speed**, **Slide Size**, **Auto-Advance**, **Click to Advance**, **Loop the Deck**, **Show Position**, **Keep Controls Visible**, **Hide the Pointer**, **Show Elapsed Time** and **Show Slide Budget**.
 
 ## Appearance
 
@@ -123,7 +119,7 @@ A few things deliberately stay on the device you are using:
 - The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
 - **Panel positions**: which corner each panel docks into.
 - **Explorer view**: List, Card or Details.
-- **Tool settings**: the laser's pen, the spotlight and the presenter's settings.
+- **Tool settings**: the laser's pen and the spotlight.
 
 The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) used to sit in the palette's own gear menu. They now live here, under **Editor** and **Panels**, so every setting has one home.
 

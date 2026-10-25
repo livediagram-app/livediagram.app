@@ -6,7 +6,7 @@ import type { ExportImageMap } from './export-tab-images';
 
 // An image the PNG / PDF export draws through its SVG (a shadow, a turn, an accent edge, a
 // finish) embeds its bytes, as the SVG export does, rather than the empty-image placeholder: a
-// slide deck's pictures came out of its PDF as empty boxes.
+// page's pictures came out of its PDF as empty boxes.
 
 const HREF = 'data:image/png;base64,iVBORw0KGgo=';
 

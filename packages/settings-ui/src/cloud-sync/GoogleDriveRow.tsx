@@ -1,7 +1,6 @@
 'use client';
 
-// Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/drive.md "Connecting"; after livediagram's
-// row, livediagram/docs/specs/022-drive-mirror "Connecting"). One row: the provider on the left, its status and one
+// Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/drive.md "Connecting"). One row: the provider on the left, its status and one
 // button on the right; a second line only while something needs the person. The status keeps one width per phase
 // (Layout stability). Syncing is the service's and automatic, so there is no Sync now: opening the row asks for a
 // pass (`POST /api/drive/check`), and the row reads the connection again only while a pass or a first copy runs.

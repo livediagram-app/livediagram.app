@@ -1,10 +1,8 @@
 // Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
-// a live window onto another tab, the Contents sidebar, and a talk kept to time while presenting.
+// a live window onto another tab and the Contents sidebar.
 
-import { YOU } from '@/components/art-tokens';
 import {
   ARROW,
-  HAIRLINE,
   INK,
   INK_TEXT,
   PANEL,
@@ -13,9 +11,8 @@ import {
   TEXT_BODY,
   TEXT_MUTED,
   TEXT_STRONG,
-} from './canvas-marks';
-import { Pill } from './mode-parts';
-import { AMBER, Frame, SKY, VIOLET } from './shared';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame, VIOLET } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** A page as the canvas shows it: a white sheet with a soft shadow. */
 function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
@@ -196,58 +193,6 @@ export function ContentsSidebarArt() {
           fill="none"
           strokeWidth="1"
         />
-      </Scene>
-    </Frame>
-  );
-}
-
-// Keeping time: the presenter's corner while a page is up, the elapsed time counting and this
-// page's budget gone amber as it runs over, beside the page itself.
-export function SlideTimingArt() {
-  return (
-    <Frame>
-      <Scene>
-        {/* The page, full screen: a logo on its artboard. */}
-        <rect className="fill-slate-900" x="10" y="8" width="160" height="80" rx="3" />
-        <rect x="62" y="16" width="56" height="56" rx="3" fill="#fff" />
-        <circle cx="90" cy="38" r="11" fill="none" stroke={SKY} strokeWidth="3.4" />
-        <circle cx="90" cy="38" r="4" fill={VIOLET} />
-        <text x="90" y="63" fontSize="7" fontWeight="800" fill="#1e293b" textAnchor="middle">
-          Bloom
-        </text>
-        <text x="164" y="83" fontSize="5" fill="#94a3b8" textAnchor="end">
-          4 / 12
-        </text>
-        {/* The readouts. */}
-        <g className={SHADOW}>
-          <rect className={PANEL} x="184" y="16" width="104" height="64" rx="5" strokeWidth="0.8" />
-        </g>
-        <text className={TEXT_MUTED} x="192" y="30" fontSize="5" fontWeight="700">
-          ELAPSED
-        </text>
-        <text className={TEXT_STRONG} x="280" y="30" fontSize="7" fontWeight="700" textAnchor="end">
-          12:40
-        </text>
-        <line className={HAIRLINE} x1="192" x2="280" y1="38" y2="38" strokeWidth="0.8" />
-        <text className={TEXT_MUTED} x="192" y="50" fontSize="5" fontWeight="700">
-          THIS PAGE
-        </text>
-        <g className="fa-d-ring">
-          <Pill x={240} y={44} text="4:20 / 4:00" tone="amber" w={42} />
-        </g>
-        <rect
-          className="fill-slate-100 dark:fill-slate-700"
-          x="192"
-          y="60"
-          width="88"
-          height="4"
-          rx="2"
-        />
-        <rect x="192" y="60" width="88" height="4" rx="2" fill={AMBER} />
-        <circle cx="194" cy="73" r="2.4" fill={YOU} />
-        <text className={TEXT_BODY} x="200" y="75" fontSize="5">
-          Only you see these
-        </text>
       </Scene>
     </Frame>
   );

@@ -3,7 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { z } from 'zod';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   LEGACY_INPUT_SHAPE,
   LEGACY_TOOL_SUNSET,

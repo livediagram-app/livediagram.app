@@ -75,8 +75,7 @@ moment; placed before the Map existed, the panel sat over its header.
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
-  once repeat each other, and the menu may open at the right edge), in zen mode, in embeds, while
-  presenting, and when edits are blocked (a view-only visitor or a locked tab).
+  once repeat each other, and the menu may open at the right edge), in zen mode, in embeds, and when edits are blocked (a view-only visitor or a locked tab).
 
 ### Turning it off
 

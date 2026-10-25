@@ -196,6 +196,20 @@ Each step is its own PR, and both products build and pass their tests after ever
      the views, the lint context and checks, typed on its `Element` and `Tab`, and the wire types in its `api-schema`,
      whose lint codes and view names really differ (livediagram's group, aspect and colour checks, livedocuments'
      `pages` view).
+   - `help-site` and `marketing-site`, second slice: what the help and marketing apps still had in two or more
+     copies. Thirteen in-article illustration modules (troubleshooting, the settings dialog, account settings, the
+     CLI, account, canvas links and notes, collaboration, explorer imports, palette rows, the drawing tools, privacy,
+     tips, the title bar) are one copy in `@liveworkspace/help-site/art/illustrations`, the union of the copies; where
+     a figure named the product or its work, the article now passes it (`product`, `noun`, with `art/noun` for
+     plurals and capitals), and liveplanner's two real differences became props (its Session strip has no Poll, its
+     R2 holds Snapshots). The retired help URLs' stubs bind `lib/moved`. `@liveworkspace/marketing-site` gains the
+     Privacy band and its art (each app keeps its promises), the Try It flourish, the feature-art kit (`shared`,
+     `canvas-marks`, `page-kit`, `versatility-parts`) and `lib/legal-moved` behind `/privacy`, `/terms` and
+     `/security`: 24 files, about 4,900 lines, and about 13,400 fewer in the products. Every moved piece rendered
+     byte-identical to main. Still in each app: the tool configs, the category-art bindings, liveplanner's help terms
+     stub (its wording differs), livediagram's and liveplanner's title bar (an older header layout), livedocuments'
+     palette rows and each `privacy-art.css` palette. Each help app's CSS grows by at most 90 B gzipped; liveplanner's
+     marketing stylesheet leaves out the card art it never draws (`@source not`).
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
    - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`
@@ -386,6 +400,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      `api-schema`, `agent-verbs` or fake host (`route.ts`, `parse-flags.ts`, `print.ts`,
      `testing/fake-io.ts` and the suites on it). Those follow `api-schema` and `agent-verbs` in
      step 3.
+
+   - Second slices, the copies the first ones left, each one copy now:
+     - `cli-kit`: the verbs' flag fields, the real `nodeIo` and the suites' `fakeIo`. Each CLI's `testing/fake-io.ts`
+       binds it to its `PRODUCT` and its host's capabilities, and livediagram's io and fake io spread them for the
+       repository link.
+     - `mcp-kit`: the Worker's `Env`, the preview budget and `svgToPngBase64`, and the `show_my_<record>` prompt every
+       server registers with its own nouns.
+     - `api-kit`: the room's access closes, follows, multiplayer count and agent presence (each room hands in its
+       trashed op), the image reference extractor, the telemetry relay's localhost check and the OpenAPI document
+       types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.
+     - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
+       `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
 
 ## Before step 1: deciding when to switch over
 

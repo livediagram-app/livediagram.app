@@ -46,10 +46,6 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   `next/dynamic`, never a static import. A document URL already has the editor from
   `/document/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
   tick the import takes.
-- The Google Drive mirror's engine loads only in the one tab elected to run it
-  ([Drive mirror](../022-drive-mirror/drive-mirror.md)); every other tab, and every person without
-  Drive, never downloads it. The token source every signed-in tab needs lives apart from it
-  (`lib/drive/browser-tokens.ts`).
 - `apps/editor/app/first-load-lazy.test.ts` fails if any of these become static imports again.
 
 ### A surface that is not on screen loads when it is

@@ -21,7 +21,7 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Its support categories cover the account, privacy, developer tooling and the hosted service's policies.
 
-**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. Isometric Mode (`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
+**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. The Slide Deck feature and its three sub-articles (`/selection-modes/slide-deck/`, with `building-a-deck`, `presenting` and `presenter-controls` under it) retired with slide decks on 25 October 2026 ([Presentation mode](../012-collaboration/presentation-mode.md)) and land on Selection Modes. Isometric Mode (`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
 
 ## Information architecture
 
@@ -35,7 +35,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedesign API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Designs_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
+**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them (each help stub binds `@liveworkspace/help-site/lib/moved`).
 
 | slug                   | title                | kind    |
 | ---------------------- | -------------------- | ------- |
@@ -62,14 +62,14 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedesign is for.
 
-- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting and presenting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
+- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
 - **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
 - **Tabs** — a design's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Design, Importing and Exporting, one guide per tab-menu action.
-- **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.
+- **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following along, teams, sharing and embeds.
 - **Tools** — zen mode, appearance (light, dark, system) and cleanup.
 - **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding designs/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
@@ -200,15 +200,17 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   same in every product that shows it (the colour and border controls, the layers
   panel, undo and redo, the presentation tools): drawn once, and imported by an
   article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
-  the app while it shows that product's own work, words or palette.
+  the app while it shows that product's own work, words or palette. A figure whose only product words are its name or what it calls its work takes them as props
+  (`product`, `noun`), and the article passes them: `<StuckCanvas noun="design" />`,
+  `<CliConsent product="livedesign" noun="design" />`.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
 - **`components/illustrations/<surface>.tsx`**: an editor surface several
-  areas show (the Settings dialog in `settings-dialog.tsx`, with the shared
-  `Switch`), drawn once and imported wherever it recurs. Files are named after
+  areas show, drawn once and imported wherever it recurs (the Settings dialog, with the shared
+  `Switch`, is every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`). Files are named after
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the

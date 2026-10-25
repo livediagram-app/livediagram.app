@@ -16,7 +16,7 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   throw new TabTooLargeError(tabId, bytes, write);
 }
 import type { DesignEnv, TabDTO } from '../types';
-import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIds, imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import {
   imageRefAddStatements,

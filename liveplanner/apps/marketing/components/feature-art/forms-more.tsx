@@ -2,9 +2,16 @@
 // several pages under a cover in the tab's style, and new answers finding you through the Inbox and
 // email.
 
-import { PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
+import {
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Pill } from './mode-parts';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 const ACCENT = '#7c3aed';
 

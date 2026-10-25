@@ -34,7 +34,7 @@ export class OfflineSyncIncompleteError extends Error {
 }
 
 // What the upload carried, as far as a later write would change it: every edit stamps savedAt (tabs,
-// name, deck, folder). A star or an open does not, and needs no new upload.
+// name, folder). A star or an open does not, and needs no new upload.
 function uploadMark(rec: OfflineDesignRecord): string {
   return String(rec.savedAt);
 }
@@ -53,7 +53,7 @@ async function upload(rec: OfflineDesignRecord, ownerId: string): Promise<Map<st
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
   // reporting a brand-new design (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
-  // deleted next, so a deck or placement left behind is gone for good.
+  // deleted next, so a placement left behind is gone for good.
   const create = (folderId: string | null) =>
     apiCreateDesign(
       ownerId,
@@ -63,7 +63,6 @@ async function upload(rec: OfflineDesignRecord, ownerId: string): Promise<Map<st
         tabs,
         folderId,
         createdAt: rec.createdAt,
-        presentation: rec.presentation ?? null,
       },
       { conversion: 'sync' },
     );

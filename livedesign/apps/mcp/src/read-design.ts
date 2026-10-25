@@ -8,7 +8,7 @@ import {
   type TabViewName,
 } from '@livedesign/api-schema';
 import { ApiError, apiJson, apiText } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
 import { laidOutPagesOf, type LaidOutPage, type Tab } from '@livedesign/design';
 import { resolvePage } from '@livedesign/edit-operations';

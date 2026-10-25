@@ -12,7 +12,7 @@ The parser, the poster URL and the embed origin are the only provider-specific p
 [YouTube video element](youtube-video.md), so each provider is one more case in them. There
 is no `provider` field: the provider is derived from the link, like the video id.
 
-Wireframes and presented pages show live third-party content: a prototype, a video, a doc. The hard part, an iframe that
+Wireframes and other pages show live third-party content: a prototype, a video, a doc. The hard part, an iframe that
 does not eat the canvas, is shared with the YouTube element.
 
 ## `embedTargetFor`

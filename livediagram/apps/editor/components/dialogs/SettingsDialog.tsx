@@ -34,8 +34,6 @@ import {
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
-import { useDriveMirror } from '@/components/drive/drive-mirror-context';
-import type { CloudSyncProviderId } from '@/lib/cloud-sync/providers';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
@@ -86,13 +84,6 @@ export function SettingsDialog({
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
   // Live settings too: a panel's rows follow its Enable switch the same way.
-  // Cloud Sync rows only where the deployment offers the provider
-  // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting").
-  const driveMode = useDriveMirror().mode;
-  const cloudProviders = useMemo<CloudSyncProviderId[]>(
-    () => (driveMode !== 'off' ? ['googleDrive'] : []),
-    [driveMode],
-  );
   // Documents in This Browser with parts set aside: Account's way back to the offer
   // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
   const retiredParts = useRetiredPartsCount(!workbench);
@@ -103,11 +94,10 @@ export function SettingsDialog({
         signedIn,
         powerUserMode,
         preferences: settings,
-        cloudProviders,
         workbench,
         retiredParts,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench, retiredParts],
+    [emailEnabled, signedIn, powerUserMode, settings, workbench, retiredParts],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt

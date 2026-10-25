@@ -133,7 +133,7 @@ export function ElementFaceRouter({
           element={element}
           surface={surface}
           selected={isSelected}
-          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
+          // A locked window, or a read-only canvas (a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
       ) : element.type === 'annotation' ? (

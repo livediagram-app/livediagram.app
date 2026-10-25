@@ -14,8 +14,8 @@ static export.
   components (PascalCase) composed from the primitives. `canvas.tsx` is the
   worked exemplar; mirror its structure and density.
 - **`<surface>.tsx`**: an editor surface several areas show, drawn once and
-  imported wherever it recurs. `settings-dialog.tsx` holds the Settings frame,
-  its Editor and Panels panes, and the `Switch` every settings-style row uses.
+  imported wherever it recurs. The Settings frame, its Editor and Panels panes, and the `Switch` every
+  settings-style row uses are every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`.
   Name every file after its subject (an area or a surface), never after the
   batch of work that produced it.
 - **`../Figure.tsx`** — frames a scene in an "editor viewport" card with a
@@ -41,7 +41,7 @@ static export.
 
 - Draw in the light ramp only. In dark, [`../packages/help-site/src/help-art.css`](../../../../../packages/help-site/src/help-art.css) re-points the
   light tokens inside `Scene` so the art shows the editor's dark chrome with no `dark:` classes.
-- Something that looks the same in both appearances (a code window, the presenter HUD, the light
+- Something that looks the same in both appearances (a code window, the light
   half of a light/dark comparison, theme swatches) goes in a `<g className="help-art-as-drawn">`.
 - A `dark:` class may only name a token the file leaves alone (slate-950, brand-800 and up, hues
   from 300 up) or a capture such as `dark:fill-(--help-art-slate-800)`.

@@ -24,7 +24,6 @@ import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
-import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -98,7 +97,6 @@ export function EditorView() {
   useRegionCycle();
   const {
     pasteFromClipboard,
-    slideDeck,
     hasClipboard,
     activeId,
     activeTab,
@@ -265,20 +263,6 @@ export function EditorView() {
             renameNonce={renameDesignNonce}
             // Minimal chrome moves the pill to an icon in the status bar.
             rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-            // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
-            // while the deck has a slide to show, on a desktop, once the design is up. Every role.
-            present={
-              hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
-                ? {
-                    slideCount: slideDeck.runnable.length,
-                    starting: slideDeck.startingDeck,
-                    onPresent: () => {
-                      track('UI', 'Opened', 'HeaderPresent');
-                      void slideDeck.start();
-                    },
-                  }
-                : undefined
-            }
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
               setShareDialogOpen(true);
@@ -385,10 +369,9 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
-  // running presentation).
+  // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
-    header && footer && slideDeck.presentingAt === null ? (
+    header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
     ) : null;
 
@@ -471,11 +454,6 @@ export function EditorView() {
                                 </AgentFocusContext.Provider>
                               </ChangesetRevealContext.Provider>
                             </AreaErrorBoundary>
-                            {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
-          Nothing at all when no deck is running. */}
-                            <AreaErrorBoundary area="Presentation">
-                              <PresentationHost />
-                            </AreaErrorBoundary>
                             {embedMode ? (
                               // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
                               // switcher replace the full TabBar. Same selection clears as
@@ -497,7 +475,7 @@ export function EditorView() {
                             ) : null}
                             {footerInColumn}
                             {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
-              a selection. Stands down in zen / embeds / presenting and while an
+              a selection. Stands down in zen / embeds and while an
               element menu is open, which is the complete home of every setting. */}
                             <AreaErrorBoundary area="QuickStyle">
                               <QuickStyleHost

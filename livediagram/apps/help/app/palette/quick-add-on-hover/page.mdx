@@ -2,7 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { QuickAddHoverMenu } from '@/components/illustrations/palette-settings';
-import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
+import { SettingsEditorPane } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Quick-add on Hover',
@@ -40,7 +40,7 @@ Hovering needs a mouse or trackpad. On a touch screen there is no hover, so you 
 It is **off by default**, since menus that open on hover can feel twitchy if you didn’t ask for them. Switch on **Quick-Add on Hover** in [Settings](/help/user-interface/settings/), under **Editor**.
 
 <Figure caption="Settings, Editor: Quick-Add on Hover is the first row, off until you switch it on.">
-  <SettingsEditorPane highlight="quick-add" />
+  <SettingsEditorPane noun="canvas" highlight="quick-add" />
 </Figure>
 
 The setting is saved with your other [settings](/help/user-interface/settings/). When you are signed in it follows you to your other devices; as a guest it stays with this browser.

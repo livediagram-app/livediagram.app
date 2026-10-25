@@ -4,7 +4,6 @@
 // once, under the product's key (the `startQueryKey` binding).
 import { workbench } from '../../bindings';
 
-
 export function handStartQuery(query: string | null): void {
   try {
     if (query) sessionStorage.setItem(workbench.startQueryKey, query);

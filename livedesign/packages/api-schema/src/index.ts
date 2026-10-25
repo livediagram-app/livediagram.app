@@ -47,12 +47,6 @@ export type LiveDoc = {
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DesignSource). Set on create, never rewritten by meta updates.
   source: DesignSource | null;
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
-  // the design has no deck (every design until somebody builds one).
-  // Deliberately absent from DesignSummary: the Explorer lists designs and
-  // has no use for their decks, and a deck is the one metadata field that can
-  // grow with the design.
-  presentation: string | null;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

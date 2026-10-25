@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { LintReport } from '@livedocuments/api-schema';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 // update_document's lint when an edit changed nothing (docs/specs/024-agents/diagram-lint.md "Where it runs"): no
 // changeset was recorded, so the tab's own lint is read and answered, never "lint unavailable".

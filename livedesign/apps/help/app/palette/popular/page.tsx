@@ -1,20 +1,11 @@
-import type { Metadata } from 'next';
 import { Redirect } from '@liveworkspace/help-site/components/Redirect';
+import { popularMoved } from '@liveworkspace/help-site/lib/moved';
 
-// Popular is gone from the palette (docs/specs/007-editor/toolbar-layout.md "The category bar"): the strip shows every
-// category by name, each one press away, so a pick from across them added nothing. This stub keeps the old help URL
-// alive (it redirects to the strip's article) but is noindex, so search engines consolidate on the canonical article
-// rather than this thin redirect.
-const NEW_URL = '/help/palette/toolbar-layout/';
+// Popular is gone; its guide is toolbar-layout: this stub keeps the old URL alive, noindex (@liveworkspace/help-site/lib/moved).
+const moved = popularMoved;
 
-export const metadata: Metadata = {
-  title: 'Toolbar Layout',
-  description:
-    'Popular is gone: the palette shows its categories on the strip, each one press away.',
-  robots: { index: false, follow: true },
-  alternates: { canonical: NEW_URL },
-};
+export const metadata = moved.metadata;
 
 export default function PopularRedirectPage() {
-  return <Redirect href={NEW_URL} label="Toolbar Layout guide" />;
+  return <Redirect href={moved.href} label={moved.label} />;
 }

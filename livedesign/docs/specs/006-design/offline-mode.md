@@ -311,8 +311,7 @@ the Explorer's This Browser view, the Share dialog gate and the move prompt afte
   the returned R2 id, so the cloud copy carries real gallery images instead of
   bloated tab JSON. A failed transfer keeps the data URI (it still renders
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
-- **Everything on the record travels**, not just tabs: the slide deck
-  ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
+- **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
   caller's own personal folders, else the root of My Work) and the star ([Favourite designs](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
@@ -323,8 +322,8 @@ the Explorer's This Browser view, the Share dialog gate and the move prompt afte
   any other failure fails the sync and keeps the local copy.
 - **A forked tab comes back as its own tab.** The create never writes into a tab
   another design holds: a seeded tab whose id is already taken outside this
-  design is created under a fresh id, and the design's tab / element links and
-  deck slides follow it. So a tab that forked on Take Offline returns as a new
+  design is created under a fresh id, and the design's tab / element links
+  follow it. So a tab that forked on Take Offline returns as a new
   tab beside the original rather than overwriting it; joining them again is an
   explicit "Add to Design". A retried create (the tab already in this design)
   keeps its ids.
@@ -364,7 +363,7 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the design stays on the server.
-- **The deck, star and personal folder come along** for the same reason: the
+- **The star and personal folder come along** for the same reason: the
   server row they live on is about to be deleted. The star is read from the account's
   favourites; if that read fails the conversion aborts before anything is written,
   rather than taking the design as unstarred and losing the star with the row. A team design's folder is a

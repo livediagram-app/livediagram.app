@@ -2,7 +2,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ModeBanner } from './ModeBanner';
-import { usePaletteStripBox, useToolbarBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import {
+  usePaletteStripBox,
+  useToolbarBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 
 // docs/specs/007-editor/toolbar-layout.md "Layout details": messages hang from the strip as its tray.
 

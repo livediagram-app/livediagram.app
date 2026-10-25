@@ -4,21 +4,21 @@ import { helpMetadata } from '@/lib/seo';
 import { ExportPagePickerScene } from '@/components/illustrations/pages';
 
 export const metadata = helpMetadata({
-  title: 'Exporting and Presenting Pages',
+  title: 'Exporting Pages',
   description:
-    'Export pages as a PDF, PNG or SVG of every page or just one, each exactly its sheet, and turn them into slides to present.',
+    'Export pages as a PDF, PNG or SVG of every page or just one, each exactly its sheet, plus logo kits and photos.',
   path: '/help/pages/exporting-pages/',
 });
 
 <ArticleLayout
-  title="Exporting and Presenting Pages"
-  description="Every page or one page as a PDF or images, and pages as slides."
+  title="Exporting Pages"
+  description="Every page or one page as a PDF or images."
   categoryTitle="Pages"
   categorySlug="pages"
   subArticles={getSubArticles('exporting-pages')}
 >
 
-Export and present work in **pages**, not the content of the whole tab.
+Export works in **pages**, not the content of the whole tab.
 
 ## Exporting
 
@@ -44,29 +44,5 @@ The **Background pattern** switch is not offered for pages: a page is its own ba
 ## Importing
 
 **Import** takes **JSON** only: a livedesign tab, pages and all.
-
-## Turning Pages Into Slides
-
-Pages are often presented, so their deck is one press away: in the bottom-right corner, the **Slides** button opens the Slide Deck panel just above it.
-
-**Every page is already in the deck**, in page order, from the moment you make it: move a page and its slide moves with it, and drag a slide in the Slide Deck panel and its page moves to match. A page slide is the page itself:
-
-- It shows whatever is on the page **now**, so it follows your edits, a new layout, a resize or a reorder without you touching the deck.
-- It is framed to **exactly** the page.
-- Its row reads the tab and the page ("Tab 1 · Page 2 · iPhone · Wireframe"), and its thumbnail is the page on its background.
-- A page's own slide can be **hidden** but not deleted: hide it to keep it out of the talk. Delete the page and its slides leave the deck too; undo the delete and they come back as they were, notes and all.
-- To show a page twice, pick it from the list and press **Add as slide**. That copy can be deleted like any slide. (Adding slides is for Editors: a Viewer or Participant can't.)
-
-Name page slides, add notes, hide or reorder them as in [Building a Deck](/help/selection-modes/slide-deck/building-a-deck/).
-
-### The Deck Button
-
-Each page's title bar holds its **deck button**, **Hide in Slides** (an open eye): press it to keep the page in the deck but skip it when presenting. The eye is then crossed, and **Show in Slides** brings it back. It is the same switch as the slide's visibility in the Slide Deck panel.
-
-Beside it is **Add Notes**. Press it to write your speaker notes for that page's slide: they are the same notes the Slide Deck panel shows, and you see them in the presenter view, never on the page itself. Once a slide has notes the button reads **Notes**. The deck button and Add Notes are for Editors on a computer: Viewers and Participants see the pages without them, and they are not shown on a phone.
-
-## Presenting
-
-Press **Present** and each page fills the screen on its own: no labels, cogs or buttons around it, and none of its neighbouring pages beside it. A page the shape of the screen fills it exactly; any other shape sits between black bars, as a projector shows it. Everything else about presenting is as for any deck; see [Presenting](/help/selection-modes/slide-deck/presenting/).
 
 </ArticleLayout>

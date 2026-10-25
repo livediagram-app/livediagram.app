@@ -39,5 +39,5 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 `../packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
 is kept, and that it never throws without `crypto`. `apps/editor/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
-`packages/api-schema/src/sha256-digest.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
+`../packages/model-core/src/sha256.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
 Crypto at every length across the padding boundaries, and that `sha256` picks Web Crypto when it is there.

@@ -46,7 +46,7 @@ listing body uses the ~500-word description).
 
 Inherits [16](marketing-site.md) and [00-purpose](../001-project-vision/purpose.md): plain,
 confident, understated; multiplayer-from-the-start pages (logos, wireframes
-and photos, presented as a deck) for teams who make things together. Lead with the hook:
+and photos) for teams who make things together. Lead with the hook:
 the editor works without signing in (open a link, make, share). Be honest about trade-offs (realtime is last-write-wins,
 not CRDT). Say "free, MIT-licensed, no paid tier" where the
 format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name

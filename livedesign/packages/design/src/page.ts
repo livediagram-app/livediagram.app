@@ -590,8 +590,8 @@ export function rowPageAt(
   return page && contains(page.rect, point) ? page : undefined;
 }
 
-/** A new page's id: never one a page has had before, so a page slide (Slide.pageId) of a deleted
- *  page stays empty rather than finding a new page under its old id. Random, checked against the
+/** A new page's id: never one a page has had before, so anything that named a deleted page never
+ *  finds a new page under its old id. Random, checked against the
  *  tab's pages. */
 export function nextPageId(pages: readonly Page[]): string {
   const taken = new Set(pages.map((p) => p.id));

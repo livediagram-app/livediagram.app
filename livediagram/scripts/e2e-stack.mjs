@@ -141,28 +141,9 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3113);
 const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
 const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
-//   E2E_DRIVE=1      the Google Drive mirror e2e (docs/specs/022-drive-mirror/blueprints/
-//                    drive-mirror.md, "Testing"): the api worker verifies access
-//                    tokens against the accounts stand-in the test serves
-//                    (E2E_DRIVE_JWKS_PORT, e2e/drive-support.ts) and
-//                    talks OAuth to the fake Google the test serves
-//                    (E2E_DRIVE_GOOGLE_PORT). Test values only; the live build
-//                    must carry NEXT_PUBLIC_E2E_AUTH=1.
-const DRIVE = process.env.E2E_DRIVE === '1';
-const DRIVE_JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);
-const DRIVE_GOOGLE_PORT = Number(process.env.E2E_DRIVE_GOOGLE_PORT ?? 8796);
-const DRIVE_E2E_VARS = {
-  ACCOUNTS_URL: `http://127.0.0.1:${DRIVE_JWKS_PORT}`,
-  API_RESOURCE: 'https://e2e.livediagram.test/api',
-  GOOGLE_CLIENT_ID: '123456789012-e2e.apps.googleusercontent.com',
-  GOOGLE_CLIENT_SECRET: 'e2e-client-secret',
-  DRIVE_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
-  GOOGLE_OAUTH_BASE_URL: `http://127.0.0.1:${DRIVE_GOOGLE_PORT}`,
-};
-//   The accounts stand-in: the stack acts as the liveworkspace accounts Worker, always, except under
-//                    E2E_DRIVE, whose spec serves its own key and JWKS (e2e/drive-support.ts) and which
-//                    the api and the index then both trust instead: the api keeps no settings or profiles
-//                    of its own, and the index lets in only tokens an accounts it trusts signed. For the signed-in specs
+//   The accounts stand-in: the stack acts as the liveworkspace accounts Worker, always, and the api and the
+//                    index both trust it: the api keeps no settings or profiles of its own, and the index
+//                    lets in only tokens an accounts it trusts signed. For the signed-in specs
 //                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
 //                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
 //                    verify against, the guest handoff (/e2e/accounts/api/auth/guest) answering every
@@ -180,19 +161,16 @@ const DRIVE_E2E_VARS = {
 //                    "Testing"): the stack acts as the accounts Worker (its stand-in, above),
 //                    for the signed-in pairing page and the api calls the CLI makes, and the api
 //                    builds its workbench and pairing URLs on this live origin (APP_BASE_URL). The
-//                    live build must carry NEXT_PUBLIC_E2E_AUTH=1, as under E2E_DRIVE.
+//                    live build must carry NEXT_PUBLIC_E2E_AUTH=1.
 const WORKBENCH = process.env.E2E_WORKBENCH === '1';
-const ACCOUNTS_STUB = WORKBENCH || !DRIVE;
-const accountsKey = ACCOUNTS_STUB ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
+const accountsKey = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
 // audience is its own API_RESOURCE, exactly as against the real accounts Worker.
 const ACCOUNTS_PATH = '/e2e/accounts';
 const API_RESOURCE = 'https://e2e.livediagram.test/api';
-// The accounts origin the api and the index both trust: the stand-in on this live origin, or the Drive spec's own.
-const ACCOUNTS_ORIGIN = ACCOUNTS_STUB
-  ? `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`
-  : DRIVE_E2E_VARS.ACCOUNTS_URL;
+// The accounts origin the api and the index both trust: the stand-in on this live origin.
+const ACCOUNTS_ORIGIN = `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`;
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
@@ -450,7 +428,6 @@ function mintGuestToken(guestId = `guest_${randomUUID()}`) {
 
 // Answers the accounts stand-in's routes, or returns false for anything else.
 function serveAccountsStandIn(req, pathname, url, res) {
-  if (!ACCOUNTS_STUB) return false;
   const internal = `${ACCOUNTS_PATH}/api/account/internal`;
   const seed = `${ACCOUNTS_PATH}/__seed/`;
   if (pathname.startsWith(internal) || pathname.startsWith(seed)) {
@@ -956,7 +933,7 @@ async function main() {
       '--persist-to',
       INDEX_STATE,
       // Everything it trusts and calls is this stack, never what a developer's .dev.vars names: the accounts the
-      // api trusts (the stand-in, or the Drive spec's own), this api's audience and key, and this api's origin.
+      // api trusts (the stand-in), this api's audience and key, and this api's origin.
       '--var',
       'ENVIRONMENT:development',
       '--var',
@@ -996,22 +973,17 @@ async function main() {
       // localhost editor. Blank it, as `pnpm dev` does (docs/specs/021-event-storming/note-reader.md).
       '--var',
       'AI_ALLOWED_ORIGINS:',
-      ...(DRIVE ? Object.entries(DRIVE_E2E_VARS).flatMap(([k, v]) => ['--var', `${k}:${v}`]) : []),
       // Verify access and guest tokens against the stack's own key (the accounts stand-in above), never a
       // real accounts Worker a developer's .dev.vars may name. The client id and secret also turn the
       // guest handoff (/api/auth/guest) on, to the stand-in's.
-      ...(ACCOUNTS_STUB
-        ? [
-            '--var',
-            `ACCOUNTS_URL:${ACCOUNTS_ORIGIN}`,
-            '--var',
-            `API_RESOURCE:${API_RESOURCE}`,
-            '--var',
-            `ACCOUNTS_CLIENT_ID:${ACCOUNTS_CLIENT.id}`,
-            '--var',
-            `ACCOUNTS_CLIENT_SECRET:${ACCOUNTS_CLIENT.secret}`,
-          ]
-        : []),
+      '--var',
+      `ACCOUNTS_URL:${ACCOUNTS_ORIGIN}`,
+      '--var',
+      `API_RESOURCE:${API_RESOURCE}`,
+      '--var',
+      `ACCOUNTS_CLIENT_ID:${ACCOUNTS_CLIENT.id}`,
+      '--var',
+      `ACCOUNTS_CLIENT_SECRET:${ACCOUNTS_CLIENT.secret}`,
       // The stack's index, never one a developer's .dev.vars names.
       '--var',
       `INDEX_ORIGIN:http://127.0.0.1:${INDEX_PORT}`,

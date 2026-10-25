@@ -11,14 +11,17 @@
     "./debug": "./src/debug.ts",
     "./did-you-mean": "./src/did-you-mean.ts",
     "./exit-codes": "./src/exit-codes.ts",
+    "./fields": "./src/fields.ts",
     "./input": "./src/input.ts",
     "./io": "./src/io.ts",
     "./keychain": "./src/keychain.ts",
+    "./node-io": "./src/node-io.ts",
     "./oauth": "./src/oauth.ts",
     "./one-line": "./src/one-line.ts",
     "./paths": "./src/paths.ts",
     "./png": "./src/png.ts",
     "./product": "./src/product.ts",
+    "./testing/fake-io": "./src/testing/fake-io.ts",
     "./transport": "./src/transport.ts",
     "./version": "./src/version.ts"
   },
@@ -32,11 +35,13 @@
   "dependencies": {
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
-    "@liveworkspace/render-png": "workspace:*"
+    "@liveworkspace/render-png": "workspace:*",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

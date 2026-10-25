@@ -22,7 +22,7 @@ import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportW
 
 export type SplitView = {
   // Whether this screen and this moment can show a split (a wide, tall enough window, not zen /
-  // embed / presenting). The drop zone and the menu entry only appear when it can.
+  // an embed). The drop zone and the menu entry only appear when it can.
   available: boolean;
   // The tab the editor is on, which the menus act for.
   activeId: string;
@@ -71,7 +71,7 @@ export function useSplitView({
   loadedTabIds: ReadonlySet<string>;
   // Resolves with the ids that failed to load.
   loadTabs: (ids: readonly string[]) => Promise<readonly string[]>;
-  // Zen, embeds, presenting and phones: the split steps aside but is kept, so it comes back.
+  // Zen, embeds and phones: the split steps aside but is kept, so it comes back.
   suspended: boolean;
 }): SplitView {
   const viewportWidth = useViewportWidth();

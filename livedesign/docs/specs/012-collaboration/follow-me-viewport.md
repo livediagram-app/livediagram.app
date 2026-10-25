@@ -10,8 +10,7 @@ take the canvas back.
 "Look at this" is the most common sentence spoken over a shared canvas, and the
 canvas answers it worst. The tools that exist all point AT something from where
 the speaker already is — the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) — and every one of them is useless to the person
-who is scrolled somewhere else entirely. Presentation mode ([Presentation mode](presentation-mode.md)) is still
-draft and solves a different problem: an authored sequence, not a live one.
+who is scrolled somewhere else entirely.
 
 Following is the missing half: instead of moving the pointer to the audience,
 move the audience to the pointer.

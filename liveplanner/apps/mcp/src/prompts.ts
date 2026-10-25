@@ -5,6 +5,7 @@
 // Pure text — no api calls, no auth needed to list them.
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerShowMyPrompt } from '@liveworkspace/mcp-kit/prompts';
 import { z } from 'zod';
 
 export function registerPrompts(server: McpServer): void {
@@ -60,28 +61,11 @@ export function registerPrompts(server: McpServer): void {
     }),
   );
 
-  server.registerPrompt(
-    'show_my_project',
-    {
-      title: 'Show my plan',
-      description: 'Find one of your plans by name and display it inline.',
-      argsSchema: {
-        name: z.string().describe('Part of the plan’s name.'),
-      },
-    },
-    ({ name }) => ({
-      messages: [
-        {
-          role: 'user',
-          content: {
-            type: 'text',
-            text:
-              `Find my liveplanner plan matching "${name}" with find_projects, then ` +
-              `read_project it to show me the image and a link. If several match, list them ` +
-              `and ask which one.`,
-          },
-        },
-      ],
-    }),
-  );
+  // @liveworkspace/mcp-kit's, every product's.
+  registerShowMyPrompt(server, {
+    product: 'liveplanner',
+    record: 'project',
+    shown: { one: 'plan', many: 'plans' },
+    called: 'plan',
+  });
 }

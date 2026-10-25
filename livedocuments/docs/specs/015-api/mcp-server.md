@@ -562,7 +562,7 @@ to the right tools:
 - **`show_my_document`** `{ name }` — find a document by name and read_document it
   inline.
 
-Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
+Registered by `registerShowMyPrompt` (`../packages/mcp-kit/src/prompts.ts`, every product's), wired in `buildServer` beside the tools
 and schema resource.
 
 ### 4.11 Read-only tokens (the one scope)
@@ -827,7 +827,7 @@ Worker (no DOM, no React).
   is the smaller cost (0.02 to 0.15 s a megapixel). So one preview draws pictures in document order while they stay
   within 8 million pixels together (`PREVIEW_IMAGE_BUDGET_PIXELS`, one full-screen retina screenshot or several
   ordinary ones) and 6 MB together (`PREVIEW_IMAGE_BUDGET_BYTES`, carried inline as base64), each at most 2 MB
-  (`PREVIEW_IMAGE_MAX_BYTES`), all in `apps/mcp/src/preview-budget.ts`. A picture's pixels are read from its header
+  (`PREVIEW_IMAGE_MAX_BYTES`), all in `../packages/mcp-kit/src/preview-budget.ts`. A picture's pixels are read from its header
   (`imagePixelSize`), never decoded; one whose header cannot be read is not drawn. A picture past a limit, or that
   fails to fetch, keeps the placeholder rectangle (the structured elements still carry its id), and a preview that
   left any out for a limit says so in a line before the picture ("2 pictures are drawn as a placeholder in this

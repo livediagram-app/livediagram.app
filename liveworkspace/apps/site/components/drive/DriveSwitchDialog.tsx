@@ -1,7 +1,6 @@
 'use client';
 
-// Switch Google Account? (liveworkspace/docs/drive.md "Connecting", after livediagram/docs/specs/022-drive-mirror
-// "Reconnecting with another Google account"): shown on /drive/connected when the consent came from another Google
+// Switch Google Account? (liveworkspace/docs/drive.md "Connecting", "Reconnecting with another Google account"): shown on /drive/connected when the consent came from another Google
 // account than the one Cloud Sync uses. Nothing has changed yet; the person confirms or cancels here. A pending switch
 // lasts 30 minutes; answered after that, the dialog says so and offers the way back.
 import { useEffect, useRef, useState } from 'react';

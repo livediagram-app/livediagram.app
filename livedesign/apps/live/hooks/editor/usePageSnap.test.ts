@@ -2,7 +2,7 @@
 
 // The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
 // pan or a zoom letting go glides the view onto a page, and so does any other move once it rests,
-// never while a hand is on the canvas, and not while following or presenting.
+// never while a hand is on the canvas, and not while following someone.
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -175,7 +175,7 @@ describe('a view moved by anything else', () => {
     expect(viewport.get()).toEqual(fitOf('p2'));
   });
 
-  it('leaves the view be while following or presenting', () => {
+  it('leaves the view be while following someone', () => {
     const viewport = createViewportStore(fitOf('p2').zoom);
     mount(viewport, { suspended: () => true });
     const loose = { zoom: fitOf('p2').zoom / 3, offset: fitOf('p2').offset };

@@ -275,7 +275,7 @@ field after `orientation` is optional and absent on a page that never set it:
 A stored page that is malformed in any optional field keeps its valid fields and drops the rest; a
 page with no valid `id` or `orientation` is skipped (as today), as is a repeat of an id already read.
 A new page's id is random (`page-` and eight hex digits) and never one the tab's pages have had, so
-a Slide Deck slide of a deleted page can never find a new page under the old id.
+anything that named a deleted page can never find a new page under the old id.
 
 ## Sizes
 
@@ -480,7 +480,7 @@ drawing only, never stored:
 - **The chart's own text** (its axis labels, its key, a Sankey's node names) is held to **4.5:1**, and taken to **7:1** when under it,
   the same way, as re-inked text is.
 - **Everywhere it is drawn alike**: the canvas, the image exports of a page (SVG, PNG, PDF), the
-  Slide Deck's thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
+  Contents thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
   it shows. A page export also draws its charts in the tab theme's ramp, as the canvas does.
 - The axis lines keep their fixed faint greys: they are guides, not data.
 
@@ -525,7 +525,7 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   everything that reads a gradient reads it unchanged: re-inking measures its tones, thumbnails
   draw the still gradient, AI tools see a gradient. A motion the editor does not know is dropped
   on reading, leaving the gradient.
-- **Where it moves**: on the page on screen and while presenting, its moving parts over the
+- **Where it moves**: on the page on screen, its moving parts over the
   gradient and under everything on the page. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
   itself (a streak still points its way, a planet keeps its place on its orbit, each bar stands at
@@ -600,7 +600,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   overlay, the picture, and its tone under them while it loads). Its bytes are fetched once per
   picture while the editor is open, never per frame, pan or zoom.
 - **Exports** (PNG, PDF, SVG) embed the picture, cropped the same way, under its overlay. The Map,
-  the Slide Deck's thumbnails and layout previews paint the page in its tone: a picture at their size is a
+  the Contents thumbnails and layout previews paint the page in its tone: a picture at their size is a
   smudge, and they draw without the image store.
 - **Stored like an image element's picture**, never as a web address: `imageId` is a gallery id
   (1 to 128 letters, digits, `-` or `_`) or an Offline Mode design's base64 PNG, JPEG, GIF or WebP
@@ -831,7 +831,7 @@ swipe, with no X.
   the tab is next opened; the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
   (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
-  the tool is put down with the page still empty), when presenting or in zen, or when the page is too small on
+  the tool is put down with the page still empty), in zen, or when the page is too small on
   screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
   small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
   sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
@@ -864,7 +864,7 @@ in any theme.
 finding your way round a long design is everyone's. It has two homes on a desktop, and the person
 chooses between them. Each row's picture is the page as the canvas shows it: a page with no fill on
 the canvas's own paper (white, or slate `#0f172a` in dark mode, as the Map draws it) in the
-canvas's ink; the Slide Deck's pictures the same.
+canvas's ink.
 
 - **Docked as a sidebar** (the default): a filmstrip pinned flush against the canvas's left edge,
   the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
@@ -888,7 +888,7 @@ Which home is the person's own, kept in their synced preferences (`contentsPlace
 › Editor › Pages › **Contents** (Sidebar or Button) sets it too. The sidebar docks only while
 the tab has more than one page: a single page has nothing to find your way round, so it keeps the
 button (and its popover offers no Dock as Sidebar). A phone never has the sidebar, whatever the
-choice: there Contents is always the button, opening a bottom sheet. Zen mode and presenting hide
+choice: there Contents is always the button, opening a bottom sheet. Zen mode hides
 both. The sidebar slides in from its side as it docks (a 200 ms fade and 12 px slide), with none
 under reduced motion.
 
@@ -907,7 +907,7 @@ Both show the same list:
   (Escape clears it, then closes).
 - **The list**: every page in row order, one row each: its number, a live thumbnail of the page as
   it is (its background, motion still, and everything on it, drawn by the same renderer as the
-  Slide Deck's thumbnails, 16:9, A4 or square as the page is), and its name (its own, else "Page
+  Map and the export, 16:9, A4 or square as the page is), and its name (its own, else "Page
   3"), with the padlock on a locked page. Nothing more: the picture says what the page is. The
   sidebar lays them out as a filmstrip: the number beside a picture as wide as the column, up to
   124 px tall for a portrait page, left-aligned with the name under it. The page in view is marked
@@ -934,7 +934,7 @@ Both show the same list:
   on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
   does not glide there, but marks the moved page as here. While Find a Page narrows the list there
   is no reordering (the rows shown are not the whole order). A Participant and a Viewer see no grip
-  and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
+  and cannot drag. The drag is `useRowReorderDrag`.
 - **For a screen reader** the rows are a list named Pages. Each row opens through one button stretched across it,
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
   button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
@@ -1136,7 +1136,7 @@ The Import dialog offers **JSON** (a livedesign tab, which may carry pages).
 `PageKindWireframe` / `PageKindPhoto` (the first page's own choice);
 `Design · Exported · PagesPNG / PagesSVG / PagesPDF` (one page) and
 `PagesPNGPages / PagesSVGPages / PagesPDFPages` (all pages);
-`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
+`UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (a wireframe
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
 **Start From a Layout** card's Hide); `UI · Opened · EmptyPageInvite` (Choose a Layout, where the
@@ -1190,54 +1190,15 @@ separate pages. It is explicit: never run on opening a tab.
 - It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
   `Tab · Changed · PagesLaidOut`.
 
-## Slides
+## Zen
 
-Every page of a tab is a slide of the deck, in page order, and presenting the tab shows its
-pages one by one. How the deck follows the pages (a page joining it, moving, being hidden or
-deleted) is in [Presentation mode](../012-collaboration/presentation-mode.md) "The deck follows
-the pages"; this section is what the pages themselves show of it.
+Zen shows the sheets alone: no labels, cogs, layout invites or add button.
 
-- The Slide Deck panel adds slides **a page at a time**: a page picker (each page by
-  its label) and **Add as slide**, in place of "Select elements to make a slide". Every page is in
-  the deck already, so what it adds is a **copy** of a page's slide (to show a page twice), which
-  takes its place in the page order too and deletes as any slide does.
-- A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
-  resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
-  follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
-  label read from the slide's own tab (so a slide on another tab names its page too), or
-  `<tab> · Page deleted` while its page is missing and the deck has not yet followed (its tab still
-  loading); its thumbnail is the page on its background, its elements inked for the page's surface
-  as the export inks them. Once the tab's pages are read, a deleted page's slides leave the deck.
-- Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
-  Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
-  (on a copy) says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
-- **A page's deck button**: in every page's title bar, beside its cog, for an editor on a desktop,
-  the page shows its place in the deck, named beside its icon while the title bar has room. The
-  deck always has a slide of every page, so the button toggles that slide's visibility in the
-  presentation: **Hide in Slides** (an open eye) or **Show in Slides** (a crossed eye), the same as
-  the slide's Visibility in the Slide Deck, so wherever a page is presented its visibility is one
-  press away. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled ·
-SlideHidden / SlideShown`).
-- **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
-  page glyph) opens a popover holding that slide's speaker notes, the deck slide's own: the same
-  notes the Slide Deck panel writes and the presenter view shows, never drawn on the page. Once
-  the slide has notes the button reads **Notes**, pressed. Every keystroke writes the deck (one
-  `UI · Changed · SlideNotes` per opening, on the first keystroke); emptying the box removes the
-  notes. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone, like the deck button.
-- **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
-  screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 page
-  fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.
-- Zen and presenting show the sheets alone: no labels, cogs, layout invites or
-  add button. While a
-  page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as
-  it shows only a slide's elements.
+livedesign has no slides: a tab's pages are not a deck and are not presented (removed 25 October 2026,
+[Presentation mode](../012-collaboration/presentation-mode.md)).
 
 ## Chrome
 
-- **Slides button**: in the bottom-right cluster (left of the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
-  outside press closes it; the button shows pressed while open). A design is likely to be
-  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown whenever the tab has pages, as every page is in the deck. Its hover card
-  reads "Order, hide and present your pages." Telemetry: `UI · Opened · SlideDeck`.
 - **Photo button**: while a photo page is in focus, a **Photo** button joins the same frame right after Contents and
   opens the Photo panel as a popover above it ([Photo pages](../031-photo/photo-pages.md) "The Photo panel").
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not

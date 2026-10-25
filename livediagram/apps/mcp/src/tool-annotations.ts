@@ -21,7 +21,7 @@ import { pascalToken } from '@livediagram/api-schema';
 import { apiRefusalOf } from '@livediagram/agent-verbs';
 import { errorResult, ToolInputError } from './tool-helpers';
 import { postTelemetry } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
 
 // Three behaviours cover every tool (a verb's `behaviour`). The split mirrors docs/specs/015-api/mcp-server.md §4.11's

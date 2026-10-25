@@ -10,7 +10,7 @@ import {
   TELEMETRY_URL,
   type TelemetryBatch,
 } from '@liveworkspace/telemetry';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { keepAlive } from '@liveworkspace/mcp-kit/request-scope';
 import { currentTool } from './tool-scope';
 

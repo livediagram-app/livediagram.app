@@ -1,7 +1,7 @@
 // Feature illustrations: Markdown and Mermaid coming in as diagrams, split from ./versatility-more.
 // Same stage and motion as the rest of the versatility cards.
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   ArrowHead,
   HAIRLINE,
@@ -13,7 +13,7 @@ import {
   PANEL_TEXT,
   STAGE,
   delay,
-} from './versatility-parts';
+} from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
 
 /* ──────────────── Markdown and Mermaid ──────────────── */
 

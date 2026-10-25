@@ -18,7 +18,7 @@ import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/Canvas
 
 export function LockBadge() {
   const zoom = useCanvasZoom();
-  // Editor chrome: an embed or a presented slide shows none (SuppressElementIndicators).
+  // Editor chrome: an embed shows none (SuppressElementIndicators).
   const suppressed = useElementIndicatorsSuppressed();
   if (suppressed) return null;
   // Scales with the canvas and hides at overview zooms, like the other

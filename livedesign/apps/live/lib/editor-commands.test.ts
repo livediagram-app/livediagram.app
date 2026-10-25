@@ -252,7 +252,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:pan',
       'tool:laser',
       'tool:spotlight',
-      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
     ]);
   });
 
@@ -320,14 +319,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:eraser',
-      'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:slide-deck',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:eraser', 'tool:format', 'tool:laser', 'tool:spotlight']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
@@ -352,11 +344,6 @@ describe('canvas tool commands', () => {
   it('withholds Spotlight on mobile', () => {
     expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
-  });
-
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
   });
 
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {

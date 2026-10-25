@@ -18,10 +18,4 @@ describe('every route’s first load', () => {
     expect(staticImports(src).some((p) => p.includes('editor-page'))).toBe(false);
     expect(src).toContain("import('./document/[id]/editor-page')");
   });
-
-  it('loads the Drive mirror’s engine only in the tab elected to run it', () => {
-    const src = read('components/drive/DriveMirrorProvider.tsx');
-    expect(staticImports(src)).not.toContain('@/lib/drive/browser-engine');
-    expect(src).toContain("import('@/lib/drive/browser-engine')");
-  });
 });

@@ -2,7 +2,7 @@
 // a 16:9 slide page taking a layout from the picker. Split from ./documents; built on ./mode-parts like it.
 
 import { at, BAR, Cursor, INK, MUTED, Pill, Stage, SURFACE, TextLines, YOU } from './mode-parts';
-import { SKY as ACCENT } from './shared';
+import { SKY as ACCENT } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** A 16:9 slide page taking a layout from the picker, ready to add to the deck. */
 export function SlideLayoutsArt() {

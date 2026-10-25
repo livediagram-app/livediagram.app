@@ -13,13 +13,13 @@ import {
 import { mcpListImages } from '@livedesign/agent-verbs/mcp';
 import type { Element, Tab } from '@livedesign/design';
 import { ApiError, apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { imageResult } from './image-result';
 import {
   PREVIEW_IMAGE_BUDGET_BYTES,
   PREVIEW_IMAGE_BUDGET_PIXELS,
   PREVIEW_IMAGE_MAX_BYTES,
-} from './preview-budget';
+} from '@liveworkspace/mcp-kit/preview-budget';
 import { registerTool } from './tool-annotations';
 import { errorResult, requireToken, textResult } from './tool-helpers';
 

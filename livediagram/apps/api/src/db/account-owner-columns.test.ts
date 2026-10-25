@@ -177,20 +177,17 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     for (const c of OWNER_COLUMNS) expect(count(sql, c, OTHER), label(c)).toBeGreaterThan(0);
   });
 
-  it("empties the owner's own store (shape libraries, Drive mirror), and no one else's", async () => {
+  it("empties the owner's own store (shape libraries), and no one else's", async () => {
     const { env } = arrange();
     const lib = { id: 'l-1', name: 'Team icons', source: 'drawio' as const, items: [] };
     for (const person of [ACCOUNT, OTHER]) {
       await personStore(env, person).createShapeLibrary(lib, 10);
-      await personStore(env, person).driveCreateBrowser(T0);
     }
 
     await deleteAccount(env, ACCOUNT);
 
     expect(await personStore(env, ACCOUNT).shapeLibraries()).toEqual([]);
-    expect(await personStore(env, ACCOUNT).driveConnection(T0)).toBeNull();
     expect(await personStore(env, OTHER).shapeLibraries()).toHaveLength(1);
-    expect(await personStore(env, OTHER).driveConnection(T0)).not.toBeNull();
   });
 });
 

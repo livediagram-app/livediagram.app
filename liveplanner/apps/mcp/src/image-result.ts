@@ -30,13 +30,13 @@ import { planTabKindOf } from '@liveplanner/plan-art';
 import { previewResolvers } from '@liveworkspace/icons/resolve';
 import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
 import { chartsReadLive } from '@liveplanner/agent-verbs';
-import { svgToPngBase64 } from './render';
+import { svgToPngBase64 } from '@liveworkspace/mcp-kit/render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
 import { formPreview } from './form-preview';
 import { coversAnother } from './board-growth';
 import { apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
 
 // The preview's blocks: the picture of the tab. Image elements draw as their placeholder: liveplanner keeps no uploaded

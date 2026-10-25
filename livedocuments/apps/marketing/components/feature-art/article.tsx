@@ -3,7 +3,7 @@
 // and the / block menu open. Split out of ./infographics by subject; built on ./page-kit so the
 // page reads as paper on the canvas in light and in dark.
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   AMBER,
   at,
@@ -18,7 +18,7 @@ import {
   SKY,
   SKY_DEEP,
   VIOLET,
-} from './page-kit';
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 /** Write like a doc: an article page with its toolbar, writing in progress and the / block menu open. */
 export function ArticlePagesArt() {

@@ -139,11 +139,10 @@ element or add one:
 - **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
   Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
   that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)")
-  and the presentation rows, which pair with the presentation
-  controls' tooltips, keep sentence case.
+  keeps sentence case.
 
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
-control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
+control's only name (the page lock), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
 case. An element's own name in prose ("a Code block") stays sentence case too. A help article
 that names an item in bold spells it exactly as the editor does
@@ -163,7 +162,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
 | New menus             | + in the Explorer pane header and a team library header        | Design, Folder tiles                                                     | Tab only                                            |
 | Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |
-| Slide menu            | ⋯ on a presentation slide row                                  | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
 | Embed copy menu       | Embed on a share pass                                          | Copy rows                                                                | Tab only                                            |
 | Selection filter menu | The filter button on a mixed selection                         | One tile per element type                                                | Tab only                                            |
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |

@@ -13,8 +13,8 @@ liveworkspace/apps/drive     the service Worker (@liveworkspace/drive-service) a
 ```
 
 The mirror is a **copy**, never an item's home. The apps and the index stay the source of truth, so realtime
-collaboration, sharing and the Explorer are untouched by it. It replaces livediagram's own browser-run mirror
-(livediagram/docs/specs/022-drive-mirror), whose rules it keeps except where this page says otherwise.
+collaboration, sharing and the Explorer are untouched by it. It replaced livediagram's own browser-run mirror,
+which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirror)); this page is the whole spec.
 
 ## Who and what
 
@@ -131,7 +131,7 @@ Explorer and open rooms behave exactly as if the person had done it in an app:
 | Folder moved to the bin                                 | Its items go to the Trash and the folder is removed; restoring it restores both |
 | File contents edited                                    | Ignored; the file is rewritten from liveworkspace on the next pass              |
 
-These rules carry over from livediagram's mirror unchanged:
+These rules carry over from livediagram's mirror:
 
 - **Our own writes are not echoes.** Each mirrored item keeps the last state the service wrote (name, parent,
   trashed, `md5Checksum`, `headRevisionId`); a change is foreign only when one of them differs.
@@ -142,14 +142,31 @@ These rules carry over from livediagram's mirror unchanged:
 - **A folder deleted in liveworkspace stays deleted**, even if Drive still reports the create made for it.
 - **A permanent delete only purges from the Trash.** `removed` also means "lost access", so a live item whose file
   is removed is not deleted; its file is re-created on the next write.
-- **Copies made in Drive, and Open with on a copy:** as livediagram's spec ("Copies made in Drive"), with "Import as
-  new canvas" read as **Import as a copy** into the file's app.
+- **Copies made in Drive** (Drive's "Make a copy") are invisible under `drive.file` (verified against real Google):
+  not a file liveworkspace created, so they never reach `changes.list` and nothing happens when one is made. The way
+  in is **Open with** on the copy, or Duplicate inside an app.
+- **Open with on a copy.** Opening it grants access to that one file, which carries the **original's** `lwItemId`
+  and `lwOrigin`. It is recognised as a copy because the mirror records another file for that item, and it is never
+  taken for the original: never opened as it, re-tagged or adopted. It offers **Import as a copy**, which makes a
+  new item in the file's app from the **copy's contents**. A copy the person owns is then re-tagged with the new
+  item's id and recorded, so it mirrors the new item and no second file is made (one someone else owns is imported
+  and left as it is). The new item lands in the folder the copy's Drive folder mirrors: the root when the copy sits
+  in the root, and the root with [the notice](#folders-liveworkspace-cant-see) when it sits in a folder
+  liveworkspace can't see.
+- **A copy's later changes** are ignored (`drive: inbound-foreign-copy`): an inbound change for a file carrying a
+  mirrored item's id under another file id is never applied, re-tagged or adopted. Two files claiming one item after
+  a reconnect are both left alone, and the next write makes a fresh file for it.
 
 ## Folders liveworkspace can't see
 
-As livediagram's spec ("Folders livediagram cannot see"), with liveworkspace for livediagram: the item moves to the
-root with a notice kept on its row, shown in Cloud Sync and on the item's Explorer row; **Show this folder to
-liveworkspace** opens the Google Picker (folder selection) in the browser with a short-lived access token from the
+Under `drive.file`, a folder the person makes in Drive is invisible to liveworkspace: moving an item's file into it
+shows up only as "moved to an unknown folder". The mirror handles this openly, never silently: the item moves to the
+root, and a notice, "Moved to a Drive folder liveworkspace can't see.", is kept on its mirror row, so every device
+shows it, in Cloud Sync and on the item's Explorer row. It clears when the item is moved again from either side, or
+when the folder is adopted; until then the file stays where the person put it in Drive. A folder moved into one is
+placed at the top level with the same notice. Folders made in liveworkspace always appear in Drive, so building the
+tree from liveworkspace needs no adoption, and widening access to all of Drive (a restricted scope with a yearly
+paid security assessment) is deliberately not the answer. **Show this folder to liveworkspace** opens the Google Picker (folder selection) in the browser with a short-lived access token from the
 service (`POST /api/drive/picker-token`), and the picked folder is adopted: a matching folder is made in the index,
 under its nearest mirrored ancestor, and the item moves into it.
 
@@ -184,10 +201,27 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
 - **Where:** Settings > Account > **Cloud Sync**, in every app and on liveworkspace.app, from the shared settings
   (`@liveworkspace/settings-ui`). It is a catalogue of cloud providers, Google Drive its first row. It shows only
   where the deployment offers Drive (`GET /api/drive/config` says so) and only to a signed-in person.
-- **The row:** as livediagram's spec ("Connecting", the row, statuses, problem lines, layout stability), with
-  "documents" read as "your work", "livediagram" as "liveworkspace", and without **Paused** / **Resume** (there is no
-  browser-only mode). Its statuses: Checking…, Not connected, Connecting…, Not synced yet, Last synced …, Syncing…,
-  Copying 3 of 12…, and, in the warning colour with its glyph, Needs reconnecting, Needs attention, Offline.
+- **The row is one row:** the cloud and "Google Drive" on the left; on the right the status and one button:
+  **Connect** when not connected (held, still reading Connect, while the status says Connecting…), the neutral grey
+  **Disconnect** when connected (reversible; the Drive files stay). Connected, the quoted root folder name under the
+  card is a link to that folder in Google Drive, in a new tab, once its id is known. On a narrow screen the status
+  and button wrap under the name rather than leave the card. There is no Sync now: syncing is automatic.
+- **The status** is plain, small, muted text: Checking…, Not connected, Connecting…, Not synced yet, Last synced …,
+  Syncing…, Copying 3 of 12…; when something needs the person it turns to the warning colour **with a small warning
+  glyph**, so colour is never the only signal: Needs reconnecting, Needs attention (a folder notice), Offline. There
+  is no Paused / Resume (there is no browser-only mode).
+- **A second line only for problems,** with what to press: a Connect that could not start ("Couldn't reach Google.
+  Check your connection and try again."), a cancel at Google, calmly ("Connection cancelled. Connect whenever you're
+  ready."), "Google Drive needs reconnecting. Your files are safe." with **Reconnect**, "Can't reach Google Drive.
+  Trying again automatically.", and a folder notice ("<name>: Moved to a Drive folder liveworkspace can't see.", with
+  "and n more" for several). The why is in the help article.
+- **Nothing moves within a phase** (layout stability, "reserve per phase, not per message"). The phases are **not
+  connected** (checking, not connected, connecting, a connect that failed, a cancel), **connected** (synced, syncing,
+  the first copy, offline, folder notices) and **needs attention** (reconnect). Within a phase the row keeps its
+  shape: the status holds that phase's wordings at their widest realistic value, and the button its phase's labels.
+  The problem line appears only while there is a problem, below the row, moving nothing in it; a change of phase that
+  follows the person's own action may change the card's height. Counts and times use tabular numerals.
+- **Where the status lives:** only in Cloud Sync. The avatar carries no sync mark.
 - **Below the card:** not connected, "Your work from every app, copied to your Google Drive in matching folders.
   Renames, moves and deletions sync both ways. liveworkspace only sees files it created."; connected, "Your work is
   synced to “<root folder name>” in Google Drive."
@@ -201,8 +235,26 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
   expiry.
 - **First mirror:** the service makes the root (or finds the one carrying `lwRoot`), the folder tree, then every item,
   oldest first, in batches, with progress in the row.
-- **Reconnecting with another Google account:** as livediagram's spec, word for word but for the names, including
-  the 30-minute pending switch and the **Switch Google Account?** dialog on `/drive/connected`.
+- **Reconnecting with another Google account.** Every consent asks Drive which account it belongs to
+  (`about.user.permissionId`; `about` answers under `drive.file`) and records it on the connection. A consent from the
+  same account keeps everything. One from a **different** account changes nothing yet, since the root, the page token
+  and every mirrored item belong to the first account's Drive:
+  - The connect stores the new account's sealed token and id as a **pending switch** beside the live connection,
+    which keeps syncing the first account meanwhile.
+  - `/drive/connected` then asks, in a dialog titled **Switch Google Account?**: "This Google account is not the one
+    liveworkspace syncs with. Switching moves Cloud Sync to the new account and starts a fresh copy of your work in
+    its Drive. The files already in the other account's Drive stay there untouched." Buttons **Keep Current
+    Account** and **Switch Account**.
+  - **Switch Account** replaces the token and account in one step, clears the root, the page token and every mirror
+    row, and the next pass starts a fresh mirror, as after a disconnect; the first account's grant is revoked (best
+    effort) and its files stay. **Keep Current Account** drops the pending switch and revokes its grant (best
+    effort).
+  - A pending switch lasts **30 minutes**. Confirming one that has expired (or was never made) answers
+    `409 drive_account_switch_expired` and changes nothing. A newer consent replaces a pending switch.
+  - A new account that sent no refresh token answers `502 drive_no_refresh_token`; one Drive cannot name answers
+    `502 drive_exchange_failed`. Neither stores anything.
+  - **Share roles:** an account-level setting of the signed-in owner, reached only from their own Cloud Sync; no
+    shared item reaches it.
 
 ## Tokens
 
@@ -217,9 +269,21 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
 ## The Explorer shows each item's sync
 
 The shared Explorer (`@liveworkspace/explorer`) draws the cloud mark on every Explorer, liveworkspace.app's
-included, from `GET /api/drive/marks`: Synced, Waiting, Syncing and Failed, as livediagram's spec ("The Explorer
-shows each document's sync"), with **Synced** when the item's `updatedAt` last uploaded is at least its `updatedAt`,
-and the unseen-folder mark beside a name with a notice. Nothing shows for someone who isn't connected, and the marks
+included, from `GET /api/drive/marks`: a small cloud at the right of an item's Updated time
+(on the same centre line as the visibility badge and the time), and the unseen-folder mark beside a name with a
+notice, instead of the cloud. The cloud is a vendored Lucide glyph at a 1px stroke in the quiet metadata colour; only
+its symbol takes a colour, and it is named on hover and focus:
+
+| State   | Glyph                                           | Symbol colour | Name                                                       |
+| ------- | ----------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| Synced  | `cloud-check`                                   | green         | Synced to Google Drive                                     |
+| Waiting | `cloud-upload`                                  | blue          | Waiting to sync to Google Drive                            |
+| Syncing | `cloud-sync`, pulsing (not with reduced motion) | blue          | Syncing to Google Drive…                                   |
+| Failed  | `cloud-alert`                                   | amber         | Couldn't sync to Google Drive. Trying again automatically. |
+
+**Synced** when the item's `updatedAt` last uploaded is at least its `updatedAt`; **Waiting** otherwise, or
+**Syncing** while a pass runs; **Failed** when that item's last upload failed on its own (not a network, rate-limit
+or sign-in failure, which stop the pass and show in Cloud Sync), cleared by the next success. Nothing shows for someone who isn't connected, and the marks
 request isn't made for them (the config answer says whether they are).
 
 ## Open with
@@ -270,14 +334,15 @@ What the browser draws, beyond what the sections above pin (`@liveworkspace/sett
   minutes having passed: the dialog says the request timed out, with **Back to Cloud Sync**. Keep Current Account on
   a switch already gone simply returns.
 - **Show folder** (the Picker) is not in the shared row yet: Google's Picker loads `apis.google.com`, which no page's
-  CSP or Trusted Types policy outside livediagram allows. Until it is, the notice line says what happened, and moving
+  CSP or Trusted Types policy allows. Until it is, the notice line says what happened, and moving
   the item again, from either side, clears it.
 - **The Explorer's marks** come from the service's answer alone (it names only the person's mirrored items), so an
   item made since the last read shows nothing until the next. Config first; marks and the connection (for the banner)
   only for someone connected; read once per Explorer mount and on window focus at most every 30 s
   (`DRIVE_MARKS_MIN_GAP_MS`); no polling. The banner ("Google Drive sync is paused.", **Reconnect**) sits bottom-left
   and closes for the tab's session. The page Explorer and the editors' Explorer panel both take the host
-  (`drive`); the site's Explorer passes it, and an editor's panel can (it draws only the name's mark).
+  (`drive`); the site's Explorer passes it, and so does every editor's panel, for an account holder only (it draws
+  only the name's mark).
 
 ## The service
 
@@ -409,7 +474,9 @@ in `wrangler tail`. Addresses and names are never logged; ids are.
 
 ## Coming from livediagram's mirror
 
-livediagram's mirror ran only in hosted livediagram, browser-only, and is off (its spec says why). Nothing is
-carried over: there are no server rows to move, and its files (`ldDocumentId`, root `livediagram`) are left where
-they are. A person who used it connects again and gets a fresh `liveworkspace` root. livediagram's Drive code,
-routes, tables and settings row are removed once this ships.
+livediagram had its own mirror, run in the browser while a tab was open, for livediagram documents only. It was
+switched off in both hosted environments before this service shipped (it ran browser-only, with no client secret,
+and could tell someone who had never connected that sync was paused), and has since been removed: its code, routes,
+settings row, Explorer marks and its PersonStore tables (dropped by a migration). Nothing is carried over: there are
+no server rows to move, and its files (tagged `ldDocumentId`, under a root named `livediagram`) are left where they
+are in the person's Drive. A person who used it connects here and gets a fresh `liveworkspace` root.

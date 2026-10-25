@@ -12,7 +12,7 @@ import {
   agentRosterFor,
   type AgentPresenceRecord,
   type RosterSession,
-} from './room-agent-presence';
+} from '@liveworkspace/api-kit/room-agent-presence';
 import type { ParticipantPresence } from './types';
 
 /** One connected socket as the roster reads it: its hello'd presence (null before hello). */

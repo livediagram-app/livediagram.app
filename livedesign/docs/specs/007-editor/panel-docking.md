@@ -26,7 +26,7 @@ theirs without adding a settings screen.
   then Escape did nothing in them, so a keyboard user in a popover's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
 - **Participating panels:** Minimap and the tool panels (Laser, Spotlight,
-  Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
+  Format), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -56,7 +56,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                   |
 | `bottom-right` | Tool panels, above the bottom cluster (zoom controls pin) |
 
-The tool panels (Laser, Spotlight, Format, Slide Deck) open bottom-right, stacked
+The tool panels (Laser, Spotlight, Format) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
@@ -94,7 +94,7 @@ editor (element drag, palette-to-canvas drag).
 A drag only **starts** once the pointer has travelled past a shared tolerance
 (`isDragTravel` in `../packages/workbench/src/lib/press-gestures.ts`), so a click on a panel header that jitters by a
 pixel stays a click. That tolerance is one definition for every draggable chrome control —
-panel headers, slide-deck rows, palette tiles, the quick-connect plus,
+panel headers, palette tiles, the quick-connect plus,
 avatars — because six of them had their own and the copies had drifted: one
 said 5px where the rest said 4, and one measured each axis separately, which is a square
 rather than a circle and let a diagonal slip of (4, 4) — 5.66px of real travel — still
@@ -127,7 +127,7 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // their mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
 // (docs/specs/008-canvas/spotlight-panel.md, the light's look) and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'minimap' | 'laser' | 'spotlight' | 'format' | 'slide-deck';
+type PanelId = 'collaborate' | 'minimap' | 'laser' | 'spotlight' | 'format';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

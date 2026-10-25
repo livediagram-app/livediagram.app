@@ -44,7 +44,7 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
       includeZen: true,
     }).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
-    for (const tool of ['eraser', 'format', 'slide-deck']) {
+    for (const tool of ['eraser', 'format']) {
       expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);
     }
   });

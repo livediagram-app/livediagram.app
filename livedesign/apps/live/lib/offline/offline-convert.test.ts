@@ -132,7 +132,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(indexClient.favourite).toHaveBeenCalledWith('d1');
   });
 
-  it('carries the deck, folder and created date, not just the tabs', async () => {
+  it('carries the folder and created date, not just the tabs, and leaves an old deck behind', async () => {
     // The local record is deleted straight after, so whatever the create
     // leaves behind is lost.
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
@@ -141,14 +141,13 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       tabs: [],
       folderId: 'f1',
       createdAt: 123,
+      // A record from before slide decks left (docs/specs/012-collaboration/presentation-mode.md "Saved data").
       presentation: '{"decks":[]}',
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(vi.mocked(apiClient.apiCreateDesign).mock.calls[0]![1]).toMatchObject({
-      folderId: 'f1',
-      createdAt: 123,
-      presentation: '{"decks":[]}',
-    });
+    const sent = vi.mocked(apiClient.apiCreateDesign).mock.calls[0]![1];
+    expect(sent).toMatchObject({ folderId: 'f1', createdAt: 123 });
+    expect(sent).not.toHaveProperty('presentation');
   });
 
   it.each(['folder_not_found', 'folder_scope_mismatch'])(
@@ -242,7 +241,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
 });
 
 describe('takeCloudOffline (cloud -> offline)', () => {
-  it('keeps the deck and personal folder on the offline record', async () => {
+  it('keeps the personal folder on the offline record, not an old deck', async () => {
     vi.mocked(apiClient.apiLoadDesign).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
@@ -252,10 +251,9 @@ describe('takeCloudOffline (cloud -> offline)', () => {
       presentation: '{"decks":[]}',
     } as never);
     await takeCloudOffline('d1', 'owner');
-    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
-      folderId: 'f1',
-      presentation: '{"decks":[]}',
-    });
+    const rec = vi.mocked(store.offlinePutRecord).mock.calls[0]![0];
+    expect(rec).toMatchObject({ folderId: 'f1' });
+    expect(rec).not.toHaveProperty('presentation');
   });
 
   it('keeps a starred design starred on the offline record', async () => {

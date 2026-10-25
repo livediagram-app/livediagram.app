@@ -1,6 +1,6 @@
 import { ctaHref } from '@livedocuments/api-schema';
 
-import { StartDrawingArt } from '@/components/StartDrawingArt';
+import { StartDrawingArt } from '@liveworkspace/marketing-site/components/StartDrawingArt';
 
 // The brand-blue "just try it" card that closes the FAQ and the comparison pages: a line of copy and the
 // Start creating CTA (docs/specs/019-marketing/marketing-site.md: the primary CTA reads "Start creating"), measured

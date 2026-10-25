@@ -2,12 +2,7 @@
 // docs/specs/015-api/api.md "Internal"): the design as its `.livedesign` file, and a new design from one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_TAB_BYTES } from '@livedesign/api-schema';
-import {
-  createShape,
-  parseDesignEnvelope,
-  type ShapeElement,
-  type Tab,
-} from '@livedesign/design';
+import { createShape, parseDesignEnvelope, type ShapeElement, type Tab } from '@livedesign/design';
 
 // The index as the owner reaches it with this app's key: the items it is asked to make.
 const { made } = vi.hoisted(() => ({
@@ -58,7 +53,8 @@ async function arrange() {
       }),
       db.env,
     );
-  // Ada's design A: two tabs, the first linking to the second, the second in a folder, and a deck on the first.
+  // Ada's design A: two tabs, the first linking to the second, the second in a folder, and the slide deck it kept
+  // from before 25 October 2026 (docs/specs/012-collaboration/presentation-mode.md "Saved data").
   db.sql
     .prepare(
       'INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 1, 1)',
@@ -96,7 +92,9 @@ describe('GET /api/internal/items/:id/export?format=file', () => {
       ['t1', 'One', undefined],
       ['t2', 'Two', 'Later'],
     ]);
-    expect(envelope.design.presentation).toContain('"tabId":"t1"');
+    // The kept deck is never served.
+    expect(envelope.design).not.toHaveProperty('presentation');
+    expect(text).not.toContain('decks');
     // Unchanged content is byte-identical.
     expect(await (await send('GET', 'A/export?format=file')).text()).toBe(text);
   });
@@ -136,7 +134,12 @@ describe('POST /api/internal/items/import', () => {
     ]);
     const meta = db.sql
       .prepare('SELECT name, owner_id, created_at, presentation FROM design WHERE id = ?')
-      .get(id) as { name: string; owner_id: string; created_at: number; presentation: string };
+      .get(id) as {
+      name: string;
+      owner_id: string;
+      created_at: number;
+      presentation: string | null;
+    };
     expect(meta).toMatchObject({ name: 'Logo copy', owner_id: OWNER });
     expect(meta.created_at).toBeGreaterThan(0);
     const tabs = db.sql
@@ -151,10 +154,9 @@ describe('POST /api/internal/items/import', () => {
     ]);
     expect(tabs.map((t) => t.id)).not.toContain('t1');
     expect(tabs.map((t) => t.id)).not.toContain('t2');
-    const [first] = (JSON.parse(tabs[0]!.data) as Pick<Tab, 'elements'>)
-      .elements as ShapeElement[];
+    const [first] = (JSON.parse(tabs[0]!.data) as Pick<Tab, 'elements'>).elements as ShapeElement[];
     expect(first!.link).toEqual({ kind: 'tab', tabId: tabs[1]!.id });
-    expect(meta.presentation).toContain(`"tabId":"${tabs[0]!.id}"`);
+    expect(meta.presentation).toBeNull();
     // The new design exports as its own file.
     expect((await send('GET', `${id}/export?format=file`)).status).toBe(200);
   });
@@ -175,9 +177,7 @@ describe('POST /api/internal/items/import', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { send, file } = await exported();
     const envelope = JSON.parse(file) as { design: { tabs: Tab[] } };
-    envelope.design.tabs[0]!.elements = [
-      { ...box('big'), label: 'x'.repeat(MAX_TAB_BYTES) },
-    ];
+    envelope.design.tabs[0]!.elements = [{ ...box('big'), label: 'x'.repeat(MAX_TAB_BYTES) }];
     const res = await send('POST', 'import', { body: body(JSON.stringify(envelope)) });
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'too_large' });

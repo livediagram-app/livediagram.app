@@ -47,8 +47,7 @@ function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
     : {};
 }
 
-const MOTION_NOTE =
-  'Moves on screen and while presenting; still in exports and with Reduce Motion on.';
+const MOTION_NOTE = 'Moves on screen; still in exports and with Reduce Motion on.';
 
 export function AnimatedBackgroundChoices({
   fill,

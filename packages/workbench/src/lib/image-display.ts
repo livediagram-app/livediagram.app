@@ -1,7 +1,7 @@
 // Pictures as the editor shows them (docs/specs/009-elements/images.md "Shown at the size they are
 // seen"): an uploaded photo is kept whole for exports, but the canvas, the pages and the gallery show
 // a copy no larger than the screen can use. A phone's camera photo decodes to 50-100 MB of pixels, so
-// a slide deck of a dozen of them, each drawn a few hundred pixels wide, had the phone close the tab
+// a row of pages holding a dozen of them, each drawn a few hundred pixels wide, had the phone close the tab
 // for memory. The copy is made once per picture and size, one picture at a time (decoding two large
 // photos at once is itself the spike this avoids), and kept for whoever shows the same picture next.
 

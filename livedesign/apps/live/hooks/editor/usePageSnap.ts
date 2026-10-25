@@ -48,7 +48,7 @@ export function usePageSnap(deps: {
   fitOf: (page: LaidOutPage) => SnapFrame;
   glideTo: (frame: SnapFrame) => void;
   cancelGlide: () => void;
-  // Following someone or presenting: the view is not this person's to move.
+  // Following someone: the view is not this person's to move.
   suspended: () => boolean;
 }): void {
   const latest = useLatest(deps);

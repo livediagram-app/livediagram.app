@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { mcpListTrash } from '@livediagram/agent-verbs/mcp';
 import { ApiError } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
 import { loadTab, ToolInputError } from './tool-helpers';
 import { deleteRefusal } from './tools';
@@ -10,7 +10,7 @@ import { deleteRefusal } from './tools';
 // Errors that teach (docs/specs/015-api/mcp-server.md): a mistake the caller
 // can fix is a tool error in words, never a thrown protocol error.
 
-vi.mock('./render', () => ({ svgToPngBase64: async () => '' }));
+vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => '' }));
 vi.mock('./api', async (original) => ({
   ...(await original<typeof import('./api')>()),
   postTelemetry: () => undefined,

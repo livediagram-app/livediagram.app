@@ -26,7 +26,7 @@ import {
   type StoredTabBody,
   servableImageIds,
 } from './db';
-import { imageRefIds } from './image-refs/extract';
+import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
 import { photoBlobKey, tabHoldsBlobs } from './db/photo-blobs';
 import { photosOf } from '@livedesign/photo-engine';
 import { mediaClient } from './media';

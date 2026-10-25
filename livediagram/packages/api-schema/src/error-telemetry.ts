@@ -123,7 +123,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
-  'drive',
   // The one-time doors of the move from the old livediagram.app.
   'legacy-guest',
   'migration',
@@ -161,13 +160,8 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'refresh',
   'invites',
   'restore',
-  // The Google Drive mirror's sub-routes (docs/specs/022-drive-mirror/drive-mirror.md).
-  'state',
-  'connect',
-  'connection',
+  // The liveworkspace index's doors into a canvas (/api/internal/items/**).
   'items',
-  'writes',
-  'lease',
 ]);
 
 /**

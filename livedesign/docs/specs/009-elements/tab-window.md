@@ -33,7 +33,7 @@ and every page showing it is up to date.
   a Stroke and Opacity change it like any shape. Its fill is the shown tab's paper; it takes no label.
   Under a hand-drawn finish (Marker, Sketch) the frame's line wobbles into the box, so the drawing sits 6 px inside
   it, clear of the line, with the window's fill around it; nothing the tab shows ever reaches past its frame.
-- **A window inside the tab it shows** (a slide showing a tab that itself holds a window) is drawn as its **frame
+- **A window inside the tab it shows** (a window showing a tab that itself holds a window) is drawn as its **frame
   named for its tab**, never the tab inside it, so windows can never recurse.
 - **Default size**: 640 by 360 (16:9); it resizes like any element, its words and buttons growing with it.
 
@@ -80,7 +80,7 @@ A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen
 content and photos first, waiting for a fetch already under way rather than drawing the tab's empty placeholder. It
 fetches every tab a window shows, and draws each as its pages, as on screen. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
 drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
-(Contents, the Slide Deck, layouts) and the API's tab render draw the frame, named for its tab where the caller
+(Contents, layouts) and the API's tab render draw the frame, named for its tab where the caller
 knows it, else "Tab Window".
 
 ## Palette

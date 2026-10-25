@@ -13,14 +13,14 @@ someone is on, each opening a flyout of its tiles:
  ☰ ⬡|✎   ┌────────────────────────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ Shapes Write │ Concepts Components Devices │ Icons … │ [🔍] │
  ▼        └────────────────────────────────────────────────────────────────────────┘
- Explorer            (Undo/Redo, Slides, Contents, zoom: the bottom-right cluster)
+ Explorer            (Undo/Redo, Contents, zoom: the bottom-right cluster)
 ```
 
 - **Top left, before the strip: the menu button**, in a card with the tab's name. On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Format / Laser / Spotlight / Slide Deck / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Format / Laser / Spotlight / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then the category bar** ("The category bar"). Its tiles are the Palette's tiles (`palette-tile-defs`, arranged
   by the page kind's palette layout, [Pages](pages-mode.md) "The palette's kind"), rendered by the shared
@@ -226,7 +226,7 @@ outside, Esc, the button again or opening an item closes it. The status screens 
 couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
-Collaborate, Slides and Contents open as **popovers over their bottom-row
+Collaborate and Contents open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every
 other panel (AI, the minimap and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). The popovers render outside

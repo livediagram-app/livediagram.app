@@ -29,8 +29,6 @@ function designOf(
     folderId: null,
     teamId: meta.teamId,
     source: isDesignSource(meta.source) ? meta.source : null,
-    // The slide deck (docs/specs/012-collaboration/presentation-mode.md), kept with the content.
-    presentation: outline.presentation,
     savedAt: outline.savedAt,
     createdAt: meta.createdAt,
     ownerName: owner?.name ?? null,

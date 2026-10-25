@@ -6,7 +6,10 @@
 
 import type { ReactNode } from 'react';
 import { FONT } from '@/components/art-tokens';
-import { Cursor as TeammateCursor, Frame } from './shared';
+import {
+  Cursor as TeammateCursor,
+  Frame,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
 

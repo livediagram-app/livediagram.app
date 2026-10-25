@@ -36,7 +36,7 @@ import {
 import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { fetchTeamLibraries, matchDocuments } from '@livedocuments/agent-verbs';
 import {
   deepLink,

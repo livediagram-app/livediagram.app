@@ -33,7 +33,6 @@ type ErrorArea =
   | 'TabBar'
   | 'TabDialogs'
   | 'Collaborators'
-  | 'Presentation'
   | 'Search'
   | 'QuickStyle'
   | 'Modals'
@@ -52,7 +51,6 @@ const AREA_LABEL: Record<ErrorArea, string> = {
   TabBar: 'the tab bar',
   TabDialogs: 'a tab dialog',
   Collaborators: 'the collaborators panel',
-  Presentation: 'the presentation',
   Search: 'search',
   QuickStyle: 'the quick style panel',
   Modals: 'a dialog',

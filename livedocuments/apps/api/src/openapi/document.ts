@@ -8,7 +8,7 @@
 
 import { COMPONENT_SCHEMAS } from './schemas.generated';
 import { ROUTE_MANIFEST, type AuthMode, type RouteSpec } from './manifest';
-import type { BodySchema, JsonSchema, OpenApiDocument } from './types';
+import type { BodySchema, JsonSchema, OpenApiDocument } from '@liveworkspace/api-kit/openapi-types';
 
 // The error envelope every 4xx/5xx shares (`responses.ts`: `{ error, message? }`).
 // Not a named DTO in api-schema (it's a worker response shape), so it's defined

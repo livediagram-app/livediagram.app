@@ -1,16 +1,16 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ZenMode, LaserPointer } from '@/components/illustrations/tips';
+import { ZenMode, LaserPointer } from '@liveworkspace/help-site/art/illustrations/tips';
 import { SpotlightTool } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
-  title: 'Presenting from the Canvas',
+  title: 'Walking People Through Your Work',
   description:
-    'Walk an audience through the canvas with zen mode, the laser pointer, spotlight, and a slide deck in livedesign.',
+    'Walk people through your pages on a call or a shared screen with zen mode, the laser pointer, spotlight and follow along in livedesign.',
   path: '/help/tips-and-tricks/presenting-well/',
 });
 
-<ArticleLayout title="Presenting from the Canvas" description="Turn a finished canvas into a clear story with a distraction-free view, a laser pointer, a spotlight, and a slide deck." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+<ArticleLayout title="Walking People Through Your Work" description="Turn finished pages into a clear story with a distraction-free view, a laser pointer, a spotlight and follow along." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
 A finished tab of pages shows everything at once, which is great for reference but harder to narrate. livedesign gives you a few ways to focus an audience as you walk through your work, whether you are on a call, a projector, or sharing your screen.
 
@@ -32,20 +32,18 @@ For pointing things out live, switch to the **Laser** tool (`K`). Moving the poi
 
 ## The spotlight
 
-To focus on one part of the canvas at a time, switch to the [Spotlight](/help/selection-modes/spotlight/) tool (desktop only). It dims the rest of the canvas and casts a pool of light around your cursor, so the room's eye lands exactly where yours does. Unlike the laser, it is **only on your screen**: everyone else in the design still sees the whole canvas. It shines when you are sharing your screen or presenting in the room; move the cursor from shape to shape to walk through the canvas one piece at a time. Click to grow the light and right-click to shrink it. Its panel sets the light's size, how far the rest dims, its edge and its shape.
+To focus on one part of the canvas at a time, switch to the [Spotlight](/help/selection-modes/spotlight/) tool (desktop only). It dims the rest of the canvas and casts a pool of light around your cursor, so the room's eye lands exactly where yours does. Unlike the laser, it is **only on your screen**: everyone else in the design still sees the whole canvas. It shines when you are sharing your screen or showing your work in the room; move the cursor from shape to shape to walk through the canvas one piece at a time. Click to grow the light and right-click to shrink it. Its panel sets the light's size, how far the rest dims, its edge and its shape.
 
 <Figure caption="Spotlight dims the canvas and keeps a bright circle around your cursor.">
   <SpotlightTool />
 </Figure>
 
-## A slide deck
+## Follow along
 
-When the walkthrough has a running order, build one. The [Slide Deck](/help/selection-modes/slide-deck/) tool (desktop only, and for Editors) turns your pages into a talk: each slide is a page. Every page is in the deck from the moment you make it, in page order, and a deck can span tabs. Present the lot full screen, one slide at a time. The deck itself broadcasts nothing: you show it by sharing your screen, the same as everything else in the meeting. While it runs, `L` arms the laser (which others in the design still see) and `S` the spotlight.
-
-Two things worth knowing before a talk. **Slides you are not going to use can be hidden rather than deleted**, so last week's detail and the section you cut for time stay in the deck without turning up in the run. And the presenter settings (in **Settings**, under **Presenting**, and the cog in the Slide Deck panel) carry the transition, an **Auto-Advance** interval and **Loop the Deck**: set those two and a deck runs itself on a screen in the room with nobody driving. While a deck runs, the editor's own shortcuts are off and the deck's take over; see [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/#while-presenting).
+When the people you are talking to are in the design with you, rather than watching your shared screen, have them follow you. [Follow Along](/help/canvas/follow-along/) keeps their view on yours as you pan and zoom from page to page, so nobody gets lost, and your laser trail shows on their screens as you point.
 
 <Tip>
-  Reveal a busy canvas gradually by building it up tab by tab, then switch to Zen mode and use the
+  Reveal a busy design gradually by building it up page by page, then switch to Zen mode and use the
   laser to walk the room through each step.
 </Tip>
 

@@ -10,7 +10,7 @@ import {
 import { ITEM_TYPES } from '@liveplanner/items';
 import { tabKindOf, type Tab } from '@liveplanner/project';
 import { apiJson, clientFor } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { PLAN_PREVIEW_TABS_MAX } from './plan-preview';
 
 // A Board tab shows its board, a Sheet tab its Sheet. A tab of another kind holding a board or a Sheet (a Blank Plan

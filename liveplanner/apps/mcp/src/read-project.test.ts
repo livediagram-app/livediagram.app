@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
   ],
 }));
 
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { readProject, revFromEtag } from './read-project';
 
 // read_project reads a view (docs/specs/015-api/mcp-server.md §4.2; docs/specs/024-agents/

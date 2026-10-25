@@ -7,6 +7,9 @@ product code. The decisions below turned the proposals into specs:
 [Miro import](../specs/020-import-export/miro-import.md) and
 [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
 the Drive decision amended [Save Locations](../specs/006-document/save-locations.md).
+The Google Drive mirror built from section A ran in livediagram until it moved to liveworkspace, for every app
+([liveworkspace/docs/drive.md](../../../liveworkspace/docs/drive.md)); its findings stand, and the names below
+(`ldDocumentId`, the browser cadence) are the old mirror's.
 
 - **Checked:** 2026-09-27, against the official pages listed in [Sources](#sources)
   (each page's own "last updated" date is recorded there).

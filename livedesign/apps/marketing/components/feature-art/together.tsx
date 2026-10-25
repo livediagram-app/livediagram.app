@@ -1,4 +1,4 @@
-// Feature illustrations: working together and presenting to the room
+// Feature illustrations: working together and pointing people at the work
 // (docs/specs/019-marketing/marketing-site.md "Feature category pages"), the Collaborate
 // category's cards. Plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts), on the
 // shared 6s timeline (app/feature-art/canvas.css, the canvas and collaboration block); every piece settles to its
@@ -53,7 +53,7 @@ function Flow({ steps, y = 36 }: { steps: [number, number, string][]; y?: number
   );
 }
 
-// The four screens the presenting cards talk through.
+// The four screens the laser and spotlight cards talk through.
 const TALK: [number, number, string][] = [
   [14, 50, 'Logo'],
   [86, 52, 'Sign in'],
@@ -386,7 +386,7 @@ export function AssignedActionsArt() {
   );
 }
 
-/* ───────────────────────── Presenting to the room ───────────────────────── */
+/* ──────────────────────── Pointing people at it ──────────────────────── */
 
 /** Spotlight: the canvas dims under a shroud, and a soft circle of light tours the steps. */
 export function SpotlightArt() {
@@ -425,7 +425,7 @@ export function SpotlightArt() {
   );
 }
 
-/** The laser pointer: a glowing trail that follows the presenter and fades behind them. */
+/** The laser pointer: a glowing trail that follows your cursor and fades behind it. */
 export function LaserArt() {
   const path = 'M18 54 C 54 66, 96 44, 150 46 S 236 60, 286 50';
   const streak = (dash: string): CSSProperties =>

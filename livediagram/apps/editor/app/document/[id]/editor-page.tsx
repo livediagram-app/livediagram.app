@@ -12,7 +12,6 @@ import {
 } from '@/components/providers/workbench-session-context';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { track } from '@/lib/telemetry';
-import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
@@ -78,12 +77,6 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     () => (state.loadingDocument ? undefined : prefetchWhenIdle(EDITOR_SURFACE_CODE)),
     [state.loadingDocument],
   );
-  // Leaving a document (another document, the Explorer) flushes its pending
-  // Google Drive write (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence").
-  useEffect(() => {
-    if (!state.documentId) return;
-    return () => requestDriveFlush();
-  }, [state.documentId]);
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());

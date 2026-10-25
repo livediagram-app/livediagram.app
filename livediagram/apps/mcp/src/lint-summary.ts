@@ -6,7 +6,7 @@
 import type { LintReport } from '@livediagram/api-schema';
 import { formatLintReport, lintSummaryLine } from '@livediagram/diagram-lint';
 import { apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 const LINT_UNAVAILABLE = 'lint unavailable';
 

@@ -1,5 +1,5 @@
 // A person's own SQLite (person-store.ts): what livediagram keeps for one person rather than for one canvas.
-// livediagram ships fresh, so the schema is one step; a later change appends a step, never edits this one.
+// Each change appends a step and never edits an earlier one, so a store at any version reaches the latest.
 
 import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 
@@ -51,7 +51,15 @@ CREATE TABLE IF NOT EXISTS drive_items (
 );
 `;
 
-const STEPS: readonly string[] = [V1];
+// livediagram's own Google Drive mirror is gone (liveworkspace/docs/drive.md "Coming from livediagram's mirror"):
+// Google Drive sync is liveworkspace's service now, which keeps its rows itself. Its two tables go, with every
+// connection's sealed token and every mirrored item in them. The files stay in the person's Drive.
+const V2 = `
+DROP TABLE IF EXISTS drive_items;
+DROP TABLE IF EXISTS drive_connections;
+`;
+
+const STEPS: readonly string[] = [V1, V2];
 
 // Bring the person's SQLite up to date. Idempotent: the version row skips what already ran.
 export function migratePersonSchema(sql: DocumentSql): void {

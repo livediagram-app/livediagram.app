@@ -7,7 +7,7 @@
 import { EDITOR_MODES, editorModeLabel } from '@livediagram/document';
 
 import { PANEL, PanelShadow, STRONG, SUBTLE, VoteSticky } from './features-parts';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // sky-700: white text on it reads at AA, where sky-500 does not.
 const PICKED = '#0369a1';

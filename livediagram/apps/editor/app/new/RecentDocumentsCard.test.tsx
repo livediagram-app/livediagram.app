@@ -13,7 +13,6 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
 // A token naming the Design team (its `teams` claim).
 const token = `x.${btoa(JSON.stringify({ teams: [{ id: 'team-1', name: 'Design' }] }))}.y`;
 vi.mock('@/lib/api/core', () => ({ currentBearer: async () => token }));
-vi.mock('@/hooks/persistence/useAfterDriveChange', () => ({ useAfterDriveChange: () => {} }));
 
 import { RecentDocumentsCard } from './RecentDocumentsCard';
 

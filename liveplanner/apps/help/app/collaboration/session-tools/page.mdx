@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SessionTools } from '@/components/illustrations/collaboration';
+import { SessionTools } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Session Tools',
@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
 Session tools make a shared plan interactive for live sessions such as a retrospective. There are two: a **timer** for time-boxing an activity, and **dot-voting** for prioritising cards as a group. Anyone who can edit the plan can run them, and they sync to everyone in real time.
 
 <Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
-  <SessionTools />
+  <SessionTools poll={false} />
 </Figure>
 
 ## Where to find them

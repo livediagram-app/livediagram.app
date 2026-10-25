@@ -4,7 +4,7 @@ import { formLook, resolveFontStack, tabKindOf, type Tab } from '@liveplanner/pr
 import { readForm } from '@liveplanner/forms';
 import { formArt } from '@liveplanner/plan-art';
 import { previewFonts } from './preview-fonts';
-import { svgToPngBase64 } from './render';
+import { svgToPngBase64 } from '@liveworkspace/mcp-kit/render';
 
 type FormImage = { type: 'image'; data: string; mimeType: 'image/png' };
 

@@ -108,7 +108,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   select-all and a remote change of the local selection re-render, anywhere in the editor, only what
   shows the selection: the element views whose selected state changed, the selection chrome
   (toolbars, popover, resize box, handles and anchors), and the panels that describe the selection
-  (Quick Style, the Slide Deck panel, an open context menu). The editor root, the canvas, the element
+  (Quick Style, an open context menu). The editor root, the canvas, the element
   layer and the Map do not re-render for it. Handlers read the selection from the store when they
   run; effects that follow it (presence, scrolling a selection into view, the screen-reader
   announcement, dropping hidden elements from it) subscribe to the store.

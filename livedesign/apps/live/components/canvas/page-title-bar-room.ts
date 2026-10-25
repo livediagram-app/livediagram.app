@@ -5,9 +5,7 @@ import { photoTitleBarRoom } from '@/components/photo/photo-title-bar-room';
 import { logoTitleBarRoom } from './LogoTitleBar';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
-import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
-import { pageNotesRoom } from './PageNotesButton';
 import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
@@ -18,9 +16,6 @@ type TitleBarButtons = {
   // Someone may edit: the cog and the lock show.
   edit: boolean;
   locked: boolean;
-  deck: boolean;
-  // A slide in the deck: its Add Notes.
-  notes: boolean;
   logo: boolean;
   // A photo page's Image, Select and Filter menus.
   photo?: boolean;
@@ -34,8 +29,6 @@ type TitleBarButtons = {
 export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
   return (
     (b.edit ? COG_ROOM + pageLockRoom(b.locked, named) : 0) +
-    (b.deck ? pageDeckRoom(named) : 0) +
-    (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.photo ? photoTitleBarRoom(named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +

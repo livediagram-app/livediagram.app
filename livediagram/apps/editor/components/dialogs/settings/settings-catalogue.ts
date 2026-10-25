@@ -49,11 +49,6 @@ import {
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
-import {
-  CLOUD_SYNC_PROVIDERS,
-  CLOUD_SYNC_SECTION,
-  type CloudSyncProviderId,
-} from '@/lib/cloud-sync/providers';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -115,8 +110,6 @@ type SettingsRowContext = {
   signedIn: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
-  // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
-  cloudProviders?: readonly CloudSyncProviderId[];
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
   // Documents in This Browser with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
@@ -261,14 +254,6 @@ export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' }
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
-// One Cloud Sync provider (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"): its
-// connection, status and actions. Not a preference: it reads the provider's
-// own state, so it carries no read/write pair.
-export type SettingsCloudSyncRowSpec = RowBase & {
-  kind: 'cloudSync';
-  provider: CloudSyncProviderId;
-};
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -284,8 +269,7 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsRetiredPartsRowSpec
   | SettingsDefaultFoldersRowSpec
-  | SettingsPresetSummaryRowSpec
-  | SettingsCloudSyncRowSpec;
+  | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -1260,18 +1244,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
         available: (ctx) => (ctx.retiredParts ?? 0) > 0 && !ctx.workbench,
       },
-      // One row per provider, from the Cloud Sync catalogue.
-      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
-        kind: 'cloudSync',
-        key: `cloudSync-${p.id}`,
-        provider: p.id,
-        section: CLOUD_SYNC_SECTION,
-        label: p.label,
-        keywords: p.keywords,
-        description: p.description,
-        helpArticle: p.helpArticle,
-        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
-      })),
       {
         kind: 'deleteAccount',
         key: 'deleteAccount',
@@ -1395,7 +1367,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
+// A section's target id: "Your Data" → "your-data". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

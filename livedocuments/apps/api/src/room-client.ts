@@ -12,7 +12,7 @@ import {
   type ChangesetRoomOp,
   type RoomOp,
 } from '@livedocuments/api-schema';
-import type { AgentPresenceWrite } from './room-agent-presence';
+import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its

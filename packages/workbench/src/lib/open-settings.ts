@@ -9,8 +9,9 @@
 // binding).
 import { workbench } from '../bindings';
 
-
 export function requestOpenSettings(categoryId: string) {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent<string>(workbench.openSettingsEvent, { detail: categoryId }));
+  window.dispatchEvent(
+    new CustomEvent<string>(workbench.openSettingsEvent, { detail: categoryId }),
+  );
 }

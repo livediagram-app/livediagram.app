@@ -25,7 +25,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
 - **Hashes work everywhere.** Every SHA-256 the code computes (a Q&A board's voter id,
   an image's content address, the CLI's PKCE challenge) goes through `sha256` in `@livediagram/document`
-  (`packages/document/src/sha256.ts`). It calls `crypto.subtle.digest` wherever the context has it and
+  (`../packages/model-core/src/sha256.ts`). It calls `crypto.subtle.digest` wherever the context has it and
   otherwise computes the same FIPS 180-4 digest in plain code (about 24 ms per MB, measured on Node 22, so a 5 MB
   image costs about 120 ms, and only outside a secure context). The two must match byte for byte: the server
   re-hashes an upload, and clients compare person and voter ids.
@@ -40,5 +40,5 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
 is kept, and that it never throws without `crypto`. `apps/editor/app/pre-hydration-scripts.test.ts` and
 `apps/community/app/layout-boot.test.ts` check each layout inlines it before any app code.
-`packages/document/src/sha256.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
+`../packages/model-core/src/sha256.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
 Crypto at every length across the padding boundaries, and that `sha256` picks Web Crypto when it is there.

@@ -64,39 +64,14 @@ export function pageOrPopover(pageId: string, name: string): string {
   return document.querySelector(titlePopover(name)) ? titlePopover(name) : pageButton(pageId, name);
 }
 
-// The Slide Deck, opened from the Slides button in the bottom-right cluster. The anchor is the button itself
-// (ClusterPopoverSegment) or, in an older layout, its wrapper: matched either way, as missing it left out every deck
-// step (and Present) without a sign.
-export const SLIDES_BUTTON =
-  '[data-tour-id="slides"][aria-expanded], [data-tour-id="slides"] button[aria-expanded]';
-export const SLIDE_DECK = '[data-tour-id="slide-deck"]';
-let deckOpened = false;
-
-export async function openSlideDeck(): Promise<void> {
-  if (deckOpened) return;
-  deckOpened = true;
-  const button = document.querySelector<HTMLButtonElement>(SLIDES_BUTTON);
-  if (button && button.getAttribute('aria-expanded') !== 'true') button.click();
-  await waitForSelector(SLIDE_DECK, 1000);
-}
-
-export function closeSlideDeck(): void {
-  if (!deckOpened) return;
-  deckOpened = false;
-  const button = document.querySelector<HTMLButtonElement>(SLIDES_BUTTON);
-  if (button?.getAttribute('aria-expanded') === 'true') button.click();
-}
-
 /** Closes whatever a page's tour opened, for a tour that stops under a step (its page gone, the mode left). */
 export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Layout');
   closeTitlePopover(pageId, 'Background');
-  closeSlideDeck();
   clearCombineDemo();
 }
 
 /** Forgets what an earlier tour opened (one that ended with its page unmounted under it): each run starts clean. */
 export function resetPageTour(): void {
   opened.clear();
-  deckOpened = false;
 }

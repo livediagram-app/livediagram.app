@@ -154,7 +154,7 @@ export function QuickStylePanel({
   // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
   // or strokes a whiteboard's pen rows style.
   powerUser?: boolean;
-  // Zen, embeds, presenting, or a context menu open: the panel stands down.
+  // Zen, embeds, or a context menu open: the panel stands down.
   hidden: boolean;
   // Section titles; on unless a caller turns them off. The rows keep their
   // names either way.

@@ -21,7 +21,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'blank-logo',
   ],
   photos: ['photo-edit'],
-  present: ['logo-design', 'wireframe-mobile-app', 'wireframe-website'],
   collaboration: ['wireframe-website', 'wireframe-mobile-app', 'logo-design', 'photo-edit'],
 };
 

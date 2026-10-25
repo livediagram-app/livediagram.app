@@ -1,28 +1,12 @@
-import type { Metadata } from 'next';
-
 import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
+import { securityMoved } from '@liveworkspace/marketing-site/lib/legal-moved';
 
-// The vulnerability disclosure policy lives in the help centre (Policies).
-// /security is the short, guessable URL
-// researchers try first, so it redirects there; noindex like /privacy so
-// search engines consolidate on the canonical help article.
-// See docs/specs/002-project-scope/vulnerability-disclosure.md.
-const HELP_SECURITY_URL = '/help/policies/report-a-vulnerability/';
+// The disclosure policy lives in the help centre: this stub keeps the historical /security URL alive, noindex
+// (@liveworkspace/marketing-site/lib/legal-moved).
+const moved = securityMoved('livediagram');
 
-export const metadata: Metadata = {
-  title: 'Security · livediagram',
-  description: 'How to report a security vulnerability in livediagram.',
-  robots: { index: false, follow: true },
-  alternates: { canonical: HELP_SECURITY_URL },
-};
+export const metadata = moved.metadata;
 
 export default function SecurityPage() {
-  return (
-    <LegalRedirect
-      href={HELP_SECURITY_URL}
-      heading="Found a security vulnerability?"
-      lead="Our disclosure policy lives in the help centre."
-      linkText="read how to report it privately"
-    />
-  );
+  return <LegalRedirect {...moved.redirect} />;
 }

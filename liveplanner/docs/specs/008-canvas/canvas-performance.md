@@ -27,14 +27,14 @@ takes as long as on the reference at 4×. A machine slower than the reference sp
 unthrottled, and its report says its numbers read harsher than the budget. Every report states the
 throttle it ran at.
 
-| Moment                     | Budget                                                                                   |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| At rest                    | No main-thread work in any frame: no animation-frame loop, no observer that feeds itself |
-| Pan and zoom               | No task over 50 ms; no element view re-renders on a pan                                  |
-| Dragging a selection       | No task over 50 ms; the median frame within 33 ms                                        |
-| Marquee, hover             | No task over 50 ms                                                                       |
-| Selecting or deselecting   | One task, within 100 ms                                                                  |
-| Opening the board          | Interactive within 3 s of the tab's data arriving                                        |
+| Moment                   | Budget                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| At rest                  | No main-thread work in any frame: no animation-frame loop, no observer that feeds itself |
+| Pan and zoom             | No task over 50 ms; no element view re-renders on a pan                                  |
+| Dragging a selection     | No task over 50 ms; the median frame within 33 ms                                        |
+| Marquee, hover           | No task over 50 ms                                                                       |
+| Selecting or deselecting | One task, within 100 ms                                                                  |
+| Opening the board        | Interactive within 3 s of the tab's data arriving                                        |
 
 A gesture's cost scales with what it changes and what is on screen, never with the whole board.
 

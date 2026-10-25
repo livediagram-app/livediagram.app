@@ -7,8 +7,7 @@ export function rowSharedAcrossApps(rowKey: string): boolean {
 }
 
 // The preference a row stands for. A row's key is its preference's, except a UI scale part's
-// (`uiScale-panels`, which writes `uiScalePanels`) and a Presenting option's (`presentation-loop`, a
-// field of `presentation`).
+// (`uiScale-panels`, which writes `uiScalePanels`).
 export function settingKeyOf(rowKey: string): string {
   return settingKeyOfRow(rowKey);
 }

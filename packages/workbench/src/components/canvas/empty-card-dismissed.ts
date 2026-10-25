@@ -9,7 +9,9 @@ export const EMPTY_CARD_DISMISSED_MAX = 200;
 
 function read(): string[] {
   try {
-    const raw = JSON.parse(localStorage.getItem(workbench.emptyCardDismissedKey) ?? '[]') as unknown;
+    const raw = JSON.parse(
+      localStorage.getItem(workbench.emptyCardDismissedKey) ?? '[]',
+    ) as unknown;
     return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
   } catch {
     return [];

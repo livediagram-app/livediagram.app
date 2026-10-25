@@ -1,8 +1,7 @@
 'use client';
 
-// The Explorer's Google Drive marks (liveworkspace/docs/drive.md "The Explorer shows each item's sync", after
-// livediagram/docs/specs/022-drive-mirror "The Explorer shows each document's sync"): beside an item's Updated time,
-// a small cloud saying where it stands with Drive; beside its name, the unseen-folder mark when its file sits in a
+// The Explorer's Google Drive marks (liveworkspace/docs/drive.md "The Explorer shows each item's sync"): beside an
+// item's Updated time, a small cloud saying where it stands with Drive; beside its name, the unseen-folder mark when its file sits in a
 // Drive folder liveworkspace can't see (that mark instead of the cloud). Only items the service mirrors carry
 // either: it answers marks for the person's own work alone. And, while Google refuses the stored grant, a quiet
 // banner with Reconnect.

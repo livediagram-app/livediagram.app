@@ -67,34 +67,7 @@ function TitlePopover({ name }: { name: string }) {
   );
 }
 
-function SlidesButton() {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <div data-tour-id="slides">
-        <button
-          type="button"
-          aria-label="Open Slides"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        />
-      </div>
-      {open ? (
-        <div data-tour-id="slide-deck">
-          <div data-slide-slot="slide-1">
-            <button type="button" aria-label="Options for Slide 1" />
-          </div>
-          <button type="button" data-slide-deck-settings-trigger="" aria-label="Show settings" />
-          <button type="button" data-presentation-start="panel">
-            Present
-          </button>
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-// CanvasPages' wiring, cut down: the page and its title bar, the + and Slides, its panel, and the tour.
+// CanvasPages' wiring, cut down: the page and its title bar, the +, its panel, and the tour.
 function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>({
     id: of.id,
@@ -115,7 +88,6 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           <TitlePopover name="Background" />
           <TitlePopover name="Style" />
           <TitlePopover name="Text" />
-          <button type="button" data-page-deck-button="add" aria-label="Add to Slides" />
           <button type="button" data-tour-id="page-cog" aria-label="Page settings" />
           <div data-logo-title-bar={of.id}>
             <button type="button" aria-label="Mirror" />
@@ -124,7 +96,6 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
         </div>
       )}
       <button type="button" data-tour-id="add-page" aria-label="Add Page" />
-      <SlidesButton />
       {opened && !deleted ? (
         <PagePanel
           key={opened.seq ?? 0}
@@ -182,7 +153,7 @@ describe('a wireframe page’s Show Me', () => {
     render(<Page of={page('wireframe')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'WireframeTour');
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Your Page/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/^Show Me step 1 of 5: Your Page/)).toBeTruthy());
     await next(); // Layout
     await next(); // Background
     await next();

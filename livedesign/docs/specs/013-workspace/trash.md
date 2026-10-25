@@ -97,7 +97,7 @@ confirmation; nothing empties more than one group at once.
 
 ## Restore
 
-Restoring returns the design exactly as it was: its tabs, its deck, its share
+Restoring returns the design exactly as it was: its tabs, its share
 links, its stars, its history and its place. It goes back to the folder it was
 in, or to that folder's parent when the folder has since been deleted (the delete moved it up,
 [Folders: Deleting a folder](folders.md#deleting-a-folder)); a team design goes

@@ -1,17 +1,11 @@
-import type { Metadata } from 'next';
 import { Redirect } from '@liveworkspace/help-site/components/Redirect';
+import { privacyPolicyMoved } from '@liveworkspace/help-site/lib/moved';
 
-// The privacy policy covers every liveworkspace app, livediagram included, so it lives on liveworkspace.app. This
-// stub keeps the old help URL alive (it redirects there) but is noindex so search engines consolidate on that page.
-const NEW_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy';
+// The privacy policy is liveworkspace's, on liveworkspace.app: this stub keeps the old URL alive, noindex (@liveworkspace/help-site/lib/moved).
+const moved = privacyPolicyMoved('livediagram');
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: "The privacy policy for livediagram is liveworkspace's, on liveworkspace.app.",
-  robots: { index: false, follow: true },
-  alternates: { canonical: NEW_URL },
-};
+export const metadata = moved.metadata;
 
 export default function PrivacyPolicyRedirectPage() {
-  return <Redirect href={NEW_URL} label="privacy policy" />;
+  return <Redirect href={moved.href} label={moved.label} />;
 }

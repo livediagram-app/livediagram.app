@@ -12,8 +12,8 @@ import {
   Selection,
   TEXT_BODY,
   TEXT_STRONG,
-} from './canvas-marks';
-import { Frame, MONO } from './shared';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // A branch colour of a multi-colour theme, tinted for the node behind its words.
 const BRANCHES = [

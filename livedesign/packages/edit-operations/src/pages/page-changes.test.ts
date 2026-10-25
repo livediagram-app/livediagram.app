@@ -98,9 +98,9 @@ describe('adding', () => {
 
   it('turns a blank of the kind asked for (a blank logo’s one empty artboard) into the page asked for', () => {
     const blank = tabOf({ pages: [page('p1', { kind: 'logo' })] });
-    const slide = layoutCatalogueFor('logo').layouts[0]!;
+    const layout = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(blank, [
-      { op: 'add', kind: 'logo', name: 'Cover', layout: slide.id },
+      { op: 'add', kind: 'logo', name: 'Cover', layout: layout.id },
       { op: 'add', kind: 'logo', name: 'Problem' },
     ]);
     expect(pagesOf(out.tab).map((p) => [p.id, p.name])).toEqual([
@@ -133,14 +133,14 @@ describe('adding', () => {
 
   it('adds after the last page, with its fields, a layout and a place', () => {
     const tab = tabOf({ pages: [mark('p1'), mark('p2')] });
-    const slide = layoutCatalogueFor('logo').layouts[0]!;
+    const layout = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(tab, [
       {
         op: 'add',
         kind: 'logo',
         name: 'Cover',
         background: { color: '#0f172a' },
-        layout: slide.id,
+        layout: layout.id,
         at: 1,
       },
     ]);
@@ -149,7 +149,7 @@ describe('adding', () => {
     expect(pages[0]).toMatchObject({ kind: 'logo', name: 'Cover' });
     expect(out.tab.elements.length).toBeGreaterThan(0);
     expect(out.lines[0]).toBe(
-      `Added page 1 (logo, 1024 x 1024) from layout ${slide.label}: name "Cover", background #0f172a.`,
+      `Added page 1 (logo, 1024 x 1024) from layout ${layout.label}: name "Cover", background #0f172a.`,
     );
   });
 
@@ -475,11 +475,11 @@ describe('a layout on a themed tab', () => {
 // docs/specs/024-agents/pages-for-agents.md "change_pages": apply_background_to_all, the
 // Background tab's Apply to All.
 describe('giving every page of a kind one background', () => {
-  const slide = (id: string, extra: Partial<Page> = {}) =>
+  const sheet = (id: string, extra: Partial<Page> = {}) =>
     page(id, { kind: 'logo', size: 'logo', ...extra });
 
   it('sets a logo, then gives every other logo its background, in one call', () => {
-    const tab = tabOf({ pages: [slide('s1'), slide('s2'), page('i1'), slide('s3')] });
+    const tab = tabOf({ pages: [sheet('s1'), sheet('s2'), page('i1'), sheet('s3')] });
     const out = run(tab, [
       { op: 'set', page: 1, background: { gradient: ['#1e1b4b', '#4c1d95'] } },
       { op: 'apply_background_to_all', page: 1 },
@@ -494,9 +494,9 @@ describe('giving every page of a kind one background', () => {
   it('says how many locked logos kept their own', () => {
     const tab = tabOf({
       pages: [
-        slide('s1', { background: { fill: { kind: 'solid', color: '#0f172a' } } }),
-        slide('s2', { locked: true }),
-        slide('s3'),
+        sheet('s1', { background: { fill: { kind: 'solid', color: '#0f172a' } } }),
+        sheet('s2', { locked: true }),
+        sheet('s3'),
       ],
     });
     expect(run(tab, [{ op: 'apply_background_to_all', page: 's1' }]).lines[0]).toBe(
@@ -505,7 +505,7 @@ describe('giving every page of a kind one background', () => {
   });
 
   it('is refused with no other page of the kind', () => {
-    const tab = tabOf({ pages: [slide('s1'), page('i1')] });
+    const tab = tabOf({ pages: [sheet('s1'), page('i1')] });
     expect(refusal(tab, [{ op: 'apply_background_to_all', page: 1 }])).toMatchObject({
       code: 'no_other_pages',
       change: 0,

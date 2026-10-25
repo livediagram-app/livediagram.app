@@ -1,5 +1,5 @@
 import { buildOpenApiDesign } from '../openapi/design';
-import type { OpenApiDesign } from '../openapi/types';
+import type { OpenApiDocument } from '@liveworkspace/api-kit/openapi-types';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 
@@ -8,7 +8,7 @@ import type { RouteContext } from './context';
 // contract, not data, so no credential is needed (mirrors /api/capabilities).
 // Built once per isolate from the route manifest + the generated component
 // schemas; the assembly is pure, so memoising is safe.
-let cached: OpenApiDesign | null = null;
+let cached: OpenApiDocument | null = null;
 
 export function handleOpenapi(ctx: RouteContext): Response {
   if (ctx.segments.length !== 2) return notFound();

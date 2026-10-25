@@ -3,8 +3,14 @@
 // fills are the catalogue's own (packages/document/src/event-storming.ts), which keep their colour
 // under every theme, so they are identity colours rather than Default-theme ink.
 
-import { HAIRLINE, PANEL, SHADOW, Scene, TEXT_MUTED } from './canvas-marks';
-import { Frame } from './shared';
+import {
+  HAIRLINE,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_MUTED,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The catalogue's paper for each note kind the cards show.
 const NOTE = {

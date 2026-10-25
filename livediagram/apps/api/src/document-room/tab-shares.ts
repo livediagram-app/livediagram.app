@@ -7,7 +7,7 @@
 import { createTabShares } from '@liveworkspace/index-app';
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { imageRefReplaceStatements } from '../db/image-refs';
 import { servableImageIds } from '../db/image-grants';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';

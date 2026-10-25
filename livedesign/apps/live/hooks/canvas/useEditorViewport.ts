@@ -89,9 +89,8 @@ type EditorViewportApi = {
   fitToScreen: () => void;
   // Focus: glide to fit an element, or out to the whole tab when it is already fitted.
   focusOn: (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => void;
-  // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
-  // the deck decides what is on screen, so the box to fit is the slide's
-  // rather than the whole tab's.
+  // Frame an ARBITRARY rectangle (following someone's view frames what they see), rather than the
+  // whole tab.
   fitToBounds: (
     bbox: { x: number; y: number; w: number; h: number },
     opts?: { maxZoom?: number; padding?: number },
@@ -360,9 +359,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     },
     [stopGlide, setViewportOffset, setViewportZoom, zoomRef, viewportOffsetRef],
   );
-  // Frame an ARBITRARY rectangle, which is what presenting a slide needs
-  // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the
-  // slide's, not the tab's. Same maths as fitToScreen, which is now the
+  // Frame an ARBITRARY rectangle rather than the tab. Same maths as fitToScreen, which is the
   // special case "fit everything on this tab".
   const fitToBounds = useCallback(
     (
@@ -372,11 +369,8 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       const node = canvasMainRef.current;
       if (!node || bbox.w <= 0 || bbox.h <= 0) return;
       // offsetWidth/Height, NOT getBoundingClientRect: the latter reports the
-      // TRANSFORMED box, and presenting (docs/specs/012-collaboration/presentation-mode.md) animates the canvas surface
-      // with a scale on entry. Measuring mid-animation therefore fitted the
-      // slide to a shrunken viewport, and it painted off-centre by exactly the
-      // difference once the animation finished. The layout size is what the
-      // slide will actually occupy.
+      // TRANSFORMED box, so a surface mid-animation would fit to a shrunken
+      // viewport. The layout size is what the box will actually occupy.
       const rect = { width: node.offsetWidth, height: node.offsetHeight };
       const { zoom, offset } = computeFitToScreen(
         rect,

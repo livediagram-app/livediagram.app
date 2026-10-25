@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { COMPONENT_SCHEMAS } from './schemas.generated';
 import { ROUTE_MANIFEST } from './manifest';
 import { buildOpenApiDesign } from './design';
-import type { JsonSchema } from './types';
+import type { JsonSchema } from '@liveworkspace/api-kit/openapi-types';
 
 // Drift guards for the OpenAPI surface (docs/specs/015-api/api-documentation.md). The worker dispatch is
 // segment-based and imperative, so the manifest is the declaration of the

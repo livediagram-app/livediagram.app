@@ -39,8 +39,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Cta·Opened',
   // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
   // kind), 'Loaded' a failed read retried.
+  'Activity·Added',
+  'Activity·Changed',
   'Activity·Loaded',
   'Activity·Opened',
+  'Activity·Resolved',
   'Activity·Selected',
   'Document·Created',
   'Document·Deleted',
@@ -157,7 +160,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Trash (docs/specs/013-workspace/trash.md): a trashed design's card, and the design restored from it.
   'Trash·Opened',
   'Trash·Restored',
-  'UI·Added',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
   'UI·Cleared',
@@ -168,7 +170,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

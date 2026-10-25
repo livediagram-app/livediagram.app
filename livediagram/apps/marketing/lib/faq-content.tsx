@@ -493,7 +493,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the canvases in My Work are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
+        a: 'Yes, once you sign in. Connect Google Drive in Settings and your canvases, with your work from every other liveworkspace app, are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
       },
     ],
   },

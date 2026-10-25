@@ -5,9 +5,7 @@ describe('live-image builders (docs/specs/013-workspace/live-image-share.md + do
   const origin = 'https://live.test';
 
   it('builds the same-origin /api share-image URL', () => {
-    expect(liveImageUrlFor(origin, 'ABC123')).toBe(
-      'https://live.test/api/share/ABC123/image.svg',
-    );
+    expect(liveImageUrlFor(origin, 'ABC123')).toBe('https://live.test/api/share/ABC123/image.svg');
   });
 
   it('url-encodes the share code', () => {

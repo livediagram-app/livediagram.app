@@ -292,10 +292,10 @@ renders `visibility: hidden` so it never paints in the wrong spot.
 
 ## Behaviour and state
 
-| State  | Condition                                                                                                                   |
-| ------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Hidden | Phone viewport, zen, embed, presenting, edits blocked, an element or multi context menu open, or `quickStyleView` is `null` |
-| Shown  | Otherwise; sections from `quickStyleView`                                                                                   |
+| State  | Condition                                                                                                       |
+| ------ | --------------------------------------------------------------------------------------------------------------- |
+| Hidden | Phone viewport, zen, embed, edits blocked, an element or multi context menu open, or `quickStyleView` is `null` |
+| Shown  | Otherwise; sections from `quickStyleView`                                                                       |
 
 Transitions are driven by selection and those flags only; the panel owns no state but roving focus.
 
