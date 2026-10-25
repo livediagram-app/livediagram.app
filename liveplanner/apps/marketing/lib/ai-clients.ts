@@ -234,7 +234,6 @@ export const AI_CLIENTS: readonly AiClient[] = [
         code: { lang: 'text', code: 'Authorization: Bearer lwt_…', label: 'Header' },
       },
     ],
-    note: 'Running your own liveplanner? Use your own MCP host in place of mcp.liveplanner.app, still ending in /mcp.',
   },
 ];
 

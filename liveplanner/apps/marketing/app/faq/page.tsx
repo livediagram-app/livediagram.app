@@ -45,7 +45,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about liveplanner, from your first board to running your own copy."
+          lede="Everything you might want to know about liveplanner, from your first board to connecting your AI assistant."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">
