@@ -4,7 +4,7 @@
 // and Delete in place of the hand-over buttons, since it no longer opens anything.
 
 import type { ShareLink } from '@liveworkspace/index-client';
-import { Button } from '@liveworkspace/ui';
+import { Button, HoverCard } from '@liveworkspace/ui';
 import { TrashIcon } from '../../ui/icons';
 import { PassTicket, usePassExit } from './PassTicket';
 import { LIFETIMES, PASS_BIN } from './parts';
@@ -27,8 +27,10 @@ export function ExpiredPass({
   return (
     <PassTicket level={link.level} code={link.code} expired leaving={exit.leaving}>
       <div className="flex items-center gap-2">
-        <span className="inline-flex shrink-0 -rotate-3 items-center rounded border-2 border-rose-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-rose-600 dark:border-rose-500/70 dark:text-rose-300">
-          Expired
+        <span className="inline-flex shrink-0 -rotate-3 items-center rounded border-2 border-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-500/70 dark:text-rose-300">
+          <span className="text-optical-line text-optical-caps uppercase tracking-widest">
+            Expired
+          </span>
         </span>
         <input
           readOnly
@@ -39,16 +41,20 @@ export function ExpiredPass({
         />
       </div>
       <div className="flex items-center gap-1.5">
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={onExtend}
-          disabled={busy}
-          title="Opens it again for another round of the lifetime it was issued with, counted from now."
-          className="whitespace-nowrap"
+        <HoverCard
+          title={extend}
+          description="Opens it again for another round of the lifetime it was issued with, counted from now."
         >
-          {extend}
-        </Button>
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={onExtend}
+            disabled={busy}
+            className="whitespace-nowrap"
+          >
+            {extend}
+          </Button>
+        </HoverCard>
         <span className="flex-1" />
         <button
           type="button"

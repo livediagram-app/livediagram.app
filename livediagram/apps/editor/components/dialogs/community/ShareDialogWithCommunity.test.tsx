@@ -28,21 +28,27 @@ vi.mock('@liveworkspace/explorer', () => ({
   ShareDialog: (p: {
     passwordLockedReason?: string | null;
     publicNote?: string | null;
-    appSection?: ReactNode;
+    appTab?: { label: string; badge?: ReactNode; panel: ReactNode } | null;
+    initialView?: string;
   }) => (
     <div
       data-testid="share"
       data-locked={p.passwordLockedReason ?? ''}
       data-public={p.publicNote ?? ''}
+      data-tab={p.appTab?.label ?? ''}
+      data-view={p.initialView ?? ''}
     >
-      {p.appSection}
+      <span data-testid="badge">{p.appTab?.badge}</span>
+      {p.appTab?.panel}
     </div>
   ),
 }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { listShareLinks: async () => ({ links: [], passwordSet: false }) },
 }));
+vi.mock('./CommunityGuide', () => ({ CommunityGuide: () => <p>Guide</p> }));
 vi.mock('./CommunitySection', () => ({
+  CommunityPublicBadge: () => <span>Public</span>,
   CommunitySection: (p: { onPublish: () => void; firstTabEmpty?: boolean }) => (
     <button type="button" onClick={p.onPublish} disabled={!!p.firstTabEmpty}>
       Share to Community
@@ -139,12 +145,25 @@ describe('ShareDialogWithCommunity', () => {
     }
   });
 
-  it('swaps in the publish dialog, and comes back to the Share dialog after', () => {
+  it('gives the Share dialog a Community tab: the guide, then the section, Public while listed', () => {
+    h.post = post('listed');
     renderDialog();
+    expect(screen.getByTestId('share').dataset.tab).toBe('Community');
+    expect(screen.getByText('Guide')).toBeTruthy();
+    expect(screen.getByTestId('badge').textContent).toBe('Public');
+    cleanup();
+    h.post = post('hidden');
+    renderDialog();
+    expect(screen.getByTestId('badge').textContent).toBe('');
+  });
+
+  it('swaps in the publish dialog, and comes back to the Share dialog on its Community tab after', () => {
+    renderDialog();
+    expect(screen.getByTestId('share').dataset.view).toBe('passes');
     fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
     expect(screen.queryByTestId('share')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
-    expect(screen.getByTestId('share')).toBeTruthy();
+    expect(screen.getByTestId('share').dataset.view).toBe('app');
   });
 
   it('hands the Community section an empty first tab, which holds Share to Community', () => {

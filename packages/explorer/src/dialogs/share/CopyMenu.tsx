@@ -1,9 +1,10 @@
 'use client';
 
 // A pass's Embed and Live image buttons: a labelled button with a trailing ⋯ (it opens a menu, it doesn't copy on
-// a click) that drops a list of "copy this as …" rows. The Live image's menu holds its tab picker above the rows.
+// a click), named by a hover card, that drops a list of "copy this as …" rows. The Live image's menu holds its tab picker above the rows.
 
 import { useState, type ReactNode } from 'react';
+import { HoverCard } from '@liveworkspace/ui';
 import { MenuActionRow, PortalMenu } from '../../ui/Menu';
 import { EllipsisGlyph } from './glyphs';
 import type { ShareNotify, ShareTelemetry } from './types';
@@ -48,33 +49,38 @@ export function CopyMenu({
   };
   return (
     <>
-      <button
-        ref={setAnchor}
-        type="button"
-        title={description}
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
-      >
-        {label}
-        <EllipsisGlyph />
-      </button>
+      {/* The card stays shut while the menu is open, which it would sit over. */}
+      <HoverCard title={label} description={description} disabled={open}>
+        <button
+          ref={setAnchor}
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition duration-micro hover:border-brand-300 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-400 dark:hover:text-brand-300"
+        >
+          {label}
+          <EllipsisGlyph />
+        </button>
+      </HoverCard>
       {open ? (
         <PortalMenu anchor={anchor} onClose={() => setOpen(false)} label={label}>
           {header ? (
-            <div className="border-b border-slate-100 px-3 pb-2 pt-1 dark:border-slate-700">
+            <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-700">
               {header}
             </div>
           ) : null}
-          {items.map((item) => (
-            <MenuActionRow
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              onClick={() => void copy(item)}
-            />
-          ))}
+          {/* One row per copy action, icon left: a short verb list that reads down like a dropdown. */}
+          <div className="min-w-44">
+            {items.map((item) => (
+              <MenuActionRow
+                key={item.label}
+                icon={item.icon}
+                label={item.label}
+                onClick={() => void copy(item)}
+              />
+            ))}
+          </div>
         </PortalMenu>
       ) : null}
     </>

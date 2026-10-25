@@ -11,9 +11,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { IndexClient, Level, ShareLinkExpiry } from '@liveworkspace/index-client';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
-import { Button } from '@liveworkspace/ui';
-import { CountBadge } from '@liveworkspace/ui';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { Button, CountBadge, DialogCloseButton, DialogHeader } from '@liveworkspace/ui';
+import { Dialog } from '../ui/Dialog';
 import type { ItemRef, ShareUrl } from '../types';
 import { kindWords } from '../words';
 import { ActivePass } from './share/ActivePass';
@@ -22,10 +21,11 @@ import { ExpiredPass } from './share/ExpiredPass';
 import type { ShareHandOver } from './share/handover';
 import { HelpLink } from './share/HelpLink';
 import { IdentityRow } from './share/IdentityRow';
-import { SECTION_LABEL, type ShareTab } from './share/parts';
+import { SECTION_LABEL, type ShareTab, type ShareView } from './share/parts';
 import { PasswordSection } from './share/PasswordSection';
 import { ShareComposer } from './share/ShareComposer';
 import { ShareStatus } from './share/ShareStatus';
+import { ShareTabs, sharePanelId, shareTabId } from './share/ShareTabs';
 import { ShareTourStage, ShowMeButton, useShareTour } from './share/ShareTour';
 import {
   SHARE_EXPIRY_TELEMETRY,
@@ -36,7 +36,7 @@ import {
   type ShareTelemetry,
 } from './share/types';
 
-export type { ShareTab } from './share/parts';
+export type { ShareTab, ShareView } from './share/parts';
 export type { ShareHandOver } from './share/handover';
 export type {
   ShareHelpArticle,
@@ -79,8 +79,12 @@ export type ShareDialogProps = {
   // Whether the item's links ask for a password, each time that is read or changed, so a host rule that hangs on it
   // (a canvas behind a password cannot be published) follows the dialog.
   onPasswordSetChange?: (set: boolean) => void;
-  // A section of the host's own below Password Protection (livediagram's Community band).
+  // A section of the host's own below Password Protection.
   appSection?: ReactNode;
+  // A tab of the host's own beside Passes (livediagram's Community): its label, a badge after the label (words, such
+  // as a Public pill; never a dot) and its panel. With it the dialog opens on two tabs, on `initialView`.
+  appTab?: { label: string; badge?: ReactNode; panel: ReactNode } | null;
+  initialView?: ShareView;
   // Where the item is public, in the host's words, for the status line ("Public: …", pink); null or absent while it
   // is not (livediagram: a canvas listed in the Community).
   publicNote?: string | null;
@@ -105,8 +109,12 @@ export function ShareDialog({
   passwordLockedReason = null,
   onPasswordSetChange,
   appSection,
+  appTab = null,
+  initialView = 'passes',
   publicNote = null,
 }: ShareDialogProps) {
+  const [view, setView] = useState<ShareView>(appTab ? initialView : 'passes');
+  const showApp = Boolean(appTab) && view === 'app';
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
   );
@@ -128,7 +136,15 @@ export function ShareDialog({
   const tabs = useLoadedTabs(givenTabs, loadTabs);
   const multiTab = tabs.length > 1;
   const word = kindWords(item.app).lowerOne;
-  const tour = useShareTour(multiTab, word, onTelemetry);
+  const shareTour = useShareTour(multiTab, word, onTelemetry);
+  // Show Me walks the passes, so it starts on their tab.
+  const tour = {
+    ...shareTour,
+    start: () => {
+      setView('passes');
+      shareTour.start();
+    },
+  };
   const [name, setName] = useState(identity?.name ?? '');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [freshCode, setFreshCode] = useState<string | null>(null);
@@ -190,10 +206,12 @@ export function ShareDialog({
       ariaLabel={`Share ${item.title || 'Untitled'}`}
       // While Show Me runs, Escape is the tour's.
       closeOnEscape={!tour.active}
-      size="xl"
+      size="lg"
+      // The body scrolls between a fixed header and footer.
+      className="max-h-[calc(100%-2rem)]"
     >
       <DialogHeader
-        title={`Share “${item.title || 'Untitled'}”`}
+        title={`Share This ${kindWords(item.app).one}`}
         subtitle={
           <ShareStatus
             passes={active.length}
@@ -205,142 +223,168 @@ export function ShareDialog({
         }
       >
         <ShowMeButton tour={tour} />
-        <HelpLink href={helpHref?.('sharing')} label="Help with sharing" />
+        <HelpLink href={helpHref?.('sharing')} label="Help with sharing" variant="labelled" />
         <DialogCloseButton onClick={close} />
       </DialogHeader>
-      <div className="flex flex-col gap-5 px-6 py-5">
-        <ShareComposer
-          tabs={tabs}
-          busy={share.busy}
-          helpHref={helpHref}
-          onIssue={(level, expiry, tabId) => void issue(level, expiry, tabId)}
-        />
+      {appTab ? (
+        <ShareTabs view={view} onView={setView} appLabel={appTab.label} appBadge={appTab.badge} />
+      ) : null}
 
-        <section
-          aria-labelledby="share-passes-heading"
-          data-tour-id="share-passes"
-          className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
+      {appTab && showApp ? (
+        <div
+          id={sharePanelId('app')}
+          role="tabpanel"
+          aria-labelledby={shareTabId('app')}
+          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
         >
-          <h3 id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
-            Passes
-            {active.length > 0 ? <CountBadge count={active.length} /> : null}
-          </h3>
-          {share.loading ? (
-            <p className="text-sm text-slate-500">Loading passes…</p>
-          ) : share.error ? (
-            <p className="text-sm text-rose-700 dark:text-rose-300">Couldn’t load the passes.</p>
-          ) : active.length === 0 ? (
-            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              {share.links.length === 0
-                ? `No passes yet. ${item.teamId ? 'Only the team' : 'Only you'} can open this ${word}.`
-                : 'Every pass has expired. Extend one below or issue a new one.'}
-            </p>
-          ) : (
-            <ul className="-mx-0.5 -mb-2 -mt-0.5 flex flex-col">
-              {active.map((link) => {
-                const url = shareUrl(link, item);
-                return (
-                  <ActivePass
+          {appTab.panel}
+        </div>
+      ) : (
+        <div
+          id={appTab ? sharePanelId('passes') : undefined}
+          role={appTab ? 'tabpanel' : undefined}
+          aria-labelledby={appTab ? shareTabId('passes') : undefined}
+          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+        >
+          <ShareComposer
+            tabs={tabs}
+            busy={share.busy}
+            helpHref={helpHref}
+            onIssue={(level, expiry, tabId) => void issue(level, expiry, tabId)}
+          />
+
+          <section
+            aria-labelledby="share-passes-heading"
+            data-tour-id="share-passes"
+            className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
+          >
+            <h3 id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+              Passes
+              {active.length > 0 ? <CountBadge count={active.length} /> : null}
+            </h3>
+            {share.loading ? (
+              <p className="text-sm text-slate-500">Loading passes…</p>
+            ) : share.error ? (
+              <p className="text-sm text-rose-700 dark:text-rose-300">Couldn’t load the passes.</p>
+            ) : active.length === 0 ? (
+              <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                {share.links.length === 0
+                  ? `No passes yet. ${item.teamId ? 'Only the team' : 'Only you'} can open this ${word}.`
+                  : 'Every pass has expired. Extend one below or issue a new one.'}
+              </p>
+            ) : (
+              <ul className="-mx-0.5 -mb-2 -mt-0.5 flex flex-col">
+                {active.map((link) => {
+                  const url = shareUrl(link, item);
+                  return (
+                    <ActivePass
+                      key={link.code}
+                      link={link}
+                      url={url}
+                      now={now}
+                      copied={copiedCode === link.code}
+                      fresh={freshCode === link.code}
+                      highlight={highlightCode === link.code}
+                      busy={share.busy}
+                      passwordSet={share.passwordSet}
+                      tabs={tabs}
+                      handOver={handOver}
+                      imageTabId={imageTabId}
+                      setImageTabId={setImageTabId}
+                      word={word}
+                      notify={notify}
+                      onTelemetry={onTelemetry}
+                      onCopy={() =>
+                        void copyLink(link.code, url).then((ok) => {
+                          // Without clipboard permission a write fails; the field stays selectable.
+                          if (!ok)
+                            notify(
+                              'Couldn’t copy the link. Select it to copy it yourself.',
+                              'error',
+                            );
+                        })
+                      }
+                      onRevoke={() =>
+                        void share.revoke(link.code).then((ok) => {
+                          if (ok) onTelemetry?.('Removed', 'ShareLink');
+                        })
+                      }
+                      onRescope={
+                        multiTab
+                          ? (tabId) =>
+                              void share.update(link.code, { tabId }).then((ok) => {
+                                if (ok) onTelemetry?.('Shared', 'Rescoped');
+                              })
+                          : null
+                      }
+                    />
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* Only when something lapsed, so people who never use expiry never see it. */}
+          {expired.length > 0 ? (
+            <section aria-labelledby="share-expired-heading" className="flex flex-col gap-2">
+              <h3
+                id="share-expired-heading"
+                className={`${SECTION_LABEL} flex items-center gap-1.5`}
+              >
+                Expired
+                <CountBadge count={expired.length} />
+              </h3>
+              <ul className="-mx-0.5 -mb-2 -mt-0.5 flex flex-col">
+                {expired.map((link) => (
+                  <ExpiredPass
                     key={link.code}
                     link={link}
-                    url={url}
-                    now={now}
-                    copied={copiedCode === link.code}
-                    fresh={freshCode === link.code}
-                    highlight={highlightCode === link.code}
+                    url={shareUrl(link, item)}
                     busy={share.busy}
-                    passwordSet={share.passwordSet}
-                    tabs={tabs}
-                    handOver={handOver}
-                    imageTabId={imageTabId}
-                    setImageTabId={setImageTabId}
-                    word={word}
-                    notify={notify}
-                    onTelemetry={onTelemetry}
-                    onCopy={() =>
-                      void copyLink(link.code, url).then((ok) => {
-                        // Without clipboard permission a write fails; the field stays selectable.
-                        if (!ok)
-                          notify('Couldn’t copy the link. Select it to copy it yourself.', 'error');
+                    onExtend={() =>
+                      void share.extend(link.code).then((ok) => {
+                        if (ok) onTelemetry?.('Shared', 'Extended');
                       })
                     }
-                    onRevoke={() =>
-                      void share.revoke(link.code).then((ok) => {
-                        if (ok) onTelemetry?.('Removed', 'ShareLink');
-                      })
-                    }
-                    onRescope={
-                      multiTab
-                        ? (tabId) =>
-                            void share.update(link.code, { tabId }).then((ok) => {
-                              if (ok) onTelemetry?.('Shared', 'Rescoped');
-                            })
-                        : null
-                    }
+                    onDelete={() => void share.revoke(link.code)}
                   />
-                );
-              })}
-            </ul>
-          )}
-        </section>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-        {/* Only when something lapsed, so people who never use expiry never see it. */}
-        {expired.length > 0 ? (
-          <section aria-labelledby="share-expired-heading" className="flex flex-col gap-2">
-            <h3 id="share-expired-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
-              Expired
-              <CountBadge count={expired.length} />
-            </h3>
-            <ul className="-mx-0.5 -mb-2 -mt-0.5 flex flex-col">
-              {expired.map((link) => (
-                <ExpiredPass
-                  key={link.code}
-                  link={link}
-                  url={shareUrl(link, item)}
-                  busy={share.busy}
-                  onExtend={() =>
-                    void share.extend(link.code).then((ok) => {
-                      if (ok) onTelemetry?.('Shared', 'Extended');
-                    })
-                  }
-                  onDelete={() => void share.revoke(link.code)}
-                />
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        <PasswordSection
-          passwordSet={share.passwordSet}
-          busy={share.busy}
-          helpHref={helpHref}
-          lockedReason={passwordLockedReason}
-          onSet={async (p) => {
-            const ok = await share.setPassword(p);
-            if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
-            return ok;
-          }}
-        />
-        {appSection}
-        {note ? (
-          <p
-            role={note.tone === 'error' ? 'alert' : 'status'}
-            className={`text-sm ${
-              note.tone === 'error'
-                ? 'text-rose-700 dark:text-rose-300'
-                : 'text-emerald-700 dark:text-emerald-300'
-            }`}
-          >
-            {note.text}
-          </p>
-        ) : null}
-      </div>
-      <DialogFooter>
+          <PasswordSection
+            passwordSet={share.passwordSet}
+            busy={share.busy}
+            helpHref={helpHref}
+            lockedReason={passwordLockedReason}
+            onSet={async (p) => {
+              const ok = await share.setPassword(p);
+              if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
+              return ok;
+            }}
+          />
+          {appSection}
+          {note ? (
+            <p
+              role={note.tone === 'error' ? 'alert' : 'status'}
+              className={`text-sm ${
+                note.tone === 'error'
+                  ? 'text-rose-700 dark:text-rose-300'
+                  : 'text-emerald-700 dark:text-emerald-300'
+              }`}
+            >
+              {note.text}
+            </p>
+          ) : null}
+        </div>
+      )}
+      <div className="flex shrink-0 items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
         {identity ? <IdentityRow identity={identity} name={name} onChange={setName} /> : null}
-        <Button variant="secondary" size="sm" onClick={close}>
+        <Button variant="secondary" size="xs" onClick={close}>
           Done
         </Button>
-      </DialogFooter>
+      </div>
       <ShareTourStage tour={tour} helpHref={helpHref?.('sharing')} />
     </Dialog>
   );

@@ -166,6 +166,14 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
 - Password Protection guards every link at once. Spaces around it are trimmed. Passes show a Password tag.
 - Show Me runs a short tour over the dialog. A guest sees "Sharing as" with their name in the footer.
 - A copy the browser refuses says so. Every refusal from the index is a note.
+- A host can add a tab of its own beside Passes (`appTab`: its label, a badge, its panel; livediagram's Community), or a
+  section below Password Protection (`appSection`).
+
+Its look is livediagram's Share dialog from before the Explorer split (`dca5eae12^`), the same in every app:
+the `lg` panel with a scrolling body between a fixed header and footer, `DialogHeader` from `@liveworkspace/ui`,
+the one-card role picker that unfolds the three levels, the sliding Valid pill, hover cards on the pass controls,
+the revoke confirmation beside the bin, Password Protection as a settings card, and a status line that leads with a
+glyph (never a coloured dot). The words are each app's own (Share This Plan, only you can open this design).
 
 The Explorer opens it from an item's menu with the host's `share` prop (`ShareHost`): `loadTabs(item)`,
 `handOver(item)`, `helpHref` and `onTelemetry(action, type, item)`, asked per item since the Explorer may list

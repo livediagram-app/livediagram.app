@@ -58,7 +58,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
   document at once give the second **This canvas is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
-  Private, Shared and Team; only This Browser beats it), and the Share dialog's Community band shows the listed post.
+  Private, Shared and Team; only This Browser beats it), and the Share dialog's Community tab shows the listed post.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
 - **In the Explorer**: while the post is public, the document's visibility badge on every list row and card (Recent,
@@ -76,7 +76,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
   ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
   share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
-- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** band below Password Protection (its `appSection`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. Unpublished, it invites the owner
+- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** tab beside Passes (its `appTab`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
 - **The Publish dialog** asks for:

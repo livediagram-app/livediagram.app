@@ -3,7 +3,7 @@ import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityOwnPost } from '@livediagram/api-schema';
-import { CommunitySection } from './CommunitySection';
+import { CommunityPublicBadge, CommunitySection } from './CommunitySection';
 
 afterEach(cleanup);
 
@@ -31,12 +31,9 @@ function renderSection(state: CommunityOwnPost['state']) {
 
 // docs/specs/025-community/community.md "Reports and moderation": a post hidden by reports is final.
 describe('CommunitySection', () => {
-  it('wears the Public badge while listed, and not once hidden', () => {
-    renderSection('listed');
+  it('draws the Community tab badge, Public, in words', () => {
+    render(<CommunityPublicBadge />);
     expect(document.querySelector('[data-community-public]')?.textContent).toBe('Public');
-    cleanup();
-    renderSection('hidden');
-    expect(document.querySelector('[data-community-public]')).toBeNull();
   });
 
   it('offers Edit Listing and Remove for a listed post', () => {
@@ -107,17 +104,6 @@ describe('CommunitySection, every face', () => {
     ).toBeTruthy();
     fireEvent.click(share);
     expect(onPublish).not.toHaveBeenCalled();
-  });
-
-  it('offers the illustrated guide before a first publish, and not once listed', () => {
-    render(<CommunitySection {...base()} />);
-    expect(screen.getByText('What Is the Community?')).toBeTruthy();
-    expect(
-      screen.getByRole('heading', { name: 'Show your board to the world', hidden: true }),
-    ).toBeTruthy();
-    cleanup();
-    renderSection('listed');
-    expect(screen.queryByText('What Is the Community?')).toBeNull();
   });
 
   it('says the Community is public, and holds Share to Community while a password is set', () => {

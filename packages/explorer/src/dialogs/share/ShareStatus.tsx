@@ -1,6 +1,11 @@
-// The Share dialog's status line: who can open the item right now, in one phrase, with a dot that is slate while
-// only the owner can get in, emerald once a pass is live or the item sits in a team's library, and pink while the
-// host says it is public (livediagram's canvas listed in the Community), the widest exposure, which wins.
+// The Share dialog's status line: who can open the item right now, in one phrase, after a small glyph in its tone
+// (never a coloured dot): a slate lock while only the owner can get in, an emerald link once a pass is live (the
+// team's glyph for an item in a team's library), and a pink globe while the host says it is public (livediagram's
+// canvas listed in the Community), the widest exposure, which wins. livediagram's ShareStatus from before the
+// Explorer split, with the glyph in place of its dot.
+
+import { LinkIcon, LockIcon, TeamIcon } from '../../ui/icons';
+import { GlobeGlyph } from './glyphs';
 
 export function shareStatusText({
   passes,
@@ -39,22 +44,28 @@ export function ShareStatus(props: {
   publicNote?: string | null;
 }) {
   const isPublic = Boolean(props.publicNote);
-  const open = props.passes > 0 || props.team || isPublic;
-  const dot = isPublic ? 'bg-pink-500' : open ? 'bg-emerald-500' : 'bg-slate-400';
-  const ping = isPublic ? 'bg-pink-400' : 'bg-emerald-400';
+  const glyph = isPublic ? (
+    <GlobeGlyph />
+  ) : props.team ? (
+    <TeamIcon size={12} />
+  ) : props.passes > 0 ? (
+    <LinkIcon size={12} />
+  ) : (
+    <LockIcon size={12} />
+  );
+  const tone = isPublic
+    ? 'text-pink-600 dark:text-pink-400'
+    : props.passes > 0 || props.team
+      ? 'text-emerald-600 dark:text-emerald-400'
+      : 'text-slate-400 dark:text-slate-500';
   return (
     <span
       className="inline-flex items-center gap-2"
       role="status"
       data-share-status={isPublic ? 'public' : ''}
     >
-      <span aria-hidden className="relative flex h-2 w-2">
-        {open ? (
-          <span
-            className={`absolute inset-0 animate-ping rounded-full ${ping} opacity-60 motion-reduce:hidden`}
-          />
-        ) : null}
-        <span className={`relative h-2 w-2 rounded-full ${dot}`} />
+      <span aria-hidden className={`flex shrink-0 ${tone}`}>
+        {glyph}
       </span>
       {shareStatusText(props)}
     </span>

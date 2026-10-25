@@ -149,10 +149,10 @@ The header Share button opens the shared Share dialog, `ShareDialog` from
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md), the same one every liveworkspace app and the
 Explorer's item menu use (`apps/editor/components/dialogs/EditorTabDialogs.tsx`, loaded on first open). It talks
 to liveworkspace's index directly: share links, their levels and the password are the index's
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access").
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access"). Its look is livediagram's Share dialog from before the Explorer split, the same in every app ([livediagram's Share dialog](../../../../livediagram/docs/specs/007-editor/editor-app.md#share-dialog)).
 
 - **New link**: three level cards, **Viewer**, **Participant** and **Editor** ([Share roles](../013-workspace/share-roles.md)),
-  **Opens** (Every tab, or one tab, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)), **Lasts**
+  **Opens** (All tabs, or one tab, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)), **Lasts**
   (Forever, 1 week, 1 month, 6 months, [Share-link expiry](../013-workspace/share-link-expiry.md)) and
   **Create and Copy Link**.
 - **Links**: each link with its level chip, its address, a Level and an Opens picker, its time left (or Forever,

@@ -10,6 +10,7 @@ export {
   ShareDialog,
   type ShareDialogProps,
   type ShareTab,
+  type ShareView,
   type ShareHandOver,
   type ShareHelpArticle,
   type ShareHelpHref,
