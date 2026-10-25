@@ -697,16 +697,18 @@ function splitCore(src: Source, hooks: SplitHooks): CoreResult {
   const grantAt = new Map(src.imageGrants.map((g) => [g.imageId, g.createdAt]));
   const payloads = new Map<MigrationApp, MigrationRoomPayload>();
   const keep: unknown[] = [];
+  // The slide deck goes where decks are still kept: livediagram and livedocuments (livedesign has none since
+  // 25 October 2026). The kept part first, then livediagram's, then livedocuments'.
   const presentationApp: MigrationApp | null =
-    keeper === 'livediagram' || keeper === 'livedesign'
+    keeper === 'livediagram' || keeper === 'livedocuments'
       ? keeper
       : partIds.has('livediagram')
         ? 'livediagram'
-        : partIds.has('livedesign')
-          ? 'livedesign'
+        : partIds.has('livedocuments')
+          ? 'livedocuments'
           : null;
   if (src.presentation && !presentationApp)
-    note('its slide deck had no part to go to (no livediagram or livedesign part); dropped');
+    note('its slide deck had no part to go to (no livediagram or livedocuments part); dropped');
 
   for (const app of order) {
     if (src.local && app === 'livediagram') continue;

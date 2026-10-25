@@ -196,6 +196,17 @@ describe('splitOldDocument: whole tabs', () => {
     expect(r.notes.some((n) => n.includes('c3'))).toBe(true);
   });
 
+  it('sends the slide deck to livedocuments, never livedesign, when there is no livediagram part', () => {
+    const input = doc([
+      { id: 's1', body: slideTab() },
+      { id: 'l1', body: { opensIn: 'pages', pages: [{ id: 'p1', kind: 'logo' }], elements: [] } },
+    ]);
+    input.document.presentation = '{"slides":[]}';
+    const r = splitOldDocument(input, hooks());
+    expect(part(r.parts, 'livedocuments').presentation).toBe('{"slides":[]}');
+    expect(part(r.parts, 'livedesign').presentation).toBeNull();
+  });
+
   it('passes an unparseable body through to livediagram as stored, with a note', () => {
     const input = doc([{ id: 't1', body: {} }]);
     input.tabs[0]!.data = '{not json';

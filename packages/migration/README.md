@@ -29,7 +29,7 @@ moves by as much as its page did. The half with more pages keeps the tab's id (d
 
 **Parts.** One per app with content. livediagram keeps the old id when it has any tab; otherwise the app with most
 tabs does (ties in `MIGRATION_APPS` order). The others get `newId('<doc>:<app>')`. Every part has the same name, owner
-(`hooks.ownerOf`), team, times and source; the slide deck goes to livediagram (or livedesign). Changesets go with
+(`hooks.ownerOf`), team, times and source; the slide deck goes to the kept part if it is livediagram or livedocuments, else to livediagram, else livedocuments (livedesign keeps no decks). Changesets go with
 their tab (a split tab's with the half that kept its id); one whose tab is gone goes to the part that kept the id.
 `moved` is null when there is one part. Every tab body goes through `hooks.upgradeTab`, except livediagram's own tabs
 on a Local only document, which stay raw for the editor's own read migrations.
