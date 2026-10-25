@@ -6,7 +6,7 @@ import { createShape, type BoxedElement, type ShapeKind } from '@livedocuments/d
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
-import { buildIndicatorItems, type IndicatorItem } from '@/components/canvas/indicator-items';
+import { buildIndicatorItems, type IndicatorItem } from '@liveworkspace/workbench/components/canvas/indicator-items';
 import { placeCluster, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 

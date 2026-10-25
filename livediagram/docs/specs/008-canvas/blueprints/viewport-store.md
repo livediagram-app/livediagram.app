@@ -9,7 +9,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 | ------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `../packages/workbench/src/lib/viewport-store.ts`             | `createViewportStore`, `View`, `ViewportStore`                             |
 | `../packages/workbench/src/hooks/ui/useStoreSlice.ts`         | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
-| `apps/editor/hooks/canvas/useSelectionStore.tsx`              | `useSelectionOf` delegates to `useStoreSlice`                              |
+| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`              | `useSelectionOf` delegates to `useStoreSlice`                              |
 | `apps/editor/hooks/canvas/useEditorViewport.ts`               | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
 | `apps/editor/app/document/[id]/useEditorState.ts`             | Never subscribes; passes `viewport` on; effects subscribe                  |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`          | Passes no view to the canvas                                               |

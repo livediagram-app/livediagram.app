@@ -16,7 +16,7 @@
 //      lands as a fresh guest.
 
 import { Button, useEscape, useFocusTrap, Portal } from '@livedocuments/ui';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';

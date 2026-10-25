@@ -7,7 +7,7 @@ import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add
 import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { Element } from '@livedocuments/document';
-import { requestToolbarSearch } from '@/lib/toolbar-search-request';
+import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.

@@ -14,7 +14,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { DropCaret } from '@/components/primitives/DropCaret';
+import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
@@ -22,7 +22,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { useRowMenu } from '@/components/primitives/useRowMenu';
+import { useRowMenu } from '@liveworkspace/workbench/components/primitives/useRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
 import type { SlideThumb } from '@/lib/slide-thumb';
 import type { PageActions, PageContents } from '@/hooks/ui/usePageContents';

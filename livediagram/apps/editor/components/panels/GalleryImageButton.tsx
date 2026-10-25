@@ -2,7 +2,7 @@
 
 import type { ImageSummary } from '@livediagram/api-schema';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
-import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
+import { DISPLAY_EDGE_TILE } from '@liveworkspace/workbench/lib/image-display';
 
 // Aspect-square clickable thumbnail for one ImageSummary. Used by
 // the ImagePicker's Gallery tab + the Current Tab Images

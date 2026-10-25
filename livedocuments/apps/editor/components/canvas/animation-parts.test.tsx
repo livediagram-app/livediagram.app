@@ -8,9 +8,9 @@ import {
   type FreehandElement,
   type TableElement,
 } from '@livedocuments/document';
-import { AnimationLayer } from './AnimationLayer';
+import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { useDrawingAnimation } from './drawing-animation';
-import { InlineTextLine } from './InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { useTableAnimation } from './useTableAnimation';
 
 const path = (animation?: string): FreehandElement => ({

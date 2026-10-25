@@ -6,18 +6,18 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livedocuments/document';
-import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import {
   resetTourOffersForTests,
   tourOffer,
 } from '@liveworkspace/workbench/components/tour/tour-offer';
-import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import {
   createSelectionStore,
   type SelectionStore,
 } from '@liveworkspace/workbench/lib/selection-store';
 import { setActiveTour, activeTour } from '@/lib/tour-active';
-import { setStartPanelOpen } from '@/components/start/start-panel-open';
+import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { SankeyElementTourApi } from './sankey-element-tour-steps';
 import { ElementTourHost } from './ElementTourHost';

@@ -27,7 +27,7 @@ import { QaDiscussed } from './QaDiscussed';
 import { QaComposer } from './QaComposer';
 import { AccentBar, DiscussGlyph, EmptyRows } from './qa-parts';
 import { CollabAccentScope } from '../collab-accent';
-import { useFlipList } from '@/hooks/ui/useFlipList';
+import { useFlipList } from '@liveworkspace/workbench/hooks/ui/useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
 // anyone in a live session (view links too); the facilitator verbs only for

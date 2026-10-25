@@ -5,7 +5,7 @@ built once by liveworkspace.app and shown at livediagram's own address. livediag
 fetching the same page from liveworkspace.app, with the address bar unchanged (`livediagram.app/explorer/recent`), so
 the person's session, This Browser's canvases and livediagram's colours come along
 ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "The Explorer on each app's address"). The editor
-serves no `/explorer` page of its own; its links to it go through `explorerHref` (`apps/editor/lib/explorer-href.ts`).
+serves no `/explorer` page of its own; its links to it go through `explorerHref` (`../packages/workbench/src/lib/explorer-href.ts`).
 
 ## Views
 

@@ -18,7 +18,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livedocuments/ui';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import {

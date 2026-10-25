@@ -6,7 +6,7 @@ import { useCanvasSelectionView } from './useCanvasSelectionView';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('./useSelectionStore', () => ({
+vi.mock('@liveworkspace/workbench/hooks/canvas/useSelectionStore', () => ({
   useSelectionOf: (pick: (s: unknown) => unknown) =>
     pick({ selectedId: 'b', multiSelectedIds: new Set<string>() }),
 }));

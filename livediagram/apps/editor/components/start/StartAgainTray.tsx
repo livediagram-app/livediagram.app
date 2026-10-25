@@ -12,7 +12,7 @@ import {
   PaletteTrayAction,
   usePaletteStripBox,
   useToolbarBox,
-} from '@/components/chrome/PaletteTray';
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';

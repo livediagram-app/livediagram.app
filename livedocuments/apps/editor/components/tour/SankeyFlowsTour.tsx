@@ -10,7 +10,7 @@ import {
   sankeyFlowsTourSteps,
   type SankeyFlowsTourApi,
   type SankeyFlowsTourContext,
-} from './sankey-flows-tour-steps';
+} from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import {
   useTourEngine,

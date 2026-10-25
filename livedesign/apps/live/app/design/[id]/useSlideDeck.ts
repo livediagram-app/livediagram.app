@@ -46,7 +46,7 @@ import {
 } from '@/lib/presentation-config';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { positionAt, presentingIndex, type PresentingPosition } from '@/lib/presenting-position';
+import { positionAt, presentingIndex, type PresentingPosition } from '@liveworkspace/workbench/lib/presenting-position';
 import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
@@ -119,7 +119,7 @@ export function useSlideDeck({
   // Which slide the PANEL has open. Separate from the presentation's own
   // index: checking slide 4 in the panel should not mean starting there.
   const [openSlideId, setOpenSlideId] = useState<string | null>(null);
-  // Non-null only while presenting: the slide on screen, by id (lib/presenting-position.ts), so a peer's edit to the
+  // Non-null only while presenting: the slide on screen, by id (@liveworkspace/workbench/lib/presenting-position.ts), so a peer's edit to the
   // deck or its tabs never moves the presenter to another slide.
   const [presenting, setPresenting] = useState<PresentingPosition | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);

@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
-import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';
-import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { sankeyFlowsTourSteps } from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
+import { sankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import { setActiveTour } from '@/lib/tour-active';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

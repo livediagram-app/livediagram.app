@@ -11,7 +11,7 @@ import {
   PaletteTray,
   PaletteTrayAction,
   usePaletteStripBox,
-} from '@/components/chrome/PaletteTray';
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';

@@ -14,7 +14,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { mayCreateCardType } from './may-create-card-type';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@liveplanner/project';
 import {

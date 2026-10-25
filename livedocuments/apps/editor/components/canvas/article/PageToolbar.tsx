@@ -9,7 +9,7 @@
 // the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
 // page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts. While the palette's
 // kind is Article it docks in the Toolbar strip instead (lib/article/article-dock.ts).
-import { keyLabel } from '@/lib/key-label';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useArticleDock } from '@/lib/article/article-dock';

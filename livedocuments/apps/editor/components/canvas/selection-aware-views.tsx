@@ -10,9 +10,9 @@ import { arrowRoutePoints, type ArrowElement, type Element } from '@livedocument
 import { ArrowView, arrowViewPropsEqual } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
-import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
+import { BoxGripsPortal } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { elementGrips } from '@/lib/canvas-selection';
 import {
   elementSelectionFlags,

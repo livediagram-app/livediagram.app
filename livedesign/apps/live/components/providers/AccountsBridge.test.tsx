@@ -8,7 +8,7 @@
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DeferredAuthState } from './deferred-auth';
+import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 vi.mock('@/lib/recent-designs-snapshot', () => ({ forgetRecentDesigns: vi.fn(async () => {}) }));
 

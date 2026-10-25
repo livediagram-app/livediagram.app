@@ -15,7 +15,7 @@ import {
   SearchGlyph,
 } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';

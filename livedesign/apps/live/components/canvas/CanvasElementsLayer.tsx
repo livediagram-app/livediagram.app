@@ -25,7 +25,7 @@ import {
   SelectionGripsContext,
   SelectionGripsLayer,
   type SelectionGripHosts,
-} from '@/components/canvas/SelectionGripsLayer';
+} from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';

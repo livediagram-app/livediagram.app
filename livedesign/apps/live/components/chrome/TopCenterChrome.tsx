@@ -5,9 +5,9 @@ import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
-import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
+import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
-import { formatBannerMessage } from '@/lib/format-page-brush';
+import { formatBannerMessage } from '@liveworkspace/workbench/lib/format-page-brush';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
 // the active editor-mode banner. (The multi-selection toolbar now floats over the selection

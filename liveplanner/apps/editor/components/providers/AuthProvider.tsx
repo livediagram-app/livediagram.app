@@ -12,8 +12,8 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { e2eAuthEnabled } from '@/lib/auth-config';
-import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
+import { e2eAuthEnabled } from '@liveworkspace/workbench/lib/auth-config';
+import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 
 // This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).

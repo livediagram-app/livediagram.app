@@ -13,7 +13,7 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
     accountUserId: auth.signedIn ? 'user_1' : null,
   }),
 }));
-vi.mock('@/lib/auth-config', () => ({
+vi.mock('@liveworkspace/workbench/lib/auth-config', () => ({
   manageTokensUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/account/tokens',
 }));
 vi.mock('@/components/chrome/auth-shared', () => ({

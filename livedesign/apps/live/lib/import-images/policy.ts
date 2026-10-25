@@ -6,7 +6,7 @@ import {
   IMPORT_IMAGE_MAX_EDGE_PX,
   IMPORT_IMAGE_SVG_DEFAULT_EDGE_PX,
   IMPORT_IMAGE_SVG_RASTER_SCALE,
-} from './constants';
+} from '@liveworkspace/workbench/lib/import-images/constants';
 import type { DisplayHint } from './types';
 
 type EncodingPlan =

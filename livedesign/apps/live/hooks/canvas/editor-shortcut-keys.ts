@@ -7,7 +7,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { requestToolbarSearch } from '@/lib/toolbar-search-request';
+import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, design,

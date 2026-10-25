@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { makeFormSheet } from './forms-make-sheet';
-import { noteTabSaved } from './tab-saved';
+import { noteTabSaved } from '@liveworkspace/workbench/lib/tab-saved';
 
 const create = vi.fn();
 vi.mock('@/components/sheets/sheet-store-client', () => ({ sheetStoreOf: () => ({ create }) }));

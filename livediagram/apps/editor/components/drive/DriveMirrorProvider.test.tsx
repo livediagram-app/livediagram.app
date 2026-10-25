@@ -34,7 +34,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => route.path }));
 vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
   useAccountBootstrap: () => auth.value,
 }));
-vi.mock('@/components/providers/deferred-auth', () => ({
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({ user: null }),
 }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({

@@ -37,7 +37,7 @@ import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';
 import { otherModeMatches } from './other-mode-matches';
 import { templateCard } from './template-card';
-import { setStartPanelOpen } from './start-panel-open';
+import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { startClosedKey } from './start-closed-key';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 import { StartModeSwitch } from '@/components/start/StartModeSwitch';

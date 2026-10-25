@@ -18,7 +18,7 @@ import {
 } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { bodySetClass } from '@/lib/animation-classes';
-import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
+import { useFrameBlocked } from '@liveworkspace/workbench/components/canvas/use-frame-blocked';
 
 // Inner content of a video element (docs/specs/009-elements/youtube-video.md): a YouTube poster frame with a
 // play button, which swaps for the real player when pressed.

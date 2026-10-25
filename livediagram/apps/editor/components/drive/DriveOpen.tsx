@@ -24,7 +24,7 @@ import {
   type OpenWithOutcome,
   type OpenWithState,
 } from '@/lib/drive/open-with';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
 import { useDriveMirror } from './drive-mirror-context';

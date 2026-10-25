@@ -17,7 +17,7 @@ Every build offers sign-in: there is no build-time switch for it. The frontend a
 
 **Guests need the accounts site too**: a guest's identity is a guest token the liveworkspace accounts site mints ([Guest identity](#guest-identity)), so a deployment without it has no guests.
 
-Test builds only: `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, `apps/editor/lib/auth-config.ts`) swaps the accounts bridge for the test-only `E2EAuthBridge`, so the signed-in e2e specs pick the session without the accounts Worker. Because `NEXT_PUBLIC_*` vars are baked at build time, a real build drops that branch entirely.
+Test builds only: `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, `../packages/workbench/src/lib/auth-config.ts`) swaps the accounts bridge for the test-only `E2EAuthBridge`, so the signed-in e2e specs pick the session without the accounts Worker. Because `NEXT_PUBLIC_*` vars are baked at build time, a real build drops that branch entirely.
 
 Until October 2026 a `NEXT_PUBLIC_SIGN_IN_ENABLED` switch could build the frontend without sign-in (guest only, with a "No sign-in on this deployment" prompt and an `AuthDisabledNotice` on the auth routes). Sign-in moved to liveworkspace's accounts, which every deployment reaches for its guests anyway, so the switch went.
 

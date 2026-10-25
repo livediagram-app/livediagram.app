@@ -7,7 +7,7 @@
 // `start-mode` transition, which StartViewTransition cross-fades, never blinking the panel's content out.
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { ModeMenuChip } from '@/components/chrome/editor-mode/ModeMenuChip';
-import { startTypedTransition } from '@/lib/view-transition';
+import { startTypedTransition } from '@liveworkspace/workbench/lib/view-transition';
 import { START_MODE_TRANSITION } from './StartViewTransition';
 
 export function StartModeSwitch() {

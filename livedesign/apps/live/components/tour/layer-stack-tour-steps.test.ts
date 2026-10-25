@@ -4,7 +4,7 @@
 // stack, the ones left out, the "+" ring it opens and closes, and the animation it previews.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { layerStackTourSteps } from './layer-stack-tour-steps';
 import type { ConceptTourContext } from './concept-element-tour-steps';
 

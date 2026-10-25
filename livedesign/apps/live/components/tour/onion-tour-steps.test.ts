@@ -4,7 +4,7 @@
 // rippling outward.
 
 import { describe, expect, it, vi } from 'vitest';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { onionTourSteps } from './onion-tour-steps';
 import type { ConceptTourContext } from './concept-element-tour-steps';
 

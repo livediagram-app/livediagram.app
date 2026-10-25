@@ -3,7 +3,7 @@
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsTrashRowSpec } from './settings-catalogue';
 import { track } from '@/lib/telemetry';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // The way into the Trash (docs/specs/013-workspace/trash.md). A link rather
 // than a list: the Trash view has the room for its groups and confirmations,

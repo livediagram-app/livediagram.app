@@ -1149,7 +1149,7 @@
    "Motion"; components/canvas/slide-transition.ts). The browser takes a picture of the canvas SURFACE before and
    after, and these classes animate the two pictures, so the canvas's content wrapper (which carries the pan/zoom
    transform) is never animated, and a hundred-element slide moves exactly like a one-element one. Reduced motion
-   starts no transition at all (lib/view-transition.ts), so it needs nothing here. */
+   starts no transition at all (@liveworkspace/workbench/lib/view-transition.ts), so it needs nothing here. */
 
 /* The first slide holds back until fullscreen has landed and the slide is fitted to it, then arrives as a
    `slide-in` (PresentationHost), so the card never arrives and then jumps when the screen resizes under it. */

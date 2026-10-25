@@ -29,8 +29,9 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
-import { useSelectionStore } from '@/hooks/canvas/useSelectionStore';
+import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
+import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -45,7 +46,7 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
-import { useStickyPeelVars } from '@/lib/sticky-peel-image';
+import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -92,7 +93,7 @@ function CanvasView(props: CanvasProps) {
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
-  useCanvasLongTaskLog();
+  useCanvasLongTaskLog(canvasGestureNow);
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };

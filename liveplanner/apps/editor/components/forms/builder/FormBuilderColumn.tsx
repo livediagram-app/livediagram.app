@@ -14,7 +14,7 @@ import { FormHeaderCard, SectionHeader } from './FormHeaderCard';
 import { FormQuestionCard } from './FormQuestionCard';
 import { useFormBuilder } from './form-builder-context';
 import { useQuestionDrag } from './useQuestionDrag';
-import { useFlipList } from '@/hooks/ui/useFlipList';
+import { useFlipList } from '@liveworkspace/workbench/hooks/ui/useFlipList';
 import { QUESTION_FLIP } from './question-motion';
 
 const QuestionIcon = lucideGlyph(lucideClipboardList, 20);

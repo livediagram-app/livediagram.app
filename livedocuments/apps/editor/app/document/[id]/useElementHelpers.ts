@@ -15,7 +15,7 @@ import {
 } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
-import { brushPageId } from '@/lib/format-page-brush';
+import { brushPageId } from '@liveworkspace/workbench/lib/format-page-brush';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 

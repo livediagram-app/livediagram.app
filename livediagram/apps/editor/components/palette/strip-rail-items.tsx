@@ -7,8 +7,8 @@ import { CatalogueGroupTile, type StripGroup, type StripOpen } from './catalogue
 import { BrowseStartGroup } from './PaletteCategoryBrowser';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
-import type { useStripPopover } from './ToolbarStripPopover';
+import { STRIP_DIVIDER_ATTR } from '@liveworkspace/workbench/components/palette/useEdgeDividers';
+import type { useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 
 // The Toolbar strip's rail items and the popover a group or opener opens (docs/specs/007-editor/toolbar-layout.md
 // "More"), kept out of ToolbarPalette: a catalogue's groups, or a category's tiles with its openers

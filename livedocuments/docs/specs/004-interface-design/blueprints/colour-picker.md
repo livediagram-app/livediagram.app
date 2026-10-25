@@ -146,7 +146,7 @@ from typed constants; nothing is injected as markup.
 
 ## Presentation and UX
 
-Constants (`apps/editor/components/colour/colour-metrics.ts`):
+Constants (`../packages/workbench/src/components/colour/colour-metrics.ts`):
 
 | Constant                 | Value | Why                         |
 | ------------------------ | ----- | --------------------------- |

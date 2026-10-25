@@ -17,7 +17,7 @@ Every build of the editor offers sign-in; there is no switch to turn it off (the
 
 Without the accounts site there is no guest identity either, so an api without accounts settings keeps projects in This Browser and opens shared plans through their links; anything the index must record (a cloud plan, the Explorer's lists) needs liveworkspace.
 
-`apps/editor/lib/auth-config.ts` keeps one build-time switch, `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, test builds only), which swaps the accounts bridge for the e2e bridge; a real build never sets it, so the bridge is never bundled.
+`../packages/workbench/src/lib/auth-config.ts` keeps one build-time switch, `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, test builds only), which swaps the accounts bridge for the e2e bridge; a real build never sets it, so the bridge is never bundled.
 
 **At most one session request per page load.** The root layout's `AuthProvider` is deferred: the app tree consumes `DeferredAuthContext`, and a lazily-loaded `AccountsBridge` (`apps/editor/components/providers/AccountsBridge.tsx`, an async chunk) asks the api for the session with one `POST /api/auth/token` and publishes the result. A browser without the `lp_signed_in` hint ([below](#who-is-a-guest-before-sign-in-answers)) has no session to find, so it settles as a guest at once and asks nothing: a guest's page load makes no auth request. It holds the access token in memory only, reuses it until a minute before it expires, and shares one refresh among concurrent asks (each refresh rotates the refresh token, so two at once would race). Signing in and out are full-page visits, so no state from before signing in survives into the signed-in page.
 

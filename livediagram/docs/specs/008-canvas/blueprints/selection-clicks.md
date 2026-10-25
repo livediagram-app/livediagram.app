@@ -11,7 +11,7 @@ Scope, by file:
 | File                                                       | Role                                                                                             |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `../packages/workbench/src/lib/selection-click.ts`         | Pure click rules (`isOnlySelected`, `plainClickOutcome`, `isPlainClick`), `armPlainClick`        |
-| `apps/editor/hooks/canvas/useCanvasSelectHandlers.ts`      | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows            |
+| `../packages/workbench/src/hooks/canvas/useCanvasSelectHandlers.ts`      | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows            |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts` | A boxed press arms the click on a selected element; a paired press reselects                     |
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`         | `beginDrag` drops the multi-selection when the pressed element is not a member                   |
 | `apps/editor/components/canvas/ArrowView.tsx`              | The line press passes `paired` (the double-press verdict) to `onSelect`                          |
@@ -126,7 +126,7 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 | Boxed press arming per kind, Shift, paint      | `apps/editor/components/canvas/useBoxedElementGestures.selection.test.tsx` |
 | Double-click from selected and unselected      | same file                                                                  |
 | Non-member press drops the multi-selection     | `apps/editor/hooks/canvas/useEditorDrag.select-press.test.tsx`             |
-| Settling, arrows, paint mode, inert            | `apps/editor/hooks/canvas/useCanvasSelectHandlers.test.tsx`                |
+| Settling, arrows, paint mode, inert            | `../packages/workbench/src/hooks/canvas/useCanvasSelectHandlers.test.tsx`                |
 | Right-click and long-press on the empty canvas | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
 | End to end in a browser                        | `apps/editor/e2e/select-clicks.spec.ts`                                    |
 

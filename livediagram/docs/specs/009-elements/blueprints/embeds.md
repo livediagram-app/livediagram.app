@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/editor/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice        |
 | `../packages/ui/src/Tooltip.tsx`                           | `Tooltip`: names each player control button                                       |
 | `../packages/ui/src/HoverCard.tsx`                         | `HoverCard`: explains the website's new-tab link                                  |
-| `apps/editor/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                              |
+| `../packages/workbench/src/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                              |
 | `apps/editor/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                           |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                                     |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the link picker                                                |
@@ -35,7 +35,7 @@ Scope, by file:
 | `apps/editor/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                   |
 | `apps/editor/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                         |
 | `apps/editor/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                         |
-| `apps/editor/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                                  |
+| `../packages/workbench/src/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                                  |
 | `apps/editor/app/document/[id]/useElementCreation.ts`      | `addVideo(provider?)` arms the draw                                               |
 | `apps/editor/lib/draw-mode.ts`                             | `PendingDraw` `video` intent, banner copy, cursor glyph                           |
 | `apps/editor/lib/draw-commit.ts`                           | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                        |
@@ -206,14 +206,14 @@ export type UrlOnlyConfig = {
   validate: (url: string) => string | null; // runs on the normalised URL
 };
 
-// apps/editor/components/canvas/use-frame-blocked.ts
+// ../packages/workbench/src/components/canvas/use-frame-blocked.ts
 export function useFrameBlocked(src: string | undefined): {
   failed: boolean;
   onLoad: () => void;
   reset: () => void;
 };
 
-// apps/editor/components/palette/palette-group-state.tsx
+// ../packages/workbench/src/components/palette/palette-group-state.tsx
 export function PaletteGroupProvider(props: { children: React.ReactNode }): JSX.Element;
 export function usePaletteGroup(id: string): [boolean, () => void];
 ```
@@ -404,7 +404,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | No iframe until play (I1)                                                                         | `mounts the player only once play is pressed`                       | `apps/editor/components/canvas/VideoView.test.tsx`          |
 | A link change tears the player down (D60)                                                         | `stops the player when the link changes`                            | `VideoView.test.tsx`                                        |
 | Pointer-inert iframe; sandbox on website only; controls; load card; empty and unembeddable states | none (GC2)                                                          | none                                                        |
-| No load event within `LOAD_TIMEOUT_MS` is a failure                                               | `calls a frame dead when it never loads`                            | `apps/editor/components/canvas/use-frame-blocked.test.tsx`  |
+| No load event within `LOAD_TIMEOUT_MS` is a failure                                               | `calls a frame dead when it never loads`                            | `../packages/workbench/src/components/canvas/use-frame-blocked.test.tsx`  |
 | A load event settles the watch                                                                    | `settles on any load event`                                         | `use-frame-blocked.test.tsx`                                |
 | A new `src` forgets the verdict and asks again                                                    | `forgets the verdict when the URL changes, and asks again`          | `use-frame-blocked.test.tsx`                                |
 | No `src`, no watch                                                                                | `asks nothing without a URL`                                        | `use-frame-blocked.test.tsx`                                |

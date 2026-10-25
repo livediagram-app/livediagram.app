@@ -1,6 +1,6 @@
 'use client';
 
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
@@ -142,7 +142,7 @@ function ExplorerImpl({
             ? onNewDesign()
             : go(newDesignHref(placement))
         }
-        // The whole Explorer page, on the same view (lib/explorer-href.ts says where it is).
+        // The whole Explorer page, on the same view (@liveworkspace/workbench/lib/explorer-href.ts says where it is).
         onOpenExplorer={(view) => {
           const [path = '', query = ''] = explorerPath(view).split('?');
           window.location.assign(explorerHref(path.replace(/^\/?explorer\/?/, ''), query));

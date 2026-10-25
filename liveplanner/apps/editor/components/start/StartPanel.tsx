@@ -23,15 +23,15 @@ import {
   useSheetDrag,
 } from '@liveplanner/ui';
 import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
-import { useChromeFloor } from '@/components/toast/useToastFloor';
+import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { takeStartQuery } from './start-query';
-import { liftBestMatch } from './best-match';
-import { isStartCardKey, nextCardIndex } from './start-card-keys';
-import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
+import { liftBestMatch } from '@liveworkspace/workbench/components/start/best-match';
+import { isStartCardKey, nextCardIndex } from '@liveworkspace/workbench/components/start/start-card-keys';
+import { noteStartPanelLeft, startPanelJustLeft } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';

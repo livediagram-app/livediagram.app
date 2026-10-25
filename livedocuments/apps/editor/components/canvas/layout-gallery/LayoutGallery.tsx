@@ -26,7 +26,7 @@ import {
   gallerySections,
   surprisePick,
 } from './layout-gallery-filter';
-import { useTileWidth } from './useTileWidth';
+import { useTileWidth } from '@liveworkspace/workbench/components/canvas/layout-gallery/useTileWidth';
 
 const DicesIcon = lucideGlyph(lucideDices, 15);
 

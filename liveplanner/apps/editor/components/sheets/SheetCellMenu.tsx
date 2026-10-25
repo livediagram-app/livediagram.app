@@ -24,7 +24,7 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
 import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
-import { keyLabel } from '@/lib/key-label';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { useSheetController } from './sheet-controller';
 import { cellMenuLabels } from './sheet-cell-menu-labels';
 import { SheetMergeConfirm } from './SheetMergeConfirm';

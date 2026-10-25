@@ -1,6 +1,6 @@
 import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
-import type { SankeyFlowsTourApi } from './sankey-flows-tour-steps';
+import type { SankeyFlowsTourApi } from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
 
 // What an element tour's steps may do (docs/specs/007-editor/element-tours.md), built fresh by ElementTourHost every
 // render on the element the tour is on. One facade for every toured kind; each kind's steps use its own part.

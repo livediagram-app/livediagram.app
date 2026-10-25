@@ -22,7 +22,7 @@ import { chevronsTourSteps } from './chevrons-tour-steps';
 import { chartTourSteps } from './chart-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
 import { tabWindowTourSteps } from './tab-window-tour-steps';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import {
   sankeyElementTourSteps,
   sankeyFlowsContextOf,

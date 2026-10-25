@@ -7,10 +7,10 @@
 import { cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { StripBox } from '@/components/chrome/PaletteTray';
+import type { StripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 
 const bars = vi.hoisted(() => ({ strip: null as StripBox | null }));
-vi.mock('@/components/chrome/PaletteTray', () => ({
+vi.mock('@liveworkspace/workbench/components/chrome/PaletteTray', () => ({
   usePaletteStripBox: () => bars.strip,
 }));
 

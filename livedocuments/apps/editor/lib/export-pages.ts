@@ -4,7 +4,7 @@
 import { pageLabel, type LaidOutPage, type Tab } from '@livedocuments/document';
 import { exportTabAsPng, exportTabAsSvg, type ImageExportOpts } from './export-tab';
 import { exportPagesAsPdf } from './export-tab-pdf';
-import { writeZip } from './zip-writer';
+import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export type PageScope = 'all' | 'one';
 export type PageExportFormat = 'pdf' | 'png' | 'svg';

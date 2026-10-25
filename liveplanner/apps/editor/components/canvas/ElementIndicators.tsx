@@ -29,7 +29,7 @@ import {
   FOOTER_ROW_PX,
   type IndicatorItem,
   type IndicatorKind,
-} from './indicator-items';
+} from '@liveworkspace/workbench/components/canvas/indicator-items';
 
 // A corner this round or rounder gets a fully round pip; sharper ones a softly squared pip.
 const ROUND_PIP_FROM_PX = 10;

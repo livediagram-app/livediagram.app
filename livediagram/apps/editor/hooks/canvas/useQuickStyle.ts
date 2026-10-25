@@ -40,7 +40,7 @@ import {
   strokesHighlighterStyle,
   toolHighlighterStyle,
 } from '@/lib/quick-style-highlighter';
-import { highlighterWidthPx, type HighlighterWidthId } from '@/lib/highlighter-config';
+import { highlighterWidthPx, type HighlighterWidthId } from '@liveworkspace/workbench/lib/highlighter-config';
 import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { resolveTabBackdrop } from '@/lib/themes';

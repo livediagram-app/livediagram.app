@@ -15,7 +15,7 @@ import {
 import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';

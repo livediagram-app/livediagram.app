@@ -7,7 +7,7 @@ import { StartModeSwitch } from './StartModeSwitch';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const transition = vi.hoisted(() => vi.fn((_type: string, change: () => void) => change()));
-vi.mock('@/lib/view-transition', () => ({ startTypedTransition: transition }));
+vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({ startTypedTransition: transition }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({
   useConfirm: () => async () => true,
 }));

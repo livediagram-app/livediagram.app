@@ -7,7 +7,7 @@
 
 import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
-import { HIGHLIGHTER_WIDTHS, type HighlighterWidthId } from '@/lib/highlighter-config';
+import { HIGHLIGHTER_WIDTHS, type HighlighterWidthId } from '@liveworkspace/workbench/lib/highlighter-config';
 import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';

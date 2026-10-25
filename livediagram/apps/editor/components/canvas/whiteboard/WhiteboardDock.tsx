@@ -37,7 +37,7 @@ import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFly
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { announceToastFloorChange } from '@/components/toast/toast-floor';
+import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';

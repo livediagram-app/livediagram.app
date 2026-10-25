@@ -1,7 +1,7 @@
 // The builder's question motion (docs/specs/030-forms/forms.md "Building a form"; forms.css): the FLIP options for the
 // question list, the leave a deleted question plays before it goes, and the grow a question plays as it opens for
 // editing or closes again. Reduced motion plays nothing.
-import type { FlipListOptions } from '@/hooks/ui/useFlipList';
+import type { FlipListOptions } from '@liveworkspace/workbench/hooks/ui/useFlipList';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // The leave's length (forms.css .form-q-leave), and a little over it in case its end never fires (a hidden tab).

@@ -25,8 +25,8 @@ Scope, by file:
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
 | `apps/editor/components/canvas/PageMasthead.tsx`       | The masthead: two `InlineTextLine`s over a hairline rule            |
-| `apps/editor/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
-| `apps/editor/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
+| `../packages/workbench/src/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
 | `apps/editor/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
 | `apps/editor/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
@@ -126,7 +126,7 @@ export function svgPageFold(el: Page, fill: string, stroke: string, paper: strin
 // apps/editor/hooks/canvas/useDataShapeSetters.ts
 setPageHeading(elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string): void;
 
-// apps/editor/components/canvas/InlineTextLine.tsx
+// ../packages/workbench/src/components/canvas/InlineTextLine.tsx
 export function InlineTextLine(props: {
   value: string;
   placeholder: string;

@@ -12,7 +12,7 @@ import {
   lucideTriangleAlert,
 } from '@liveworkspace/icons/lucide';
 import { CloseIcon, lucideGlyph } from '@liveplanner/ui';
-import type { ToastTone } from './toast-queue';
+import type { ToastTone } from '@liveworkspace/workbench/components/toast/toast-queue';
 
 /** The toast's card look, shared with the notices that are not in the stack (the new-version prompt). */
 export const TOAST_SURFACE =

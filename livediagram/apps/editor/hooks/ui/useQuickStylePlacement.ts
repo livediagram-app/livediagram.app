@@ -7,7 +7,7 @@
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { placeQuickStylePanel, type Rect } from '@/lib/quick-style-placement';
+import { placeQuickStylePanel, type Rect } from '@liveworkspace/workbench/lib/quick-style-placement';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { PANEL_PRESENCE_EVENT } from '@/lib/panel-presence';

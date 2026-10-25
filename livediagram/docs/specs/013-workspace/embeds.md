@@ -28,7 +28,7 @@ only from a ticket minted with the person's own API token, and the page mounts o
 
 ## Share dialog
 
-Each pass in the ShareDialog ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet the shared Share dialog (`@liveworkspace/explorer`) builds around the embed URL livediagram gives it (`embedUrlFor` in `apps/editor/lib/embed.ts`, through `apps/editor/lib/explorer-share-host.ts`): a sensible default size (800×500), a hairline border, and `allowfullscreen`. The pass carries no separate embed hint for a password: its **Password** tag already shows when one is set, and viewers are prompted for it inside the embed.
+Each pass in the ShareDialog ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet the shared Share dialog (`@liveworkspace/explorer`) builds around the embed URL livediagram gives it (`embedUrlFor` in `../packages/workbench/src/lib/embed.ts`, through `apps/editor/lib/explorer-share-host.ts`): a sensible default size (800×500), a hairline border, and `allowfullscreen`. The pass carries no separate embed hint for a password: its **Password** tag already shows when one is set, and viewers are prompted for it inside the embed.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

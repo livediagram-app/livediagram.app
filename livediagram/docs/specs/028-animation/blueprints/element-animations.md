@@ -48,8 +48,8 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | `apps/editor/components/palette/AnimationSetTiles.tsx`      | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
 | `apps/editor/components/canvas/useShapeSvgAnimation.tsx`    | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
-| `apps/editor/components/canvas/useTraceDashes.ts`           | measures the SVG Trace copies' on-screen length onto them                                                                                  |
-| `apps/editor/components/canvas/AnimationLayer.tsx`          | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
+| `../packages/workbench/src/components/canvas/useTraceDashes.ts`           | measures the SVG Trace copies' on-screen length onto them                                                                                  |
+| `../packages/workbench/src/components/canvas/AnimationLayer.tsx`          | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
 | `apps/editor/components/canvas/animated-words.tsx`          | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
 | `apps/editor/components/canvas/useTextAnimation.ts`         | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
 | `apps/editor/components/canvas/useTableAnimation.ts`        | a table's grid class, counts, cells' Text view and unit starts                                                                             |

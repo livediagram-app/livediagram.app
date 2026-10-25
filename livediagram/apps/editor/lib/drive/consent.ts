@@ -5,7 +5,7 @@
 
 import { DRIVE_SCOPES } from '@livediagram/api-schema';
 import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
-import { explorerHref } from '../explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const RETURN_KEY = 'livediagram:v2:drive-return';

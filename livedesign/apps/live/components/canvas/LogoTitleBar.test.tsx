@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
-import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { DEFAULT_MIRROR } from '@livedesign/design';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';

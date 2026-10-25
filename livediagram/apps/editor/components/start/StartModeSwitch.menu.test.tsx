@@ -20,7 +20,7 @@ import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-
 import { StartModeSwitch } from './StartModeSwitch';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/view-transition', () => ({
+vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({
   startTypedTransition: (_type: string, change: () => void) => change(),
 }));
 

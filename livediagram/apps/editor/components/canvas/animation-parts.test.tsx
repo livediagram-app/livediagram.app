@@ -3,9 +3,9 @@ import { render, renderHook } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { DRAWING_ANIMATIONS, type PathElement, type TableElement } from '@livediagram/document';
-import { AnimationLayer } from './AnimationLayer';
+import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { useDrawingAnimation } from './drawing-animation';
-import { InlineTextLine } from './InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { useTableAnimation } from './useTableAnimation';
 
 const path = (animation?: string) =>

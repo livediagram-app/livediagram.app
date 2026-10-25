@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
-import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';
-import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { sankeyFlowsTourSteps } from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
+import { sankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the project" here, and there is nothing to scroll.
@@ -118,7 +118,7 @@ describe('Sankey Flows dialog Show Me', () => {
   });
 });
 
-// The dialog's handle switches its tabs from outside it (lib/sankey-flows-dialog-handle.ts).
+// The dialog's handle switches its tabs from outside it (@liveworkspace/workbench/lib/sankey-flows-dialog-handle.ts).
 describe('Sankey Flows dialog handle', () => {
   it('switches its tabs while it is open, and nothing once it closes', () => {
     renderDialog();

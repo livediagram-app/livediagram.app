@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
+import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 
 // The gap a popover keeps under a toolbar it would otherwise run beneath.
 const TOOLBAR_GAP_PX = 8;

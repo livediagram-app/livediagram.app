@@ -18,7 +18,7 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import {
   sameMembers,
   selectionIds,
@@ -36,8 +36,8 @@ import { PlayIcon } from '@/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
-import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
-import { DropCaret } from '@/components/primitives/DropCaret';
+import { rowDropIndex, useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
+import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 

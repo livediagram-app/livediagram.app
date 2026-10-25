@@ -50,7 +50,7 @@ import {
   withContentsPlacement,
   type ContentsPlacement,
 } from '@/lib/contents-placement';
-import type { SettingsIllustrationId } from './settings-illustrations';
+import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 import {
   LOGO_GUIDE_PARTS,
   readLogoGuideParts,

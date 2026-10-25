@@ -2,15 +2,15 @@
 
 import type { Element } from '@livedocuments/document';
 import { useEffect, useEffectEvent, useMemo, useRef, type ReactNode } from 'react';
-import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
+import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import { atLeastInset, safeInlinePadding } from '@livedocuments/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
-import { SnapWidth } from '@/components/primitives/SnapWidth';
+import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
-import { PaletteGroupProvider } from './palette-group-state';
+import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
 import { PaletteDropdown } from './PaletteDropdown';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -18,13 +18,13 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { StripPopover, useStripPopover } from './ToolbarStripPopover';
+import { StripPopover, useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { Divider } from './strip-rail-items';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
-import { useBarLabels } from './useBarLabels';
-import { useStripCrowded } from './useStripCrowded';
+import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
+import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';

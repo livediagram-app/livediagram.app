@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/live/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
 | `apps/live/lib/import-merge.ts`                             | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
 | `apps/live/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `apps/live/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
 | `apps/live/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |

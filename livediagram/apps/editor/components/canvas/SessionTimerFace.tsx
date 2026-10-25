@@ -16,7 +16,7 @@ import {
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
 import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
-import { useNow } from '@/hooks/ui/useNow';
+import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 
 // The settings open from the element's options menu only; fetched once the editor is idle
 // (lib/editor-deferred-code.ts).

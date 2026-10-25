@@ -17,7 +17,7 @@ import {
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { markConnectCancelled, markConnectConnected, takeConsent } from '@/lib/drive/consent';
 import { driveLog, driveWarn } from '@/lib/drive/log';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
 import { DriveAccountSwitchDialog } from './DriveAccountSwitchDialog';

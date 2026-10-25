@@ -21,7 +21,7 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';
 import { templateCard } from './template-card';
-import { setStartPanelOpen } from './start-panel-open';
+import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { startClosedKey } from './start-closed-key';
 import { TEMPLATE_START } from './start-template-items';
 import { useStartPalette } from '@/components/start/useStartPalette';

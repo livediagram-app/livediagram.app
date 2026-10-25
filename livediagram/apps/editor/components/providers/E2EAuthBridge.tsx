@@ -1,6 +1,6 @@
 'use client';
 
-// Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see lib/auth-config.ts): a
+// Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see @liveworkspace/workbench/lib/auth-config.ts): a
 // signed-in session without the accounts Worker, for the signed-in e2e specs
 // (docs/specs/003-system-architecture/e2e-smoke.md) and the opt-in Google Drive e2e
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing"). The e2e
@@ -11,7 +11,7 @@
 
 import { useEffect } from 'react';
 import { readLocalStorageSafe, safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
-import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
+import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 export const E2E_SESSION_KEY = 'livediagram:e2e:session';
 

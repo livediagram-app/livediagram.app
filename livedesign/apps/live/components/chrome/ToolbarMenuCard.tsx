@@ -25,7 +25,7 @@ export function ToolbarMenuCard({
   // `data-dock-button`: MovablePanel's outside-click check skips it, for a card that toggles a dock panel.
   dockButton?: boolean;
   tourId?: string;
-  // The editor's F6 region the card stands for (hooks/ui/useRegionCycle.ts).
+  // The editor's F6 region the card stands for (@liveworkspace/workbench/hooks/ui/useRegionCycle.ts).
   region?: 'header';
 }) {
   // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from the corner. Inline it sits in the

@@ -8,7 +8,7 @@ import { useEffect, useLayoutEffect, useRef, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import type { QuickStylePanel as QuickStylePanelComponent } from '@/components/canvas/QuickStylePanel';
 import { loadQuickStylePanel } from '@/lib/editor-deferred-code';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useQuickStyle, type QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import {
   sameMembers,

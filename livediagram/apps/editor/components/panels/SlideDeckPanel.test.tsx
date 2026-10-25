@@ -6,7 +6,7 @@ import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { SlideDeckPanel } from './SlideDeckPanel';
 
 // The Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md).
-vi.mock('@/hooks/canvas/useSelectionStore', () => ({ useSelectionOf: () => new Set() }));
+vi.mock('@liveworkspace/workbench/hooks/canvas/useSelectionStore', () => ({ useSelectionOf: () => new Set() }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 
 afterEach(cleanup);

@@ -7,7 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
-import { COLOUR_PICKER_WIDTH, COLOUR_POPOVER_PADDING } from './colour-metrics';
+import { COLOUR_PICKER_WIDTH, COLOUR_POPOVER_PADDING } from '@liveworkspace/workbench/components/colour/colour-metrics';
 
 const COLOUR_POPOVER_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2;
 

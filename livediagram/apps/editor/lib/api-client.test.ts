@@ -19,7 +19,7 @@ import {
   setTokenProvider,
 } from './api-client';
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
-import { resetDisplayCacheForTests } from './image-display';
+import { resetDisplayCacheForTests } from '@liveworkspace/workbench/lib/image-display';
 
 // A canvas's grant and the index are their own modules (document-grants.test.ts, the index client's tests): here
 // every request goes straight to the stubbed fetch.

@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { participantKey, type Participant } from '@/lib/identity';
 import { tint } from '@/lib/element-tint';
-import { useNow } from '@/hooks/ui/useNow';
+import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
 import {
   ElementEllipsisMenu,

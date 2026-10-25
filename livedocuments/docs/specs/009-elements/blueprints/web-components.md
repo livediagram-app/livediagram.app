@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`                        | `isSelfDrawingShape`: stat row and process carry no label                        |
 | `packages/document/src/validate.ts`                           | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
 | `apps/editor/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `apps/editor/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
 | `apps/editor/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |

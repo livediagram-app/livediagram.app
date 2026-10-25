@@ -16,7 +16,7 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
 | `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note); none for chevrons                            |
 | `apps/live/components/canvas/ConceptRowBar.tsx`                                                      | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
-| `apps/live/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
+| `../packages/workbench/src/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
 | `../packages/workbench/src/lib/move-row.ts`                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
 | `apps/live/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
 

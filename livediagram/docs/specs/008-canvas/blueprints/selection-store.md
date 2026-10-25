@@ -10,9 +10,9 @@ who re-renders when it changes.
 | File                                                                       | Role                                                                                |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `apps/editor/hooks/canvas/useSelectionStore.tsx`                           | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`                           | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
 | `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
-| `apps/editor/hooks/ui/useStableObject.ts`                                  | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
+| `../packages/workbench/src/hooks/ui/useStableObject.ts`                                  | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
 | `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
 | `apps/editor/app/document/[id]/editor-ui-state.ts`                         | Creates the store; `selectedId` / setters come from it                              |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                       | Provides the store; passes the canvas stable event props                            |
@@ -172,7 +172,7 @@ export function elementGrips(
 export type CanvasSelectionInput = Omit<DeriveInput, 'selectedId' | 'multiSelectedIds'>;
 export function useCanvasSelectionView(input: CanvasSelectionInput): CanvasSelection;
 
-// apps/editor/hooks/canvas/useSelectionStore.tsx
+// ../packages/workbench/src/hooks/canvas/useSelectionStore.tsx
 export function SelectionStoreProvider(props: {
   store: SelectionStore;
   children: ReactNode;
@@ -183,7 +183,7 @@ export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b:
 // ../packages/workbench/src/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
 
-// apps/editor/hooks/ui/useStableObject.ts
+// ../packages/workbench/src/hooks/ui/useStableObject.ts
 export function useStableObject<T extends object>(value: T): T;
 
 // ../packages/workbench/src/components/primitives/withStableEventProps.tsx

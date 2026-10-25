@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { spotlightRadius } from '@/lib/spotlight-config';
-import { useSpotlight } from './useSpotlight';
+import { useSpotlight } from '@liveworkspace/workbench/hooks/canvas/useSpotlight';
 
 // docs/specs/008-canvas/spotlight-panel.md "Persistence": the light opens at the saved Size preset, and the
 // session's clicks own the radius from then on.

@@ -4,7 +4,7 @@
 // worded for an Inverted one too, and the animation it previews.
 
 import { describe, expect, it, vi } from 'vitest';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { pyramidTourSteps } from './pyramid-tour-steps';
 
 vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({

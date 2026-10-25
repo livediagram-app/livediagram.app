@@ -1,6 +1,6 @@
 // What the Explorer's "Import from" asks the /import page for, and where it returns
 // (docs/specs/013-workspace/folders.md "Import from").
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { IMPORT_SOURCES, type ImportSourceId } from './import-sources';
 
 export type ImportRequest = {

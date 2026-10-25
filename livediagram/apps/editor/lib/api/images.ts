@@ -10,8 +10,8 @@ import {
   apiFetch,
   getWorkbenchConfinement,
 } from './core';
-import { blobToDataUrl } from '@/lib/blob-data-url';
-import { cachedDisplayCopy, displayEdge, releaseShownUrl, shownUrl } from '@/lib/image-display';
+import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
+import { cachedDisplayCopy, displayEdge, releaseShownUrl, shownUrl } from '@liveworkspace/workbench/lib/image-display';
 
 // Listing the owner's gallery. Returns null when the server reports
 // 503 (R2 not provisioned on this deployment), letting the picker

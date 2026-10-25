@@ -201,7 +201,7 @@ Team roles are `admin` and `member`. Neither changes what a member can do to a d
 
 ### Embeds in short
 
-An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, `apps/live/lib/embed.ts`). It
+An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, `../packages/workbench/src/lib/embed.ts`). It
 differs from the plain link only in what the chrome withholds: no identity screen (comments and Q&A notes carry
 the default guest identity, so `getParticipant` often yields "Anonymous"), no palette, panels, tab bar, theme
 dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `useClipboard.ts`), and the

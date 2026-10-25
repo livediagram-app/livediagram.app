@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { PendingFormStart } from '@/components/forms/PendingFormStart';
-import { useEverTrue } from '@/hooks/ui/useEverTrue';
+import { useEverTrue } from '@liveworkspace/workbench/hooks/ui/useEverTrue';
 
 // The Plan tour (docs/specs/026-plan/plan-tour.md), its chunk out of the editor's first load.
 const PlanTourHost = dynamic(

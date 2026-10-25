@@ -31,8 +31,9 @@ import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
-import { useSelectionStore } from '@/hooks/canvas/useSelectionStore';
+import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
+import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -49,12 +50,12 @@ import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLo
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
-import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
+import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadArticleFlows, loadCanvasPages } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
-import { useStickyPeelVars } from '@/lib/sticky-peel-image';
+import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -113,7 +114,7 @@ function CanvasView(props: CanvasProps) {
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
-  useCanvasLongTaskLog();
+  useCanvasLongTaskLog(canvasGestureNow);
   const offscreenContent = useOffscreenContent(
     elements,
     viewportOffset,

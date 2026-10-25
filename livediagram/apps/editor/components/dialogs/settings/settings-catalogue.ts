@@ -48,7 +48,7 @@ import {
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
-import type { SettingsIllustrationId } from './settings-illustrations';
+import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 import {
   CLOUD_SYNC_PROVIDERS,
   CLOUD_SYNC_SECTION,

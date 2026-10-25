@@ -24,10 +24,10 @@ import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
-import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
+import { DISPLAY_EDGE_TILE } from '@liveworkspace/workbench/lib/image-display';
 import type { OpenverseFilters } from '@/lib/image-search/openverse';
 import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
-import { sampleImageTone } from '@/lib/page-image-tone';
+import { sampleImageTone } from '@liveworkspace/workbench/lib/page-image-tone';
 import { track } from '@/lib/telemetry';
 import {
   addImageFileForDocument,

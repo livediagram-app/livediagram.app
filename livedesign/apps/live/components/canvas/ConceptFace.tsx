@@ -26,12 +26,12 @@ import {
   type ShapeElement,
   type WebRows,
 } from '@livedesign/design';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
-import { ConceptRowLayer } from './concept-row-layer';
+import { ConceptRowLayer } from '@liveworkspace/workbench/components/canvas/concept-row-layer';
 import { ConceptTimelineBody } from './ConceptTimelineBody';
 import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 

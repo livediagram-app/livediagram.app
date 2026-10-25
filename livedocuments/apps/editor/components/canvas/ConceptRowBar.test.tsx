@@ -16,7 +16,7 @@ import {
 } from '@livedocuments/document';
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
-import { HOVER_GRACE_MS } from '@/hooks/ui/useGraceHover';
+import { HOVER_GRACE_MS } from '@liveworkspace/workbench/hooks/ui/useGraceHover';
 import { track } from '@/lib/telemetry';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

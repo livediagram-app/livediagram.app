@@ -43,7 +43,7 @@ import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext'
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
-import { PageCornerFold } from '@/components/canvas/PageCornerFold';
+import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { FenceView } from '@/components/canvas/collab/FenceView';
 import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
@@ -54,7 +54,7 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
-import { SketchFace } from '@/components/canvas/SketchFace';
+import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
@@ -70,7 +70,7 @@ import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
-import { AnimationLayer } from '@/components/canvas/AnimationLayer';
+import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';

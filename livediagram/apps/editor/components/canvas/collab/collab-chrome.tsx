@@ -12,7 +12,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
-import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
+import { useTouchScrollBody } from '@liveworkspace/workbench/hooks/ui/useTouchScrollBody';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
 //

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readImportImageSource } from './source';
-import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from './constants';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '@liveworkspace/workbench/lib/import-images/constants';
 
 const PNG_BYTES = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 1, 2];
 const b64 = (bytes: number[]) => btoa(String.fromCharCode(...bytes));

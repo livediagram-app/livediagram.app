@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds the editor app with the test-only auth bridge, into `.next/out-signed-in/`, for the signed-in
 // e2e specs (docs/specs/003-system-architecture/e2e-smoke.md "Signed-in specs"). The bridge is a
-// build-time switch (lib/auth-config.ts), so the plain `out/` cannot show a signed-in user without
+// build-time switch (@liveworkspace/workbench/lib/auth-config.ts), so the plain `out/` cannot show a signed-in user without
 // the accounts Worker.
 //
 // NEXT_PUBLIC_E2E_AUTH=1 swaps the accounts bridge for the test-only E2EAuthBridge, which takes the

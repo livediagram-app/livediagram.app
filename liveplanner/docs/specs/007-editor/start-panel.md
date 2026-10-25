@@ -87,6 +87,6 @@ chosen from another mode's results, was retired with the other modes.
 ## Tests
 
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
-- `components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
-- `components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
+- `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
+- `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.

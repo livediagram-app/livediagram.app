@@ -109,7 +109,7 @@ When `imageId === null`, `<ImageElementView>` (`apps/editor/components/canvas/Im
 ### Shown at the size they are seen
 
 A picture is kept whole in the gallery, and exports draw the original, but the editor shows a copy
-no larger than a screen can use (`apps/editor/lib/image-display.ts`): at most 2048 px on its longest
+no larger than a screen can use (`../packages/workbench/src/lib/image-display.ts`): at most 2048 px on its longest
 side on a phone or tablet (a coarse pointer), 4096 px elsewhere, and 512 px in a gallery tile.
 A camera photo or a retina screenshot decodes to 25 to 100 MB of pixels whatever size it is drawn
 at, and a phone closes a tab that holds too many, so a slide deck of a dozen screenshots on an

@@ -13,7 +13,7 @@ import {
   peelInset,
   stickyPeelImage,
   stickyPeelVars,
-} from './sticky-peel-image';
+} from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Sticky notes read as paper": the peel is a slate ramp
 // (none above 10% of the caster, full ink from 77%) blurred by 2px, run 3px proud of the sides and 5px

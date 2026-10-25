@@ -4,7 +4,7 @@
 // native scroll container over a spacer the size of the whole sheet, with a sticky viewport inside that draws only
 // what is in view: the cells, the headers, the selection, the editor. One tab stop; its keys are the grid's while it
 // has focus, and Escape hands them back to the canvas.
-import { keyLabel } from '@/lib/key-label';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { focusOpenEdit } from './focus-open-edit';
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';

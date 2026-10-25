@@ -5,7 +5,7 @@
 // Go To and Settings under the status bar's cog. Preview (and everyone who may not edit) sees it exactly as the form
 // link draws it. The status bar holds Preview, the help link and the cog; the menu box, its name; the header's Share is
 // Share Form (lib/form-share-store.ts).
-import { useNow } from '@/hooks/ui/useNow';
+import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@liveplanner/project';

@@ -9,7 +9,7 @@ import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { Element } from '@livedesign/design';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import { requestToolbarSearch } from '@/lib/toolbar-search-request';
+import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.

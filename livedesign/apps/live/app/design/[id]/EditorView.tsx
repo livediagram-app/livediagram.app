@@ -10,7 +10,7 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
-import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
+import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDesignTargets } from '@/lib/add-to-design-targets';
 import { canvasSurface } from '@livedesign/design';
@@ -21,7 +21,7 @@ import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
-import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';

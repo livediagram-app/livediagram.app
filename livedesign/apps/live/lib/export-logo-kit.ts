@@ -6,7 +6,7 @@ import type { LaidOutPage, Tab } from '@livedesign/design';
 import { sanitizeFilename } from './export-pages';
 import { encodeIco } from './ico-writer';
 import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';
-import { writeZip } from './zip-writer';
+import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export const LOGO_KIT_PNG_SIZES = [16, 32, 48, 64, 128, 180, 192, 256, 512, 1024] as const;
 export const LOGO_ICO_SIZES = [16, 32, 48] as const;

@@ -31,7 +31,7 @@ import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { isAnimatedPattern } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { SketchFace } from '@/components/canvas/SketchFace';
+import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
 import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';

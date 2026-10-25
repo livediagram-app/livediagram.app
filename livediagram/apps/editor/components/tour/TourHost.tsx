@@ -20,7 +20,7 @@ import {
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).

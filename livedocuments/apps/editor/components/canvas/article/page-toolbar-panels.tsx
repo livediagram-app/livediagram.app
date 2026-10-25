@@ -4,7 +4,7 @@
 // the text styles, the lists and indent, alignment, the colours (text and highlight together),
 // the less used formats under More, and the inserts. Each entry runs a command on the writing (or
 // asks the host to insert) and closes its menu.
-import { keyLabel } from '@/lib/key-label';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import type { ReactNode } from 'react';
 import {
   lucideChartColumn,

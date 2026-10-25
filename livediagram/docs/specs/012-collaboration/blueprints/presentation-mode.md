@@ -24,7 +24,7 @@ Transitions) and "Full screen" (refusals logged). The rest of presentation mode 
    `clamp(asked ?? at, + step, 0 … runnable.length)`; a jump keeps `next`. It writes `asked`.
 3. `type = slideTransitionType(config.transition, asked ?? at, target)`. With no type it calls
    `setPresentingAt(target)` and stops.
-4. Otherwise `startTypedTransition(type, () => setPresentingAt(target))` (`apps/editor/lib/view-transition.ts`), which
+4. Otherwise `startTypedTransition(type, () => setPresentingAt(target))` (`../packages/workbench/src/lib/view-transition.ts`), which
    runs it plainly under `prefersReducedMotion()` and in a typed `startTransition` otherwise.
 5. The layout effect on `[at, shown]` clears `asked` once `at` equals it, records the direction for the HUD and sets
    `data-presenting`, `data-hide-pointer` and `--lvd-slide-ms`; it drives no animation itself.

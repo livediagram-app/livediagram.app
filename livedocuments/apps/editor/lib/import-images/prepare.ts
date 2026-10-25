@@ -3,7 +3,7 @@
 // The DOM work sits behind the injected codec, so this runs under Node.
 
 import { MAX_IMAGE_BYTES, sniffImageType } from '@livedocuments/api-schema';
-import { IMPORT_IMAGE_JPEG_QUALITY, IMPORT_IMAGE_WEBP_QUALITY } from './constants';
+import { IMPORT_IMAGE_JPEG_QUALITY, IMPORT_IMAGE_WEBP_QUALITY } from '@liveworkspace/workbench/lib/import-images/constants';
 import { fallbackOutputType, planImageEncoding } from './policy';
 import type {
   DecodedImage,

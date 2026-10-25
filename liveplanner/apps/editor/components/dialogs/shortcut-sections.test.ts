@@ -46,7 +46,7 @@ describe('the Keyboard settings list matches the keys a Plan tab answers', () =>
 
   it('lists only editor-wide keys that run on a Plan tab', () => {
     // On a Plan tab the canvas is covered, so the editor runs just what coveredKeyRole lets through. F6 is the
-    // region cycle's own listener (hooks/ui/useRegionCycle.ts), not the editor's.
+    // region cycle's own listener (@liveworkspace/workbench/hooks/ui/useRegionCycle.ts), not the editor's.
     const dead = section('Everywhere')
       .filter((row) => row.keys[0] !== 'F6')
       .filter((row) => coveredKeyRole(eventOf(row), false) !== 'run')

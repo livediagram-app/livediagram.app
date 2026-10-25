@@ -5,7 +5,7 @@ import { useImageBlobUrl } from './useImageBlobUrl';
 
 const apiFetchImageBlobUrl = vi.fn<(ownerId: string, imageId: string) => Promise<string | null>>();
 // The URLs handed out are given back, never revoked directly: one is shared by every view of a
-// picture (lib/image-display.ts).
+// picture (@liveworkspace/workbench/lib/image-display.ts).
 const revoked: string[] = [];
 vi.mock('@/lib/api-client', () => ({
   apiFetchImageBlobUrl: (ownerId: string, imageId: string) =>

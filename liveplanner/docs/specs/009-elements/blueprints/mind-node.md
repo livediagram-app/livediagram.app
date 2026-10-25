@@ -41,7 +41,7 @@ Scope, by file:
 | outline-levels.ts                                              | `levelLook`: the colour ring per level                                                                                             |
 | outline-rows.ts                                                | The row model: `rowsFromText`, `textFromRows`, split, join, indent, outdent, move, paste                                           |
 | MindOutlineContext.tsx                                         | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map commands                                       |
-| `apps/editor/components/canvas/indicator-items.ts`             | `buildIndicatorItems`: the outline and tidy commands                                                                               |
+| `../packages/workbench/src/components/canvas/indicator-items.ts`             | `buildIndicatorItems`: the outline and tidy commands                                                                               |
 | mind-handoff.ts                                                | Typing ahead: `beginMindHandoff`, `landMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                         |
 | format-painter.ts                                              | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies                                                         |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                                                                     |
