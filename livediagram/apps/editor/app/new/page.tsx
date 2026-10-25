@@ -30,9 +30,10 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
-import { isOfflineLocation } from '@/lib/save-locations';
+import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
 import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
+import { NewSaveSwitch } from './NewSaveSwitch';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -84,6 +85,13 @@ const presetModeFromUrl = () => wizardPresetMode(window.location.search);
 const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
 const noPreset = () => null;
 const noBypass = () => null;
+// A `/new?folder=` / `?team=` context names a server place, so the wizard offers no save switch.
+const placedFromUrl = () => {
+  const p = placementParamsFromSearch(window.location.search);
+  return !!(p.folderId || p.teamId);
+};
+const onClient = () => true;
+const onServer = () => false;
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
 // Owns identity bootstrap, the mode choice (a one-step wizard),
 // and the actual "commit a new document" handoff. Once the user picks (or
@@ -166,7 +174,13 @@ export default function NewDocumentPage() {
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation, signedIn } = useNewDocumentLocation({ authLoaded, accountUserId });
+  // The wizard's Sync Canvas to Server switch (save-locations.md "On the start screen"): null until flipped, so
+  // the create follows the default. Drawn only once the page runs in the browser: the prerender knows no sign-in,
+  // and a switch that flipped on at hydration would jolt.
+  const [chosenLocation, setChosenLocation] = useState<SaveLocationId | null>(null);
+  const placedByUrl = useSyncExternalStore(subscribeNever, placedFromUrl, onServer);
+  const hydratedPage = useSyncExternalStore(subscribeNever, onClient, onServer);
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -403,7 +417,7 @@ export default function NewDocumentPage() {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
     try {
-      const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+      const saveLocation = await resolveSaveLocation(placed, resolveSelf, chosenLocation);
       explicitBlank.current = blank;
       await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
     } finally {
@@ -523,6 +537,15 @@ export default function NewDocumentPage() {
             // Escape backs out to the page that opened /new, creating nothing
             // (docs/specs/007-editor/new-document-route.md "Escape backs out").
             onBackOut={backOut}
+            saveSwitch={
+              hydratedPage && !placedByUrl ? (
+                <NewSaveSwitch
+                  chosen={chosenLocation}
+                  signedIn={signedIn}
+                  onChoose={setChosenLocation}
+                />
+              ) : undefined
+            }
           />
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):

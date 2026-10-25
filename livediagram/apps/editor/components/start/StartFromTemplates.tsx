@@ -34,6 +34,7 @@ import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
+import { StartSaveSwitch } from './StartSaveSwitch';
 import { otherModeMatches } from './other-mode-matches';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from './start-panel-open';
@@ -169,6 +170,8 @@ export function StartFromTemplates({
       onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
       lead={<StartModeSwitch />}
       onClose={close}
+      // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
+      footer={(palette) => <StartSaveSwitch palette={palette} />}
     />
   );
 }
