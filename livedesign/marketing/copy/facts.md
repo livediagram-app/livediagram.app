@@ -44,8 +44,7 @@ The unit of value is the team, not the individual.
 - On any page: text, shapes, images, charts, tables, icons, stickers and
   embeds.
 - Templates for logos, wireframes and photos; themes that restyle a whole tab.
-- Present: the Slides view steps through a tab's pages full screen, with a
-  laser pointer and a spotlight.
+- Show the work: a laser pointer, a spotlight and Zen mode.
 - Export pages as PDF, PNG or SVG; import and export a design as JSON.
 - Tabs, tab folders and layers; nested folders in the Explorer.
 - Editor or view-only share links, revocable any time; read-only embeds.

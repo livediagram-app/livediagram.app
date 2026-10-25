@@ -2,8 +2,7 @@
 
 A short, optional guided tour of one [page kind](pages-mode.md#page-kinds): a wireframe, a logo or a photo. Like every tour it is started from the footer's **Start Pages Tour** button and never offers itself; [Show Me](show-me.md)
 runs the same track from a page's panel, and the [element tours](element-tours.md) share the button. Each kind has its own **track**, which shows how that kind of page is made by
-opening the real controls on the person's own page (a page's Layout and Background popovers, its panel, the Slide
-Deck) rather than only pointing at them: anchored step cards, a glide, a dimming spotlight, Skip,
+opening the real controls on the person's own page (a page's Layout and Background popovers, its panel) rather than only pointing at them: anchored step cards, a glide, a dimming spotlight, Skip,
 Back and a closing card, driven by the tour engine every tour shares ("How a tour runs").
 
 ## Domain language
@@ -53,7 +52,7 @@ and the closing card. This tour's part:
 
 ## Tour content
 
-The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving the step. Its
+The tour opens popovers and the page's panel, and closes them again on leaving the step. Its
 controls stay live: a layout or background the person picks while its step is up is theirs, kept as any pick is (one
 edit, undoable). The tour places nothing of its own.
 
@@ -61,14 +60,14 @@ edit, undoable). The tour places nothing of its own.
 
 The track's steps, then its closing card, a step card in the same popover (`TourPopover`) that sits outside the
 step count. Each
-step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
+step rings one control of the tour page, held by its own page rather than the first page's,
 never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
 on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
 
 Each track's cards name its page kind, never the mode: eyebrow **Wireframe tour**, **Logo tour** or **Photo tour**.
 The exact strings live in `apps/live/components/tour/<kind>-tour-steps.ts`.
 
-**A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
+**A step that opens a popover** (Layout, Background) opens it once on entering, by pressing its
 real button, and rings it. The popover stays open while the person presses the tour's card. Picking from it closes
 it as it always does: the ring then moves to the tour page, so the person sees what they picked land; the step
 never reopens it. Leaving the step closes whatever it opened that is still open.
@@ -84,9 +83,7 @@ Layouts) and closes it on leaving.
 4. **Device** (the page's panel, opened): its cog picks the device, turns it and sets its frame;
    duplicate, move or delete below.
 5. **Add a Page** (the +).
-6. **Present It** (the Slide Deck, opened): every page is in the deck; hide the ones to skip, then Present
-   shows them full screen.
-7. **You're ready to make pages** (closing card).
+6. **You're ready to make pages** (closing card).
 
 ### Logo track
 
@@ -101,7 +98,7 @@ Filter** (the page's menus), then **That Is a Photo Page**.
 
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (the Slide Deck on a phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
+- A step whose control is not on screen when the tour starts (the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped ("Mechanics").
 - If the tour can no longer run where it started (the person's edit rights go, they open another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
 

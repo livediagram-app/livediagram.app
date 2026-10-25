@@ -150,7 +150,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, and the `PortalMenu` body and chevron.
-  - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
+  - `long`: `TourPopover`, `TourHost`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
 - **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes
@@ -185,8 +185,6 @@ takes these blocks:
   `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
 - `[data-insert-shift]`.
-- The presentation slide transitions (`lvd-slide-*`, `[data-slide-move]` and the reduced-motion
-  fade).
 - `longpress-hold` and the new `element-pop-in`.
 
 The only change on the way is `element-pop-in`. Non-motion canvas rules stay in `globals.css`:
@@ -196,12 +194,9 @@ the sticky peel, cursors and note ink.
 
 - **The root takes no part**: `html { view-transition-name: none; }` in the editor's `globals.css`, so only a named
   surface is captured.
-- **The canvas surface** (slide moves) keeps its classes in `canvas-motion.css`: `slide-in`, `slide-forward`,
-  `slide-back` and `slide-fade`, on `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)`, with
-  `::view-transition-group(.<class>)` held still (`animation: none`). They reuse the `lvd-slide-*` keyframes and
-  `--lvd-slide-ms`; the only other slide rule is the `[data-slide-move='pending']` hold.
-- **Chrome surfaces** (the start's mode switch) keep theirs in `globals.css`: `start-mode` cross-fades old and new
-  over `--transition-duration-short` (200ms) on the ease-out curve.
+- **No surface has classes today** (the slide moves left with slide decks on 25 October 2026);
+  `view-transitions.test.ts` pins both stylesheets empty. A chrome surface's would go in `globals.css`, a canvas
+  surface's in `canvas-motion.css`.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the
   pseudo-elements never exist.
 
@@ -351,7 +346,6 @@ logging, because motion isn't a decision point.
 | Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
 | The root takes no View Transition part       | `apps/live/app/view-transitions.test.ts`                                                    |
 | View Transition classes stay in their files  | `apps/live/app/view-transitions.test.ts`                                                    |
-| Slide moves animate, reduced motion cuts     | `apps/live/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                  |
 
 ### The runtime guard
 

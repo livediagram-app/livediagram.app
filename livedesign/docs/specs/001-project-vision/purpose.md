@@ -16,7 +16,7 @@ edit in layers ([Photo pages](../031-photo/photo-pages.md)). Anyone with access 
 see other collaborators' cursors and edits live, and contribute simultaneously.
 
 The page is the product. Everything else exists because a team making a design together usually ends by
-showing it or sending it: a way to present the pages, and a way to export them as PDF, PNG, SVG, a Logo Kit or
+sending it: a way to export the pages as PDF, PNG, SVG, a Logo Kit or
 a photo's own files.
 
 livedesign is a fork of livediagram cut down to Pages, and then to three page kinds. The diagram, whiteboard,
@@ -52,8 +52,8 @@ never arrives.
   ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)).
 - **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-design/layers.md)),
   themes and the templates (Logos, Photos, Wireframes).
-- **Presenting** ([Presentation mode](../012-collaboration/presentation-mode.md)): the Slides view steps through a
-  tab's pages full screen, with the laser and the spotlight.
+- **Pointing** ([Laser](../008-canvas/laser-panel.md), [Spotlight](../008-canvas/spotlight-panel.md)): the laser and
+  the spotlight, for showing the pages while you share your screen.
 - **Getting work in and out**: import/export as JSON; PDF, PNG and SVG export of the pages, the Logo Kit of a logo
   page, and a photo page as PNG, JPEG, WebP or PSD ([Export fidelity](../020-import-export/export-fidelity.md));
   read-only embeds.
@@ -95,9 +95,9 @@ here in the same change, with the spec that moved it.
 - **Pages only**: livedesign began as livediagram with every mode, and was cut down to Pages. A feature that serves
   only a diagram, a whiteboard, a workshop or a plan does not belong here.
 - **Logos, wireframes and photos only**: the Pages it kept were cut down to three page kinds. Articles (and
-  Markdown in and out), slide pages, infographics and the animated GIF export went with livedocuments; presenting
-  stays, as the Slides view over any tab's pages. Photo pages came in from livediagram's photo editor
-  ([Photo pages](../031-photo/photo-pages.md)).
+  Markdown in and out), slide pages, infographics and the animated GIF export went with livedocuments, and presenting
+  pages as a slide deck was retired ([Presentation mode](../012-collaboration/presentation-mode.md)). Photo pages came
+  in from livediagram's photo editor ([Photo pages](../031-photo/photo-pages.md)).
 
 ## Why it matters
 

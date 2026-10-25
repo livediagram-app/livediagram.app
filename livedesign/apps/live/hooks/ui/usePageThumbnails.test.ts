@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, layOutPages, type Element, type Page } from '@livedesign/design';
-import * as slideThumb from '@/lib/slide-thumb';
+import * as pageThumb from '@/lib/page-thumb';
 import { usePageThumbnails, type PageThumbTab } from './usePageThumbnails';
 
 vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => true }));
@@ -38,7 +38,7 @@ const ids = ['p1', 'p2', 'p3'];
 
 describe('usePageThumbnails', () => {
   it('redraws only the page an edit touched', () => {
-    const draw = vi.spyOn(slideThumb, 'slideThumbFor');
+    const draw = vi.spyOn(pageThumb, 'pageThumbFor');
     const a = boxOn(0, 'a');
     const b = boxOn(1, 'b');
     const c = boxOn(2, 'c');
@@ -50,13 +50,13 @@ describe('usePageThumbnails', () => {
     draw.mockClear();
     rerender({ tab: tabWith([a, boxOn(1, 'b', 'Edited'), c]) });
     expect(draw).toHaveBeenCalledTimes(1);
-    expect(draw.mock.calls[0]![0].pageId).toBe('p2');
+    expect(draw.mock.calls[0]![0]).toBe('p2');
     expect(result.current.get('p1')).toBe(before.get('p1'));
     expect(result.current.get('p2')).not.toBe(before.get('p2'));
   });
 
   it('redraws every page when what they share changes', () => {
-    const draw = vi.spyOn(slideThumb, 'slideThumbFor');
+    const draw = vi.spyOn(pageThumb, 'pageThumbFor');
     const elements = [boxOn(0, 'a'), boxOn(1, 'b')];
     const { rerender } = renderHook(({ tab }) => usePageThumbnails(tab, ids), {
       initialProps: { tab: tabWith(elements) },
@@ -67,14 +67,14 @@ describe('usePageThumbnails', () => {
   });
 
   it('draws only the pages asked for', () => {
-    const draw = vi.spyOn(slideThumb, 'slideThumbFor');
+    const draw = vi.spyOn(pageThumb, 'pageThumbFor');
     renderHook(() => usePageThumbnails(tabWith([boxOn(0, 'a')]), ['p2']));
-    expect(draw.mock.calls.map((c) => c[0].pageId)).toEqual(['p2']);
+    expect(draw.mock.calls.map((c) => c[0])).toEqual(['p2']);
   });
 
   it('with settleMs, redraws once the tab has rested, not on every change', () => {
     vi.useFakeTimers();
-    const draw = vi.spyOn(slideThumb, 'slideThumbFor');
+    const draw = vi.spyOn(pageThumb, 'pageThumbFor');
     const { rerender } = renderHook(({ tab }) => usePageThumbnails(tab, ids, 250), {
       initialProps: { tab: tabWith([boxOn(0, 'a')]) },
     });

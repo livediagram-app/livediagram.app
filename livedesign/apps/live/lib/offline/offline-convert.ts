@@ -118,14 +118,13 @@ async function downloadAndRemoveCloudCopy(
   const rec: OfflineDesignRecord = {
     id: liveDoc.id,
     name: liveDoc.name,
-    // Keep its place and its deck: the server row, the only other copy, is
+    // Keep its place: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
     // offline record lives in, so a team design lands at the root of My Work.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
-    ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
   };
   await offlinePutRecord(rec);

@@ -1,5 +1,5 @@
-# Retired help articles (docs/specs/018-help/help-app.md "Retired articles"). The old category is gone,
-# so each of its URLs moves permanently to the help centre home, and search results and old links keep landing.
+# Retired help articles (docs/specs/018-help/help-app.md "Retired articles"). Each retired URL moves
+# permanently to the nearest live page, so search results and old links keep landing.
 # The router strips /help before forwarding and puts it back on a relative Location, so paths here
 # carry no /help prefix. Workers Static Assets reads this file from out/ (Next copies public/).
 # lib/retired-articles.test.ts pins every target to a live page.
@@ -8,6 +8,10 @@
 /self-hosting/ / 301
 /self-hosting/* / 301
 
+# The Slide Deck (Presentation mode) was retired on 25 October 2026; its guides move to the Selection Modes index.
+/selection-modes/slide-deck /selection-modes/ 301
+/selection-modes/slide-deck/ /selection-modes/ 301
+/selection-modes/slide-deck/* /selection-modes/ 301
 # The isometric view left this product on 2026-10-25 (docs/specs/008-canvas/canvas-and-palette.md "Retired
 # features"); its article's old URL lands on the Selection Modes page. livediagram keeps the view.
 /selection-modes/isometric-mode /selection-modes/ 301

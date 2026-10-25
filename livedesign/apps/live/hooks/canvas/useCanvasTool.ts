@@ -32,10 +32,6 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md) is 'UI'/'Opened' rather than 'Canvas'/'Used':
-    // picking it opens the deck workbench, it does not change the canvas.
-    // Starting the presentation is its own event, fired from the panel.
-    if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
   return { canvasTool, setCanvasTool, selectCanvasTool };

@@ -1,8 +1,7 @@
-// Working together: live sessions, sharing, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, sharing, discussion, the Timeline and teams (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import { SLIDE_DECK_OPENED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
 
 export const SHARE_LINKS_COPIED = chart(
@@ -100,14 +99,6 @@ export const WORKBENCH_WORKSPACES = chart(
   'Workbench Workspaces',
   'The Explorer opened inside a developer tool’s frame, signed in.',
   { types: ['WorkbenchWorkspace'] },
-);
-
-export const SLIDE_NOTES = chart(
-  'UI',
-  'Changed',
-  'Slide Notes',
-  'Speaker notes on a slide edited.',
-  { types: ['SlideNotes'] },
 );
 
 export const LIVE_IMAGE_TABS = chart(
@@ -296,7 +287,7 @@ export const DESIGNS_SHARED_TO_A_TEAM: Metric = {
 export const LIVE_TOGETHER: MetricStack = {
   stack: true,
   title: 'Live Together',
-  blurb: 'Two or more people on one canvas at the same moment, and sessions being presented.',
+  blurb: 'Two or more people on one canvas at the same moment, and sessions being followed.',
   members: [MULTIPLAYER_SESSIONS, VIEWPORTS_FOLLOWED, LOCKS_RELEASED],
   headline: MULTIPLAYER_SESSIONS,
 };
@@ -566,90 +557,4 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_FILTERED,
     FEED_RETRIES,
   ],
-};
-
-// Presentations (docs/specs/012-collaboration/presentation-mode.md).
-export const SLIDES_REORDERED = chart(
-  'UI',
-  'Moved',
-  'Slides Reordered',
-  'Slides dragged into a new order in the deck.',
-  { types: ['Slide'] },
-);
-export const PRESENTATIONS_STARTED = chart(
-  'UI',
-  'Started',
-  'Presentations Started',
-  'A slide deck presented full screen.',
-  { types: ['Presentation'] },
-);
-
-export const PRESENTATIONS_CLOSED = chart(
-  'UI',
-  'Closed',
-  'Presentations Closed',
-  'A presentation ended.',
-  { types: ['Presentation'] },
-);
-
-export const SLIDES_ADDED = chart(
-  'UI',
-  'Added',
-  'Slides Added',
-  'A slide added to a deck: from a selection or a page.',
-  { types: ['Slide', 'PageSlide'] },
-);
-
-export const SLIDES_REMOVED = chart(
-  'UI',
-  'Removed',
-  'Slides Removed',
-  'A slide taken out of a deck.',
-  { types: ['Slide'], rising: 'neutral' },
-);
-
-export const SLIDES_SHOWN_HIDDEN = chart(
-  'UI',
-  'Toggled',
-  'Slides Shown & Hidden',
-  'A slide hidden from the deck or shown again.',
-  { types: ['SlideShown', 'SlideHidden'], rising: 'neutral' },
-);
-
-// The presenter settings (transition, speed, auto-advance, loop and the
-// rest) send UI·Changed·Presentation-<field>: which setting, never its value.
-export const PRESENTER_SETTINGS_CHANGED = chart(
-  'UI',
-  'Changed',
-  'Presenter Settings Changed',
-  'A presentation setting changed: the transition, speed, auto-advance, loop, zoom, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-// The Settings dialog's presenter switches send UI·Toggled·Presentation-<field>On|Off.
-export const PRESENTER_SETTINGS_TOGGLED = chart(
-  'UI',
-  'Toggled',
-  'Presenter Settings Switched',
-  'A presentation switch turned on or off in Settings: advance on click, loop, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-export const PRESENTATIONS: MetricStack = {
-  stack: true,
-  title: 'Presentations',
-  blurb: 'Slide decks built from element sets and presented full screen.',
-  members: [
-    PRESENTATIONS_STARTED,
-    PRESENTATIONS_CLOSED,
-    SLIDE_DECK_OPENED,
-    SLIDES_ADDED,
-    SLIDES_REMOVED,
-    SLIDES_SHOWN_HIDDEN,
-    SLIDE_NOTES,
-    SLIDES_REORDERED,
-    PRESENTER_SETTINGS_CHANGED,
-    PRESENTER_SETTINGS_TOGGLED,
-  ],
-  headline: PRESENTATIONS_STARTED,
 };

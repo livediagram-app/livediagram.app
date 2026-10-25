@@ -1,5 +1,5 @@
 /* The scenes' shared build (components/hero-logo-board.tsx, hero-photo-board.tsx,
-   hero-present-board.tsx, hero-together-board.tsx; docs/specs/019-marketing/marketing-site.md "Story
+   hero-together-board.tsx; docs/specs/019-marketing/marketing-site.md "Story
    beats"). Every mark plays once at its own delay (--d): the window's group is remounted each time it
    plays, and its veil (hero-fade) covers the last second, so nothing has to clear on a loop. Settled
    (.hero-static) and under reduced motion every mark shows its finished frame. */
@@ -30,16 +30,6 @@
 @keyframes hm-fade {
   to {
     opacity: 1;
-  }
-}
-
-/* A value gives way to the next. */
-.hm-out {
-  animation: hm-out 0.25s ease-in var(--d, 0s) both;
-}
-@keyframes hm-out {
-  to {
-    opacity: 0;
   }
 }
 
@@ -157,10 +147,6 @@
   transform: none;
   stroke-dashoffset: var(--to, 0);
 }
-.hero-static .hm-out {
-  animation: none;
-  opacity: 0;
-}
 .hero-static .hm-select,
 .hero-static .hm-cursor {
   display: none;
@@ -177,10 +163,6 @@
     clip-path: none;
     transform: none;
     stroke-dashoffset: var(--to, 0);
-  }
-  .hm-out {
-    animation: none;
-    opacity: 0;
   }
   .hm-select {
     display: none;

@@ -1,5 +1,5 @@
 // Tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts and their toggle,
-// the palette strip as a quick-add launchpad, and the presenting surfaces
+// the palette strip as a quick-add launchpad, and the screen-sharing surfaces
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
@@ -74,7 +74,7 @@ export function ZenMode() {
 }
 
 /** The laser pointer: a fading glowing trail sweeping across the canvas in the
- *  presenter's participant colour, ending at the cursor. */
+ *  pointing person's participant colour, ending at the cursor. */
 export function LaserPointer() {
   return (
     <Scene w={420} h={210}>

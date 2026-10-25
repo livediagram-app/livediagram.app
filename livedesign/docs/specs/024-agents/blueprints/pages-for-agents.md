@@ -25,7 +25,7 @@ function and a test here; nothing here adds design.
 | CLI verbs       | `page.ls`, `page.set` (`pagesVerbs`)                                                                                                                                                          | `packages/agent-verbs/src/verbs/pages.ts`                                     |
 | view            | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                                                                                                          | `packages/design-views/src/pages.ts`                                          |
 
-Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck presents them),
+Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages),
 "template" for a layout.
 
 ## Behaviour and state

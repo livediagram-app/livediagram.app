@@ -1,7 +1,7 @@
 # Element animations
 
 An element can carry a looping or play-once **animation** to show flow, signal status, reveal content or draw the
-room's eye during a presentation. Each kind of element animates in ways that suit what it is: words type and ripple,
+room's eye on a shared screen. Each kind of element animates in ways that suit what it is: words type and ripple,
 shapes pulse and bounce, sticky notes flutter, drawings draw themselves on, photos pan and develop, tables cascade
 row by row. The element context menu offers only the animations that fit what is selected.
 
@@ -279,7 +279,7 @@ their existing types.
 
 ## Non-goals
 
-- Animations triggered by presentation steps, clicks or scrolling. Every animation runs from the stored fields
+- Animations triggered by clicks or scrolling. Every animation runs from the stored fields
   alone.
 - Choosing a different animation per letter, word, row or cell.
 - Sequencing animations across elements (one after another).

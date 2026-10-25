@@ -109,8 +109,8 @@ function useFrameSize(ref: RefObject<HTMLDivElement | null>, drawn: boolean) {
   return size;
 }
 
-// A window scrolled or zoomed off screen holds its drawing still (its loops pause where they are), so a deck of
-// slides each showing a moving tab spends nothing on the ones out of sight. The flag rides the frame as an
+// A window scrolled or zoomed off screen holds its drawing still (its loops pause where they are), so a row of
+// pages each showing a moving tab spends nothing on the ones out of sight. The flag rides the frame as an
 // attribute, so a pause never re-renders the drawing.
 function useHoldOffscreen(ref: RefObject<HTMLDivElement | null>, drawn: boolean) {
   useEffect(() => {

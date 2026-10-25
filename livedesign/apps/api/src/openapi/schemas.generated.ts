@@ -1349,12 +1349,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "presentation": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "savedAt": {
         "type": "number"
       },
@@ -1409,7 +1403,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ownerColor",
       "ownerId",
       "ownerName",
-      "presentation",
       "savedAt",
       "shareCode",
       "shareable",

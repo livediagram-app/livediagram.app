@@ -14,13 +14,7 @@ import {
   type ItemCreateRequest,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
-import {
-  MAX_DECK_LEN,
-  MAX_TAB_BYTES,
-  TabTooLargeError,
-  logTabRefused,
-  tabDataBytes,
-} from '../limits';
+import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
 import {
   INDEX_GRANT_HEADER,
   INTENT_INVALID,
@@ -47,7 +41,6 @@ import {
   readDesignMeta,
   readDesignTabs,
   renameDesign,
-  setDesignPresentation,
 } from '../design-room/design-content';
 import { identityOf } from '../design-room/design-route';
 import { designRoom } from '../design-client';
@@ -321,9 +314,8 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
             ),
           }))
         : null;
-      if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
-        return badRequest('presentation too large');
-      }
+      // A `presentation` field (the slide deck an editor on an older build may still send,
+      // docs/specs/012-collaboration/presentation-mode.md "Saved data") is ignored.
       // Tabs are the design's own (each design has its own store), so a seeded tab id can never name another
       // design's tab: a synced-back offline copy keeps its ids.
       const seeded = incomingTabs;
@@ -336,9 +328,6 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
         name,
         ownerId: owner,
         teamId: ctx.grant?.team ?? null,
-        // Usually none. An Offline Mode sync carries the deck it built offline (docs/specs/006-design/offline-mode.md),
-        // and a copy its source's, which would otherwise be lost.
-        presentation: typeof body.presentation === 'string' ? body.presentation : null,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made design.
         source: isDesignSource(body.source) ? body.source : null,
@@ -402,9 +391,8 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
         name?: string;
         tabIds?: unknown;
         tabs?: unknown;
-        // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
-        // clear. Absent leaves the stored deck alone.
-        presentation?: string | null;
+        // A `presentation` field (the slide deck an older build may send) is ignored
+        // (docs/specs/012-collaboration/presentation-mode.md "Saved data").
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -425,14 +413,6 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
           : existing.name;
       if (!name) return badRequest('missing name');
       await renameDesign(env, id, name, Date.now());
-      // The slide deck, only when the caller sent the field: `undefined` means "not my business", which is what a
-      // rename sends, so a rename can never wipe it.
-      if (body.presentation !== undefined) {
-        if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
-          return badRequest('presentation too large');
-        }
-        await setDesignPresentation(env, id, body.presentation, Date.now());
-      }
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDesign(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab

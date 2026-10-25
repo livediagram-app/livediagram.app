@@ -11,7 +11,7 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Wireframe: its name, layout, background, device, another page, present', () => {
+  it('Wireframe: its name, layout, background, device, another page', () => {
     const steps = pageTourSteps('wireframe');
     expect(ids(steps)).toEqual([
       'page-name',
@@ -19,7 +19,6 @@ describe('the tracks', () => {
       'background',
       'page-size',
       'add-page',
-      'present',
       'outro',
     ]);
     const device = steps.find((s) => s.id === 'page-size')!;
@@ -59,10 +58,10 @@ describe('what the tour starts with', () => {
     expect(steps.at(-1)!.card).toBe('outro');
   });
 
-  it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
-    const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
-    expect(ids(shownPageTourSteps('wireframe', api, exists))).not.toContain('present');
-    expect(ids(shownPageTourSteps('wireframe', api, exists))).toContain('layouts');
+  it('leaves out a step whose control is not on screen (no Layout button on a locked page)', () => {
+    const exists = (sel: string) => !sel.includes('aria-label="Layout"');
+    expect(ids(shownPageTourSteps('wireframe', api, exists))).not.toContain('layouts');
+    expect(ids(shownPageTourSteps('wireframe', api, exists))).toContain('background');
   });
 
   it('checks what a step opens by the button that opens it', () => {

@@ -1,26 +1,18 @@
 'use client';
 
 // Every page's picture for the Contents popover (docs/specs/007-editor/pages-mode.md
-// "Contents"): each page drawn as a page slide is drawn in the Slide Deck, so a page looks the same
-// in both. Only while the list is on screen (the caller mounts this then); redrawn when the tab's
+// "Contents"): each page drawn by the headless renderer the exports use (lib/page-thumb.ts). Only while the list is on screen (the caller mounts this then); redrawn when the tab's
 // elements or pages change, with the tab's arrow labels laid out once rather than once a page.
 // The docked sidebar stays on screen while the person works, so it passes `settleMs`: the pictures
 // redraw once the tab has rested that long, never on every frame of a drag or every key typed.
 // Each page draws from its own elements only (lib/page-element-buckets.ts), and a page whose own
 // elements and page are unchanged keeps its picture: an edit redraws the page it touched, not the tab.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  pagesOf,
-  layOutPages,
-  type Element,
-  type LaidOutPage,
-  type Slide,
-  type Tab,
-} from '@livedesign/design';
+import { pagesOf, layOutPages, type Element, type LaidOutPage, type Tab } from '@livedesign/design';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';
+import { pageThumbFor, tabArrowLabels, type PageThumb } from '@/lib/page-thumb';
 
 export type PageThumbTab = Pick<
   Tab,
@@ -28,7 +20,7 @@ export type PageThumbTab = Pick<
 >;
 
 // One page's picture and what it was drawn from.
-type Drawn = { page: LaidOutPage; elements: readonly Element[]; thumb: SlideThumb | null };
+type Drawn = { page: LaidOutPage; elements: readonly Element[]; thumb: PageThumb | null };
 // What every picture shares: a change to any redraws them all.
 type Shared = readonly unknown[];
 
@@ -36,7 +28,7 @@ export function usePageThumbnails(
   tab: PageThumbTab,
   pageIds: readonly string[],
   settleMs = 0,
-): Map<string, SlideThumb> {
+): Map<string, PageThumb> {
   const iconsLoaded = useIconCatalogs();
   // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
   const surface = useCanvasSurface();
@@ -63,7 +55,7 @@ export function usePageThumbnails(
     const buckets = pageElementBuckets(full.elements, laid);
     let labels: ReturnType<typeof tabArrowLabels> | undefined;
     const next = new Map<string, Drawn>();
-    const out = new Map<string, SlideThumb>();
+    const out = new Map<string, PageThumb>();
     for (const pageId of drawn.pageIds) {
       const page = laid.find((p) => p.id === pageId);
       if (!page) continue;
@@ -73,9 +65,8 @@ export function usePageThumbnails(
       if (!was || !samePage(was.page, page) || !sameList(was.elements, elements)) {
         // Arrow labels laid out once for the tab, and only when a page with an arrow redraws.
         if (!labels && full.elements.some((e) => e.type === 'arrow')) labels = tabArrowLabels(full);
-        const slide: Slide = { id: `contents-${pageId}`, tabId: full.id, elementIds: [], pageId };
-        const thumb = slideThumbFor(
-          slide,
+        const thumb = pageThumbFor(
+          pageId,
           { ...full, elements },
           { iconsLoaded, surface, ...(labels ? { labels } : {}) },
         );

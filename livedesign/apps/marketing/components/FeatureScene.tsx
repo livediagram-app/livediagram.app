@@ -22,13 +22,11 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
   logo: () => import('./hero-logo-board').then((m) => m.LogoBoard),
   photo: () => import('./hero-photo-board').then((m) => m.PhotoBoard),
-  present: () => import('./hero-present-board').then((m) => m.PresentBoard),
   together: () => import('./hero-together-board').then((m) => m.TogetherBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
   logo: dynamic(BOARD_LOADERS.logo, { ssr: false }),
   photo: dynamic(BOARD_LOADERS.photo, { ssr: false }),
-  present: dynamic(BOARD_LOADERS.present, { ssr: false }),
   together: dynamic(BOARD_LOADERS.together, { ssr: false }),
 };
 

@@ -68,8 +68,6 @@ every design decision.
 | Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `PAGES_FORMATS`, `PAGES_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath`, `waveLine` (`apps/live/lib/page-motion-parts.ts`; the fourth carousel page's motions in `page-motion-parts-page-four.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier`, `ANIM_ORIGIN`, `animOrigin` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                   |
 | Import formats              | `ImportTabDialog` `formats` (`['json']` in Pages mode, from `EditorTabDialogs`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/design/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Slides button               | `SlidesClusterSegment`, in `PagesClusterStrip` after `ContentsClusterSegment`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Contents                    | `usePageContents` (`apps/live/hooks/ui/usePageContents.ts`): rows, Find a Page, thumbnails, `current` (here), `go`, keys, reorder, add; laid out by `PageContentsList.tsx` (`ContentsList` `variant` `'list' \| 'film'`, `ContentsFind`) and `ContentsAddPage.tsx`                                                                                                                                                                                                                                                                                                                                                                                     |
 | Contents popover            | `PageContentsPanel` (a `MovablePanel` popover, a `BottomSheet` on a phone; `onDock` adds Dock as Sidebar, absent on a phone or with one page), opened by `ContentsClusterSegment`; dock panel `'contents'`; a row's ⋯ is `PageMenu` (`useRowMenu`, `EllipsisTriggerButton`, `PortalMenu`)                                                                                                                                                                                                                                                                                                                                                              |
 | Contents sidebar            | `PageContentsSidebar` (`data-contents-sidebar`, `data-contents-side`, header `data-contents-handle`, drop outline `data-contents-drop`), `CONTENTS_SIDEBAR_SELECTOR`; a row's toolbar is `PageToolbar`; wired by `useContentsChrome` (`contentsDocked`, `contentsSide`, `contentsSidebarEl`, `contentsPopoverEl`)                                                                                                                                                                                                                                                                                                                                      |
@@ -144,9 +142,7 @@ page; "template" stays the whole-tab starting point.
 | `PAGE_EASE_MS`                                                             | 200 ms                                                                             | Editor modes "Turning, adding and deleting animate"                                                                                      |
 | `COG_ROOM`, `LABEL_MIN`                                                    | 32 px, 40 px                                                                       | `page-title-bar-room.ts`; spec "The label fits its page" (40); D28 (32)                                                                  |
 | `INVITE_WIDE`, `INVITE_ICON`                                               | 150 px, 30 px                                                                      | `CanvasPages.tsx`; D28                                                                                                                   |
-| `DECK_ROOM`, `DECK_LABELLED_ROOM`, `NOTES_ROOM`, `NOTES_LABELLED_ROOM`     | 28, 112, 28, 88 px                                                                 | `PageDeckButton.tsx`, `PageNotesButton.tsx`; each button and its gap, icon or named                                                      |
 | `BACKGROUND_ROOM`, `BACKGROUND_LABELLED_ROOM`, `POPOVER_WIDTH`             | 28 px, 104 px, 304 px                                                              | `PageBackgroundButton.tsx`; the button and its gap (icon, or named); panel `WIDTH`                                                       |
-| `LETTERBOX_SPREAD`                                                         | 100 000 canvas px                                                                  | `CanvasPages.tsx`; spec "A page slide presents full screen", D79                                                                         |
 | `THUMB_W`                                                                  | 120 px (a tile outside the gallery; the gallery sizes its own from its columns)    | `layout-thumb.tsx`; D29                                                                                                                  |
 | `DRAG_THRESHOLD`                                                           | 6 px                                                                               | `usePageReorderDrag.ts`; spec "Drag a page's label"                                                                                      |
 | `VIEW_GLIDE_MS`                                                            | 280 ms                                                                             | `../packages/workbench/src/lib/viewport-glide.ts`; spec "The page navigator"                                                             |
@@ -201,8 +197,6 @@ page; "template" stays the whole-tab starting point.
   no page carries `rowAt`); `pageDimensions` reads `fit` for a `'fit'` page.
   `withPages(tab, next)` hands the current anchor to `next[0]` when no page of `next`
   carries one (`withRowAnchorKept`), so deleting the carrier keeps the row in place.
-- `Slide.pageId?: string` (design presentation blob): a page slide; `isSlide` rejects an empty or
-  non-string `pageId`. `elementIds` is `[]` on a page slide.
 - No migration: every new field is optional and absent on old data; old pages parse unchanged (as
   blank pages, their row on the origin).
 - The page you were last on, per person (`lib/last-page.ts`, local storage key
@@ -217,7 +211,7 @@ page; "template" stays the whole-tab starting point.
 ### The view (`usePagesMode`)
 
 Returns null outside a page look (`hasPageLook(mode)`), else `PagesModeView`:
-`pages` (laid out), `rowPages?` (the whole row while a page slide presents, `presentedPages`),
+`pages` (laid out),
 `focusPage(id)` (frames one page whatever its kind: `computeFitBelow` of
 `pageFitBox(page)` below the Toolbar strip), `panFrom?` (a finger's pan from the view
 now; stops a glide), `themeBackgrounds`, `themeAccent`, `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
@@ -247,7 +241,7 @@ is in the row (`goTo` state, consumed in a `requestAnimationFrame`), gliding the
 `fitOf(page)` (`frameFor`: the same `computeFitBelow` + `besideSideInsets` as `focusPage`),
 `glideTo` (`glideViewport` through the hook's one `glide` ref, so any later frame or a gesture
 cancels it), `cancelGlide`, and `suspended` (`snapSuspended`: `useEditorState` passes
-`presenting || followingRef.current !== null`).
+`followingRef.current !== null`).
 
 - **Triggers**: `subscribeCanvasGesture`. Idle to open: clear the rest timer, cancel a glide, take
   `from = pageInView(...)` beside the band, reset `panned` and the samples. Any `'pan'` sets
@@ -528,7 +522,7 @@ PageUnlocked`, tracked before the change); rename, orientation, size, background
   and delete are refused for a locked page (`[page] refused: page locked`).
 - UI: `PageLockButton` (`components/canvas/PageLockButton.tsx`) before the cog, named for its
   press ("Lock page" / "Unlock page", no `aria-pressed`), its room `pageLockRoom(locked, !mobile)`;
-  the title bar's fixed room (cog, lock, deck button, logo buttons, Background button) is taken before the invite
+  the title bar's fixed room (cog, lock, logo buttons, Background button) is taken before the invite
   chooses its wide or icon form; a locked page shows no layout invite, card or kind choice. The
   panel (`PagePanel`) shows a `role="status"` notice and renders its name and sections
   `inert` at 50% opacity; Delete page is disabled.
@@ -578,7 +572,7 @@ pageHasOrientation(page)`, then a logo page's **Background** and
   swallowed (`endsDrag`); Escape cancels. `reorderSlot` = count of other units (`laidOutUnits`)
   whose centre is left of the dragged unit's centre (unit rect centre + screen dx / zoom); the
   marker sits in the gap between units.
-- Bare sheets: `CanvasPages` `bare` (zen, presenting) drops `edit`,
+- Bare sheets: `CanvasPages` `bare` (zen) drops `edit`,
   labels, the navigator and the first page's choice.
 
 ### Kinds, adding, getting around
@@ -743,7 +737,7 @@ targets - locked, locked)`, the counts taken from the pages before the commit; `
   `<image preserveAspectRatio="xMid{YMin|YMid|YMax} slice">` when `href` (an inline URI, or
   `imageHref(imageId)`: `renderTabToSvg` / `renderTabToCanvas` pass `opts.images?.get(id)?.href`),
   then the overlay (a `fill-opacity` rect, or a `<linearGradient id="<id>-fade">` rect for Fade).
-  The Map and the Slide Deck's thumbnails pass no `imageHref`: tone and overlay only. `loadTabImages` loads the
+  The Map passes no `imageHref`: tone and overlay only. `loadTabImages` loads the
   pages' pictures (`pageImageIds(tab.pages)`) with the elements' images, each once.
 
 `ImageExportOpts.page` makes `renderTabToCanvas` / `renderTabToSvg` use `pageExportFrame(page)`:
@@ -815,41 +809,6 @@ outcome line.
 
 The Import dialog takes `formats`; in Pages mode `EditorTabDialogs` passes `['json']`.
 
-### Slides
-
-`resolveSlide` of a page slide: the tab's elements on that page (`elementIdsOnPage`).
-`slideFrame(slide, tab)`: the page rect, else `slideBounds(resolveSlide(...))`. Presenting a page
-slide sets `presentingPageId`; `EditorCanvasHost` passes the view with only that page.
-`newPageSlide(pageId)` appends `{ id, tabId: activeTabId, elementIds: [], pageId }`. Thumbnails
-prepend the page's `backgroundSvg`.
-
-The deck follows the pages (`deckFollowingPages`, `pageMoveForDeckOrder`, `slidePageOwnSlideIds`,
-`GoneSlides` in `packages/design/src/slide-deck-pages.ts`, run by `useDeckFollowsPages`):
-[Presentation mode](../../012-collaboration/presentation-mode.md) "The deck follows the pages".
-
-- **Deck button**: `PageDeckButton` (`apps/live/components/canvas/PageDeckButton.tsx`) in the
-  title bar, beside the cog, on every page (`view.deck` set), for an editor, not on a phone; `labelled` as the
-  other title-bar buttons, its room `pageDeckRoom(named)` (28 px, or 112 px named). It reads
-  `view.deck: PageDeckControls` (`slideOf(pageId)` giving `{ id, hidden, notes }`, `add`,
-  `toggleHidden`, `setNotes`), built by `pageDeckControls(deck, tabId, canEdit, { newPageSlide,
-toggleSlideHidden, setSlideNotes })` (`apps/live/lib/page-deck-controls.ts`) and memoised into
-  the view in `useEditorState`. States (`data-page-deck-button`): `add` (SlideDeckIcon,
-  `ADD_TO_SLIDES` "Add to Slides"), `shown` (EyeIcon, `HIDE_IN_SLIDES` "Hide in Slides"; no
-  `aria-pressed`, the name says the press), `hidden` (EyeOffIcon, `SHOW_IN_SLIDES` "Show in
-  Slides").
-- **Notes button**: `PageNotesButton` (`apps/live/components/canvas/PageNotesButton.tsx`) after the
-  deck button while `slideOf(page.id)` is defined (`buttons.notes`); a `TitlePopoverButton` named
-  `ADD_NOTES` "Add Notes" (`on` false) or, with non-blank notes, `NOTES` "Notes" (`on` true),
-  `lucideFileText`, 320 px popover holding a 6-row textarea (`data-page-notes-popover`, autoFocus,
-  placeholder "What you'll say over this slide…") whose change calls `deck.setNotes(slideId,
-value)`; keys other than Escape stop at the textarea. Room `pageNotesRoom(named)` (28 px, or 88
-  px named). Telemetry `UI · Opened · PageNotesButton`; `UI · Changed · SlideNotes` once per
-  opening.
-- **Full screen**: `slideFitOptions(slide, config)` (`lib/presentation-config.ts`) gives a page
-  slide `{ maxZoom, padding: 0 }`; `fitToBounds` passes `padding` to `computeFitToScreen` (default
-  `FIT_TO_SCREEN_PADDING`). `presentedPages` sets `letterbox: true`, and `CanvasPages` then
-  draws the sheet's shadow as `0 0 0 LETTERBOX_SPREAD px #000` (`LETTERBOX_SPREAD` 100 000 canvas px).
-
 ## Interfaces and contracts
 
 - `PageEdits`: `setOrientation(id, o)`, `setSize(id, size)`, `rename(id, name)`,
@@ -871,7 +830,6 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
   the page edge; arrows only between the layout's own elements; fresh ids each call.
 - `withContentOnAPage(tab)`, `withPageSplit(tab, pageId)`: the tab with `pages`, or null (nothing
   to do); `pageAround(box, id)`: always a page.
-- `slideFrame(slide, tab)`: a rect or null (nothing to frame).
 - `pageExportFrame(page, paper?)`: never throws; the paint is decorative and a rasterise failure
   leaves the paper.
 
@@ -894,7 +852,6 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
 | Duplicated arrow pinned off the page   | Not copied                                                   |
 | Re-fit of content larger than the room | Scaled down, never up                                        |
 | Lone page under a layout preview       | `pagesClipPath([])` returns a clip that hides everything     |
-| Page slide whose page is gone          | Resolves to no elements, frames to null; shown, fixable      |
 | Split past 20 clusters or the limit    | The rest share the last new page, sized around them          |
 | Split of a page with one cluster       | No edit; a toast says there is nothing to split              |
 | Content wider than `FIT_PAGE_MAX_SIDE` | The page stops at the limit; the content runs off, unscaled  |
@@ -912,8 +869,8 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
 
 ## Security and trust
 
-No server path is added: pages and page slides are tab and presentation data, written by the
-existing tab sync and validated on read (`parsePage`, `isSlide`). Colours are validated hex before
+No server path is added: pages are tab data, written by the
+existing tab sync and validated on read (`parsePage`). Colours are validated hex before
 they reach CSS or SVG; SVG markup escapes every colour (`xmlEscape`). The layout preview injects
 only the renderer's own markup, whose labels are escaped. A page picture names a gallery id or an
 inline raster URI, never a URL (`isPageImageId`); the sheet's CSS `url()` takes only a `blob:`,
@@ -924,7 +881,7 @@ SVG `href` is escaped. The api counts a page picture as an image reference
 
 ## Performance and limits
 
-- Contents' pictures: before, every page scanned every element (`resolveSlide`), O(pages x
+- Contents' pictures: before, every page scanned every element, O(pages x
   elements) per redraw, on every change while open. Measured in Node (shapes only, no icons): 10
   pages x 20 elements 6.7 ms, 30 x 40 46 ms, 100 x 30 219 ms per redraw. Now one O(elements) bucket
   pass and a redraw of the changed pages only: 100 x 30 draws in full in 68 ms and redraws after a
@@ -996,8 +953,8 @@ the panel's tabs **Page** / **Background** / **Layouts** (a logo page **Backgrou
 **Orientation**, **Background**, **Pattern**, **Start From a Layout**; the confirm **Replace this
 page's content?**, "The n elements on it make way for <layout>. Undo brings them back.",
 **Cancel** / **Replace**; actions **Duplicate page**, **Move page left**, **Move page right**,
-**Delete page**; the logo page's invite **Start From a Layout**; the title-bar **Layout** and **Tidy Up** buttons; the title-bar **Background** button on a wireframe page (tooltip **Background**, its popover named **Background**, holding the **Background** and **Pattern** sections); the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages."; the slide picker
-**Add as slide**; the size tile **Fit** (tooltip "Sized around the board it was made for"), the
+**Delete page**; the logo page's invite **Start From a Layout**; the title-bar **Layout** and **Tidy Up** buttons; the title-bar **Background** button on a wireframe page (tooltip **Background**, its popover named **Background**, holding the **Background** and **Pattern** sections); the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages.";
+the size tile **Fit** (tooltip "Sized around the board it was made for"), the
 action **Split Into Pages**; the toasts "Put onto a page that fits it. Undo switches back to
 <Mode>.", "Put onto a page that fits it. Undo takes the page away.",
 "Split into n pages. Undo puts it back.", "This page is one group: nothing to split.", "A tab holds
@@ -1010,8 +967,8 @@ at most 100 pages: delete one to split this page."
 - Tabs: a `role="group"` named "Page panel section" of toggle buttons (`aria-pressed`) on the
   shared segmented control; size, orientation, swatches and patterns are `role="radiogroup"` / `role="radio"` with `aria-checked` and names; previews follow
   focus as well as hover.
-- The page label is a button named by its text (a HoverCard describes the press); the invite and
-  Slides buttons are named; Tooltips repeat names only.
+- The page label is a button named by its text (a HoverCard describes the press); the invite
+  button is named; Tooltips repeat names only.
 - The + is a button named by what it adds (`addAnotherLabel`). A wireframe tab's **Add a Screen of
   Another Device**: `aria-haspopup="dialog"`, `aria-expanded`; its popover `role="dialog"` named
   "Choose a Device" around a `role="group"`; rows are buttons (name and screen size as text), the
@@ -1043,7 +1000,7 @@ unavailable` / `picture failed` (a sheet's fetch, or a carried picture's in a la
   `background upload failed`.
 - Telemetry as the spec's Telemetry section, charted in `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/features.ts`
   (`PAGE_ORIENTATION`, `PAGES`, `PAGE_SETUP`,
-  `PAGE_BUILDING`) and `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/collaboration.ts` (`SLIDES_ADDED`, `SLIDE_DECK_OPENED`), with
+  `PAGE_BUILDING`), with
   explanations in `event-explanations.ts`.
 
 ## Testing
@@ -1111,9 +1068,6 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Into pages on opening (own edit, toast, telemetry)                                                                                                                                                                                                                          | `apps/live/hooks/editor/usePagesMode.into-pages.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                |
 | No template changes entering Pages (issue #491, Sailboat)                                                                                                                                                                                                                   | `packages/templates/src/template-into-pages.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Split Into Pages: clusters, reading order, at most 20, never past the limit                                                                                                                                                                                                 | `paginate.test.ts` "contentClusters", "withPageSplit"; `page-edits.test.ts` "Fit to Content page edits"; `PagePanel.fit.test.tsx`                                                                                                                                                                                                                                                                                                                                       |
-| Page slides resolve and frame; labels; every page in the deck, in page order; a deleted page (its slides removed, brought back with it)                                                                                                                                     | `packages/design/src/slide-deck.test.ts` "page slides"; `packages/design/src/slide-deck-pages.test.ts`; `apps/live/app/design/[id]/useSlideDeck.page-slide.test.ts`; `apps/live/components/panels/SlideDeckPanel.test.tsx` "SlideDeckPanel on a Pages tab"                                                                                                                                                                                                              |
-| Every page's deck button and eye; full screen with no margin                                                                                                                                                                                                                | `apps/live/components/canvas/PageDeckButton.test.tsx`; `apps/live/lib/page-deck-controls.test.ts`                                                                                                                                                                                                                                                                                                                                                                       |
-| A presented page slide's sheet; its thumbnail inked for its page                                                                                                                                                                                                            | `apps/live/lib/presented-pages.test.ts`; `apps/live/hooks/ui/useSlideThumbnails.test.ts` "inks a page slide's elements for its page's surface"                                                                                                                                                                                                                                                                                                                          |
 | Telemetry: the kind events, Fit to Content                                                                                                                                                                                                                                  | `page-edits.test.ts` ("LogoPageAdded", "PageKindLogo"); `usePagesMode.into-pages.test.ts` ("PageFitToContent")                                                                                                                                                                                                                                                                                                                                                          |
 | Image backgrounds: parse, safe ids, logo drop, tone under the overlay, ids and re-homing                                                                                                                                                                                    | `packages/design/src/page-image.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Image backgrounds: sheet layers, CSS url guard, overlay and crop, export SVG and the page frame                                                                                                                                                                             | `apps/live/lib/page-image-paint.test.ts`; `apps/live/lib/page-image-tone.test.ts`; `apps/live/lib/export-tab-images.test.ts` "loads a page's picture"                                                                                                                                                                                                                                                                                                                   |
@@ -1137,8 +1091,7 @@ Gaps (no unit test; browser-checked or uncovered):
   with headless Playwright (light and dark, portrait and landscape, upload and export).
 - The export dialog's page row (`ExportPagePicker`), `pageExportFrame` for a filled page, the
   elements clipped to a page in PDF / PNG / SVG, and the PDF bytes.
-- The Slides button and its popover, no Layers in Pages mode, the letterbox
-  (`LETTERBOX_SPREAD`) and bare sheets in zen and presenting.
+- No Layers in Pages mode, and bare sheets in zen.
 - `pressIsOffPage` (only the pages are drawn on) and the per-element surface provider
   (`PageSurfacesProvider`, `useElementSurface`).
 - Telemetry for the remaining page events (`PagePortrait`, `PageLandscape`, `PageSize`,
@@ -1148,4 +1101,4 @@ Gaps (no unit test; browser-checked or uncovered):
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D87.
+See [DEFAULTS.md](DEFAULTS.md), rows D23 to D31, D55 to D58 and D81 to D87 (D32 and D79 went with slide decks).

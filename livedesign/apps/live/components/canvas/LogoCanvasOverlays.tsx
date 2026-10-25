@@ -26,7 +26,7 @@ export function LogoCanvasOverlays({
   zoom,
 }: {
   view: PagesModeView;
-  // Zen or presenting: no guides.
+  // Zen: no guides.
   bare: boolean;
   pendingDraw: PendingDraw | null;
   penStroke: LiveStroke | null;

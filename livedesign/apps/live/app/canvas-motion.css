@@ -3,7 +3,7 @@
  *
  * Motion OF the canvas, not of the chrome around it: element entry, the
  * animated-element set, arrow flow, icon / progress / rating / pie
- * animations, presentation slide transitions and the touch long-press ring. Each follows
+ * animations and the touch long-press ring. Each follows
  * its own spec, so this stylesheet is the one the chrome motion budget does
  * not read (the guard in apps/live/motion-budget.test.ts lists it as canvas).
  * The global reduced-motion collapse in globals.css still applies to all of it.
@@ -1143,119 +1143,6 @@
   transition:
     left 160ms ease-out,
     top 160ms ease-out;
-}
-
-/* Slide moves and the entrance are React View Transitions (docs/specs/012-collaboration/presentation-mode.md
-   "Motion"; components/canvas/slide-transition.ts). The browser takes a picture of the canvas SURFACE before and
-   after, and these classes animate the two pictures, so the canvas's content wrapper (which carries the pan/zoom
-   transform) is never animated, and a hundred-element slide moves exactly like a one-element one. Reduced motion
-   starts no transition at all (lib/view-transition.ts), so it needs nothing here. */
-
-/* The first slide holds back until fullscreen has landed and the slide is fitted to it, then arrives as a
-   `slide-in` (PresentationHost), so the card never arrives and then jumps when the screen resizes under it. */
-html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
-  opacity: 0;
-}
-
-/* The pictures move; the group they sit in stays put. */
-::view-transition-group(.slide-in),
-::view-transition-group(.slide-forward),
-::view-transition-group(.slide-back),
-::view-transition-group(.slide-fade) {
-  animation: none;
-}
-
-/* Entering: the deck arrives as a card over the editor. The old picture is the surface held hidden. */
-::view-transition-old(.slide-in) {
-  animation: none;
-  opacity: 0;
-}
-::view-transition-new(.slide-in) {
-  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
-/* Advancing: the new slide travels in from the RIGHT edge, all the way across the screen, while the old one leaves
-   to the left, so the deck reads as one strip of slides moving together. A gentle 6% nudge was the first attempt
-   and read as a wobble rather than as a slide. The curve is a plain decelerate: easing with a long slow tail
-   (0.22, 1, 0.36, 1 and friends) reads as rubber-banding, the slide arriving and then creeping. */
-::view-transition-old(.slide-forward) {
-  animation: lvd-slide-out-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-::view-transition-new(.slide-forward) {
-  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-/* Going back mirrors it, so the direction always says which way you are travelling through the deck. */
-::view-transition-old(.slide-back) {
-  animation: lvd-slide-out-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-::view-transition-new(.slide-back) {
-  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-/* A fade crosses the two: the old slide fades out as the new one fades in. */
-::view-transition-old(.slide-fade) {
-  animation: lvd-slide-fade-out var(--lvd-slide-ms, 380ms) ease both;
-}
-::view-transition-new(.slide-fade) {
-  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease both;
-}
-
-@keyframes lvd-slide-out-forward {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-@keyframes lvd-slide-out-back {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-@keyframes lvd-slide-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-@keyframes lvd-slide-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes lvd-slide-in {
-  from {
-    transform: scale(0.92);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-@keyframes lvd-slide-forward {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes lvd-slide-back {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
 }
 
 /* A Plan card gliding to where it now sits: set by

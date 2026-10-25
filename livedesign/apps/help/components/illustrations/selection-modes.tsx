@@ -17,7 +17,6 @@ import {
   LaserGlyph,
   PainterGlyph,
   SelectGlyph,
-  SlideDeckGlyph,
   SpotlightGlyph,
   ZenGlyph,
 } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
@@ -32,7 +31,6 @@ const TOOLS = [
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
-  { key: 'slide-deck', label: 'Slide Deck', shortcut: undefined, band: 1, Glyph: SlideDeckGlyph },
   { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
 ] as const;
 

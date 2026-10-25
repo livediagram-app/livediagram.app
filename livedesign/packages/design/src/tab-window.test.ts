@@ -18,7 +18,7 @@ const windowOn = (extra: Partial<ShapeElement> = {}) =>
 
 describe('which tabs a window may show', () => {
   const tabs = [
-    { id: 'slides', opensIn: 'pages' },
+    { id: 'logos', opensIn: 'pages' },
     { id: 'diagram' },
     { id: 'board', kind: 'board' },
     { id: 'sheet', kind: 'sheet' },
@@ -28,7 +28,7 @@ describe('which tabs a window may show', () => {
   ];
 
   it('offers every tab but its own, Plan tabs included, in tab-bar order', () => {
-    expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual([
+    expect(tabWindowOffers(tabs, 'logos').map((t) => t.id)).toEqual([
       'diagram',
       'board',
       'sheet',

@@ -31,7 +31,7 @@ const file = (tabs: Tab[] = [tab()]): PullFile => ({
   kind: 'livedesign.design',
   schemaVersion: 1,
   exportedAt: 1,
-  design: { id: 'd1', name: 'Shop', presentation: null, tabs },
+  design: { id: 'd1', name: 'Shop', tabs },
   livedesignSync: {
     host: 'https://livedesign.app',
     pulledAt: 1,

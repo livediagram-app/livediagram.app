@@ -8,7 +8,6 @@ import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './pa
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 import { EmptyPageInvite } from './EmptyPageInvite';
 import { LayoutGalleryDialog } from './LayoutGalleryDialog';
-import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from './PageLockButton';
@@ -17,7 +16,6 @@ import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { PageDeviceButton } from './wireframe/PageDeviceButton';
-import { PageNotesButton } from './PageNotesButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import {
@@ -60,8 +58,6 @@ import {
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
-// Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
-const LETTERBOX_SPREAD = 100_000;
 // The empty page's layout button beside the cog: with its words, or just its icon.
 const INVITE_WIDE = 150;
 const INVITE_ICON = 30;
@@ -94,7 +90,7 @@ export function CanvasPages({
 }: {
   view: PagesModeView;
   zoom: number;
-  // The sheets alone, without their title bars or the add button (zen, presenting).
+  // The sheets alone, without their title bars or the add button (zen).
   bare?: boolean;
   // A palette tile is armed (tap to drop or drag to draw): the page is where it will land, so the in-page layout
   // card steps aside until the tool is put down.
@@ -214,22 +210,14 @@ export function CanvasPages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        // Every page's deck button sits beside its cog (PageDeckButton): every page is in the deck
-        // (docs/specs/012-collaboration/presentation-mode.md "The deck follows the pages"), so its eye
-        // is there wherever the page is presented.
-        const deckButton = !!edit && !!view.deck && !mobile;
-        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
-        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         // A photo page's Image, Select and Filter menus (PhotoTitleBar), for someone who may edit it.
         const photoButtons = !!edit && !locked && page.kind === 'photo' && !!view.photo?.canEdit;
-        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
+        // The title bar's fixed buttons (the cog, the lock, a logo page's own and
         // a wireframe page's): the invite and the label share what they leave.
         const buttons = {
           edit: !!edit,
           locked,
-          deck: deckButton,
-          notes: notesButton,
           logo: logoButtons,
           photo: photoButtons,
           page: pageButtons,
@@ -273,12 +261,9 @@ export function CanvasPages({
               top: page.rect.y,
               width: page.rect.width,
               height: page.rect.height,
-              // Presenting a page slide, a spread shadow blacks out the whole surround.
-              boxShadow: view.letterbox
-                ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
-                : device
-                  ? undefined
-                  : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+              boxShadow: device
+                ? undefined
+                : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
               ...(device ? {} : pageSheetStyle(background, pictureOf)),
             }}
           >
@@ -368,14 +353,6 @@ export function CanvasPages({
                 {/* A photo page's Image, Select and Filter menus (PhotoTitleBar). */}
                 {photoButtons && view.photo ? (
                   <PhotoTitleBar pageId={page.id} photo={view.photo} labelled={labelled} />
-                ) : null}
-                {/* First, left of Layout and Background: this slide's place in the deck, and its
-                    notes once it is in it. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
-                ) : null}
-                {notesButton && view.deck ? (
-                  <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
                 ) : null}
                 {/* A wireframe page's Device (PageDeviceButton). */}
                 {deviceButton ? (

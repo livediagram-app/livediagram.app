@@ -16,9 +16,6 @@ export * from './feature-art/features';
 export * from './feature-art/embeds-timeline';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
-// Presenting (docs/specs/012-collaboration/presentation-mode.md): the pages in order, a page full screen, notes,
-// and the fact that presenting is yours alone.
-export * from './feature-art/present';
 // Pages (docs/specs/007-editor/pages-mode.md): pages, backgrounds, export.
 export * from './feature-art/pages';
 export * from './feature-art/pages-export';

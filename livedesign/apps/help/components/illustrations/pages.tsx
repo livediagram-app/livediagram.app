@@ -1,4 +1,4 @@
-// Illustrations for the Pages articles on Working with Pages and Exporting and Presenting Pages
+// Illustrations for the Pages articles on Working with Pages and Exporting Pages
 // (docs/specs/018-help/help-app.md). Each draws the real surface with its real labels: the pages in
 // a row with their labels, title-bar buttons, cogs and add buttons (CanvasPages.tsx,
 // AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the page panel (PagePanel.tsx,

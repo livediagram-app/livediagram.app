@@ -52,12 +52,11 @@ function show({
     setLocked: vi.fn(),
     removePage: vi.fn(),
   };
-  const deck = { slideOf: (id: string) => (id === 'p1' ? { id: 's1' } : undefined), add: vi.fn() };
   const store = createViewportStore(1);
   const view = {
     pages: laid,
     focusPage,
-    ...(canEdit ? { edit, deck } : {}),
+    ...(canEdit ? { edit } : {}),
   } as unknown as PagesModeView;
   render(
     <ViewportStoreProvider store={store}>
@@ -71,7 +70,7 @@ function show({
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, addPageLike, onMinimise, onMoveToSide, edit, deck, store };
+  return { focusPage, addPage, addPageLike, onMinimise, onMoveToSide, edit, store };
 }
 
 // The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
@@ -123,8 +122,6 @@ describe('PageContentsSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete Page 2' }));
     expect(h.edit.removePage).toHaveBeenCalledWith('p2');
     expect(h.focusPage).not.toHaveBeenCalledWith('p2');
-    // No line of what each page is: the toolbar and the picture say it.
-    expect(screen.queryByText(/Not in the deck|In the deck/)).toBeNull();
     cleanup();
     show({ canEdit: false });
     expect(screen.queryByRole('toolbar')).toBeNull();

@@ -24,10 +24,6 @@ import {
   type RemoteSelection,
 } from '@/lib/presence-rows';
 
-// Stable empty stand-in for the remote laser map while cursors are hidden,
-// so the memo below doesn't rebuild on every render from a fresh literal.
-const EMPTY_LASER_TRAILS: Map<string, { tabId: string; points: LaserPoint[] }> = new Map();
-
 type PresenceRowsDeps = {
   designShareable: boolean;
   designTeamId: string | null;
@@ -46,10 +42,6 @@ type PresenceRowsDeps = {
   localLaserTrail: LaserPoint[];
   // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
   selfLaserConfig?: LaserConfig;
-  // True while presenting (docs/specs/012-collaboration/presentation-mode.md), inbound only: peer cursors and
-  // peer laser trails are withheld from the render. Our own laser trail still shows, and presence / selection
-  // badges are untouched — the selection lock needs to keep naming who holds an element.
-  cursorsHidden: boolean;
 };
 
 export function usePresenceRows(deps: PresenceRowsDeps) {
@@ -70,7 +62,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     // Our own pen (docs/specs/008-canvas/laser-panel.md): peers' arrive with their samples, ours is read
     // from state so our trail never lags a change we just made.
     selfLaserConfig,
-    cursorsHidden,
   } = deps;
 
   // Per-element remote-selection map. Looks up each participant id
@@ -130,11 +121,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // op payload. Filter to the active tab so cursors of teammates
   // looking at a different tab don't bleed onto this one.
   const remoteCursorRows = useMemo(
-    () =>
-      cursorsHidden
-        ? []
-        : buildRemoteCursorRows(remoteCursors, livePresenceById, selfParticipant.id, activeId),
-    [cursorsHidden, remoteCursors, livePresenceById, selfParticipant.id, activeId],
+    () => buildRemoteCursorRows(remoteCursors, livePresenceById, selfParticipant.id, activeId),
+    [remoteCursors, livePresenceById, selfParticipant.id, activeId],
   );
   // Laser trails for the LaserOverlay: local first, then any peers
   // whose latest sample is on the active tab and whose participant
@@ -144,9 +132,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     () =>
       buildLaserTrailRows({
         localLaserTrail,
-        // Peers' trails drop out with their cursors; ours stays, so the
-        // laser still works as a pointer on our own screen.
-        remoteLaserTrails: cursorsHidden ? EMPTY_LASER_TRAILS : remoteLaserTrails,
+        remoteLaserTrails,
         livePresenceById,
         selfId: selfParticipant.id,
         selfColor: selfParticipant.color,
@@ -154,7 +140,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
         selfLaserConfig,
       }),
     [
-      cursorsHidden,
       localLaserTrail,
       remoteLaserTrails,
       livePresenceById,

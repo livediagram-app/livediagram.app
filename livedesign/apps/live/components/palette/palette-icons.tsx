@@ -108,18 +108,6 @@ export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="highlighter" size={size} />;
 }
 
-// Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
-// deck IS. Deliberately not a "play" triangle — the tool opens the workbench
-// where you build slides, and only the Start button inside it presents.
-export function SlideDeckIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <rect x="1.5" y="4.5" width="10" height="7.5" rx="1.2" />
-      <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
-    </Glyph>
-  );
-}
-
 export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="eraser" size={size} />;
 }

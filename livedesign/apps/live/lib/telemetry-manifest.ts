@@ -160,7 +160,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Trash (docs/specs/013-workspace/trash.md): a trashed design's card, and the design restored from it.
   'Trash·Opened',
   'Trash·Restored',
-  'UI·Added',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
   'UI·Cleared',
@@ -171,7 +170,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

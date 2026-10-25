@@ -63,7 +63,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('importMigrated (the migration door into a design)', () => {
-  it('writes the design row with its deck, opens-in and kind, and its tab, in one transaction', async () => {
+  it('writes the design row with its opens-in and kind, and its tab, in one transaction, leaving any deck behind', async () => {
     const r = open();
     const before = r.counter.transactions;
     expect(await r.room.importMigrated('G', payload())).toEqual({
@@ -76,7 +76,7 @@ describe('importMigrated (the migration door into a design)', () => {
       one(r.db, 'SELECT name, presentation, opens_in, tab_kind, created_at, saved_at FROM design'),
     ).toEqual({
       name: 'Logo',
-      presentation: '{"slides":[]}',
+      presentation: null,
       opens_in: 'pages',
       tab_kind: 'logo',
       created_at: 100,

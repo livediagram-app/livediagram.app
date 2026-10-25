@@ -1,16 +1,14 @@
-// Shared primitives for the pages, photo and presenting card art (./pages, ./photo, ./present):
-// paper that reads as a page on the canvas in light and dark, an editor panel, a presenting
-// screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
-// attribute and its dark value as a dark: utility, so a card is right in both appearances.
+// Shared primitives for the pages and photo card art (./pages, ./photo): paper that reads as a
+// page on the canvas in light and dark, an editor panel and lines of writing. Every colour has its
+// light value as the SVG attribute and its dark value as a dark: utility, so a card is right in
+// both appearances.
 //
 // Motion lives in app/feature-art/pages.css (the fa-e-* block): each piece takes its own
 // delay through --e-d, every loop is the same length, and reduced motion settles all of it.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Cursor as TeammateCursor } from './shared';
 
 export { AMBER, EMERALD, ROSE, SKY, VIOLET } from './shared';
-export const SKY_DEEP = '#0369a1';
 
 /** A delay for an fa-e-* piece, so pieces in one card land in turn. */
 export const at = (seconds: number) => ({ '--e-d': `${seconds}s` }) as CSSProperties;
@@ -115,35 +113,6 @@ export function Panel({
   );
 }
 
-/** A screen presenting a page: near black in both appearances, with an edge so dark still sees it. */
-export function Screen({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
-  return (
-    <g>
-      <rect
-        className="dark:fill-black/50"
-        x={x}
-        y={y + 2.5}
-        width={w}
-        height={h}
-        rx="5"
-        fill="#0f172a"
-        fillOpacity="0.18"
-      />
-      <rect
-        className="stroke-slate-800 dark:fill-slate-950 dark:stroke-slate-600"
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx="5"
-        fill="#0b1220"
-        stroke="#1e293b"
-        strokeWidth="0.8"
-      />
-    </g>
-  );
-}
-
 /** Rows of writing: soft bars, the last one short. */
 export function Lines({
   x,
@@ -174,25 +143,6 @@ export function Lines({
           rx={height / 2}
         />
       ))}
-    </g>
-  );
-}
-
-/** A teammate's pointer with their name tag, as the editor draws presence. */
-export function Cursor({
-  x,
-  y,
-  color,
-  name,
-}: {
-  x: number;
-  y: number;
-  color: string;
-  name?: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <TeammateCursor color={color} name={name} size={9} />
     </g>
   );
 }

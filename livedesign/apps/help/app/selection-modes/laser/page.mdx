@@ -7,19 +7,19 @@ import { LaserPanelScene } from '@/components/illustrations/selection-modes';
 export const metadata = helpMetadata({
   title: 'Laser Pointer',
   description:
-    'Use the Laser Pointer mode in livedesign to draw a temporary, fading trail that highlights parts of the canvas while presenting.',
+    'Use the Laser Pointer mode in livedesign to draw a temporary, fading trail that highlights parts of the canvas on a call or a shared screen.',
   path: '/help/selection-modes/laser/',
 });
 
 <ArticleLayout
   title="Laser Pointer"
-  description="Draw a temporary, fading trail to draw attention while presenting."
+  description="Draw a temporary, fading trail to draw attention to part of the canvas."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("laser")}
 >
 
-The Laser Pointer mode gives you a temporary laser trail for drawing attention while presenting or walking a group through the canvas. Choose **Laser** from the tool picker at the start of the palette strip, or press **`K`**.
+The Laser Pointer mode gives you a temporary laser trail for drawing attention while you share your screen or walk a group through the canvas. Choose **Laser** from the tool picker at the start of the palette strip, or press **`K`**.
 
 ## How it works
 
@@ -39,7 +39,7 @@ On a shared design everyone else sees your trail live, in your colour, and your 
 While the mode is active a **Laser** panel sits at the bottom right, above the zoom controls, with four settings over a preview of the stroke. The preview holds still, and draws the stroke across once each time you change a setting:
 
 - **Width**: **Fine**, **Medium** or **Bold**.
-- **Colour**: **Your colour** (your participant colour, the default), one of the ten standard colours (each adjusted to read on a light or a dark canvas), or **Add a custom colour** (four coloured dots) for a colour of your own, for when your colour doesn't read against the canvas you are presenting.
+- **Colour**: **Your colour** (your participant colour, the default), one of the ten standard colours (each adjusted to read on a light or a dark canvas), or **Add a custom colour** (four coloured dots) for a colour of your own, for when your colour doesn't read against the canvas you are showing.
 - **Trail**: how long the line lingers: **Quick**, **Normal** or **Long**. Long lets the end of the line linger for longer after you stop moving.
 - **Effect**: **Beam** (a clean line), **Glow** (a soft halo that survives a projector), **Comet** (tapers away behind the tip), or **Spark** (a dotted trail).
 
@@ -48,12 +48,6 @@ While the mode is active a **Laser** panel sits at the bottom right, above the z
 </Figure>
 
 Everyone in the room sees your laser as you set it, not their own default, and the settings are remembered on this device for next time.
-
-## The laser inside a presentation
-
-The laser is not only an editor tool. While you are running a [slide deck](/help/selection-modes/slide-deck/presenting/), press **`L`** to arm it over the slide and `L` again to put it away. It is one of only two tools reachable from a presentation (the [spotlight](/help/selection-modes/spotlight/) is the other), because pointing at the canvas is the one thing a presenter needs to do to it and neither tool can change it.
-
-While the laser is armed, moving draws the trail and a click no longer advances the slide; the keys and the presenter's buttons still move the deck. Leaving the presentation puts you back on Select, so you don't land in the editor still holding the laser.
 
 ## Who can use it
 

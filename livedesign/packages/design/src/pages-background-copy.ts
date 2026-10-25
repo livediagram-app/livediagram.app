@@ -65,7 +65,7 @@ type BackgroundSpread<T> =
     }
   | { refused: 'unknown_page' | 'no_other_pages' };
 
-/** A page's background onto every other page of its kind (Apply to All Slides, and so on): one
+/** A page's background onto every other page of its kind (Apply to All Logo Pages, and so on): one
  *  edit, each page re-inked for it. A locked page keeps its own and is counted as skipped; a page
  *  already wearing it counts as applied. */
 export function pageBackgroundSpread<T extends PagesTab>(

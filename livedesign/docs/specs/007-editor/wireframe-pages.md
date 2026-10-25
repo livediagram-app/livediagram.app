@@ -230,9 +230,8 @@ category:
 
 - A wireframe page exports as its whole device: the frame, the screen with its content clipped to
   it, and the system bars over it. PNG and SVG are **transparent** outside the device's outline (a
-  device mockup is placed over other things); a PDF page stays white. Slides, page thumbnails,
+  device mockup is placed over other things); a PDF page stays white. Page thumbnails,
   the Minimap and agents' previews draw the frame too.
-- Presenting a page slide of a wireframe page presents the whole device on the black.
 
 ## Share roles
 

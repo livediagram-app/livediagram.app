@@ -96,6 +96,49 @@ function isRetiredAiAssistant(category: string, action: string, type: string | n
   return category === 'Error' && AI_ASSISTANT_ROUTE.test(type ?? '');
 }
 
+// Slide decks and presenting (removed 2026-10-25, livedesign docs/specs/012-collaboration/presentation-mode.md):
+// building a deck, running one, the presenter settings (the controls' cog and Settings › Presenting), the Pages
+// tour's Slides steps, the Presentation render area's errors, and the Slide Deck help articles.
+const SLIDE_DECK_UI = new Set([
+  'Opened|SlideDeck',
+  'Added|Slide',
+  'Added|PageSlide',
+  'Removed|Slide',
+  'Moved|Slide',
+  'Toggled|SlideHidden',
+  'Toggled|SlideShown',
+  'Changed|SlideNotes',
+  'Opened|PageNotesButton',
+  'Opened|HeaderPresent',
+  'Started|Presentation',
+  'Closed|Presentation',
+  'Opened|PresenterNotes',
+  'Opened|PresentationSettings',
+  'Opened|SlideElementDetail',
+  'Opened|SettingsPresenting',
+  'View|PagesTourStepSlides',
+  'View|PagesTourStepWireframePresent',
+]);
+const SLIDE_DECK_HELP_IDS = new Set([
+  'slide-deck',
+  'building-a-deck',
+  'presenting',
+  'presenter-controls',
+]);
+
+function isRetiredSlideDeck(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'UI') {
+    if (SLIDE_DECK_UI.has(`${action}|${t}`)) return true;
+    // The presenter settings: `Changed·Presentation-<field>[<Option>]`, `Toggled·Presentation-<field>On|Off`.
+    if ((action === 'Changed' || action === 'Toggled') && t.startsWith('Presentation-'))
+      return true;
+  }
+  if (category === 'Help' || (category === 'UI' && action === 'Opened')) {
+    if (SLIDE_DECK_HELP_IDS.has(t)) return true;
+  }
+  return category === 'Error' && action === 'Client' && t.startsWith('Render.Presentation.');
+}
 // The isometric view (removed 2026-10-25, docs/specs/008-canvas/canvas-and-palette.md "Retired features"; livediagram
 // keeps it): the canvas tool, the image export's Isometric view toggle and the tool's help article.
 const ISOMETRIC_VIEW = new Set(['Canvas|Used|Isometric', 'UI|Toggled|IsometricExport']);
@@ -109,6 +152,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   )
     return true;
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isRetiredSlideDeck(category, action, type)) return true;
   if (isRetiredAiAssistant(category, action, type)) return true;
   if (isRetiredCustomTheme(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;

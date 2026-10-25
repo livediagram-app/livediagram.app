@@ -39,6 +39,6 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Out of scope
 
-- Broadcasting the shroud to the room ("presenter mode" proper). A real one needs consent and an escape hatch for every viewer, which is its own spec.
+- Broadcasting the shroud to the room (a shared spotlight). A real one needs consent and an escape hatch for every viewer, which is its own spec.
 - A custom shroud colour or tint.
 - Locking the light in place, or following the selection rather than the cursor. Both are reasonable, both change what the tool IS rather than how it looks.

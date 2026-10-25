@@ -778,34 +778,6 @@ body:has([data-mode-message]) [data-yields-to-mode] {
   --note-link-color: var(--color-brand-200);
 }
 
-/* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
-
-   The SLIDE is the canvas itself, narrowed to one slide's elements and framed
-   to their bounds by useEditorState. These rules are only the frame around
-   it, driven by the attributes the PresentationHost sets on <html>:
-   `data-presenting` while a deck is running, and `data-slide-move="pending"`
-   while the first slide waits for the screen to settle. The motion itself is a
-   View Transition of the canvas surface (canvas-motion.css): one picture moves,
-   so a hundred-element slide costs what a one-element slide does. */
-
-/* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
-   own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
-   away through the same path a zen user gets. One way to hide the chrome, not
-   two that can disagree. The zoom cluster is the one survivor zen keeps, and
-   presenting hides it below since a deck has no zoom controls. */
-html[data-presenting] [data-zoom-cluster] {
-  display: none !important;
-}
-
-/* A still cursor left sitting on a projector is a distraction, so it goes
-   away with the HUD. Driven by the same idle state, so the pointer and the
-   controls come back together on the first twitch of the mouse — a hidden
-   cursor you cannot bring back would be a trap. */
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-canvas-a11y-root],
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-surface] {
-  cursor: none;
-}
-
 /* Timeline event colours (docs/specs/013-workspace/timeline.md §2).
  *
  * Keyed on WHAT HAPPENED, not on which part of the product it happened
@@ -933,8 +905,8 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 
 /* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The design root takes no part,
-   so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
-   motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
+   so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. No
+   surface animates as one since slide decks left on 25 October 2026; the rule keeps a future one opt-in. */
 html {
   view-transition-name: none;
 }

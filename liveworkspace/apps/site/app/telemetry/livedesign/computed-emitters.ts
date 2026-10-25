@@ -111,42 +111,6 @@ const APPEARANCE_LABELS = tokensAfter(
 // The Trash a restored design sat in: useDesignTrashed's `from`.
 const TRASH_TYPES = ['Personal', 'Team'];
 
-// The presenter settings: `Presentation-<field>` per PresentationConfig key.
-const PRESENTATION_FIELDS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
-})();
-
-// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
-// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
-const PRESENTATION_SETTINGS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
-    (m) => [m[1]!, m[2]!] as const,
-  );
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const unionOf = (type: string) => {
-    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
-    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
-  };
-  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
-  return {
-    toggled: fields
-      .filter(([, type]) => type === 'boolean')
-      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
-    changed: [
-      ...fields
-        .filter(([, type]) => type !== 'boolean' && type !== 'number')
-        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
-      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
-    ],
-  };
-})();
-
 // The image picker's search failures (apps/live image-search/telemetry.ts):
 // every `ImageSearch.<Reason>` token in its fixed tables.
 const IMAGE_SEARCH_WARNINGS = [
@@ -227,7 +191,7 @@ const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Unknown'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Unknown";
-const TEMPLATES = ['Article', 'SlideDeck', 'LogoDesign'];
+const TEMPLATES = ['WireframePhone', 'LogoDesign', 'PhotoEdit'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
@@ -312,13 +276,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/app/design/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
-  },
-  'apps/live/app/design/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
-    values: PRESENTATION_SETTINGS.toggled,
-  },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
-    values: PRESENTATION_SETTINGS.changed,
   },
   'apps/live/app/design/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,

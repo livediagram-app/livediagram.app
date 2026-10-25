@@ -103,7 +103,7 @@ import { answerDesignRequest, type RouteIdentity } from './design-route';
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
 //
-//   - The design's content: tabs (with their stats), its slide deck, image references and grants, photo blob
+//   - The design's content: tabs (with their stats), image references and grants, photo blob
 //     refs and the changeset log, in its own SQLite (design-schema.ts), which the content modules reach as
 //     `env.DESIGN_DB` (index-app item-db.ts). Every API request about the design runs here (`route`,
 //     design-route.ts), so a save is one call to this object and one SQLite transaction. What the index's cross-design reads need (the

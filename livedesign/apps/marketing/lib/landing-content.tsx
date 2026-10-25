@@ -7,7 +7,6 @@ import {
   ExpiryArt,
   FollowAlongArt,
   FontsArt,
-  FullScreenSlideArt,
   LaserArt,
   LiveImageArt,
   LogoLayoutsArt,
@@ -21,14 +20,11 @@ import {
   PhotoPsdArt,
   PhotoRetouchArt,
   PresenceArt,
-  PresentLocallyArt,
-  PresenterNotesArt,
   RealtimeArt,
   RevokeArt,
   SearchPaletteArt,
   SelectionGlowArt,
   ShareLinksArt,
-  SlideTimingArt,
   SpotlightArt,
   TabWindowArt,
   TeamsArt,
@@ -68,7 +64,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: the kinds of page a design is made
- * of (logos and wireframes, then photos), presenting them, then working on them together. `page.tsx`
+ * of (logos and wireframes, then photos), then working on them together. `page.tsx`
  * renders one beat per entry and alternates its background by index; `/features/<id>` renders each
  * one's cards.
  */
@@ -152,7 +148,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'Every page, print-ready',
         description:
-          'Export every page as one PDF at true print size, or one page as a PNG or SVG, and keep any tab as a livedesign JSON file. Then present them full screen, one page at a time.',
+          'Export every page as one PDF at true print size, or one page as a PNG or SVG, and keep any tab as a livedesign JSON file.',
       },
       {
         art: <ThemesArt />,
@@ -220,81 +216,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Open and save PSD files',
         description:
           'Drop a PSD onto a photo page and its layers come in with their names, opacity, blend modes and masks. Export the photo as a PNG, a JPEG, a WebP, or a PSD with its layers kept.',
-      },
-    ],
-  },
-  {
-    id: 'present',
-    label: 'Present',
-    scene: 'present',
-    cta: 'Explore presenting',
-    title: 'Present the design, page by page',
-    description:
-      'Step through the logo, the screens and the photos full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
-    metaDescription:
-      'Present a design page by page, full screen, with private notes, a timer, a laser pointer and a spotlight.',
-    highlights: [
-      'Every page, in your order',
-      'Notes only you open',
-      'Laser pointer for presenting',
-      'Your screen, not everyone else’s',
-    ],
-    items: [
-      {
-        art: <FullScreenSlideArt />,
-        href: '/help/selection-modes/slide-deck/building-a-deck/',
-        group: 'Prepare',
-        title: 'Every page, in your order',
-        description:
-          'Every page of every tab presents: a logo, a wireframe, a photo. Order them in the Slide Deck panel: drag to rearrange, rename, or hide a page you might want next week without deleting it. The order is saved with the design, so a teammate opens it and sees the same walkthrough.',
-      },
-      {
-        art: <PresenterNotesArt />,
-        href: '/help/selection-modes/slide-deck/presenting/',
-        group: 'Present',
-        title: 'Notes only you open',
-        description:
-          'Write what you mean to say over each page. While you present they sit behind a button in the corner, so nothing about your script is on screen until you ask for it.',
-      },
-      {
-        art: <SlideTimingArt />,
-        href: '/help/selection-modes/slide-deck/presenter-controls/',
-        group: 'Present',
-        title: 'Keep the talk on time',
-        description:
-          'Give each page a few minutes before you present. While you talk, an elapsed clock counts up and the page’s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves you on to the next page.',
-      },
-      {
-        art: <PresentLocallyArt />,
-        href: '/help/selection-modes/slide-deck/presenting/',
-        group: 'Present',
-        title: 'Your screen, not everyone else’s',
-        description:
-          'Presenting shows the design on your screen and nowhere else. Nobody is dragged along, nobody’s view moves, and collaborators with the design open carry on working. You share your screen the way you already do. Nothing on a page can be changed by a stray click, so a projector is safe. To leave a design running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Point the room',
-        title: 'Laser pointer for presenting',
-        description:
-          'Switch to the laser and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Point the room',
-        title: 'Spotlight one thing at a time',
-        description:
-          'Switch on Spotlight and the page dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy screen one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        group: 'Point the room',
-        title: 'Zen mode for focus',
-        description:
-          'Press Z and every toolbar, panel and tab bar drops away, leaving just your pages. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },
@@ -378,6 +299,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Undo and redo',
         description:
           "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
+      },
+      {
+        art: <LaserArt />,
+        href: '/help/selection-modes/laser/',
+        group: 'Point and focus',
+        title: 'Point with the laser',
+        description:
+          'Switch to the laser and your cursor leaves a glowing trail everyone in the design can see. Point at the thing you mean while you talk it through, on a call or a shared screen. Trails fade on their own.',
+      },
+      {
+        art: <SpotlightArt />,
+        href: '/help/selection-modes/spotlight/',
+        group: 'Point and focus',
+        title: 'Spotlight one thing at a time',
+        description:
+          'Switch on Spotlight and the page dims under a soft shroud, with only a circle of light around your cursor. Walk people through a busy screen one piece at a time while you share it. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
+      },
+      {
+        art: <ZenModeArt />,
+        href: '/help/tools/zen-mode/',
+        group: 'Point and focus',
+        title: 'Zen mode for focus',
+        description:
+          'Press Z and every toolbar, panel and tab bar drops away, leaving just your pages. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
       {
         art: <ShareLinksArt />,

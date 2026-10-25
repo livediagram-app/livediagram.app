@@ -34,9 +34,7 @@ export type PanelId =
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, on the same terms.
   | 'eraser'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
-  | 'format'
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
-  | 'slide-deck';
+  | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -52,7 +50,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'spotlight',
   'eraser',
   'format',
-  'slide-deck',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -82,7 +79,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   spotlight: 'bottom-right',
   eraser: 'bottom-right',
   format: 'bottom-right',
-  'slide-deck': 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livedesign:panel-layout:v1';

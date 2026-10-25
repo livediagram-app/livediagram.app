@@ -1,9 +1,11 @@
 // The design as its Google Drive file (liveworkspace/docs/drive.md "The file", "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the `livedesign.design` envelope the CLI's pull files write, every tab with
-// its per-design folder, and the slide deck. The export runs inside the design's Durable Object, from the same tab
+// its per-design folder. The export runs inside the design's Durable Object, from the same tab
 // read a copy makes (design-content.ts readContentTabRows), stamped with the design's last save so unchanged content
 // is byte-identical. The import's file is read in the worker (readDesignFile: parsed, fresh ids, limits) and written
-// inside the new design's object (importDesignFile) as a copy lands, then started as its owner's.
+// inside the new design's object (importDesignFile) as a copy lands, then started as its owner's. A file written
+// while livedesign had slide decks still imports, its `presentation` left behind
+// (docs/specs/012-collaboration/presentation-mode.md "Saved data").
 
 import {
   capElementActions,
@@ -19,7 +21,7 @@ import {
 } from '@livedesign/design';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import type { ExportResult } from '@liveworkspace/index-app';
-import { MAX_DECK_LEN, MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
+import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { DesignEnv } from '../types';
 import {
@@ -52,13 +54,13 @@ export async function exportDesignFile(
   designId: string,
   ifVersion: number | null,
 ): Promise<ExportResult> {
-  const { meta, savedAt, presentation } = await readDesignHead(env, designId);
+  const { meta, savedAt } = await readDesignHead(env, designId);
   if (!meta) return { status: 'not_found' };
   if (ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
   const tabs = (await readContentTabRows(env, designId, null)).map(envelopeTabOf);
   return {
     status: 'ok',
-    body: designToEnvelopeText({ id: designId, name: meta.name, presentation }, tabs, savedAt),
+    body: designToEnvelopeText({ id: designId, name: meta.name }, tabs, savedAt),
     contentType: DESIGN_FILE_FORMAT.mimeType,
     version: savedAt,
   };
@@ -66,7 +68,7 @@ export async function exportDesignFile(
 
 // ---------- Import ------------------------------------------------------------------------------------------------
 
-// What a new design is made of: its tabs and deck as a copy carries them (fresh ids, links re-pointed). No placement
+// What a new design is made of: its tabs as a copy carries them (fresh ids, links re-pointed). No placement
 // grants, image owners or photo blobs travel: the file names images, it holds no right to serve them.
 export type DesignFileContent = { copy: DesignCopy };
 
@@ -78,14 +80,11 @@ export type DesignFileRead =
 const ROW_FIELDS = ['designId', 'orderIndex', 'updatedAt', 'rev', 'folder'] as const;
 
 // Read a file's text as a new design's content: another kind, an unreadable envelope or a malformed tab is
-// `invalid_file`; a tab past the tab cap, or a deck past its cap, `too_large` (docs/specs/015-api/api.md "Tab size").
+// `invalid_file`; a tab past the tab cap `too_large` (docs/specs/015-api/api.md "Tab size").
 export function readDesignFile(text: string): DesignFileRead {
   const parsed = parseDesignEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs, presentation } = copyDesignEnvelope(parsed.envelope);
-  if (presentation !== null && presentation.length > MAX_DECK_LEN) {
-    return { ok: false, failure: 'too_large' };
-  }
+  const { tabs } = copyDesignEnvelope(parsed.envelope);
   const copied: DesignCopy['tabs'] = [];
   for (const [index, incoming] of tabs.entries()) {
     const tab = migrateIncomingTab(incoming);
@@ -115,7 +114,6 @@ export function readDesignFile(text: string): DesignFileRead {
     ok: true,
     content: {
       copy: {
-        presentation,
         opensIn: null,
         tabKind: null,
         tabs: copied,

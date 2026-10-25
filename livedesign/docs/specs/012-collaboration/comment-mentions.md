@@ -66,8 +66,7 @@ designs they can already open (the library scoping, [Inbox](../013-workspace/inb
 
 ## Reading a mention
 
-In every thread rendering (the Collaborate panel, the popover, the
-presentation popover) an `@handle` that matches one of the comment's mentions
+In every thread rendering (the Collaborate panel and the popover) an `@handle` that matches one of the comment's mentions
 is drawn as a **chip**: semibold, in the accent, on a soft accent tint. An
 `@word` that matches no mention is plain text. The export draws the text as
 written.

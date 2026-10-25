@@ -23,7 +23,7 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
-import type { SlideThumb } from '@/lib/slide-thumb';
+import type { PageThumb } from '@/lib/page-thumb';
 import type { PageActions, PageContents } from '@/hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
@@ -204,7 +204,7 @@ const FILM_ROW_CLASS = (here: boolean) =>
 type RowProps = {
   row: ContentsRow;
   here: boolean;
-  thumb: SlideThumb | undefined;
+  thumb: PageThumb | undefined;
   actions: React.ReactNode;
   grip: React.ReactNode;
 };
@@ -216,7 +216,7 @@ function Picture({
   here,
   large,
 }: {
-  thumb: SlideThumb | undefined;
+  thumb: PageThumb | undefined;
   w: number;
   h: number;
   here: boolean;

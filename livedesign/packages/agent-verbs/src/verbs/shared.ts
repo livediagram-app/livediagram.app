@@ -14,7 +14,6 @@ export {
 
 type DesignWithTabs = ResolvedDesign & {
   tabs: TabSummary[];
-  presentation: string | null;
 };
 
 // The design a command names, its share code applied, with its tabs.
@@ -22,9 +21,9 @@ export async function designOf(ctx: VerbContext, doc: string): Promise<DesignWit
   const resolved = await resolveDesign(ctx.api, doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
   const { design } = await ctx.api.json<{
-    design: { tabs: TabSummary[]; presentation?: string | null };
+    design: { tabs: TabSummary[] };
   }>(`/designs/${encodeURIComponent(resolved.id)}`);
-  return { ...resolved, tabs: design.tabs, presentation: design.presentation ?? null };
+  return { ...resolved, tabs: design.tabs };
 }
 
 export async function tabOf(ctx: VerbContext, doc: string, tab: string | undefined) {

@@ -6,8 +6,6 @@ import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-ro
 const wireframe = {
   edit: true,
   locked: false,
-  deck: false,
-  notes: false,
   logo: false,
   page: true,
 };
@@ -27,13 +25,5 @@ describe('the title bar', () => {
   it('takes less room as icons than named', () => {
     expect(titleBarFixedRoom(wireframe, false)).toBeLessThan(titleBarFixedRoom(wireframe, true));
     expect(titleBarFixedRoom({ ...wireframe, edit: false, page: false }, true)).toBe(0);
-  });
-
-  it("makes room for a slide's named deck and notes buttons", () => {
-    const slide = { ...wireframe, deck: true, notes: true };
-    expect(titleBarFixedRoom(slide, true)).toBeGreaterThan(titleBarFixedRoom(wireframe, true));
-    expect(titleBarFixedRoom(slide, true) - titleBarFixedRoom(slide, false)).toBeGreaterThan(
-      titleBarFixedRoom(wireframe, true) - titleBarFixedRoom(wireframe, false),
-    );
   });
 });

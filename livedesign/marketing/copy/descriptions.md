@@ -31,7 +31,7 @@ For social posts and short "about" fields.
 
 > livedesign is a multiplayer page editor in the browser: logos, wireframes and
 > photos. Open a link and design with your team, with live cursors and comments,
-> then present your pages or export them. No sign-in wall. MIT-licensed and free. [236]
+> then export your pages. No sign-in wall. MIT-licensed and free. [220]
 
 ---
 
@@ -57,10 +57,9 @@ For Product Hunt, app store short descriptions, README intros.
 >
 > Draw a logo on an artboard and export its Logo Kit, lay out the screens of an
 > app as wireframes, or touch up a photo in layers with adjustments and filters.
-> Start from a template, present a tab's pages full screen, and export them as
-> PDF, PNG or SVG.
+> Start from a template and export your pages as PDF, PNG or SVG.
 >
-> It is MIT-licensed and free for everyone with no paid tier. [111 words]
+> It is MIT-licensed and free for everyone with no paid tier. [105 words]
 
 ---
 
@@ -85,13 +84,13 @@ For longer listing bodies and "about this project" sections.
 > and filters, exported as PNG, JPEG, WebP or PSD. On any page go text, shapes,
 > images, charts, tables, icons and embeds.
 >
-> When it is time to show the work, the Slides view steps through a tab's pages
-> full screen, with a laser and a spotlight. Export pages as PDF, PNG or SVG,
-> share view-only or editable links and revoke them whenever you like, and keep
-> everything in tabs and nested folders.
+> When it is time to show the work, point with a laser or a spotlight, or hide
+> the toolbars in Zen mode. Export pages as PDF, PNG or SVG, share view-only or
+> editable links and revoke them whenever you like, and keep everything in tabs
+> and nested folders.
 >
 > livedesign is MIT-licensed, free for everyone with no paid tier and no plan
-> for one. [234 words]
+> for one. [236 words]
 
 ---
 
@@ -131,8 +130,8 @@ detailed GitHub / Product Hunt write-up.
 > #### Start fast, show it well
 >
 > Start from a template for each kind of page, or start blank, and restyle a
-> whole tab with a theme. When the work is ready, the Slides view steps through
-> a tab's pages full screen with a laser pointer and a spotlight. Export pages
+> whole tab with a theme. When the work is ready, walk people through it with a
+> laser pointer and a spotlight, or clear the screen with Zen mode. Export pages
 > as PDF, PNG or SVG, a photo as PNG, JPEG, WebP or PSD, and a whole design as
 > JSON.
 >

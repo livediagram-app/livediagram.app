@@ -34,15 +34,15 @@ a grid is not always the better shape:
 ## Details that had to survive the change
 
 - **Band titles.** The canvas tool's three bands are named — **Edit** (the
-  tools that act on the canvas), **Present** (the ones you use in front of an
-  audience) and **Preview** (the whole-canvas views). A named band doesn't
+  tools that act on the canvas), **Present** (Laser and Spotlight, for pointing
+  while you share your screen) and **Preview** (the whole-canvas views). A named band doesn't
   also need a rule to say it started, so the title replaces the divider rather
   than sitting under it. Passed as a `groupLabels` map keyed by group index,
   NOT as a field on the first option: the selected option is filtered out of
   the menu, so a label hanging off an option would vanish exactly when that
   option was the current one.
 - **Group bands.** The canvas tool's options carry a `group` index that draws
-  a divider where the band changes — select-ish tools, then the presentation
+  a divider where the band changes — select-ish tools, then the pointing
   tools, then the whole-canvas modes. In a grid that becomes a full-width rule
   between rows (`col-span-full`) rather than a rule between two items.
 - **Shortcut badges.** Kept, but tucked into the tile's top-right corner

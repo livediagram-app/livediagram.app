@@ -579,11 +579,6 @@ export {
 // mcp worker as well as the browser.
 export * from '@liveworkspace/model-core/fonts';
 
-// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
-// helpers a presentation is built from. Kept here rather than in apps/live
-// because the api and the MCP worker can answer the same questions.
-export * from './slide-deck';
-export * from './slide-deck-pages';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/design-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';

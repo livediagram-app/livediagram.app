@@ -28,7 +28,7 @@ export function laidOutPagesOf(tab: Tab): LaidOutPage[] {
   return layOutPages(pagesOf(tab));
 }
 
-// How many pages a grid row holds: two of wide pages (slides), three of tall or square ones, never more than there are.
+// How many pages a grid row holds: two of wide pages, three of tall or square ones, never more than there are.
 export function pagesPerRow(pages: readonly LaidOutPage[]): number {
   const wide = pages.filter((p) => p.rect.width > p.rect.height).length > pages.length / 2;
   return Math.max(1, Math.min(pages.length, wide ? 2 : 3));

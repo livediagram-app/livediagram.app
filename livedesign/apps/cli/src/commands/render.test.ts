@@ -24,7 +24,6 @@ const host: Route = (_r, url) => {
       design: {
         id: DOC,
         name: 'Shop',
-        presentation: null,
         tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
       },
     });

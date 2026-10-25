@@ -86,7 +86,7 @@ describe('Pages', () => {
     const id = nextPageId(pages);
     expect(id).toMatch(/^page-[0-9a-f]{8}$/);
     expect(pages.some((p) => p.id === id)).toBe(false);
-    // A deleted page-3's id never comes back for the next page (a page slide may still name it).
+    // A deleted page-3's id never comes back for the next page (something may still name it).
     expect(nextPageId(pages)).not.toBe('page-3');
   });
 });
@@ -164,6 +164,17 @@ describe('page kinds', () => {
   it('read a stored article page as a plain page', () => {
     const [b] = pagesOf({ pages: [{ ...P('b'), kind: 'article', flow: 'art-1' }] });
     expect(b).toEqual(P('b'));
+  });
+
+  // docs/specs/012-collaboration/presentation-mode.md "Saved data": a slide page made in livedocuments opens as a page
+  // whose kind is not chosen yet, its background kept.
+  it('read a stored slide page as a page with no kind, keeping its background', () => {
+    const background = { fill: { kind: 'solid' as const, color: '#0f172a' } };
+    const [s] = pagesOf({
+      pages: [{ ...P('s'), kind: 'slide', size: 'a4', name: 'Title', background }],
+    });
+    expect(pageKindOf(s!)).toBeNull();
+    expect(s).toEqual({ ...P('s'), name: 'Title', background });
   });
 });
 

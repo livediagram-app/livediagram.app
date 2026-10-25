@@ -7,8 +7,8 @@ import { FAQ_CATEGORIES } from './faq-content';
 // The FAQ is about livedesign only (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"). Much of
 // it began as a copy of livediagram's, so this guard keeps the other liveworkspace products, and the kinds of
 // work only they make, out of every question, answer, category title and blurb. livedesign's own words stay
-// allowed: pages, tabs, the canvas, stickies, cards in the Explorer, the Slide Deck mode and spreadsheets you
-// paste from are all livedesign's.
+// allowed: pages, tabs, the canvas, stickies, cards in the Explorer and spreadsheets you paste from are all
+// livedesign's.
 const OTHER_PRODUCTS: { name: string; pattern: RegExp }[] = [
   { name: 'livediagram', pattern: /\blivediagram\b/i },
   { name: 'liveplanner', pattern: /\bliveplanner\b/i },
@@ -32,6 +32,8 @@ const OTHER_PRODUCTS: { name: string; pattern: RegExp }[] = [
   // livedocuments'.
   { name: 'articles', pattern: /\barticles?\b/i },
   { name: 'infographics', pattern: /\binfographics?\b/i },
+  // livedesign has no slide decks or Presentation mode (retired 25 October 2026); decks are livedocuments'.
+  { name: 'slide decks', pattern: /\b(?:slides?|decks?|presenting|presentations?)\b/i },
 ];
 
 // The answers that may name another product, because livedesign genuinely integrates with it there. Keyed by

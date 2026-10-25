@@ -41,13 +41,12 @@ export function redactDesignForReader(liveDoc: DesignDTO, caller: string | null)
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps
 // its id and position, so the bar can draw a "Not shared" pill in place, and loses
-// its name, folder and timestamp. The deck goes too: slides span tabs.
+// its name, folder and timestamp.
 // `tabScope` null (owner, team member, All-tabs link) returns the design as is.
 export function redactDesignForScope(liveDoc: DesignDTO, tabScope: string | null): DesignDTO {
   if (tabScope === null) return liveDoc;
   return {
     ...liveDoc,
-    presentation: null,
     tabs: liveDoc.tabs.map((t) =>
       t.id === tabScope
         ? t
