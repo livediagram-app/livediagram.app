@@ -48,7 +48,7 @@ Inherits [16](marketing-site.md) and [00-purpose](../001-project-vision/purpose.
 confident, understated; multiplayer-from-the-start pages (articles, decks
 and infographics) for teams who make things together. Lead with the hook:
 the editor works without signing in (open a link, make, share). Be honest about trade-offs (realtime is last-write-wins,
-not CRDT). Say "free, MIT-licensed, self-hostable, no paid tier" where the
+not CRDT). Say "free, MIT-licensed, no paid tier" where the
 format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name
 **livedocuments** (lowercase); brand colour amber `#F59E0B`, text and fills in `#A34A0C`
 ([01-color-scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.

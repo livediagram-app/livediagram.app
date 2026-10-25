@@ -23,8 +23,8 @@ type = "Data"
 globs = ["**/*.ttf", "**/*.otf"]
 
 [vars]
-# Where the OAuth consent page lives (apps/editor). Self-hosters set their own
-# live origin; the authorize endpoint redirects the signed-in user here.
+# Where the OAuth consent page lives (apps/editor). Staging sets its own
+# editor origin; the authorize endpoint redirects the signed-in user here.
 CONSENT_BASE_URL = "https://livedocuments.app"
 
 # TELEMETRY_KEY is deliberately NOT here — it's secret material, so it goes
@@ -39,7 +39,7 @@ CONSENT_BASE_URL = "https://livedocuments.app"
 # is attached in the Cloudflare dashboard, not via wrangler: the deploy
 # CF_API_TOKEN is scoped to upload worker scripts, not manage zone routes / DNS.
 # Attach the custom domain once under Workers → livedocuments-mcp → Domains &
-# Routes. Self-hosters do the same with their own host, then point
+# Routes. Another host does the same, then points
 # CONSENT_BASE_URL + the editor app's NEXT_PUBLIC_MCP_ORIGIN at it.
 
 # Reach the api worker over a service binding (not public DNS). Every tool

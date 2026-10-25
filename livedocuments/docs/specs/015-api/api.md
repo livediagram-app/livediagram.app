@@ -329,7 +329,7 @@ Other reads (a signed-in or guest `GET`, and every `OPTIONS`) are unmetered. The
 
 Before any limiter, a write whose `Content-Length` exceeds the body cap (`MAX_BODY_BYTES`, or `MAX_IMAGE_BYTES` for `/api/images`, `limits.ts`) is refused with `413`.
 
-Self-host: every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature still serve. The bindings are a Cloudflare paid-tier capability; the open-source path stays unaffected (per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+Every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature still serve. The bindings are a Cloudflare paid-tier capability; the open-source path stays unaffected (per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## Realtime model
 
@@ -483,7 +483,7 @@ A new owner-keyed table adds a row here, a statement to each function, and a see
 Before the first deploy:
 
 1. `pnpm --filter @livedocuments/api exec wrangler d1 create livedocuments`
-2. Copy the printed `database_id` into the `[[d1_databases]]` block in `apps/api/wrangler.toml`. The block is already there with its binding name (`DB`) — only the id changes. What is committed is livedocuments.app's own database id, so a self-hoster is replacing a real value rather than filling in a blank.
+2. Copy the printed `database_id` into the `[[d1_databases]]` block in `apps/api/wrangler.toml`. The block is already there with its binding name (`DB`) — only the id changes. What is committed is livedocuments.app's own database id, so a fork is replacing a real value rather than filling in a blank.
 3. `pnpm --filter @livedocuments/api run db:migrate:remote` to apply migrations.
 
 After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `livedocuments-api` means the API must deploy before the router.

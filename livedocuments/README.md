@@ -2,7 +2,7 @@
 
 A collaborative editor for documents made of pages (articles, slide decks and infographics) that works without signing in. Open a link, make pages, share, present. Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start writing."
 
-**Live at [livedocuments.app](https://livedocuments.app).** MIT-licensed and self-hostable end-to-end.
+**Live at [livedocuments.app](https://livedocuments.app).** MIT-licensed.
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
@@ -18,7 +18,6 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 | ------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Understand what livedocuments does and where it's going | [docs/README.md](docs/README.md)                                               |
 | Run it on your machine                                  | [docs/development/local-development.md](docs/development/local-development.md) |
-| Host it on your own Cloudflare account                  | [docs/operations/self-hosting.md](docs/operations/self-hosting.md)             |
 | See the repo's shape (apps, packages, deploy)           | [docs/development/architecture.md](docs/development/architecture.md)           |
 | Propose a change                                        | [docs/development/contributing.md](docs/development/contributing.md)           |
 | Read the spec for a specific behaviour                  | [docs/specs/README.md](docs/specs/README.md)                                   |
@@ -49,6 +48,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livedocuments.app](https://livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Resend (transactional email), each gated on its own key — and the editor runs fully without either of them.
+[MIT](LICENSE). A free hosted version runs at [livedocuments.app](https://livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Resend (transactional email), each gated on its own key — and the editor runs fully without either of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedocuments.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

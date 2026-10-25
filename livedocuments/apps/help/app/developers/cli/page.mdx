@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="The livedocuments CLI"
-  description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting."
+  description="Read, build, edit and discuss documents from a terminal: install, sign in and the commands."
   categoryTitle="Developers"
   categorySlug="developers"
 >
@@ -210,19 +210,6 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `7`       | Network or server failure                                  |
 
 Every error names what was wrong and suggests one command that fixes it. Set `LIVEDOCUMENTS_DEBUG=1` to see what the CLI is doing, on stderr.
-
-## Self-Hosted Instances
-
-The CLI talks to `https://livedocuments.app` unless you point it elsewhere. For one command, add `--host https://pages.example.com`; for a shell, set `LIVEDOCUMENTS_HOST`. To keep several, name them as profiles in `~/.config/livedocuments/config.toml` and choose one with `--profile` or `LIVEDOCUMENTS_PROFILE`:
-
-```toml
-default_profile = "work"
-
-[profiles.work]
-host = "https://pages.example.com"
-```
-
-Each profile keeps its own sign-in, and a self-hosted profile never contacts livedocuments.app. `LIVEDOCUMENTS_TOKEN` goes to whichever host is active, so set `LIVEDOCUMENTS_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
 
 ## Errors and Rate Limits
 

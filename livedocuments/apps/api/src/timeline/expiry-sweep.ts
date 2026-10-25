@@ -7,7 +7,7 @@
 //
 // Deliberately NOT folded into the existing token-expiry email sweep
 // (email/token-expiry.ts), which returns early when RESEND_API_KEY is
-// unset. A self-hosted deployment with no email provider still deserves
+// unset. A deployment with no email provider still deserves
 // to be told its integration is about to break — that is exactly the
 // kind of silent change this feed exists to surface (docs/specs/002-project-scope/open-source-and-business-model.md: never
 // degrade the core product on a missing SaaS key).

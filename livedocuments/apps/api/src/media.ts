@@ -22,7 +22,7 @@ import type { Env, ImageSummary } from './types';
 
 export const MEDIA_APP = 'livedocuments.app';
 
-// The service, or null when this deploy has none (a self-host without the key): images are then off.
+// The service, or null when this deploy has none (no MEDIA_KEY, as in local dev): images are then off.
 export function mediaClient(env: Pick<Env, 'MEDIA_KEY' | 'MEDIA_URL'>): MediaClient | null {
   if (!env.MEDIA_KEY) return null;
   return createMediaClient({ app: MEDIA_APP, key: env.MEDIA_KEY, url: env.MEDIA_URL });

@@ -15,7 +15,7 @@ Built from [`facts.md`](facts.md). No em dashes. Don't promise anything under
 For HTML `<meta name="description">` and search snippets.
 
 > A free, real-time editor for articles, slide decks and infographics. Write,
-> present and design together. Open source and self-hostable. [135]
+> present and design together. Free and open source. [126]
 
 Alternate:
 
@@ -42,8 +42,8 @@ For directory cards and "short pitch" fields.
 > livedocuments is a free, real-time editor for articles, slide decks and
 > infographics. Open the editor and start, no sign-up needed. Write and present
 > together with live cursors, comments and assigned actions, start from 35
-> templates, and export to PDF, PNG or Markdown. MIT-licensed and self-hostable
-> on Cloudflare. [47 words]
+> templates, and export to PDF, PNG or Markdown. MIT-licensed and free for
+> everyone. [47 words]
 
 ---
 
@@ -60,8 +60,8 @@ For Product Hunt, app store short descriptions, README intros.
 > actions. Start from 35 templates, recolour every page with one of twenty-four
 > themes, and share view or edit links any time.
 >
-> It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [104 words]
+> It is MIT-licensed, free for everyone with no paid tier, and open for anyone
+> to read. [103 words]
 
 ---
 
@@ -93,8 +93,8 @@ For longer listing bodies and "about this project" sections.
 > AI assistants and scripts can work on documents too, through the MCP server,
 > the CLI and the API.
 >
-> livedocuments is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [244 words]
+> livedocuments is MIT-licensed and free for everyone, with no paid tier and no
+> plan for one. [237 words]
 
 ---
 
@@ -159,8 +159,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > livedocuments is MIT-licensed and publicly viewable. The hosted version at
 > livedocuments.app is free for everyone, with no paid tier and no plan to
-> introduce one. If we ship it, every user gets it. You can self-host the
-> entire stack on your own Cloudflare account; the open-source core never calls
-> home and never gates features behind a license check.
+> introduce one. If we ship it, every user gets it. The open-source core never
+> calls home and never gates features behind a license check.
 >
-> Write it, present it, share it. [415 words]
+> Write it, present it, share it. [404 words]

@@ -83,7 +83,7 @@ bucket_name = "livedocuments-images"
 # `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
 # endpoint; over-limit requests get a 429. Namespace ids are
 # arbitrary local identifiers (Cloudflare scopes by binding name +
-# script). Self-host: when this binding is absent the rate-limit
+# script). When this binding is absent the rate-limit
 # helper falls through to "allow" so deployments without the
 # feature still work.
 [[unsafe.bindings]]
@@ -136,7 +136,7 @@ crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 # exempt from the write limiter, so without this an attacker holding a
 # code could brute-force the password unbounded. 30 resolves / 60s per IP
 # is ample for legit visitors. Separate namespace. Absent binding → the
-# index.ts check is skipped, so self-host still works.
+# index.ts check is skipped, so local dev still works.
 [[unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
 type = "ratelimit"
@@ -145,7 +145,7 @@ simple = { limit = 30, period = 60 }
 
 # Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
 # page fetch for link-card previews. 60/60s is plenty for a user dropping
-# bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
+# bookmark cards. Separate namespace. Absent binding → check skipped.
 [[unsafe.bindings]]
 name = "UNFURL_RATE_LIMITER"
 type = "ratelimit"
@@ -165,7 +165,7 @@ simple = { limit = 120, period = 60 }
 # Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
 # docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
 # reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow (self-host).
+# looping client. Separate namespace. Absent binding → allow.
 [[unsafe.bindings]]
 name = "HOME_RATE_LIMITER"
 type = "ratelimit"
@@ -174,7 +174,7 @@ simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
-# Separate namespace. Absent binding → allow (self-host).
+# Separate namespace. Absent binding → allow.
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
 type = "ratelimit"
@@ -184,7 +184,7 @@ simple = { limit = 30, period = 60 }
 # Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
 # email"): GET and POST /api/teams/invite-decline/<token>, keyed invite-decline:<network> (an IPv4 /24 or IPv6 /56).
 # Open doors, so the owner-keyed write limiter would put every caller on one key. 20 / 60s is far above one
-# person declining. Separate namespace. Absent binding → allow (self-host).
+# person declining. Separate namespace. Absent binding → allow.
 [[unsafe.bindings]]
 name = "TEAM_INVITE_RATE_LIMITER"
 type = "ratelimit"
@@ -240,7 +240,7 @@ simple = { limit = 20, period = 60 }
 # worker mints signed guest ids and /api/migrate requires a valid
 # signature, closing the "observe a guest id, claim its data" hole
 # (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest / single-user self-host).
+# migrate (pure-guest local dev).
 
 # TELEMETRY_KEY is livedocuments' Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
@@ -254,7 +254,7 @@ simple = { limit = 20, period = 60 }
 #     worker, the SAME value as the service's TELEMETRY_KEY_LIVEDOCUMENTS.
 #     Generate with `openssl rand -hex 32`.
 #
-# Unset = this worker sends no telemetry, so a self-host can ignore it.
+# Unset = this worker sends no telemetry, so local dev can ignore it.
 
 # MEDIA_KEY is livedocuments' secret on liveworkspace's media service (liveworkspace/docs/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as

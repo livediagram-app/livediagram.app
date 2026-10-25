@@ -17,7 +17,7 @@ export default function PoliciesPage() {
     <BrowsePage
       listing={{ appPath: '/policies/', articles: articles }}
       title="Policies"
-      lede="The terms that govern the hosted service, and how your data is handled. They cover only livedocuments.app; a copy you self-host is yours to run."
+      lede="The terms that govern the hosted service, and how your data is handled. They cover livedocuments.app."
     >
       {articles.map((article) => (
         <ArticleCard key={article.slug} article={article} />

@@ -44,7 +44,7 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
     expect(del).toHaveBeenCalledWith(['thumb/d1', 'og/d1', 'thumb/d2', 'og/d2']);
   });
 
-  it('skips R2 cleanup when no bucket is bound (self-host) without throwing', async () => {
+  it('skips R2 cleanup when no bucket is bound without throwing', async () => {
     const env = fakeEnv({ documentIds: ['d1'], images: undefined });
     await expect(deleteAccount(env, 'owner-1')).resolves.toMatchObject({
       documents: expect.any(Number),

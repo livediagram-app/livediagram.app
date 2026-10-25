@@ -5,20 +5,20 @@ import { PublicCode } from '@/components/illustrations/privacy';
 export const metadata = helpMetadata({
   title: 'Open Source and Trust',
   description:
-    'livedocuments is MIT-licensed with a public codebase, so you can audit exactly how it handles your data, or run your own copy.',
+    'livedocuments is MIT-licensed with a public codebase, so you can audit exactly how it handles your data.',
   path: '/help/privacy-and-security/open-source-trust/',
 });
 
 <ArticleLayout title="Open Source and Trust" description="The whole codebase is public and MIT-licensed, so you do not have to take any privacy claim on faith." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-The strongest privacy guarantee livedocuments can offer is that you do not have to trust it blindly. The entire codebase is public and MIT-licensed, so every claim on these pages, where documents are stored, what telemetry records, how share passwords work, is something you can verify in the source yourself, or sidestep entirely by running your own copy.
+The strongest privacy guarantee livedocuments can offer is that you do not have to trust it blindly. The entire codebase is public and MIT-licensed, so every claim on these pages, where documents are stored, what telemetry records, how share passwords work, is something you can verify in the source yourself.
 
 ## A public, MIT-licensed codebase
 
-livedocuments is open source under the **MIT license**. That is permissive on purpose: anyone may read, fork, modify, embed, or self-host it, for any purpose.
+livedocuments is open source under the **MIT license**. That is permissive on purpose: anyone may read, fork, modify or embed it, for any purpose.
 
 - **Free for everyone.** There is no paid tier and no plan to introduce one. Every feature ships to every user.
-- **No license checks.** Nothing in the core editor calls home to verify a licence or gate a feature, which is also what keeps self-hosting honest.
+- **No license checks.** Nothing in the core editor calls home to verify a licence or gate a feature.
 - **Optional, not required, outside services.** Sign-in is optional. With it unconfigured, the app runs in pure-guest mode and works fully without any account system. Email is the same: it stays off until a deployment adds its key. Image search (Openverse) needs no key and is on everywhere; it runs from the browser, and only when someone searches.
 
 Because the code is visible to the world, you can audit precisely how your data is handled rather than relying on a privacy policy alone.
@@ -33,20 +33,16 @@ A public repository has one hard rule: no secret ever lives in the source code. 
 
 Every secret a deployment needs is supplied at runtime through environment variables or the hosting dashboard, never committed. Only values explicitly marked as publishable (such as a public API base URL) are ever included in what ships to the browser. This is what makes a public codebase safe to publish in the first place.
 
-## Audit it, or run your own
+## Audit it
 
-You have two ways to satisfy yourself about how livedocuments treats your data.
-
-1. **Read the code.** Follow how a document is saved, how access is checked, or what an analytics event contains, all in the open.
-2. **Self-host it.** Deploy your own instance so the data never leaves infrastructure you control. A self-hoster who wants no server-side outbound traffic beyond their own hosting can run the guest-only, telemetry-off configuration. The API still fetches a page's title and preview image when someone adds a link card, visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it. See [self-hosting](/help/self-hosting/self-hosting-overview/).
+Read the code to satisfy yourself about how livedocuments treats your data: follow how a document is saved, how access is checked, or what an analytics event contains, all in the open.
 
 ## Found a problem?
 
 Open code also means anyone can look for weaknesses, and we want to hear about them. If you find a security vulnerability, please report it privately through GitHub rather than in a public issue: [Reporting a Vulnerability](/help/policies/report-a-vulnerability/) explains how, what is in scope, and our safe-harbour promise. The same policy is linked from `/security` and from the site's `/.well-known/security.txt`.
 
 <Tip>
-  Whether you use the hosted version or run your own, you get the same feature set. The hosted site
-  is a convenience, not a more capable product.
+  Every feature ships to every user, free, so there is no hidden tier with different rules to audit.
 </Tip>
 
 </ArticleLayout>

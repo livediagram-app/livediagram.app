@@ -289,7 +289,7 @@ document, so a per-card badge is noise — the team list omits it as well).
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
-## Self-hosting
+## Without the bucket
 
 The whole feature is gated on the optional `IMAGES` R2 binding, which holds only snapshots and share
 cards (uploaded images live in liveworkspace's media service, [Image element + per-owner gallery](../009-elements/images.md)):

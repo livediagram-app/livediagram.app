@@ -3,7 +3,7 @@
 // The auth surface the app tree consumes. The session itself comes from a
 // lazily-loaded bridge (AccountsBridge, via AuthProvider) that publishes this
 // state; until it lands the defaults below describe "not settled yet", which
-// every consumer already handles. A self-host without sign-in
+// every consumer already handles. A deployment without sign-in
 // (docs/specs/002-project-scope/open-source-and-business-model.md: sign-in is optional and purely
 // additive) never loads the bridge, and the defaults are its final state.
 

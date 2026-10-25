@@ -119,7 +119,7 @@ export function useExplorerState() {
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
-  // the sidebar section instead of rows; sign-in-disabled self-host
+  // the sidebar section instead of rows; sign-in-disabled
   // deployments hide the section entirely.
   const teamsEnabled = Boolean(isSignedIn && accountUserId);
   const {

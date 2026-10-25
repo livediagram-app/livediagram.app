@@ -31,7 +31,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //     after the first visit; subsequent loads can't be downgraded
 //     to plain HTTP by a network-level attacker. Cloudflare's zone-
 //     level toggle covers the same ground but this code-side header
-//     is the source of truth so self-host deployments inherit it.
+//     is the source of truth so every deployment inherits it.
 //
 //   - Content-Security-Policy: Trusted Types alone, enforced
 //     (docs/specs/016-platform/trusted-types.md). The rest of a CSP

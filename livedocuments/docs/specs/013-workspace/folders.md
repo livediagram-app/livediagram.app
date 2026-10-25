@@ -380,7 +380,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   folders, Manage Teams), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
-  when the api worker reports 503, e.g. a self-host without R2.
+  when the api worker reports 503, e.g. a deployment without R2.
 - **Right pane:**
   - Breadcrumb showing the path from "My Work" through every
     ancestor of the focused folder. Each segment is a button that

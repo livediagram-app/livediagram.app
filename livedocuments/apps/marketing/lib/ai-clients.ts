@@ -1,6 +1,6 @@
 // The Build with AI page's clients and starter prompts, as data (docs/specs/019-marketing/build-with-ai.md
 // "The clients"). One address, MCP_URL, feeds every snippet, so the page can never show two. It is this
-// deployment's MCP worker: a self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the hosted one.
+// deployment's MCP worker: a build set with NEXT_PUBLIC_MCP_ORIGIN (staging, local dev) shows its own, never the hosted one.
 
 import { mcpEndpoint, resolveMcpOrigin } from '@livedocuments/api-schema';
 

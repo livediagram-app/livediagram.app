@@ -15,7 +15,7 @@
 // a "Sign in" link only to swap it for the user pill a tick later.
 //
 // When sign-in is disabled for the deployment
-// (docs/specs/002-project-scope/open-source-and-business-model.md self-host path), the component is a
+// (docs/specs/002-project-scope/open-source-and-business-model.md, sign-in optional), the component is a
 // no-op. Same module-load hook-swap pattern as `useAccountBootstrap`, chosen
 // from a compile-time constant.
 

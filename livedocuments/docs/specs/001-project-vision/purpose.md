@@ -104,7 +104,7 @@ making pages together need this?".
 ## How it ships
 
 livedocuments is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. Anyone can self-host the entire codebase; the hosted
+for everyone, no paid tier. The codebase is public; the hosted
 version is the easy default. See
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md).
 

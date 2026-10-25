@@ -321,7 +321,7 @@ export function identityHeaders(ownerId: string, token: string | null): Record<s
   // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
   // section 4): the api worker can require a valid signature on owner-scoped
   // routes, which a harvested id wouldn't have. Absent for legacy unsigned
-  // guests and self-hosts with signing disabled.
+  // guests and deployments with signing disabled.
   const sig = getGuestSelfSig();
   return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
 }

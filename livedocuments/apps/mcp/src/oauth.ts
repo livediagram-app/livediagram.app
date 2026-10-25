@@ -71,7 +71,7 @@ export function isAllowedRedirectUri(uri: string): boolean {
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
-// (works on mcp.livedocuments.app and any self-host).
+// (works on mcp.livedocuments.app, staging and local dev).
 function selfOrigin(reqUrl: string): string {
   return new URL(reqUrl).origin;
 }

@@ -163,21 +163,21 @@ numbers, but the ratios hold. All local, read-only.
 
 ### 3.1 Help text sizes
 
-| Command                                   | Tokens  | Lines |
-| ----------------------------------------- | ------- | ----- |
-| `gh --help`                               | 485     | 65    |
-| `gh pr --help`                            | 386     | 47    |
-| `gh pr list --help`                       | 465     | 52    |
-| `gh pr view --help`                       | 242     | 28    |
-| `git --help`                              | 509     | 45    |
-| `git commit -h`                           | 900     | 65    |
-| `kubectl --help`                          | 678     | 73    |
-| `kubectl get --help`                      | 1,473   | 126   |
-| `wrangler --help`                         | 854     | 64    |
-| `wrangler d1 --help`                      | 378     | 24    |
-| `wrangler d1 execute --help`              | 381     | 28    |
-| `jq --help`                               | 649     | 63    |
-| playwright-cli command list               | 2,243   | 155   |
+| Command                                       | Tokens  | Lines |
+| --------------------------------------------- | ------- | ----- |
+| `gh --help`                                   | 485     | 65    |
+| `gh pr --help`                                | 386     | 47    |
+| `gh pr list --help`                           | 465     | 52    |
+| `gh pr view --help`                           | 242     | 28    |
+| `git --help`                                  | 509     | 45    |
+| `git commit -h`                               | 900     | 65    |
+| `kubectl --help`                              | 678     | 73    |
+| `kubectl get --help`                          | 1,473   | 126   |
+| `wrangler --help`                             | 854     | 64    |
+| `wrangler d1 --help`                          | 378     | 24    |
+| `wrangler d1 execute --help`                  | 381     | 28    |
+| `jq --help`                                   | 649     | 63    |
+| playwright-cli command list                   | 2,243   | 155   |
 | **mock `livedocuments --help`** (§6.1)        | **380** | 32    |
 | **mock `livedocuments el --help`** (§6.2)     | **162** | 14    |
 | **mock `livedocuments el add --help`** (§6.3) | **349** | 28    |
@@ -197,7 +197,7 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
-| schema resource `livedocuments://schema/elements`                     | 1,898           |
+| schema resource `livedocuments://schema/elements`                 | 1,898           |
 
 The element format is repeated inline in each of the three element-taking tools, about 2k tokens each time.
 With a CLI, the agent reads `livedocuments schema sticky` (about 100 tokens) only when it places a sticky.
@@ -266,9 +266,9 @@ needs a **default field set**, not "everything".
 
 ### 4.2 Progressive help, with token budgets
 
-| Level | Command                              | Content                                                                   | Budget       |
-| ----- | ------------------------------------ | ------------------------------------------------------------------------- | ------------ |
-| 0     | skill frontmatter                    | when to use the CLI                                                       | ≤ 80         |
+| Level | Command                                  | Content                                                                   | Budget       |
+| ----- | ---------------------------------------- | ------------------------------------------------------------------------- | ------------ |
+| 0     | skill frontmatter                        | when to use the CLI                                                       | ≤ 80         |
 | 1     | `livedocuments` / `--help`               | resources with their verbs, ref syntax, output contract, 4 starting moves | ≤ 500        |
 | 2     | `livedocuments <resource> --help`        | verbs, one line each                                                      | ≤ 250        |
 | 3     | `livedocuments <resource> <verb> --help` | usage, flags, 2-3 examples, what it prints                                | ≤ 400        |
@@ -652,7 +652,7 @@ must settle.
 - **Comment writes** go through the tab today. A thread endpoint (add, reply, resolve) would let `comment add`
   avoid touching anything else on the tab.
 - **Rendering.** `tab render` can rasterise locally (resvg in Node, the shared `svg-render.ts`), or use a server
-  endpoint. Doing it locally keeps it working offline and on self-hosts.
+  endpoint. Doing it locally keeps it working offline and on any host.
 - **Document lookup by name across team libraries**, without the client sweeping every team, would make
   `doc ls` and name refs a single call (the MCP sweeps today, `find-documents.ts`).
 - **Short ids.** If evals show prefixes still produce wrong refs, the alternative is server-issued short element

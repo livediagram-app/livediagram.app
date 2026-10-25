@@ -15,7 +15,7 @@
 //     the bare id is. So observing the id does not reveal the signature.
 //   - /api/migrate verifies the signature before reassigning ownership.
 //
-// When `GUEST_ID_HMAC_SECRET` is unset (an OSS self-host that hasn't
+// When `GUEST_ID_HMAC_SECRET` is unset (a deployment that hasn't
 // configured it), signing degrades to disabled — `signOwnerId` returns
 // null and migrate skips the check — mirroring how an unset `ACCOUNTS_URL`
 // makes sign-in optional. Production sets the secret and is protected.
@@ -55,7 +55,7 @@ export async function signOwnerId(
 // Constant-time verify of `sig` against `ownerId`. With a secret set, a
 // missing or mismatched signature returns false. Callers gate on the
 // secret being present before *requiring* a signature (so an unconfigured
-// self-host keeps its legacy unsigned behaviour).
+// deployment keeps its legacy unsigned behaviour).
 export async function verifyOwnerId(
   secret: string | undefined,
   ownerId: string,

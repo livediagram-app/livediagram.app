@@ -75,7 +75,7 @@ beforeEach(() => {
 });
 
 describe('getDocumentThumbnailSvg', () => {
-  it('returns null without an R2 binding (self-host without storage)', async () => {
+  it('returns null without an R2 binding (no storage)', async () => {
     const out = await getDocumentThumbnailSvg({} as Env, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();

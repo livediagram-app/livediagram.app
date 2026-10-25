@@ -15,7 +15,7 @@ import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../
 import { recordImageUploaded } from '../timeline';
 import { gateGrant, requireOwner, type RouteContext } from './context';
 
-// Without the service (a self-host without MEDIA_KEY) every endpoint answers 503, so the editor hides
+// Without the service (no MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
 export async function handleImages(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;

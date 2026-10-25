@@ -99,7 +99,7 @@ are excluded just like today), each gets its own accordion section id
 unchanged. The **Assign Action** tile:
 
 - **Always shows, for everyone.** The feature is not sign-in gated:
-  a signed-out user (or a self-host without sign-in, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
+  a signed-out user (or a deployment without sign-in, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
   every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from
@@ -152,7 +152,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
 - **"Email {name} about this action"**: the shared iOS-style toggle
   (`ToggleSwitch`, the same control every settings row uses), **default
   on**, rendered only when `useCapabilities().emailEnabled` is true
-  ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a self-host without Resend never advertises a send it
+  ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §2): a deployment without Resend never advertises a send it
   can't perform. **Hidden entirely for a self-assignment** (guest or
   signed-in) — you don't email yourself about your own action, so the
   row disappears rather than defaulting off.

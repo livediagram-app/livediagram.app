@@ -3,7 +3,7 @@
 // over an empty box. For a link whose preview may name its document, the api answers its name, and the shell's head
 // is rewritten to carry it and the share card before it is sent.
 //
-// Without the API binding (a self-host that leaves it out), or when the api is slow or says no, the shell goes out as
+// Without the API binding (local dev that leaves it out), or when the api is slow or says no, the shell goes out as
 // built, with the brand card the root layout declares.
 
 import {

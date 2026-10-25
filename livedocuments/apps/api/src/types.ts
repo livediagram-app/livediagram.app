@@ -30,7 +30,7 @@ export type Env = {
   DB: D1Database;
   DOCUMENT_ROOM: DurableObjectNamespace;
   // The live build id: the deploy's commit, the same one baked into the editor build as
-  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
+  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, or a deploy that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
@@ -56,7 +56,7 @@ export type Env = {
   // and /api/migrate requires a valid signature before reassigning a
   // guest's data to an account — closing the "observe a guest id,
   // claim its data" hole. Unset → migrate keeps its legacy unsigned
-  // behaviour (OSS self-host that hasn't configured it).
+  // behaviour (a deployment that hasn't configured it).
   GUEST_ID_HMAC_SECRET?: string;
   // Guest REST signature enforcement cutoff (docs/specs/015-api/public-api-and-tokens.md §4), epoch ms. While
   // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
@@ -83,33 +83,33 @@ export type Env = {
   MEDIA_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
-  // wrangler.toml. Optional so self-host deployments without the
+  // wrangler.toml. Optional so deployments without the
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real document writes. Keyed on CF-Connecting-IP. Optional: absent
-  // (self-host) falls through to "allow", same as the write limiter.
+  // falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
   // which carries the optional share password and is otherwise an
   // unauthenticated read exempt from WRITE_RATE_LIMITER. Bounds blind
   // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent → "allow".
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md) — an unauthenticated
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
   // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
-  // Optional: absent (self-host) → "allow".
+  // Optional: absent → "allow".
   TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
-  // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never send analytics unless they opt in.
+  // Absent/anything-else keeps telemetry fully off — the
+  // default, so forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
@@ -129,17 +129,17 @@ export type Env = {
   // "https://livedocuments.app".
   APP_BASE_URL?: string;
   // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // (a self-host) allows every read.
+  // allows every read.
   HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
-  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
+  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding allows every mint.
   WORKBENCH_TICKET_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
-  // (self-host) falls through to "allow".
+  // falls through to "allow".
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };

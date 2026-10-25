@@ -80,7 +80,7 @@ Inside the frame the person browses, opens documents (with a **Back**) and makes
 
 Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=<documentId>#ticket=<ticket>`: the document id is not a secret, and the ticket travels in the fragment, which no server, log or `Referer` sees. The page reads the ticket and removes it from its address before doing anything else.
 
-A ticket works **once**, within **one minute**. On a self-hosted instance the app origin is whatever that instance serves the app from. Take it from `new URL(url).origin` and accept messages only from that origin.
+A ticket works **once**, within **one minute**. Take the app origin from `new URL(url).origin` and accept messages only from that origin.
 
 If the ticket has expired or was already used, the frame shows **Open this document from your workbench** and sends no messages: mint a fresh one. If the page is not framed, or framed by another origin, it says "This view opens only inside" your origin, and does nothing else.
 

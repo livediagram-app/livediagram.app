@@ -68,7 +68,7 @@ export async function apiListTimeline(
       lastSeenAt: typeof body.lastSeenAt === 'number' ? body.lastSeenAt : undefined,
     };
   } catch {
-    // Offline, or a self-host with no /api configured. Still not an
+    // Offline, or a deployment with no /api configured. Still not an
     // empty feed: "we couldn't ask" and "there is nothing" are
     // different answers, and this surface is the first thing a visitor
     // sees, so getting them confused is expensive.

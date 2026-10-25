@@ -85,7 +85,7 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
 // Backs the Explorer Image Gallery's "Used in" badge. Images that
 // aren't placed on any canvas yet are absent from the map (treat a
 // missing key as "0 uses, safe to delete"). 503 collapses to an
-// empty map so a self-host without R2 still renders an empty
+// empty map so a deployment without R2 still renders an empty
 // gallery rather than a hard error.
 //
 // Deduped alongside apiListImages: the GalleryPane fires both in a

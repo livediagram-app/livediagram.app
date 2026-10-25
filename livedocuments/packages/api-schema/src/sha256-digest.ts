@@ -1,7 +1,7 @@
 // SHA-256 for every runtime the repo targets, secure context or not (docs/specs/016-platform/secure-context.md).
 // Web Crypto's `crypto.subtle` is the implementation wherever it exists: the workers, Node, the CLI and every
 // HTTPS page. A browser leaves `crypto.subtle` out of a page that is not a secure context (an embed on a
-// plain-http wiki, a self-hosted instance on a LAN address), and there the hashes the editor computes for
+// plain-http wiki, a dev server on a LAN address), and there the hashes the editor computes for
 // itself (an image's content address) would throw. This falls back to FIPS 180-4 in plain code, byte for
 // byte the same digest, so both sides of every check agree.
 

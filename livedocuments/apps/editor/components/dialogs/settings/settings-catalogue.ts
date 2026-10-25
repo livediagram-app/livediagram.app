@@ -110,9 +110,9 @@ function emailSwitch(
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 // `authEnabled` is whether this deployment offers sign-in at all
-// (`signInEnabled`): API tokens are signed-in only, so on a no-auth self-host they
+// (`signInEnabled`): API tokens are signed-in only, so on a no-auth deployment they
 // are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
+// (docs/specs/015-api/public-api-and-tokens.md#37-without-sign-in).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
@@ -263,7 +263,7 @@ export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
 // The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and self-hosts without accounts included, because
+// Here for everyone, guests and deployments without accounts included, because
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 

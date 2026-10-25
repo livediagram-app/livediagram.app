@@ -28,7 +28,7 @@ or store it for this machine:
 printf %s "$TOKEN" | livedocuments auth login --with-token
 ```
 
-The CLI never prompts. A self-hosted livedocuments is reached with `--host https://…` or `LIVEDOCUMENTS_HOST`.
+The CLI never prompts. Another livedocuments server, such as local development, is reached with `--host https://…` or `LIVEDOCUMENTS_HOST`.
 
 ## Start
 

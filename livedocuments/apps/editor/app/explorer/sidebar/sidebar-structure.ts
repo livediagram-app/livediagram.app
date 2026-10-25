@@ -48,7 +48,7 @@ export type SidebarRowKind =
 export type SidebarLayoutInput = {
   // A signed-in session (teams exist only for one).
   signedIn: boolean;
-  // The deployment offers sign-in at all (a no-auth self-host does not).
+  // The deployment offers sign-in at all (local dev without sign-in does not).
   signInAvailable: boolean;
   pendingInvites: number;
   offlineDocuments: number;
