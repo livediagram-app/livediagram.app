@@ -1,6 +1,6 @@
 // If it doesn't connect (docs/specs/019-marketing/build-with-ai.md "The page" 7): the help article's failure lines,
 // as native disclosures so every answer is in the static HTML.
-const issues = (name: string, hostedMcpHost: string) => [
+const issues = [
   {
     q: 'The page says the request has expired',
     a: 'A connection request lasts ten minutes. Start the connection again from your AI tool.',
@@ -13,22 +13,12 @@ const issues = (name: string, hostedMcpHost: string) => [
     q: 'My tool keeps asking me to sign in',
     a: 'The token it held may have expired (they last six months) or been revoked. Remove the connection in your tool and add it again.',
   },
-  {
-    q: `I run my own ${name}`,
-    a: `Use your own MCP host in place of ${hostedMcpHost}, still ending in /mcp. The MCP server is optional and needs accounts set up on your deployment.`,
-  },
 ];
 
-export function AiTroubleshooting({
-  name,
-  hostedMcpHost,
-}: {
-  name: string;
-  hostedMcpHost: string;
-}) {
+export function AiTroubleshooting() {
   return (
     <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
-      {issues(name, hostedMcpHost).map(({ q, a }) => (
+      {issues.map(({ q, a }) => (
         <details key={q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900 dark:text-slate-100">
             {q}

@@ -8,7 +8,6 @@ import { ClientPicker } from './ClientPicker';
 const clients = aiClients({
   name: 'livediagram',
   mcpUrl: 'https://mcp.livediagram.app/mcp',
-  hostedMcpHost: 'mcp.livediagram.app',
 });
 const wide = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({
