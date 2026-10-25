@@ -12,8 +12,13 @@ import {
   type ReactNode,
 } from 'react';
 import type { Folder, Item } from '@liveworkspace/index-client';
+import type { ThisBrowserItem } from '../this-browser';
 
-export type Payload = { kind: 'item'; item: Item } | { kind: 'folder'; folder: Folder };
+// An index item, a folder, or an item kept only in this browser (This Browser, which the index never sees).
+export type Payload =
+  | { kind: 'item'; item: Item }
+  | { kind: 'folder'; folder: Folder }
+  | { kind: 'local'; item: ThisBrowserItem };
 export type DragKind = Payload['kind'];
 
 export type DragStore = {

@@ -67,7 +67,9 @@ view says so.
   (id, title and dates, never content) in the shared `localStorage` key the Explorer reads
   (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). Its sidebar has a **This
   Browser** row with their count, shown while there are some, opening the Explorer's own This Browser view
-  (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened. On
+  (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened, each a card
+  like the rest with the This Browser badge, its menu (Open, Sync Canvas) and its drag (the Trash or a folder,
+  [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "This Browser in Jump Back In"). On
   liveworkspace.app, which cannot read this browser's storage for livediagram, the row links to `/explorer/offline` here.
 - **The editor's Explorer panel** has This Browser as a view of its own: a rail entry under More with the count,
   shown only while there are some, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,

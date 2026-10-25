@@ -3,16 +3,15 @@
 // The editor panel's This Browser section, as livediagram's own panel showed it before the shared Explorer (its
 // `browser` section): the items this browser keeps only for itself (offline), newest change first, each a row that
 // opens it in the editor. The editor runs the app's own code, so Sync (signed in) moves one into the account in
-// place, and Delete removes one for good after a confirmation, since nothing else holds it. The rail shows the section
+// place, and Delete removes one for good after a confirmation (the Explorer's `delete-local` dialog, which a drop on
+// the Trash asks too), since nothing else holds it. The rail shows the section
 // only while there are some (sections.ts), with their count.
 
-import { useState } from 'react';
 import { useExplorer } from '../explorer/context';
 import { BrowserIcon } from '../explorer/host';
-import { thenReload, useThisBrowserItems } from '../explorer/ThisBrowser';
+import { openThisBrowserItem, thenReload, useThisBrowserItems } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { relativeSince, useNow } from '../time';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { TrashIcon } from '../ui/icons';
 import { PaneEmpty, PaneIconButton, PaneList, PaneRow, PaneTile } from './pane-parts';
 
@@ -21,10 +20,9 @@ const SYNC_BUTTON =
   'flex h-8 shrink-0 cursor-pointer items-center rounded-lg px-2.5 text-xs font-medium text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-brand-200 dark:ring-brand-400/40 dark:hover:bg-brand-500/15';
 
 export function PanelThisBrowser() {
-  const { words, kind, reloadLists } = useExplorer();
+  const { words, kind, reloadLists, openDialog } = useExplorer();
   const { host, live } = useThisBrowserItems();
   const now = useNow();
-  const [confirming, setConfirming] = useState<ThisBrowserItem | null>(null);
   if (!host || live.length === 0)
     return (
       <PaneEmpty
@@ -33,8 +31,7 @@ export function PanelThisBrowser() {
         description={`${words.many} you keep only in this browser show up here.`}
       />
     );
-  const open = (item: ThisBrowserItem) =>
-    host.open ? host.open(item) : window.location.assign(host.itemHref(item));
+  const open = (item: ThisBrowserItem) => openThisBrowserItem(host, item);
   return (
     <div className="flex flex-col gap-3">
       <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
@@ -74,7 +71,7 @@ export function PanelThisBrowser() {
                       <PaneIconButton
                         label={`Delete ${name}`}
                         tone="danger"
-                        onClick={() => setConfirming(item)}
+                        onClick={() => openDialog({ kind: 'delete-local', item })}
                       >
                         <TrashIcon />
                       </PaneIconButton>
@@ -86,18 +83,6 @@ export function PanelThisBrowser() {
           );
         })}
       </PaneList>
-      {confirming ? (
-        <ConfirmDialog
-          title={`Delete this ${kind.lowerOne}?`}
-          message={`“${confirming.title || 'Untitled'}” is kept only in this browser, so deleting it removes it for good.`}
-          confirmLabel="Delete"
-          onConfirm={() => {
-            host.remove?.(confirming);
-            setConfirming(null);
-          }}
-          onCancel={() => setConfirming(null)}
-        />
-      ) : null}
     </div>
   );
 }

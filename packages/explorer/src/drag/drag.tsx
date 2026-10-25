@@ -6,7 +6,10 @@
 // pane or the panel's rail), on My Work (its root) or on a team; the drop takes the Change Folder path (the same
 // optimistic move and rollback) and says where it went, with an Undo. Anything that drags also drops on the Trash,
 // which wakes as a target for the whole drag: an item through its own Delete (with its Undo), one of the person's
-// folders through Delete Folder (with its confirmation). Folders are not moved by dragging.
+// folders through Delete Folder (with its confirmation). Folders are not moved by dragging. An item kept only in this
+// browser (This Browser, Home's Jump Back In) drags too, and each target means what it can for something the account
+// doesn't hold (liveworkspace/docs/one-explorer.md "This Browser in Jump Back In"): the Trash deletes it for good after
+// a confirmation where the host can, and a place asks to sync it to the account first.
 //
 // Drags carry custom types, so dropping one outside any target (the page, the URL bar, another app) does nothing
 // rather than navigating. A target can read only a drag's types until the drop, so what is being dragged is held
@@ -24,13 +27,17 @@ import {
 } from 'react';
 import type { Folder, Item } from '@liveworkspace/index-client';
 import { useExplorer } from '../explorer/context';
+import { useHostExtras } from '../explorer/host';
 import { canManage } from '../explorer/menus';
+import { openThisBrowserItem } from '../explorer/ThisBrowser';
+import type { ThisBrowserItem } from '../this-browser';
 import { useDragging, useDragStore } from './store';
 
 export { useDragging } from './store';
 
 export const ITEM_DRAG_MIME = 'application/x-liveworkspace-item';
 export const FOLDER_DRAG_MIME = 'application/x-liveworkspace-folder';
+export const THIS_BROWSER_DRAG_MIME = 'application/x-liveworkspace-this-browser';
 
 // How long a drag rests on an expandable row before it opens under it (spring-loaded folders open after about half
 // a second to a second; long enough that a drag passing over a row on its way elsewhere never opens it).
@@ -74,6 +81,50 @@ export function useFolderDrag(folder: Folder | null, renaming = false): SourcePr
       store.set({ kind: 'folder', folder });
     },
     onDragEnd: () => store.set(null),
+  };
+}
+
+/** What a card of an item kept only in this browser spreads to drag it (to the Trash, or to a place to sync it). */
+export function useThisBrowserDrag(item: ThisBrowserItem): SourceProps {
+  const store = useDragStore();
+  if (item.trashedAt !== null) return {};
+  return {
+    draggable: true,
+    onDragStart: (e) => {
+      e.dataTransfer.setData(THIS_BROWSER_DRAG_MIME, item.id);
+      e.dataTransfer.effectAllowed = 'move';
+      store.set({ kind: 'local', item });
+    },
+    onDragEnd: () => store.set(null),
+  };
+}
+
+export const THIS_BROWSER_DROP_COPY = {
+  trash: (name: string) => `“${name}” is kept only in this browser. Open it to delete it.`,
+  place: (name: string) =>
+    `“${name}” is kept only in this browser. Sign in and sync it to your account to put it in a folder.`,
+} as const;
+
+/** What a drop does with an item kept only in this browser, through This Browser's own verbs: the Trash asks before
+ *  deleting it for good (`remove`), and a place asks to sync it into the account first (`sync`, or `syncHref` on
+ *  the page). Where the host has neither, the drop says why, rather than doing nothing. */
+function useThisBrowserDrop() {
+  const { openDialog, toast } = useExplorer();
+  const { thisBrowser } = useHostExtras();
+  return {
+    toTrash: (item: ThisBrowserItem) => {
+      if (thisBrowser?.remove) return openDialog({ kind: 'delete-local', item });
+      toast.show(THIS_BROWSER_DROP_COPY.trash(item.title || 'Untitled'), {
+        action: thisBrowser
+          ? { label: 'Open', run: () => openThisBrowserItem(thisBrowser, item) }
+          : undefined,
+      });
+    },
+    toPlace: (item: ThisBrowserItem, to: DropPlace) => {
+      if (thisBrowser?.sync || thisBrowser?.syncHref)
+        return openDialog({ kind: 'sync-local', item, to });
+      toast.show(THIS_BROWSER_DROP_COPY.place(item.title || 'Untitled'));
+    },
   };
 }
 
@@ -147,8 +198,15 @@ export function useDropTarget(
 ): { over: boolean; handlers: DropHandlers | Record<string, never> } {
   const store = useDragStore();
   const move = useDropMove();
-  const accepts = (e: DragEvent) =>
-    to !== null && hasType(e, ITEM_DRAG_MIME) && store.get()?.kind === 'item';
+  const local = useThisBrowserDrop();
+  const accepts = (e: DragEvent) => {
+    if (to === null) return false;
+    const kind = store.get()?.kind;
+    return (
+      (kind === 'item' && hasType(e, ITEM_DRAG_MIME)) ||
+      (kind === 'local' && hasType(e, THIS_BROWSER_DRAG_MIME))
+    );
+  };
   const hover = useHover(accepts);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const opened = useRef(false);
@@ -207,6 +265,7 @@ export function useDropTarget(
         reset();
         store.set(null);
         if (payload?.kind === 'item') void move(payload.item, to);
+        else if (payload?.kind === 'local') local.toPlace(payload.item, to);
       },
     },
   };
@@ -227,8 +286,12 @@ export function useTrashTarget(): {
   const store = useDragStore();
   const { actions, openDialog } = useExplorer();
   const dragging = useDragging();
+  const local = useThisBrowserDrop();
   const accepts = (e: DragEvent) =>
-    store.get() !== null && (hasType(e, ITEM_DRAG_MIME) || hasType(e, FOLDER_DRAG_MIME));
+    store.get() !== null &&
+    (hasType(e, ITEM_DRAG_MIME) ||
+      hasType(e, FOLDER_DRAG_MIME) ||
+      hasType(e, THIS_BROWSER_DRAG_MIME));
   const hover = useHover(accepts);
   const [gulp, setGulp] = useState(false);
   const { over, reset } = hover;
@@ -270,6 +333,8 @@ export function useTrashTarget(): {
         if (payload.kind === 'item') {
           setGulp(true);
           void actions.trash(payload.item);
+        } else if (payload.kind === 'local') {
+          local.toTrash(payload.item);
         } else {
           openDialog({ kind: 'delete-folder', folderId: payload.folder.id });
         }

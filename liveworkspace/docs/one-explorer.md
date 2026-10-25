@@ -206,6 +206,17 @@ The page reads where it is from its own address and there is that app's page:
   the address, checks the item is the person's to move, asks them to confirm, and runs the app's own conversion. A
   request that reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on
   to the editor the same way. A link alone never moves anything.
+- **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
+  shape as the rest of its group (a thumbnail area, the title, and a line with the **This Browser** badge and when it
+  was opened). It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
+  (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
+  where the host deletes in place (`remove`), **Delete**, asked first. It drags as the others do, and each target
+  means what it can for an item the account doesn't hold. On the **Trash** it is deleted for good after a
+  confirmation, since nothing else holds it; where the host can't delete it (the page, which can't reach the
+  editor's store) the drop says so and offers Open, as the Trash's This Browser group does. On a **folder**, My Work
+  or a team it has to be synced to the account first, so the drop asks to Sync: in place, it then moves there; on
+  the page Sync hands over to the editor, and the dialog says it can be moved once it's in the account. Signed out,
+  the drop says to sign in and sync it first.
 - **Teams.** Made, run and answered here, as on liveworkspace.app: the accounts Worker takes the app's token for
   them ([Teams](#teams-are-run-in-the-explorer)). After a change the app is asked for a fresh token, which names
   the teams as they now are.

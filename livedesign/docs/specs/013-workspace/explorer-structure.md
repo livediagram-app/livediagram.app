@@ -378,7 +378,11 @@ editor's Explorer, the Trash), carries the **This Browser** pill
 ([Offline Mode: This Browser pill](../006-design/offline-mode.md#this-browser-pill)).
 
 The editor header names such a design with the matching **This Browser** badge. Home's "Jump Back In" carries the
-same pill (`ThisBrowserPill`) on the design's thumbnail ([Explorer Home](explorer-home.md)).
+same pill (`ThisBrowserPill`) on the design's card, which is the same size and shape as the rest of its group, with
+the same ⋯ menu and right-click (Open, Sync Design) and the same drag: to the Trash, deleted for good after a
+confirmation where the host can; to a folder, synced to the account first
+([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "This Browser in Jump Back In",
+[Explorer Home](explorer-home.md)).
 
 ## Telemetry
 

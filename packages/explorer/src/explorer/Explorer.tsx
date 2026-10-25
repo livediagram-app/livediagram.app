@@ -420,8 +420,9 @@ function ExplorerInner({
               ) : null}
             </div>
           </WelcomeProvider>
+          {/* Inside the host's extras: This Browser's dialogs run its verbs. */}
+          <ExplorerDialogs />
         </HostExtrasProvider>
-        <ExplorerDialogs />
         {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
         {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
       </ExtrasProvider>
