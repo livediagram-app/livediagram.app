@@ -10,6 +10,7 @@ import {
   type Element,
   type ShapeKind,
 } from '@livedocuments/document';
+import { noteAriaLabel } from '@/lib/article/article-note-look';
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -119,6 +120,8 @@ export function describeMany(elements: Element[]): string {
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.
 export function elementAriaLabel(el: Element): string {
+  // A margin note names which it is and where it stands (docs/specs/007-editor/article-pages.md "Its name").
+  if (el.type === 'article-note') return noteAriaLabel(el);
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;

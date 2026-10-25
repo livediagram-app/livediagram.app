@@ -23,6 +23,7 @@ import {
 } from '@livedocuments/document';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { NOTE_INK } from '@/lib/article/article-note-look';
 
 // The wrapper className + inline style for a boxed element, derived purely
 // from the element + its selection state. Encodes the per-type styling
@@ -258,14 +259,15 @@ export function describeVariant(
     }
     case 'article-note': {
       // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
-      // small rounded chip in its note's colour, matching the tint on its text.
-      const action = element.articleNote === 'action';
+      // chip in its note's fixed colours, round for a comment and a rounded square (a checkbox) for
+      // an action, so the two part by outline as well as colour and glyph.
+      const ink = NOTE_INK[element.articleNote === 'action' ? 'action' : 'comment'];
       return {
-        className: `shadow-sm ${`${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim()}`,
+        className: `shadow-sm transition-shadow hover:shadow-md ${`${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim()}`,
         style: {
-          borderRadius: 9,
-          backgroundColor: action ? '#f0f9ff' : '#fffbeb',
-          borderColor: remoteBorderColor ?? (action ? '#7dd3fc' : '#fcd34d'),
+          borderRadius: element.articleNote === 'action' ? 8 : '50%',
+          backgroundColor: ink.chip,
+          borderColor: remoteBorderColor ?? ink.rim,
           borderWidth: remoteBorderColor ? remoteBorderWidth : 1.5,
           borderStyle: 'solid',
         },
