@@ -289,14 +289,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I set up a team with shared plans?',
         a: (
           <>
-            Yes, once you sign in. Create a team from the Explorer, invite people by email, and
-            everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage
-            membership, everyone else just gets to work. See{' '}
-            <a href="/help/collaboration/teams/">teams</a>.
+            Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams
+            in the Explorer sidebar to create one and invite people by email on liveworkspace.app.
+            Each team then shows in the Explorer as a space with its own shared folders of plans.
+            Teams have Admin and Member roles: admins manage membership, everyone else just gets to
+            work. See <a href="/help/collaboration/teams/">teams</a>.
           </>
         ),
         aText:
-          'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
+          'Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams in the Explorer sidebar to create one and invite people by email on liveworkspace.app. Each team then shows in the Explorer as a space with its own shared folders of plans. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
       },
       {
         q: 'How do I keep my plans organised?',
@@ -440,7 +441,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a board as CSV, an image, a PDF or a Markdown outline, and a sheet as CSV. Your work is never locked in.',
+        a: 'Yes. Export a board as CSV, a Markdown outline, an image (PNG or SVG) or a PDF; a sheet as CSV, an image or a PDF; and a dashboard or form as JSON you can import into another plan. Your work is never locked in.',
       },
     ],
   },

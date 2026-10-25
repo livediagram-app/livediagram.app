@@ -84,3 +84,41 @@ describe('domain language', () => {
     );
   });
 });
+
+// The FAQ answers for liveplanner alone. Several sibling apps share the platform (the account, teams on
+// liveworkspace.app), and liveworkspace may be named, but no answer may name another app or offer its kind of work.
+// An answer about a genuine integration with another app goes in INTEGRATION_ANSWERS, by its question, and is the
+// only place such a name may appear. None does today.
+const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set<string>([]);
+
+const OTHER_APPS: readonly [string, RegExp][] = [
+  ['another app by name', /\b(?:livediagram|livedocuments|livepages|livedesign)\b/i],
+  [
+    "livediagram's kinds of work",
+    /\b(?:diagrams?|diagramming|flowcharts?|whiteboards?|mind ?maps?|mermaid|canvas(?:es)?|draw mode|workshop mode|community)\b/i,
+  ],
+  [
+    "livedocuments' kinds of work",
+    /\b(?:documents?|articles?|slides?|slide decks?|decks?|infographics?|presentations?)\b/i,
+  ],
+  [
+    "livedesign's kinds of work",
+    /\b(?:designs?|logos?|logo kits?|artboards?|wireframes?|mock-?ups?|prototypes?|photo edit(?:s|ing|or)?)\b/i,
+  ],
+];
+
+describe('only about liveplanner', () => {
+  it('lists only questions the FAQ asks as integration answers', () => {
+    const asked = new Set(items.map((i) => i.q));
+    for (const q of INTEGRATION_ANSWERS) expect(asked.has(q), q).toBe(true);
+  });
+
+  it.each(OTHER_APPS)('never names %s outside an integration answer', (_label, pattern) => {
+    for (const c of FAQ_CATEGORIES)
+      for (const item of c.items) {
+        if (INTEGRATION_ANSWERS.has(item.q)) continue;
+        const text = `${c.title} ${c.blurb} ${item.q} ${faqAnswerText(item)}`;
+        expect(text, item.q).not.toMatch(pattern);
+      }
+  });
+});
